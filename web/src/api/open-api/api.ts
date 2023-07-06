@@ -102,44 +102,6 @@ export interface APIKeyUpdateDto {
 /**
  * 
  * @export
- * @interface AddAssetsDto
- */
-export interface AddAssetsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof AddAssetsDto
-     */
-    'assetIds': Array<string>;
-}
-/**
- * 
- * @export
- * @interface AddAssetsResponseDto
- */
-export interface AddAssetsResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof AddAssetsResponseDto
-     */
-    'successfullyAdded': number;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof AddAssetsResponseDto
-     */
-    'alreadyInAlbum': Array<string>;
-    /**
-     * 
-     * @type {AlbumResponseDto}
-     * @memberof AddAssetsResponseDto
-     */
-    'album'?: AlbumResponseDto;
-}
-/**
- * 
- * @export
  * @interface AddUsersDto
  */
 export interface AddUsersDto {
@@ -1930,19 +1892,6 @@ export interface QueueStatusDto {
 /**
  * 
  * @export
- * @interface RemoveAssetsDto
- */
-export interface RemoveAssetsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof RemoveAssetsDto
-     */
-    'assetIds': Array<string>;
-}
-/**
- * 
- * @export
  * @interface SearchAlbumResponseDto
  */
 export interface SearchAlbumResponseDto {
@@ -3679,16 +3628,16 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} id 
-         * @param {AddAssetsDto} addAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum: async (id: string, addAssetsDto: AddAssetsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        addAssetsToAlbum: async (id: string, assetIdsDto: AssetIdsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('addAssetsToAlbum', 'id', id)
-            // verify required parameter 'addAssetsDto' is not null or undefined
-            assertParamExists('addAssetsToAlbum', 'addAssetsDto', addAssetsDto)
+            // verify required parameter 'assetIdsDto' is not null or undefined
+            assertParamExists('addAssetsToAlbum', 'assetIdsDto', assetIdsDto)
             const localVarPath = `/album/{id}/assets`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3722,7 +3671,7 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(addAssetsDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(assetIdsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3999,15 +3948,15 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} id 
-         * @param {RemoveAssetsDto} removeAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum: async (id: string, removeAssetsDto: RemoveAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        removeAssetFromAlbum: async (id: string, assetIdsDto: AssetIdsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('removeAssetFromAlbum', 'id', id)
-            // verify required parameter 'removeAssetsDto' is not null or undefined
-            assertParamExists('removeAssetFromAlbum', 'removeAssetsDto', removeAssetsDto)
+            // verify required parameter 'assetIdsDto' is not null or undefined
+            assertParamExists('removeAssetFromAlbum', 'assetIdsDto', assetIdsDto)
             const localVarPath = `/album/{id}/assets`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4037,7 +3986,7 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(removeAssetsDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(assetIdsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4151,13 +4100,13 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {AddAssetsDto} addAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AddAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(id, addAssetsDto, key, options);
+        async addAssetsToAlbum(id: string, assetIdsDto: AssetIdsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetIdsResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(id, assetIdsDto, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4225,12 +4174,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {RemoveAssetsDto} removeAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(id, removeAssetsDto, options);
+        async removeAssetFromAlbum(id: string, assetIdsDto: AssetIdsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetIdsResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(id, assetIdsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4268,13 +4217,13 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {string} id 
-         * @param {AddAssetsDto} addAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: any): AxiosPromise<AddAssetsResponseDto> {
-            return localVarFp.addAssetsToAlbum(id, addAssetsDto, key, options).then((request) => request(axios, basePath));
+        addAssetsToAlbum(id: string, assetIdsDto: AssetIdsDto, key?: string, options?: any): AxiosPromise<Array<AssetIdsResponseDto>> {
+            return localVarFp.addAssetsToAlbum(id, assetIdsDto, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4335,12 +4284,12 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {string} id 
-         * @param {RemoveAssetsDto} removeAssetsDto 
+         * @param {AssetIdsDto} assetIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.removeAssetFromAlbum(id, removeAssetsDto, options).then((request) => request(axios, basePath));
+        removeAssetFromAlbum(id: string, assetIdsDto: AssetIdsDto, options?: any): AxiosPromise<Array<AssetIdsResponseDto>> {
+            return localVarFp.removeAssetFromAlbum(id, assetIdsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4380,10 +4329,10 @@ export interface AlbumApiAddAssetsToAlbumRequest {
 
     /**
      * 
-     * @type {AddAssetsDto}
+     * @type {AssetIdsDto}
      * @memberof AlbumApiAddAssetsToAlbum
      */
-    readonly addAssetsDto: AddAssetsDto
+    readonly assetIdsDto: AssetIdsDto
 
     /**
      * 
@@ -4499,10 +4448,10 @@ export interface AlbumApiRemoveAssetFromAlbumRequest {
 
     /**
      * 
-     * @type {RemoveAssetsDto}
+     * @type {AssetIdsDto}
      * @memberof AlbumApiRemoveAssetFromAlbum
      */
-    readonly removeAssetsDto: RemoveAssetsDto
+    readonly assetIdsDto: AssetIdsDto
 }
 
 /**
@@ -4562,7 +4511,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public addAssetsToAlbum(requestParameters: AlbumApiAddAssetsToAlbumRequest, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).addAssetsToAlbum(requestParameters.id, requestParameters.addAssetsDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).addAssetsToAlbum(requestParameters.id, requestParameters.assetIdsDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4638,7 +4587,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public removeAssetFromAlbum(requestParameters: AlbumApiRemoveAssetFromAlbumRequest, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).removeAssetFromAlbum(requestParameters.id, requestParameters.removeAssetsDto, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).removeAssetFromAlbum(requestParameters.id, requestParameters.assetIdsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

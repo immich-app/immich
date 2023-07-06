@@ -17,7 +17,7 @@ void main() {
   // final instance = AlbumApi();
 
   group('tests for AlbumApi', () {
-    //Future<AddAssetsResponseDto> addAssetsToAlbum(String id, AddAssetsDto addAssetsDto, { String key }) async
+    //Future<List<AssetIdsResponseDto>> addAssetsToAlbum(String id, AssetIdsDto assetIdsDto, { String key }) async
     test('test addAssetsToAlbum', () async {
       // TODO
     });
@@ -52,7 +52,7 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumResponseDto> removeAssetFromAlbum(String id, RemoveAssetsDto removeAssetsDto) async
+    //Future<List<AssetIdsResponseDto>> removeAssetFromAlbum(String id, AssetIdsDto assetIdsDto) async
     test('test removeAssetFromAlbum', () async {
       // TODO
     });
