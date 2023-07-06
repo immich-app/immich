@@ -256,8 +256,8 @@ export class AssetService {
     }
 
     try {
-      const [thumbnailPath, contentType] = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers, contentType);
+      const thumbnailPath = this.getThumbnailPath(asset, query.format);
+      return this.streamFile(thumbnailPath, res, headers);
     } catch (e) {
       res.header('Cache-Control', 'none');
       this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -522,17 +522,16 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath) {
-          return [asset.webpPath, 'image/webp'];
+        if (asset.webpPath && asset.webpPath.length > 0) {
+          return asset.webpPath;
         }
-        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
-          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
+          throw new NotFoundException('resizePath not set');
         }
-        return [asset.resizePath, 'image/jpeg'];
+        return asset.resizePath;
     }
   }
 
