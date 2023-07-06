@@ -768,7 +768,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> getAssetThumbnail(id, format, key)
+> MultipartFile getAssetThumbnail(id, format, key)
 
 
 
@@ -796,7 +796,8 @@ final format = ; // ThumbnailFormat |
 final key = key_example; // String | 
 
 try {
-    api_instance.getAssetThumbnail(id, format, key);
+    final result = api_instance.getAssetThumbnail(id, format, key);
+    print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
 }
@@ -812,7 +813,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
@@ -821,7 +822,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1272,7 +1273,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **serveFile**
-> serveFile(id, isThumb, isWeb, key)
+> MultipartFile serveFile(id, isThumb, isWeb, key)
 
 
 
@@ -1301,7 +1302,8 @@ final isWeb = true; // bool |
 final key = key_example; // String | 
 
 try {
-    api_instance.serveFile(id, isThumb, isWeb, key);
+    final result = api_instance.serveFile(id, isThumb, isWeb, key);
+    print(result);
 } catch (e) {
     print('Exception when calling AssetApi->serveFile: $e\n');
 }
@@ -1318,7 +1320,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
@@ -1327,7 +1329,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
