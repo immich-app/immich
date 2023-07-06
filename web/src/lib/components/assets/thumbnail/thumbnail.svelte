@@ -46,7 +46,6 @@
 
   const thumbnailClickedHandler = (e: Event) => {
     if (!disabled) {
-      e.preventDefault();
       dispatch('click', { asset });
     }
   };

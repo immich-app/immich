@@ -1351,14 +1351,6 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            },
             "description": ""
           }
         },
@@ -1672,20 +1664,6 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/webp": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            },
             "description": ""
           }
         },
@@ -2709,14 +2687,6 @@
         ],
         "responses": {
           "200": {
-            "content": {
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            },
             "description": ""
           }
         },
