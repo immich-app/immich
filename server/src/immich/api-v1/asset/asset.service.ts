@@ -332,8 +332,6 @@ export class AssetService {
     const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
-    console.log(dto);
-
     const ids = dto.ids.slice();
     for (const id of ids) {
       const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
