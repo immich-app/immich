@@ -11,7 +11,7 @@ import {
 import { IJobRepository, JobName } from '..';
 import { IStorageRepository } from '../storage';
 import { PersonResponseDto } from './person.dto';
-import { IPersonRepository, UpdateFacesData } from './person.repository';
+import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
