@@ -201,7 +201,7 @@ export const libraryEntityStub = {
     refreshedAt: null,
     isVisible: true,
   }),
-  library2: Object.freeze<LibraryEntity>({
+  uploadLibrary: Object.freeze<LibraryEntity>({
     id: 'library-id',
     name: 'test_library',
     assets: [],
@@ -214,13 +214,13 @@ export const libraryEntityStub = {
     refreshedAt: null,
     isVisible: true,
   }),
-  library3: Object.freeze<LibraryEntity>({
+  importLibrary: Object.freeze<LibraryEntity>({
     id: 'library-id',
     name: 'test_library',
     assets: [],
     owner: userEntityStub.user1,
     ownerId: 'user-id',
-    type: LibraryType.UPLOAD,
+    type: LibraryType.IMPORT,
     importPaths: [],
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
@@ -314,7 +314,7 @@ export const assetEntityStub = {
     } as ExifEntity,
     isOffline: true,
     libraryId: 'library-id2',
-    library: libraryEntityStub.library3,
+    library: libraryEntityStub.importLibrary,
   }),
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -348,7 +348,7 @@ export const assetEntityStub = {
     sidecarPath: null,
     isOffline: true,
     libraryId: 'library-id2',
-    library: libraryEntityStub.library2,
+    library: libraryEntityStub.uploadLibrary,
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -435,6 +435,8 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 100_000,
     },
+    libraryId: 'library-id',
+    library: libraryEntityStub.uploadLibrary,
   } as AssetEntity),
 
   livePhotoStillAsset: Object.freeze({
@@ -449,6 +451,8 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 25_000,
     },
+    libraryId: 'library-id',
+    library: libraryEntityStub.uploadLibrary,
   } as AssetEntity),
 
   withLocation: Object.freeze<AssetEntity>({
@@ -486,7 +490,7 @@ export const assetEntityStub = {
       longitude: 100,
       fileSizeInByte: 23_456,
     } as ExifEntity,
-    isOffline: true,
+    isOffline: false,
     libraryId: 'library-id',
     library: libraryEntityStub.library1,
   }),
@@ -522,7 +526,7 @@ export const assetEntityStub = {
     sidecarPath: '/original/path.ext.xmp',
     isOffline: false,
     libraryId: 'library-id2',
-    library: libraryEntityStub.library2,
+    library: libraryEntityStub.uploadLibrary,
   }),
 };
 

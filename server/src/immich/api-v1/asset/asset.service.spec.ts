@@ -6,12 +6,13 @@ import {
   authStub,
   fileStub,
   IAccessRepositoryMock,
+  libraryEntityStub,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newLibraryRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
-import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
@@ -293,7 +294,10 @@ describe('AssetService', () => {
     });
 
     it('should return failed status a delete fails', async () => {
-      assetRepositoryMock.get.mockResolvedValue({ id: 'asset1' } as AssetEntity);
+      assetRepositoryMock.get.mockResolvedValue({
+        id: 'asset1',
+        library: libraryEntityStub.uploadLibrary,
+      } as AssetEntity);
       assetRepositoryMock.remove.mockRejectedValue('delete failed');
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
@@ -337,6 +341,7 @@ describe('AssetService', () => {
         originalPath: 'original-path-1',
         resizePath: 'resize-path-1',
         webpPath: 'web-path-1',
+        library: libraryEntityStub.uploadLibrary,
       };
 
       const asset2 = {
@@ -345,6 +350,17 @@ describe('AssetService', () => {
         resizePath: 'resize-path-2',
         webpPath: 'web-path-2',
         encodedVideoPath: 'encoded-video-path-2',
+        library: libraryEntityStub.uploadLibrary,
+      };
+
+      // Can't be deleted since it's external
+      const asset3 = {
+        id: 'asset3',
+        originalPath: 'original-path-3',
+        resizePath: 'resize-path-3',
+        webpPath: 'web-path-3',
+        encodedVideoPath: 'encoded-video-path-2',
+        library: libraryEntityStub.importLibrary,
       };
 
       when(assetRepositoryMock.get)
@@ -353,12 +369,16 @@ describe('AssetService', () => {
       when(assetRepositoryMock.get)
         .calledWith(asset2.id)
         .mockResolvedValue(asset2 as AssetEntity);
+      when(assetRepositoryMock.get)
+        .calledWith(asset3.id)
+        .mockResolvedValue(asset3 as AssetEntity);
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2', 'asset3'] })).resolves.toEqual([
         { id: 'asset1', status: 'SUCCESS' },
         { id: 'asset2', status: 'SUCCESS' },
+        { id: 'asset3', status: 'FAILED' },
       ]);
 
       expect(jobMock.queue.mock.calls).toEqual([

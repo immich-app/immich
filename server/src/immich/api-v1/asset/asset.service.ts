@@ -108,7 +108,6 @@ export class AssetService {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
-      console.log(dto);
 
       if (!dto.libraryId) {
         // No library given, fall back to default upload library
@@ -117,7 +116,6 @@ export class AssetService {
         if (!defaultUploadLibrary) {
           throw new InternalServerErrorException('Cannot find default upload library for user ' + authUser.id);
         }
-        console.log(defaultUploadLibrary);
         dto.libraryId = defaultUploadLibrary.id;
       }
 
@@ -334,6 +332,8 @@ export class AssetService {
     const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
+    console.log(dto);
+
     const ids = dto.ids.slice();
     for (const id of ids) {
       const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
@@ -343,12 +343,7 @@ export class AssetService {
       }
 
       const asset = await this._assetRepository.get(id);
-      if (!asset) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-        continue;
-      }
-
-      if (asset.library.type === LibraryType.IMPORT) {
+      if (!asset || asset.library.type === LibraryType.IMPORT) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
@@ -381,7 +376,8 @@ export class AssetService {
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
           ids.push(asset.livePhotoVideoId);
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }
