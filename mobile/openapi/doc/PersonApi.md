@@ -178,7 +178,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getPersonThumbnail**
-> getPersonThumbnail(id)
+> MultipartFile getPersonThumbnail(id)
 
 
 
@@ -204,7 +204,8 @@ final api_instance = PersonApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.getPersonThumbnail(id);
+    final result = api_instance.getPersonThumbnail(id);
+    print(result);
 } catch (e) {
     print('Exception when calling PersonApi->getPersonThumbnail: $e\n');
 }
@@ -218,7 +219,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
@@ -227,7 +228,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
