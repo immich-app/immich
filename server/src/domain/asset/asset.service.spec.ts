@@ -3,21 +3,29 @@ import {
   assetEntityStub,
   authStub,
   IAccessRepositoryMock,
+  libraryEntityStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newLibraryRepositoryMock,
   newStorageRepositoryMock,
+  userEntityStub,
 } from '@test';
 import { when } from 'jest-when';
+import mock from 'mock-fs';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository } from '../job';
+import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetService } from './asset.service';
 import { DownloadResponseDto } from './index';
 import { mapAsset } from './response-dto';
+
+jest.mock('mime', () => ({
+  lookup: jest.fn().mockReturnValue('image/jpeg'),
+}));
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -208,6 +216,46 @@ describe(AssetService.name, () => {
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+    });
+  });
+
+  describe('handleRefreshAsset', () => {
+    afterEach(() => {
+      mock.restore();
+    });
+
+    it('should add a new asset', async () => {
+      mock({
+        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetEntityStub.image);
+
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.METADATA_EXTRACTION,
+        data: {
+          id: assetEntityStub.image.id,
+          source: 'upload',
+        },
+      });
+
+      expect(jobMock.queue).not.toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: {
+          id: assetEntityStub.image.id,
+        },
+      });
     });
   });
 

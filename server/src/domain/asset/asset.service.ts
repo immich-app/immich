@@ -150,7 +150,6 @@ export class AssetService {
   }
 
   async handleRefreshAsset(job: ILibraryJob) {
-    console.log('Refreshing file ' + job.assetPath);
     // TODO: Determine file type from extension only
     const mimeType = mime.lookup(job.assetPath);
     if (!mimeType) {
@@ -165,6 +164,7 @@ export class AssetService {
     let stats: fs.Stats;
     try {
       stats = await fs.promises.stat(job.assetPath);
+      console.log('Before stat2');
     } catch (error) {
       // Can't access file, probably offline
       if (job.emptyTrash && existingAssetEntity) {
@@ -256,7 +256,6 @@ export class AssetService {
     if (job.emptyTrash && existingAssetEntity) {
       // Remove asset from database
       await this.assetRepository.remove(existingAssetEntity);
-      console.log('Removed offline file ' + job.assetPath);
     } else if (existingAssetEntity) {
       // Mark asset as offline
       existingAssetEntity.isOffline = true;
