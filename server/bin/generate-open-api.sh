@@ -23,11 +23,23 @@ function web {
   npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api -t ./openapi-generator/templates/web --additional-properties=useSingleRequestParameter=true
 }
 
+function cli {
+  rm -rf ../cli/src/api/open-api
+  cd ./openapi-generator/templates/cli
+  wget -O apiInner.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/v6.6.0/modules/openapi-generator/src/main/resources/typescript-axios/apiInner.mustache
+  patch -u apiInner.mustache < apiInner.mustache.patch
+  cd ../../..
+  npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../cli/src/api/open-api -t ./openapi-generator/templates/cli --additional-properties=useSingleRequestParameter=true
+}
+
 if [[ $1 == 'mobile' ]]; then
   mobile
 elif [[ $1 == 'web' ]]; then
   web
+elif [[ $1 == 'cli' ]]; then
+  cli
 else
   mobile
   web
+  cli
 fi
