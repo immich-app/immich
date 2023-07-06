@@ -120,17 +120,16 @@ export class UserCore {
     if (!user.profileImageHash) {
       throw new NotFoundException('User does not have a profile image');
     }
-    return user.profileImageHash; 
-
-
+    return user.profileImageHash;
+  }
 
   async getList(filter?: UserListFilter): Promise<UserEntity[]> {
     return this.userRepository.getList(filter);
   }
 
-  async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
+  async createProfileImage(authUser: AuthUserDto, filePath: string, hash: string): Promise<UserEntity> {
     try {
-      return this.userRepository.update(authUser.id, { profileImagePath: filePath });
+      return this.userRepository.update(authUser.id, { profileImagePath: filePath, profileImageHash: hash });
     } catch (e) {
       Logger.error(e, 'Create User Profile Image');
       throw new InternalServerErrorException('Failed to create new user profile image');
