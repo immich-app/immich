@@ -1,6 +1,5 @@
 import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
-import { sortBy } from 'lodash-es';
 import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
 
@@ -13,6 +12,7 @@ export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
 export const selectedGroup = writable<Set<string>>(new Set());
 export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
+export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
 
 function createAssetInteractionStore() {
   let _assetGridState = new AssetGridState();
@@ -20,8 +20,7 @@ function createAssetInteractionStore() {
   let _selectedAssets: Set<AssetResponseDto>;
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
-  let savedAssetLength = 0;
-  let assetSortedByDate: AssetResponseDto[] = [];
+  let _assetSelectionCandidates: Set<AssetResponseDto>;
 
   // Subscriber
   assetGridState.subscribe((state) => {
@@ -44,6 +43,10 @@ function createAssetInteractionStore() {
     _assetsInAlbums = assets;
   });
 
+  assetSelectionCandidates.subscribe((assets) => {
+    _assetSelectionCandidates = assets;
+  });
+
   // Methods
 
   /**
@@ -63,41 +66,64 @@ function createAssetInteractionStore() {
     isViewingAssetStoreState.set(isViewing);
   };
 
-  const navigateAsset = async (direction: 'next' | 'previous') => {
-    // Flatten and sort the asset by date if there are new assets
-    if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
-      assetSortedByDate = sortBy(_assetGridState.assets, (a) => a.fileCreatedAt);
-      savedAssetLength = _assetGridState.assets.length;
+  const getNextAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
+    const currentBucket = _assetGridState.buckets[currentBucketIndex];
+    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
+    if (assetIndex === -1) {
+      return null;
     }
 
-    // Find the index of the current asset
-    const currentIndex = assetSortedByDate.findIndex((a) => a.id === _viewingAssetStoreState.id);
+    if (assetIndex + 1 < currentBucket.assets.length) {
+      return currentBucket.assets[assetIndex + 1];
+    }
 
-    // Get the next or previous asset
-    const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
+    const nextBucketIndex = currentBucketIndex + 1;
+    if (nextBucketIndex >= _assetGridState.buckets.length) {
+      return null;
+    }
 
-    // Run out of asset, this might be because there is no asset in the next bucket.
-    if (nextIndex == -1) {
-      let nextBucket = '';
-      // Find next bucket that doesn't have all assets loaded
+    const nextBucket = _assetGridState.buckets[nextBucketIndex];
+    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Unknown);
 
-      for (const bucket of _assetGridState.buckets) {
-        if (bucket.assets.length === 0) {
-          nextBucket = bucket.bucketDate;
-          break;
-        }
-      }
+    return nextBucket.assets[0] ?? null;
+  };
 
-      if (nextBucket !== '') {
-        await assetStore.getAssetsByBucket(nextBucket, BucketPosition.Below);
-        navigateAsset(direction);
-      }
+  const getPrevAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
+    const currentBucket = _assetGridState.buckets[currentBucketIndex];
+    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
+    if (assetIndex === -1) {
+      return null;
+    }
+
+    if (assetIndex > 0) {
+      return currentBucket.assets[assetIndex - 1];
+    }
+
+    const prevBucketIndex = currentBucketIndex - 1;
+    if (prevBucketIndex < 0) {
+      return null;
+    }
+
+    const prevBucket = _assetGridState.buckets[prevBucketIndex];
+    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Unknown);
+
+    return prevBucket.assets[prevBucket.assets.length - 1] ?? null;
+  };
+
+  const navigateAsset = async (direction: 'next' | 'previous') => {
+    const currentAssetId = _viewingAssetStoreState.id;
+    const currentBucketIndex = _assetGridState.loadedAssets[currentAssetId];
+    if (currentBucketIndex < 0 || currentBucketIndex >= _assetGridState.buckets.length) {
       return;
     }
 
-    const nextAsset = assetSortedByDate[nextIndex];
-    if (nextAsset) {
-      setViewingAsset(nextAsset);
+    const asset =
+      direction === 'next'
+        ? await getNextAsset(currentBucketIndex, currentAssetId)
+        : await getPrevAsset(currentBucketIndex, currentAssetId);
+
+    if (asset) {
+      setViewingAsset(asset);
     }
   };
 
@@ -129,14 +155,26 @@ function createAssetInteractionStore() {
     selectedGroup.set(_selectedGroup);
   };
 
+  const setAssetSelectionCandidates = (assets: AssetResponseDto[]) => {
+    _assetSelectionCandidates = new Set(assets);
+    assetSelectionCandidates.set(_assetSelectionCandidates);
+  };
+
+  const clearAssetSelectionCandidates = () => {
+    _assetSelectionCandidates.clear();
+    assetSelectionCandidates.set(_assetSelectionCandidates);
+  };
+
   const clearMultiselect = () => {
     _selectedAssets.clear();
     _selectedGroup.clear();
+    _assetSelectionCandidates.clear();
     _assetsInAlbums = [];
 
     selectedAssets.set(_selectedAssets);
     selectedGroup.set(_selectedGroup);
     assetsInAlbumStoreState.set(_assetsInAlbums);
+    assetSelectionCandidates.set(_assetSelectionCandidates);
   };
 
   return {
@@ -148,6 +186,8 @@ function createAssetInteractionStore() {
     removeAssetFromMultiselectGroup,
     addGroupToMultiselectGroup,
     removeGroupFromMultiselectGroup,
+    setAssetSelectionCandidates,
+    clearAssetSelectionCandidates,
     clearMultiselect,
   };
 }

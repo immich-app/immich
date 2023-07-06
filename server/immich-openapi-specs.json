@@ -1673,7 +1673,13 @@
         "responses": {
           "200": {
             "content": {
-              "application/octet-stream": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
                 "schema": {
                   "type": "string",
                   "format": "binary"
@@ -2704,7 +2710,7 @@
         "responses": {
           "200": {
             "content": {
-              "application/octet-stream": {
+              "image/jpeg": {
                 "schema": {
                   "type": "string",
                   "format": "binary"
@@ -4322,7 +4328,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.65.0",
+    "version": "1.66.1",
     "contact": {}
   },
   "tags": [],
@@ -5816,12 +5822,14 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Person name."
+          },
+          "featureFaceAssetId": {
+            "type": "string",
+            "description": "Asset is used to get the feature face thumbnail."
           }
-        },
-        "required": [
-          "name"
-        ]
+        }
       },
       "QueueStatusDto": {
         "type": "object",

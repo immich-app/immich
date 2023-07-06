@@ -1,10 +1,20 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class PersonUpdateDto {
-  @IsNotEmpty()
+  /**
+   * Person name.
+   */
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
+
+  /**
+   * Asset is used to get the feature face thumbnail.
+   */
+  @IsOptional()
+  @IsString()
+  featureFaceAssetId?: string;
 }
 
 export class PersonResponseDto {

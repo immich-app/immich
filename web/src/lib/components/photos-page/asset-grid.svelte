@@ -1,12 +1,15 @@
 <script lang="ts">
+  import { BucketPosition } from '$lib/models/asset-grid-state';
   import {
     assetInteractionStore,
+    isMultiSelectStoreState,
     isViewingAssetStoreState,
+    selectedAssets,
     viewingAssetStoreState,
   } from '$lib/stores/asset-interaction.store';
   import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
   import type { UserResponseDto } from '@api';
-  import { AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum, api } from '@api';
+  import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -16,7 +19,6 @@
     OnScrollbarDragDetail,
   } from '../shared-components/scrollbar/scrollbar.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { BucketPosition } from '$lib/models/asset-grid-state';
   import MemoryLane from './memory-lane.svelte';
 
   export let user: UserResponseDto | undefined = undefined;
@@ -111,7 +113,79 @@
     navigateToNextAsset();
     assetStore.removeAsset(asset.id);
   };
+
+  let lastAssetMouseEvent: AssetResponseDto | null = null;
+
+  $: if (!lastAssetMouseEvent) {
+    assetInteractionStore.clearAssetSelectionCandidates();
+  }
+
+  let shiftKeyIsDown = false;
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Shift') {
+      e.preventDefault();
+      shiftKeyIsDown = true;
+    }
+  };
+
+  const onKeyUp = (e: KeyboardEvent) => {
+    if (e.key === 'Shift') {
+      e.preventDefault();
+      shiftKeyIsDown = false;
+    }
+  };
+
+  $: if (!shiftKeyIsDown) {
+    assetInteractionStore.clearAssetSelectionCandidates();
+  }
+
+  $: if (shiftKeyIsDown && lastAssetMouseEvent) {
+    selectAssetCandidates(lastAssetMouseEvent);
+  }
+
+  const getLastSelectedAsset = () => {
+    let value;
+    for (value of $selectedAssets);
+    return value;
+  };
+
+  const handleSelectAssetCandidates = (e: CustomEvent) => {
+    const asset = e.detail.asset;
+    if (asset) {
+      selectAssetCandidates(asset);
+    }
+    lastAssetMouseEvent = asset;
+  };
+
+  const selectAssetCandidates = (asset: AssetResponseDto) => {
+    if (!shiftKeyIsDown) {
+      return;
+    }
+
+    const lastSelectedAsset = getLastSelectedAsset();
+    if (!lastSelectedAsset) {
+      return;
+    }
+
+    let start = $assetGridState.assets.indexOf(asset);
+    let end = $assetGridState.assets.indexOf(lastSelectedAsset);
+
+    if (start > end) {
+      [start, end] = [end, start];
+    }
+
+    assetInteractionStore.setAssetSelectionCandidates($assetGridState.assets.slice(start, end + 1));
+  };
+
+  const onSelectStart = (e: Event) => {
+    if ($isMultiSelectStoreState && shiftKeyIsDown) {
+      e.preventDefault();
+    }
+  };
 </script>
+
+<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
   <Scrollbar
@@ -155,6 +229,7 @@
               <AssetDateGroup
                 {isAlbumSelectionMode}
                 on:shift={handleScrollTimeline}
+                on:selectAssetCandidates={handleSelectAssetCandidates}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

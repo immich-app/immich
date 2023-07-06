@@ -228,7 +228,6 @@ describe('AssetService', () => {
             data: { id: assetEntityStub.livePhotoMotionAsset.id, source: 'upload' },
           },
         ],
-        [{ name: JobName.VIDEO_CONVERSION, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
         [{ name: JobName.METADATA_EXTRACTION, data: { id: assetEntityStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
     });

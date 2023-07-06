@@ -21,16 +21,15 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
-import { constants, createReadStream, stat } from 'fs';
+import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
 import path from 'path';
+import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
-import { promisify } from 'util';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -62,8 +61,6 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-
-const fileInfo = promisify(stat);
 
 interface ServableFile {
   filepath: string;
@@ -259,11 +256,11 @@ export class AssetService {
     }
 
     try {
-      const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers);
+      const [thumbnailPath, contentType] = this.getThumbnailPath(asset, query.format);
+      return this.streamFile(thumbnailPath, res, headers, contentType);
     } catch (e) {
       res.header('Cache-Control', 'none');
-      Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
+      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
       throw new InternalServerErrorException(
         `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
         { cause: e as Error },
@@ -294,7 +291,7 @@ export class AssetService {
         const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
         return this.streamFile(filepath, res, headers, contentType);
       } catch (e) {
-        Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
+        this.logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
           e,
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
@@ -302,56 +299,8 @@ export class AssetService {
       }
     } else {
       try {
-        // Handle Video
-        let videoPath = asset.originalPath;
-        let mimeType = asset.mimeType;
-
-        await fs.access(videoPath, constants.R_OK);
-
-        if (asset.encodedVideoPath) {
-          videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
-          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
-        }
-
-        const { size } = await fileInfo(videoPath);
-        const range = headers.range;
-
-        if (range) {
-          /** Extracting Start and End value from Range Header */
-          const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
-          let start = parseInt(startStr, 10);
-          let end = endStr ? parseInt(endStr, 10) : size - 1;
-
-          if (!isNaN(start) && isNaN(end)) {
-            start = start;
-            end = size - 1;
-          }
-          if (isNaN(start) && !isNaN(end)) {
-            start = size - end;
-            end = size - 1;
-          }
-
-          // Handle unavailable range request
-          if (start >= size || end >= size) {
-            console.error('Bad Request');
-            // Return the 416 Range Not Satisfiable.
-            res.status(416).set({ 'Content-Range': `bytes */${size}` });
-
-            throw new BadRequestException('Bad Request Range');
-          }
-
-          /** Sending Partial Content With HTTP Code 206 */
-          res.status(206).set({
-            'Content-Range': `bytes ${start}-${end}/${size}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': end - start + 1,
-            'Content-Type': mimeType,
-          });
-
-          const videoStream = createReadStream(videoPath, { start, end });
-
-          return new StreamableFile(videoStream);
-        }
+        const videoPath = asset.encodedVideoPath ? asset.encodedVideoPath : asset.originalPath;
+        const mimeType = asset.encodedVideoPath ? 'video/mp4' : asset.mimeType;
 
         return this.streamFile(videoPath, res, headers, mimeType);
       } catch (e: Error | any) {
@@ -573,16 +522,17 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          return asset.webpPath;
+        if (asset.webpPath) {
+          return [asset.webpPath, 'image/webp'];
         }
+        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
+          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return asset.resizePath;
+        return [asset.resizePath, 'image/jpeg'];
     }
   }
 
@@ -618,12 +568,16 @@ export class AssetService {
   }
 
   private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+    await fs.access(filepath, constants.R_OK);
+    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
+
     if (contentType) {
       res.header('Content-Type', contentType);
     }
 
+    const range = this.setResRange(res, headers, Number(size));
+
     // etag
-    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
     const etag = `W/"${size}-${mtimeNs}"`;
     res.setHeader('ETag', etag);
     if (etag === headers['if-none-match']) {
@@ -631,8 +585,48 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, constants.R_OK);
+    const stream = createReadStream(filepath, range);
+    return await pipeline(stream, res).catch((err) => {
+      if (err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+        this.logger.error(err);
+      }
+    });
+  }
 
-    return new StreamableFile(createReadStream(filepath));
+  private setResRange(res: Res, headers: Record<string, string>, size: number) {
+    if (!headers.range) {
+      return {};
+    }
+
+    /** Extracting Start and End value from Range Header */
+    const [startStr, endStr] = headers.range.replace(/bytes=/, '').split('-');
+    let start = parseInt(startStr, 10);
+    let end = endStr ? parseInt(endStr, 10) : size - 1;
+
+    if (!isNaN(start) && isNaN(end)) {
+      start = start;
+      end = size - 1;
+    }
+
+    if (isNaN(start) && !isNaN(end)) {
+      start = size - end;
+      end = size - 1;
+    }
+
+    // Handle unavailable range request
+    if (start >= size || end >= size) {
+      console.error('Bad Request');
+      res.status(416).set({ 'Content-Range': `bytes */${size}` });
+
+      throw new BadRequestException('Bad Request Range');
+    }
+
+    res.status(206).set({
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': end - start + 1,
+    });
+
+    return { start, end };
   }
 }
