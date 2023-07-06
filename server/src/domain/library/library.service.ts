@@ -1,4 +1,4 @@
-import { LibraryType, UserEntity } from '@app/infra/entities';
+import { AssetType, LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -7,11 +7,15 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import fs from 'fs';
+import mime from 'mime';
+import { basename, parse } from 'path';
+import { isSupportedFileType } from '../domain.constant';
 
 import path from 'node:path';
-import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { LibraryCrawler } from './library-crawler';
 import {
@@ -32,8 +36,8 @@ export class LibraryService {
   constructor(
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.crawler = new LibraryCrawler();
   }
@@ -103,6 +107,134 @@ export class LibraryService {
     return mapLibrary(updatedEntity);
   }
 
+  async handleRefreshAsset(job: ILibraryJob) {
+    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
+
+    let stats: fs.Stats;
+    try {
+      stats = await fs.promises.stat(job.assetPath);
+    } catch (error) {
+      // Can't access file, probably offline
+      if (existingAssetEntity) {
+        // Mark asset as offline
+        await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
+        return true;
+      } else {
+        // File can't be accessed and does not already exist in db
+        throw new BadRequestException(error, "Can't access file");
+      }
+    }
+
+    let doImport = false;
+
+    if (job.forceRefresh) {
+      // Force refresh was requested, re-read from disk
+      doImport = true;
+    }
+
+    if (!existingAssetEntity) {
+      // This asset is new to us, read it from disk
+      doImport = true;
+    } else if (stats.mtime !== existingAssetEntity.fileModifiedAt) {
+      // File modification time has changed since last time we checked, re-read fro disk
+      doImport = true;
+    }
+
+    if (existingAssetEntity?.isOffline) {
+      // File was previously offline but is now online
+      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
+    }
+
+    if (!doImport) {
+      // If we don't import, exit early
+      return true;
+    }
+
+    // TODO: Determine file type from extension only
+    const mimeType = mime.lookup(job.assetPath);
+    if (!mimeType) {
+      throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
+    }
+    if (!isSupportedFileType(mimeType)) {
+      throw new BadRequestException(`Unsupported file type ${mimeType}`);
+    }
+
+    const checksum = await this.cryptoRepository.hashFile(job.assetPath);
+    const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
+    const assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
+
+    // TODO: doesn't xmp replace the file extension? Will need investigation
+    let sidecarPath: string | null = null;
+    try {
+      await fs.promises.access(`${job.assetPath}.xmp`, fs.constants.R_OK);
+      sidecarPath = `${job.assetPath}.xmp`;
+    } catch (error) {}
+
+    // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
+    const addedAsset = await this.assetRepository.create({
+      owner: { id: job.ownerId } as UserEntity,
+
+      library: { id: job.libraryId } as LibraryEntity,
+
+      mimeType: mimeType,
+      checksum: checksum,
+      originalPath: job.assetPath,
+
+      deviceAssetId: deviceAssetId,
+      deviceId: 'Library Import',
+
+      fileCreatedAt: stats.ctime,
+      fileModifiedAt: stats.mtime,
+
+      type: assetType,
+      isFavorite: false,
+      isArchived: false,
+      duration: null,
+      isVisible: true,
+      livePhotoVideo: null,
+      resizePath: null,
+      webpPath: null,
+      thumbhash: null,
+      encodedVideoPath: null,
+      tags: [],
+      sharedLinks: [],
+      originalFileName: parse(job.assetPath).name,
+      faces: [],
+      sidecarPath: sidecarPath,
+      isReadOnly: true,
+      isOffline: false,
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.METADATA_EXTRACTION,
+      data: { id: addedAsset.id, source: 'upload' },
+    });
+
+    if (addedAsset.type === AssetType.VIDEO) {
+      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: addedAsset.id } });
+    }
+
+    return true;
+  }
+
+  async handleOfflineAsset(job: ILibraryJob) {
+    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
+
+    if (!existingAssetEntity) {
+      throw new BadRequestException(`Asset does not exist in database: ${job.assetPath}`);
+    }
+
+    if (job.emptyTrash && existingAssetEntity) {
+      // Remove asset from database
+      await this.assetRepository.remove(existingAssetEntity);
+    } else if (existingAssetEntity) {
+      // Mark asset as offline
+      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
+    }
+
+    return true;
+  }
+
   async refresh(authUser: AuthUserDto, libraryId: string, dto: RefreshLibraryDto) {
     // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
@@ -117,7 +249,6 @@ export class LibraryService {
     const crawledAssetPaths = (
       await this.crawler.findAllMedia({
         pathsToCrawl: library.importPaths,
-        excludePatterns: ['**/Original/**'], //TODO: this exclusion pattern is just for testing
       })
     ).map(path.normalize);
 

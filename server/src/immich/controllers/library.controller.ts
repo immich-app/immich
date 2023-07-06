@@ -9,7 +9,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminRoute, Authenticated, AuthUser } from '../app.guard';
+import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -20,7 +20,6 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 export class LibraryController {
   constructor(private libraryService: LibraryService) {}
 
-  @AdminRoute()
   @Post()
   createLibrary(
     @AuthUser() authUser: AuthUserDto,

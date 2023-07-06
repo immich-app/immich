@@ -1,9 +1,9 @@
 import {
-  AssetService,
   FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
   PersonService,
@@ -37,7 +37,7 @@ export class AppService {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
-    private assetService: AssetService,
+    private libraryService: LibraryService,
   ) {}
 
   async init() {
@@ -76,8 +76,8 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
-      [JobName.REFRESH_LIBRARY_FILE]: (data) => this.assetService.handleRefreshAsset(data),
-      [JobName.OFFLINE_LIBRARY_FILE]: (data) => this.assetService.handleOfflineAsset(data),
+      [JobName.REFRESH_LIBRARY_FILE]: (data) => this.libraryService.handleRefreshAsset(data),
+      [JobName.OFFLINE_LIBRARY_FILE]: (data) => this.libraryService.handleOfflineAsset(data),
     });
 
     process.on('uncaughtException', (error: Error | any) => {
