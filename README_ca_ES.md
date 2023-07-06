@@ -38,7 +38,7 @@
 - [Introducció](https://immich.app/docs/overview/introduction)
 - [Instal·lació](https://immich.app/docs/install/requirements)
 - [Directrius de contribució](https://immich.app/docs/overview/support-the-project)
-- [Suportar el projecte](#suportar-el-projecte)
+- [Donar suport al projecte](#suportar-el-projecte)
 
 ## Documentació
 
