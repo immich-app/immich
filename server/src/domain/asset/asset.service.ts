@@ -1,16 +1,30 @@
+import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
-import { AssetEntity } from '../../infra/entities/asset.entity';
+import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { AccessCore, IAccessRepository, Permission } from '../index';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
 import { MapMarkerDto } from './dto/map-marker.dto';
 import { mapAsset, MapMarkerResponseDto } from './response-dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
+
+export enum UploadFieldName {
+  ASSET_DATA = 'assetData',
+  LIVE_PHOTO_DATA = 'livePhotoData',
+  SIDECAR_DATA = 'sidecarData',
+  PROFILE_DATA = 'file',
+}
+
+export interface UploadFile {
+  mimeType: string;
+  checksum: Buffer;
+  originalPath: string;
+  originalName: string;
+}
 
 export class AssetService {
   private access: AccessCore;
