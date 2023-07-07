@@ -187,7 +187,7 @@ export class MediaService {
 
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
-    const isTargetAudioCodec = audioStream != null && audioStream.codecName === ffmpegConfig.targetAudioCodec;
+    const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     if (audioStream != null) {
       this.logger.verbose(
