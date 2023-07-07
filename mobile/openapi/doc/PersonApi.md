@@ -285,6 +285,7 @@ void (empty response body)
 
  - **Content-Type**: application/json
  - **Accept**: Not defined
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
