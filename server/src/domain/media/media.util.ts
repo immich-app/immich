@@ -2,11 +2,7 @@ import { BitrateDistribution, TranscodeOptions, VideoCodecSWHandler, VideoStream
 import { SystemConfigFFmpegDto } from '..';
 
 abstract class BaseHandler {
-  protected config: SystemConfigFFmpegDto;
-
-  constructor(config: SystemConfigFFmpegDto) {
-    this.config = config;
-  }
+  constructor(protected config: SystemConfigFFmpegDto) {}
 
   getOptions(stream: VideoStreamInfo) {
     const options = {
