@@ -43,11 +43,11 @@
         <FaceThumbnail {person} selectable={false} />
       </div>
       <div
-        class="pl-4 overflow-y-scroll py-4 rounded-xl mr-18 bg-gray-200 dark:bg-immich-dark-gray"
+        class="pl-4 overflow-y-scroll rounded-xl mr-18 bg-gray-200 dark:bg-immich-dark-gray"
         style:height={screenHeight - 200 - 200 + 'px'}
         bind:clientWidth={peopleContainerWidth}
       >
-        <div class="flex flex-row flex-wrap gap-1">
+        <div class="flex flex-row flex-wrap gap-1 my-4">
           {#each people as person (person.id)}
             <FaceThumbnail
               {person}
