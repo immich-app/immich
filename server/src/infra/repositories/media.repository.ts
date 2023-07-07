@@ -8,6 +8,8 @@ import { promisify } from 'util';
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
+  private logger = new Logger(MediaRepository.name);
+
   crop(input: string, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOnError: false })
       .extract({
@@ -48,7 +50,10 @@ export class MediaRepository implements IMediaRepository {
           `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
         ])
         .output(output)
-        .on('error', reject)
+        .on('error', (err, stdout, stderr) => {
+          this.logger.error(stderr);
+          reject(err);
+        })
         .on('end', resolve)
         .run();
     });
@@ -89,7 +94,7 @@ export class MediaRepository implements IMediaRepository {
           .outputOptions(options.outputOptions)
           .output(output)
           .on('error', (err, stdout, stderr) => {
-            Logger.error(stderr);
+            this.logger.error(stderr);
             reject(err);
           })
           .on('end', resolve)
@@ -107,7 +112,7 @@ export class MediaRepository implements IMediaRepository {
         .addOptions('-f null')
         .output('/dev/null') // first pass output is not saved as only the .log file is needed
         .on('error', (err, stdout, stderr) => {
-          Logger.error(stderr);
+          this.logger.error(stderr);
           reject(err);
         })
         .on('end', () => {
@@ -118,7 +123,7 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-passlogfile', output)
             .output(output)
             .on('error', (err, stdout, stderr) => {
-              Logger.error(stderr);
+              this.logger.error(stderr);
               reject(err);
             })
             .on('end', () => fs.unlink(`${output}-0.log`))

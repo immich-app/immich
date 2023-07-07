@@ -24,7 +24,7 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ enumName: 'VideoCodec', enum: VideoCodec })
   targetVideoCodec!: VideoCodec;
 
-  @IsString()
+  @IsEnum(AudioCodec)
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec })
   targetAudioCodec!: AudioCodec;
 

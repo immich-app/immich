@@ -12,7 +12,7 @@ abstract class BaseHandler {
     const options = {
       inputOptions: this.getBaseInputOptions(),
       outputOptions: this.getBaseOutputOptions(),
-      twoPass: eligibleForTwoPass(this.config),
+      twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
     if (filters.length > 0) {
@@ -42,8 +42,8 @@ abstract class BaseHandler {
 
   getFilterOptions(stream: VideoStreamInfo) {
     const options = [];
-    if (shouldScale(stream, this.config)) {
-      options.push(`scale=${getScaling(stream, this.config)}`);
+    if (this.shouldScale(stream)) {
+      options.push(`scale=${this.getScaling(stream)}`);
     }
 
     return options;
@@ -55,12 +55,75 @@ abstract class BaseHandler {
 
   abstract getBitrateOptions(): Array<string>;
   abstract getThreadOptions(): Array<string>;
+
+  eligibleForTwoPass() {
+    if (!this.config.twoPass) {
+      return false;
+    }
+
+    return this.isBitrateConstrained() || this.config.targetVideoCodec === 'vp9';
+  }
+
+  getBitrateDistribution() {
+    const max = this.getMaxBitrateValue();
+    const target = Math.ceil(max / 1.45); // recommended by https://developers.google.com/media/vp9/settings/vod
+    const min = target / 2;
+    const unit = this.getBitrateUnit();
+
+    return { max, target, min, unit } as BitrateDistribution;
+  }
+
+  getTargetResolution(stream: VideoStreamInfo) {
+    if (this.config.targetResolution === 'original') {
+      return Math.min(stream.height, stream.width);
+    }
+
+    return Number.parseInt(this.config.targetResolution);
+  }
+
+  shouldScale(stream: VideoStreamInfo) {
+    if (this.config.targetResolution === 'original') {
+      return false;
+    }
+    return Math.min(stream.height, stream.width) > Number.parseInt(this.config.targetResolution);
+  }
+
+  getScaling(stream: VideoStreamInfo) {
+    const targetResolution = this.getTargetResolution(stream);
+    return this.isVideoVertical(stream) ? `${targetResolution}:-2` : `-2:${targetResolution}`;
+  }
+
+  isVideoRotated(stream: VideoStreamInfo) {
+    return Math.abs(stream.rotation) === 90;
+  }
+
+  isVideoVertical(stream: VideoStreamInfo) {
+    return stream.height > stream.width || this.isVideoRotated(stream);
+  }
+
+  isBitrateConstrained() {
+    return this.getMaxBitrateValue() > 0;
+  }
+
+  getBitrateUnit() {
+    const maxBitrate = this.getMaxBitrateValue();
+    return this.config.maxBitrate.trim().substring(maxBitrate.toString().length); // use inputted unit if provided
+  }
+
+  getMaxBitrateValue() {
+    return Number.parseInt(this.config.maxBitrate) || 0;
+  }
+
+  getPresetIndex() {
+    const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
+    return presets.indexOf(this.config.preset);
+  }
 }
 
 export class H264Handler extends BaseHandler implements VideoCodecSWHandler {
   getBitrateOptions() {
-    const bitrates = getBitrateDistribution(this.config);
-    if (eligibleForTwoPass(this.config)) {
+    const bitrates = this.getBitrateDistribution();
+    if (this.eligibleForTwoPass()) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
@@ -106,7 +169,7 @@ export class HEVCHandler extends H264Handler {
 
 export class VP9Handler extends BaseHandler implements VideoCodecSWHandler {
   getPresetOptions() {
-    const speed = Math.min(getPresetIndex(this.config.preset), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
+    const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {
       return [`-cpu-used ${speed}`];
     }
@@ -114,8 +177,8 @@ export class VP9Handler extends BaseHandler implements VideoCodecSWHandler {
   }
 
   getBitrateOptions() {
-    const bitrates = getBitrateDistribution(this.config);
-    if (eligibleForTwoPass(this.config)) {
+    const bitrates = this.getBitrateDistribution();
+    if (this.eligibleForTwoPass()) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
@@ -133,67 +196,4 @@ export class VP9Handler extends BaseHandler implements VideoCodecSWHandler {
     }
     return options;
   }
-}
-
-export function eligibleForTwoPass(config: SystemConfigFFmpegDto) {
-  if (!config.twoPass) {
-    return false;
-  }
-
-  return isBitrateConstrained(config) || config.targetVideoCodec === 'vp9';
-}
-
-export function getBitrateDistribution(config: SystemConfigFFmpegDto) {
-  const max = getMaxBitrateValue(config);
-  const target = Math.ceil(max / 1.45); // recommended by https://developers.google.com/media/vp9/settings/vod
-  const min = target / 2;
-  const unit = getBitrateUnit(config);
-
-  return { max, target, min, unit } as BitrateDistribution;
-}
-
-export function getTargetResolution(stream: VideoStreamInfo, config: SystemConfigFFmpegDto) {
-  if (config.targetResolution === 'original') {
-    return Math.min(stream.height, stream.width);
-  }
-
-  return Number.parseInt(config.targetResolution);
-}
-
-export function shouldScale(stream: VideoStreamInfo, config: SystemConfigFFmpegDto) {
-  if (config.targetResolution === 'original') {
-    return false;
-  }
-  return Math.min(stream.height, stream.width) > Number.parseInt(config.targetResolution);
-}
-
-export function getScaling(stream: VideoStreamInfo, config: SystemConfigFFmpegDto) {
-  const targetResolution = getTargetResolution(stream, config);
-  return isVideoVertical(stream) ? `${targetResolution}:-2` : `-2:${targetResolution}`;
-}
-
-export function isVideoRotated(stream: VideoStreamInfo) {
-  return Math.abs(stream.rotation) === 90;
-}
-
-export function isVideoVertical(stream: VideoStreamInfo) {
-  return stream.height > stream.width || isVideoRotated(stream);
-}
-
-export function isBitrateConstrained(config: SystemConfigFFmpegDto) {
-  return getMaxBitrateValue(config) > 0;
-}
-
-export function getBitrateUnit(config: SystemConfigFFmpegDto) {
-  const maxBitrate = getMaxBitrateValue(config);
-  return config.maxBitrate.trim().substring(maxBitrate.toString().length); // use inputted unit if provided
-}
-
-export function getMaxBitrateValue(config: SystemConfigFFmpegDto) {
-  return Number.parseInt(config.maxBitrate) || 0;
-}
-
-export function getPresetIndex(preset: string) {
-  const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  return presets.indexOf(preset);
 }
