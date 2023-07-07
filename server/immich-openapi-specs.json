@@ -1673,13 +1673,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/webp": {
+              "application/octet-stream": {
                 "schema": {
                   "type": "string",
                   "format": "binary"
@@ -3010,7 +3004,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
+              "application/octet-stream": {
                 "schema": {
                   "type": "string",
                   "format": "binary"

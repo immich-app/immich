@@ -19,7 +19,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
@@ -122,6 +122,7 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/file/:id')
   @Header('Cache-Control', 'private, max-age=86400, no-transform')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   serveFile(
     @AuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
@@ -135,6 +136,7 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
   @Header('Cache-Control', 'private, max-age=86400, no-transform')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   getAssetThumbnail(
     @AuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
