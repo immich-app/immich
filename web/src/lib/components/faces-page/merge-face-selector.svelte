@@ -58,13 +58,14 @@
         class="p-4 overflow-y-scroll rounded-xl bg-gray-200 dark:bg-immich-dark-gray"
         style:height={screenHeight - 200 - 200 + 'px'}
       >
-        <div class="grid grid-col-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-12 gap-4">
+        <div class="grid grid-col-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-8">
           {#each people as person (person.id)}
             <FaceThumbnail
               {person}
               selectable={true}
               on:click={() => handleOnClicked(person)}
               selected={selectFaces.has(person)}
+              circle
             />
           {/each}
         </div>

@@ -7,6 +7,7 @@
   export let selectable = false;
   export let selected = false;
   export let thumbnailSize: number | null = null;
+  export let circle = false;
 
   let dispatch = createEventDispatcher();
 
@@ -23,7 +24,7 @@
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}
 >
   <div class="rounded-xl filter w-full h-full brightness-90">
-    <ImageThumbnail circle url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
+    <ImageThumbnail {circle} url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
   </div>
 
   <div
@@ -32,7 +33,11 @@
   />
 
   {#if selected}
-    <div class="absolute top-0 left-0 w-full h-full rounded-full bg-green-900/75" />
+    <div
+      class="absolute top-0 left-0 w-full h-full bg-green-900/75"
+      class:rounded-full={circle}
+      class:rounded-lg={!circle}
+    />
   {/if}
 
   {#if person.name}
