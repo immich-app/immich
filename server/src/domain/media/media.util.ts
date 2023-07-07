@@ -21,8 +21,8 @@ abstract class BaseHandler {
     return options;
   }
 
-  getBaseInputOptions() {
-    return [] as Array<string>;
+  getBaseInputOptions(): string[] {
+    return [];
   }
 
   getBaseOutputOptions() {
