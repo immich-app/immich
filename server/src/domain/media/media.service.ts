@@ -176,7 +176,7 @@ export class MediaService {
   private isTranscodeRequired(
     asset: AssetEntity,
     videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    audioStream: AudioStreamInfo | null,
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
@@ -186,12 +186,18 @@ export class MediaService {
     }
 
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
-    const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
+    const isTargetAudioCodec = (audioStream != null) && audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
-    this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
-    );
+    if (audioStream != null) {
+        this.logger.log(
+            `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
+        );
+    } else {
+        this.logger.log(
+            `${asset.id}: AudioCodecName None, AudioStreamCodecType None, containerExtension ${containerExtension}`,
+        );
+    }
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
