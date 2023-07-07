@@ -223,7 +223,7 @@ export class MediaService {
       case VideoCodec.H264:
         handler = new H264Handler(config);
         break;
-      case  VideoCodec.HEVC:
+      case VideoCodec.HEVC:
         handler = new HEVCHandler(config);
         break;
       case VideoCodec.VP9:
