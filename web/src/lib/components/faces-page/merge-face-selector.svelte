@@ -1,14 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import type { PersonResponseDto } from '../../../api/open-api';
-  import { api } from '../../../api/api';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+  import { api, type PersonResponseDto } from '@api';
   import FaceThumbnail from './face-thumbnail.svelte';
-  import { assets } from '$app/paths';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import AssetSelectionViewer from '../shared-components/gallery-viewer/asset-selection-viewer.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -16,13 +12,13 @@
   let peopleContainerWidth: number;
   let dispatch = createEventDispatcher();
   let facesPerRow = 10;
+
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople();
     people = data.filter((p) => p.id !== person.id);
   });
 
   const onClose = () => {
-    console.log('go back');
     dispatch('go-back');
   };
 </script>
