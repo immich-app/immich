@@ -39,7 +39,7 @@
   <section class="pt-[100px] pl-[70px] bg-immich-bg dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
       <div class=" flex flex-col place-items-center place-content-center mb-10 h-[200px]">
-        <p class="uppercase mb-4">Choose matching faces with</p>
+        <p class="uppercase mb-4 dark:text-white">Choose matching faces with</p>
         <FaceThumbnail {person} selectable={false} />
       </div>
       <div
