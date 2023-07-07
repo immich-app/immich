@@ -9,6 +9,7 @@
   import Merge from 'svelte-material-icons/Merge.svelte';
   import CallMerge from 'svelte-material-icons/CallMerge.svelte';
   import { flip } from 'svelte/animate';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -33,6 +34,13 @@
       selectFaces = temp;
       people = [person, ...people];
     } else {
+      if (selectFaces.size >= 5) {
+        notificationController.show({
+          message: 'You can only merge up to 5 faces at a time',
+          type: NotificationType.Info,
+        });
+        return;
+      }
       selectFaces = selectFaces.add(person);
       people = people.filter((p) => p.id !== person.id);
     }
@@ -46,7 +54,14 @@
   class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
 >
   <ControlAppBar on:close-button-click={onClose}>
-    <svelte:fragment slot="leading">Merge faces</svelte:fragment>
+    <svelte:fragment slot="leading">
+      {#if hasSelection}
+        Selected {selectFaces.size}
+      {:else}
+        Merge faces
+      {/if}
+      <div />
+    </svelte:fragment>
     <svelte:fragment slot="trailing">
       <Button size={'sm'} disabled={selectFaces.size == 0}>
         <Merge size={18} />

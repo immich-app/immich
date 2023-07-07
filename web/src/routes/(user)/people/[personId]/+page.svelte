@@ -33,7 +33,7 @@
   export let data: PageData;
   let isEditingName = false;
   let showFaceThumbnailSelection = false;
-  let showMergeFacePanel = true;
+  let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;

@@ -29,9 +29,16 @@
     class:rounded-full={circle}
     class:rounded-lg={!circle}
     class:border-transparent={!border}
-    class:border-immich-dark-primary={border}
+    class:dark:border-immich-dark-primary={border}
+    class:border-immich-primary={border}
   >
-    <ImageThumbnail {circle} url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
+    <ImageThumbnail
+      {circle}
+      url={api.getPeopleThumbnailUrl(person.id)}
+      altText={person.name}
+      widthStyle="100%"
+      shadow
+    />
   </div>
 
   <div
