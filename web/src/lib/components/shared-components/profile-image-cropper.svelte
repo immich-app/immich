@@ -9,13 +9,14 @@
   export let publicSharedKey = '';
   import domtoimage from 'dom-to-image';
   import { notificationController, NotificationType } from './notification/notification';
+  import { handleError } from '$lib/utils/handle-error';
 
   let profilePicture: HTMLDivElement;
 
   const handleSetProfilePicture = async () => {
-    const div = profilePicture.childNodes[0] as HTMLDivElement;
-    const blob: Blob = await domtoimage.toBlob(div);
-    const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
+    const div = profilePicture.childNodes[0];
+    const blob = await domtoimage.toBlob(div);
+    const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
     try {
       await api.userApi.createProfileImage({ file });
       dispatch('close');
@@ -25,7 +26,7 @@
         timeout: 3000,
       });
     } catch (err) {
-      console.error('Error [profile-image-cropper]:', err);
+      handleError(err, 'Error setting profile picture.');
       notificationController.show({
         type: NotificationType.Error,
         message: 'Error setting profile picture.',
@@ -51,7 +52,7 @@
   </div>
   <span class="p-4 flex justify-end">
     <Button on:click={handleSetProfilePicture}>
-      <p class="">Set as profile picture</p>
+      <p>Set as profile picture</p>
     </Button>
   </span>
 
