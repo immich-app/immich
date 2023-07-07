@@ -1,4 +1,5 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -88,7 +89,7 @@ export class MediaRepository implements IMediaRepository {
           .outputOptions(options.outputOptions)
           .output(output)
           .on('error', (err, stdout, stderr) => {
-            console.log(stderr);
+            Logger.error(stderr);
             reject(err);
           })
           .on('end', resolve)
@@ -106,7 +107,7 @@ export class MediaRepository implements IMediaRepository {
         .addOptions('-f null')
         .output('/dev/null') // first pass output is not saved as only the .log file is needed
         .on('error', (err, stdout, stderr) => {
-          console.log(stderr);
+          Logger.error(stderr);
           reject(err);
         })
         .on('end', () => {
@@ -117,7 +118,7 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-passlogfile', output)
             .output(output)
             .on('error', (err, stdout, stderr) => {
-              console.log(stderr);
+              Logger.error(stderr);
               reject(err);
             })
             .on('end', () => fs.unlink(`${output}-0.log`))
