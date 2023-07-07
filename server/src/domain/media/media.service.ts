@@ -8,7 +8,7 @@ import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoCodecSWConfig, VideoStreamInfo } from './media.repository';
+import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
 import { H264Config, HEVCConfig, VP9Config } from './media.util';
 
 @Injectable()
