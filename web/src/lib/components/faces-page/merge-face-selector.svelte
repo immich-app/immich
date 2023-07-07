@@ -8,10 +8,9 @@
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
+  let selectFaces: Set<PersonResponseDto> = new Set();
   let screenHeight: number;
-  let peopleContainerWidth: number;
   let dispatch = createEventDispatcher();
-  let facesPerRow = 10;
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople();
@@ -20,6 +19,16 @@
 
   const onClose = () => {
     dispatch('go-back');
+  };
+
+  const handleOnClicked = (person: PersonResponseDto) => {
+    if (selectFaces.has(person)) {
+      const temp = new Set(selectFaces);
+      temp.delete(person);
+      selectFaces = temp;
+    } else {
+      selectFaces = selectFaces.add(person);
+    }
   };
 </script>
 
@@ -32,23 +41,30 @@
   <ControlAppBar on:close-button-click={onClose}>
     <svelte:fragment slot="leading">Merge faces</svelte:fragment>
   </ControlAppBar>
-  <section class="pt-[100px] pl-[70px] bg-immich-bg dark:bg-immich-dark-bg">
+  <section class="pt-[100px] px-[70px] bg-immich-bg dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
-      <div class=" flex flex-col place-items-center place-content-center mb-10 h-[200px]">
+      <div class="flex flex-col place-items-center place-content-center mb-10 h-[200px]">
         <p class="uppercase mb-4 dark:text-white">Choose matching faces with</p>
-        <FaceThumbnail {person} selectable={false} />
+
+        <div class="grid grid-flow-col-dense place-items-center gap-4">
+          {#each Array.from(selectFaces) as person (person.id)}
+            <FaceThumbnail {person} selectable={false} thumbnailSize={120} />
+            <span class="text-2xl font-medium dark:text-white">+</span>
+          {/each}
+          <FaceThumbnail {person} selectable={false} thumbnailSize={180} />
+        </div>
       </div>
       <div
-        class="pl-4 overflow-y-scroll rounded-xl mr-18 bg-gray-200 dark:bg-immich-dark-gray"
+        class="p-4 overflow-y-scroll rounded-xl bg-gray-200 dark:bg-immich-dark-gray"
         style:height={screenHeight - 200 - 200 + 'px'}
-        bind:clientWidth={peopleContainerWidth}
       >
-        <div class="flex flex-row flex-wrap gap-1 my-4">
+        <div class="grid grid-col-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-12 gap-1">
           {#each people as person (person.id)}
             <FaceThumbnail
               {person}
               selectable={true}
-              thumbnailSize={peopleContainerWidth / facesPerRow - facesPerRow + 3}
+              on:click={() => handleOnClicked(person)}
+              selected={selectFaces.has(person)}
             />
           {/each}
         </div>
