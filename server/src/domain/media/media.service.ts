@@ -141,7 +141,7 @@ export class MediaService {
     const mainVideoStream = this.getMainVideoStream(videoStreams);
     const mainAudioStream = this.getMainAudioStream(audioStreams);
     const containerExtension = format.formatName;
-    if (!mainVideoStream || !mainAudioStream || !containerExtension) {
+    if (!mainVideoStream || !containerExtension) {
       return false;
     }
 
