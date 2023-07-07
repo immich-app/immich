@@ -153,7 +153,7 @@ export class MediaService {
       return false;
     }
 
-    const transcodeOptions = this.getHandler(config).getOptions(mainVideoStream);
+    const transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
 
     this.logger.log(`Start encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
     await this.mediaRepository.transcode(input, output, transcodeOptions);
@@ -216,21 +216,16 @@ export class MediaService {
     }
   }
 
-  private getHandler(config: SystemConfigFFmpegDto) {
-    let handler: VideoCodecSWConfig;
+  private getCodecConfig(config: SystemConfigFFmpegDto) {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264:
-        handler = new H264Config(config);
-        break;
+        return new H264Config(config);
       case VideoCodec.HEVC:
-        handler = new HEVCConfig(config);
-        break;
+        return new HEVCConfig(config);
       case VideoCodec.VP9:
-        handler = new VP9Config(config);
-        break;
+        return new VP9Config(config);
       default:
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
     }
-    return handler;
   }
 }
