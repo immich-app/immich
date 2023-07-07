@@ -772,11 +772,19 @@ class AssetApi {
   /// * [ThumbnailFormat] format:
   ///
   /// * [String] key:
-  Future<void> getAssetThumbnail(String id, { ThumbnailFormat? format, String? key, }) async {
+  Future<MultipartFile?> getAssetThumbnail(String id, { ThumbnailFormat? format, String? key, }) async {
     final response = await getAssetThumbnailWithHttpInfo(id,  format: format, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
   }
 
   /// Performs an HTTP 'GET /asset/curated-locations' operation and returns the [Response].
@@ -1276,11 +1284,19 @@ class AssetApi {
   /// * [bool] isWeb:
   ///
   /// * [String] key:
-  Future<void> serveFile(String id, { bool? isThumb, bool? isWeb, String? key, }) async {
+  Future<MultipartFile?> serveFile(String id, { bool? isThumb, bool? isWeb, String? key, }) async {
     final response = await serveFileWithHttpInfo(id,  isThumb: isThumb, isWeb: isWeb, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
   }
 
   /// Update an asset

@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future getPersonThumbnail(String id) async
+    //Future<MultipartFile> getPersonThumbnail(String id) async
     test('test getPersonThumbnail', () async {
       // TODO
     });
