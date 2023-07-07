@@ -83,7 +83,7 @@ export class MediaService {
     return true;
   }
 
-  async handleGenerateWepbThumbnail({ id }: IEntityJob) {
+  async handleGenerateWebpThumbnail({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset || !asset.resizePath) {
       return false;
@@ -153,7 +153,13 @@ export class MediaService {
       return false;
     }
 
-    const transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+    let transcodeOptions;
+    try {
+      transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+    } catch (err) {
+      this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
+      return false;
+    }
 
     this.logger.log(`Start encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
     await this.mediaRepository.transcode(input, output, transcodeOptions);

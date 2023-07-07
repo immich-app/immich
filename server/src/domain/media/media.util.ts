@@ -78,10 +78,7 @@ abstract class BaseConfig implements VideoCodecSWConfig {
   }
 
   shouldScale(stream: VideoStreamInfo) {
-    if (this.config.targetResolution === 'original') {
-      return false;
-    }
-    return Math.min(stream.height, stream.width) > Number.parseInt(this.config.targetResolution);
+    return Math.min(stream.height, stream.width) > this.getTargetResolution(stream);
   }
 
   getScaling(stream: VideoStreamInfo) {
