@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, TranscodePolicy } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { join } from 'path';
 import { VideoCodecSWHandler } from '..';
@@ -220,13 +220,13 @@ export class MediaService {
   private getHandler(config: SystemConfigFFmpegDto) {
     let handler: VideoCodecSWHandler;
     switch (config.targetVideoCodec) {
-      case 'h264':
+      case VideoCodec.H264:
         handler = new H264Handler(config);
         break;
-      case 'hevc':
+      case  VideoCodec.HEVC:
         handler = new HEVCHandler(config);
         break;
-      case 'vp9':
+      case VideoCodec.VP9:
         handler = new VP9Handler(config);
         break;
       default:
