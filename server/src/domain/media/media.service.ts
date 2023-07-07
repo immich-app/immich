@@ -1,7 +1,6 @@
 import { AssetEntity, AssetType, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { join } from 'path';
-import { VideoCodecSWHandler } from '..';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
@@ -9,8 +8,8 @@ import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
-import { H264Handler, HEVCHandler, VP9Handler } from './media.util';
+import { AudioStreamInfo, IMediaRepository, VideoCodecSWConfig, VideoStreamInfo } from './media.repository';
+import { H264Config, HEVCConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -218,16 +217,16 @@ export class MediaService {
   }
 
   private getHandler(config: SystemConfigFFmpegDto) {
-    let handler: VideoCodecSWHandler;
+    let handler: VideoCodecSWConfig;
     switch (config.targetVideoCodec) {
       case VideoCodec.H264:
-        handler = new H264Handler(config);
+        handler = new H264Config(config);
         break;
       case VideoCodec.HEVC:
-        handler = new HEVCHandler(config);
+        handler = new HEVCConfig(config);
         break;
       case VideoCodec.VP9:
-        handler = new VP9Handler(config);
+        handler = new VP9Config(config);
         break;
       default:
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);

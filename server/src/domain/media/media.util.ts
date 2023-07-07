@@ -1,7 +1,7 @@
-import { BitrateDistribution, TranscodeOptions, VideoCodecSWHandler, VideoStreamInfo } from '.';
-import { SystemConfigFFmpegDto } from '..';
+import { SystemConfigFFmpegDto } from '../system-config/dto';
+import { BitrateDistribution, TranscodeOptions, VideoCodecSWConfig, VideoStreamInfo } from './media.repository';
 
-abstract class BaseHandler {
+abstract class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
 
   getOptions(stream: VideoStreamInfo) {
@@ -116,7 +116,7 @@ abstract class BaseHandler {
   }
 }
 
-export class H264Handler extends BaseHandler implements VideoCodecSWHandler {
+export class H264Config extends BaseConfig {
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     if (this.eligibleForTwoPass()) {
@@ -150,7 +150,7 @@ export class H264Handler extends BaseHandler implements VideoCodecSWHandler {
   }
 }
 
-export class HEVCHandler extends H264Handler {
+export class HEVCConfig extends H264Config {
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
@@ -163,7 +163,7 @@ export class HEVCHandler extends H264Handler {
   }
 }
 
-export class VP9Handler extends BaseHandler implements VideoCodecSWHandler {
+export class VP9Config extends BaseConfig {
   getPresetOptions() {
     const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {

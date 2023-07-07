@@ -51,7 +51,7 @@ export interface BitrateDistribution {
   unit: string;
 }
 
-export interface VideoCodecSWHandler {
+export interface VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo): TranscodeOptions;
 }
 
