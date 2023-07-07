@@ -113,9 +113,9 @@
             desc="Opus is the highest quality option, but has lower compatibility with old devices or software."
             bind:value={ffmpegConfig.targetAudioCodec}
             options={[
-              { value: AudioCodec.AAC, text: 'aac' },
-              { value: AudioCodec.MP3, text: 'mp3' },
-              { value: AudioCodec.OPUS, text: 'opus' },
+              { value: AudioCodec.Aac, text: 'aac' },
+              { value: AudioCodec.Mp3, text: 'mp3' },
+              { value: AudioCodec.Opus, text: 'opus' },
             ]}
             name="acodec"
             isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
@@ -127,8 +127,8 @@
             bind:value={ffmpegConfig.targetVideoCodec}
             options={[
               { value: VideoCodec.H264, text: 'h264' },
-              { value: VideoCodec.HEVC, text: 'hevc' },
-              { value: VideoCodec.VP9, text: 'vp9' },
+              { value: VideoCodec.Hevc, text: 'hevc' },
+              { value: VideoCodec.Vp9, text: 'vp9' },
             ]}
             name="vcodec"
             isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
@@ -172,17 +172,17 @@
             bind:value={ffmpegConfig.transcode}
             name="transcode"
             options={[
-              { value: TranscodePolicy.ALL, text: 'All videos' },
+              { value: TranscodePolicy.All, text: 'All videos' },
               {
-                value: TranscodePolicy.OPTIMAL,
+                value: TranscodePolicy.Optimal,
                 text: 'Videos higher than target resolution or not in the desired format',
               },
               {
-                value: TranscodePolicy.REQUIRED,
+                value: TranscodePolicy.Required,
                 text: 'Only videos not in the desired format',
               },
               {
-                value: TranscodePolicy.DISABLED,
+                value: TranscodePolicy.Disabled,
                 text: "Don't transcode any videos, may break playback on some clients",
               },
             ]}
