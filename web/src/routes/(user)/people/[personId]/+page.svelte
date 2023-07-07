@@ -150,7 +150,7 @@
 <!-- Gallery Block -->
 {#if showAssets}
   <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-    <section class="overflow-y-auto relative immich-scrollbar">
+    <section class="overflow-y-scroll relative immich-scrollbar">
       <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
         <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
       </section>
@@ -163,5 +163,5 @@
 {/if}
 
 {#if showMergeFacePanel}
-  <MergeFaceSelector person={data.person} />
+  <MergeFaceSelector person={data.person} on:go-back={() => (showMergeFacePanel = false)} />
 {/if}
