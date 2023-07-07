@@ -23,7 +23,7 @@
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}
 >
   <div class="rounded-xl filter w-full h-full brightness-90">
-    <ImageThumbnail url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" curve />
+    <ImageThumbnail circle url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
   </div>
 
   <div
@@ -32,14 +32,14 @@
   />
 
   {#if selected}
-    <div class="absolute top-0 left-0 w-full h-full bg-gray-900/50 rounded-lg" />
+    <div class="absolute top-0 left-0 w-full h-full rounded-full bg-green-900/75" />
   {/if}
 
   {#if person.name}
     <span
       class="absolute bottom-2 left-0 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
     >
-      {person.name} - {selected}
+      {person.name}
     </span>
   {/if}
 </button>
