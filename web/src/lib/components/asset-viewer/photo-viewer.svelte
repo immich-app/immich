@@ -9,8 +9,8 @@
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
-  export let element: HTMLDivElement;
-  let imgElement: HTMLDivElement | null = null;
+  export let element: HTMLDivElement | null = null;
+  let imgElement: HTMLDivElement;
 
   let assetData: string;
 
