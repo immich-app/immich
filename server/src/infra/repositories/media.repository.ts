@@ -9,6 +9,7 @@ const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 export class MediaRepository implements IMediaRepository {
   crop(input: string, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOnError: false })
+      .withMetadata()
       .extract({
         left: options.left,
         top: options.top,
@@ -22,17 +23,19 @@ export class MediaRepository implements IMediaRepository {
     switch (options.format) {
       case 'webp':
         await sharp(input, { failOnError: false })
+          .rotate()
+          .withMetadata()
           .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
           .webp()
-          .rotate()
           .toFile(output);
         return;
 
       case 'jpeg':
         await sharp(input, { failOnError: false })
+          .rotate()
+          .withMetadata()
           .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
           .jpeg()
-          .rotate()
           .toFile(output);
         return;
     }
@@ -124,6 +127,7 @@ export class MediaRepository implements IMediaRepository {
     const maxSize = 100;
 
     const { data, info } = await sharp(imagePath)
+      .withMetadata()
       .resize(maxSize, maxSize, { fit: 'inside', withoutEnlargement: true })
       .raw()
       .ensureAlpha()
