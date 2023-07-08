@@ -28,6 +28,7 @@
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/svelte": "^3.2.2",
 		"@types/cookie": "^0.5.1",
+		"@types/dom-to-image": "^2.6.4",
 		"@types/justified-layout": "^4.1.0",
 		"@types/leaflet": "^1.9.1",
 		"@types/leaflet.markercluster": "^1.5.1",
@@ -58,7 +59,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@types/dom-to-image": "^2.6.4",
 		"@zoom-image/svelte": "^0.1.0",
 		"axios": "^0.27.2",
 		"buffer": "^6.0.3",
