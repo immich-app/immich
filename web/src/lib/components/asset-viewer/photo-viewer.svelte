@@ -9,14 +9,13 @@
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
-  export let imgElement: HTMLDivElement;
+  export let element: HTMLDivElement;
+  let imgElement: HTMLDivElement;
 
   let assetData: string;
 
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
-
-  $: console.log(imgElement);
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -98,7 +97,11 @@
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div
+  bind:this={element}
+  transition:fade={{ duration: 150 }}
+  class="flex place-items-center place-content-center h-full select-none"
+>
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}

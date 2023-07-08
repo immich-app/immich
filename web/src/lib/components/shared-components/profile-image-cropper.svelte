@@ -15,16 +15,10 @@
   let imgElement: HTMLDivElement;
 
   const handleSetProfilePicture = async () => {
-    console.log(imgElement);
-    if (!imgElement) {
-      console.log('No image element');
-      return;
-    }
     try {
       const blob = await domtoimage.toBlob(imgElement);
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
       await api.userApi.createProfileImage({ file });
-      dispatch('close');
       notificationController.show({
         type: NotificationType.Info,
         message: 'Profile picture set.',
@@ -33,9 +27,8 @@
     } catch (err) {
       handleError(err, 'Error setting profile picture.');
     }
+    dispatch('close');
   };
-
-  $: console.log(imgElement);
 </script>
 
 <BaseModal on:close>
@@ -46,7 +39,7 @@
   </svelte:fragment>
   <div class="flex justify-center place-items-center items-center">
     <div class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4">
-      <PhotoViewer {imgElement} {publicSharedKey} {asset} />
+      <PhotoViewer bind:element={imgElement} {publicSharedKey} {asset} />
     </div>
   </div>
   <span class="p-4 flex justify-end">
