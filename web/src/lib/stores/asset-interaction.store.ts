@@ -13,6 +13,7 @@ export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
 export const selectedGroup = writable<Set<string>>(new Set());
 export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
 export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
+export const assetSelectionStart = writable<AssetResponseDto | null>(null);
 
 function createAssetInteractionStore() {
   let _assetGridState = new AssetGridState();
@@ -21,6 +22,7 @@ function createAssetInteractionStore() {
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
   let _assetSelectionCandidates: Set<AssetResponseDto>;
+  let _assetSelectionStart: AssetResponseDto | null;
 
   // Subscriber
   assetGridState.subscribe((state) => {
@@ -47,6 +49,9 @@ function createAssetInteractionStore() {
     _assetSelectionCandidates = assets;
   });
 
+  assetSelectionStart.subscribe((asset) => {
+    _assetSelectionStart = asset;
+  });
   // Methods
 
   /**
@@ -155,6 +160,11 @@ function createAssetInteractionStore() {
     selectedGroup.set(_selectedGroup);
   };
 
+  const setAssetSelectionStart = (asset: AssetResponseDto | null) => {
+    _assetSelectionStart = asset;
+    assetSelectionStart.set(_assetSelectionStart);
+  };
+
   const setAssetSelectionCandidates = (assets: AssetResponseDto[]) => {
     _assetSelectionCandidates = new Set(assets);
     assetSelectionCandidates.set(_assetSelectionCandidates);
@@ -168,13 +178,15 @@ function createAssetInteractionStore() {
   const clearMultiselect = () => {
     _selectedAssets.clear();
     _selectedGroup.clear();
-    _assetSelectionCandidates.clear();
     _assetsInAlbums = [];
+    _assetSelectionCandidates.clear();
+    _assetSelectionStart = null;
 
     selectedAssets.set(_selectedAssets);
     selectedGroup.set(_selectedGroup);
     assetsInAlbumStoreState.set(_assetsInAlbums);
     assetSelectionCandidates.set(_assetSelectionCandidates);
+    assetSelectionStart.set(_assetSelectionStart);
   };
 
   return {
@@ -188,6 +200,7 @@ function createAssetInteractionStore() {
     removeGroupFromMultiselectGroup,
     setAssetSelectionCandidates,
     clearAssetSelectionCandidates,
+    setAssetSelectionStart,
     clearMultiselect,
   };
 }

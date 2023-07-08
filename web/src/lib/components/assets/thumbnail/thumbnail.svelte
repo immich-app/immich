@@ -84,8 +84,6 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            on:keydown|preventDefault
-            on:keyup|preventDefault
             class="absolute p-2"
             class:cursor-not-allowed={disabled}
             role="checkbox"
