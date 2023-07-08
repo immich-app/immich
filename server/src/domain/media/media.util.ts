@@ -1,7 +1,7 @@
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import { BitrateDistribution, TranscodeOptions, VideoCodecSWConfig, VideoStreamInfo } from './media.repository';
 
-abstract class BaseConfig implements VideoCodecSWConfig {
+class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
 
   getOptions(stream: VideoStreamInfo) {
@@ -49,8 +49,32 @@ abstract class BaseConfig implements VideoCodecSWConfig {
     return [`-preset ${this.config.preset}`];
   }
 
-  abstract getBitrateOptions(): Array<string>;
-  abstract getThreadOptions(): Array<string>;
+  getBitrateOptions() {
+    const bitrates = this.getBitrateDistribution();
+    if (this.eligibleForTwoPass()) {
+      return [
+        `-b:v ${bitrates.target}${bitrates.unit}`,
+        `-minrate ${bitrates.min}${bitrates.unit}`,
+        `-maxrate ${bitrates.max}${bitrates.unit}`,
+      ];
+    } else if (bitrates.max > 0) {
+      // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
+      return [
+        `-crf ${this.config.crf}`,
+        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
+      ];
+    } else {
+      return [`-crf ${this.config.crf}`];
+    }
+  }
+
+  getThreadOptions(): Array<string> {
+    if (this.config.threads <= 0) {
+      return [];
+    }
+    return [`-threads ${this.config.threads}`];
+  }
 
   eligibleForTwoPass() {
     if (!this.config.twoPass) {
@@ -114,46 +138,25 @@ abstract class BaseConfig implements VideoCodecSWConfig {
 }
 
 export class H264Config extends BaseConfig {
-  getBitrateOptions() {
-    const bitrates = this.getBitrateDistribution();
-    if (this.eligibleForTwoPass()) {
-      return [
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-minrate ${bitrates.min}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-      ];
-    } else if (bitrates.max > 0) {
-      // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
-      // needed for -maxrate to be enforced
-      return [
-        `-crf ${this.config.crf}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
-      ];
-    } else {
-      return [`-crf ${this.config.crf}`];
-    }
-  }
-
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
     }
     return [
-      `-threads ${this.config.threads}`,
+      ...super.getThreadOptions(),
       '-x264-params "pools=none"',
       `-x264-params "frame-threads=${this.config.threads}"`,
     ];
   }
 }
 
-export class HEVCConfig extends H264Config {
+export class HEVCConfig extends BaseConfig {
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
     }
     return [
-      `-threads ${this.config.threads}`,
+      ...super.getThreadOptions(),
       '-x265-params "pools=none"',
       `-x265-params "frame-threads=${this.config.threads}"`,
     ];
@@ -183,10 +186,6 @@ export class VP9Config extends BaseConfig {
   }
 
   getThreadOptions() {
-    const options = ['-row-mt 1'];
-    if (this.config.threads) {
-      options.push(`-threads ${this.config.threads}`);
-    }
-    return options;
+    return ['-row-mt 1', ...super.getThreadOptions()];
   }
 }
