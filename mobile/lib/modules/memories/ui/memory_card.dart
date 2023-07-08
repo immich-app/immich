@@ -54,27 +54,24 @@ class MemoryCard extends HookConsumerWidget {
       clipBehavior: Clip.hardEdge,
       child: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: CachedNetworkImageProvider(
-                  getThumbnailUrl(
-                    asset,
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: CachedNetworkImageProvider(
+                    getThumbnailUrl(
+                      asset,
+                    ),
+                    cacheKey: getThumbnailCacheKey(
+                      asset,
+                    ),
+                    headers: {"Authorization": authToken},
                   ),
-                  cacheKey: getThumbnailCacheKey(
-                    asset,
-                  ),
-                  headers: {"Authorization": authToken},
+                  fit: BoxFit.cover,
                 ),
-                fit: BoxFit.cover,
               ),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-              child: Container(
-                decoration:
-                    BoxDecoration(color: Colors.black.withOpacity(0.25)),
-              ),
+              child: Container(color: Colors.black.withOpacity(0.2)),
             ),
           ),
           GestureDetector(

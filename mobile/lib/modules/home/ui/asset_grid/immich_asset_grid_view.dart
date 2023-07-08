@@ -311,7 +311,13 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   Widget _buildAssetGrid() {
     final useDragScrolling = widget.renderList.totalAssets >= 20;
 
-    void dragScrolling(bool active) => _scrolling = active;
+    void dragScrolling(bool active) {
+      if (active != _scrolling) {
+        setState(() {
+          _scrolling = active;
+        });
+      }
+    }
 
     final listWidget = ScrollablePositionedList.builder(
       padding: const EdgeInsets.only(

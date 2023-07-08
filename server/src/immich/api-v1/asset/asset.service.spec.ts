@@ -13,7 +13,6 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
-import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -124,7 +123,6 @@ describe('AssetService', () => {
   let accessMock: IAccessRepositoryMock;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
@@ -152,24 +150,12 @@ describe('AssetService', () => {
 
     cryptoMock = newCryptoRepositoryMock();
 
-    downloadServiceMock = {
-      downloadArchive: jest.fn(),
-    };
-
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new AssetService(
-      accessMock,
-      assetRepositoryMock,
-      a,
-      cryptoMock,
-      downloadServiceMock as DownloadService,
-      jobMock,
-      storageMock,
-    );
+    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, storageMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoStillAsset.id)
@@ -242,7 +228,6 @@ describe('AssetService', () => {
             data: { id: assetEntityStub.livePhotoMotionAsset.id, source: 'upload' },
           },
         ],
-        [{ name: JobName.VIDEO_CONVERSION, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
         [{ name: JobName.METADATA_EXTRACTION, data: { id: assetEntityStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
     });
@@ -395,27 +380,6 @@ describe('AssetService', () => {
           },
         ],
       ]);
-    });
-  });
-
-  // describe('checkDownloadAccess', () => {
-  //   it('should validate download access', async () => {
-  //     await sut.checkDownloadAccess(authStub.adminSharedLink);
-  //   });
-
-  //   it('should not allow when user is not allowed to download', async () => {
-  //     expect(() => sut.checkDownloadAccess(authStub.readonlySharedLink)).toThrow(ForbiddenException);
-  //   });
-  // });
-
-  describe('downloadFile', () => {
-    it('should download a single file', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetRepositoryMock.get.mockResolvedValue(_getAsset_1());
-
-      await sut.downloadFile(authStub.admin, 'id_1');
-
-      expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
     });
   });
 

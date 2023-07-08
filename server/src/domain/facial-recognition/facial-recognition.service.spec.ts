@@ -191,6 +191,12 @@ describe(FacialRecognitionService.name, () => {
         personId: 'person-1',
         assetId: 'asset-id',
         embedding: [1, 2, 3, 4],
+        boundingBoxX1: 100,
+        boundingBoxY1: 100,
+        boundingBoxX2: 200,
+        boundingBoxY2: 200,
+        imageHeight: 500,
+        imageWidth: 400,
       });
     });
 
@@ -207,6 +213,12 @@ describe(FacialRecognitionService.name, () => {
         personId: 'person-1',
         assetId: 'asset-id',
         embedding: [1, 2, 3, 4],
+        boundingBoxX1: 100,
+        boundingBoxY1: 100,
+        boundingBoxX2: 200,
+        boundingBoxY2: 200,
+        imageHeight: 500,
+        imageWidth: 400,
       });
       expect(jobMock.queue.mock.calls).toEqual([
         [

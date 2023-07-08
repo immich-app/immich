@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AlbumModule } from './api-v1/album/album.module';
 import { AssetModule } from './api-v1/asset/asset.module';
+import { AppGuard } from './app.guard';
 import { AppService } from './app.service';
 import {
   AlbumController,
@@ -23,7 +24,6 @@ import {
   TagController,
   UserController,
 } from './controllers';
-import { AuthGuard } from './middlewares/auth.guard';
 
 @Module({
   imports: [
@@ -52,8 +52,8 @@ import { AuthGuard } from './middlewares/auth.guard';
   ],
   providers: [
     //
-    { provide: APP_GUARD, useExisting: AuthGuard },
-    AuthGuard,
+    { provide: APP_GUARD, useExisting: AppGuard },
+    AppGuard,
     AppService,
   ],
 })

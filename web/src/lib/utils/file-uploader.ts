@@ -4,196 +4,193 @@ import type { AssetFileUploadResponseDto } from '@api';
 import axios from 'axios';
 import { combineLatestAll, filter, firstValueFrom, from, mergeMap, of } from 'rxjs';
 import type { UploadAsset } from '../models/upload-asset';
-import {
-	notificationController,
-	NotificationType
-} from './../components/shared-components/notification/notification';
+import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 
 export const openFileUploadDialog = async (
-	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined
+  albumId: string | undefined = undefined,
+  sharedKey: string | undefined = undefined,
 ) => {
-	return new Promise<(string | undefined)[]>((resolve, reject) => {
-		try {
-			const fileSelector = document.createElement('input');
+  return new Promise<(string | undefined)[]>((resolve, reject) => {
+    try {
+      const fileSelector = document.createElement('input');
 
-			fileSelector.type = 'file';
-			fileSelector.multiple = true;
+      fileSelector.type = 'file';
+      fileSelector.multiple = true;
 
-			// When adding a content type that is unsupported by browsers, make sure
-			// to also add it to getFileMimeType() otherwise the upload will fail.
-			fileSelector.accept = [
-				'image/*',
-				'video/*',
-				'.3fr',
-				'.3gp',
-				'.ari',
-				'.arw',
-				'.avif',
-				'.cap',
-				'.cin',
-				'.cr2',
-				'.cr3',
-				'.crw',
-				'.dcr',
-				'.dng',
-				'.erf',
-				'.fff',
-				'.heic',
-				'.heif',
-				'.iiq',
-				'.insp',
-				'.insv',
-				'.jxl',
-				'.k25',
-				'.kdc',
-				'.m2ts',
-				'.mov',
-				'.mrw',
-				'.mts',
-				'.nef',
-				'.orf',
-				'.ori',
-				'.pef',
-				'.raf',
-				'.raf',
-				'.raw',
-				'.rwl',
-				'.sr2',
-				'.srf',
-				'.srw',
-				'.x3f'
-			].join(',');
+      // When adding a content type that is unsupported by browsers, make sure
+      // to also add it to getFileMimeType() otherwise the upload will fail.
+      fileSelector.accept = [
+        'image/*',
+        'video/*',
+        '.3fr',
+        '.3gp',
+        '.ari',
+        '.arw',
+        '.avif',
+        '.cap',
+        '.cin',
+        '.cr2',
+        '.cr3',
+        '.crw',
+        '.dcr',
+        '.dng',
+        '.erf',
+        '.fff',
+        '.heic',
+        '.heif',
+        '.iiq',
+        '.insp',
+        '.insv',
+        '.jxl',
+        '.k25',
+        '.kdc',
+        '.m2ts',
+        '.mov',
+        '.mrw',
+        '.mts',
+        '.nef',
+        '.orf',
+        '.ori',
+        '.pef',
+        '.raf',
+        '.raf',
+        '.raw',
+        '.rwl',
+        '.sr2',
+        '.srf',
+        '.srw',
+        '.x3f',
+      ].join(',');
 
-			fileSelector.onchange = async (e: Event) => {
-				const target = e.target as HTMLInputElement;
-				if (!target.files) {
-					return;
-				}
-				const files = Array.from<File>(target.files);
+      fileSelector.onchange = async (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        if (!target.files) {
+          return;
+        }
+        const files = Array.from<File>(target.files);
 
-				resolve(await fileUploadHandler(files, albumId, sharedKey));
-			};
+        resolve(await fileUploadHandler(files, albumId, sharedKey));
+      };
 
-			fileSelector.click();
-		} catch (e) {
-			console.log('Error selecting file', e);
-			reject(e);
-		}
-	});
+      fileSelector.click();
+    } catch (e) {
+      console.log('Error selecting file', e);
+      reject(e);
+    }
+  });
 };
 
 export const fileUploadHandler = async (
-	files: File[],
-	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined
+  files: File[],
+  albumId: string | undefined = undefined,
+  sharedKey: string | undefined = undefined,
 ) => {
-	return firstValueFrom(
-		from(files).pipe(
-			filter((file) => {
-				const assetType = getFileMimeType(file).split('/')[0];
-				return assetType === 'video' || assetType === 'image';
-			}),
-			mergeMap(async (file) => of(await fileUploader(file, albumId, sharedKey)), 2),
-			combineLatestAll()
-		)
-	);
+  return firstValueFrom(
+    from(files).pipe(
+      filter((file) => {
+        const assetType = getFileMimeType(file).split('/')[0];
+        return assetType === 'video' || assetType === 'image';
+      }),
+      mergeMap(async (file) => of(await fileUploader(file, albumId, sharedKey)), 2),
+      combineLatestAll(),
+    ),
+  );
 };
 
 //TODO: should probably use the @api SDK
 async function fileUploader(
-	asset: File,
-	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined
+  asset: File,
+  albumId: string | undefined = undefined,
+  sharedKey: string | undefined = undefined,
 ): Promise<string | undefined> {
-	const mimeType = getFileMimeType(asset);
-	const assetType = mimeType.split('/')[0].toUpperCase();
-	const fileExtension = getFilenameExtension(asset.name);
-	const formData = new FormData();
-	const fileCreatedAt = new Date(asset.lastModified).toISOString();
-	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+  const mimeType = getFileMimeType(asset);
+  const assetType = mimeType.split('/')[0].toUpperCase();
+  const fileExtension = getFilenameExtension(asset.name);
+  const formData = new FormData();
+  const fileCreatedAt = new Date(asset.lastModified).toISOString();
+  const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
-	try {
-		// Create and add pseudo-unique ID of asset on the device
-		formData.append('deviceAssetId', deviceAssetId);
+  try {
+    // Create and add pseudo-unique ID of asset on the device
+    formData.append('deviceAssetId', deviceAssetId);
 
-		// Get device id - for web -> use WEB
-		formData.append('deviceId', 'WEB');
+    // Get device id - for web -> use WEB
+    formData.append('deviceId', 'WEB');
 
-		// Get asset type
-		formData.append('assetType', assetType);
+    // Get asset type
+    formData.append('assetType', assetType);
 
-		// Get Asset Created Date
-		formData.append('fileCreatedAt', fileCreatedAt);
+    // Get Asset Created Date
+    formData.append('fileCreatedAt', fileCreatedAt);
 
-		// Get Asset Modified At
-		formData.append('fileModifiedAt', new Date(asset.lastModified).toISOString());
+    // Get Asset Modified At
+    formData.append('fileModifiedAt', new Date(asset.lastModified).toISOString());
 
-		// Set Asset is Favorite to false
-		formData.append('isFavorite', 'false');
+    // Set Asset is Favorite to false
+    formData.append('isFavorite', 'false');
 
-		// Get asset duration
-		formData.append('duration', '0:00:00.000000');
+    // Get asset duration
+    formData.append('duration', '0:00:00.000000');
 
-		// Get asset file extension
-		formData.append('fileExtension', '.' + fileExtension);
+    // Get asset file extension
+    formData.append('fileExtension', '.' + fileExtension);
 
-		// Get asset binary data with a custom MIME type, because browsers will
-		// use application/octet-stream for unsupported MIME types, leading to
-		// failed uploads.
-		formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
+    // Get asset binary data with a custom MIME type, because browsers will
+    // use application/octet-stream for unsupported MIME types, leading to
+    // failed uploads.
+    formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
 
-		const newUploadAsset: UploadAsset = {
-			id: deviceAssetId,
-			file: asset,
-			progress: 0,
-			fileExtension: fileExtension
-		};
+    const newUploadAsset: UploadAsset = {
+      id: deviceAssetId,
+      file: asset,
+      progress: 0,
+      fileExtension: fileExtension,
+    };
 
-		uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+    uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 
-		const response = await axios.post(`/api/asset/upload`, formData, {
-			params: {
-				key: sharedKey
-			},
-			onUploadProgress: (event) => {
-				const percentComplete = Math.floor((event.loaded / event.total) * 100);
-				uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
-			}
-		});
+    const response = await axios.post(`/api/asset/upload`, formData, {
+      params: {
+        key: sharedKey,
+      },
+      onUploadProgress: (event) => {
+        const percentComplete = Math.floor((event.loaded / event.total) * 100);
+        uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+      },
+    });
 
-		if (response.status == 200 || response.status == 201) {
-			const res: AssetFileUploadResponseDto = response.data;
+    if (response.status == 200 || response.status == 201) {
+      const res: AssetFileUploadResponseDto = response.data;
 
-			if (albumId && res.id) {
-				await addAssetsToAlbum(albumId, [res.id], sharedKey);
-			}
+      if (albumId && res.id) {
+        await addAssetsToAlbum(albumId, [res.id], sharedKey);
+      }
 
-			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			}, 1000);
+      setTimeout(() => {
+        uploadAssetsStore.removeUploadAsset(deviceAssetId);
+      }, 1000);
 
-			return res.id;
-		}
-	} catch (e) {
-		console.log('error uploading file ', e);
-		handleUploadError(asset, JSON.stringify(e));
-		uploadAssetsStore.removeUploadAsset(deviceAssetId);
-	}
+      return res.id;
+    }
+  } catch (e) {
+    console.log('error uploading file ', e);
+    handleUploadError(asset, JSON.stringify(e));
+    uploadAssetsStore.removeUploadAsset(deviceAssetId);
+  }
 }
 
 function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
-	try {
-		const res = JSON.parse(respBody);
+  try {
+    const res = JSON.parse(respBody);
 
-		const extraMsg = res ? ' ' + res?.message : '';
+    const extraMsg = res ? ' ' + res?.message : '';
 
-		notificationController.show({
-			type: NotificationType.Error,
-			message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
-			timeout: 5000
-		});
-	} catch (e) {
-		console.error('ERROR parsing data JSON in handleUploadError');
-	}
+    notificationController.show({
+      type: NotificationType.Error,
+      message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
+      timeout: 5000,
+    });
+  } catch (e) {
+    console.error('ERROR parsing data JSON in handleUploadError');
+  }
 }

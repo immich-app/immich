@@ -45,7 +45,8 @@ class ImmichImage extends StatelessWidget {
       );
     }
     final Asset asset = this.asset!;
-    if (asset.isLocal) {
+    if (!asset.isRemote ||
+        (asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false))) {
       return Image(
         image: AssetEntityImageProvider(
           asset.local!,

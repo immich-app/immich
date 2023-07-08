@@ -1,5 +1,5 @@
-import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
-import { AuthGuard } from '@app/immich/middlewares/auth.guard';
+import { AuthUserDto } from '@app/domain';
+import { AppGuard } from '@app/immich/app.guard';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
@@ -34,5 +34,5 @@ export function authCustom(builder: TestingModuleBuilder, callback: CustomAuthCa
       return true;
     },
   };
-  return builder.overrideProvider(AuthGuard).useValue(canActivate);
+  return builder.overrideProvider(AppGuard).useValue(canActivate);
 }

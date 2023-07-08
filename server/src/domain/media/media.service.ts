@@ -128,7 +128,7 @@ export class MediaService {
 
   async handleVideoConversion({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset) {
+    if (!asset || asset.type !== AssetType.VIDEO) {
       return false;
     }
 
@@ -222,7 +222,8 @@ export class MediaService {
       `-acodec ${ffmpeg.targetAudioCodec}`,
       // Makes a second pass moving the moov atom to the beginning of
       // the file for improved playback speed.
-      `-movflags faststart`,
+      '-movflags faststart',
+      '-fps_mode passthrough',
     ];
 
     // video dimensions
@@ -284,7 +285,14 @@ export class MediaService {
     } else if (constrainMaximumBitrate || isVP9) {
       // for vp9, these flags work for both one-pass and two-pass
       options.push(`-crf ${ffmpeg.crf}`);
-      options.push(`${isVP9 ? '-b:v' : '-maxrate'} ${maxBitrateValue}${bitrateUnit}`);
+      if (isVP9) {
+        options.push(`-b:v ${maxBitrateValue}${bitrateUnit}`);
+      } else {
+        options.push(`-maxrate ${maxBitrateValue}${bitrateUnit}`);
+        // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
+        // needed for -maxrate to be enforced
+        options.push(`-bufsize ${maxBitrateValue * 2}${bitrateUnit}`);
+      }
     } else {
       options.push(`-crf ${ffmpeg.crf}`);
     }

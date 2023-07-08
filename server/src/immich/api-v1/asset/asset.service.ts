@@ -6,7 +6,6 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
-  ImmichReadStream,
   isSupportedFileType,
   IStorageRepository,
   JobName,
@@ -22,18 +21,15 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
-import { createReadStream, stat } from 'fs';
+import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
 import path from 'path';
+import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
-import { promisify } from 'util';
-import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -42,8 +38,6 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { DownloadDto } from './dto/download-library.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -68,8 +62,6 @@ import { CuratedLocationsResponseDto } from './response-dto/curated-locations-re
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
-const fileInfo = promisify(stat);
-
 interface ServableFile {
   filepath: string;
   contentType: string;
@@ -86,7 +78,6 @@ export class AssetService {
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    private downloadService: DownloadService,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
@@ -161,7 +152,7 @@ export class AssetService {
         continue;
       }
 
-      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
+      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
       if (!exists) {
         throw new BadRequestException('File does not exist');
       }
@@ -250,50 +241,6 @@ export class AssetService {
     return mapAsset(updatedAsset);
   }
 
-  public async downloadLibrary(authUser: AuthUserDto, dto: DownloadDto) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, authUser.id);
-
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
-
-    return this.downloadService.downloadArchive(dto.name || `library`, assets);
-  }
-
-  public async downloadFiles(authUser: AuthUserDto, dto: DownloadFilesDto) {
-    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, dto.assetIds);
-
-    const assetToDownload = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assetToDownload.push(asset);
-
-      // Get live photo asset
-      if (asset.livePhotoVideoId) {
-        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
-        assetToDownload.push(livePhotoAsset);
-      }
-    }
-
-    const now = new Date().toISOString();
-    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
-  }
-
-  public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
-    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, assetId);
-
-    try {
-      const asset = await this._assetRepository.get(assetId);
-      if (asset && asset.originalPath && asset.mimeType) {
-        return this.storageRepository.createReadStream(asset.originalPath, asset.mimeType);
-      }
-    } catch (e) {
-      Logger.error(`Error download asset ${e}`, 'downloadFile');
-      throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
-    }
-
-    throw new NotFoundException();
-  }
-
   async getAssetThumbnail(
     authUser: AuthUserDto,
     assetId: string,
@@ -313,7 +260,7 @@ export class AssetService {
       return this.streamFile(thumbnailPath, res, headers);
     } catch (e) {
       res.header('Cache-Control', 'none');
-      Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
+      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
       throw new InternalServerErrorException(
         `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
         { cause: e as Error },
@@ -344,7 +291,7 @@ export class AssetService {
         const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
         return this.streamFile(filepath, res, headers, contentType);
       } catch (e) {
-        Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
+        this.logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
           e,
           `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
@@ -352,60 +299,12 @@ export class AssetService {
       }
     } else {
       try {
-        // Handle Video
-        let videoPath = asset.originalPath;
-        let mimeType = asset.mimeType;
-
-        await fs.access(videoPath, R_OK | W_OK);
-
-        if (asset.encodedVideoPath) {
-          videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
-          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
-        }
-
-        const { size } = await fileInfo(videoPath);
-        const range = headers.range;
-
-        if (range) {
-          /** Extracting Start and End value from Range Header */
-          const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
-          let start = parseInt(startStr, 10);
-          let end = endStr ? parseInt(endStr, 10) : size - 1;
-
-          if (!isNaN(start) && isNaN(end)) {
-            start = start;
-            end = size - 1;
-          }
-          if (isNaN(start) && !isNaN(end)) {
-            start = size - end;
-            end = size - 1;
-          }
-
-          // Handle unavailable range request
-          if (start >= size || end >= size) {
-            console.error('Bad Request');
-            // Return the 416 Range Not Satisfiable.
-            res.status(416).set({ 'Content-Range': `bytes */${size}` });
-
-            throw new BadRequestException('Bad Request Range');
-          }
-
-          /** Sending Partial Content With HTTP Code 206 */
-          res.status(206).set({
-            'Content-Range': `bytes ${start}-${end}/${size}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': end - start + 1,
-            'Content-Type': mimeType,
-          });
-
-          const videoStream = createReadStream(videoPath, { start, end });
-
-          return new StreamableFile(videoStream);
-        }
+        const videoPath = asset.encodedVideoPath ? asset.encodedVideoPath : asset.originalPath;
+        const mimeType = asset.encodedVideoPath ? 'video/mp4' : asset.mimeType;
 
         return this.streamFile(videoPath, res, headers, mimeType);
-      } catch (e) {
-        this.logger.error(`Error serving VIDEO asset=${asset.id}`);
+      } catch (e: Error | any) {
+        this.logger.error(`Error serving VIDEO asset=${asset.id}`, e?.stack);
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
@@ -668,12 +567,16 @@ export class AssetService {
   }
 
   private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+    await fs.access(filepath, constants.R_OK);
+    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
+
     if (contentType) {
       res.header('Content-Type', contentType);
     }
 
+    const range = this.setResRange(res, headers, Number(size));
+
     // etag
-    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
     const etag = `W/"${size}-${mtimeNs}"`;
     res.setHeader('ETag', etag);
     if (etag === headers['if-none-match']) {
@@ -681,8 +584,48 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, R_OK);
+    const stream = createReadStream(filepath, range);
+    return await pipeline(stream, res).catch((err) => {
+      if (err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+        this.logger.error(err);
+      }
+    });
+  }
 
-    return new StreamableFile(createReadStream(filepath));
+  private setResRange(res: Res, headers: Record<string, string>, size: number) {
+    if (!headers.range) {
+      return {};
+    }
+
+    /** Extracting Start and End value from Range Header */
+    const [startStr, endStr] = headers.range.replace(/bytes=/, '').split('-');
+    let start = parseInt(startStr, 10);
+    let end = endStr ? parseInt(endStr, 10) : size - 1;
+
+    if (!isNaN(start) && isNaN(end)) {
+      start = start;
+      end = size - 1;
+    }
+
+    if (isNaN(start) && !isNaN(end)) {
+      start = size - end;
+      end = size - 1;
+    }
+
+    // Handle unavailable range request
+    if (start >= size || end >= size) {
+      console.error('Bad Request');
+      res.status(416).set({ 'Content-Range': `bytes */${size}` });
+
+      throw new BadRequestException('Bad Request Range');
+    }
+
+    res.status(206).set({
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': end - start + 1,
+    });
+
+    return { start, end };
   }
 }

@@ -24,9 +24,9 @@ Run all web checks with `npm run check:all`
 Run all server checks with `npm run check:all`
 :::
 
-## Open API
+## OpenAPI
 
-The Open API client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. See [Open API](/docs/developer/open-api.md) for more details.
+The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/docs/developer/open-api.md) for more details.
 
 ## Database Migrations
 

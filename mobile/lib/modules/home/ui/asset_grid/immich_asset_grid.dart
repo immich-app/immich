@@ -50,86 +50,49 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var settings = ref.watch(appSettingsServiceProvider);
-
-    // Needs to suppress hero animations when navigating to this widget
-    final enableHeroAnimations = useState(false);
-    final transitionDuration = ModalRoute.of(context)?.transitionDuration;
-
+    final settings = ref.watch(appSettingsServiceProvider);
     final perRow = useState(
       assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!,
     );
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
 
-    useEffect(
-      () {
-        // Wait for transition to complete, then re-enable
-        if (transitionDuration == null) {
-          // No route transition found, maybe we opened this up first
-          enableHeroAnimations.value = true;
-        } else {
-          // Unfortunately, using the transition animation itself didn't
-          // seem to work reliably. So instead, wait until the duration of the
-          // animation has elapsed to re-enable the hero animations
-          Future.delayed(transitionDuration).then((_) {
-            enableHeroAnimations.value = true;
-          });
-        }
-        return null;
-      },
-      [],
-    );
-
-    Future<bool> onWillPop() async {
-      enableHeroAnimations.value = false;
-      return true;
-    }
-
     Widget buildAssetGridView(RenderList renderList) {
-      return WillPopScope(
-        onWillPop: onWillPop,
-        child: HeroMode(
-          enabled: enableHeroAnimations.value,
-          child: RawGestureDetector(
-            gestures: {
-              CustomScaleGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                          CustomScaleGestureRecognizer>(
-                      () => CustomScaleGestureRecognizer(),
-                      (CustomScaleGestureRecognizer scale) {
-                scale.onStart = (details) {
-                  baseScaleFactor.value = scaleFactor.value;
-                };
+      return RawGestureDetector(
+        gestures: {
+          CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+                  CustomScaleGestureRecognizer>(
+              () => CustomScaleGestureRecognizer(),
+              (CustomScaleGestureRecognizer scale) {
+            scale.onStart = (details) {
+              baseScaleFactor.value = scaleFactor.value;
+            };
 
-                scale.onUpdate = (details) {
-                  scaleFactor.value =
-                      max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
-                  if (7 - scaleFactor.value.toInt() != perRow.value) {
-                    perRow.value = 7 - scaleFactor.value.toInt();
-                  }
-                };
-                scale.onEnd = (details) {};
-              })
-            },
-            child: ImmichAssetGridView(
-              onRefresh: onRefresh,
-              assetsPerRow: perRow.value,
-              listener: listener,
-              showStorageIndicator: showStorageIndicator ??
-                  settings.getSetting(AppSettingsEnum.storageIndicator),
-              renderList: renderList,
-              margin: margin,
-              selectionActive: selectionActive,
-              preselectedAssets: preselectedAssets,
-              canDeselect: canDeselect,
-              dynamicLayout: dynamicLayout ??
-                  settings.getSetting(AppSettingsEnum.dynamicLayout),
-              showMultiSelectIndicator: showMultiSelectIndicator,
-              visibleItemsListener: visibleItemsListener,
-              topWidget: topWidget,
-            ),
-          ),
+            scale.onUpdate = (details) {
+              scaleFactor.value =
+                  max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
+              if (7 - scaleFactor.value.toInt() != perRow.value) {
+                perRow.value = 7 - scaleFactor.value.toInt();
+              }
+            };
+          })
+        },
+        child: ImmichAssetGridView(
+          onRefresh: onRefresh,
+          assetsPerRow: perRow.value,
+          listener: listener,
+          showStorageIndicator: showStorageIndicator ??
+              settings.getSetting(AppSettingsEnum.storageIndicator),
+          renderList: renderList,
+          margin: margin,
+          selectionActive: selectionActive,
+          preselectedAssets: preselectedAssets,
+          canDeselect: canDeselect,
+          dynamicLayout: dynamicLayout ??
+              settings.getSetting(AppSettingsEnum.dynamicLayout),
+          showMultiSelectIndicator: showMultiSelectIndicator,
+          visibleItemsListener: visibleItemsListener,
+          topWidget: topWidget,
         ),
       );
     }

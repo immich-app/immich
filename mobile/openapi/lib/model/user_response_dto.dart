@@ -137,9 +137,9 @@ class UserResponseDto {
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        deletedAt: mapDateTime(json, r'deletedAt', ''),
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }

@@ -131,7 +131,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
 
-        if (asset.isLocal) {
+        if (!asset.isRemote ||
+            asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
           // Preload the local asset
           precacheImage(localImageProvider(asset), context);
         } else {
@@ -459,7 +460,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     });
 
     ImageProvider imageProvider(Asset asset) {
-      if (asset.isLocal) {
+      if (!asset.isRemote ||
+          asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
         return localImageProvider(asset);
       } else {
         if (isLoadOriginal.value) {
@@ -518,7 +520,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               loadingBuilder: isLoadPreview.value
                   ? (context, event) {
                       final a = asset();
-                      if (!a.isLocal) {
+                      if (!a.isLocal ||
+                          (a.isRemote &&
+                              Store.get(StoreKey.preferRemoteImage, false))) {
                         // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                         // Three-Stage Loading (WEBP -> JPEG -> Original)
                         final webPThumbnail = CachedNetworkImage(

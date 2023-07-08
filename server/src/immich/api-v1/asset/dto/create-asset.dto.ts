@@ -1,9 +1,9 @@
+import { toBoolean, toSanitized } from '@app/domain';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
-import { toBoolean, toSanitized } from '../../../utils/transform.util';
 
 export class CreateAssetBase {
   @IsNotEmpty()
