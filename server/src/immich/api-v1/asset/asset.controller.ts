@@ -122,7 +122,11 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/file/:id')
   @Header('Cache-Control', 'private, max-age=86400, no-transform')
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse({
+    content: {
+      'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
+    },
+  })
   serveFile(
     @AuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
@@ -136,7 +140,12 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
   @Header('Cache-Control', 'private, max-age=86400, no-transform')
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse({
+    content: {
+      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+      'image/webp': { schema: { type: 'string', format: 'binary' } },
+    },
+  })
   getAssetThumbnail(
     @AuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,

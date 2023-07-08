@@ -43,7 +43,11 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse({
+    content: {
+      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+    },
+  })
   getPersonThumbnail(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
   }
