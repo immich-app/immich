@@ -31,7 +31,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
+<BaseModal on:close>
   <svelte:fragment slot="title">
     <span class="flex gap-2 place-items-center">
       <p class="font-medium">Set profile picture</p>
