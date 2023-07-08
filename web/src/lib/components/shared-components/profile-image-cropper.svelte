@@ -27,11 +27,6 @@
       });
     } catch (err) {
       handleError(err, 'Error setting profile picture.');
-      notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error setting profile picture.',
-        timeout: 3000,
-      });
     }
   };
 </script>
