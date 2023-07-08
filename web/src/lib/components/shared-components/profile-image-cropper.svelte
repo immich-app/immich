@@ -1,15 +1,17 @@
 <script lang="ts">
   import { AssetResponseDto, api } from '@api';
   import { createEventDispatcher } from 'svelte';
+  import { notificationController, NotificationType } from './notification/notification';
+  import { handleError } from '$lib/utils/handle-error';
+  import domtoimage from 'dom-to-image';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
   import BaseModal from './base-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
-  const dispatch = createEventDispatcher();
+
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
-  import domtoimage from 'dom-to-image';
-  import { notificationController, NotificationType } from './notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
+
+  const dispatch = createEventDispatcher();
 
   let profilePicture: HTMLDivElement;
 
