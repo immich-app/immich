@@ -12,14 +12,17 @@
   export let publicSharedKey = '';
 
   const dispatch = createEventDispatcher();
-
-  let profilePicture: HTMLDivElement;
+  let imgElement: HTMLDivElement;
 
   const handleSetProfilePicture = async () => {
-    const div = profilePicture.childNodes[0];
-    const blob = await domtoimage.toBlob(div);
-    const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
+    console.log(imgElement);
+    if (!imgElement) {
+      console.log('No image element');
+      return;
+    }
     try {
+      const blob = await domtoimage.toBlob(imgElement);
+      const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
       await api.userApi.createProfileImage({ file });
       dispatch('close');
       notificationController.show({
@@ -31,6 +34,8 @@
       handleError(err, 'Error setting profile picture.');
     }
   };
+
+  $: console.log(imgElement);
 </script>
 
 <BaseModal on:close>
@@ -40,11 +45,8 @@
     </span>
   </svelte:fragment>
   <div class="flex justify-center place-items-center items-center">
-    <div
-      bind:this={profilePicture}
-      class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4"
-    >
-      <PhotoViewer {publicSharedKey} {asset} />
+    <div class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4">
+      <PhotoViewer {imgElement} {publicSharedKey} {asset} />
     </div>
   </div>
   <span class="p-4 flex justify-end">
@@ -52,6 +54,5 @@
       <p>Set as profile picture</p>
     </Button>
   </span>
-
   <div class="max-h-[400px] flex flex-col mb-2" />
 </BaseModal>

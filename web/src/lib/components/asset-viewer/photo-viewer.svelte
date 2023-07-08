@@ -9,12 +9,14 @@
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
-  let imgElement: HTMLDivElement;
+  export let imgElement: HTMLDivElement;
 
   let assetData: string;
 
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+
+  $: console.log(imgElement);
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
