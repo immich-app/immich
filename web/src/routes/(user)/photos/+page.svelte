@@ -21,7 +21,7 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
 
   export let data: PageData;
-  let assetCount: number = 1;
+  let assetCount = 1;
 
   onMount(async () => {
     const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
