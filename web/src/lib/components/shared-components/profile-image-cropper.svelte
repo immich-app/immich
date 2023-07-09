@@ -17,14 +17,18 @@
   const hasTransparentPixels = async (blob: Blob) => {
     const img = new Image();
     img.src = URL.createObjectURL(blob);
+    await img.decode();
     return new Promise((resolve) => {
       img.onload = function () {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0);
-        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        if (!ctx) {
+          throw new Error('Could not get canvas context.');
+        }
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData?.data;
         if (!data) {
           throw new Error('Could not get image data.');
@@ -46,7 +50,7 @@
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,
-          message: 'Profile pictures cannot have transparent pixels.',
+          message: 'Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.',
           timeout: 3000,
         });
         return;
@@ -72,7 +76,9 @@
     </span>
   </svelte:fragment>
   <div class="flex justify-center place-items-center items-center">
-    <div class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4">
+    <div
+      class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4 bg-immich-"
+    >
       <PhotoViewer bind:element={imgElement} {publicSharedKey} {asset} />
     </div>
   </div>
