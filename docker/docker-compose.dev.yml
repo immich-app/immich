@@ -24,7 +24,6 @@ services:
       - redis
       - database
       - typesense
-    restart: always
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -68,7 +67,6 @@ services:
       - database
       - immich-server
       - typesense
-    restart: always
 
   immich-web:
     container_name: immich_web
@@ -104,7 +102,6 @@ services:
       driver: none
     volumes:
       - tsdata:/data
-    restart: always
 
   redis:
     container_name: immich_redis
@@ -124,7 +121,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - 5432:5432
-    restart: always
 
   immich-proxy:
     container_name: immich_proxy
