@@ -10,12 +10,16 @@
   import CallMerge from 'svelte-material-icons/CallMerge.svelte';
   import { flip } from 'svelte/animate';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
   let selectFaces: Set<PersonResponseDto> = new Set();
   let screenHeight: number;
   let dispatch = createEventDispatcher();
+  let isShowConfirmation = false;
+
   $: hasSelection = selectFaces.size > 0;
 
   onMount(async () => {
@@ -45,6 +49,25 @@
       people = people.filter((p) => p.id !== person.id);
     }
   };
+
+  const mergeFaces = async () => {
+    try {
+      const { data } = await api.personApi.mergePerson({
+        id: person.id,
+        mergePersonDto: { ids: Array.from(selectFaces).map((p) => p.id.toString()) },
+      });
+
+      notificationController.show({
+        message: 'Faces merged successfully',
+        type: NotificationType.Info,
+      });
+      dispatch('go-back');
+    } catch (error) {
+      handleError(error, 'Cannot merge faces');
+    } finally {
+      isShowConfirmation = false;
+    }
+  };
 </script>
 
 <svelte:window bind:innerHeight={screenHeight} />
@@ -63,13 +86,20 @@
       <div />
     </svelte:fragment>
     <svelte:fragment slot="trailing">
-      <Button size={'sm'} disabled={selectFaces.size == 0}>
+      <Button
+        size={'sm'}
+        disabled={selectFaces.size == 0}
+        on:click={() => {
+          isShowConfirmation = true;
+        }}
+      >
         <Merge size={18} />
         <span class="ml-2"> Merge</span></Button
       >
     </svelte:fragment>
   </ControlAppBar>
   <section class="pt-[100px] px-[70px] bg-immich-bg dark:bg-immich-dark-bg">
+    {isShowConfirmation}
     <section id="merge-face-selector relative">
       <div class="place-items-center place-content-center mb-10 h-[200px]">
         <p class="uppercase mb-4 dark:text-white text-center">Choose matching faces to merge</p>
@@ -112,5 +142,18 @@
         </div>
       </div>
     </section>
+
+    {#if isShowConfirmation}
+      <ConfirmDialogue
+        title="Merge faces"
+        confirmText="Merge"
+        on:confirm={mergeFaces}
+        on:cancel={() => (isShowConfirmation = false)}
+      >
+        <svelte:fragment slot="prompt">
+          <p>Are you sure you want merge these faces?</p>
+        </svelte:fragment>
+      </ConfirmDialogue>
+    {/if}
   </section>
 </section>
