@@ -14,9 +14,43 @@
   const dispatch = createEventDispatcher();
   let imgElement: HTMLDivElement;
 
+  const hasTransparentPixels = async (blob: Blob) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(blob);
+    return new Promise((resolve) => {
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData?.data;
+        if (!data) {
+          throw new Error('Could not get image data.');
+        }
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 255) {
+            resolve(true);
+            return;
+          }
+        }
+        resolve(false);
+      };
+    });
+  };
+
   const handleSetProfilePicture = async () => {
     try {
       const blob = await domtoimage.toBlob(imgElement);
+      if (await hasTransparentPixels(blob)) {
+        notificationController.show({
+          type: NotificationType.Error,
+          message: 'Profile pictures cannot have transparent pixels.',
+          timeout: 3000,
+        });
+        return;
+      }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
       await api.userApi.createProfileImage({ file });
       notificationController.show({
