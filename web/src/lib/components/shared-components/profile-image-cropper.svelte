@@ -18,30 +18,25 @@
     const img = new Image();
     img.src = URL.createObjectURL(blob);
     await img.decode();
-    return new Promise((resolve) => {
-      img.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          throw new Error('Could not get canvas context.');
-        }
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData?.data;
-        if (!data) {
-          throw new Error('Could not get image data.');
-        }
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i + 3] < 255) {
-            resolve(true);
-            return;
-          }
-        }
-        resolve(false);
-      };
-    });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not get canvas context.');
+    }
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData?.data;
+    if (!data) {
+      throw new Error('Could not get image data.');
+    }
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 255) {
+        return true;
+      }
+    }
+    return false;
   };
 
   const handleSetProfilePicture = async () => {
