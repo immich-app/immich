@@ -145,15 +145,28 @@
   };
 
   const toggleFavorite = async () => {
-    const { data } = await api.assetApi.updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        isFavorite: !asset.isFavorite,
-      },
-    });
+    try {
+      const { data } = await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          isFavorite: !asset.isFavorite,
+        },
+      });
 
-    asset.isFavorite = data.isFavorite;
-    assetStore.updateAsset(asset.id, data.isFavorite);
+      asset.isFavorite = data.isFavorite;
+      assetStore.updateAsset(asset.id, data.isFavorite);
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+      });
+    } catch (error) {
+      console.error(error);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: `Error ${asset.isFavorite ? 'favoriting' : 'unfavoriting'} asset, check console for more details`,
+      });
+    }
   };
 
   const openAlbumPicker = (shared: boolean) => {
