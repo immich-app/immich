@@ -16,6 +16,11 @@ void main() {
   // final instance = SystemConfigFFmpegDto();
 
   group('test SystemConfigFFmpegDto', () {
+    // TranscodeHWAccel accel
+    test('to test the property `accel`', () async {
+      // TODO
+    });
+
     // int crf
     test('to test the property `crf`', () async {
       // TODO

@@ -1,5 +1,12 @@
+import { VideoCodec } from '@app/infra/entities';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
-import { BitrateDistribution, TranscodeOptions, VideoCodecSWConfig, VideoStreamInfo } from './media.repository';
+import {
+  BitrateDistribution,
+  TranscodeOptions,
+  VideoCodecHWConfig,
+  VideoCodecSWConfig,
+  VideoStreamInfo,
+} from './media.repository';
 
 class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
@@ -187,5 +194,185 @@ export class VP9Config extends BaseConfig {
 
   getThreadOptions() {
     return ['-row-mt 1', ...super.getThreadOptions()];
+  }
+}
+
+export class NVENCConfig extends BaseConfig implements VideoCodecHWConfig {
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC];
+  }
+
+  getBaseInputOptions() {
+    return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
+  }
+
+  getBaseOutputOptions() {
+    return [
+      `-vcodec ${this.config.targetVideoCodec}_nvenc`,
+      `-acodec ${this.config.targetAudioCodec}`,
+      '-movflags faststart',
+      '-fps_mode passthrough',
+      // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
+      '-tune hq',
+      '-qmin 0',
+      '-g 250',
+      '-bf 3',
+      '-b_ref_mode middle',
+      '-temporal-aq 1',
+      '-rc-lookahead 20',
+      '-i_qfactor 0.75',
+      '-b_qfactor 1.1',
+    ];
+  }
+
+  getFilterOptions(stream: VideoStreamInfo) {
+    const options = ['hwupload_cuda'];
+    if (this.shouldScale(stream)) {
+      options.push(`scale_cuda=${this.getScaling(stream)}`);
+    }
+
+    return options;
+  }
+
+  getPresetOptions() {
+    let presetIndex = this.getPresetIndex();
+    if (presetIndex < 0) {
+      return [];
+    }
+    presetIndex = 7 - Math.min(6, presetIndex); // map to p1-p7; p7 is the highest quality, so reverse index
+    return [`-preset p${presetIndex}`];
+  }
+
+  getBitrateOptions() {
+    const bitrates = this.getBitrateDistribution();
+    if (this.eligibleForTwoPass()) {
+      return [
+        `-b:v ${bitrates.target}${bitrates.unit}`,
+        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        `-bufsize ${bitrates.target}${bitrates.unit}`,
+        '-multipass 2',
+      ];
+    } else if (bitrates.max > 0) {
+      return [
+        `-cq:v ${this.config.crf}`,
+        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        `-bufsize ${bitrates.target}${bitrates.unit}`,
+      ];
+    } else {
+      return [`-cq:v ${this.config.crf}`];
+    }
+  }
+
+  getThreadOptions() {
+    return [];
+  }
+}
+
+export class QSVConfig extends BaseConfig implements VideoCodecHWConfig {
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+  }
+
+  getBaseInputOptions() {
+    return ['-hwaccel qsv', '-init_hw_device qsv=accel', '-hwaccel_output_format qsv'];
+  }
+
+  getBaseOutputOptions() {
+    return [
+      `-vcodec ${this.config.targetVideoCodec}_qsv`,
+      `-acodec ${this.config.targetAudioCodec}`,
+      '-movflags faststart',
+      '-fps_mode passthrough',
+      '-filter_hw_device accel',
+    ];
+  }
+
+  getFilterOptions(stream: VideoStreamInfo) {
+    // no-op if the video can be hardware decoded, else software decode
+    const options = ['format=nv12|qsv', 'hwupload=extra_hw_frames=64'];
+    if (this.shouldScale(stream)) {
+      options.push(`scale_qsv=${this.getScaling(stream)}`);
+    }
+    return options;
+  }
+
+  getPresetOptions() {
+    let presetIndex = this.getPresetIndex();
+    if (presetIndex < 0) {
+      return [];
+    }
+    presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
+    return [`-preset ${presetIndex}`];
+  }
+
+  getBitrateOptions() {
+    const options = [`-global_quality ${this.config.crf}`];
+    const bitrates = this.getBitrateDistribution();
+    if (bitrates.max > 0) {
+      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
+    }
+    return options;
+  }
+
+  getThreadOptions() {
+    return [];
+  }
+}
+
+export class VAAPIConfig extends BaseConfig implements VideoCodecHWConfig {
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+  }
+
+  getBaseInputOptions() {
+    return [
+      '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+      '-hwaccel vaapi',
+      '-hwaccel_output_format vaapi',
+      '-hwaccel_device accel ',
+    ];
+  }
+
+  getBaseOutputOptions() {
+    return [
+      `-vcodec ${this.config.targetVideoCodec}_vaapi`,
+      `-acodec ${this.config.targetAudioCodec}`,
+      '-movflags faststart',
+      '-fps_mode passthrough',
+      '-filter_hw_device accel',
+    ];
+  }
+
+  getFilterOptions(stream: VideoStreamInfo) {
+    // no-op if the video can be hardware decoded, else software decode
+    const options = ['format=nv12|vaapi', 'hwupload'];
+    if (this.shouldScale(stream)) {
+      options.push(`scale_vaapi=${this.getScaling(stream)}`);
+    }
+
+    return options;
+  }
+
+  getPresetOptions() {
+    let presetIndex = this.getPresetIndex();
+    if (presetIndex < 0) {
+      return [];
+    }
+    presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
+    return [`-compression_level ${presetIndex}`];
+  }
+
+  getBitrateOptions() {
+    const bitrates = this.getBitrateDistribution();
+    // VAAPI doesn't allow setting both quality and max bitrate
+    if (bitrates.max > 0) {
+      return [`-b:v ${bitrates.target}${bitrates.unit}`, `-maxrate ${bitrates.max}${bitrates.unit}`];
+    } else {
+      return [`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 4']; // intelligent constant-quality
+    }
+  }
+
+  getThreadOptions() {
+    return [`-threads ${this.config.threads}`];
   }
 }

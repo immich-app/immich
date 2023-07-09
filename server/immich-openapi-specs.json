@@ -6577,6 +6577,9 @@
       },
       "SystemConfigFFmpegDto": {
         "properties": {
+          "accel": {
+            "$ref": "#/components/schemas/TranscodeHWAccel"
+          },
           "crf": {
             "type": "integer"
           },
@@ -6611,6 +6614,7 @@
           "targetVideoCodec",
           "targetAudioCodec",
           "transcode",
+          "accel",
           "preset",
           "targetResolution",
           "maxBitrate",
@@ -6836,6 +6840,15 @@
         "enum": [
           "day",
           "month"
+        ],
+        "type": "string"
+      },
+      "TranscodeHWAccel": {
+        "enum": [
+          "nvenc",
+          "qsv",
+          "vaapi",
+          "disabled"
         ],
         "type": "string"
       },

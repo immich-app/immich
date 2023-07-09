@@ -1,3 +1,5 @@
+import { VideoCodec } from '@app/infra/entities';
+
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
@@ -53,6 +55,10 @@ export interface BitrateDistribution {
 
 export interface VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo): TranscodeOptions;
+}
+
+export interface VideoCodecHWConfig extends VideoCodecSWConfig {
+  getSupportedCodecs(): Array<VideoCodec>;
 }
 
 export interface IMediaRepository {

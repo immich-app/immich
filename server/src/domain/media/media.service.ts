@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -8,8 +8,8 @@ import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, VP9Config } from './media.util';
+import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -228,7 +228,15 @@ export class MediaService {
     }
   }
 
-  private getCodecConfig(config: SystemConfigFFmpegDto) {
+  getCodecConfig(config: SystemConfigFFmpegDto) {
+    if (!config.accel || config.accel == TranscodeHWAccel.DISABLED) {
+      return this.getSWCodecConfig(config);
+    } else {
+      return this.getHWCodecConfig(config);
+    }
+  }
+
+  private getSWCodecConfig(config: SystemConfigFFmpegDto) {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264:
         return new H264Config(config);
@@ -239,5 +247,31 @@ export class MediaService {
       default:
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
     }
+  }
+
+  private getHWCodecConfig(config: SystemConfigFFmpegDto) {
+    let handler: VideoCodecHWConfig;
+    switch (config.accel) {
+      case TranscodeHWAccel.NVENC:
+        handler = new NVENCConfig(config);
+        break;
+      case TranscodeHWAccel.QSV:
+        handler = new QSVConfig(config);
+        break;
+      case TranscodeHWAccel.VAAPI:
+        handler = new VAAPIConfig(config);
+        break;
+      default:
+        throw new UnsupportedMediaTypeException(`${config.accel} acceleration is unsupported`);
+    }
+    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
+      throw new UnsupportedMediaTypeException(
+        `${config.accel} acceleration does not support codec '${
+          config.targetVideoCodec
+        }'. Supported codecs: ${handler.getSupportedCodecs()}`,
+      );
+    }
+
+    return handler;
   }
 }

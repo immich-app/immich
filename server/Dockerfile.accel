@@ -1,0 +1,54 @@
+FROM node:18-bookworm as builder
+
+WORKDIR /usr/src/app
+
+RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get install -yqq ffmpeg libraw-dev libjxl-dev libvips-dev libheif-dev
+# debian build for imagemagick has broken RAW support, so build manually
+RUN wget https://imagemagick.org/archive/ImageMagick.tar.gz \
+&& mkdir ImageMagick \
+&& tar -xvzf ImageMagick.tar.gz -C ImageMagick --strip-components=1 \
+&& cd ImageMagick && ./configure && make && make install && ldconfig /usr/local/lib \
+&& cd .. && rm ImageMagick.tar.gz && rm -rf ImageMagick
+COPY package.json package-lock.json ./
+
+RUN npm ci
+
+COPY . .
+
+FROM builder as prod
+
+RUN npm run build
+RUN npm prune --omit=dev --omit=optional
+
+FROM node:18-bookworm-slim
+
+ENV NODE_ENV=production
+
+WORKDIR /usr/src/app
+
+RUN apt-get update \
+&& apt-get install -yqq ffmpeg libvips42 libdjvulibre21 libraw20 libjxl0.7 \
+&& apt-get autoremove \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=prod /usr/local/bin/magick /usr/local/bin/magick
+COPY --from=prod /usr/local/lib/libMagick* /usr/local/lib
+COPY --from=prod /usr/local/lib/ImageMagick* /usr/local/lib
+RUN ldconfig /usr/local/lib
+
+COPY --from=prod /usr/src/app/node_modules ./node_modules
+COPY --from=prod /usr/src/app/dist ./dist
+COPY --from=prod /usr/src/app/bin ./bin
+
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
+COPY package.json package-lock.json ./
+COPY start*.sh ./
+
+RUN npm link && npm cache clean --force
+VOLUME /usr/src/app/upload
+
+EXPOSE 3001
+
+ENTRYPOINT ["/bin/sh"]
