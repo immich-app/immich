@@ -10,12 +10,12 @@ import {
 import fs from 'fs';
 import mime from 'mime';
 import { basename, parse } from 'path';
-import { isSupportedFileType } from '../domain.constant';
 
 import path from 'node:path';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
+import { ASSET_MIME_TYPES } from '../domain.constant';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { LibraryCrawler } from './library-crawler';
 import {
@@ -155,7 +155,7 @@ export class LibraryService {
     if (!mimeType) {
       throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
     }
-    if (!isSupportedFileType(mimeType)) {
+    if (!ASSET_MIME_TYPES.includes(mimeType)) {
       throw new BadRequestException(`Unsupported file type ${mimeType}`);
     }
 

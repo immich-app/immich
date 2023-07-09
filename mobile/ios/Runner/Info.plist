@@ -21,24 +21,38 @@
     <string>6.0</string>
     <key>CFBundleLocalizations</key>
     <array>
-      <string>cs</string>
-      <string>da</string>
-      <string>de</string>
       <string>en</string>
-      <string>es</string>
-      <string>fi</string>
-      <string>fr</string>
+      <string>de</string>
+      <string>da</string>
       <string>it</string>
+      <string>es</string>
+      <string>vi</string>
+      <string>fr</string>
       <string>ja</string>
-      <string>ko</string>
-      <string>nl</string>
       <string>pl</string>
+      <string>fi</string>
       <string>pt</string>
+      <string>cs</string>
+      <string>uk</string>
       <string>ru</string>
-      <string>se</string>
-      <string>sk</string>
       <string>zh</string>
+      <string>sk</string>
+      <string>nl</string>
       <string>nb</string>
+      <string>sv</string>
+      <string>mn</string>
+      <string>ko</string>
+      <string>sr</string>
+      <string>sr</string>
+      <string>hi</string>
+      <string>es</string>
+      <string>es</string>
+      <string>sv</string>
+      <string>ca</string>
+      <string>hu</string>
+      <string>lv</string>
+      <string>zh</string>
+      <string>th</string>
     </array>
     <key>CFBundleName</key>
     <string>immich_mobile</string>

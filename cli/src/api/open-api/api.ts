@@ -761,6 +761,21 @@ export type AssetTypeEnum = typeof AssetTypeEnum[keyof typeof AssetTypeEnum];
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const AudioCodec = {
+    Mp3: 'mp3',
+    Aac: 'aac',
+    Opus: 'opus'
+} as const;
+
+export type AudioCodec = typeof AudioCodec[keyof typeof AudioCodec];
+
+
+/**
+ * 
+ * @export
  * @interface AuthDeviceResponseDto
  */
 export interface AuthDeviceResponseDto {
@@ -2574,22 +2589,28 @@ export interface SystemConfigFFmpegDto {
     'threads': number;
     /**
      * 
+     * @type {VideoCodec}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'targetVideoCodec': VideoCodec;
+    /**
+     * 
+     * @type {AudioCodec}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'targetAudioCodec': AudioCodec;
+    /**
+     * 
+     * @type {TranscodePolicy}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'transcode': TranscodePolicy;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
     'preset': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'targetVideoCodec': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'targetAudioCodec': string;
     /**
      * 
      * @type {string}
@@ -2608,22 +2629,8 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'twoPass': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'transcode': SystemConfigFFmpegDtoTranscodeEnum;
 }
 
-export const SystemConfigFFmpegDtoTranscodeEnum = {
-    All: 'all',
-    Optimal: 'optimal',
-    Required: 'required',
-    Disabled: 'disabled'
-} as const;
-
-export type SystemConfigFFmpegDtoTranscodeEnum = typeof SystemConfigFFmpegDtoTranscodeEnum[keyof typeof SystemConfigFFmpegDtoTranscodeEnum];
 
 /**
  * 
@@ -2919,6 +2926,22 @@ export type TimeGroupEnum = typeof TimeGroupEnum[keyof typeof TimeGroupEnum];
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const TranscodePolicy = {
+    All: 'all',
+    Optimal: 'optimal',
+    Required: 'required',
+    Disabled: 'disabled'
+} as const;
+
+export type TranscodePolicy = typeof TranscodePolicy[keyof typeof TranscodePolicy];
+
+
+/**
+ * 
+ * @export
  * @interface UpdateAlbumDto
  */
 export interface UpdateAlbumDto {
@@ -3194,6 +3217,21 @@ export interface ValidateAccessTokenResponseDto {
      */
     'authStatus': boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const VideoCodec = {
+    H264: 'h264',
+    Hevc: 'hevc',
+    Vp9: 'vp9'
+} as const;
+
+export type VideoCodec = typeof VideoCodec[keyof typeof VideoCodec];
+
+
 
 /**
  * APIKeyApi - axios parameter creator

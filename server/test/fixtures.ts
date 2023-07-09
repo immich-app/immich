@@ -19,6 +19,7 @@ import {
   AssetEntity,
   AssetFaceEntity,
   AssetType,
+  AudioCodec,
   ExifEntity,
   LibraryEntity,
   LibraryType,
@@ -29,9 +30,10 @@ import {
   SystemConfig,
   TagEntity,
   TagType,
-  TranscodePreset,
+  TranscodePolicy,
   UserEntity,
   UserTokenEntity,
+  VideoCodec,
 } from '@app/infra/entities';
 
 const today = new Date();
@@ -790,12 +792,12 @@ export const systemConfigStub = {
       crf: 23,
       threads: 0,
       preset: 'ultrafast',
-      targetAudioCodec: 'aac',
+      targetAudioCodec: AudioCodec.AAC,
       targetResolution: '720',
-      targetVideoCodec: 'h264',
+      targetVideoCodec: VideoCodec.H264,
       maxBitrate: '0',
       twoPass: false,
-      transcode: TranscodePreset.REQUIRED,
+      transcode: TranscodePolicy.REQUIRED,
     },
     job: {
       [QueueName.BACKGROUND_TASK]: { concurrency: 5 },

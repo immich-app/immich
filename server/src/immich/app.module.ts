@@ -1,11 +1,16 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AlbumModule } from './api-v1/album/album.module';
-import { AssetModule } from './api-v1/asset/asset.module';
+import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
+import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
+import { AssetService } from './api-v1/asset/asset.service';
 import { AppGuard } from './app.guard';
+import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
 import {
   AlbumController,
@@ -30,11 +35,12 @@ import {
   imports: [
     //
     DomainModule.register({ imports: [InfraModule] }),
-    AssetModule,
     AlbumModule,
     ScheduleModule.forRoot(),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
   controllers: [
+    AssetControllerV1,
     AppController,
     AlbumController,
     APIKeyController,
@@ -55,8 +61,11 @@ import {
   providers: [
     //
     { provide: APP_GUARD, useExisting: AppGuard },
+    { provide: IAssetRepository, useClass: AssetRepository },
     AppGuard,
     AppService,
+    AssetService,
+    FileUploadInterceptor,
   ],
 })
 export class AppModule {}

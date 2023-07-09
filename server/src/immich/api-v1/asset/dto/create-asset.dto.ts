@@ -1,5 +1,4 @@
-import { toBoolean, toSanitized } from '@app/domain';
-import { ImmichFile } from '@app/immich/config/asset-upload.config';
+import { toBoolean, toSanitized, UploadFieldName } from '@app/domain';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -60,13 +59,13 @@ export class CreateAssetDto extends CreateAssetBase {
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })
-  assetData!: any;
+  [UploadFieldName.ASSET_DATA]!: any;
 
-  @ApiProperty({ type: 'string', format: 'binary' })
-  livePhotoData?: any;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.LIVE_PHOTO_DATA]?: any;
 
-  @ApiProperty({ type: 'string', format: 'binary' })
-  sidecarData?: any;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
 export class ImportAssetDto extends CreateAssetBase {
@@ -88,20 +87,4 @@ export class ImportAssetDto extends CreateAssetBase {
   @IsNotEmpty()
   @Transform(toSanitized)
   sidecarPath?: string;
-}
-
-export interface UploadFile {
-  mimeType: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-}
-
-export function mapToUploadFile(file: ImmichFile): UploadFile {
-  return {
-    checksum: file.checksum,
-    mimeType: file.mimetype,
-    originalPath: file.path,
-    originalName: file.originalname,
-  };
 }

@@ -29,6 +29,7 @@ doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
+doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/ChangePasswordDto.md
@@ -114,6 +115,7 @@ doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
+doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateTagDto.md
@@ -123,6 +125,7 @@ doc/UserApi.md
 doc/UserCountResponseDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/VideoCodec.md
 git_push.sh
 lib/api.dart
 lib/api/album_api.dart
@@ -171,6 +174,7 @@ lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
+lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
@@ -245,6 +249,7 @@ lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
+lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_tag_dto.dart
@@ -253,6 +258,7 @@ lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/video_codec.dart
 pubspec.yaml
 test/add_assets_dto_test.dart
 test/add_assets_response_dto_test.dart
@@ -280,6 +286,7 @@ test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
+test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/change_password_dto_test.dart
@@ -365,6 +372,7 @@ test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
 test/time_group_enum_test.dart
+test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_tag_dto_test.dart
@@ -374,3 +382,4 @@ test/user_api_test.dart
 test/user_count_response_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/video_codec_test.dart

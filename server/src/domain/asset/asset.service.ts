@@ -14,6 +14,20 @@ import { MapMarkerDto } from './dto/map-marker.dto';
 import { mapAsset, MapMarkerResponseDto } from './response-dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
 
+export enum UploadFieldName {
+  ASSET_DATA = 'assetData',
+  LIVE_PHOTO_DATA = 'livePhotoData',
+  SIDECAR_DATA = 'sidecarData',
+  PROFILE_DATA = 'file',
+}
+
+export interface UploadFile {
+  mimeType: string;
+  checksum: Buffer;
+  originalPath: string;
+  originalName: string;
+}
+
 export class AssetService {
   private access: AccessCore;
 
