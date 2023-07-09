@@ -162,7 +162,17 @@ export class MediaService {
     }
 
     this.logger.log(`Start encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
-    await this.mediaRepository.transcode(input, output, transcodeOptions);
+    try {
+      await this.mediaRepository.transcode(input, output, transcodeOptions);
+    } catch (err) {
+      this.logger.error(err);
+      if (config.accel && config.accel !== TranscodeHWAccel.DISABLED) {
+        this.logger.error(`Error occurred during transcoding. Retrying with ${config.accel} acceleration disabled.`);
+      }
+      config.accel = TranscodeHWAccel.DISABLED;
+      transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+      await this.mediaRepository.transcode(input, output, transcodeOptions);
+    }
 
     this.logger.log(`Encoding success ${asset.id}`);
 
@@ -229,7 +239,7 @@ export class MediaService {
   }
 
   getCodecConfig(config: SystemConfigFFmpegDto) {
-    if (!config.accel || config.accel == TranscodeHWAccel.DISABLED) {
+    if (!config.accel || config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
     } else {
       return this.getHWCodecConfig(config);
