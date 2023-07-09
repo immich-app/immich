@@ -7,6 +7,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
+      # dockerfile: Dockerfile.accel
       target: builder
     command: npm run start:debug immich
     volumes:
@@ -50,6 +51,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
+      # dockerfile: Dockerfile.accel
       target: builder
     command: npm run start:debug microservices
     volumes:
@@ -62,10 +64,18 @@ services:
       - 9231:9230
     environment:
       - NODE_ENV=development
+      # - NVIDIA_DRIVER_CAPABILITIES=all
     depends_on:
       - database
       - immich-server
       - typesense
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
   immich-web:
     container_name: immich_web
