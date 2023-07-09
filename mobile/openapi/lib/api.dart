@@ -66,6 +66,7 @@ part 'model/asset_ids_dto.dart';
 part 'model/asset_ids_response_dto.dart';
 part 'model/asset_response_dto.dart';
 part 'model/asset_type_enum.dart';
+part 'model/audio_codec.dart';
 part 'model/auth_device_response_dto.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_duplicate_asset_dto.dart';
@@ -135,6 +136,7 @@ part 'model/tag_response_dto.dart';
 part 'model/tag_type_enum.dart';
 part 'model/thumbnail_format.dart';
 part 'model/time_group_enum.dart';
+part 'model/transcode_policy.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_asset_dto.dart';
 part 'model/update_tag_dto.dart';
@@ -143,6 +145,7 @@ part 'model/usage_by_user_dto.dart';
 part 'model/user_count_response_dto.dart';
 part 'model/user_response_dto.dart';
 part 'model/validate_access_token_response_dto.dart';
+part 'model/video_codec.dart';
 
 
 const _delimiters = {'csv': ',', 'ssv': ' ', 'tsv': '\t', 'pipes': '|'};
