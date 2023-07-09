@@ -62,7 +62,7 @@
     {#if assetCount}
       <AssetGrid showMemoryLane />
     {:else}
-      <EmptyPlaceholder text="Upload some assets to view them" actionHandler={handleUpload} />
+      <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={handleUpload} />
     {/if}
   </svelte:fragment>
 </UserPageLayout>
