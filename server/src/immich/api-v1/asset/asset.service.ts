@@ -1,17 +1,24 @@
 import {
   AccessCore,
   AssetResponseDto,
+  ASSET_MIME_TYPES,
   AuthUserDto,
   getLivePhotoMotionFilename,
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
-  isSupportedFileType,
   IStorageRepository,
   JobName,
+  LIVE_PHOTO_MIME_TYPES,
   mapAsset,
   mapAssetWithoutExif,
   Permission,
+  PROFILE_MIME_TYPES,
+  SIDECAR_MIME_TYPES,
+  StorageCore,
+  StorageFolder,
+  UploadFieldName,
+  UploadFile,
 } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
@@ -27,16 +34,18 @@ import { Response as Res } from 'express';
 import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
-import path from 'path';
+import path, { extname } from 'path';
+import sanitize from 'sanitize-filename';
 import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
+import { UploadRequest } from '../../app.interceptor';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
@@ -72,6 +81,7 @@ export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private assetCore: AssetCore;
   private access: AccessCore;
+  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -83,6 +93,68 @@ export class AssetService {
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = new AccessCore(accessRepository);
+  }
+
+  canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
+    this.access.requireUploadAccess(authUser);
+
+    switch (fieldName) {
+      case UploadFieldName.ASSET_DATA:
+        if (ASSET_MIME_TYPES.includes(file.mimeType)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.LIVE_PHOTO_DATA:
+        if (LIVE_PHOTO_MIME_TYPES.includes(file.mimeType)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.SIDECAR_DATA:
+        if (SIDECAR_MIME_TYPES.includes(file.mimeType)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.PROFILE_DATA:
+        if (PROFILE_MIME_TYPES.includes(file.mimeType)) {
+          return true;
+        }
+        break;
+    }
+
+    const ext = extname(file.originalName);
+    this.logger.error(`Unsupported file type ${ext} file MIME type ${file.mimeType}`);
+    throw new BadRequestException(`Unsupported file type ${ext}`);
+  }
+
+  getUploadFilename({ authUser, fieldName, file }: UploadRequest): string {
+    this.access.requireUploadAccess(authUser);
+
+    const originalExt = extname(file.originalName);
+
+    const lookup = {
+      [UploadFieldName.ASSET_DATA]: originalExt,
+      [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
+      [UploadFieldName.SIDECAR_DATA]: '.xmp',
+      [UploadFieldName.PROFILE_DATA]: originalExt,
+    };
+
+    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+  }
+
+  getUploadFolder({ authUser, fieldName }: UploadRequest): string {
+    authUser = this.access.requireUploadAccess(authUser);
+
+    let folder = this.storageCore.getFolderLocation(StorageFolder.UPLOAD, authUser.id);
+    if (fieldName === UploadFieldName.PROFILE_DATA) {
+      folder = this.storageCore.getFolderLocation(StorageFolder.PROFILE, authUser.id);
+    }
+
+    this.storageRepository.mkdirSync(folder);
+
+    return folder;
   }
 
   public async uploadFile(
@@ -136,9 +208,9 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
-    const assetPathType = mime.lookup(dto.assetPath) as string;
-    if (!isSupportedFileType(assetPathType)) {
-      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    const mimeType = mime.lookup(dto.assetPath) as string;
+    if (!ASSET_MIME_TYPES.includes(mimeType)) {
+      throw new BadRequestException(`Unsupported file type ${mimeType}`);
     }
 
     if (dto.sidecarPath) {
@@ -164,7 +236,7 @@ export class AssetService {
 
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      mimeType: assetPathType,
+      mimeType,
       originalPath: dto.assetPath,
       originalName: path.parse(dto.assetPath).name,
     };
@@ -256,8 +328,8 @@ export class AssetService {
     }
 
     try {
-      const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers);
+      const [thumbnailPath, contentType] = this.getThumbnailPath(asset, query.format);
+      return this.streamFile(thumbnailPath, res, headers, contentType);
     } catch (e) {
       res.header('Cache-Control', 'none');
       this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -522,16 +594,17 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          return asset.webpPath;
+        if (asset.webpPath) {
+          return [asset.webpPath, 'image/webp'];
         }
+        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
+          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return asset.resizePath;
+        return [asset.resizePath, 'image/jpeg'];
     }
   }
 

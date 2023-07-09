@@ -28,7 +28,7 @@ export function assertMachineLearningEnabled() {
   }
 }
 
-export const validMimeTypes = [
+export const ASSET_MIME_TYPES = [
   'image/3fr',
   'image/ari',
   'image/arw',
@@ -106,11 +106,14 @@ export const validMimeTypes = [
   'video/x-ms-wmv',
   'video/x-msvideo',
 ];
-
-export function isSupportedFileType(mimetype: string): boolean {
-  return validMimeTypes.includes(mimetype);
-}
-
-export function isSidecarFileType(mimeType: string): boolean {
-  return ['application/xml', 'text/xml'].includes(mimeType);
-}
+export const LIVE_PHOTO_MIME_TYPES = ASSET_MIME_TYPES;
+export const SIDECAR_MIME_TYPES = ['application/xml', 'text/xml'];
+export const PROFILE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+  'image/dng',
+  'image/webp',
+  'image/avif',
+];

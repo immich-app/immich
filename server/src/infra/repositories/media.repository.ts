@@ -1,4 +1,5 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -7,6 +8,8 @@ import { promisify } from 'util';
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
+  private logger = new Logger(MediaRepository.name);
+
   crop(input: string, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOnError: false })
       .extract({
@@ -47,7 +50,10 @@ export class MediaRepository implements IMediaRepository {
           `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
         ])
         .output(output)
-        .on('error', reject)
+        .on('error', (err, stdout, stderr) => {
+          this.logger.error(stderr);
+          reject(err);
+        })
         .on('end', resolve)
         .run();
     });
@@ -87,7 +93,10 @@ export class MediaRepository implements IMediaRepository {
         ffmpeg(input, { niceness: 10 })
           .outputOptions(options.outputOptions)
           .output(output)
-          .on('error', reject)
+          .on('error', (err, stdout, stderr) => {
+            this.logger.error(stderr);
+            reject(err);
+          })
           .on('end', resolve)
           .run();
       });
@@ -102,7 +111,10 @@ export class MediaRepository implements IMediaRepository {
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
         .output('/dev/null') // first pass output is not saved as only the .log file is needed
-        .on('error', reject)
+        .on('error', (err, stdout, stderr) => {
+          this.logger.error(stderr);
+          reject(err);
+        })
         .on('end', () => {
           // second pass
           ffmpeg(input, { niceness: 10 })
@@ -110,7 +122,10 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .output(output)
-            .on('error', reject)
+            .on('error', (err, stdout, stderr) => {
+              this.logger.error(stderr);
+              reject(err);
+            })
             .on('end', () => fs.unlink(`${output}-0.log`))
             .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
             .on('end', resolve)

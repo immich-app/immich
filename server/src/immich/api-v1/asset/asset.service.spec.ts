@@ -1,6 +1,16 @@
-import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
+import {
+  ASSET_MIME_TYPES,
+  ICryptoRepository,
+  IJobRepository,
+  IStorageRepository,
+  JobName,
+  LIVE_PHOTO_MIME_TYPES,
+  PROFILE_MIME_TYPES,
+  SIDECAR_MIME_TYPES,
+  UploadFieldName,
+} from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
@@ -117,6 +127,43 @@ const _getArchivedAssetsCountByUserId = (): AssetCountByUserIdResponseDto => {
   return result;
 };
 
+const uploadFile = {
+  nullAuth: {
+    authUser: null,
+    fieldName: UploadFieldName.ASSET_DATA,
+    file: {
+      mimeType: 'image/jpeg',
+      checksum: Buffer.from('checksum', 'utf8'),
+      originalPath: 'upload/admin/image.jpeg',
+      originalName: 'image.jpeg',
+    },
+  },
+  mimeType: (fieldName: UploadFieldName, mimeType: string) => {
+    return {
+      authUser: authStub.admin,
+      fieldName,
+      file: {
+        mimeType,
+        checksum: Buffer.from('checksum', 'utf8'),
+        originalPath: 'upload/admin/image.jpeg',
+        originalName: 'image.jpeg',
+      },
+    };
+  },
+  filename: (fieldName: UploadFieldName, filename: string) => {
+    return {
+      authUser: authStub.admin,
+      fieldName,
+      file: {
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('checksum', 'utf8'),
+        originalPath: `upload/admin/${filename}`,
+        originalName: filename,
+      },
+    };
+  },
+};
+
 describe('AssetService', () => {
   let sut: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
@@ -163,6 +210,112 @@ describe('AssetService', () => {
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
+  });
+
+  const tests = [
+    { label: 'asset', fieldName: UploadFieldName.ASSET_DATA, mimeTypes: ASSET_MIME_TYPES },
+    { label: 'live photo', fieldName: UploadFieldName.LIVE_PHOTO_DATA, mimeTypes: LIVE_PHOTO_MIME_TYPES },
+    { label: 'sidecar', fieldName: UploadFieldName.SIDECAR_DATA, mimeTypes: SIDECAR_MIME_TYPES },
+    { label: 'profile', fieldName: UploadFieldName.PROFILE_DATA, mimeTypes: PROFILE_MIME_TYPES },
+  ];
+
+  for (const { label, fieldName, mimeTypes } of tests) {
+    describe(`${label} mime types linting`, () => {
+      it('should be a sorted list', () => {
+        expect(mimeTypes).toEqual(mimeTypes.sort());
+      });
+
+      it('should contain only unique values', () => {
+        expect(mimeTypes).toEqual([...new Set(mimeTypes)]);
+      });
+
+      if (fieldName !== UploadFieldName.SIDECAR_DATA) {
+        it('should contain only image or video mime types', () => {
+          expect(mimeTypes).toEqual(
+            mimeTypes.filter((mimeType) => mimeType.startsWith('image/') || mimeType.startsWith('video/')),
+          );
+        });
+      }
+
+      it('should contain only lowercase mime types', () => {
+        expect(mimeTypes).toEqual(mimeTypes.map((mimeType) => mimeType.toLowerCase()));
+      });
+    });
+  }
+
+  describe('canUpload', () => {
+    it('should require an authenticated user', () => {
+      expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should accept all accepted mime types', () => {
+      for (const { fieldName, mimeTypes } of tests) {
+        for (const mimeType of mimeTypes) {
+          expect(sut.canUploadFile(uploadFile.mimeType(fieldName, mimeType))).toEqual(true);
+        }
+      }
+    });
+
+    it('should reject other mime types', () => {
+      for (const { fieldName, mimeType } of [
+        { fieldName: UploadFieldName.ASSET_DATA, mimeType: 'application/html' },
+        { fieldName: UploadFieldName.LIVE_PHOTO_DATA, mimeType: 'application/html' },
+        { fieldName: UploadFieldName.PROFILE_DATA, mimeType: 'application/html' },
+        { fieldName: UploadFieldName.SIDECAR_DATA, mimeType: 'image/jpeg' },
+      ]) {
+        expect(() => sut.canUploadFile(uploadFile.mimeType(fieldName, mimeType))).toThrowError(BadRequestException);
+      }
+    });
+  });
+
+  describe('getUploadFilename', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFilename(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should be the original extension for asset upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+
+    it('should be the mov extension for live photo upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.LIVE_PHOTO_DATA, 'image.mp4'))).toEqual(
+        'random-uuid.mov',
+      );
+    });
+
+    it('should be the xmp extension for sidecar upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.SIDECAR_DATA, 'image.html'))).toEqual(
+        'random-uuid.xmp',
+      );
+    });
+
+    it('should be the original extension for profile upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+  });
+
+  describe('getUploadFolder', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should return profile for profile uploads', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'upload/profile/admin_id',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+    });
+
+    it('should return upload for everything else', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'upload/upload/admin_id',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+    });
   });
 
   describe('uploadFile', () => {

@@ -1,11 +1,12 @@
 import { ICryptoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 import { createReadStream } from 'fs';
 
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
+  randomUUID = randomUUID;
   randomBytes = randomBytes;
 
   hashBcrypt = hash;

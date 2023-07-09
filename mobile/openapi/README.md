@@ -200,6 +200,7 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
+ - [AudioCodec](doc//AudioCodec.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
@@ -270,6 +271,7 @@ Class | Method | HTTP request | Description
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
+ - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
@@ -278,6 +280,7 @@ Class | Method | HTTP request | Description
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
+ - [VideoCodec](doc//VideoCodec.md)
 
 
 ## Documentation For Authorization
