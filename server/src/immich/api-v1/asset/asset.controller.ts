@@ -18,11 +18,10 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
-import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+import { FileUploadInterceptor, ImmichFile, mapToUploadFile, Route } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
@@ -30,7 +29,7 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto, mapToUploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
@@ -56,23 +55,14 @@ interface UploadFiles {
 }
 
 @ApiTags('Asset')
-@Controller('asset')
+@Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
   constructor(private assetService: AssetService) {}
 
   @SharedLinkRoute()
   @Post('upload')
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'assetData', maxCount: 1 },
-        { name: 'livePhotoData', maxCount: 1 },
-        { name: 'sidecarData', maxCount: 1 },
-      ],
-      assetUploadOption,
-    ),
-  )
+  @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Asset Upload Information',

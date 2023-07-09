@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository } from './access.repository';
 
@@ -24,6 +24,13 @@ export enum Permission {
 
 export class AccessCore {
   constructor(private repository: IAccessRepository) {}
+
+  requireUploadAccess(authUser: AuthUserDto | null): AuthUserDto {
+    if (!authUser || (authUser.isPublicUser && !authUser.isAllowUpload)) {
+      throw new UnauthorizedException();
+    }
+    return authUser;
+  }
 
   async requirePermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
     const hasAccess = await this.hasPermission(authUser, permission, ids);

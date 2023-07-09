@@ -34,10 +34,6 @@ export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => 
   return new StreamableFile(stream, { type, length });
 };
 
-export function patchFormData(latin1: string) {
-  return Buffer.from(latin1, 'latin1').toString('utf8');
-}
-
 function sortKeys<T extends object>(obj: T): T {
   if (!obj) {
     return obj;
