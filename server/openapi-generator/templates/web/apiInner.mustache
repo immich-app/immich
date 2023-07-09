@@ -173,9 +173,9 @@ export const {{classname}}AxiosParamCreator = function (configuration?: Configur
             {{^isArray}}
             if ({{paramName}} !== undefined) { {{^multipartFormData}}
                 localVarFormParams.set('{{baseName}}', {{paramName}} as any);{{/multipartFormData}}{{#multipartFormData}}{{#isPrimitiveType}}
-                localVarFormParams.append('{{baseName}}', {{paramName}} as any);{{/isPrimitiveType}}{{^isPrimitiveType}}
-                localVarFormParams.append('{{baseName}}', new Blob([JSON.stringify({{paramName}})], { type: "application/json", }));{{/isPrimitiveType}}{{/multipartFormData}}
-            }{{/isArray}}
+                localVarFormParams.append('{{baseName}}', {{paramName}} as any);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isEnum}}
+                localVarFormParams.append('{{baseName}}', {{paramName}} as any);{{/isEnum}}{{^isEnum}}
+                localVarFormParams.append('{{baseName}}', new Blob([JSON.stringify({{paramName}})], { type: "application/json", }));{{/isEnum}}{{/isPrimitiveType}}{{/multipartFormData}}            }{{/isArray}}
     {{/formParams}}{{/vendorExtensions}}
     {{#vendorExtensions}}{{#hasFormParams}}{{^multipartFormData}}
             localVarHeaderParameter['Content-Type'] = 'application/x-www-form-urlencoded';{{/multipartFormData}}{{#multipartFormData}}
