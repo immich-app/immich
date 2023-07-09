@@ -44,9 +44,12 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
+  getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
+  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;

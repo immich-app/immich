@@ -42,7 +42,7 @@ export class AssetEntity {
   @Column()
   type!: AssetType;
 
-  @Column()
+  @Column({ unique: true })
   originalPath!: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -50,6 +50,9 @@ export class AssetEntity {
 
   @Column({ type: 'varchar', nullable: true, default: '' })
   webpPath!: string | null;
+
+  @Column({ type: 'bytea', nullable: true })
+  thumbhash!: Buffer | null;
 
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
@@ -71,6 +74,9 @@ export class AssetEntity {
 
   @Column({ type: 'boolean', default: false })
   isArchived!: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isReadOnly!: boolean;
 
   @Column({ type: 'varchar', nullable: true })
   mimeType!: string | null;

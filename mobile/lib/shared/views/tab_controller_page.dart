@@ -112,7 +112,6 @@ class TabControllerPage extends HookConsumerWidget {
             ),
             selectedIcon: buildIcon(
               Icon(
-                size: 24,
                 Icons.photo_library,
                 color: Theme.of(context).primaryColor,
               ),

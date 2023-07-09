@@ -20,6 +20,10 @@ export interface AssetCheck {
   checksum: Buffer;
 }
 
+export interface AssetOwnerCheck extends AssetCheck {
+  ownerId: string;
+}
+
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
@@ -39,6 +43,7 @@ export interface IAssetRepository {
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -255,11 +260,15 @@ export class AssetRepository implements IAssetRepository {
     asset.isArchived = dto.isArchived ?? asset.isArchived;
 
     if (asset.exifInfo != null) {
-      asset.exifInfo.description = dto.description || '';
+      if (dto.description !== undefined) {
+        asset.exifInfo.description = dto.description;
+      }
       await this.exifRepository.save(asset.exifInfo);
     } else {
       const exifInfo = new ExifEntity();
-      exifInfo.description = dto.description || '';
+      if (dto.description !== undefined) {
+        exifInfo.description = dto.description;
+      }
       exifInfo.asset = asset;
       await this.exifRepository.save(exifInfo);
       asset.exifInfo = exifInfo;
@@ -349,5 +358,18 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return assetCountByUserId;
+  }
+
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null> {
+    return this.assetRepository.findOne({
+      select: {
+        id: true,
+        ownerId: true,
+        checksum: true,
+      },
+      where: {
+        originalPath,
+      },
+    });
   }
 }

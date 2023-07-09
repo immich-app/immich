@@ -82,7 +82,7 @@ describe(MetadataService.name, () => {
       assetMock.save.mockResolvedValue(assetEntityStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
       await sut.handleSidecarDiscovery({ id: assetEntityStub.image.id });
-      expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.W_OK);
+      expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.R_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
         sidecarPath: '/original/path.ext.xmp',
@@ -94,7 +94,7 @@ describe(MetadataService.name, () => {
       assetMock.save.mockResolvedValue(assetEntityStub.video);
       storageMock.checkFileExists.mockResolvedValue(true);
       await sut.handleSidecarDiscovery({ id: assetEntityStub.video.id });
-      expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.W_OK);
+      expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.R_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
         sidecarPath: '/original/path.ext.xmp',

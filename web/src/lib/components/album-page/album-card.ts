@@ -1,11 +1,11 @@
 import type { AlbumResponseDto } from '@api';
 
 export type OnShowContextMenu = {
-	showalbumcontextmenu: OnShowContextMenuDetail;
+  showalbumcontextmenu: OnShowContextMenuDetail;
 };
 
 export type OnClick = {
-	click: OnClickDetail;
+  click: OnClickDetail;
 };
 
 export type OnShowContextMenuDetail = { x: number; y: number };

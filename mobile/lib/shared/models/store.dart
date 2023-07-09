@@ -173,6 +173,7 @@ enum StoreKey<T> {
   selectedAlbumSortOrder<int>(113, type: int),
   advancedTroubleshooting<bool>(114, type: bool),
   logLevel<int>(115, type: int),
+  preferRemoteImage<bool>(116, type: bool),
   ;
 
   const StoreKey(

@@ -2,9 +2,7 @@ import { FileValidator, Injectable } from '@nestjs/common';
 
 @Injectable()
 export default class FileNotEmptyValidator extends FileValidator {
-  requiredFields: string[];
-
-  constructor(requiredFields: string[]) {
+  constructor(private requiredFields: string[]) {
     super({});
     this.requiredFields = requiredFields;
   }
@@ -14,9 +12,7 @@ export default class FileNotEmptyValidator extends FileValidator {
       return false;
     }
 
-    return this.requiredFields.every((field) => {
-      return files[field];
-    });
+    return this.requiredFields.every((field) => files[field]);
   }
 
   buildErrorMessage(): string {

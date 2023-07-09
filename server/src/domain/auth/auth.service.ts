@@ -10,10 +10,9 @@ import {
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { IKeyRepository } from '../api-key';
-import { APIKeyCore } from '../api-key/api-key.core';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { OAuthCore } from '../oauth/oauth.core';
-import { ISharedLinkRepository, SharedLinkCore } from '../shared-link';
+import { ISharedLinkRepository } from '../shared-link';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
 import { IUserTokenRepository, UserTokenCore } from '../user-token';
@@ -35,18 +34,16 @@ export class AuthService {
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
-  private shareCore: SharedLinkCore;
-  private keyCore: APIKeyCore;
 
   private logger = new Logger(AuthService.name);
 
   constructor(
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
-    @Inject(ISharedLinkRepository) shareRepository: ISharedLinkRepository,
-    @Inject(IKeyRepository) keyRepository: IKeyRepository,
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+    @Inject(IKeyRepository) private keyRepository: IKeyRepository,
     @Inject(INITIAL_SYSTEM_CONFIG)
     initialConfig: SystemConfig,
   ) {
@@ -54,8 +51,6 @@ export class AuthService {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
     this.userCore = new UserCore(userRepository, cryptoRepository);
-    this.shareCore = new SharedLinkCore(shareRepository, cryptoRepository);
-    this.keyCore = new APIKeyCore(cryptoRepository, keyRepository);
   }
 
   public async login(
@@ -147,7 +142,7 @@ export class AuthService {
     const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
 
     if (shareKey) {
-      return this.shareCore.validate(shareKey);
+      return this.validateSharedLink(shareKey);
     }
 
     if (userToken) {
@@ -155,7 +150,7 @@ export class AuthService {
     }
 
     if (apiKey) {
-      return this.keyCore.validate(apiKey);
+      return this.validateApiKey(apiKey);
     }
 
     throw new UnauthorizedException('Authentication required');
@@ -192,5 +187,49 @@ export class AuthService {
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = cookieParser.parse(headers.cookie || '');
     return cookies[IMMICH_ACCESS_COOKIE] || null;
+  }
+
+  private async validateSharedLink(key: string | string[]): Promise<AuthUserDto> {
+    key = Array.isArray(key) ? key[0] : key;
+
+    const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
+    const link = await this.sharedLinkRepository.getByKey(bytes);
+    if (link) {
+      if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
+        const user = link.user;
+        if (user) {
+          return {
+            id: user.id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            isPublicUser: true,
+            sharedLinkId: link.id,
+            isAllowUpload: link.allowUpload,
+            isAllowDownload: link.allowDownload,
+            isShowExif: link.showExif,
+          };
+        }
+      }
+    }
+    throw new UnauthorizedException('Invalid share key');
+  }
+
+  private async validateApiKey(key: string): Promise<AuthUserDto> {
+    const hashedKey = this.cryptoRepository.hashSha256(key);
+    const keyEntity = await this.keyRepository.getKey(hashedKey);
+    if (keyEntity?.user) {
+      const user = keyEntity.user;
+
+      return {
+        id: user.id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        isPublicUser: false,
+        isAllowUpload: true,
+        externalPath: user.externalPath,
+      };
+    }
+
+    throw new UnauthorizedException('Invalid API key');
   }
 }

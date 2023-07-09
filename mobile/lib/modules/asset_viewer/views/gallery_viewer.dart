@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,8 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
@@ -49,25 +53,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
-    final showAppBar = useState<bool>(true);
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
-    late Offset localPosition;
+    final progressValue = useState(0.0);
+    Offset? localPosition;
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
     final watchedAsset = ref.watch(assetDetailProvider(currentAsset));
 
     Asset asset() => watchedAsset.value ?? currentAsset;
-
-    showAppBar.addListener(() {
-      // Change to and from immersive mode, hiding navigation and app bar
-      if (showAppBar.value) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
-    });
 
     useEffect(
       () {
@@ -136,7 +131,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
 
-        if (asset.isLocal) {
+        if (!asset.isRemote ||
+            asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
           // Preload the local asset
           precacheImage(localImageProvider(asset), context);
         } else {
@@ -246,8 +242,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
+      // Guard [localPosition] null
+      if (localPosition == null) {
+        return;
+      }
+
       // Check for delta from initial down point
-      final d = details.localPosition - localPosition;
+      final d = details.localPosition - localPosition!;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshold) {
         return;
@@ -272,15 +273,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     buildAppBar() {
-      final show = (showAppBar.value || // onTap has the final say
-              (showAppBar.value && !isZoomed.value)) &&
-          !isPlayingVideo.value;
-
       return IgnorePointer(
-        ignoring: !show,
+        ignoring: !ref.watch(showControlsProvider),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
-          opacity: show ? 1.0 : 0.0,
+          opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
           child: Container(
             color: Colors.black.withOpacity(0.4),
             child: TopControlAppBar(
@@ -308,63 +305,179 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    buildBottomBar() {
-      final show = (showAppBar.value || // onTap has the final say
-              (showAppBar.value && !isZoomed.value)) &&
-          !isPlayingVideo.value;
+    Widget buildProgressBar() {
+      final playerValue = ref.watch(videoPlaybackValueProvider);
 
+      return Expanded(
+        child: Slider(
+          value: playerValue.duration == Duration.zero
+              ? 0.0
+              : min(
+                  playerValue.position.inMicroseconds /
+                      playerValue.duration.inMicroseconds *
+                      100,
+                  100,
+                ),
+          min: 0,
+          max: 100,
+          thumbColor: Colors.white,
+          activeColor: Colors.white,
+          inactiveColor: Colors.white.withOpacity(0.75),
+          onChanged: (position) {
+            progressValue.value = position;
+            ref.read(videoPlayerControlsProvider.notifier).position = position;
+          },
+        ),
+      );
+    }
+
+    Text buildPosition() {
+      final position = ref
+          .watch(videoPlaybackValueProvider.select((value) => value.position));
+
+      return Text(
+        _formatDuration(position),
+        style: TextStyle(
+          fontSize: 14.0,
+          color: Colors.white.withOpacity(.75),
+          fontWeight: FontWeight.normal,
+        ),
+      );
+    }
+
+    Text buildDuration() {
+      final duration = ref
+          .watch(videoPlaybackValueProvider.select((value) => value.duration));
+
+      return Text(
+        _formatDuration(duration),
+        style: TextStyle(
+          fontSize: 14.0,
+          color: Colors.white.withOpacity(.75),
+          fontWeight: FontWeight.normal,
+        ),
+      );
+    }
+
+    Widget buildMuteButton() {
+      return IconButton(
+        icon: Icon(
+          ref.watch(videoPlayerControlsProvider.select((value) => value.mute))
+              ? Icons.volume_off
+              : Icons.volume_up,
+        ),
+        onPressed: () =>
+            ref.read(videoPlayerControlsProvider.notifier).toggleMute(),
+        color: Colors.white,
+      );
+    }
+
+    buildBottomBar() {
       return IgnorePointer(
-        ignoring: !show,
+        ignoring: !ref.watch(showControlsProvider),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 100),
-          opacity: show ? 1.0 : 0.0,
-          child: BottomNavigationBar(
-            backgroundColor: Colors.black.withOpacity(0.4),
-            unselectedIconTheme: const IconThemeData(color: Colors.white),
-            selectedIconTheme: const IconThemeData(color: Colors.white),
-            unselectedLabelStyle: const TextStyle(color: Colors.black),
-            selectedLabelStyle: const TextStyle(color: Colors.black),
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.ios_share_rounded),
-                label: 'control_bottom_app_bar_share'.tr(),
-                tooltip: 'control_bottom_app_bar_share'.tr(),
-              ),
-              asset().isArchived
-                  ? BottomNavigationBarItem(
-                      icon: const Icon(Icons.unarchive_rounded),
-                      label: 'control_bottom_app_bar_unarchive'.tr(),
-                      tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-                    )
-                  : BottomNavigationBarItem(
-                      icon: const Icon(Icons.archive_outlined),
-                      label: 'control_bottom_app_bar_archive'.tr(),
-                      tooltip: 'control_bottom_app_bar_archive'.tr(),
+          opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
+          child: Column(
+            children: [
+              Visibility(
+                visible: !asset().isImage && !isPlayingMotionVideo.value,
+                child: Container(
+                  color: Colors.black.withOpacity(0.4),
+                  child: Padding(
+                    padding: MediaQuery.of(context).orientation ==
+                            Orientation.portrait
+                        ? const EdgeInsets.symmetric(horizontal: 12.0)
+                        : const EdgeInsets.symmetric(horizontal: 64.0),
+                    child: Row(
+                      children: [
+                        buildPosition(),
+                        buildProgressBar(),
+                        buildDuration(),
+                        buildMuteButton(),
+                      ],
                     ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.delete_outline),
-                label: 'control_bottom_app_bar_delete'.tr(),
-                tooltip: 'control_bottom_app_bar_delete'.tr(),
+                  ),
+                ),
+              ),
+              BottomNavigationBar(
+                backgroundColor: Colors.black.withOpacity(0.4),
+                unselectedIconTheme: const IconThemeData(color: Colors.white),
+                selectedIconTheme: const IconThemeData(color: Colors.white),
+                unselectedLabelStyle: const TextStyle(color: Colors.black),
+                selectedLabelStyle: const TextStyle(color: Colors.black),
+                showSelectedLabels: false,
+                showUnselectedLabels: false,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.ios_share_rounded),
+                    label: 'control_bottom_app_bar_share'.tr(),
+                    tooltip: 'control_bottom_app_bar_share'.tr(),
+                  ),
+                  asset().isArchived
+                      ? BottomNavigationBarItem(
+                          icon: const Icon(Icons.unarchive_rounded),
+                          label: 'control_bottom_app_bar_unarchive'.tr(),
+                          tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                        )
+                      : BottomNavigationBarItem(
+                          icon: const Icon(Icons.archive_outlined),
+                          label: 'control_bottom_app_bar_archive'.tr(),
+                          tooltip: 'control_bottom_app_bar_archive'.tr(),
+                        ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.delete_outline),
+                    label: 'control_bottom_app_bar_delete'.tr(),
+                    tooltip: 'control_bottom_app_bar_delete'.tr(),
+                  ),
+                ],
+                onTap: (index) {
+                  switch (index) {
+                    case 0:
+                      shareAsset();
+                      break;
+                    case 1:
+                      handleArchive(asset());
+                      break;
+                    case 2:
+                      handleDelete(asset());
+                      break;
+                  }
+                },
               ),
             ],
-            onTap: (index) {
-              switch (index) {
-                case 0:
-                  shareAsset();
-                  break;
-                case 1:
-                  handleArchive(asset());
-                  break;
-                case 2:
-                  handleDelete(asset());
-                  break;
-              }
-            },
           ),
         ),
       );
+    }
+
+    ref.listen(showControlsProvider, (_, show) {
+      if (show) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      }
+    });
+
+    ImageProvider imageProvider(Asset asset) {
+      if (!asset.isRemote ||
+          asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
+        return localImageProvider(asset);
+      } else {
+        if (isLoadOriginal.value) {
+          return originalImageProvider(asset);
+        } else if (isLoadPreview.value) {
+          return remoteThumbnailImageProvider(
+            asset,
+            api.ThumbnailFormat.JPEG,
+          );
+        } else {
+          return remoteThumbnailImageProvider(
+            asset,
+            api.ThumbnailFormat.WEBP,
+          );
+        }
+      }
     }
 
     return Scaffold(
@@ -380,7 +493,6 @@ class GalleryViewerPage extends HookConsumerWidget {
             PhotoViewGallery.builder(
               scaleStateChangedCallback: (state) {
                 isZoomed.value = state != PhotoViewScaleState.initial;
-                showAppBar.value = !isZoomed.value;
               },
               pageController: controller,
               scrollPhysics: isZoomed.value
@@ -401,12 +513,16 @@ class GalleryViewerPage extends HookConsumerWidget {
                   precacheNextImage(value - 1);
                 }
                 currentIndex.value = value;
+                progressValue.value = 0.0;
+
                 HapticFeedback.selectionClick();
               },
               loadingBuilder: isLoadPreview.value
                   ? (context, event) {
                       final a = asset();
-                      if (!a.isLocal) {
+                      if (!a.isLocal ||
+                          (a.isRemote &&
+                              Store.get(StoreKey.preferRemoteImage, false))) {
                         // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                         // Three-Stage Loading (WEBP -> JPEG -> Original)
                         final webPThumbnail = CachedNetworkImage(
@@ -460,33 +576,17 @@ class GalleryViewerPage extends HookConsumerWidget {
                   : null,
               builder: (context, index) {
                 final asset = loadAsset(index);
+                final ImageProvider provider = imageProvider(asset);
+
                 if (asset.isImage && !isPlayingMotionVideo.value) {
-                  // Show photo
-                  final ImageProvider provider;
-                  if (asset.isLocal) {
-                    provider = localImageProvider(asset);
-                  } else {
-                    if (isLoadOriginal.value) {
-                      provider = originalImageProvider(asset);
-                    } else if (isLoadPreview.value) {
-                      provider = remoteThumbnailImageProvider(
-                        asset,
-                        api.ThumbnailFormat.JPEG,
-                      );
-                    } else {
-                      provider = remoteThumbnailImageProvider(
-                        asset,
-                        api.ThumbnailFormat.WEBP,
-                      );
-                    }
-                  }
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
-                    onTapDown: (_, __, ___) =>
-                        showAppBar.value = !showAppBar.value,
+                    onTapDown: (_, __, ___) {
+                      ref.read(showControlsProvider.notifier).toggle();
+                    },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
                       tag: asset.id,
@@ -511,19 +611,24 @@ class GalleryViewerPage extends HookConsumerWidget {
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
                     minScale: 1.0,
-                    basePosition: Alignment.bottomCenter,
-                    child: SafeArea(
-                      child: VideoViewerPage(
-                        onPlaying: () => isPlayingVideo.value = true,
-                        onPaused: () => isPlayingVideo.value = false,
-                        asset: asset,
-                        isMotionVideo: isPlayingMotionVideo.value,
-                        onVideoEnded: () {
-                          if (isPlayingMotionVideo.value) {
-                            isPlayingMotionVideo.value = false;
-                          }
-                        },
+                    basePosition: Alignment.center,
+                    child: VideoViewerPage(
+                      onPlaying: () => isPlayingVideo.value = true,
+                      onPaused: () => isPlayingVideo.value = false,
+                      asset: asset,
+                      isMotionVideo: isPlayingMotionVideo.value,
+                      placeholder: Image(
+                        image: provider,
+                        fit: BoxFit.fitWidth,
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.center,
                       ),
+                      onVideoEnded: () {
+                        if (isPlayingMotionVideo.value) {
+                          isPlayingMotionVideo.value = false;
+                        }
+                      },
                     ),
                   );
                 }
@@ -545,5 +650,38 @@ class GalleryViewerPage extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _formatDuration(Duration position) {
+    final ms = position.inMilliseconds;
+
+    int seconds = ms ~/ 1000;
+    final int hours = seconds ~/ 3600;
+    seconds = seconds % 3600;
+    final minutes = seconds ~/ 60;
+    seconds = seconds % 60;
+
+    final hoursString = hours >= 10
+        ? '$hours'
+        : hours == 0
+            ? '00'
+            : '0$hours';
+
+    final minutesString = minutes >= 10
+        ? '$minutes'
+        : minutes == 0
+            ? '00'
+            : '0$minutes';
+
+    final secondsString = seconds >= 10
+        ? '$seconds'
+        : seconds == 0
+            ? '00'
+            : '0$seconds';
+
+    final formattedTime =
+        '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
+
+    return formattedTime;
   }
 }

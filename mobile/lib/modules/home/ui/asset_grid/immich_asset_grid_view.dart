@@ -19,6 +19,45 @@ typedef ImmichAssetGridSelectionListener = void Function(
   Set<Asset>,
 );
 
+class ImmichAssetGridView extends StatefulWidget {
+  final RenderList renderList;
+  final int assetsPerRow;
+  final double margin;
+  final bool showStorageIndicator;
+  final ImmichAssetGridSelectionListener? listener;
+  final bool selectionActive;
+  final Future<void> Function()? onRefresh;
+  final Set<Asset>? preselectedAssets;
+  final bool canDeselect;
+  final bool dynamicLayout;
+  final bool showMultiSelectIndicator;
+  final void Function(ItemPosition start, ItemPosition end)?
+      visibleItemsListener;
+  final Widget? topWidget;
+
+  const ImmichAssetGridView({
+    super.key,
+    required this.renderList,
+    required this.assetsPerRow,
+    required this.showStorageIndicator,
+    this.listener,
+    this.margin = 5.0,
+    this.selectionActive = false,
+    this.onRefresh,
+    this.preselectedAssets,
+    this.canDeselect = true,
+    this.dynamicLayout = true,
+    this.showMultiSelectIndicator = true,
+    this.visibleItemsListener,
+    this.topWidget,
+  });
+
+  @override
+  State<StatefulWidget> createState() {
+    return ImmichAssetGridViewState();
+  }
+}
+
 class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
@@ -127,7 +166,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           width: width * widthDistribution[index],
           height: width,
           margin: EdgeInsets.only(
-            top: widget.margin,
+            bottom: widget.margin,
             right: last ? 0.0 : widget.margin,
           ),
           child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
@@ -157,7 +196,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     final String title = monthFormat.format(date);
     return Padding(
       key: Key("month-$title"),
-      padding: const EdgeInsets.only(left: 12.0, top: 30),
+      padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
         style: TextStyle(
@@ -179,7 +218,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             width: width,
             height: height,
             margin: EdgeInsets.only(
-              top: widget.margin,
+              bottom: widget.margin,
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
             color: Colors.grey,
@@ -206,6 +245,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (section.offset == 0 && widget.topWidget != null)
+              widget.topWidget!,
             if (section.type == RenderAssetGridElementType.monthTitle)
               _buildMonthTitle(context, section.date),
             if (section.type == RenderAssetGridElementType.groupDividerTitle ||
@@ -271,9 +312,11 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     final useDragScrolling = widget.renderList.totalAssets >= 20;
 
     void dragScrolling(bool active) {
-      setState(() {
-        _scrolling = active;
-      });
+      if (active != _scrolling) {
+        setState(() {
+          _scrolling = active;
+        });
+      }
     }
 
     final listWidget = ScrollablePositionedList.builder(
@@ -300,7 +343,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             child: listWidget,
           )
         : listWidget;
-
     return widget.onRefresh == null
         ? child
         : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
@@ -384,42 +426,5 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         ],
       ),
     );
-  }
-}
-
-class ImmichAssetGridView extends StatefulWidget {
-  final RenderList renderList;
-  final int assetsPerRow;
-  final double margin;
-  final bool showStorageIndicator;
-  final ImmichAssetGridSelectionListener? listener;
-  final bool selectionActive;
-  final Future<void> Function()? onRefresh;
-  final Set<Asset>? preselectedAssets;
-  final bool canDeselect;
-  final bool dynamicLayout;
-  final bool showMultiSelectIndicator;
-  final void Function(ItemPosition start, ItemPosition end)?
-      visibleItemsListener;
-
-  const ImmichAssetGridView({
-    super.key,
-    required this.renderList,
-    required this.assetsPerRow,
-    required this.showStorageIndicator,
-    this.listener,
-    this.margin = 5.0,
-    this.selectionActive = false,
-    this.onRefresh,
-    this.preselectedAssets,
-    this.canDeselect = true,
-    this.dynamicLayout = true,
-    this.showMultiSelectIndicator = true,
-    this.visibleItemsListener,
-  });
-
-  @override
-  State<StatefulWidget> createState() {
-    return ImmichAssetGridViewState();
   }
 }

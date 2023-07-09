@@ -227,6 +227,8 @@ class ApiClient {
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AudioCodec':
+          return AudioCodecTypeTransformer().decode(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
         case 'ChangePasswordDto':
@@ -241,10 +243,6 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
-        case 'CreateAlbumShareLinkDto':
-          return CreateAlbumShareLinkDto.fromJson(value);
-        case 'CreateAssetsShareLinkDto':
-          return CreateAssetsShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -261,16 +259,18 @@ class ApiClient {
           return DeleteAssetResponseDto.fromJson(value);
         case 'DeleteAssetStatus':
           return DeleteAssetStatusTypeTransformer().decode(value);
-        case 'DownloadFilesDto':
-          return DownloadFilesDto.fromJson(value);
-        case 'EditSharedLinkDto':
-          return EditSharedLinkDto.fromJson(value);
+        case 'DownloadArchiveInfo':
+          return DownloadArchiveInfo.fromJson(value);
+        case 'DownloadResponseDto':
+          return DownloadResponseDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
+        case 'ImportAssetDto':
+          return ImportAssetDto.fromJson(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':
@@ -333,6 +333,10 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkCreateDto':
+          return SharedLinkCreateDto.fromJson(value);
+        case 'SharedLinkEditDto':
+          return SharedLinkEditDto.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
@@ -363,6 +367,8 @@ class ApiClient {
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':
           return TimeGroupEnumTypeTransformer().decode(value);
+        case 'TranscodePolicy':
+          return TranscodePolicyTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
@@ -379,6 +385,8 @@ class ApiClient {
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
+        case 'VideoCodec':
+          return VideoCodecTypeTransformer().decode(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

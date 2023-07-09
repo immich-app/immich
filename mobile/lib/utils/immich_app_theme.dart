@@ -24,6 +24,10 @@ ThemeData base = ThemeData(
   chipTheme: const ChipThemeData(
     side: BorderSide.none,
   ),
+  sliderTheme: const SliderThemeData(
+    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
+    trackHeight: 2.0,
+  ),
 );
 
 ThemeData immichLightTheme = ThemeData(
@@ -32,6 +36,8 @@ ThemeData immichLightTheme = ThemeData(
   primarySwatch: Colors.indigo,
   primaryColor: Colors.indigo,
   hintColor: Colors.indigo,
+  focusColor: Colors.indigo,
+  splashColor: Colors.indigo.withOpacity(0.15),
   fontFamily: 'WorkSans',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
@@ -97,6 +103,7 @@ ThemeData immichLightTheme = ThemeData(
     ),
   ),
   chipTheme: base.chipTheme,
+  sliderTheme: base.sliderTheme,
   popupMenuTheme: const PopupMenuThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -118,6 +125,26 @@ ThemeData immichLightTheme = ThemeData(
         color: Colors.grey[700],
       ),
     ),
+  ),
+  dialogTheme: const DialogTheme(
+    surfaceTintColor: Colors.transparent,
+  ),
+  inputDecorationTheme: const InputDecorationTheme(
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(
+        color: Colors.indigo,
+      ),
+    ),
+    labelStyle: TextStyle(
+      color: Colors.indigo,
+    ),
+    hintStyle: TextStyle(
+      fontSize: 14.0,
+      fontWeight: FontWeight.normal,
+    ),
+  ),
+  textSelectionTheme: const TextSelectionThemeData(
+    cursorColor: Colors.indigo,
   ),
 );
 
@@ -196,6 +223,7 @@ ThemeData immichDarkTheme = ThemeData(
     ),
   ),
   chipTheme: base.chipTheme,
+  sliderTheme: base.sliderTheme,
   popupMenuTheme: const PopupMenuThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -216,5 +244,25 @@ ThemeData immichDarkTheme = ThemeData(
         color: Colors.grey[500],
       ),
     ),
+  ),
+  dialogTheme: const DialogTheme(
+    surfaceTintColor: Colors.transparent,
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(
+        color: immichDarkThemePrimaryColor,
+      ),
+    ),
+    labelStyle: TextStyle(
+      color: immichDarkThemePrimaryColor,
+    ),
+    hintStyle: const TextStyle(
+      fontSize: 14.0,
+      fontWeight: FontWeight.normal,
+    ),
+  ),
+  textSelectionTheme: TextSelectionThemeData(
+    cursorColor: immichDarkThemePrimaryColor,
   ),
 );

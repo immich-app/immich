@@ -1,4 +1,5 @@
 import {
+  AuthUserDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
   CreateUserDto,
@@ -24,16 +25,14 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { profileImageUploadOption } from '../config/profile-image-upload.config';
-import { AuthUser, AuthUserDto } from '../decorators/auth-user.decorator';
-import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { AdminRoute, Authenticated, AuthUser, PublicRoute } from '../app.guard';
+import { FileUploadInterceptor, Route } from '../app.interceptor';
+import { UseValidation } from '../app.utils';
 
 @ApiTags('User')
-@Controller('user')
+@Controller(Route.USER)
 @Authenticated()
 @UseValidation()
 export class UserController {
@@ -83,12 +82,9 @@ export class UserController {
     return this.service.updateUser(authUser, updateUserDto);
   }
 
-  @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
+  @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'A new avatar for the user',
-    type: CreateProfileImageDto,
-  })
+  @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
   @Post('/profile-image')
   createProfileImage(
     @AuthUser() authUser: AuthUserDto,
@@ -98,7 +94,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  @Header('Cache-Control', 'max-age=600')
+  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');

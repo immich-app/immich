@@ -16,7 +16,9 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
@@ -33,6 +35,7 @@ class BackupService {
   final httpClient = http.Client();
   final ApiService _apiService;
   final Isar _db;
+  final Logger _log = Logger("BackupService");
 
   BackupService(this._apiService, this._db);
 
@@ -203,6 +206,14 @@ class BackupService {
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
     Function(ErrorUploadAsset) errorCb,
   ) async {
+    if (Platform.isAndroid &&
+        !(await Permission.accessMediaLocation.status).isGranted) {
+      // double check that permission is granted here, to guard against
+      // uploading corrupt assets without EXIF information
+      _log.warning("Media location permission is not granted. "
+          "Cannot access original assets for backup.");
+      return false;
+    }
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     File? file;

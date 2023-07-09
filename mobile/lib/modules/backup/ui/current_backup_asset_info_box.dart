@@ -138,6 +138,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     return FutureBuilder<Uint8List?>(
       future: buildAssetThumbnail(),
       builder: (context, thumbnail) => ListTile(
+        isThreeLine: true,
         leading: AnimatedCrossFade(
           alignment: Alignment.centerLeft,
           firstChild: GestureDetector(

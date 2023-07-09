@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { mapFace, PersonResponseDto } from '../../person';
+import { mapFace, PersonResponseDto } from '../../person/person.dto';
 import { mapTag, TagResponseDto } from '../../tag';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { mapSmartInfo, SmartInfoResponseDto } from './smart-info-response.dto';
@@ -16,6 +16,8 @@ export class AssetResponseDto {
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
+  /**base64 encoded thumbhash */
+  thumbhash!: string | null;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
@@ -42,6 +44,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     resized: !!entity.resizePath,
+    thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
@@ -68,6 +71,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     resized: !!entity.resizePath,
+    thumbhash: entity.thumbhash?.toString('base64') || null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,

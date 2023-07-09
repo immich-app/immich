@@ -5,16 +5,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
+  final Widget? placeholder;
   final VoidCallback onVideoEnded;
   final VoidCallback? onPlaying;
   final VoidCallback? onPaused;
@@ -26,6 +29,7 @@ class VideoViewerPage extends HookConsumerWidget {
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   }) : super(key: key);
 
   @override
@@ -66,10 +70,15 @@ class VideoViewerPage extends HookConsumerWidget {
           onVideoEnded: onVideoEnded,
           onPaused: onPaused,
           onPlaying: onPlaying,
+          placeholder: placeholder,
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
-          const Center(
-            child: ImmichLoadingIndicator(),
+          SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: const Center(
+              child: ImmichLoadingIndicator(),
+            ),
           ),
       ],
     );
@@ -95,6 +104,10 @@ class VideoPlayer extends StatefulWidget {
   final Function()? onPlaying;
   final Function()? onPaused;
 
+  /// The placeholder to show while the video is loading
+  /// usually, a thumbnail of the video
+  final Widget? placeholder;
+
   const VideoPlayer({
     Key? key,
     this.url,
@@ -104,6 +117,7 @@ class VideoPlayer extends StatefulWidget {
     required this.isMotionVideo,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   }) : super(key: key);
 
   @override
@@ -122,13 +136,16 @@ class _VideoPlayerState extends State<VideoPlayer> {
     videoPlayerController.addListener(() {
       if (videoPlayerController.value.isInitialized) {
         if (videoPlayerController.value.isPlaying) {
+          Wakelock.enable();
           widget.onPlaying?.call();
         } else if (!videoPlayerController.value.isPlaying) {
+          Wakelock.disable();
           widget.onPaused?.call();
         }
 
         if (videoPlayerController.value.position ==
             videoPlayerController.value.duration) {
+          Wakelock.disable();
           widget.onVideoEnded();
         }
       }
@@ -162,9 +179,10 @@ class _VideoPlayerState extends State<VideoPlayer> {
       videoPlayerController: videoPlayerController,
       autoPlay: true,
       autoInitialize: true,
-      allowFullScreen: true,
+      allowFullScreen: false,
       allowedScreenSleep: false,
       showControls: !widget.isMotionVideo,
+      customControls: const VideoPlayerControls(),
       hideControlsTimer: const Duration(seconds: 5),
     );
   }
@@ -186,12 +204,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
         ),
       );
     } else {
-      return const Center(
-        child: SizedBox(
-          width: 75,
-          height: 75,
-          child: CircularProgressIndicator.adaptive(
-            strokeWidth: 2,
+      return SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: Center(
+          child: Stack(
+            children: [
+              if (widget.placeholder != null)
+                widget.placeholder!,
+              const Center(
+                child: ImmichLoadingIndicator(),
+              ),
+            ],
           ),
         ),
       );

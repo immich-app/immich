@@ -29,6 +29,7 @@ doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
+doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/ChangePasswordDto.md
@@ -37,8 +38,6 @@ doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CreateAlbumDto.md
-doc/CreateAlbumShareLinkDto.md
-doc/CreateAssetsShareLinkDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
@@ -47,11 +46,12 @@ doc/CuratedObjectsResponseDto.md
 doc/DeleteAssetDto.md
 doc/DeleteAssetResponseDto.md
 doc/DeleteAssetStatus.md
-doc/DownloadFilesDto.md
-doc/EditSharedLinkDto.md
+doc/DownloadArchiveInfo.md
+doc/DownloadResponseDto.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
+doc/ImportAssetDto.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -89,7 +89,9 @@ doc/ServerInfoResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
-doc/ShareApi.md
+doc/SharedLinkApi.md
+doc/SharedLinkCreateDto.md
+doc/SharedLinkEditDto.md
 doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
@@ -107,6 +109,7 @@ doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
+doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateTagDto.md
@@ -116,6 +119,7 @@ doc/UserApi.md
 doc/UserCountResponseDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/VideoCodec.md
 git_push.sh
 lib/api.dart
 lib/api/album_api.dart
@@ -128,7 +132,7 @@ lib/api/partner_api.dart
 lib/api/person_api.dart
 lib/api/search_api.dart
 lib/api/server_info_api.dart
-lib/api/share_api.dart
+lib/api/shared_link_api.dart
 lib/api/system_config_api.dart
 lib/api/tag_api.dart
 lib/api/user_api.dart
@@ -163,6 +167,7 @@ lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
+lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
@@ -170,8 +175,6 @@ lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/create_album_dto.dart
-lib/model/create_album_share_link_dto.dart
-lib/model/create_assets_share_link_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
@@ -180,11 +183,12 @@ lib/model/curated_objects_response_dto.dart
 lib/model/delete_asset_dto.dart
 lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
-lib/model/download_files_dto.dart
-lib/model/edit_shared_link_dto.dart
+lib/model/download_archive_info.dart
+lib/model/download_response_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
+lib/model/import_asset_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -216,6 +220,8 @@ lib/model/server_info_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
+lib/model/shared_link_create_dto.dart
+lib/model/shared_link_edit_dto.dart
 lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
@@ -231,6 +237,7 @@ lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
+lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_tag_dto.dart
@@ -239,6 +246,7 @@ lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/video_codec.dart
 pubspec.yaml
 test/add_assets_dto_test.dart
 test/add_assets_response_dto_test.dart
@@ -266,6 +274,7 @@ test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
+test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/change_password_dto_test.dart
@@ -274,8 +283,6 @@ test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/create_album_dto_test.dart
-test/create_album_share_link_dto_test.dart
-test/create_assets_share_link_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
@@ -284,11 +291,12 @@ test/curated_objects_response_dto_test.dart
 test/delete_asset_dto_test.dart
 test/delete_asset_response_dto_test.dart
 test/delete_asset_status_test.dart
-test/download_files_dto_test.dart
-test/edit_shared_link_dto_test.dart
+test/download_archive_info_test.dart
+test/download_response_dto_test.dart
 test/exif_response_dto_test.dart
 test/get_asset_by_time_bucket_dto_test.dart
 test/get_asset_count_by_time_bucket_dto_test.dart
+test/import_asset_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart
@@ -326,7 +334,9 @@ test/server_info_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_version_reponse_dto_test.dart
-test/share_api_test.dart
+test/shared_link_api_test.dart
+test/shared_link_create_dto_test.dart
+test/shared_link_edit_dto_test.dart
 test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
@@ -344,6 +354,7 @@ test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
 test/time_group_enum_test.dart
+test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_tag_dto_test.dart
@@ -353,3 +364,4 @@ test/user_api_test.dart
 test/user_count_response_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/video_codec_test.dart

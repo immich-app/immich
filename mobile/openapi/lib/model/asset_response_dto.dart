@@ -21,6 +21,7 @@ class AssetResponseDto {
     required this.originalPath,
     required this.originalFileName,
     required this.resized,
+    required this.thumbhash,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.updatedAt,
@@ -51,6 +52,9 @@ class AssetResponseDto {
   String originalFileName;
 
   bool resized;
+
+  /// base64 encoded thumbhash
+  String? thumbhash;
 
   DateTime fileCreatedAt;
 
@@ -101,6 +105,7 @@ class AssetResponseDto {
      other.originalPath == originalPath &&
      other.originalFileName == originalFileName &&
      other.resized == resized &&
+     other.thumbhash == thumbhash &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.updatedAt == updatedAt &&
@@ -126,6 +131,7 @@ class AssetResponseDto {
     (originalPath.hashCode) +
     (originalFileName.hashCode) +
     (resized.hashCode) +
+    (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (updatedAt.hashCode) +
@@ -141,7 +147,7 @@ class AssetResponseDto {
     (checksum.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, thumbhash=$thumbhash, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -153,6 +159,11 @@ class AssetResponseDto {
       json[r'originalPath'] = this.originalPath;
       json[r'originalFileName'] = this.originalFileName;
       json[r'resized'] = this.resized;
+    if (this.thumbhash != null) {
+      json[r'thumbhash'] = this.thumbhash;
+    } else {
+    //  json[r'thumbhash'] = null;
+    }
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
@@ -161,23 +172,23 @@ class AssetResponseDto {
     if (this.mimeType != null) {
       json[r'mimeType'] = this.mimeType;
     } else {
-      // json[r'mimeType'] = null;
+    //  json[r'mimeType'] = null;
     }
       json[r'duration'] = this.duration;
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
-      // json[r'exifInfo'] = null;
+    //  json[r'exifInfo'] = null;
     }
     if (this.smartInfo != null) {
       json[r'smartInfo'] = this.smartInfo;
     } else {
-      // json[r'smartInfo'] = null;
+    //  json[r'smartInfo'] = null;
     }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-      // json[r'livePhotoVideoId'] = null;
+    //  json[r'livePhotoVideoId'] = null;
     }
       json[r'tags'] = this.tags;
       json[r'people'] = this.people;
@@ -192,17 +203,6 @@ class AssetResponseDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AssetResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
@@ -212,9 +212,10 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resized: mapValueOfType<bool>(json, r'resized')!,
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
@@ -280,6 +281,7 @@ class AssetResponseDto {
     'originalPath',
     'originalFileName',
     'resized',
+    'thumbhash',
     'fileCreatedAt',
     'fileModifiedAt',
     'updatedAt',

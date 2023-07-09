@@ -32,18 +32,8 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> createAlbumSharedLink(CreateAlbumShareLinkDto createAlbumShareLinkDto) async
-    test('test createAlbumSharedLink', () async {
-      // TODO
-    });
-
     //Future deleteAlbum(String id) async
     test('test deleteAlbum', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> downloadArchive(String id, { String name, num skip, String key }) async
-    test('test downloadArchive', () async {
       // TODO
     });
 

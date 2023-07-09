@@ -71,8 +71,8 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
               if (serverInfoState.isVersionMismatch)
                 Positioned(
-                  bottom: 12,
-                  right: 12,
+                  bottom: 4,
+                  right: 6,
                   child: GestureDetector(
                     onTap: () => Scaffold.of(context).openDrawer(),
                     child: Material(

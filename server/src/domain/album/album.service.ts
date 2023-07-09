@@ -1,7 +1,8 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
+import { AccessCore, IAccessRepository, Permission } from '../index';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
@@ -10,12 +11,16 @@ import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto
 
 @Injectable()
 export class AlbumService {
+  private access: AccessCore;
   constructor(
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-  ) {}
+  ) {
+    this.access = new AccessCore(accessRepository);
+  }
 
   async getCount(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
@@ -53,15 +58,19 @@ export class AlbumService {
       return obj;
     }, {});
 
-    return albums.map((album) => {
-      return {
-        ...album,
-        assets: album?.assets?.map(mapAsset),
-        sharedLinks: undefined, // Don't return shared links
-        shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
-        assetCount: albumsAssetCountObj[album.id],
-      } as AlbumResponseDto;
-    });
+    return Promise.all(
+      albums.map(async (album) => {
+        const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
+        return {
+          ...album,
+          assets: album?.assets?.map(mapAsset),
+          sharedLinks: undefined, // Don't return shared links
+          shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
+          assetCount: albumsAssetCountObj[album.id],
+          lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
+        } as AlbumResponseDto;
+      }),
+    );
   }
 
   private async updateInvalidThumbnails(): Promise<number> {
@@ -96,8 +105,9 @@ export class AlbumService {
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ALBUM_UPDATE, id);
+
     const album = await this.get(id);
-    this.assertOwner(authUser, album);
 
     if (dto.albumThumbnailAssetId) {
       const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
@@ -118,13 +128,11 @@ export class AlbumService {
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.access.requirePermission(authUser, Permission.ALBUM_DELETE, id);
+
     const [album] = await this.albumRepository.getByIds([id]);
     if (!album) {
       throw new BadRequestException('Album not found');
-    }
-
-    if (album.ownerId !== authUser.id) {
-      throw new ForbiddenException('Album not owned by user');
     }
 
     await this.albumRepository.delete(album);
@@ -132,8 +140,9 @@ export class AlbumService {
   }
 
   async addUsers(authUser: AuthUserDto, id: string, dto: AddUsersDto) {
+    await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, id);
+
     const album = await this.get(id);
-    this.assertOwner(authUser, album);
 
     for (const userId of dto.sharedUserIds) {
       const exists = album.sharedUsers.find((user) => user.id === userId);
@@ -176,7 +185,7 @@ export class AlbumService {
 
     // non-admin can remove themselves
     if (authUser.id !== userId) {
-      this.assertOwner(authUser, album);
+      await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, id);
     }
 
     await this.albumRepository.update({
@@ -192,11 +201,5 @@ export class AlbumService {
       throw new BadRequestException('Album not found');
     }
     return album;
-  }
-
-  private assertOwner(authUser: AuthUserDto, album: AlbumEntity) {
-    if (album.ownerId !== authUser.id) {
-      throw new ForbiddenException('Album not owned by user');
-    }
   }
 }

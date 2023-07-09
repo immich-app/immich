@@ -8,9 +8,8 @@ import {
 } from '@app/domain';
 import { Body, Controller, Get, Param, Put, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated, AuthUser } from '../app.guard';
+import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
@@ -44,7 +43,11 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse({
+    content: {
+      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+    },
+  })
   getPersonThumbnail(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
   }

@@ -130,102 +130,102 @@ class ExifResponseDto {
     if (this.fileSizeInByte != null) {
       json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
-      // json[r'fileSizeInByte'] = null;
+    //  json[r'fileSizeInByte'] = null;
     }
     if (this.make != null) {
       json[r'make'] = this.make;
     } else {
-      // json[r'make'] = null;
+    //  json[r'make'] = null;
     }
     if (this.model != null) {
       json[r'model'] = this.model;
     } else {
-      // json[r'model'] = null;
+    //  json[r'model'] = null;
     }
     if (this.exifImageWidth != null) {
       json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-      // json[r'exifImageWidth'] = null;
+    //  json[r'exifImageWidth'] = null;
     }
     if (this.exifImageHeight != null) {
       json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-      // json[r'exifImageHeight'] = null;
+    //  json[r'exifImageHeight'] = null;
     }
     if (this.orientation != null) {
       json[r'orientation'] = this.orientation;
     } else {
-      // json[r'orientation'] = null;
+    //  json[r'orientation'] = null;
     }
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
     } else {
-      // json[r'dateTimeOriginal'] = null;
+    //  json[r'dateTimeOriginal'] = null;
     }
     if (this.modifyDate != null) {
       json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
     } else {
-      // json[r'modifyDate'] = null;
+    //  json[r'modifyDate'] = null;
     }
     if (this.timeZone != null) {
       json[r'timeZone'] = this.timeZone;
     } else {
-      // json[r'timeZone'] = null;
+    //  json[r'timeZone'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
     } else {
-      // json[r'lensModel'] = null;
+    //  json[r'lensModel'] = null;
     }
     if (this.fNumber != null) {
       json[r'fNumber'] = this.fNumber;
     } else {
-      // json[r'fNumber'] = null;
+    //  json[r'fNumber'] = null;
     }
     if (this.focalLength != null) {
       json[r'focalLength'] = this.focalLength;
     } else {
-      // json[r'focalLength'] = null;
+    //  json[r'focalLength'] = null;
     }
     if (this.iso != null) {
       json[r'iso'] = this.iso;
     } else {
-      // json[r'iso'] = null;
+    //  json[r'iso'] = null;
     }
     if (this.exposureTime != null) {
       json[r'exposureTime'] = this.exposureTime;
     } else {
-      // json[r'exposureTime'] = null;
+    //  json[r'exposureTime'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
     } else {
-      // json[r'latitude'] = null;
+    //  json[r'latitude'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
-      // json[r'longitude'] = null;
+    //  json[r'longitude'] = null;
     }
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
-      // json[r'city'] = null;
+    //  json[r'city'] = null;
     }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
-      // json[r'state'] = null;
+    //  json[r'state'] = null;
     }
     if (this.country != null) {
       json[r'country'] = this.country;
     } else {
-      // json[r'country'] = null;
+    //  json[r'country'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-      // json[r'description'] = null;
+    //  json[r'description'] = null;
     }
     return json;
   }
@@ -237,48 +237,37 @@ class ExifResponseDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "ExifResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "ExifResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return ExifResponseDto(
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
-            : num.parse(json[r'exifImageWidth'].toString()),
+            : num.parse('${json[r'exifImageWidth']}'),
         exifImageHeight: json[r'exifImageHeight'] == null
             ? null
-            : num.parse(json[r'exifImageHeight'].toString()),
+            : num.parse('${json[r'exifImageHeight']}'),
         orientation: mapValueOfType<String>(json, r'orientation'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
-        modifyDate: mapDateTime(json, r'modifyDate', ''),
+        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
+        modifyDate: mapDateTime(json, r'modifyDate', r''),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         fNumber: json[r'fNumber'] == null
             ? null
-            : num.parse(json[r'fNumber'].toString()),
+            : num.parse('${json[r'fNumber']}'),
         focalLength: json[r'focalLength'] == null
             ? null
-            : num.parse(json[r'focalLength'].toString()),
+            : num.parse('${json[r'focalLength']}'),
         iso: json[r'iso'] == null
             ? null
-            : num.parse(json[r'iso'].toString()),
+            : num.parse('${json[r'iso']}'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         latitude: json[r'latitude'] == null
             ? null
-            : num.parse(json[r'latitude'].toString()),
+            : num.parse('${json[r'latitude']}'),
         longitude: json[r'longitude'] == null
             ? null
-            : num.parse(json[r'longitude'].toString()),
+            : num.parse('${json[r'longitude']}'),
         city: mapValueOfType<String>(json, r'city'),
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),

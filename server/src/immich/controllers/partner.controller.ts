@@ -1,9 +1,8 @@
-import { PartnerDirection, PartnerService, UserResponseDto } from '@app/domain';
+import { AuthUserDto, PartnerDirection, PartnerService, UserResponseDto } from '@app/domain';
 import { Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthUser, AuthUserDto } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated, AuthUser } from '../app.guard';
+import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Partner')
