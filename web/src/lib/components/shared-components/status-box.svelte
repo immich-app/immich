@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import Cloud from 'svelte-material-icons/icons/Cloud.svelte';
-  import Dns from 'svelte-material-icons/icons/Dns.svelte';
+  import Cloud from 'svelte-material-icons/Cloud.svelte';
+  import Dns from 'svelte-material-icons/Dns.svelte';
   import LoadingSpinner from './loading-spinner.svelte';
   import { api, ServerInfoResponseDto } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';

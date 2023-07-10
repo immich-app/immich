@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import DotsVertical from 'svelte-material-icons/icons/DotsVertical.svelte';
+  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import type { OnClick, OnShowContextMenu } from './album-card';
 

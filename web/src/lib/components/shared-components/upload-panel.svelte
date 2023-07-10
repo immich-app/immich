@@ -2,8 +2,8 @@
   import { quartInOut } from 'svelte/easing';
   import { scale, fade } from 'svelte/transition';
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import CloudUploadOutline from 'svelte-material-icons/icons/CloudUploadOutline.svelte';
-  import WindowMinimize from 'svelte-material-icons/icons/WindowMinimize.svelte';
+  import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
+  import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 

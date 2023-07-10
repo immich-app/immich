@@ -3,8 +3,8 @@
   import { AppRoute } from '$lib/constants';
   import type { UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import Cog from 'svelte-material-icons/icons/Cog.svelte';
-  import Logout from 'svelte-material-icons/icons/Logout.svelte';
+  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Logout from 'svelte-material-icons/Logout.svelte';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SwapVertical from 'svelte-material-icons/icons/SwapVertical.svelte';
-  import Check from 'svelte-material-icons/icons/Check.svelte';
+  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
+  import Check from 'svelte-material-icons/Check.svelte';
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';

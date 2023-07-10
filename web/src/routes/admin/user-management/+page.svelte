@@ -2,11 +2,11 @@
   import { api, UserResponseDto } from '@api';
 
   import { onMount } from 'svelte';
-  import PencilOutline from 'svelte-material-icons/icons/PencilOutline.svelte';
-  import TrashCanOutline from 'svelte-material-icons/icons/TrashCanOutline.svelte';
-  import DeleteRestore from 'svelte-material-icons/icons/DeleteRestore.svelte';
-  import Check from 'svelte-material-icons/icons/Check.svelte';
-  import Close from 'svelte-material-icons/icons/Close.svelte';
+  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
+  import Check from 'svelte-material-icons/Check.svelte';
+  import Close from 'svelte-material-icons/Close.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';

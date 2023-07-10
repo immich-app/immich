@@ -8,7 +8,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import type Icon from 'svelte-material-icons/icons/AbTesting.svelte';
+  import type Icon from 'svelte-material-icons/AbTesting.svelte';
 
   export let icon: typeof Icon;
   export let title: string;

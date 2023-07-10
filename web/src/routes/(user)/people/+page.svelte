@@ -2,7 +2,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { api } from '@api';
-  import AccountOff from 'svelte-material-icons/icons/AccountOff.svelte';
+  import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;

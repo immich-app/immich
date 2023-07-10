@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type Icon from 'svelte-material-icons/icons/AbTesting.svelte';
-  import InformationOutline from 'svelte-material-icons/icons/InformationOutline.svelte';
+  import type Icon from 'svelte-material-icons/AbTesting.svelte';
+  import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
   import { fade } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
 

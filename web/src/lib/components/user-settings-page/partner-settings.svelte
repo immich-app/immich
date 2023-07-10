@@ -1,7 +1,7 @@
 <script lang="ts">
   import { UserResponseDto, api } from '@api';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Close from 'svelte-material-icons/icons/Close.svelte';
+  import Close from 'svelte-material-icons/Close.svelte';
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import { handleError } from '../../utils/handle-error';

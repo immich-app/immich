@@ -10,13 +10,13 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import SelectAll from 'svelte-material-icons/icons/SelectAll.svelte';
+  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import { archivedAsset } from '$lib/stores/archived-asset.store';
   import { handleError } from '$lib/utils/handle-error';
   import { api, AssetResponseDto } from '@api';
   import { onMount } from 'svelte';
-  import DotsVertical from 'svelte-material-icons/icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/icons/Plus.svelte';
+  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 

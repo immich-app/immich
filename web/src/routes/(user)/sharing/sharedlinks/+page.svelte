@@ -1,6 +1,6 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ArrowLeft from 'svelte-material-icons/icons/ArrowLeft.svelte';
+  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import { api, SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';

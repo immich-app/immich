@@ -5,8 +5,8 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { api } from '@api';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/icons/ArchiveArrowDownOutline.svelte';
-  import ArchiveArrowUpOutline from 'svelte-material-icons/icons/ArchiveArrowUpOutline.svelte';
+  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
+  import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetArchive, getAssetControlContext } from '../asset-select-control-bar.svelte';
 

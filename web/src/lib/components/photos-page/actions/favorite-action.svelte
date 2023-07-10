@@ -6,8 +6,8 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { api } from '@api';
-  import HeartMinusOutline from 'svelte-material-icons/icons/HeartMinusOutline.svelte';
-  import HeartOutline from 'svelte-material-icons/icons/HeartOutline.svelte';
+  import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
+  import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
   import { OnAssetFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let onAssetFavorite: OnAssetFavorite = (asset, isFavorite) => {

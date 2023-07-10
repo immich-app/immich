@@ -1,9 +1,9 @@
 <script>
   import { page } from '$app/stores';
-  import Message from 'svelte-material-icons/icons/Message.svelte';
-  import PartyPopper from 'svelte-material-icons/icons/PartyPopper.svelte';
-  import CodeTags from 'svelte-material-icons/icons/CodeTags.svelte';
-  import ContentCopy from 'svelte-material-icons/icons/ContentCopy.svelte';
+  import Message from 'svelte-material-icons/Message.svelte';
+  import PartyPopper from 'svelte-material-icons/PartyPopper.svelte';
+  import CodeTags from 'svelte-material-icons/CodeTags.svelte';
+  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import {
     notificationController,
     NotificationType,

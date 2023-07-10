@@ -16,12 +16,12 @@
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, api } from '@api';
-  import ArrowLeft from 'svelte-material-icons/icons/ArrowLeft.svelte';
-  import DotsVertical from 'svelte-material-icons/icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/icons/Plus.svelte';
+  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import SelectAll from 'svelte-material-icons/icons/SelectAll.svelte';
+  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import FaceThumbnailSelector from '$lib/components/faces-page/face-thumbnail-selector.svelte';
   import {

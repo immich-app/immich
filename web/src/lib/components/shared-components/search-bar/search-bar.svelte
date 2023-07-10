@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import Magnify from 'svelte-material-icons/icons/Magnify.svelte';
-  import Close from 'svelte-material-icons/icons/Close.svelte';
+  import Magnify from 'svelte-material-icons/Magnify.svelte';
+  import Close from 'svelte-material-icons/Close.svelte';
   import { goto } from '$app/navigation';
   import { savedSearchTerms } from '$lib/stores/search.store';
   import { fly } from 'svelte/transition';
