@@ -44,7 +44,7 @@
     {#if canScrollLeft || canScrollRight}
       <div class="sticky left-0 z-20">
         {#if canScrollLeft}
-          <div class="absolute left-4 top-[6rem] z-20" transition:fade|global={{ duration: 200 }}>
+          <div class="absolute left-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
               class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
               on:click={scrollLeft}
@@ -54,7 +54,7 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute right-4 top-[6rem] z-20" transition:fade|global={{ duration: 200 }}>
+          <div class="absolute right-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
               class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
               on:click={scrollRight}

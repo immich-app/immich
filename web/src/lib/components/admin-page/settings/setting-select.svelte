@@ -20,7 +20,7 @@
 
     {#if isEdited}
       <div
-        transition:fly|global={{ x: 10, duration: 200, easing: quintOut }}
+        transition:fly={{ x: 10, duration: 200, easing: quintOut }}
         class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
       >
         Unsaved change

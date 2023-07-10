@@ -25,8 +25,8 @@
 
 {#if isUploading}
   <div
-    in:fade|global={{ duration: 250 }}
-    out:fade|global={{ duration: 250, delay: 1000 }}
+    in:fade={{ duration: 250 }}
+    out:fade={{ duration: 250, delay: 1000 }}
     on:outroend={() => {
       notificationController.show({
         message: 'Upload success, refresh the page to see new upload assets',
@@ -37,7 +37,7 @@
   >
     {#if showDetail}
       <div
-        in:scale|global={{ duration: 250, easing: quartInOut }}
+        in:scale={{ duration: 250, easing: quartInOut }}
         class="bg-gray-200 p-4 text-sm w-[300px] rounded-lg shadow-sm border"
       >
         <div class="flex justify-between place-item-center mb-4">
@@ -61,14 +61,14 @@
     {:else}
       <div class="rounded-full">
         <button
-          in:scale|global={{ duration: 250, easing: quartInOut }}
+          in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
           class="absolute -top-4 -left-4 text-xs rounded-full w-10 h-10 p-5 flex place-items-center place-content-center bg-immich-primary text-gray-200"
         >
           {$uploadAssetsStore.length}
         </button>
         <button
-          in:scale|global={{ duration: 250, easing: quartInOut }}
+          in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
           class="bg-gray-300 p-5 rounded-full w-16 h-16 flex place-items-center place-content-center text-sm shadow-lg"
         >

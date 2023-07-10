@@ -31,7 +31,7 @@
       <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
       <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
       {#if customDateRange}
-        <div in:fly|global={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
+        <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex justify-between items-center gap-8">
             <label class="immich-form-label text-sm shrink-0" for="date-after">Date after</label>
             <input
@@ -59,7 +59,7 @@
           </div>
         </div>
       {:else}
-        <div in:fly|global={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
+        <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
           <SettingSelect
             label="Date range"
             name="date-range"

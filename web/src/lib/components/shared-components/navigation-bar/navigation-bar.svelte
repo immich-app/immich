@@ -60,7 +60,7 @@
         <ThemeButton />
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <div in:fly|global={{ x: 50, duration: 250 }}>
+          <div in:fly={{ x: 50, duration: 250 }}>
             <LinkButton on:click={() => dispatch('uploadClicked')}>
               <div class="flex gap-2">
                 <TrayArrowUp size="1.5em" />
@@ -115,8 +115,8 @@
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
             <div
-              in:fade|global={{ delay: 500, duration: 150 }}
-              out:fade|global={{ delay: 200, duration: 150 }}
+              in:fade={{ delay: 500, duration: 150 }}
+              out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 border bg-gray-500 dark:bg-immich-dark-gray text-[12px] text-gray-100 p-2 rounded-md shadow-md dark:border-immich-dark-gray"
             >
               <p>{user.firstName} {user.lastName}</p>

@@ -115,7 +115,7 @@
 {/if}
 
 <section class="my-4">
-  <div class="flex flex-col gap-2" in:fade|global={{ duration: 500 }}>
+  <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="flex justify-end mb-2">
       <Button size="sm" on:click={() => (newKey = { name: 'API Key' })}>New API Key</Button>
     </div>

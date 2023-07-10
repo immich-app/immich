@@ -106,7 +106,7 @@
 
 <div class="mt-2">
   {#await getConfigs() then}
-    <div in:fade|global={{ duration: 500 }}>
+    <div in:fade={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault class="flex flex-col mx-4 gap-4 py-4">
         <p class="text-sm dark:text-immich-dark-fg">
           For more details about this feature, refer to the <a

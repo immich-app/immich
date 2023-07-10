@@ -81,7 +81,7 @@
 {#if authConfig.passwordLoginEnabled}
   <form on:submit|preventDefault={login} class="flex flex-col gap-5 mt-5">
     {#if error}
-      <p class="text-red-400" transition:fade|global>
+      <p class="text-red-400" transition:fade>
         {error}
       </p>
     {/if}
@@ -139,7 +139,7 @@
   {/if}
   <div class="my-5 flex flex-col gap-5">
     {#if oauthError}
-      <p class="text-red-400" transition:fade|global>{oauthError}</p>
+      <p class="text-red-400" transition:fade>{oauthError}</p>
     {/if}
     <a href={authConfig.url} class="flex w-full">
       <Button

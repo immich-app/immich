@@ -21,7 +21,7 @@
 </script>
 
 <div
-  transition:slide|global={{ duration: 200, easing: quintOut }}
+  transition:slide={{ duration: 200, easing: quintOut }}
   bind:this={menuElement}
   class="absolute w-[200px] z-[99999] rounded-lg overflow-hidden shadow-lg"
   style="left: {left}px; top: {top}px;"

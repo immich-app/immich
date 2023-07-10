@@ -57,7 +57,7 @@
 </script>
 
 <section class="my-4">
-  <div in:fade|global={{ duration: 500 }}>
+  <div in:fade={{ duration: 500 }}>
     <div class="flex justify-end">
       {#if loading}
         <div class="flex place-items-center place-content-center">

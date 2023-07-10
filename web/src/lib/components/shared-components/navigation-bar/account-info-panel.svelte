@@ -14,8 +14,8 @@
 </script>
 
 <div
-  in:fade|global={{ duration: 100 }}
-  out:fade|global={{ duration: 100 }}
+  in:fade={{ duration: 100 }}
+  out:fade={{ duration: 100 }}
   id="account-info-panel"
   class="absolute right-[25px] top-[75px] bg-gray-200 dark:bg-immich-dark-gray dark:border dark:border-immich-dark-gray shadow-lg rounded-3xl w-[360px] z-[100]"
 >

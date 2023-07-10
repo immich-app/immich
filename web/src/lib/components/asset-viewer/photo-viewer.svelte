@@ -96,13 +96,13 @@
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
 
-<div transition:fade|global={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}
     <div bind:this={imgElement} class="h-full w-full">
       <img
-        transition:fade|global={{ duration: 150 }}
+        transition:fade={{ duration: 150 }}
         src={assetData}
         alt={asset.id}
         class="object-contain h-full w-full"

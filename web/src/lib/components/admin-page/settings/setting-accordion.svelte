@@ -39,7 +39,7 @@
   </div>
 
   {#if isOpen}
-    <ul transition:slide|global={{ duration: 250 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}

@@ -48,7 +48,7 @@
             <div
               class="flex place-items-center place-content-center whitespace-nowrap rounded-3xl shadow-lg py-3 px-6 bg-immich-bg text-immich-fg dark:bg-gray-600 dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
               class:hidden={!showMoreInformation}
-              transition:fade|global={{ duration: 200 }}
+              transition:fade={{ duration: 200 }}
             >
               <slot name="moreInformation" />
             </div>
