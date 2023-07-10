@@ -12,7 +12,6 @@ import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { PostgreSqlContainer } from 'testcontainers';
 import { DataSource } from 'typeorm';
 import { authCustom, clearDb, getAuthUser } from '../test/test-utils';
 
