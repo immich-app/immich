@@ -2,6 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "modulePaths": ["<rootDir>"],
   "rootDir": ".",
+  "globalSetup": "<rootDir>/e2e/load-testcontainers.ts",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
