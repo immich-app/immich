@@ -42,8 +42,8 @@ We will use those values in the steps below.
     command: [ "start.sh", "immich" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/media/precious-memory:/mnt/media/precious-memory
-+     - /mnt/media/childhood-memory:/mnt/media/childhood-memory
++     - /mnt/media/precious-memory:/mnt/media/precious-memory:ro
++     - /mnt/media/childhood-memory:/mnt/media/childhood-memory:ro
     env_file:
       - .env
     depends_on:
@@ -58,8 +58,8 @@ We will use those values in the steps below.
     command: [ "start.sh", "microservices" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/media/precious-memory:/mnt/media/precious-memory
-+     - /mnt/media/childhood-memory:/mnt/media/childhood-memory
++     - /mnt/media/precious-memory:/mnt/media/precious-memory:ro
++     - /mnt/media/childhood-memory:/mnt/media/childhood-memory:ro
     env_file:
       - .env
     depends_on:
