@@ -5,8 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:timezone/timezone.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -171,7 +171,6 @@ class ExifBottomSheet extends HookConsumerWidget {
     /// identifier is provided, the original date is
     /// provided
     getOriginalDate(DateTime date, String? timezone) {
-      // TODO This does not support the "UTC-5" format
       if (timezone != null && timezone.contains('/')) {
         final parsedTZ = getLocation(timezone);
         return TZDateTime.from(date, parsedTZ);
@@ -181,8 +180,29 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDate() {
-      // Isar stores dates in UTC, but returns them in local time
-      // see https://isar.dev/schema.html#datetime
+      // Handle offset timezones
+      if (exifInfo != null &&
+          exifInfo.timeZone != null &&
+          exifInfo.timeZone!.contains("UTC")) {
+        List<String> parts = exifInfo.timeZone!
+            .substring(exifInfo.timeZone!.indexOf('UTC') + 3)
+            .split(':');
+        int hours = int.parse(parts[0]);
+        int minutes = int.parse(parts.length == 2 ? parts[1] : "00");
+        Duration utcOffset = Duration(hours: hours, minutes: minutes);
+
+        final adjustedDate = asset.fileCreatedAt.toUtc().add(utcOffset);
+        final sign = utcOffset.isNegative ? '-' : '+';
+        final hrs = utcOffset.inHours.abs().toString().padLeft(2, '0');
+        final mins =
+            utcOffset.inMinutes.remainder(60).abs().toString().padLeft(2, '0');
+
+        final formattedDate = DateFormat.yMMMEd().format(adjustedDate);
+        final formattedTime = DateFormat.jm().format(adjustedDate);
+        return Text('$formattedDate • $formattedTime GMT$sign$hrs:$mins');
+      }
+
+      // Handle null and IANA timezones
       final fileCreatedAt =
           getOriginalDate(asset.fileCreatedAt, exifInfo?.timeZone);
       final date = DateFormat.yMMMEd().format(fileCreatedAt);
