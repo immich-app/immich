@@ -32,7 +32,7 @@
   <!-- DROP DOWN MENU -->
   {#if showMenu}
     <div
-      transition:fly={{ y: -30, x: 30, duration: 200 }}
+      transition:fly|global={{ y: -30, x: 30, duration: 200 }}
       class="absolute top-5 right-0 min-w-[250px] bg-gray-100 dark:bg-gray-700 rounded-2xl py-4 shadow-lg dark:text-white text-black z-50 text-md flex flex-col"
     >
       {#each options as option, index (option)}

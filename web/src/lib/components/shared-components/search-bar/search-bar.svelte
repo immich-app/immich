@@ -88,7 +88,7 @@
 
   {#if showBigSearchBar}
     <div
-      transition:fly={{ y: 25, duration: 250 }}
+      transition:fly|global={{ y: 25, duration: 250 }}
       class="w-full pb-5 absolute bg-white transition-all rounded-b-3xl shadow-2xl border border-gray-200 dark:bg-immich-dark-gray dark:border-gray-800 dark:text-gray-300"
     >
       <div class="px-5 pt-5 text-xs">

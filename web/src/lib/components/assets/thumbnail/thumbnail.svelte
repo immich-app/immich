@@ -164,8 +164,8 @@
       {#if selectionCandidate}
         <div
           class="absolute w-full h-full top-0 bg-immich-primary opacity-40"
-          in:fade={{ duration: 100 }}
-          out:fade={{ duration: 100 }}
+          in:fade|global={{ duration: 100 }}
+          out:fade|global={{ duration: 100 }}
         />
       {/if}
     {/if}

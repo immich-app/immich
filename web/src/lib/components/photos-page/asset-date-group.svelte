@@ -227,7 +227,7 @@
       >
         {#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
           <div
-            transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
+            transition:fly|global={{ x: -24, duration: 200, opacity: 0.5 }}
             class="inline-block px-2 hover:cursor-pointer"
             on:click={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
             on:keydown={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}

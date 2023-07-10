@@ -70,7 +70,7 @@
 </script>
 
 <div
-  transition:fade={{ duration: 250 }}
+  transition:fade|global={{ duration: 250 }}
   style:background-color={backgroundColor()}
   style:border={borderStyle()}
   class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"

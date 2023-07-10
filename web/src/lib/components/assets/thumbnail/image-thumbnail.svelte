@@ -42,6 +42,6 @@
     class:shadow-lg={shadow}
     class:rounded-full={circle}
     draggable="false"
-    out:fade={{ duration: 300 }}
+    out:fade|global={{ duration: 300 }}
   />
 {/if}

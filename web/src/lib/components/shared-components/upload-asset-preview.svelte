@@ -12,18 +12,18 @@
 </script>
 
 <div
-  in:fade={{ duration: 250 }}
-  out:fade={{ duration: 100 }}
+  in:fade|global={{ duration: 250 }}
+  out:fade|global={{ duration: 100 }}
   class="text-xs mt-3 rounded-lg bg-immich-bg grid grid-cols-[70px_auto] gap-2 h-[70px]"
 >
   <div class="relative">
     {#if showFallbackImage}
-      <div in:fade={{ duration: 250 }}>
+      <div in:fade|global={{ duration: 250 }}>
         <ImmichLogo class="h-[70px] w-[70px] object-cover rounded-tl-lg rounded-bl-lg" />
       </div>
     {:else}
       <img
-        in:fade={{ duration: 250 }}
+        in:fade|global={{ duration: 250 }}
         on:load={() => {
           URL.revokeObjectURL(previewURL);
         }}

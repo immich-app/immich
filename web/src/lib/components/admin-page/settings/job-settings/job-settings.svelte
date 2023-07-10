@@ -72,7 +72,7 @@
 
 <div>
   {#await getConfigs() then}
-    <div in:fade={{ duration: 500 }}>
+    <div in:fade|global={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault>
         {#each jobNames as jobName}
           <div class="flex flex-col gap-4 ml-4 mt-4">

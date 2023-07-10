@@ -22,7 +22,7 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div transition:fade|global={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
   <video
     controls
     class="h-full object-contain"

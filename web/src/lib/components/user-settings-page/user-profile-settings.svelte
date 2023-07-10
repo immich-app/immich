@@ -35,7 +35,7 @@
 </script>
 
 <section class="my-4">
-  <div in:fade={{ duration: 500 }}>
+  <div in:fade|global={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="flex flex-col gap-4 ml-4 mt-4">
         <SettingInputField

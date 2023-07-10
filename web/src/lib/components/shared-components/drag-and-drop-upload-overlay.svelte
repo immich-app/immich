@@ -26,7 +26,7 @@
 {#if dragStartTarget}
   <div
     class="fixed inset-0 w-full h-full z-[1000] flex flex-col items-center justify-center bg-gray-100/90 dark:bg-immich-dark-bg/90 text-immich-dark-gray dark:text-immich-gray"
-    transition:fade={{ duration: 250 }}
+    transition:fade|global={{ duration: 250 }}
     on:dragover={(e) => {
       // Prevent browser from opening the dropped file.
       e.stopPropagation();

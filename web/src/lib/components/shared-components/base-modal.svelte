@@ -30,7 +30,7 @@
 <div
   id="immich-modal"
   style:z-index={zIndex}
-  transition:fade={{ duration: 100, easing: quintOut }}
+  transition:fade|global={{ duration: 100, easing: quintOut }}
   class="fixed top-0 left-0 w-full h-full bg-black/50 flex place-items-center place-content-center overflow-hidden"
 >
   <div
