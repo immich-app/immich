@@ -12,13 +12,16 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { invalidateAll } from '$app/navigation';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
   let selectFaces: Set<PersonResponseDto> = new Set();
+
   let screenHeight: number;
-  let dispatch = createEventDispatcher();
   let isShowConfirmation = false;
+
+  let dispatch = createEventDispatcher();
 
   $: hasSelection = selectFaces.size > 0;
 
@@ -52,7 +55,7 @@
 
   const mergeFaces = async () => {
     try {
-      const { data } = await api.personApi.mergePerson({
+      await api.personApi.mergePerson({
         id: person.id,
         mergePersonDto: { ids: Array.from(selectFaces).map((p) => p.id.toString()) },
       });
@@ -61,7 +64,9 @@
         message: 'Faces merged successfully',
         type: NotificationType.Info,
       });
-      dispatch('go-back');
+
+      await invalidateAll();
+      onClose();
     } catch (error) {
       handleError(error, 'Cannot merge faces');
     } finally {
@@ -99,7 +104,6 @@
     </svelte:fragment>
   </ControlAppBar>
   <section class="pt-[100px] px-[70px] bg-immich-bg dark:bg-immich-dark-bg">
-    {isShowConfirmation}
     <section id="merge-face-selector relative">
       <div class="place-items-center place-content-center mb-10 h-[200px]">
         <p class="uppercase mb-4 dark:text-white text-center">Choose matching faces to merge</p>
