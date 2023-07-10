@@ -35,13 +35,12 @@ def mock_classifier_pipeline() -> Iterator[mock.Mock]:
         def forward(
             inputs: Image.Image | list[Image.Image], **kwargs: Any
         ) -> list[dict[str, Any]] | list[list[dict[str, Any]]]:
-            if isinstance(inputs, list) and not all([isinstance(img, Image.Image) for img in inputs]):
-                raise TypeError
+            if isinstance(inputs, list):
+                if not all([isinstance(img, Image.Image) for img in inputs]):
+                    raise TypeError
+                return [classifier_preds] * len(inputs)
             elif not isinstance(inputs, Image.Image):
                 raise TypeError
-
-            if isinstance(inputs, list):
-                return [classifier_preds] * len(inputs)
 
             return classifier_preds
 
@@ -86,7 +85,7 @@ def mock_faceanalysis() -> Iterator[mock.Mock]:
 
 @pytest.fixture
 def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("app.models.cache.InferenceModel.from_model_type", autospec=True) as mocked:
+    with mock.patch("app.models.base.InferenceModel.from_model_type", autospec=True) as mocked:
         yield mocked
 
 

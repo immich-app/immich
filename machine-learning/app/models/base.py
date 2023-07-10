@@ -30,7 +30,7 @@ class InferenceModel(ABC):
         if eager:
             self.load()
 
-    def load(self, **kwargs) -> None:
+    def load(self, **kwargs: Any) -> None:
         self.model = None
         try:
             self.model = self._load(**self.model_kwargs, **kwargs)

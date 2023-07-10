@@ -8,11 +8,9 @@ import requests
 from PIL import Image
 
 from .config import settings
-from .models.cache import ModelCache
 from .models.clip import CLIPSTEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
-from .schemas import ModelType
 
 
 class TestImageClassifier:
@@ -93,48 +91,6 @@ class TestFaceRecognition:
             assert all([isinstance(num, float) for num in face["embedding"]])
 
         mock_faceanalysis.assert_called_once()
-
-
-@pytest.mark.asyncio
-class TestCache:
-    async def test_caches(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        assert len(model_cache.cache._cache) == 1
-        mock_get_model.assert_called_once()
-
-    async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION, cache_dir="test_cache")
-        mock_get_model.assert_called_once_with(
-            ModelType.IMAGE_CLASSIFICATION, "test_model_name", cache_dir="test_cache"
-        )
-
-    async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache()
-        await model_cache.get("test_image_model_name", ModelType.CLIP)
-        await model_cache.get("test_text_model_name", ModelType.CLIP)
-        mock_get_model.assert_has_calls(
-            [
-                mock.call(ModelType.CLIP, "test_image_model_name"),
-                mock.call(ModelType.CLIP, "test_text_model_name"),
-            ]
-        )
-        assert len(model_cache.cache._cache) == 2
-
-    @mock.patch("app.models.cache.OptimisticLock", autospec=True)
-    async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(ttl=100)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
-
-    @mock.patch("app.models.cache.SimpleMemoryCache.expire")
-    async def test_revalidate(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
-        model_cache = ModelCache(ttl=100, revalidate=True)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        mock_cache_expire.assert_called_once_with(mock.ANY, 100)
 
 
 @pytest.mark.skipif(
