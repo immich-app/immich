@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import { DateTime } from 'luxon';
   import { api } from '@api';
-  import ChevronLeft from 'immich-material-icons/icons/ChevronLeft.svelte';
-  import ChevronRight from 'immich-material-icons/icons/ChevronRight.svelte';
+  import ChevronLeft from 'svelte-material-icons/icons/ChevronLeft.svelte';
+  import ChevronRight from 'svelte-material-icons/icons/ChevronRight.svelte';
   import { memoryStore } from '$lib/stores/memory.store';
   import { goto } from '$app/navigation';
   import { fade } from 'svelte/transition';

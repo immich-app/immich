@@ -1,8 +1,8 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import CloseCircleOutline from 'immich-material-icons/icons/CloseCircleOutline.svelte';
-  import InformationOutline from 'immich-material-icons/icons/InformationOutline.svelte';
-  import WindowClose from 'immich-material-icons/icons/WindowClose.svelte';
+  import CloseCircleOutline from 'svelte-material-icons/icons/CloseCircleOutline.svelte';
+  import InformationOutline from 'svelte-material-icons/icons/InformationOutline.svelte';
+  import WindowClose from 'svelte-material-icons/icons/WindowClose.svelte';
 
   import {
     ImmichNotification,

@@ -4,9 +4,9 @@
   import { goto } from '$app/navigation';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import DeleteOutline from 'immich-material-icons/icons/DeleteOutline.svelte';
+  import DeleteOutline from 'svelte-material-icons/icons/DeleteOutline.svelte';
   import type { PageData } from './$types';
-  import PlusBoxOutline from 'immich-material-icons/icons/PlusBoxOutline.svelte';
+  import PlusBoxOutline from 'svelte-material-icons/icons/PlusBoxOutline.svelte';
   import { useAlbums } from './albums.bloc';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';

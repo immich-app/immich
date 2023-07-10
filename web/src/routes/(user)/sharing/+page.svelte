@@ -1,6 +1,6 @@
 <script lang="ts">
-  import PlusBoxOutline from 'immich-material-icons/icons/PlusBoxOutline.svelte';
-  import Link from 'immich-material-icons/icons/Link.svelte';
+  import PlusBoxOutline from 'svelte-material-icons/icons/PlusBoxOutline.svelte';
+  import Link from 'svelte-material-icons/icons/Link.svelte';
   import { goto } from '$app/navigation';
   import { api } from '@api';
   import type { PageData } from './$types';

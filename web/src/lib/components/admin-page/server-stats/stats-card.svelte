@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type Icon from 'immich-material-icons/icons/AbTesting.svelte';
+  import type Icon from 'svelte-material-icons/icons/AbTesting.svelte';
 
   export let logo: typeof Icon;
   export let title: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { api, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import AccountEditOutline from 'immich-material-icons/icons/AccountEditOutline.svelte';
+  import AccountEditOutline from 'svelte-material-icons/icons/AccountEditOutline.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';

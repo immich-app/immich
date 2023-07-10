@@ -1,9 +1,9 @@
 <script>
   import { page } from '$app/stores';
-  import Message from 'immich-material-icons/icons/Message.svelte';
-  import PartyPopper from 'immich-material-icons/icons/PartyPopper.svelte';
-  import CodeTags from 'immich-material-icons/icons/CodeTags.svelte';
-  import ContentCopy from 'immich-material-icons/icons/ContentCopy.svelte';
+  import Message from 'svelte-material-icons/icons/Message.svelte';
+  import PartyPopper from 'svelte-material-icons/icons/PartyPopper.svelte';
+  import CodeTags from 'svelte-material-icons/icons/CodeTags.svelte';
+  import ContentCopy from 'svelte-material-icons/icons/ContentCopy.svelte';
   import {
     notificationController,
     NotificationType,

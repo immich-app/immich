@@ -4,16 +4,16 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import ArrowLeft from 'immich-material-icons/icons/ArrowLeft.svelte';
-  import FileImagePlusOutline from 'immich-material-icons/icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'immich-material-icons/icons/FolderDownloadOutline.svelte';
+  import ArrowLeft from 'svelte-material-icons/icons/ArrowLeft.svelte';
+  import FileImagePlusOutline from 'svelte-material-icons/icons/FileImagePlusOutline.svelte';
+  import FolderDownloadOutline from 'svelte-material-icons/icons/FolderDownloadOutline.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import SelectAll from 'immich-material-icons/icons/SelectAll.svelte';
+  import SelectAll from 'svelte-material-icons/icons/SelectAll.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
 
   import { notificationController, NotificationType } from '../shared-components/notification/notification';

@@ -10,8 +10,8 @@
   import { AppRoute } from '$lib/constants';
   import { assetInteractionStore, isMultiSelectStoreState, selectedAssets } from '$lib/stores/asset-interaction.store';
   import { onDestroy } from 'svelte';
-  import ArrowLeft from 'immich-material-icons/icons/ArrowLeft.svelte';
-  import Plus from 'immich-material-icons/icons/Plus.svelte';
+  import ArrowLeft from 'svelte-material-icons/icons/ArrowLeft.svelte';
+  import Plus from 'svelte-material-icons/icons/Plus.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;

@@ -13,8 +13,8 @@
   import justifiedLayout from 'justified-layout';
   import lodash from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
-  import CheckCircle from 'immich-material-icons/icons/CheckCircle.svelte';
-  import CircleOutline from 'immich-material-icons/icons/CircleOutline.svelte';
+  import CheckCircle from 'svelte-material-icons/icons/CheckCircle.svelte';
+  import CircleOutline from 'svelte-material-icons/icons/CircleOutline.svelte';
   import { fly } from 'svelte/transition';
   import { DateTime, Interval } from 'luxon';
   import { getAssetRatio } from '$lib/utils/asset-utils';

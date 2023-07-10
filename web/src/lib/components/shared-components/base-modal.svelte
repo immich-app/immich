@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import Close from 'immich-material-icons/icons/Close.svelte';
+  import Close from 'svelte-material-icons/icons/Close.svelte';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';

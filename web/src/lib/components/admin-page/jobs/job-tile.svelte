@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type Icon from 'immich-material-icons/icons/AbTesting.svelte';
-  import SelectionSearch from 'immich-material-icons/icons/SelectionSearch.svelte';
-  import Play from 'immich-material-icons/icons/Play.svelte';
-  import Pause from 'immich-material-icons/icons/Pause.svelte';
-  import FastForward from 'immich-material-icons/icons/FastForward.svelte';
-  import AllInclusive from 'immich-material-icons/icons/AllInclusive.svelte';
-  import Close from 'immich-material-icons/icons/Close.svelte';
+  import type Icon from 'svelte-material-icons/icons/AbTesting.svelte';
+  import SelectionSearch from 'svelte-material-icons/icons/SelectionSearch.svelte';
+  import Play from 'svelte-material-icons/icons/Play.svelte';
+  import Pause from 'svelte-material-icons/icons/Pause.svelte';
+  import FastForward from 'svelte-material-icons/icons/FastForward.svelte';
+  import AllInclusive from 'svelte-material-icons/icons/AllInclusive.svelte';
+  import Close from 'svelte-material-icons/icons/Close.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { createEventDispatcher } from 'svelte';
   import { JobCommand, JobCommandDto, JobCountsDto, QueueStatusDto } from '@api';

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import OpenInNew from 'immich-material-icons/icons/OpenInNew.svelte';
-  import Delete from 'immich-material-icons/icons/TrashCanOutline.svelte';
-  import ContentCopy from 'immich-material-icons/icons/ContentCopy.svelte';
-  import CircleEditOutline from 'immich-material-icons/icons/CircleEditOutline.svelte';
+  import OpenInNew from 'svelte-material-icons/icons/OpenInNew.svelte';
+  import Delete from 'svelte-material-icons/icons/TrashCanOutline.svelte';
+  import ContentCopy from 'svelte-material-icons/icons/ContentCopy.svelte';
+  import CircleEditOutline from 'svelte-material-icons/icons/CircleEditOutline.svelte';
   import * as luxon from 'luxon';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';

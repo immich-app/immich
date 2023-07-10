@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Duration } from 'luxon';
-  import PauseCircleOutline from 'immich-material-icons/icons/PauseCircleOutline.svelte';
-  import PlayCircleOutline from 'immich-material-icons/icons/PlayCircleOutline.svelte';
-  import AlertCircleOutline from 'immich-material-icons/icons/AlertCircleOutline.svelte';
+  import PauseCircleOutline from 'svelte-material-icons/icons/PauseCircleOutline.svelte';
+  import PlayCircleOutline from 'svelte-material-icons/icons/PlayCircleOutline.svelte';
+  import AlertCircleOutline from 'svelte-material-icons/icons/AlertCircleOutline.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let url: string;

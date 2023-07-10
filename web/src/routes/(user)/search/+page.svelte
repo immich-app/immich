@@ -13,12 +13,12 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import type { AssetResponseDto } from '@api';
-  import ArrowLeft from 'immich-material-icons/icons/ArrowLeft.svelte';
-  import DotsVertical from 'immich-material-icons/icons/DotsVertical.svelte';
-  import ImageOffOutline from 'immich-material-icons/icons/ImageOffOutline.svelte';
-  import Plus from 'immich-material-icons/icons/Plus.svelte';
+  import ArrowLeft from 'svelte-material-icons/icons/ArrowLeft.svelte';
+  import DotsVertical from 'svelte-material-icons/icons/DotsVertical.svelte';
+  import ImageOffOutline from 'svelte-material-icons/icons/ImageOffOutline.svelte';
+  import Plus from 'svelte-material-icons/icons/Plus.svelte';
   import type { PageData } from './$types';
-  import SelectAll from 'immich-material-icons/icons/SelectAll.svelte';
+  import SelectAll from 'svelte-material-icons/icons/SelectAll.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { AppRoute } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';

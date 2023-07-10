@@ -3,7 +3,7 @@
   import { AlbumResponseDto, api, UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import DotsVertical from 'immich-material-icons/icons/DotsVertical.svelte';
+  import DotsVertical from 'svelte-material-icons/icons/DotsVertical.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';

@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
-  import CloudDownloadOutline from 'immich-material-icons/icons/CloudDownloadOutline.svelte';
+  import CloudDownloadOutline from 'svelte-material-icons/icons/CloudDownloadOutline.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 

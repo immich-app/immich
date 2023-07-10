@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import KeyVariant from 'immich-material-icons/icons/KeyVariant.svelte';
+  import KeyVariant from 'svelte-material-icons/icons/KeyVariant.svelte';
   import { handleError } from '../../utils/handle-error';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
