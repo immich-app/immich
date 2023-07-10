@@ -24,7 +24,6 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
-  mimeType!: string | null;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -52,7 +51,6 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
@@ -80,7 +78,6 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,

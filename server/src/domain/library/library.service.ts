@@ -15,7 +15,7 @@ import path from 'node:path';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
-import { ASSET_MIME_TYPES } from '../domain.constant';
+import { mimeTypes } from '../domain.constant';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { LibraryCrawler } from './library-crawler';
 import {
@@ -155,7 +155,8 @@ export class LibraryService {
     if (!mimeType) {
       throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
     }
-    if (!ASSET_MIME_TYPES.includes(mimeType)) {
+
+    if (!mimeTypes.isAsset(job.assetPath)) {
       throw new BadRequestException(`Unsupported file type ${mimeType}`);
     }
 
@@ -176,7 +177,6 @@ export class LibraryService {
 
       library: { id: job.libraryId } as LibraryEntity,
 
-      mimeType: mimeType,
       checksum: checksum,
       originalPath: job.assetPath,
 

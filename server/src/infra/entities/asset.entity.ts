@@ -94,9 +94,6 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isOffline!: boolean;
 
-  @Column({ type: 'varchar', nullable: true })
-  mimeType!: string | null;
-
   @Column({ type: 'bytea' })
   @Index()
   checksum!: Buffer; // sha1 checksum

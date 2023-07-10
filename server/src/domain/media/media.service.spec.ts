@@ -116,7 +116,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateJpegThumbnail({ id: assetEntityStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
       });
@@ -167,11 +167,11 @@ describe(MediaService.name, () => {
       await sut.handleGenerateWebpThumbnail({ id: assetEntityStub.image.id });
 
       expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.ext',
-        '/uploads/user-id/thumbs/path.ext',
+        '/uploads/user-id/thumbs/path.jpg',
+        '/uploads/user-id/thumbs/path.webp',
         { format: 'webp', size: 250 },
       );
-      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.ext' });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.webp' });
     });
   });
 
@@ -195,7 +195,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbhashThumbnail({ id: assetEntityStub.image.id });
 
-      expect(mediaMock.generateThumbhash).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext');
+      expect(mediaMock.generateThumbhash).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg');
       expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
     });
   });

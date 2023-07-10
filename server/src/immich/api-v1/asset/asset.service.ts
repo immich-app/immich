@@ -1,7 +1,6 @@
 import {
   AccessCore,
   AssetResponseDto,
-  ASSET_MIME_TYPES,
   AuthUserDto,
   getLivePhotoMotionFilename,
   IAccessRepository,
@@ -10,12 +9,10 @@ import {
   ILibraryRepository,
   IStorageRepository,
   JobName,
-  LIVE_PHOTO_MIME_TYPES,
   mapAsset,
   mapAssetWithoutExif,
+  mimeTypes,
   Permission,
-  PROFILE_MIME_TYPES,
-  SIDECAR_MIME_TYPES,
   StorageCore,
   StorageFolder,
   UploadFieldName,
@@ -34,7 +31,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
 import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
-import mime from 'mime-types';
 import path, { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { pipeline } from 'stream/promises';
@@ -72,11 +68,6 @@ import { CuratedLocationsResponseDto } from './response-dto/curated-locations-re
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
-interface ServableFile {
-  filepath: string;
-  contentType: string;
-}
-
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
@@ -100,35 +91,36 @@ export class AssetService {
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
     this.access.requireUploadAccess(authUser);
 
+    const filename = file.originalName;
+
     switch (fieldName) {
       case UploadFieldName.ASSET_DATA:
-        if (ASSET_MIME_TYPES.includes(file.mimeType)) {
+        if (mimeTypes.isAsset(filename)) {
           return true;
         }
         break;
 
       case UploadFieldName.LIVE_PHOTO_DATA:
-        if (LIVE_PHOTO_MIME_TYPES.includes(file.mimeType)) {
+        if (mimeTypes.isVideo(filename)) {
           return true;
         }
         break;
 
       case UploadFieldName.SIDECAR_DATA:
-        if (SIDECAR_MIME_TYPES.includes(file.mimeType)) {
+        if (mimeTypes.isSidecar(filename)) {
           return true;
         }
         break;
 
       case UploadFieldName.PROFILE_DATA:
-        if (PROFILE_MIME_TYPES.includes(file.mimeType)) {
+        if (mimeTypes.isProfile(filename)) {
           return true;
         }
         break;
     }
 
-    const ext = extname(file.originalName);
-    this.logger.error(`Unsupported file type ${ext} file MIME type ${file.mimeType}`);
-    throw new BadRequestException(`Unsupported file type ${ext}`);
+    this.logger.error(`Unsupported file type ${filename}`);
+    throw new BadRequestException(`Unsupported file type ${filename}`);
   }
 
   getUploadFilename({ authUser, fieldName, file }: UploadRequest): string {
@@ -227,15 +219,12 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
-    const mimeType = mime.lookup(dto.assetPath) as string;
-    if (!ASSET_MIME_TYPES.includes(mimeType)) {
-      throw new BadRequestException(`Unsupported file type ${mimeType}`);
+    if (!mimeTypes.isAsset(dto.assetPath)) {
+      throw new BadRequestException(`Unsupported file type ${dto.assetPath}`);
     }
 
-    if (dto.sidecarPath) {
-      if (path.extname(dto.sidecarPath).toLowerCase() !== '.xmp') {
-        throw new BadRequestException(`Unsupported sidecar file type`);
-      }
+    if (dto.sidecarPath && !mimeTypes.isSidecar(dto.sidecarPath)) {
+      throw new BadRequestException(`Unsupported sidecar file type`);
     }
 
     for (const filepath of [dto.assetPath, dto.sidecarPath]) {
@@ -251,7 +240,6 @@ export class AssetService {
 
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      mimeType,
       originalPath: dto.assetPath,
       originalName: path.parse(dto.assetPath).name,
     };
@@ -346,8 +334,7 @@ export class AssetService {
     }
 
     try {
-      const [thumbnailPath, contentType] = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers, contentType);
+      return this.streamFile(this.getThumbnailPath(asset, query.format), res, headers);
     } catch (e) {
       res.header('Cache-Control', 'none');
       this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -378,8 +365,7 @@ export class AssetService {
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE) {
       try {
-        const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
-        return this.streamFile(filepath, res, headers, contentType);
+        return this.streamFile(this.getServePath(asset, query, allowOriginalFile), res, headers);
       } catch (e) {
         this.logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
@@ -389,10 +375,7 @@ export class AssetService {
       }
     } else {
       try {
-        const videoPath = asset.encodedVideoPath ? asset.encodedVideoPath : asset.originalPath;
-        const mimeType = asset.encodedVideoPath ? 'video/mp4' : asset.mimeType;
-
-        return this.streamFile(videoPath, res, headers, mimeType);
+        return this.streamFile(asset.encodedVideoPath || asset.originalPath, res, headers);
       } catch (e: Error | any) {
         this.logger.error(`Error serving VIDEO asset=${asset.id}`, e?.stack);
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
@@ -613,7 +596,7 @@ export class AssetService {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
         if (asset.webpPath) {
-          return [asset.webpPath, 'image/webp'];
+          return asset.webpPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
@@ -622,48 +605,48 @@ export class AssetService {
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return [asset.resizePath, 'image/jpeg'];
+        return asset.resizePath;
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): ServableFile {
+  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+    const mimeType = mimeTypes.lookup(asset.originalPath);
+
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && asset.mimeType != 'image/gif') {
+    if (query.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+      return asset.resizePath;
     }
 
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
-      return { filepath: asset.originalPath, contentType: asset.mimeType as string };
+    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+      return asset.originalPath;
     }
 
     if (asset.webpPath && asset.webpPath.length > 0) {
-      return { filepath: asset.webpPath, contentType: 'image/webp' };
+      return asset.webpPath;
     }
 
     if (!asset.resizePath) {
       throw new Error('resizePath not set');
     }
 
-    return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+    return asset.resizePath;
   }
 
-  private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+  private async streamFile(filepath: string, res: Res, headers: Record<string, string>) {
     await fs.access(filepath, constants.R_OK);
     const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
 
-    if (contentType) {
-      res.header('Content-Type', contentType);
-    }
+    res.header('Content-Type', mimeTypes.lookup(filepath));
 
     const range = this.setResRange(res, headers, Number(size));
 

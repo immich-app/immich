@@ -18,7 +18,6 @@ export class AssetCore {
       owner: { id: authUser.id } as UserEntity,
       library: { id: dto.libraryId } as LibraryEntity,
 
-      mimeType: file.mimeType,
       checksum: file.checksum,
       originalPath: file.originalPath,
 

@@ -5173,10 +5173,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
           "duration": {
             "type": "string"
           },
@@ -5223,7 +5219,6 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
-          "mimeType",
           "duration",
           "checksum"
         ]
