@@ -89,10 +89,10 @@ export class MediaService {
       return false;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp');
+    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
 
     await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
-    await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
+    await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;
   }

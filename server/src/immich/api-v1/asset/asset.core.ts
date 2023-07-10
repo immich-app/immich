@@ -17,7 +17,6 @@ export class AssetCore {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
 
-      mimeType: file.mimeType,
       checksum: file.checksum,
       originalPath: file.originalPath,
 

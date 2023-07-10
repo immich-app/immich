@@ -56,11 +56,11 @@ describe(StorageTemplateService.name, () => {
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
       when(storageMock.checkFileExists)
-        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.ext')
+        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.jpg')
         .mockResolvedValue(true);
 
       when(storageMock.checkFileExists)
-        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id+1.ext')
+        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id+1.jpg')
         .mockResolvedValue(false);
 
       await sut.handleMigration();
@@ -69,7 +69,7 @@ describe(StorageTemplateService.name, () => {
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(2);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
       });
       expect(userMock.getList).toHaveBeenCalled();
     });
@@ -79,7 +79,7 @@ describe(StorageTemplateService.name, () => {
         items: [
           {
             ...assetEntityStub.image,
-            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
+            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
           },
         ],
         hasNextPage: false,
@@ -99,7 +99,7 @@ describe(StorageTemplateService.name, () => {
         items: [
           {
             ...assetEntityStub.image,
-            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
+            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
           },
         ],
         hasNextPage: false,
@@ -126,12 +126,12 @@ describe(StorageTemplateService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/library/user-id/2023/2023-02-23/asset-id.ext',
+        '/original/path.jpg',
+        'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       });
     });
 
@@ -147,12 +147,12 @@ describe(StorageTemplateService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/library/label-1/2023/2023-02-23/asset-id.ext',
+        '/original/path.jpg',
+        'upload/library/label-1/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/library/label-1/2023/2023-02-23/asset-id.ext',
+        originalPath: 'upload/library/label-1/2023/2023-02-23/asset-id.jpg',
       });
     });
 
@@ -168,8 +168,8 @@ describe(StorageTemplateService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/library/user-id/2023/2023-02-23/asset-id.ext',
+        '/original/path.jpg',
+        'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).not.toHaveBeenCalled();
     });
@@ -187,11 +187,11 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       });
       expect(storageMock.moveFile.mock.calls).toEqual([
-        ['/original/path.ext', 'upload/library/user-id/2023/2023-02-23/asset-id.ext'],
-        ['upload/library/user-id/2023/2023-02-23/asset-id.ext', '/original/path.ext'],
+        ['/original/path.jpg', 'upload/library/user-id/2023/2023-02-23/asset-id.jpg'],
+        ['upload/library/user-id/2023/2023-02-23/asset-id.jpg', '/original/path.jpg'],
       ]);
     });
 
@@ -200,7 +200,7 @@ describe(StorageTemplateService.name, () => {
         items: [
           {
             ...assetEntityStub.image,
-            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
+            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
             isReadOnly: true,
           },
         ],

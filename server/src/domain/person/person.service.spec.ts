@@ -17,7 +17,7 @@ import { PersonService } from './person.service';
 const responseDto: PersonResponseDto = {
   id: 'person-1',
   name: 'Person 1',
-  thumbnailPath: '/path/to/thumbnail',
+  thumbnailPath: '/path/to/thumbnail.jpg',
 };
 
 describe(PersonService.name, () => {
@@ -74,7 +74,7 @@ describe(PersonService.name, () => {
     it('should serve the thumbnail', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       await sut.getThumbnail(authStub.admin, 'person-1');
-      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/thumbnail', 'image/jpeg');
+      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/thumbnail.jpg', 'image/jpeg');
     });
   });
 
@@ -150,7 +150,7 @@ describe(PersonService.name, () => {
       expect(personMock.delete).toHaveBeenCalledWith(personStub.noName);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
-        data: { files: ['/path/to/thumbnail'] },
+        data: { files: ['/path/to/thumbnail.jpg'] },
       });
     });
   });
