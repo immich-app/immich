@@ -220,16 +220,6 @@ describe('AssetService', () => {
   });
 
   describe('mime types linting', () => {
-    it('should contain only lowercase mime types', () => {
-      for (const mimeType of [mimeTypes.image, mimeTypes.video, mimeTypes.profile, mimeTypes.sidecar]) {
-        const keys = Object.keys(mimeType);
-        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
-
-        const values = Object.values(mimeType);
-        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-      }
-    });
-
     describe('profile', () => {
       it('should contain only lowercase mime types', () => {
         const keys = Object.keys(mimeTypes.profile);
