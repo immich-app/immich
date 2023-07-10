@@ -21,7 +21,8 @@ ENV NODE_ENV=production \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
   PATH="/opt/venv/bin:$PATH" \
-  PYTHONPATH=/usr/src
+  PYTHONPATH=/usr/src \
+  RAY_USAGE_STATS_ENABLED=0
 
 COPY --from=builder /opt/venv /opt/venv
 COPY app .

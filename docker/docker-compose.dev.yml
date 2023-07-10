@@ -28,12 +28,13 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
+    shm_size: 256MiB
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
-    command: python main.py
     ports:
       - 3003:3003
+      - 8265:8265
     volumes:
       - ../machine-learning/app:/usr/src/app
       - model-cache:/cache

@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     @property
     def autoscaling(self) -> dict[str, Any]:
         return {
-            "min_replicas": 0,
-            "initial_replicas": int(self.eager_startup),
+            "min_replicas": 0 if self.model_ttl > 0 else 1,
+            "initial_replicas": 1,
             "max_replicas": 1,
             "metrics_interval_s": 1,
             "downscale_delay_s": self.model_ttl,
@@ -44,6 +44,12 @@ class Settings(BaseSettings):
 
 def get_cache_dir(model_name: str, model_type: ModelType) -> Path:
     return Path(settings.cache_folder, model_type.value, model_name)
+
+
+def get_shm_size() -> int:
+    statvfs = os.statvfs("/dev/shm")
+    shm_size = statvfs.f_frsize * statvfs.f_bavail
+    return min(max(shm_size - 1, 0), 2**30)  # 0B <= shm_size <= 1GiB
 
 
 settings = Settings()

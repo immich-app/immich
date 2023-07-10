@@ -4,15 +4,13 @@ from typing import Any
 import cv2
 import numpy as np
 from fastapi import Body, Depends, FastAPI, HTTPException
+from fastapi.responses import ORJSONResponse
 from PIL import Image, UnidentifiedImageError
 from ray import serve
 
 from ..config import settings
 from ..schemas import (
-    EmbeddingResponse,
-    FaceResponse,
     MessageResponse,
-    TagResponse,
     TextModelRequest,
     TextResponse,
 )
@@ -39,7 +37,7 @@ app = FastAPI()
 
 
 # lots of `type: ignores` below; it seems `serve` doesn't play well with mypy
-@serve.deployment(route_prefix="/", ray_actor_options={"num_cpus": 0})
+@serve.deployment(route_prefix="/")
 @serve.ingress(app)
 class ModelIngress:
     """
@@ -47,6 +45,8 @@ class ModelIngress:
     Individual requests are batched together for more efficient model inference.
     Unlike `ModelHandler`, this deployment does not autoscale; it will always have one replica.
     """
+
+    __slots__ = "handler"
 
     def __init__(self, handler: Any) -> None:
         self.handler = handler
@@ -59,29 +59,29 @@ class ModelIngress:
     def ping(self) -> str:
         return "pong"
 
-    @app.post("/image-classifier/tag-image", response_model=TagResponse, status_code=200)
+    @app.post("/image-classifier/tag-image", response_class=ORJSONResponse, status_code=200)
     async def classify(self, image: Image.Image = Depends(load_pil_image)) -> list[list[str]]:
-        return await self.classify_batch(image)  # type: ignore
+        return ORJSONResponse(await self.classify_batch(image))  # type: ignore
 
     @app.post(
         "/sentence-transformer/encode-image",
-        response_model=EmbeddingResponse,
+        response_class=ORJSONResponse,
         status_code=200,
     )
     async def clip_encode_image(self, image: Image.Image = Depends(load_pil_image)) -> list[list[float]]:
-        return await self.clip_encode_image_batch(image)  # type: ignore
+        return ORJSONResponse(await self.clip_encode_image_batch(image))  # type: ignore
 
     @app.post(
         "/sentence-transformer/encode-text",
-        response_model=EmbeddingResponse,
+        response_class=ORJSONResponse,
         status_code=200,
     )
     async def clip_encode_text(self, payload: TextModelRequest) -> list[list[float]]:
-        return await self.clip_encode_text_batch(payload.text)  # type: ignore
+        return ORJSONResponse(await self.clip_encode_text_batch(payload.text))  # type: ignore
 
-    @app.post("/facial-recognition/detect-faces", response_model=FaceResponse, status_code=200)
+    @app.post("/facial-recognition/detect-faces", response_class=ORJSONResponse, status_code=200)
     async def facial_recognition(self, image: cv2.Mat = Depends(load_cv_image)) -> list[dict[str, Any]]:
-        return await self.facial_recognition_batch(image)  # type: ignore
+        return ORJSONResponse(await self.facial_recognition_batch(image))  # type: ignore
 
     @serve.batch(max_batch_size=settings.max_batch_size, batch_wait_timeout_s=settings.batch_timeout_s)  # type: ignore
     async def classify_batch(self, images: list[Image.Image]) -> list[list[str]]:

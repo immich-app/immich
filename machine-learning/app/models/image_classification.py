@@ -10,6 +10,7 @@ from .base import InferenceModel
 
 
 class ImageClassifier(InferenceModel):
+    __slots__ = "min_score"
     _model_type = ModelType.IMAGE_CLASSIFICATION
 
     def __init__(
@@ -22,20 +23,14 @@ class ImageClassifier(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def load(self, **model_kwargs: Any) -> None:
-        self.model = pipeline(
+    def _load(self, **model_kwargs: Any) -> None:
+        return pipeline(
             self.model_type.value,
             self.model_name,
             model_kwargs={"cache_dir": self.cache_dir, **model_kwargs},
         )
 
-    def predict(self, image: Image) -> list[str]:
-        predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
-        tags = self._postprocess(predictions)
-
-        return tags
-
-    def predict_batch(self, images: list[Image]) -> list[list[str]]:
+    def _predict_batch(self, images: list[Image]) -> list[list[str]]:
         batch_predictions: list[list[dict[str, Any]]] = self.model(images)  # type: ignore
         results = [self._postprocess(predictions) for predictions in batch_predictions]
 

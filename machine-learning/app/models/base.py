@@ -7,33 +7,51 @@ from typing import Any
 
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf  # type: ignore
 
-from ..config import get_cache_dir
+from ..config import get_cache_dir, settings
 from ..schemas import ModelType
 
 
 class InferenceModel(ABC):
+    __slots__ = ("model_name", "_cache_dir", "eager", "model_kwargs", "model")
     _model_type: ModelType
 
-    def __init__(self, model_name: str, cache_dir: Path | str | None = None, **model_kwargs: Any) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        cache_dir: Path | str | None = None,
+        eager: bool = settings.eager_startup,
+        **model_kwargs: Any,
+    ) -> None:
         self.model_name = model_name
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
+        self.eager = eager
+        self.model_kwargs = model_kwargs
+        self.model: Any = None
+        if eager:
+            self.load()
 
+    def load(self, **kwargs) -> None:
+        self.model = None
         try:
-            self.load(**model_kwargs)
+            self.model = self._load(**self.model_kwargs, **kwargs)
         except (OSError, InvalidProtobuf):
             self.clear_cache()
-            self.load(**model_kwargs)
+            self.model = self._load(**self.model_kwargs, **kwargs)
 
-    @abstractmethod
-    def load(self, **model_kwargs: Any) -> None:
-        ...
-
-    @abstractmethod
     def predict(self, inputs: Any) -> Any:
+        return self.predict_batch([inputs])[0]
+
+    def predict_batch(self, inputs: list[Any]) -> list[Any]:
+        if not self.model:
+            self.load()
+        return self._predict_batch(inputs)
+
+    @abstractmethod
+    def _load(self, **model_kwargs: Any) -> Any:
         ...
 
     @abstractmethod
-    def predict_batch(self, inputs: list[Any]) -> list[Any]:
+    def _predict_batch(self, inputs: list[Any]) -> list[Any]:
         ...
 
     @property

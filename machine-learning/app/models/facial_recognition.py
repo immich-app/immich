@@ -12,6 +12,7 @@ from .base import InferenceModel
 
 
 class FaceRecognizer(InferenceModel):
+    __slots__ = "min_score"
     _model_type = ModelType.FACIAL_RECOGNITION
 
     def __init__(
@@ -24,23 +25,21 @@ class FaceRecognizer(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def load(self, **model_kwargs: Any) -> None:
-        self.model = FaceAnalysis(
+    def _load(self, **model_kwargs: Any) -> None:
+        model = FaceAnalysis(
             name=self.model_name,
             root=self.cache_dir.as_posix(),
             allowed_modules=["detection", "recognition"],
             **model_kwargs,
         )
-        self.model.prepare(
+        model.prepare(
             ctx_id=0,
             det_thresh=self.min_score,
             det_size=(640, 640),
         )
+        return model
 
-    def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
-        return self.predict_batch([image])[0]
-
-    def predict_batch(self, images: list[cv2.Mat]) -> list[list[dict[str, Any]]]:
+    def _predict_batch(self, images: list[cv2.Mat]) -> list[list[dict[str, Any]]]:
         batch_det, batch_kpss = self._detect(images)
         batch_cropped_images, batch_offsets = self._preprocess(images, batch_kpss)
         if batch_cropped_images:
