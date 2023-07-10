@@ -78,9 +78,6 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isReadOnly!: boolean;
 
-  @Column({ type: 'varchar', nullable: true })
-  mimeType!: string | null;
-
   @Column({ type: 'bytea' })
   @Index()
   checksum!: Buffer; // sha1 checksum

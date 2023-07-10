@@ -156,10 +156,7 @@ describe(AssetService.name, () => {
 
       await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
 
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(
-        assetEntityStub.image.originalPath,
-        assetEntityStub.image.mimeType,
-      );
+      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetEntityStub.image.originalPath, 'image/jpeg');
     });
 
     it('should download an archive', async () => {

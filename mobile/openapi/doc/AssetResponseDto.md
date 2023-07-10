@@ -22,7 +22,6 @@ Name | Type | Description | Notes
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **isFavorite** | **bool** |  | 
 **isArchived** | **bool** |  | 
-**mimeType** | **String** |  | 
 **duration** | **String** |  | 
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
