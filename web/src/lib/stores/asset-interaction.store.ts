@@ -7,12 +7,24 @@ import { assetGridState, assetStore } from './assets.store';
 export const viewingAssetStoreState = writable<AssetResponseDto>();
 export const isViewingAssetStoreState = writable<boolean>(false);
 
-// Multi-Selection mode
+/**
+ * Multi-selection mode
+ */
 export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
+// Selected assets
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
+// Selected date groups
 export const selectedGroup = writable<Set<string>>(new Set());
+// If any asset selected
 export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
+
+/**
+ * Range selection
+ */
+// Candidates for the range selection. This set includes only loaded assets, so it improves highlight
+// performance. From the user's perspective, range is highlighted almost immediately
 export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
+// The beginning of the selection range
 export const assetSelectionStart = writable<AssetResponseDto | null>(null);
 
 function createAssetInteractionStore() {
@@ -176,9 +188,12 @@ function createAssetInteractionStore() {
   };
 
   const clearMultiselect = () => {
+    // Multi-selection
     _selectedAssets.clear();
     _selectedGroup.clear();
     _assetsInAlbums = [];
+
+    // Range selection
     _assetSelectionCandidates.clear();
     _assetSelectionStart = null;
 
