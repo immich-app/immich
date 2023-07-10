@@ -18,6 +18,7 @@
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { browser } from '$app/environment';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
@@ -161,11 +162,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      console.error(error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: `Error ${asset.isFavorite ? 'favoriting' : 'unfavoriting'} asset, check console for more details`,
-      });
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -229,11 +226,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      console.error(error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: `Error ${asset.isArchived ? 'archiving' : 'unarchiving'} asset, check console for more details`,
-      });
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
