@@ -179,6 +179,21 @@ class ExifBottomSheet extends HookConsumerWidget {
       return date;
     }
 
+    String formatUtcOffset(Duration utcOffset) {
+      final sign = utcOffset.isNegative ? '-' : '+';
+      final hours = utcOffset.inHours.abs().toString().padLeft(2, '0');
+      final minutes =
+          utcOffset.inMinutes.remainder(60).abs().toString().padLeft(2, '0');
+      return 'GMT$sign$hours:$minutes';
+    }
+
+    String formatDateTime(DateTime dateTime) {
+      final date = DateFormat.yMMMEd().format(dateTime);
+      final time = DateFormat.jm().format(dateTime);
+
+      return '$date • $time';
+    }
+
     buildDate() {
       // Handle offset timezones
       if (exifInfo != null &&
@@ -192,35 +207,22 @@ class ExifBottomSheet extends HookConsumerWidget {
         Duration utcOffset = Duration(hours: hours, minutes: minutes);
 
         final adjustedDate = asset.fileCreatedAt.toUtc().add(utcOffset);
-        final sign = utcOffset.isNegative ? '-' : '+';
-        final hrs = utcOffset.inHours.abs().toString().padLeft(2, '0');
-        final mins =
-            utcOffset.inMinutes.remainder(60).abs().toString().padLeft(2, '0');
 
-        final formattedDate = DateFormat.yMMMEd().format(adjustedDate);
-        final formattedTime = DateFormat.jm().format(adjustedDate);
-        return Text('$formattedDate • $formattedTime GMT$sign$hrs:$mins');
+        return Text(
+          '${formatDateTime(adjustedDate)} ${formatUtcOffset(utcOffset)}',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        );
       }
 
       // Handle null and IANA timezones
       final fileCreatedAt =
           getOriginalDate(asset.fileCreatedAt, exifInfo?.timeZone);
-      final date = DateFormat.yMMMEd().format(fileCreatedAt);
-      final time = DateFormat.jm().format(fileCreatedAt);
-
-      // Prepare the offset for the "GMT+00:00" format
-      final formattedOffset =
-          fileCreatedAt.timeZoneOffset.isNegative ? '-' : '+';
-      final formattedOffsetHours =
-          fileCreatedAt.timeZoneOffset.inHours.abs().toString().padLeft(2, '0');
-      final formattedOffsetMinutes = fileCreatedAt.timeZoneOffset.inMinutes
-          .remainder(60)
-          .abs()
-          .toString()
-          .padLeft(2, '0');
 
       return Text(
-        '$date • $time GMT$formattedOffset$formattedOffsetHours:$formattedOffsetMinutes',
+        '${formatDateTime(fileCreatedAt)} ${formatUtcOffset(fileCreatedAt.timeZoneOffset)}',
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
