@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AlbumResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+  import Plus from 'immich-material-icons/icons/Plus.svelte';
   import BaseModal from './base-modal.svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
 

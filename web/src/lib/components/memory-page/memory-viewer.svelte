@@ -5,12 +5,12 @@
   import { api } from '@api';
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import Play from 'svelte-material-icons/Play.svelte';
-  import Pause from 'svelte-material-icons/Pause.svelte';
-  import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
-  import ChevronUp from 'svelte-material-icons/ChevronUp.svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+  import Play from 'immich-material-icons/icons/Play.svelte';
+  import Pause from 'immich-material-icons/icons/Pause.svelte';
+  import ChevronDown from 'immich-material-icons/icons/ChevronDown.svelte';
+  import ChevronUp from 'immich-material-icons/icons/ChevronUp.svelte';
+  import ChevronLeft from 'immich-material-icons/icons/ChevronLeft.svelte';
+  import ChevronRight from 'immich-material-icons/icons/ChevronRight.svelte';
   import { AppRoute } from '$lib/constants';
   import { page } from '$app/stores';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';

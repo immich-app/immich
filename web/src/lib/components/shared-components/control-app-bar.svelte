@@ -2,7 +2,7 @@
   import { browser } from '$app/environment';
 
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
+  import Close from 'immich-material-icons/icons/Close.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
 

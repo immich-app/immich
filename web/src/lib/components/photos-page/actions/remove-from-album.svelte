@@ -5,7 +5,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AlbumResponseDto, api } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import DeleteOutline from 'immich-material-icons/icons/DeleteOutline.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 

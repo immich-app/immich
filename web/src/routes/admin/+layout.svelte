@@ -7,10 +7,10 @@
   // using transitions on pages: https://github.com/sveltejs/kit/issues/7405
 
   import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
-  import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
-  import Sync from 'svelte-material-icons/Sync.svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
-  import Server from 'svelte-material-icons/Server.svelte';
+  import AccountMultipleOutline from 'immich-material-icons/icons/AccountMultipleOutline.svelte';
+  import Sync from 'immich-material-icons/icons/Sync.svelte';
+  import Cog from 'immich-material-icons/icons/Cog.svelte';
+  import Server from 'immich-material-icons/icons/Server.svelte';
   import StatusBox from '$lib/components/shared-components/status-box.svelte';
   import { goto } from '$app/navigation';
   import { AppRoute } from '../../lib/constants';

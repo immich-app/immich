@@ -13,8 +13,8 @@
   import { assetInteractionStore, isMultiSelectStoreState, selectedAssets } from '$lib/stores/asset-interaction.store';
   import { assetStore } from '$lib/stores/assets.store';
   import { onDestroy, onMount } from 'svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+  import DotsVertical from 'immich-material-icons/icons/DotsVertical.svelte';
+  import Plus from 'immich-material-icons/icons/Plus.svelte';
   import type { PageData } from './$types';
   import { api } from '@api';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';

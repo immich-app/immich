@@ -3,8 +3,8 @@
   import { AlbumResponseDto, api, SharedLinkResponseDto, UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
-  import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
+  import Link from 'immich-material-icons/icons/Link.svelte';
+  import ShareCircle from 'immich-material-icons/icons/ShareCircle.svelte';
   import { goto } from '$app/navigation';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import Button from '../elements/buttons/button.svelte';

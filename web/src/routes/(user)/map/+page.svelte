@@ -12,7 +12,7 @@
   import { MapMarkerResponseDto, api } from '@api';
   import { isEqual, omit } from 'lodash-es';
   import { onDestroy, onMount } from 'svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Cog from 'immich-material-icons/icons/Cog.svelte';
   import type { PageData } from './$types';
   import { DateTime, Duration } from 'luxon';
 

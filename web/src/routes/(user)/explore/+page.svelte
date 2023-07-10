@@ -4,10 +4,10 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
   import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
-  import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
-  import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
-  import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-  import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+  import ClockOutline from 'immich-material-icons/icons/ClockOutline.svelte';
+  import HeartMultipleOutline from 'immich-material-icons/icons/HeartMultipleOutline.svelte';
+  import MotionPlayOutline from 'immich-material-icons/icons/MotionPlayOutline.svelte';
+  import PlayCircleOutline from 'immich-material-icons/icons/PlayCircleOutline.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;

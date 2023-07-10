@@ -7,7 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AlbumResponseDto, api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
+  import Link from 'immich-material-icons/icons/Link.svelte';
   import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';

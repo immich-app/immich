@@ -2,9 +2,9 @@
   import { goto } from '$app/navigation';
   import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
+  import ChevronLeft from 'immich-material-icons/icons/ChevronLeft.svelte';
+  import ChevronRight from 'immich-material-icons/icons/ChevronRight.svelte';
+  import ImageBrokenVariant from 'immich-material-icons/icons/ImageBrokenVariant.svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';

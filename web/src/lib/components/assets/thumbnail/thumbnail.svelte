@@ -3,12 +3,12 @@
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-  import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-  import Heart from 'svelte-material-icons/Heart.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
-  import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
-  import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+  import ArchiveArrowDownOutline from 'immich-material-icons/icons/ArchiveArrowDownOutline.svelte';
+  import CheckCircle from 'immich-material-icons/icons/CheckCircle.svelte';
+  import Heart from 'immich-material-icons/icons/Heart.svelte';
+  import ImageBrokenVariant from 'immich-material-icons/icons/ImageBrokenVariant.svelte';
+  import MotionPauseOutline from 'immich-material-icons/icons/MotionPauseOutline.svelte';
+  import MotionPlayOutline from 'immich-material-icons/icons/MotionPlayOutline.svelte';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';

@@ -3,11 +3,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
-  import Calendar from 'svelte-material-icons/Calendar.svelte';
-  import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-  import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-  import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
+  import Calendar from 'immich-material-icons/icons/Calendar.svelte';
+  import CameraIris from 'immich-material-icons/icons/CameraIris.svelte';
+  import Close from 'immich-material-icons/icons/Close.svelte';
+  import ImageOutline from 'immich-material-icons/icons/ImageOutline.svelte';
+  import MapMarkerOutline from 'immich-material-icons/icons/MapMarkerOutline.svelte';
   import { createEventDispatcher } from 'svelte';
   import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';

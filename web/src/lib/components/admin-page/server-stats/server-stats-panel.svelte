@@ -1,9 +1,9 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { ServerStatsResponseDto } from '@api';
-  import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-  import Memory from 'svelte-material-icons/Memory.svelte';
-  import PlayCircle from 'svelte-material-icons/PlayCircle.svelte';
+  import CameraIris from 'immich-material-icons/icons/CameraIris.svelte';
+  import Memory from 'immich-material-icons/icons/Memory.svelte';
+  import PlayCircle from 'immich-material-icons/icons/PlayCircle.svelte';
   import { asByteUnitString, getBytesWithUnit } from '../../../utils/byte-units';
   import StatsCard from './stats-card.svelte';
 

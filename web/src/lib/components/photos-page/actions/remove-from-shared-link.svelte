@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { SharedLinkResponseDto, api } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import DeleteOutline from 'immich-material-icons/icons/DeleteOutline.svelte';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';

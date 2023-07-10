@@ -2,7 +2,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import { SharedLinkType } from '@api';
-  import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+  import ShareVariantOutline from 'immich-material-icons/icons/ShareVariantOutline.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   let showModal = false;

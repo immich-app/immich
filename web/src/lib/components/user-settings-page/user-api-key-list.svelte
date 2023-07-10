@@ -1,8 +1,8 @@
 <script lang="ts">
   import { api, APIKeyResponseDto } from '@api';
   import { onMount } from 'svelte';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import PencilOutline from 'immich-material-icons/icons/PencilOutline.svelte';
+  import TrashCanOutline from 'immich-material-icons/icons/TrashCanOutline.svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import APIKeyForm from '../forms/api-key-form.svelte';

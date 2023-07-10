@@ -3,14 +3,14 @@
   import type { AuthDeviceResponseDto } from '@api';
   import { DateTime, ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import Android from 'svelte-material-icons/Android.svelte';
-  import Apple from 'svelte-material-icons/Apple.svelte';
-  import AppleSafari from 'svelte-material-icons/AppleSafari.svelte';
-  import GoogleChrome from 'svelte-material-icons/GoogleChrome.svelte';
-  import Help from 'svelte-material-icons/Help.svelte';
-  import Linux from 'svelte-material-icons/Linux.svelte';
-  import MicrosoftWindows from 'svelte-material-icons/MicrosoftWindows.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import Android from 'immich-material-icons/icons/Android.svelte';
+  import Apple from 'immich-material-icons/icons/Apple.svelte';
+  import AppleSafari from 'immich-material-icons/icons/AppleSafari.svelte';
+  import GoogleChrome from 'immich-material-icons/icons/GoogleChrome.svelte';
+  import Help from 'immich-material-icons/icons/Help.svelte';
+  import Linux from 'immich-material-icons/icons/Linux.svelte';
+  import MicrosoftWindows from 'immich-material-icons/icons/MicrosoftWindows.svelte';
+  import TrashCanOutline from 'immich-material-icons/icons/TrashCanOutline.svelte';
 
   export let device: AuthDeviceResponseDto;
 

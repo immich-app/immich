@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { APIKeyResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
+  import KeyVariant from 'immich-material-icons/icons/KeyVariant.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 

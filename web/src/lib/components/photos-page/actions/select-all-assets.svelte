@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
+  import SelectAll from 'immich-material-icons/icons/SelectAll.svelte';
+  import TimerSand from 'immich-material-icons/icons/TimerSand.svelte';
   import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetGridState, assetStore } from '$lib/stores/assets.store';
   import { handleError } from '../../../utils/handle-error';

@@ -14,13 +14,13 @@
     api,
   } from '@api';
   import { onMount } from 'svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
-  import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+  import ArrowLeft from 'immich-material-icons/icons/ArrowLeft.svelte';
+  import DeleteOutline from 'immich-material-icons/icons/DeleteOutline.svelte';
+  import DotsVertical from 'immich-material-icons/icons/DotsVertical.svelte';
+  import FileImagePlusOutline from 'immich-material-icons/icons/FileImagePlusOutline.svelte';
+  import FolderDownloadOutline from 'immich-material-icons/icons/FolderDownloadOutline.svelte';
+  import Plus from 'immich-material-icons/icons/Plus.svelte';
+  import ShareVariantOutline from 'immich-material-icons/icons/ShareVariantOutline.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -33,7 +33,7 @@
   import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+  import SelectAll from 'immich-material-icons/icons/SelectAll.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AssetSelection from './asset-selection.svelte';

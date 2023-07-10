@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { api } from '@api';
-  import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
-  import AccountMultiple from 'svelte-material-icons/AccountMultiple.svelte';
-  import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
-  import ImageMultipleOutline from 'svelte-material-icons/ImageMultipleOutline.svelte';
-  import ImageMultiple from 'svelte-material-icons/ImageMultiple.svelte';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-  import Magnify from 'svelte-material-icons/Magnify.svelte';
-  import Map from 'svelte-material-icons/Map.svelte';
-  import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
-  import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
+  import AccountMultipleOutline from 'immich-material-icons/icons/AccountMultipleOutline.svelte';
+  import AccountMultiple from 'immich-material-icons/icons/AccountMultiple.svelte';
+  import ImageAlbum from 'immich-material-icons/icons/ImageAlbum.svelte';
+  import ImageMultipleOutline from 'immich-material-icons/icons/ImageMultipleOutline.svelte';
+  import ImageMultiple from 'immich-material-icons/icons/ImageMultiple.svelte';
+  import ArchiveArrowDownOutline from 'immich-material-icons/icons/ArchiveArrowDownOutline.svelte';
+  import Magnify from 'immich-material-icons/icons/Magnify.svelte';
+  import Map from 'immich-material-icons/icons/Map.svelte';
+  import HeartMultipleOutline from 'immich-material-icons/icons/HeartMultipleOutline.svelte';
+  import HeartMultiple from 'immich-material-icons/icons/HeartMultiple.svelte';
   import { AppRoute } from '../../../constants';
   import LoadingSpinner from '../loading-spinner.svelte';
   import StatusBox from '../status-box.svelte';
