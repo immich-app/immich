@@ -109,36 +109,19 @@ async function fileUploader(
   const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
   try {
-    // Create and add pseudo-unique ID of asset on the device
     formData.append('deviceAssetId', deviceAssetId);
-
-    // Get device id - for web -> use WEB
     formData.append('deviceId', 'WEB');
-
-    // Get Asset Created Date
     formData.append('fileCreatedAt', fileCreatedAt);
-
-    // Get Asset Modified At
     formData.append('fileModifiedAt', new Date(asset.lastModified).toISOString());
-
-    // Set Asset is Favorite to false
     formData.append('isFavorite', 'false');
-
-    // Get asset duration
     formData.append('duration', '0:00:00.000000');
-
-    // Get asset binary data with a custom MIME type, because browsers will
-    // use application/octet-stream for unsupported MIME types, leading to
-    // failed uploads.
     formData.append('assetData', new File([asset], asset.name));
 
-    const newUploadAsset: UploadAsset = {
+    uploadAssetsStore.addNewUploadAsset({
       id: deviceAssetId,
       file: asset,
       progress: 0,
-    };
-
-    uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+    });
 
     const response = await axios.post(`/api/asset/upload`, formData, {
       params: {
