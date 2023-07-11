@@ -59,7 +59,7 @@
 {#if $assetStore.timelineHeight > height}
   <div
     id="immich-scrubbable-scrollbar"
-    class="fixed right-0 z-[100] select-none bg-immich-bg hover:cursor-row-resize"
+    class="bg-immich-bg fixed right-0 z-[100] select-none hover:cursor-row-resize"
     style:width={isDragging ? '100vw' : '60px'}
     style:height={height + 'px'}
     style:background-color={isDragging ? 'transparent' : 'transparent'}
@@ -76,7 +76,7 @@
   >
     {#if isHover}
       <div
-        class="pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 pl-1 pr-6 text-sm font-medium shadow-lg dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+        class="border-immich-primary bg-immich-bg dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 py-1 pl-1 pr-6 text-sm font-medium shadow-lg"
         style:top="{Math.max(hoverY - HOVER_DATE_HEIGHT, 0)}px"
       >
         {hoverLabel}
@@ -86,7 +86,7 @@
     <!-- Scroll Position Indicator Line -->
     {#if !isDragging}
       <div
-        class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
+        class="bg-immich-primary dark:bg-immich-dark-primary absolute right-0 h-[2px] w-10"
         style:top="{scrollY}px"
       />
     {/if}
@@ -108,7 +108,7 @@
           {#if segment.height > 8}
             <div
               aria-label={segment.timeGroup + ' ' + segment.count}
-              class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
+              class="dark:text-immich-dark-fg absolute right-0 z-10 pr-5 text-xs font-medium"
             >
               {year}
             </div>

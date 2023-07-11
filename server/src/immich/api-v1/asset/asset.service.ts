@@ -37,8 +37,6 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
@@ -49,10 +47,6 @@ import {
   AssetRejectReason,
   AssetUploadAction,
 } from './response-dto/asset-check-response.dto';
-import {
-  AssetCountByTimeBucketResponseDto,
-  mapAssetCountByTimeBucket,
-} from './response-dto/asset-count-by-time-group-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -192,13 +186,6 @@ export class AssetService {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset));
-  }
-
-  public async getAssetByTimeBucket(authUser: AuthUserDto, dto: GetAssetByTimeBucketDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
-    const assets = await this._assetRepository.getAssetByTimeBucket(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
@@ -455,16 +442,6 @@ export class AssetService {
         };
       }),
     };
-  }
-
-  async getAssetCountByTimeBucket(
-    authUser: AuthUserDto,
-    dto: GetAssetCountByTimeBucketDto,
-  ): Promise<AssetCountByTimeBucketResponseDto> {
-    const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
-    const result = await this._assetRepository.getAssetCountByTimeBucket(userId, dto);
-    return mapAssetCountByTimeBucket(result);
   }
 
   getExifPermission(authUser: AuthUserDto) {

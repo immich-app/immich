@@ -948,48 +948,6 @@
         ]
       }
     },
-    "/asset/count-by-time-bucket": {
-      "post": {
-        "operationId": "getAssetCountByTimeBucket",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetAssetCountByTimeBucketDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetCountByTimeBucketResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -1697,19 +1655,68 @@
       }
     },
     "/asset/time-bucket": {
-      "post": {
-        "operationId": "getAssetByTimeBucket",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetAssetByTimeBucketDto"
-              }
+      "get": {
+        "operationId": "getByTimeBucket",
+        "parameters": [
+          {
+            "name": "size",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimeBucketSize"
             }
           },
-          "required": true
-        },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "timeBucket",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -1726,6 +1733,110 @@
           }
         },
         "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          },
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/time-buckets": {
+      "get": {
+        "operationId": "getTimeBuckets",
+        "parameters": [
+          {
+            "name": "size",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TimeBucketResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          },
           {
             "bearer": []
           },
@@ -4787,39 +4898,6 @@
         ],
         "type": "object"
       },
-      "AssetCountByTimeBucket": {
-        "properties": {
-          "count": {
-            "type": "integer"
-          },
-          "timeBucket": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "timeBucket",
-          "count"
-        ],
-        "type": "object"
-      },
-      "AssetCountByTimeBucketResponseDto": {
-        "properties": {
-          "buckets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetCountByTimeBucket"
-            },
-            "type": "array"
-          },
-          "totalCount": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "totalCount",
-          "buckets"
-        ],
-        "type": "object"
-      },
       "AssetFileUploadResponseDto": {
         "properties": {
           "duplicate": {
@@ -5552,53 +5630,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "GetAssetByTimeBucketDto": {
-        "properties": {
-          "timeBucket": {
-            "example": [
-              "2015-06-01T00:00:00.000Z",
-              "2016-02-01T00:00:00.000Z",
-              "2016-03-01T00:00:00.000Z"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "title": "Array of date time buckets",
-            "type": "array"
-          },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "withoutThumbs": {
-            "description": "Include assets without thumbnails",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "timeBucket"
-        ],
-        "type": "object"
-      },
-      "GetAssetCountByTimeBucketDto": {
-        "properties": {
-          "timeGroup": {
-            "$ref": "#/components/schemas/TimeGroupEnum"
-          },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "withoutThumbs": {
-            "description": "Include assets without thumbnails",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "timeGroup"
-        ],
         "type": "object"
       },
       "ImportAssetDto": {
@@ -6806,10 +6837,25 @@
         ],
         "type": "string"
       },
-      "TimeGroupEnum": {
+      "TimeBucketResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "timeBucket": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "timeBucket",
+          "count"
+        ],
+        "type": "object"
+      },
+      "TimeBucketSize": {
         "enum": [
-          "day",
-          "month"
+          "DAY",
+          "MONTH"
         ],
         "type": "string"
       },
