@@ -3,7 +3,6 @@ import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
 import type { AssetFileUploadResponseDto } from '@api';
 import axios from 'axios';
 import { combineLatestAll, filter, firstValueFrom, from, mergeMap, of } from 'rxjs';
-import type { UploadAsset } from '../models/upload-asset';
 import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 
 const extensions = [
