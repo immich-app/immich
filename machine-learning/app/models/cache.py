@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any
 
 from aiocache.backends.memory import SimpleMemoryCache
@@ -51,10 +50,7 @@ class ModelCache:
         model = await self.cache.get(key)
         if model is None:
             async with OptimisticLock(self.cache, key) as lock:
-                model = await asyncio.get_running_loop().run_in_executor(
-                    None,
-                    lambda: InferenceModel.from_model_type(model_type, model_name, **model_kwargs),
-                )
+                model = InferenceModel.from_model_type(model_type, model_name, **model_kwargs)
                 await lock.cas(model, ttl=self.ttl)
         return model
 
