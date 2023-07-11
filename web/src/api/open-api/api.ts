@@ -807,6 +807,41 @@ export interface AuthDeviceResponseDto {
 /**
  * 
  * @export
+ * @interface BulkIdResponseDto
+ */
+export interface BulkIdResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof BulkIdResponseDto
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'error'?: BulkIdResponseDtoErrorEnum;
+}
+
+export const BulkIdResponseDtoErrorEnum = {
+    Duplicate: 'duplicate',
+    NoPermission: 'no_permission',
+    NotFound: 'not_found',
+    Unknown: 'unknown'
+} as const;
+
+export type BulkIdResponseDtoErrorEnum = typeof BulkIdResponseDtoErrorEnum[keyof typeof BulkIdResponseDtoErrorEnum];
+
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -9023,7 +9058,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(id, mergePersonDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9090,7 +9125,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mergePerson(id: string, mergePersonDto: MergePersonDto, options?: any): AxiosPromise<void> {
+        mergePerson(id: string, mergePersonDto: MergePersonDto, options?: any): AxiosPromise<Array<BulkIdResponseDto>> {
             return localVarFp.mergePerson(id, mergePersonDto, options).then((request) => request(axios, basePath));
         },
         /**

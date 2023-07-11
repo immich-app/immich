@@ -202,6 +202,7 @@ Class | Method | HTTP request | Description
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
+ - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)

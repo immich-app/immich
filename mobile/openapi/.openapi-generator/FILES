@@ -32,6 +32,7 @@ doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
+doc/BulkIdResponseDto.md
 doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
@@ -170,6 +171,7 @@ lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
+lib/model/bulk_id_response_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
@@ -279,6 +281,7 @@ test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
+test/bulk_id_response_dto_test.dart
 test/change_password_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart

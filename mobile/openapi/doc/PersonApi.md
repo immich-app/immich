@@ -234,7 +234,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **mergePerson**
-> mergePerson(id, mergePersonDto)
+> List<BulkIdResponseDto> mergePerson(id, mergePersonDto)
 
 
 
@@ -261,7 +261,8 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final mergePersonDto = MergePersonDto(); // MergePersonDto | 
 
 try {
-    api_instance.mergePerson(id, mergePersonDto);
+    final result = api_instance.mergePerson(id, mergePersonDto);
+    print(result);
 } catch (e) {
     print('Exception when calling PersonApi->mergePerson: $e\n');
 }
@@ -276,7 +277,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
 
 ### Authorization
 
@@ -285,7 +286,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
