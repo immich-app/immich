@@ -84,7 +84,7 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            class="absolute p-2"
+            class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
