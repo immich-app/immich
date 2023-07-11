@@ -344,7 +344,6 @@ export const assetEntityStub = {
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    mimeType: null,
     isFavorite: true,
     isArchived: false,
     isReadOnly: false,
