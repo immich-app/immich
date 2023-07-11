@@ -231,6 +231,8 @@ class ApiClient {
           return AudioCodecTypeTransformer().decode(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
+        case 'BulkIdResponseDto':
+          return BulkIdResponseDto.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
@@ -293,6 +295,8 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MergePersonDto':
+          return MergePersonDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':

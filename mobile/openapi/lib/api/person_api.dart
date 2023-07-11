@@ -207,6 +207,61 @@ class PersonApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /person/{id}/merge' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MergePersonDto] mergePersonDto (required):
+  Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/person/{id}/merge'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = mergePersonDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MergePersonDto] mergePersonDto (required):
+  Future<List<BulkIdResponseDto>?> mergePerson(String id, MergePersonDto mergePersonDto,) async {
+    final response = await mergePersonWithHttpInfo(id, mergePersonDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /person/{id}' operation and returns the [Response].
   /// Parameters:
   ///

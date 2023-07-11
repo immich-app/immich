@@ -1,12 +1,11 @@
-import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
+import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, PersonResponseDto, PersonUpdateDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
+import { mapPerson, MergePersonDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
+import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
@@ -30,17 +29,12 @@ export class PersonService {
     );
   }
 
-  async getById(authUser: AuthUserDto, personId: string): Promise<PersonResponseDto> {
-    const person = await this.repository.getById(authUser.id, personId);
-    if (!person) {
-      throw new BadRequestException();
-    }
-
-    return mapPerson(person);
+  getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
+    return this.findOrFail(authUser, id).then(mapPerson);
   }
 
-  async getThumbnail(authUser: AuthUserDto, personId: string): Promise<ImmichReadStream> {
-    const person = await this.repository.getById(authUser.id, personId);
+  async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
+    const person = await this.repository.getById(authUser.id, id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
     }
@@ -48,60 +42,46 @@ export class PersonService {
     return this.storageRepository.createReadStream(person.thumbnailPath, mimeTypes.lookup(person.thumbnailPath));
   }
 
-  async getAssets(authUser: AuthUserDto, personId: string): Promise<AssetResponseDto[]> {
-    const assets = await this.repository.getAssets(authUser.id, personId);
+  async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
+    const assets = await this.repository.getAssets(authUser.id, id);
     return assets.map(mapAsset);
   }
 
-  async update(authUser: AuthUserDto, personId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    let person = await this.repository.getById(authUser.id, personId);
-    if (!person) {
-      throw new BadRequestException();
-    }
+  async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+    let person = await this.findOrFail(authUser, id);
 
     if (dto.name) {
-      person = await this.updateName(authUser, personId, dto.name);
+      person = await this.repository.update({ id, name: dto.name });
+      const assets = await this.repository.getAssets(authUser.id, id);
+      const ids = assets.map((asset) => asset.id);
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     }
 
     if (dto.featureFaceAssetId) {
-      await this.updateFaceThumbnail(personId, dto.featureFaceAssetId);
+      const assetId = dto.featureFaceAssetId;
+      const face = await this.repository.getFaceById({ personId: id, assetId });
+      if (!face) {
+        throw new BadRequestException('Invalid assetId for feature face');
+      }
+
+      await this.jobRepository.queue({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          personId: id,
+          assetId,
+          boundingBox: {
+            x1: face.boundingBoxX1,
+            x2: face.boundingBoxX2,
+            y1: face.boundingBoxY1,
+            y2: face.boundingBoxY2,
+          },
+          imageHeight: face.imageHeight,
+          imageWidth: face.imageWidth,
+        },
+      });
     }
 
     return mapPerson(person);
-  }
-
-  private async updateName(authUser: AuthUserDto, personId: string, name: string): Promise<PersonEntity> {
-    const person = await this.repository.update({ id: personId, name });
-
-    const relatedAsset = await this.getAssets(authUser, personId);
-    const assetIds = relatedAsset.map((asset) => asset.id);
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
-
-    return person;
-  }
-
-  private async updateFaceThumbnail(personId: string, assetId: string): Promise<void> {
-    const face = await this.repository.getFaceById({ assetId, personId });
-
-    if (!face) {
-      throw new BadRequestException();
-    }
-
-    return await this.jobRepository.queue({
-      name: JobName.GENERATE_FACE_THUMBNAIL,
-      data: {
-        assetId: assetId,
-        personId,
-        boundingBox: {
-          x1: face.boundingBoxX1,
-          x2: face.boundingBoxX2,
-          y1: face.boundingBoxY1,
-          y2: face.boundingBoxY2,
-        },
-        imageHeight: face.imageHeight,
-        imageWidth: face.imageWidth,
-      },
-    });
   }
 
   async handlePersonCleanup() {
@@ -117,5 +97,50 @@ export class PersonService {
     }
 
     return true;
+  }
+
+  async mergePerson(authUser: AuthUserDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
+    const mergeIds = dto.ids;
+    const primaryPerson = await this.findOrFail(authUser, id);
+    const primaryName = primaryPerson.name || primaryPerson.id;
+
+    const results: BulkIdResponseDto[] = [];
+
+    for (const mergeId of mergeIds) {
+      try {
+        const mergePerson = await this.repository.getById(authUser.id, mergeId);
+        if (!mergePerson) {
+          results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
+          continue;
+        }
+
+        const mergeName = mergePerson.name || mergePerson.id;
+        const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
+        this.logger.log(`Merging ${mergeName} into ${primaryName}`);
+
+        const assetIds = await this.repository.prepareReassignFaces(mergeData);
+        for (const assetId of assetIds) {
+          await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId: mergeId } });
+        }
+        await this.repository.reassignFaces(mergeData);
+        await this.repository.delete(mergePerson);
+
+        this.logger.log(`Merged ${mergeName} into ${primaryName}`);
+        results.push({ id: mergeId, success: true });
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to merge ${mergeId} into ${id}: ${error}`, error?.stack);
+        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
+      }
+    }
+
+    return results;
+  }
+
+  private async findOrFail(authUser: AuthUserDto, id: string) {
+    const person = await this.repository.getById(authUser.id, id);
+    if (!person) {
+      throw new BadRequestException('Person not found');
+    }
+    return person;
   }
 }

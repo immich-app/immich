@@ -1,5 +1,6 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { IsOptional, IsString } from 'class-validator';
+import { ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
   /**
@@ -15,6 +16,11 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsString()
   featureFaceAssetId?: string;
+}
+
+export class MergePersonDto {
+  @ValidateUUID({ each: true })
+  ids!: string[];
 }
 
 export class PersonResponseDto {

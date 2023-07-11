@@ -801,6 +801,41 @@ export interface AuthDeviceResponseDto {
 /**
  * 
  * @export
+ * @interface BulkIdResponseDto
+ */
+export interface BulkIdResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof BulkIdResponseDto
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'error'?: BulkIdResponseDtoErrorEnum;
+}
+
+export const BulkIdResponseDtoErrorEnum = {
+    Duplicate: 'duplicate',
+    NoPermission: 'no_permission',
+    NotFound: 'not_found',
+    Unknown: 'unknown'
+} as const;
+
+export type BulkIdResponseDtoErrorEnum = typeof BulkIdResponseDtoErrorEnum[keyof typeof BulkIdResponseDtoErrorEnum];
+
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -1685,6 +1720,19 @@ export interface MemoryLaneResponseDto {
      * @memberof MemoryLaneResponseDto
      */
     'assets': Array<AssetResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @interface MergePersonDto
+ */
+export interface MergePersonDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof MergePersonDto
+     */
+    'ids': Array<string>;
 }
 /**
  * 
@@ -8855,6 +8903,54 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson: async (id: string, mergePersonDto: MergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('mergePerson', 'id', id)
+            // verify required parameter 'mergePersonDto' is not null or undefined
+            assertParamExists('mergePerson', 'mergePersonDto', mergePersonDto)
+            const localVarPath = `/person/{id}/merge`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(mergePersonDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8952,6 +9048,17 @@ export const PersonApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(id, mergePersonDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9008,6 +9115,16 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson(id: string, mergePersonDto: MergePersonDto, options?: any): AxiosPromise<Array<BulkIdResponseDto>> {
+            return localVarFp.mergePerson(id, mergePersonDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9058,6 +9175,27 @@ export interface PersonApiGetPersonThumbnailRequest {
      * @memberof PersonApiGetPersonThumbnail
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for mergePerson operation in PersonApi.
+ * @export
+ * @interface PersonApiMergePersonRequest
+ */
+export interface PersonApiMergePersonRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiMergePerson
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {MergePersonDto}
+     * @memberof PersonApiMergePerson
+     */
+    readonly mergePersonDto: MergePersonDto
 }
 
 /**
@@ -9129,6 +9267,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonThumbnail(requestParameters: PersonApiGetPersonThumbnailRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonThumbnail(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiMergePersonRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
