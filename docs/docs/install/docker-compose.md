@@ -153,6 +153,7 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 - Consider changing `DB_PASSWORD` to something randomly generated
 - Consider changing `TYPESENSE_API_KEY` to something randomly generated
+- Consider changing `TZ` to your [timezone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
 
 ### Step 3 - Start the containers
 
