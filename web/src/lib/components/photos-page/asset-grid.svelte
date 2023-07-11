@@ -159,66 +159,68 @@
 
   const handleSelectAssets = async (e: CustomEvent) => {
     const asset = e.detail.asset;
-    if (asset) {
-      const rangeSelection = $assetSelectionCandidates.size > 0;
-      const deselect = $selectedAssets.has(asset);
-
-      // Select/deselect already loaded assets
-      if (deselect) {
-        for (const candidate of $assetSelectionCandidates || []) {
-          assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
-        }
-        assetInteractionStore.removeAssetFromMultiselectGroup(asset);
-      } else {
-        for (const candidate of $assetSelectionCandidates || []) {
-          assetInteractionStore.addAssetToMultiselectGroup(candidate);
-        }
-        assetInteractionStore.addAssetToMultiselectGroup(asset);
-      }
-
-      assetInteractionStore.clearAssetSelectionCandidates();
-
-      if ($assetSelectionStart && rangeSelection) {
-        let startBucketIndex = $assetGridState.loadedAssets[$assetSelectionStart.id];
-        let endBucketIndex = $assetGridState.loadedAssets[asset.id];
-
-        if (endBucketIndex < startBucketIndex) {
-          [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
-        }
-
-        // Select/deselect assets in all intermediate buckets
-        for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; ++bucketIndex) {
-          const bucket = $assetGridState.buckets[bucketIndex];
-          await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
-          for (const asset of bucket.assets) {
-            if (deselect) {
-              assetInteractionStore.removeAssetFromMultiselectGroup(asset);
-            } else {
-              assetInteractionStore.addAssetToMultiselectGroup(asset);
-            }
-          }
-        }
-
-        // Update date group selection
-        for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; ++bucketIndex) {
-          const bucket = $assetGridState.buckets[bucketIndex];
-
-          // Split bucket into date groups and check each group
-          const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
-
-          for (const dateGroup of assetsGroupByDate) {
-            const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
-            if (dateGroup.every((a) => $selectedAssets.has(a))) {
-              assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
-            } else {
-              assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
-            }
-          }
-        }
-      }
-
-      assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
+    if (!asset) {
+      return;
     }
+
+    const rangeSelection = $assetSelectionCandidates.size > 0;
+    const deselect = $selectedAssets.has(asset);
+
+    // Select/deselect already loaded assets
+    if (deselect) {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      }
+      assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+    } else {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+      }
+      assetInteractionStore.addAssetToMultiselectGroup(asset);
+    }
+
+    assetInteractionStore.clearAssetSelectionCandidates();
+
+    if ($assetSelectionStart && rangeSelection) {
+      let startBucketIndex = $assetGridState.loadedAssets[$assetSelectionStart.id];
+      let endBucketIndex = $assetGridState.loadedAssets[asset.id];
+
+      if (endBucketIndex < startBucketIndex) {
+        [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
+      }
+
+      // Select/deselect assets in all intermediate buckets
+      for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        for (const asset of bucket.assets) {
+          if (deselect) {
+            assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+          } else {
+            assetInteractionStore.addAssetToMultiselectGroup(asset);
+          }
+        }
+      }
+
+      // Update date group selection
+      for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+
+        // Split bucket into date groups and check each group
+        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
+
+        for (const dateGroup of assetsGroupByDate) {
+          const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
+          if (dateGroup.every((a) => $selectedAssets.has(a))) {
+            assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+          } else {
+            assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+          }
+        }
+      }
+    }
+
+    assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
   };
 
   const selectAssetCandidates = (asset: AssetResponseDto) => {
@@ -226,12 +228,12 @@
       return;
     }
 
-    const rangeBegin = $assetSelectionStart;
-    if (!rangeBegin) {
+    const rangeStart = $assetSelectionStart;
+    if (!rangeStart) {
       return;
     }
 
-    let start = $assetGridState.assets.indexOf(rangeBegin);
+    let start = $assetGridState.assets.indexOf(rangeStart);
     let end = $assetGridState.assets.indexOf(asset);
 
     if (start > end) {
