@@ -47,9 +47,9 @@ class ModelCache:
         """
 
         key = self.cache.build_key(model_name, model_type.value)
-        model = await self.cache.get(key)
-        if model is None:
-            async with OptimisticLock(self.cache, key) as lock:
+        async with OptimisticLock(self.cache, key) as lock:
+            model = await self.cache.get(key)
+            if model is None:
                 model = InferenceModel.from_model_type(model_type, model_name, **model_kwargs)
                 await lock.cas(model, ttl=self.ttl)
         return model
