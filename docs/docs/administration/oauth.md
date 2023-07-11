@@ -14,6 +14,7 @@ Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an i
 - [Authelia](https://www.authelia.com/configuration/identity-providers/open-id-connect/)
 - [Okta](https://www.okta.com/openid-connect/)
 - [Google](https://developers.google.com/identity/openid-connect/openid-connect)
+- [Keycloak](https://www.keycloak.org/)
 
 ## Prerequisites
 
@@ -103,5 +104,22 @@ Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to 
 Here's an example of OAuth configured for Authentik:
 
 ![OAuth Settings](./img/oauth-settings.png)
+
+## Docker environment configuration for OAuth
+
+It is also possible to configure OAuth through the Docker `.env` or `docker-compse.yaml` file. A possible configuration for Authentik or Keycloak would be:
+
+```
+
+OAUTH_ENABLED=true
+OAUTH_ISSUER_URL=https://authentik.example.com/application/o/immich/.well-known/openid-configuration
+OAUTH_ISSUER_URL=https://keycloak.example.com/realms/realm-name
+OAUTH_CLIENT_ID=immich
+OAUTH_CLIENT_SECRET=shared-client-secret
+#OAUTH_REDIRECT_URI=https://immich.example.com/auth/login
+OAUTH_TOKEN_RESPONSE_ALG=HS256
+OAUTH_AUTO_REGISTER=true
+OAUTH_BUTTON_TEXT=Login with OpenID
+```
 
 [oidc]: https://openid.net/connect/

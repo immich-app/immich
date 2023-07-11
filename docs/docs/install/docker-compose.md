@@ -153,6 +153,7 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 - Consider changing `DB_PASSWORD` to something randomly generated
 - Consider changing `TYPESENSE_API_KEY` to something randomly generated
+- Configure OAuth environment variables if you're using SSO. See [Administration - OAuth](/docs/administration/oauth) for more details
 
 ### Step 3 - Start the containers
 
