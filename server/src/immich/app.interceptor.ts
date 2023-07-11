@@ -23,7 +23,6 @@ export interface ImmichFile extends Express.Multer.File {
 export function mapToUploadFile(file: ImmichFile): UploadFile {
   return {
     checksum: file.checksum,
-    mimeType: file.mimetype,
     originalPath: file.path,
     originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
   };

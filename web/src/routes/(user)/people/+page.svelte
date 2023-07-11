@@ -15,7 +15,7 @@
         {#each data.people as person (person.id)}
           <div class="relative">
             <a href="/people/{person.id}" draggable="false">
-              <div class="filter brightness-75 rounded-xl w-48">
+              <div class="filter brightness-95 rounded-xl w-48">
                 <ImageThumbnail
                   shadow
                   url={api.getPeopleThumbnailUrl(person.id)}

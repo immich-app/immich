@@ -2693,6 +2693,61 @@
         ]
       }
     },
+    "/person/{id}/merge": {
+      "post": {
+        "operationId": "mergePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePersonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/person/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
@@ -4866,10 +4921,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
           "duration": {
             "type": "string"
           },
@@ -4915,7 +4966,6 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
-          "mimeType",
           "duration",
           "checksum"
         ]
@@ -4966,6 +5016,30 @@
           "current",
           "deviceType",
           "deviceOS"
+        ]
+      },
+      "BulkIdResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "success"
         ]
       },
       "ChangePasswordDto": {
@@ -5759,6 +5833,21 @@
         "required": [
           "title",
           "assets"
+        ]
+      },
+      "MergePersonDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "OAuthCallbackDto": {

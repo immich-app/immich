@@ -28,16 +28,19 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
 
   export let data: PageData;
-
   let isEditingName = false;
-  let isSelectingFace = false;
+  let showFaceThumbnailSelection = false;
+  let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
+
+  $: showAssets = !showMergeFacePanel && !showFaceThumbnailSelection;
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
@@ -64,7 +67,7 @@
   };
 
   const handleSelectFeaturePhoto = async (event: CustomEvent) => {
-    isSelectingFace = false;
+    showFaceThumbnailSelection = false;
 
     const { selectedAsset }: { selectedAsset: AssetResponseDto | undefined } = event.detail;
 
@@ -102,7 +105,8 @@
   <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
     <svelte:fragment slot="trailing">
       <AssetSelectContextMenu icon={DotsVertical} title="Menu">
-        <MenuOption text="Change feature photo" on:click={() => (isSelectingFace = true)} />
+        <MenuOption text="Change feature photo" on:click={() => (showFaceThumbnailSelection = true)} />
+        <MenuOption text="Merge face" on:click={() => (showMergeFacePanel = true)} />
       </AssetSelectContextMenu>
     </svelte:fragment>
   </ControlAppBar>
@@ -117,7 +121,7 @@
       on:cancel={() => (isEditingName = false)}
     />
   {:else}
-    <button on:click={() => (isSelectingFace = true)}>
+    <button on:click={() => (showFaceThumbnailSelection = true)}>
       <ImageThumbnail
         circle
         shadow
@@ -144,9 +148,9 @@
 </section>
 
 <!-- Gallery Block -->
-{#if !isSelectingFace}
+{#if showAssets}
   <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-    <section class="overflow-y-auto relative immich-scrollbar">
+    <section class="overflow-y-scroll relative immich-scrollbar">
       <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
         <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
       </section>
@@ -154,6 +158,10 @@
   </section>
 {/if}
 
-{#if isSelectingFace}
+{#if showFaceThumbnailSelection}
   <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
+{/if}
+
+{#if showMergeFacePanel}
+  <MergeFaceSelector person={data.person} on:go-back={() => (showMergeFacePanel = false)} />
 {/if}

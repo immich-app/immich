@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
 
 const [major, minor, patch] = pkg.version.split('.');
@@ -28,92 +29,78 @@ export function assertMachineLearningEnabled() {
   }
 }
 
-export const ASSET_MIME_TYPES = [
-  'image/3fr',
-  'image/ari',
-  'image/arw',
-  'image/avif',
-  'image/cap',
-  'image/cin',
-  'image/cr2',
-  'image/cr3',
-  'image/crw',
-  'image/dcr',
-  'image/dng',
-  'image/erf',
-  'image/fff',
-  'image/gif',
-  'image/heic',
-  'image/heif',
-  'image/iiq',
-  'image/jpeg',
-  'image/jxl',
-  'image/k25',
-  'image/kdc',
-  'image/mrw',
-  'image/nef',
-  'image/orf',
-  'image/ori',
-  'image/pef',
-  'image/png',
-  'image/raf',
-  'image/raw',
-  'image/rwl',
-  'image/sr2',
-  'image/srf',
-  'image/srw',
-  'image/tiff',
-  'image/webp',
-  'image/x-adobe-dng',
-  'image/x-arriflex-ari',
-  'image/x-canon-cr2',
-  'image/x-canon-cr3',
-  'image/x-canon-crw',
-  'image/x-epson-erf',
-  'image/x-fuji-raf',
-  'image/x-hasselblad-3fr',
-  'image/x-hasselblad-fff',
-  'image/x-kodak-dcr',
-  'image/x-kodak-k25',
-  'image/x-kodak-kdc',
-  'image/x-leica-rwl',
-  'image/x-minolta-mrw',
-  'image/x-nikon-nef',
-  'image/x-olympus-orf',
-  'image/x-olympus-ori',
-  'image/x-panasonic-raw',
-  'image/x-pentax-pef',
-  'image/x-phantom-cin',
-  'image/x-phaseone-cap',
-  'image/x-phaseone-iiq',
-  'image/x-samsung-srw',
-  'image/x-sigma-x3f',
-  'image/x-sony-arw',
-  'image/x-sony-sr2',
-  'image/x-sony-srf',
-  'image/x3f',
-  'video/3gpp',
-  'video/avi',
-  'video/mp2t',
-  'video/mp4',
-  'video/mpeg',
-  'video/msvideo',
-  'video/quicktime',
-  'video/vnd.avi',
-  'video/webm',
-  'video/x-flv',
-  'video/x-matroska',
-  'video/x-ms-wmv',
-  'video/x-msvideo',
-];
-export const LIVE_PHOTO_MIME_TYPES = ASSET_MIME_TYPES;
-export const SIDECAR_MIME_TYPES = ['application/xml', 'text/xml'];
-export const PROFILE_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/heic',
-  'image/heif',
-  'image/dng',
-  'image/webp',
-  'image/avif',
-];
+const profile: Record<string, string> = {
+  '.avif': 'image/avif',
+  '.dng': 'image/x-adobe-dng',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+};
+
+const image: Record<string, string> = {
+  ...profile,
+  '.3fr': 'image/x-hasselblad-3fr',
+  '.ari': 'image/x-arriflex-ari',
+  '.arw': 'image/x-sony-arw',
+  '.cap': 'image/x-phaseone-cap',
+  '.cin': 'image/x-phantom-cin',
+  '.cr2': 'image/x-canon-cr2',
+  '.cr3': 'image/x-canon-cr3',
+  '.crw': 'image/x-canon-crw',
+  '.dcr': 'image/x-kodak-dcr',
+  '.erf': 'image/x-epson-erf',
+  '.fff': 'image/x-hasselblad-fff',
+  '.gif': 'image/gif',
+  '.iiq': 'image/x-phaseone-iiq',
+  '.k25': 'image/x-kodak-k25',
+  '.kdc': 'image/x-kodak-kdc',
+  '.mrw': 'image/x-minolta-mrw',
+  '.nef': 'image/x-nikon-nef',
+  '.orf': 'image/x-olympus-orf',
+  '.ori': 'image/x-olympus-ori',
+  '.pef': 'image/x-pentax-pef',
+  '.raf': 'image/x-fuji-raf',
+  '.raw': 'image/x-panasonic-raw',
+  '.rwl': 'image/x-leica-rwl',
+  '.sr2': 'image/x-sony-sr2',
+  '.srf': 'image/x-sony-srf',
+  '.srw': 'image/x-samsung-srw',
+  '.tiff': 'image/tiff',
+  '.x3f': 'image/x-sigma-x3f',
+};
+
+const video: Record<string, string> = {
+  '.3gp': 'video/3gpp',
+  '.avi': 'video/x-msvideo',
+  '.flv': 'video/x-flv',
+  '.mkv': 'video/x-matroska',
+  '.mov': 'video/quicktime',
+  '.mp2t': 'video/mp2t',
+  '.mp4': 'video/mp4',
+  '.mpeg': 'video/mpeg',
+  '.webm': 'video/webm',
+  '.wmv': 'video/x-ms-wmv',
+};
+
+const sidecar: Record<string, string> = {
+  '.xmp': 'application/xml',
+};
+
+const isType = (filename: string, lookup: Record<string, string>) => !!lookup[extname(filename).toLowerCase()];
+const getType = (filename: string, lookup: Record<string, string>) => lookup[extname(filename).toLowerCase()];
+
+export const mimeTypes = {
+  image,
+  profile,
+  sidecar,
+  video,
+
+  isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
+  isProfile: (filename: string) => isType(filename, profile),
+  isSidecar: (filename: string) => isType(filename, sidecar),
+  isVideo: (filename: string) => isType(filename, video),
+  lookup: (filename: string) => getType(filename, { ...image, ...video, ...sidecar }) || 'application/octet-stream',
+};

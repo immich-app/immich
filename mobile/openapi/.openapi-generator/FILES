@@ -32,6 +32,7 @@ doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
+doc/BulkIdResponseDto.md
 doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
@@ -64,6 +65,7 @@ doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
 doc/MapMarkerResponseDto.md
 doc/MemoryLaneResponseDto.md
+doc/MergePersonDto.md
 doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
@@ -169,6 +171,7 @@ lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
+lib/model/bulk_id_response_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
@@ -200,6 +203,7 @@ lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/map_marker_response_dto.dart
 lib/model/memory_lane_response_dto.dart
+lib/model/merge_person_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
@@ -277,6 +281,7 @@ test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
+test/bulk_id_response_dto_test.dart
 test/change_password_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
@@ -309,6 +314,7 @@ test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
 test/map_marker_response_dto_test.dart
 test/memory_lane_response_dto_test.dart
+test/merge_person_dto_test.dart
 test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart

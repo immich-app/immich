@@ -1,12 +1,9 @@
 import {
-  ASSET_MIME_TYPES,
   ICryptoRepository,
   IJobRepository,
   IStorageRepository,
   JobName,
-  LIVE_PHOTO_MIME_TYPES,
-  PROFILE_MIME_TYPES,
-  SIDECAR_MIME_TYPES,
+  mimeTypes,
   UploadFieldName,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
@@ -60,7 +57,6 @@ const _getAsset_1 = () => {
   asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
   asset_1.isArchived = false;
-  asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
@@ -85,7 +81,6 @@ const _getAsset_2 = () => {
   asset_2.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_2.isFavorite = false;
   asset_2.isArchived = false;
-  asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
   asset_2.encodedVideoPath = '';
   asset_2.duration = '0:00:00.000000';
@@ -132,23 +127,10 @@ const uploadFile = {
     authUser: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
-      mimeType: 'image/jpeg',
       checksum: Buffer.from('checksum', 'utf8'),
       originalPath: 'upload/admin/image.jpeg',
       originalName: 'image.jpeg',
     },
-  },
-  mimeType: (fieldName: UploadFieldName, mimeType: string) => {
-    return {
-      authUser: authStub.admin,
-      fieldName,
-      file: {
-        mimeType,
-        checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: 'upload/admin/image.jpeg',
-        originalName: 'image.jpeg',
-      },
-    };
   },
   filename: (fieldName: UploadFieldName, filename: string) => {
     return {
@@ -163,6 +145,33 @@ const uploadFile = {
     };
   },
 };
+
+const uploadTests = [
+  {
+    label: 'asset',
+    fieldName: UploadFieldName.ASSET_DATA,
+    filetypes: Object.keys({ ...mimeTypes.image, ...mimeTypes.video }),
+    invalid: ['.xml', '.html'],
+  },
+  {
+    label: 'live photo',
+    fieldName: UploadFieldName.LIVE_PHOTO_DATA,
+    filetypes: Object.keys(mimeTypes.video),
+    invalid: ['.xml', '.html', '.jpg', '.jpeg'],
+  },
+  {
+    label: 'sidecar',
+    fieldName: UploadFieldName.SIDECAR_DATA,
+    filetypes: Object.keys(mimeTypes.sidecar),
+    invalid: ['.xml', '.html', '.jpg', '.jpeg', '.mov', '.mp4'],
+  },
+  {
+    label: 'profile',
+    fieldName: UploadFieldName.PROFILE_DATA,
+    filetypes: Object.keys(mimeTypes.profile),
+    invalid: ['.xml', '.html', '.cr2', '.arf', '.mov', '.mp4'],
+  },
+];
 
 describe('AssetService', () => {
   let sut: AssetService;
@@ -195,8 +204,6 @@ describe('AssetService', () => {
       getByOriginalPath: jest.fn(),
     };
 
-    cryptoMock = newCryptoRepositoryMock();
-
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
@@ -212,60 +219,106 @@ describe('AssetService', () => {
       .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
   });
 
-  const tests = [
-    { label: 'asset', fieldName: UploadFieldName.ASSET_DATA, mimeTypes: ASSET_MIME_TYPES },
-    { label: 'live photo', fieldName: UploadFieldName.LIVE_PHOTO_DATA, mimeTypes: LIVE_PHOTO_MIME_TYPES },
-    { label: 'sidecar', fieldName: UploadFieldName.SIDECAR_DATA, mimeTypes: SIDECAR_MIME_TYPES },
-    { label: 'profile', fieldName: UploadFieldName.PROFILE_DATA, mimeTypes: PROFILE_MIME_TYPES },
-  ];
-
-  for (const { label, fieldName, mimeTypes } of tests) {
-    describe(`${label} mime types linting`, () => {
-      it('should be a sorted list', () => {
-        expect(mimeTypes).toEqual(mimeTypes.sort());
-      });
-
-      it('should contain only unique values', () => {
-        expect(mimeTypes).toEqual([...new Set(mimeTypes)]);
-      });
-
-      if (fieldName !== UploadFieldName.SIDECAR_DATA) {
-        it('should contain only image or video mime types', () => {
-          expect(mimeTypes).toEqual(
-            mimeTypes.filter((mimeType) => mimeType.startsWith('image/') || mimeType.startsWith('video/')),
-          );
-        });
-      }
-
+  describe('mime types linting', () => {
+    describe('profile', () => {
       it('should contain only lowercase mime types', () => {
-        expect(mimeTypes).toEqual(mimeTypes.map((mimeType) => mimeType.toLowerCase()));
+        const keys = Object.keys(mimeTypes.profile);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.profile);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.profile);
+        expect(keys).toEqual([...keys].sort());
       });
     });
-  }
+
+    describe('image', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.image);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.image);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.image).filter((key) => key in mimeTypes.profile === false);
+        expect(keys).toEqual([...keys].sort());
+      });
+
+      it('should contain only image mime types', () => {
+        expect(Object.values(mimeTypes.image)).toEqual(
+          Object.values(mimeTypes.image).filter((mimeType) => mimeType.startsWith('image/')),
+        );
+      });
+    });
+
+    describe('video', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.video);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.video);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.video);
+        expect(keys).toEqual([...keys].sort());
+      });
+
+      it('should contain only video mime types', () => {
+        expect(Object.values(mimeTypes.video)).toEqual(
+          Object.values(mimeTypes.video).filter((mimeType) => mimeType.startsWith('video/')),
+        );
+      });
+    });
+
+    describe('sidecar', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.sidecar);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.sidecar);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.sidecar);
+        expect(keys).toEqual([...keys].sort());
+      });
+    });
+
+    describe('sidecar', () => {
+      it('should contain only be xml mime type', () => {
+        expect(Object.values(mimeTypes.sidecar)).toEqual(
+          Object.values(mimeTypes.sidecar).filter((mimeType) => mimeType === 'application/xml'),
+        );
+      });
+    });
+  });
 
   describe('canUpload', () => {
     it('should require an authenticated user', () => {
       expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
     });
 
-    it('should accept all accepted mime types', () => {
-      for (const { fieldName, mimeTypes } of tests) {
-        for (const mimeType of mimeTypes) {
-          expect(sut.canUploadFile(uploadFile.mimeType(fieldName, mimeType))).toEqual(true);
+    for (const { fieldName, filetypes, invalid } of uploadTests) {
+      describe(`${fieldName}`, () => {
+        for (const filetype of filetypes) {
+          it(`should accept ${filetype}`, () => {
+            expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
+          });
         }
-      }
-    });
 
-    it('should reject other mime types', () => {
-      for (const { fieldName, mimeType } of [
-        { fieldName: UploadFieldName.ASSET_DATA, mimeType: 'application/html' },
-        { fieldName: UploadFieldName.LIVE_PHOTO_DATA, mimeType: 'application/html' },
-        { fieldName: UploadFieldName.PROFILE_DATA, mimeType: 'application/html' },
-        { fieldName: UploadFieldName.SIDECAR_DATA, mimeType: 'image/jpeg' },
-      ]) {
-        expect(() => sut.canUploadFile(uploadFile.mimeType(fieldName, mimeType))).toThrowError(BadRequestException);
-      }
-    });
+        for (const filetype of invalid) {
+          it(`should reject ${filetype}`, () => {
+            expect(() => sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toThrowError(
+              BadRequestException,
+            );
+          });
+        }
+      });
+    }
   });
 
   describe('getUploadFilename', () => {

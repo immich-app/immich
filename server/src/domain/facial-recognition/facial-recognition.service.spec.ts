@@ -268,7 +268,7 @@ describe(FacialRecognitionService.name, () => {
 
       expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext', {
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
         left: 95,
         top: 95,
         width: 110,
@@ -289,7 +289,7 @@ describe(FacialRecognitionService.name, () => {
 
       await sut.handleGenerateFaceThumbnail(face.start);
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext', {
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
         left: 0,
         top: 0,
         width: 510,
@@ -306,7 +306,7 @@ describe(FacialRecognitionService.name, () => {
 
       await sut.handleGenerateFaceThumbnail(face.end);
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext', {
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
         left: 297,
         top: 297,
         width: 202,
