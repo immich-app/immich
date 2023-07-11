@@ -89,10 +89,10 @@ export class MediaService {
       return false;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp');
+    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
 
     await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
-    await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
+    await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;
   }
@@ -142,7 +142,7 @@ export class MediaService {
     const mainVideoStream = this.getMainVideoStream(videoStreams);
     const mainAudioStream = this.getMainAudioStream(audioStreams);
     const containerExtension = format.formatName;
-    if (!mainVideoStream || !mainAudioStream || !containerExtension) {
+    if (!mainVideoStream || !containerExtension) {
       return false;
     }
 
@@ -182,7 +182,7 @@ export class MediaService {
   private isTranscodeRequired(
     asset: AssetEntity,
     videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    audioStream: AudioStreamInfo | null,
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
@@ -192,12 +192,18 @@ export class MediaService {
     }
 
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
-    const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
+    const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
-    this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
-    );
+    if (audioStream != null) {
+      this.logger.verbose(
+        `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
+      );
+    } else {
+      this.logger.verbose(
+        `${asset.id}: AudioCodecName None, AudioStreamCodecType None, containerExtension ${containerExtension}`,
+      );
+    }
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';

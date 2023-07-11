@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { extname } from 'path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
+import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
@@ -20,7 +21,6 @@ export enum UploadFieldName {
 }
 
 export interface UploadFile {
-  mimeType: string;
   checksum: Buffer;
   originalPath: string;
   originalName: string;
@@ -68,7 +68,7 @@ export class AssetService {
       throw new BadRequestException('Asset not found');
     }
 
-    return this.storageRepository.createReadStream(asset.originalPath, asset.mimeType);
+    return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
   }
 
   async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {

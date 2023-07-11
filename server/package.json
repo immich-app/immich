@@ -51,7 +51,6 @@
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "^9.2.1",
     "@socket.io/redis-adapter": "^8.0.1",
-    "@types/mime-types": "^2.1.1",
     "archiver": "^5.3.1",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
@@ -64,12 +63,12 @@
     "fluent-ffmpeg": "^2.1.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
+    "immich": "^0.39.0",
     "ioredis": "^5.3.1",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "0.12.5",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
-    "mime-types": "^2.1.35",
     "mv": "^2.1.1",
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
@@ -81,8 +80,7 @@
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.11",
     "typesense": "^1.5.3",
-    "ua-parser-js": "^1.0.35",
-    "immich": "^0.39.0"
+    "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",

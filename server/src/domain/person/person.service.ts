@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
+import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { mapPerson, MergePersonDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
@@ -38,7 +39,7 @@ export class PersonService {
       throw new NotFoundException();
     }
 
-    return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
+    return this.storageRepository.createReadStream(person.thumbnailPath, mimeTypes.lookup(person.thumbnailPath));
   }
 
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
