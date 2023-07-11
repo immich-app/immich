@@ -1,11 +1,15 @@
 import {
   AssetIdsDto,
+  AssetResponseDto,
   AssetService,
   AuthUserDto,
   DownloadDto,
   DownloadResponseDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
+  TimeBucketAssetDto,
+  TimeBucketDto,
+  TimeBucketResponseDto,
 } from '@app/domain';
 import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
 import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
@@ -52,5 +56,17 @@ export class AssetController {
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   downloadFile(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.downloadFile(authUser, id).then(asStreamableFile);
+  }
+
+  @Authenticated({ isShared: true })
+  @Get('time-buckets')
+  getTimeBuckets(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
+    return this.service.getTimeBuckets(authUser, dto);
+  }
+
+  @Authenticated({ isShared: true })
+  @Get('time-bucket')
+  getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    return this.service.getByTimeBucket(authUser, dto);
   }
 }

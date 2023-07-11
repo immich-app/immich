@@ -6,6 +6,9 @@ import {
   MapMarkerSearchOptions,
   Paginated,
   PaginationOptions,
+  TimeBucketItem,
+  TimeBucketOptions,
+  TimeBucketSize,
   WithoutProperty,
   WithProperty,
 } from '@app/domain';
@@ -16,6 +19,11 @@ import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } f
 import { AssetEntity, AssetType } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
+
+const truncateMap: Record<TimeBucketSize, string> = {
+  [TimeBucketSize.DAY]: 'day',
+  [TimeBucketSize.MONTH]: 'month',
+};
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -320,5 +328,48 @@ export class AssetRepository implements IAssetRepository {
       /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lon: asset.exifInfo!.longitude!,
     }));
+  }
+
+  getTimeBuckets(userId: string, options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+    const truncateValue = truncateMap[options.size];
+
+    return this.getBuilder(userId, options)
+      .select(`COUNT(asset.id)::int`, 'count')
+      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
+      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .getRawMany();
+  }
+
+  getByTimeBucket(userId: string, timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+    const truncateValue = truncateMap[options.size];
+    return this.getBuilder(userId, options)
+      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
+      .orderBy('asset.fileCreatedAt', 'DESC')
+      .getMany();
+  }
+
+  private getBuilder(userId: string, options: TimeBucketOptions) {
+    const { isArchived, isFavorite, albumId } = options;
+
+    let builder = this.repository
+      .createQueryBuilder('asset')
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere('asset.resizePath is not NULL')
+      .andWhere('asset.isVisible = true');
+
+    if (albumId) {
+      builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    }
+
+    if (isArchived != undefined) {
+      builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+    }
+
+    if (isFavorite !== undefined) {
+      builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    return builder;
   }
 }

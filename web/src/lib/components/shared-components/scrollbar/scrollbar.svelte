@@ -17,10 +17,10 @@
 </script>
 
 <script lang="ts">
-  import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
-
   import { assetGridState } from '$lib/stores/assets.store';
-
+  import { createEventDispatcher } from 'svelte';
+  import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
+  import { assetGridState } from '$lib/stores/assets.store';
   import { createEventDispatcher } from 'svelte';
   import { SegmentScrollbarLayout } from './segment-scrollbar-layout';
 
@@ -37,9 +37,11 @@
   let currentMouseYLocation = 0;
   let scrollbarPosition = 0;
   let animationTick = false;
+  let innerHeight = 0;
 
-  const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
-  $: offset = $isAlbumAssetSelectionOpen ? 100 : 71;
+  const HOVER_DATE_HEIGHT = 30;
+
+  $: offset = innerHeight - scrollbarHeight + HOVER_DATE_HEIGHT;
   const dispatchClick = createEventDispatcher<OnScrollbarClick>();
   const dispatchDrag = createEventDispatcher<OnScrollbarDrag>();
   $: {
@@ -58,15 +60,13 @@
     segmentScrollbarLayout = result;
   }
 
-  const handleMouseMove = (e: MouseEvent, currentDate: Date) => {
-    currentMouseYLocation = e.clientY - offset - 30;
-
+  const handleMouseMove = (currentDate: Date) => {
     hoveredDate = new Date(currentDate.toISOString().slice(0, -1));
   };
 
   const handleMouseDown = (e: MouseEvent) => {
     isDragging = true;
-    scrollbarPosition = e.clientY - offset;
+    scrollbarPosition = e.clientY;
   };
 
   const handleMouseUp = (e: MouseEvent) => {
@@ -76,6 +76,8 @@
   };
 
   const handleMouseDrag = (e: MouseEvent) => {
+    currentMouseYLocation = e.clientY - offset;
+
     if (isDragging) {
       if (!animationTick) {
         window.requestAnimationFrame(() => {
@@ -91,11 +93,14 @@
   };
 </script>
 
+<svelte:window bind:innerHeight />
+
 <div
   id="immich-scrubbable-scrollbar"
   class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none"
   style:width={isDragging ? '100vw' : '60px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
+  draggable="false"
   on:mouseenter={() => (isHover = true)}
   on:mouseleave={() => {
     isHover = false;
@@ -132,7 +137,7 @@
       class="relative"
       style:height={segment.height + 'px'}
       aria-label={segment.timeGroup + ' ' + segment.count}
-      on:mousemove={(e) => handleMouseMove(e, groupDate)}
+      on:mousemove={() => handleMouseMove(groupDate)}
     >
       {#if new Date(segmentScrollbarLayout[index - 1]?.timeGroup).getFullYear() !== groupDate.getFullYear()}
         {#if segment.height > 8}

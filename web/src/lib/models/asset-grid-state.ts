@@ -1,4 +1,5 @@
 import type { AssetResponseDto } from '@api';
+import { TimeBucketSize } from '@api';
 
 export enum BucketPosition {
   Above = 'above',
@@ -19,7 +20,19 @@ export class AssetBucket {
   position!: BucketPosition;
 }
 
+export interface AssetGridOptions {
+  size: TimeBucketSize;
+  albumId?: string;
+  userId?: string;
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  sharedKey?: string;
+}
+
 export class AssetGridState {
+  initialized = false;
+  options: AssetGridOptions = { size: TimeBucketSize.Month };
+
   /**
    * The total height of the timeline in pixel
    * This value is first estimated by the number of asset and later is corrected as the user scroll
@@ -50,9 +63,4 @@ export class AssetGridState {
    * Total assets that have been loaded along with additional data
    */
   loadedAssets: Record<string, number> = {};
-
-  /**
-   * User that owns assets
-   */
-  userId: string | undefined;
 }
