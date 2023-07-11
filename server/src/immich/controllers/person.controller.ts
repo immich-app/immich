@@ -1,6 +1,7 @@
 import {
   AssetResponseDto,
   AuthUserDto,
+  BulkIdResponseDto,
   ImmichReadStream,
   MergePersonDto,
   PersonResponseDto,
@@ -59,7 +60,11 @@ export class PersonController {
   }
 
   @Post(':id/merge')
-  mergePerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: MergePersonDto) {
+  mergePerson(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: MergePersonDto,
+  ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePerson(authUser, id, dto);
   }
 }

@@ -19,7 +19,7 @@ export class PersonUpdateDto {
 }
 
 export class MergePersonDto {
-  @ValidateUUID({ optional: false, each: true })
+  @ValidateUUID({ each: true })
   ids!: string[];
 }
 

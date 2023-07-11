@@ -13,7 +13,7 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     delete: jest.fn(),
 
     getFaceById: jest.fn(),
-    deleteFacesForSharedAssets: jest.fn(),
+    prepareReassignFaces: jest.fn(),
     reassignFaces: jest.fn(),
   };
 };

@@ -2719,7 +2719,17 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5011,6 +5021,30 @@
           "current",
           "deviceType",
           "deviceOS"
+        ]
+      },
+      "BulkIdResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "success"
         ]
       },
       "ChangePasswordDto": {

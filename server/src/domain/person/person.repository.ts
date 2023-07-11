@@ -17,7 +17,7 @@ export interface IPersonRepository {
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
 
   getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
-  deleteFacesForSharedAssets(data: UpdateFacesData): Promise<string[]>;
+  prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;

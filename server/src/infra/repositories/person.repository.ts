@@ -10,6 +10,25 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
+  /**
+   * Before reassigning faces, delete potential key violations
+   */
+  async prepareReassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
+    const results = await this.assetFaceRepository
+      .createQueryBuilder('face')
+      .select('face."assetId"')
+      .where(`face."personId" IN (:...ids)`, { ids: [oldPersonId, newPersonId] })
+      .groupBy('face."assetId"')
+      .having('COUNT(face."personId") > 1')
+      .getRawMany();
+
+    const assetIds = results.map(({ assetId }) => assetId);
+
+    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
+
+    return assetIds;
+  }
+
   async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
@@ -19,34 +38,6 @@ export class PersonRepository implements IPersonRepository {
       .execute();
 
     return result.affected ?? 0;
-  }
-
-  /**
-   * Delete the assets that containers faces from both persons.
-   * Normally, this shouldn't happen, however there are some edge cases, where your photo is taken
-   * with an older version of your self, and the face detection algorithm detects both faces as different.
-   * @param ids Array of personId.
-   * @returns sAn array of assetId that contains faces from both persons.
-   */
-  async deleteFacesForSharedAssets({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
-    const duplicatedAssets = await this.assetFaceRepository
-      .createQueryBuilder('af')
-      .select('af."assetId"')
-      .where(`af."personId" IN (:...ids)`, {
-        ids: [oldPersonId, newPersonId],
-      })
-      .groupBy('af."assetId"')
-      .having('COUNT(af."personId") > 1')
-      .getRawMany();
-
-    const deleteIds = duplicatedAssets.map((r) => r.assetId);
-
-    await this.assetFaceRepository.delete({
-      assetId: In(deleteIds),
-      personId: oldPersonId,
-    });
-
-    return deleteIds;
   }
 
   delete(entity: PersonEntity): Promise<PersonEntity | null> {

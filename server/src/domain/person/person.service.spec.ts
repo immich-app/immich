@@ -157,14 +157,14 @@ describe(PersonService.name, () => {
 
   describe('mergePerson', () => {
     it('should merge two people', async () => {
-      personMock.getById.mockResolvedValue(personStub.primaryPerson);
-      personMock.getById.mockResolvedValue(personStub.mergePerson);
-      personMock.deleteFacesForSharedAssets.mockResolvedValue([]);
+      personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
+      personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
+      personMock.prepareReassignFaces.mockResolvedValue([]);
       personMock.delete.mockResolvedValue(personStub.mergePerson);
 
       await sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] });
 
-      expect(personMock.deleteFacesForSharedAssets).toHaveBeenCalledWith({
+      expect(personMock.prepareReassignFaces).toHaveBeenCalledWith({
         newPersonId: personStub.primaryPerson.id,
         oldPersonId: personStub.mergePerson.id,
       });
@@ -177,14 +177,14 @@ describe(PersonService.name, () => {
       expect(personMock.delete).toHaveBeenCalledWith(personStub.mergePerson);
     });
 
-    it('Should delete identical assets', async () => {
+    it('should delete conflicting faces before merging', async () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       personMock.getById.mockResolvedValue(personStub.mergePerson);
-      personMock.deleteFacesForSharedAssets.mockResolvedValue([assetEntityStub.image.id]);
+      personMock.prepareReassignFaces.mockResolvedValue([assetEntityStub.image.id]);
 
       await sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] });
 
-      expect(personMock.deleteFacesForSharedAssets).toHaveBeenCalledWith({
+      expect(personMock.prepareReassignFaces).toHaveBeenCalledWith({
         newPersonId: personStub.primaryPerson.id,
         oldPersonId: personStub.mergePerson.id,
       });
