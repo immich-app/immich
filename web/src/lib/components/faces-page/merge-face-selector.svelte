@@ -16,55 +16,51 @@
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
-  let selectFaces: Set<PersonResponseDto> = new Set();
-
+  let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
   let isShowConfirmation = false;
-
   let dispatch = createEventDispatcher();
 
-  $: hasSelection = selectFaces.size > 0;
+  $: hasSelection = selectedPeople.length > 0;
+  $: unselectedPeople = people.filter((source) => !selectedPeople.includes(source) && source.id !== person.id);
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople();
-    people = data.filter((p) => p.id !== person.id);
+    people = data;
   });
 
   const onClose = () => {
     dispatch('go-back');
   };
 
-  const onFaceClicked = (person: PersonResponseDto) => {
-    if (selectFaces.has(person)) {
-      const temp = new Set(selectFaces);
-      temp.delete(person);
-      selectFaces = temp;
-      people = [person, ...people];
-    } else {
-      if (selectFaces.size >= 5) {
-        notificationController.show({
-          message: 'You can only merge up to 5 faces at a time',
-          type: NotificationType.Info,
-        });
-        return;
-      }
-      selectFaces = selectFaces.add(person);
-      people = people.filter((p) => p.id !== person.id);
+  const onSelect = (selected: PersonResponseDto) => {
+    if (selectedPeople.includes(selected)) {
+      selectedPeople = selectedPeople.filter((person) => person.id !== selected.id);
+      return;
     }
-  };
 
-  const mergeFaces = async () => {
-    try {
-      await api.personApi.mergePerson({
-        id: person.id,
-        mergePersonDto: { ids: Array.from(selectFaces).map((p) => p.id.toString()) },
-      });
-
+    if (selectedPeople.length >= 5) {
       notificationController.show({
-        message: 'Faces merged successfully',
+        message: 'You can only merge up to 5 faces at a time',
         type: NotificationType.Info,
       });
+      return;
+    }
 
+    selectedPeople = [selected, ...selectedPeople];
+  };
+
+  const handleMerge = async () => {
+    try {
+      const { data: results } = await api.personApi.mergePerson({
+        id: person.id,
+        mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
+      });
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
+        type: NotificationType.Info,
+      });
       await invalidateAll();
       onClose();
     } catch (error) {
@@ -84,7 +80,7 @@
   <ControlAppBar on:close-button-click={onClose}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
-        Selected {selectFaces.size}
+        Selected {selectedPeople.length}
       {:else}
         Merge faces
       {/if}
@@ -93,7 +89,7 @@
     <svelte:fragment slot="trailing">
       <Button
         size={'sm'}
-        disabled={selectFaces.size == 0}
+        disabled={!hasSelection}
         on:click={() => {
           isShowConfirmation = true;
         }}
@@ -109,16 +105,9 @@
         <p class="uppercase mb-4 dark:text-white text-center">Choose matching faces to merge</p>
 
         <div class="grid grid-flow-col-dense place-items-center place-content-center gap-4">
-          {#each Array.from(selectFaces) as person (person.id)}
+          {#each selectedPeople as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              <FaceThumbnail
-                border
-                circle
-                {person}
-                selectable
-                thumbnailSize={120}
-                on:click={() => onFaceClicked(person)}
-              />
+              <FaceThumbnail border circle {person} selectable thumbnailSize={120} on:click={() => onSelect(person)} />
             </div>
           {/each}
 
@@ -133,15 +122,8 @@
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
         <div class="grid grid-col-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-8">
-          {#each people as person (person.id)}
-            <FaceThumbnail
-              {person}
-              on:click={() => onFaceClicked(person)}
-              selected={selectFaces.has(person)}
-              circle
-              border
-              selectable
-            />
+          {#each unselectedPeople as person (person.id)}
+            <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
           {/each}
         </div>
       </div>
@@ -151,11 +133,11 @@
       <ConfirmDialogue
         title="Merge faces"
         confirmText="Merge"
-        on:confirm={mergeFaces}
+        on:confirm={handleMerge}
         on:cancel={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
-          <p>Are you sure you want merge these faces?</p>
+          <p>Are you sure you want merge these faces? <br />This action is <strong>irreversible</strong>.</p>
         </svelte:fragment>
       </ConfirmDialogue>
     {/if}
