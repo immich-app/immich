@@ -93,8 +93,13 @@ export class AssetService {
 
     switch (fieldName) {
       case UploadFieldName.ASSET_DATA:
-      case UploadFieldName.LIVE_PHOTO_DATA:
         if (mimeTypes.isAsset(filename)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.LIVE_PHOTO_DATA:
+        if (mimeTypes.isVideo(filename)) {
           return true;
         }
         break;
