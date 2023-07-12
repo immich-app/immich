@@ -1377,12 +1377,6 @@ export interface GetAssetCountByTimeBucketDto {
 export interface ImportAssetDto {
     /**
      * 
-     * @type {AssetTypeEnum}
-     * @memberof ImportAssetDto
-     */
-    'assetType': AssetTypeEnum;
-    /**
-     * 
      * @type {boolean}
      * @memberof ImportAssetDto
      */
@@ -1448,8 +1442,6 @@ export interface ImportAssetDto {
      */
     'duration'?: string;
 }
-
-
 /**
  * 
  * @export
@@ -5690,9 +5682,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {AssetTypeEnum} assetType 
          * @param {File} assetData 
-         * @param {string} fileExtension 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
          * @param {string} fileCreatedAt 
@@ -5708,13 +5698,9 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetType' is not null or undefined
-            assertParamExists('uploadFile', 'assetType', assetType)
+        uploadFile: async (assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
-            // verify required parameter 'fileExtension' is not null or undefined
-            assertParamExists('uploadFile', 'fileExtension', fileExtension)
             // verify required parameter 'deviceAssetId' is not null or undefined
             assertParamExists('uploadFile', 'deviceAssetId', deviceAssetId)
             // verify required parameter 'deviceId' is not null or undefined
@@ -5752,10 +5738,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             }
 
 
-            if (assetType !== undefined) { 
-                localVarFormParams.append('assetType', new Blob([JSON.stringify(assetType)], { type: "application/json", }));
-            }
-    
             if (assetData !== undefined) { 
                 localVarFormParams.append('assetData', assetData as any);
             }
@@ -5770,10 +5752,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     
             if (isReadOnly !== undefined) { 
                 localVarFormParams.append('isReadOnly', isReadOnly as any);
-            }
-    
-            if (fileExtension !== undefined) { 
-                localVarFormParams.append('fileExtension', fileExtension as any);
             }
     
             if (deviceAssetId !== undefined) { 
@@ -6089,9 +6067,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {AssetTypeEnum} assetType 
          * @param {File} assetData 
-         * @param {string} fileExtension 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
          * @param {string} fileCreatedAt 
@@ -6107,8 +6083,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, options);
+        async uploadFile(assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6339,7 +6315,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(requestParameters.assetType, requestParameters.assetData, requestParameters.fileExtension, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, options).then((request) => request(axios, basePath));
+            return localVarFp.uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6765,24 +6741,10 @@ export interface AssetApiUpdateAssetRequest {
 export interface AssetApiUploadFileRequest {
     /**
      * 
-     * @type {AssetTypeEnum}
-     * @memberof AssetApiUploadFile
-     */
-    readonly assetType: AssetTypeEnum
-
-    /**
-     * 
      * @type {File}
      * @memberof AssetApiUploadFile
      */
     readonly assetData: File
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiUploadFile
-     */
-    readonly fileExtension: string
 
     /**
      * 
@@ -7143,7 +7105,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetType, requestParameters.assetData, requestParameters.fileExtension, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

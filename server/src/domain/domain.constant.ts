@@ -1,3 +1,4 @@
+import { AssetType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
@@ -91,6 +92,8 @@ const sidecar: Record<string, string> = {
 
 const isType = (filename: string, lookup: Record<string, string>) => !!lookup[extname(filename).toLowerCase()];
 const getType = (filename: string, lookup: Record<string, string>) => lookup[extname(filename).toLowerCase()];
+const lookup = (filename: string) =>
+  getType(filename, { ...image, ...video, ...sidecar }) || 'application/octet-stream';
 
 export const mimeTypes = {
   image,
@@ -102,5 +105,16 @@ export const mimeTypes = {
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
-  lookup: (filename: string) => getType(filename, { ...image, ...video, ...sidecar }) || 'application/octet-stream',
+  lookup,
+  assetType: (filename: string) => {
+    const contentType = lookup(filename).split('/')[0];
+    switch (contentType) {
+      case 'image':
+        return AssetType.IMAGE;
+      case 'video':
+        return AssetType.VIDEO;
+      default:
+        return AssetType.OTHER;
+    }
+  },
 };

@@ -4,6 +4,7 @@
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
+  import { getFilenameExtension } from '../../utils/asset-utils';
 
   export let uploadAsset: UploadAsset;
 
@@ -42,7 +43,7 @@
       <p
         class="absolute bottom-1 right-1 object-right-bottom text-gray-50/95 font-semibold stroke-immich-primary uppercase"
       >
-        .{uploadAsset.fileExtension}
+        .{getFilenameExtension(uploadAsset.file.name)}
       </p>
     </div>
   </div>

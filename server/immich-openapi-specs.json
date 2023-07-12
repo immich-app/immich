@@ -5148,9 +5148,6 @@
       "CreateAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
           "assetData": {
             "type": "string",
             "format": "binary"
@@ -5166,9 +5163,6 @@
           "isReadOnly": {
             "type": "boolean",
             "default": false
-          },
-          "fileExtension": {
-            "type": "string"
           },
           "deviceAssetId": {
             "type": "string"
@@ -5198,9 +5192,7 @@
           }
         },
         "required": [
-          "assetType",
           "assetData",
-          "fileExtension",
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
@@ -5571,9 +5563,6 @@
       "ImportAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
           "isReadOnly": {
             "type": "boolean",
             "default": true
@@ -5612,7 +5601,6 @@
           }
         },
         "required": [
-          "assetType",
           "assetPath",
           "deviceAssetId",
           "deviceId",

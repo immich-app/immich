@@ -32,7 +32,6 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
   createAssetDto.deviceAssetId = 'deviceAssetId';
   createAssetDto.deviceId = 'deviceId';
-  createAssetDto.assetType = AssetType.OTHER;
   createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.isFavorite = false;

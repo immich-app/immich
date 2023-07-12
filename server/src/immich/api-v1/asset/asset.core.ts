@@ -1,4 +1,4 @@
-import { AuthUserDto, IJobRepository, JobName, UploadFile } from '@app/domain';
+import { AuthUserDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
 import { AssetEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
@@ -26,7 +26,7 @@ export class AssetCore {
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
 
-      type: dto.assetType,
+      type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
