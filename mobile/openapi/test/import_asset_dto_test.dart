@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // String libraryId
-    test('to test the property `libraryId`', () async {
-      // TODO
-    });
-
     // bool isReadOnly (default value: true)
     test('to test the property `isReadOnly`', () async {
       // TODO

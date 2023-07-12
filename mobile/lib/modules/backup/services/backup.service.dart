@@ -14,15 +14,13 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
+import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -230,18 +228,12 @@ class BackupService {
 
         if (file != null) {
           String originalFileName = await entity.titleAsync;
-          var fileExtension = p.extension(file.path);
-          var mimeType = FileHelper.getMimeType(file.path);
           var fileStream = file.openRead();
           var assetRawUploadData = http.MultipartFile(
             "assetData",
             fileStream,
             file.lengthSync(),
             filename: originalFileName,
-            contentType: MediaType(
-              mimeType["type"],
-              mimeType["subType"],
-            ),
           );
 
           var req = MultipartRequest(
@@ -256,12 +248,10 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
           req.fields['fileModifiedAt'] =
               entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
-          req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
 
           req.files.add(assetRawUploadData);
@@ -342,18 +332,12 @@ class BackupService {
       var validPath = motionFilePath.replaceAll('file://', '');
       var motionFile = File(validPath);
       var fileStream = motionFile.openRead();
-      String originalFileName = await entity.titleAsync;
-      var mimeType = FileHelper.getMimeType(validPath);
-
+      String fileName = p.basename(motionFile.path);
       return http.MultipartFile(
         "livePhotoData",
         fileStream,
         motionFile.lengthSync(),
-        filename: originalFileName,
-        contentType: MediaType(
-          mimeType["type"],
-          mimeType["subType"],
-        ),
+        filename: fileName,
       );
     }
 

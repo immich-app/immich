@@ -2,14 +2,19 @@
   import { BucketPosition } from '$lib/models/asset-grid-state';
   import {
     assetInteractionStore,
+    assetSelectionCandidates,
+    assetSelectionStart,
     isMultiSelectStoreState,
     isViewingAssetStoreState,
     selectedAssets,
     viewingAssetStoreState,
   } from '$lib/stores/asset-interaction.store';
   import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
+  import { locale } from '$lib/stores/preferences.store';
+  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { UserResponseDto } from '@api';
   import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
+  import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -144,12 +149,6 @@
     selectAssetCandidates(lastAssetMouseEvent);
   }
 
-  const getLastSelectedAsset = () => {
-    let value;
-    for (value of $selectedAssets);
-    return value;
-  };
-
   const handleSelectAssetCandidates = (e: CustomEvent) => {
     const asset = e.detail.asset;
     if (asset) {
@@ -158,18 +157,84 @@
     lastAssetMouseEvent = asset;
   };
 
+  const handleSelectAssets = async (e: CustomEvent) => {
+    const asset = e.detail.asset;
+    if (!asset) {
+      return;
+    }
+
+    const rangeSelection = $assetSelectionCandidates.size > 0;
+    const deselect = $selectedAssets.has(asset);
+
+    // Select/deselect already loaded assets
+    if (deselect) {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      }
+      assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+    } else {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+      }
+      assetInteractionStore.addAssetToMultiselectGroup(asset);
+    }
+
+    assetInteractionStore.clearAssetSelectionCandidates();
+
+    if ($assetSelectionStart && rangeSelection) {
+      let startBucketIndex = $assetGridState.loadedAssets[$assetSelectionStart.id];
+      let endBucketIndex = $assetGridState.loadedAssets[asset.id];
+
+      if (endBucketIndex < startBucketIndex) {
+        [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
+      }
+
+      // Select/deselect assets in all intermediate buckets
+      for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        for (const asset of bucket.assets) {
+          if (deselect) {
+            assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+          } else {
+            assetInteractionStore.addAssetToMultiselectGroup(asset);
+          }
+        }
+      }
+
+      // Update date group selection
+      for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+
+        // Split bucket into date groups and check each group
+        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
+
+        for (const dateGroup of assetsGroupByDate) {
+          const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
+          if (dateGroup.every((a) => $selectedAssets.has(a))) {
+            assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+          } else {
+            assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+          }
+        }
+      }
+    }
+
+    assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
+  };
+
   const selectAssetCandidates = (asset: AssetResponseDto) => {
     if (!shiftKeyIsDown) {
       return;
     }
 
-    const lastSelectedAsset = getLastSelectedAsset();
-    if (!lastSelectedAsset) {
+    const rangeStart = $assetSelectionStart;
+    if (!rangeStart) {
       return;
     }
 
-    let start = $assetGridState.assets.indexOf(asset);
-    let end = $assetGridState.assets.indexOf(lastSelectedAsset);
+    let start = $assetGridState.assets.indexOf(rangeStart);
+    let end = $assetGridState.assets.indexOf(asset);
 
     if (start > end) {
       [start, end] = [end, start];
@@ -230,6 +295,7 @@
                 {isAlbumSelectionMode}
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={handleSelectAssetCandidates}
+                on:selectAssets={handleSelectAssets}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

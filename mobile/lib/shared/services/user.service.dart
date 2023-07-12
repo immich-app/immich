@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/modules/partner/services/partner.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -11,7 +10,6 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -59,17 +57,11 @@ class UserService {
 
   Future<CreateProfileImageResponseDto?> uploadProfileImage(XFile image) async {
     try {
-      var mimeType = FileHelper.getMimeType(image.path);
-
       return await _apiService.userApi.createProfileImage(
         MultipartFile.fromBytes(
           'file',
           await image.readAsBytes(),
           filename: image.name,
-          contentType: MediaType(
-            mimeType["type"],
-            mimeType["subType"],
-          ),
         ),
       );
     } catch (e) {

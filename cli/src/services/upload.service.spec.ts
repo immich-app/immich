@@ -21,7 +21,6 @@ describe('UploadService', () => {
 
   it('should upload a single file', async () => {
     const data = new FormData();
-    data.append('assetType', 'image');
 
     uploadService.upload(data);
 

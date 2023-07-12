@@ -1359,11 +1359,7 @@ class AssetApi {
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [AssetTypeEnum] assetType (required):
-  ///
   /// * [MultipartFile] assetData (required):
-  ///
-  /// * [String] fileExtension (required):
   ///
   /// * [String] deviceAssetId (required):
   ///
@@ -1377,7 +1373,7 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
-  /// * [String] libraryId:
+  /// * [AssetTypeEnum] assetType:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
@@ -1392,7 +1388,7 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, AssetTypeEnum? assetType, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1415,10 +1411,6 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'assetType'] = parameterToString(assetType);
     }
-    if (libraryId != null) {
-      hasFields = true;
-      mp.fields[r'libraryId'] = parameterToString(libraryId);
-    }
     if (assetData != null) {
       hasFields = true;
       mp.fields[r'assetData'] = assetData.field;
@@ -1437,10 +1429,6 @@ class AssetApi {
     if (isReadOnly != null) {
       hasFields = true;
       mp.fields[r'isReadOnly'] = parameterToString(isReadOnly);
-    }
-    if (fileExtension != null) {
-      hasFields = true;
-      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
     }
     if (deviceAssetId != null) {
       hasFields = true;
@@ -1495,11 +1483,7 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [AssetTypeEnum] assetType (required):
-  ///
   /// * [MultipartFile] assetData (required):
-  ///
-  /// * [String] fileExtension (required):
   ///
   /// * [String] deviceAssetId (required):
   ///
@@ -1513,7 +1497,7 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
-  /// * [String] libraryId:
+  /// * [AssetTypeEnum] assetType:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
@@ -1528,8 +1512,8 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
+  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, AssetTypeEnum? assetType, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, assetType: assetType, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -9,7 +9,6 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
-**libraryId** | **String** |  | 
 **isReadOnly** | **bool** |  | [optional] [default to true]
 **assetPath** | **String** |  | 
 **sidecarPath** | **String** |  | [optional] 

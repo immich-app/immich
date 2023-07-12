@@ -813,6 +813,41 @@ export interface AuthDeviceResponseDto {
 /**
  * 
  * @export
+ * @interface BulkIdResponseDto
+ */
+export interface BulkIdResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof BulkIdResponseDto
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
+    'error'?: BulkIdResponseDtoErrorEnum;
+}
+
+export const BulkIdResponseDtoErrorEnum = {
+    Duplicate: 'duplicate',
+    NoPermission: 'no_permission',
+    NotFound: 'not_found',
+    Unknown: 'unknown'
+} as const;
+
+export type BulkIdResponseDtoErrorEnum = typeof BulkIdResponseDtoErrorEnum[keyof typeof BulkIdResponseDtoErrorEnum];
+
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -1387,12 +1422,6 @@ export interface ImportAssetDto {
     'assetType': AssetTypeEnum;
     /**
      * 
-     * @type {string}
-     * @memberof ImportAssetDto
-     */
-    'libraryId': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof ImportAssetDto
      */
@@ -1814,6 +1843,19 @@ export interface MemoryLaneResponseDto {
      * @memberof MemoryLaneResponseDto
      */
     'assets': Array<AssetResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @interface MergePersonDto
+ */
+export interface MergePersonDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof MergePersonDto
+     */
+    'ids': Array<string>;
 }
 /**
  * 
@@ -5818,16 +5860,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {AssetTypeEnum} assetType 
          * @param {File} assetData 
-         * @param {string} fileExtension 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
          * @param {string} fileCreatedAt 
          * @param {string} fileModifiedAt 
          * @param {boolean} isFavorite 
          * @param {string} [key] 
-         * @param {string} [libraryId] 
+         * @param {AssetTypeEnum} [assetType] 
          * @param {File} [livePhotoData] 
          * @param {File} [sidecarData] 
          * @param {boolean} [isReadOnly] 
@@ -5838,13 +5878,9 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, libraryId?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetType' is not null or undefined
-            assertParamExists('uploadFile', 'assetType', assetType)
+        uploadFile: async (assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, assetType?: AssetTypeEnum, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
-            // verify required parameter 'fileExtension' is not null or undefined
-            assertParamExists('uploadFile', 'fileExtension', fileExtension)
             // verify required parameter 'deviceAssetId' is not null or undefined
             assertParamExists('uploadFile', 'deviceAssetId', deviceAssetId)
             // verify required parameter 'deviceId' is not null or undefined
@@ -5886,10 +5922,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarFormParams.append('assetType', new Blob([JSON.stringify(assetType)], { type: "application/json", }));
             }
     
-            if (libraryId !== undefined) { 
-                localVarFormParams.append('libraryId', libraryId as any);
-            }
-    
             if (assetData !== undefined) { 
                 localVarFormParams.append('assetData', assetData as any);
             }
@@ -5904,10 +5936,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     
             if (isReadOnly !== undefined) { 
                 localVarFormParams.append('isReadOnly', isReadOnly as any);
-            }
-    
-            if (fileExtension !== undefined) { 
-                localVarFormParams.append('fileExtension', fileExtension as any);
             }
     
             if (deviceAssetId !== undefined) { 
@@ -6227,16 +6255,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {AssetTypeEnum} assetType 
          * @param {File} assetData 
-         * @param {string} fileExtension 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
          * @param {string} fileCreatedAt 
          * @param {string} fileModifiedAt 
          * @param {boolean} isFavorite 
          * @param {string} [key] 
-         * @param {string} [libraryId] 
+         * @param {AssetTypeEnum} [assetType] 
          * @param {File} [livePhotoData] 
          * @param {File} [sidecarData] 
          * @param {boolean} [isReadOnly] 
@@ -6247,8 +6273,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, libraryId?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, libraryId, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options);
+        async uploadFile(assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, assetType?: AssetTypeEnum, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, assetType, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6495,16 +6521,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {AssetTypeEnum} assetType 
          * @param {File} assetData 
-         * @param {string} fileExtension 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
          * @param {string} fileCreatedAt 
          * @param {string} fileModifiedAt 
          * @param {boolean} isFavorite 
          * @param {string} [key] 
-         * @param {string} [libraryId] 
+         * @param {AssetTypeEnum} [assetType] 
          * @param {File} [livePhotoData] 
          * @param {File} [sidecarData] 
          * @param {boolean} [isReadOnly] 
@@ -6515,8 +6539,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, libraryId?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, libraryId, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options).then((request) => request(axios, basePath));
+        uploadFile(assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, assetType?: AssetTypeEnum, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, assetType, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6942,24 +6966,10 @@ export interface AssetApiUpdateAssetRequest {
 export interface AssetApiUploadFileRequest {
     /**
      * 
-     * @type {AssetTypeEnum}
-     * @memberof AssetApiUploadFile
-     */
-    readonly assetType: AssetTypeEnum
-
-    /**
-     * 
      * @type {File}
      * @memberof AssetApiUploadFile
      */
     readonly assetData: File
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiUploadFile
-     */
-    readonly fileExtension: string
 
     /**
      * 
@@ -7005,10 +7015,10 @@ export interface AssetApiUploadFileRequest {
 
     /**
      * 
-     * @type {string}
+     * @type {AssetTypeEnum}
      * @memberof AssetApiUploadFile
      */
-    readonly libraryId?: string
+    readonly assetType?: AssetTypeEnum
 
     /**
      * 
@@ -7334,7 +7344,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetType, requestParameters.assetData, requestParameters.fileExtension, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, requestParameters.isOffline, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.assetType, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, requestParameters.isOffline, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -9702,6 +9712,54 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson: async (id: string, mergePersonDto: MergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('mergePerson', 'id', id)
+            // verify required parameter 'mergePersonDto' is not null or undefined
+            assertParamExists('mergePerson', 'mergePersonDto', mergePersonDto)
+            const localVarPath = `/person/{id}/merge`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(mergePersonDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9799,6 +9857,17 @@ export const PersonApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(id, mergePersonDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9855,6 +9924,16 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @param {string} id 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson(id: string, mergePersonDto: MergePersonDto, options?: any): AxiosPromise<Array<BulkIdResponseDto>> {
+            return localVarFp.mergePerson(id, mergePersonDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9905,6 +9984,27 @@ export interface PersonApiGetPersonThumbnailRequest {
      * @memberof PersonApiGetPersonThumbnail
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for mergePerson operation in PersonApi.
+ * @export
+ * @interface PersonApiMergePersonRequest
+ */
+export interface PersonApiMergePersonRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiMergePerson
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {MergePersonDto}
+     * @memberof PersonApiMergePerson
+     */
+    readonly mergePersonDto: MergePersonDto
 }
 
 /**
@@ -9976,6 +10076,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonThumbnail(requestParameters: PersonApiGetPersonThumbnailRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonThumbnail(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiMergePersonRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
