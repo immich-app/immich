@@ -355,7 +355,6 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.ownerId = :userId', { userId })
-      .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true');
 
     if (albumId) {

@@ -9,7 +9,7 @@
   } from '$lib/stores/asset-interaction.store';
   import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
   import type { UserResponseDto } from '@api';
-  import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
+  import { AssetResponseDto, TimeBucketSize } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -28,42 +28,16 @@
   let viewportHeight = 0;
   let viewportWidth = 0;
   let assetGridElement: HTMLElement;
-  let bucketInfo: AssetCountByTimeBucketResponseDto;
 
   onMount(async () => {
-    const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
-      getAssetCountByTimeBucketDto: {
-        timeGroup: TimeGroupEnum.Month,
-        userId: user?.id,
-        withoutThumbs: true,
-      },
-    });
-
-    bucketInfo = assetCountByTimebucket;
-
-    assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket, user?.id);
-
-    // Get asset bucket if bucket height is smaller than viewport height
-    let bucketsToFetchInitially: string[] = [];
-    let initialBucketsHeight = 0;
-    $assetGridState.buckets.every((bucket) => {
-      if (initialBucketsHeight < viewportHeight) {
-        initialBucketsHeight += bucket.bucketHeight;
-        bucketsToFetchInitially.push(bucket.bucketDate);
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    bucketsToFetchInitially.forEach((bucketDate) => {
-      assetStore.getAssetsByBucket(bucketDate, BucketPosition.Visible);
+    await assetStore.init(viewportHeight, viewportWidth, {
+      size: TimeBucketSize.Day,
+      isArchived: false,
+      userId: user?.id,
     });
   });
 
-  onDestroy(() => {
-    assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
-  });
+  onDestroy(() => assetStore.reset());
 
   function intersectedHandler(event: CustomEvent) {
     const el = event.detail.container as HTMLElement;
@@ -187,7 +161,7 @@
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
-{#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
+{#if viewportHeight && $assetGridState.timelineHeight > viewportHeight}
   <Scrollbar
     scrollbarHeight={viewportHeight}
     scrollTop={lastScrollPosition}

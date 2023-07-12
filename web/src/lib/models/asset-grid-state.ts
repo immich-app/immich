@@ -30,7 +30,6 @@ export interface AssetGridOptions {
 }
 
 export class AssetGridState {
-  initialized = false;
   options: AssetGridOptions = { size: TimeBucketSize.Month };
 
   /**

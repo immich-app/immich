@@ -1,5 +1,5 @@
-import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
-import { api, AssetCountByTimeBucketResponseDto } from '@api';
+import { AssetGridOptions, AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
+import { api, TimeBucketSize } from '@api';
 import { writable } from 'svelte/store';
 
 /**
@@ -30,32 +30,25 @@ function createAssetStore() {
     return height;
   };
 
-  const refreshLoadedAssets = (state: AssetGridState): void => {
+  const sync = (state: AssetGridState): AssetGridState => {
     state.loadedAssets = {};
     state.buckets.forEach((bucket, bucketIndex) =>
       bucket.assets.map((asset) => {
         state.loadedAssets[asset.id] = bucketIndex;
       }),
     );
+    state.assets = state.buckets.flatMap((b) => b.assets);
+    return state;
   };
 
-  /**
-   * Set initial state
-   * @param viewportHeight
-   * @param viewportWidth
-   * @param data
-   */
-  const setInitialState = (
-    viewportHeight: number,
-    viewportWidth: number,
-    data: AssetCountByTimeBucketResponseDto,
-    userId: string | undefined,
-  ) => {
+  const init = async (viewportHeight: number, viewportWidth: number, options: AssetGridOptions) => {
+    const { data: timeBuckets } = await api.assetApi.getTimeBuckets(options);
+
     assetGridState.set({
       viewportHeight,
       viewportWidth,
       timelineHeight: 0,
-      buckets: data.buckets.map((bucket) => ({
+      buckets: timeBuckets.map((bucket) => ({
         bucketDate: bucket.timeBucket,
         bucketHeight: estimateViewportHeight(bucket.count, viewportWidth),
         assets: [],
@@ -64,13 +57,42 @@ function createAssetStore() {
       })),
       assets: [],
       loadedAssets: {},
-      userId,
+      options,
     });
 
     // Update timeline height based on calculated bucket height
     assetGridState.update((state) => {
       state.timelineHeight = state.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
       return state;
+    });
+
+    // Get asset bucket if bucket height is smaller than viewport height
+    let initialBucketsHeight = 0;
+    const initialBucketDates = _assetGridState.buckets
+      .filter((bucket) => {
+        if (initialBucketsHeight < viewportHeight) {
+          initialBucketsHeight += bucket.bucketHeight;
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map(({ bucketDate }) => bucketDate);
+
+    for (const bucketDate of initialBucketDates) {
+      assetStore.getAssetsByBucket(bucketDate, BucketPosition.Visible);
+    }
+  };
+
+  const reset = () => {
+    assetGridState.set({
+      viewportHeight: 0,
+      viewportWidth: 0,
+      timelineHeight: 0,
+      buckets: [],
+      assets: [],
+      loadedAssets: {},
+      options: { size: TimeBucketSize.Month },
     });
   };
 
@@ -90,14 +112,8 @@ function createAssetStore() {
         ..._loadingBucketState,
         [bucket]: true,
       });
-      const { data: assets } = await api.assetApi.getAssetByTimeBucket(
-        {
-          getAssetByTimeBucketDto: {
-            timeBucket: [bucket],
-            userId: _assetGridState.userId,
-            withoutThumbs: true,
-          },
-        },
+      const { data: assets } = await api.assetApi.getByTimeBucket(
+        { timeBucket: bucket, ..._assetGridState.options },
         { signal: currentBucketData?.cancelToken.signal },
       );
       loadingBucketState.set({
@@ -110,9 +126,7 @@ function createAssetStore() {
         const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
         state.buckets[bucketIndex].assets = assets;
         state.buckets[bucketIndex].position = position;
-        state.assets = state.buckets.flatMap((b) => b.assets);
-        refreshLoadedAssets(state);
-        return state;
+        return sync(state);
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -133,9 +147,7 @@ function createAssetStore() {
       if (state.buckets[bucketIndex].assets.length === 0) {
         _removeBucket(state.buckets[bucketIndex].bucketDate);
       }
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
+      return sync(state);
     });
   };
 
@@ -143,9 +155,7 @@ function createAssetStore() {
     assetGridState.update((state) => {
       const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
       state.buckets.splice(bucketIndex, 1);
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
+      return sync(state);
     });
   };
 
@@ -191,15 +201,13 @@ function createAssetStore() {
       const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
       const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
       state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
-
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
+      return sync(state);
     });
   };
 
   return {
-    setInitialState,
+    init,
+    reset,
     getAssetsByBucket,
     removeAsset,
     updateBucketHeight,
