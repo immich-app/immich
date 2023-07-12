@@ -9,7 +9,6 @@
   import Button from '../elements/buttons/button.svelte';
 
   export let asset: AssetResponseDto;
-  export let publicSharedKey = '';
 
   const dispatch = createEventDispatcher();
   let imgElement: HTMLDivElement;
@@ -72,9 +71,9 @@
   </svelte:fragment>
   <div class="flex justify-center place-items-center items-center">
     <div
-      class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4 bg-immich-"
+      class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary dark:border-immich-dark-primary border-4 bg-immich-dark-primary dark:bg-immich-primary"
     >
-      <PhotoViewer bind:element={imgElement} {publicSharedKey} {asset} />
+      <PhotoViewer bind:element={imgElement} {asset} />
     </div>
   </div>
   <span class="p-4 flex justify-end">
