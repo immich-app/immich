@@ -20,6 +20,7 @@ import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:cancellation_token_http/http.dart' as http;
+import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -331,13 +332,12 @@ class BackupService {
       var validPath = motionFilePath.replaceAll('file://', '');
       var motionFile = File(validPath);
       var fileStream = motionFile.openRead();
-      String originalFileName = await entity.titleAsync;
-
+      String fileName = p.basename(motionFile.path);
       return http.MultipartFile(
         "livePhotoData",
         fileStream,
         motionFile.lengthSync(),
-        filename: originalFileName,
+        filename: fileName,
       );
     }
 
