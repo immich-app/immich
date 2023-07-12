@@ -37,12 +37,14 @@ class GalleryViewerPage extends HookConsumerWidget {
   final Asset Function(int index) loadAsset;
   final int totalAssets;
   final int initialIndex;
+  final int heroOffset;
 
   GalleryViewerPage({
     super.key,
     required this.initialIndex,
     required this.loadAsset,
     required this.totalAssets,
+    this.heroOffset = 0,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -589,7 +591,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id,
+                      tag: asset.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
@@ -606,7 +608,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id,
+                      tag: asset.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,

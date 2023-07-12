@@ -106,7 +106,11 @@ part 'router.gr.dart';
       guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: AlbumViewerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(
+      page: AlbumViewerPage,
+      guards: [AuthGuard, DuplicateGuard],
+      initial: true,
+    ),
     CustomRoute<List<String>?>(
       page: SelectAdditionalUserForSharingPage,
       guards: [AuthGuard, DuplicateGuard],
