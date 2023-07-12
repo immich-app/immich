@@ -18,6 +18,7 @@
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import { browser } from '$app/environment';
+  import PhotoEditor from './photo-editor.svelte';
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
@@ -34,6 +35,7 @@
   let shouldPlayMotionPhoto = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
+  let shouldShowPhotoEditor = false;
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
   onMount(async () => {
@@ -223,6 +225,8 @@
         return 'Asset';
     }
   };
+
+  $: console.log(shouldShowPhotoEditor);
 </script>
 
 <section
@@ -237,6 +241,7 @@
       showZoomButton={asset.type === AssetTypeEnum.Image}
       showMotionPlayButton={!!asset.livePhotoVideoId}
       showDownloadButton={shouldShowDownloadButton}
+      showEditButton={asset.type === AssetTypeEnum.Image}
       on:goBack={closeViewer}
       on:showDetail={showDetailInfoHandler}
       on:download={() => downloadFile(asset, publicSharedKey)}
@@ -247,6 +252,7 @@
       on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
       on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
       on:toggleArchive={toggleArchive}
+      on:edit={() => (shouldShowPhotoEditor = true)}
     />
   </div>
 
@@ -370,6 +376,10 @@
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>
     </ConfirmDialogue>
+  {/if}
+
+  {#if shouldShowPhotoEditor}
+    <PhotoEditor />
   {/if}
 </section>
 

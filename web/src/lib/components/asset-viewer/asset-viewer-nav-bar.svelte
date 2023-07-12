@@ -15,6 +15,7 @@
   import MagnifyMinusOutline from 'svelte-material-icons/MagnifyMinusOutline.svelte';
   import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+  import Tune from 'svelte-material-icons/Tune.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -26,6 +27,7 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
+  export let showEditButton: boolean;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
@@ -52,6 +54,9 @@
     <CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
   </div>
   <div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
+    {#if showEditButton}
+      <CircleIconButton isOpacity={true} logo={Tune} title="Edit" on:click={() => dispatch('edit')} />
+    {/if}
     {#if showMotionPlayButton}
       {#if isMotionPhotoPlaying}
         <CircleIconButton

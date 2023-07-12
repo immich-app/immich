@@ -72,6 +72,7 @@
 		"socket.io-client": "^4.6.1",
 		"svelte-local-storage-store": "^0.5.0",
 		"svelte-material-icons": "^3.0.4",
-		"thumbhash": "^0.1.1"
+		"thumbhash": "^0.1.1",
+		"tui-image-editor": "^3.15.3"
 	}
 }
