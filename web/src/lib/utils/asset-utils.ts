@@ -88,14 +88,17 @@ export const downloadArchive = async (
 };
 
 export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
-  const filenames = [`${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`];
+  const assets = [{ filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`, id: asset.id }];
   if (asset.livePhotoVideoId) {
-    filenames.push(`${asset.originalFileName}.mov`);
+    assets.push({
+      filename: `${asset.originalFileName}.mov`,
+      id: asset.livePhotoVideoId,
+    });
   }
 
-  for (const filename of filenames) {
+  for (const asset of assets) {
     try {
-      updateDownload(filename, 0);
+      updateDownload(asset.filename, 0);
 
       const { data } = await api.assetApi.downloadFile(
         { id: asset.id, key },
@@ -103,17 +106,17 @@ export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {
             if (event.lengthComputable) {
-              updateDownload(filename, Math.floor((event.loaded / event.total) * 100));
+              updateDownload(asset.filename, Math.floor((event.loaded / event.total) * 100));
             }
           },
         },
       );
 
-      downloadBlob(data, filename);
+      downloadBlob(data, asset.filename);
     } catch (e) {
-      handleError(e, `Error downloading ${filename}`);
+      handleError(e, `Error downloading ${asset.filename}`);
     } finally {
-      setTimeout(() => clearDownload(filename), 3_000);
+      setTimeout(() => clearDownload(asset.filename), 3_000);
     }
   }
 };
