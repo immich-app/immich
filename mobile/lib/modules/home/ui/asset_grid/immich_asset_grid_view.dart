@@ -34,6 +34,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
   final Widget? topWidget;
+  final int heroOffset;
 
   const ImmichAssetGridView({
     super.key,
@@ -50,6 +51,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
     this.topWidget,
+    this.heroOffset = 0,
   });
 
   @override
@@ -122,6 +124,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           : null,
       useGrayBoxPlaceholder: true,
       showStorageIndicator: widget.showStorageIndicator,
+      heroOffset: widget.heroOffset,
     );
   }
 
