@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -111,39 +109,35 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get('/file/:id')
-  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   @ApiOkResponse({
     content: {
       'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
     },
   })
-  serveFile(
+  async serveFile(
     @AuthUser() authUser: AuthUserDto,
-    @Headers() headers: Record<string, string>,
-    @Response({ passthrough: true }) res: Res,
+    @Response() res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param() { id }: UUIDParamDto,
   ) {
-    return this.assetService.serveFile(authUser, id, query, res, headers);
+    await this.assetService.serveFile(authUser, id, query, res);
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
-  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   @ApiOkResponse({
     content: {
       'image/jpeg': { schema: { type: 'string', format: 'binary' } },
       'image/webp': { schema: { type: 'string', format: 'binary' } },
     },
   })
-  getAssetThumbnail(
+  async getAssetThumbnail(
     @AuthUser() authUser: AuthUserDto,
-    @Headers() headers: Record<string, string>,
-    @Response({ passthrough: true }) res: Res,
+    @Response() res: Res,
     @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
-    return this.assetService.getAssetThumbnail(authUser, id, query, res, headers);
+    await this.assetService.serveThumbnail(authUser, id, query, res);
   }
 
   @Get('/curated-objects')
