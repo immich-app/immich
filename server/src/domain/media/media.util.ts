@@ -7,7 +7,7 @@ import {
   VideoCodecSWConfig,
   VideoStreamInfo,
 } from './media.repository';
-
+import { readdirSync } from 'fs';
 class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
 
@@ -274,7 +274,7 @@ export class QSVConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getBaseInputOptions() {
-    return ['-hwaccel qsv', '-init_hw_device qsv=accel', '-hwaccel_output_format qsv'];
+    return ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'];
   }
 
   getBaseOutputOptions() {
@@ -283,13 +283,11 @@ export class QSVConfig extends BaseConfig implements VideoCodecHWConfig {
       `-acodec ${this.config.targetAudioCodec}`,
       '-movflags faststart',
       '-fps_mode passthrough',
-      '-filter_hw_device accel',
     ];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    // no-op if the video can be hardware decoded, else software decode
-    const options = ['format=nv12|qsv', 'hwupload=extra_hw_frames=64'];
+    const options = ['format=nv12', 'hwupload=extra_hw_frames=64'];
     if (this.shouldScale(stream)) {
       options.push(`scale_qsv=${this.getScaling(stream)}`);
     }
@@ -325,12 +323,16 @@ export class VAAPIConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getBaseInputOptions() {
-    return [
-      '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-      '-hwaccel vaapi',
-      '-hwaccel_output_format vaapi',
-      '-hwaccel_device accel ',
-    ];
+    const devices = readdirSync('/dev/dri/');
+    let device;
+    if (devices.includes('card0')) {
+      device = 'card0';
+    } else if (devices.includes('renderD129')) {
+      device = 'renderD129';
+    } else {
+      device = 'renderD128';
+    }
+    return [`-init_hw_device vaapi=accel:/dev/dri/${device}`, '-filter_hw_device accel'];
   }
 
   getBaseOutputOptions() {
@@ -339,13 +341,11 @@ export class VAAPIConfig extends BaseConfig implements VideoCodecHWConfig {
       `-acodec ${this.config.targetAudioCodec}`,
       '-movflags faststart',
       '-fps_mode passthrough',
-      '-filter_hw_device accel',
     ];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    // no-op if the video can be hardware decoded, else software decode
-    const options = ['format=nv12|vaapi', 'hwupload'];
+    const options = ['format=nv12', 'hwupload'];
     if (this.shouldScale(stream)) {
       options.push(`scale_vaapi=${this.getScaling(stream)}`);
     }
@@ -366,13 +366,14 @@ export class VAAPIConfig extends BaseConfig implements VideoCodecHWConfig {
     const bitrates = this.getBitrateDistribution();
     // VAAPI doesn't allow setting both quality and max bitrate
     if (bitrates.max > 0) {
-      return [`-b:v ${bitrates.target}${bitrates.unit}`, `-maxrate ${bitrates.max}${bitrates.unit}`];
+      return [
+        `-b:v ${bitrates.target}${bitrates.unit}`,
+        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        `-minrate ${bitrates.min}${bitrates.unit}`,
+        '-rc_mode 3',
+      ]; // variable bitrate
     } else {
-      return [`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 4']; // intelligent constant-quality
+      return [`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1']; // constant quality
     }
-  }
-
-  getThreadOptions() {
-    return [`-threads ${this.config.threads}`];
   }
 }

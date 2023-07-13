@@ -21,13 +21,29 @@ services:
     command: [ "start.sh", "microservices" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      # - /usr/lib/wsl:/usr/lib/wsl  # If using hwaccel in WSL2
     env_file:
       - .env
     depends_on:
       - redis
       - database
       - typesense
+    # environment:  # Uncomment this line if any of the below apply
+      # - NVIDIA_DRIVER_CAPABILITIES=all  # If NVIDIA GPU is available
+      # - LD_LIBRARY_PATH=/usr/lib/wsl/lib  # If using hwaccel in WSL2
+      # - LIBVA_DRIVER_NAME=d3d12  # If using hwaccel in WSL2
     restart: always
+    devices:
+      - /dev/dri/renderD128  # If using QSV or VAAPI for CPU hwaccel
+    #   - /dev/dxg  # If using hwaccel in WSL2
+    #   - /dev/dri/card0  # If using VAAPI for GPU hwaccel
+    # deploy:  # Uncomment this section if using NVIDIA GPU
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
   immich-machine-learning:
     container_name: immich_machine_learning
