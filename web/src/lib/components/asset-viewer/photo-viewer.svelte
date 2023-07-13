@@ -45,6 +45,9 @@
   };
 
   const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
+    if (window.getSelection()?.type === 'Range') {
+      return;
+    }
     if ((metaKey || ctrlKey) && key === 'c') {
       await doCopy();
     }
