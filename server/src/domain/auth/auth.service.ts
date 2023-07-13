@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig, UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -9,99 +9,112 @@ import {
 } from '@nestjs/common';
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
+import { DateTime } from 'luxon';
+import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
-import { OAuthCore } from '../oauth/oauth.core';
 import { ISharedLinkRepository } from '../shared-link';
-import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository, UserCore } from '../user';
-import { IUserTokenRepository, UserTokenCore } from '../user-token';
-import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant';
-import { AuthCore, LoginDetails } from './auth.core';
-import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
+import { ISystemConfigRepository } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
+import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import {
+  AuthType,
+  IMMICH_ACCESS_COOKIE,
+  IMMICH_API_KEY_HEADER,
+  IMMICH_AUTH_TYPE_COOKIE,
+  LOGIN_URL,
+  MOBILE_REDIRECT,
+} from './auth.constant';
+import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, OAuthCallbackDto, OAuthConfigDto, SignUpDto } from './dto';
 import {
   AdminSignupResponseDto,
   AuthDeviceResponseDto,
   LoginResponseDto,
   LogoutResponseDto,
   mapAdminSignupResponse,
+  mapLoginResponse,
   mapUserToken,
+  OAuthConfigResponseDto,
 } from './response-dto';
+import { IUserTokenRepository } from './user-token.repository';
+
+export interface LoginDetails {
+  isSecure: boolean;
+  clientIp: string;
+  deviceType: string;
+  deviceOS: string;
+}
+
+interface LoginResponse {
+  response: LoginResponseDto;
+  cookie: string[];
+}
+
+interface OAuthProfile extends UserinfoResponse {
+  email: string;
+}
 
 @Injectable()
 export class AuthService {
-  private userTokenCore: UserTokenCore;
-  private authCore: AuthCore;
-  private oauthCore: OAuthCore;
   private userCore: UserCore;
-
+  private configCore: SystemConfigCore;
   private logger = new Logger(AuthService.name);
 
   constructor(
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
+    @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG)
-    initialConfig: SystemConfig,
   ) {
-    this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
-    this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
-    this.oauthCore = new OAuthCore(configRepository, initialConfig);
+    this.configCore = new SystemConfigCore(configRepository);
     this.userCore = new UserCore(userRepository, cryptoRepository);
+
+    custom.setHttpOptionsDefaults({ timeout: 30000 });
   }
 
-  public async login(
-    loginCredential: LoginCredentialDto,
-    loginDetails: LoginDetails,
-  ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
-    if (!this.authCore.isPasswordLoginEnabled()) {
+  async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
+    const config = await this.configCore.getConfig();
+    if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userCore.getByEmail(loginCredential.email, true);
+    let user = await this.userCore.getByEmail(dto.email, true);
     if (user) {
-      const isAuthenticated = this.authCore.validatePassword(loginCredential.password, user);
+      const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
         user = null;
       }
     }
 
     if (!user) {
-      this.logger.warn(
-        `Failed login attempt for user ${loginCredential.email} from ip address ${loginDetails.clientIp}`,
-      );
+      this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
       throw new BadRequestException('Incorrect email or password');
     }
 
-    return this.authCore.createLoginResponse(user, AuthType.PASSWORD, loginDetails);
+    return this.createLoginResponse(user, AuthType.PASSWORD, details);
   }
 
-  public async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
+  async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (authUser.accessTokenId) {
-      await this.userTokenCore.delete(authUser.id, authUser.accessTokenId);
+      await this.userTokenRepository.delete(authUser.id, authUser.accessTokenId);
     }
 
-    if (authType === AuthType.OAUTH) {
-      const url = await this.oauthCore.getLogoutEndpoint();
-      if (url) {
-        return { successful: true, redirectUri: url };
-      }
-    }
-
-    return { successful: true, redirectUri: '/auth/login?autoLaunch=0' };
+    return {
+      successful: true,
+      redirectUri: await this.getLogoutEndpoint(authType),
+    };
   }
 
-  public async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
+  async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
     const user = await this.userCore.getByEmail(authUser.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    const valid = this.authCore.validatePassword(password, user);
+    const valid = this.validatePassword(password, user);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -109,7 +122,7 @@ export class AuthService {
     return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
   }
 
-  public async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
+  async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
     const adminUser = await this.userCore.getAdmin();
 
     if (adminUser) {
@@ -133,7 +146,7 @@ export class AuthService {
     }
   }
 
-  public async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
@@ -146,7 +159,7 @@ export class AuthService {
     }
 
     if (userToken) {
-      return this.userTokenCore.validate(userToken);
+      return this.validateUserToken(userToken);
     }
 
     if (apiKey) {
@@ -157,22 +170,153 @@ export class AuthService {
   }
 
   async getDevices(authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
-    const userTokens = await this.userTokenCore.getAll(authUser.id);
+    const userTokens = await this.userTokenRepository.getAll(authUser.id);
     return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
   }
 
   async logoutDevice(authUser: AuthUserDto, deviceId: string): Promise<void> {
-    await this.userTokenCore.delete(authUser.id, deviceId);
+    await this.userTokenRepository.delete(authUser.id, deviceId);
   }
 
   async logoutDevices(authUser: AuthUserDto): Promise<void> {
-    const devices = await this.userTokenCore.getAll(authUser.id);
+    const devices = await this.userTokenRepository.getAll(authUser.id);
     for (const device of devices) {
       if (device.id === authUser.accessTokenId) {
         continue;
       }
-      await this.userTokenCore.delete(authUser.id, device.id);
+      await this.userTokenRepository.delete(authUser.id, device.id);
     }
+  }
+
+  getMobileRedirect(url: string) {
+    return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
+  }
+
+  async generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
+    const config = await this.configCore.getConfig();
+    const response = {
+      enabled: config.oauth.enabled,
+      passwordLoginEnabled: config.passwordLogin.enabled,
+    };
+
+    if (!response.enabled) {
+      return response;
+    }
+
+    const { scope, buttonText, autoLaunch } = config.oauth;
+    const url = (await this.getOAuthClient(config)).authorizationUrl({
+      redirect_uri: this.normalize(config, dto.redirectUri),
+      scope,
+      state: generators.state(),
+    });
+
+    return { ...response, buttonText, url, autoLaunch };
+  }
+
+  async callback(
+    dto: OAuthCallbackDto,
+    loginDetails: LoginDetails,
+  ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
+    const config = await this.configCore.getConfig();
+    const profile = await this.getOAuthProfile(config, dto.url);
+    this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
+    let user = await this.userCore.getByOAuthId(profile.sub);
+
+    // link existing user
+    if (!user) {
+      const emailUser = await this.userCore.getByEmail(profile.email);
+      if (emailUser) {
+        user = await this.userCore.updateUser(emailUser, emailUser.id, { oauthId: profile.sub });
+      }
+    }
+
+    // register new user
+    if (!user) {
+      if (!config.oauth.autoRegister) {
+        this.logger.warn(
+          `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
+        );
+        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
+      }
+
+      this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
+      user = await this.userCore.createUser({
+        firstName: profile.given_name || '',
+        lastName: profile.family_name || '',
+        email: profile.email,
+        oauthId: profile.sub,
+      });
+    }
+
+    return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
+  }
+
+  async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    const config = await this.configCore.getConfig();
+    const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
+    const duplicate = await this.userCore.getByOAuthId(oauthId);
+    if (duplicate && duplicate.id !== user.id) {
+      this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+    return this.userCore.updateUser(user, user.id, { oauthId });
+  }
+
+  async unlink(user: AuthUserDto): Promise<UserResponseDto> {
+    return this.userCore.updateUser(user, user.id, { oauthId: '' });
+  }
+
+  private async getLogoutEndpoint(authType: AuthType): Promise<string> {
+    if (authType !== AuthType.OAUTH) {
+      return LOGIN_URL;
+    }
+
+    const config = await this.configCore.getConfig();
+    if (!config.oauth.enabled) {
+      return LOGIN_URL;
+    }
+
+    const client = await this.getOAuthClient(config);
+    return client.issuer.metadata.end_session_endpoint || LOGIN_URL;
+  }
+
+  private async getOAuthProfile(config: SystemConfig, url: string): Promise<OAuthProfile> {
+    const redirectUri = this.normalize(config, url.split('?')[0]);
+    const client = await this.getOAuthClient(config);
+    const params = client.callbackParams(url);
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+  }
+
+  private async getOAuthClient(config: SystemConfig) {
+    const { enabled, clientId, clientSecret, issuerUrl } = config.oauth;
+
+    if (!enabled) {
+      throw new BadRequestException('OAuth2 is not enabled');
+    }
+
+    const metadata: ClientMetadata = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      response_types: ['code'],
+    };
+
+    const issuer = await Issuer.discover(issuerUrl);
+    const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
+    if (algorithms[0] === 'HS256') {
+      metadata.id_token_signed_response_alg = algorithms[0];
+    }
+
+    return new issuer.Client(metadata);
+  }
+
+  private normalize(config: SystemConfig, redirectUri: string) {
+    const isMobile = redirectUri.startsWith(MOBILE_REDIRECT);
+    const { mobileRedirectUri, mobileOverrideEnabled } = config.oauth;
+    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
+      return mobileRedirectUri;
+    }
+    return redirectUri;
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
@@ -231,5 +375,69 @@ export class AuthService {
     }
 
     throw new UnauthorizedException('Invalid API key');
+  }
+
+  private validatePassword(inputPassword: string, user: UserEntity): boolean {
+    if (!user || !user.password) {
+      return false;
+    }
+    return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
+  }
+
+  private async validateUserToken(tokenValue: string): Promise<AuthUserDto> {
+    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
+    let token = await this.userTokenRepository.getByToken(hashedToken);
+
+    if (token?.user) {
+      const now = DateTime.now();
+      const updatedAt = DateTime.fromJSDate(token.updatedAt);
+      const diff = now.diff(updatedAt, ['hours']);
+      if (diff.hours > 1) {
+        token = await this.userTokenRepository.save({ ...token, updatedAt: new Date() });
+      }
+
+      return {
+        ...token.user,
+        isPublicUser: false,
+        isAllowUpload: true,
+        isAllowDownload: true,
+        isShowExif: true,
+        accessTokenId: token.id,
+      };
+    }
+
+    throw new UnauthorizedException('Invalid user token');
+  }
+
+  private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
+    const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
+    const token = this.cryptoRepository.hashSha256(key);
+
+    await this.userTokenRepository.create({
+      token,
+      user,
+      deviceOS: loginDetails.deviceOS,
+      deviceType: loginDetails.deviceType,
+    });
+
+    const response = mapLoginResponse(user, key);
+    const cookie = this.getCookies(response, authType, loginDetails);
+    return { response, cookie };
+  }
+
+  private getCookies(loginResponse: LoginResponseDto, authType: AuthType, { isSecure }: LoginDetails) {
+    const maxAge = 400 * 24 * 3600; // 400 days
+
+    let authTypeCookie = '';
+    let accessTokenCookie = '';
+
+    if (isSecure) {
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+    } else {
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+    }
+    return [accessTokenCookie, authTypeCookie];
   }
 }

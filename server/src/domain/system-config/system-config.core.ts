@@ -16,7 +16,7 @@ import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
-const defaults = Object.freeze<SystemConfig>({
+export const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
     crf: 23,
     threads: 0,

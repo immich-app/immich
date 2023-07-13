@@ -7,9 +7,9 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '@test';
+import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { IJobRepository, JobName, QueueName } from '../job';
-import { SystemConfigValidator } from './system-config.core';
+import { defaults, SystemConfigValidator } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 
@@ -81,7 +81,7 @@ describe(SystemConfigService.name, () => {
     it('should return the default config', () => {
       configMock.load.mockResolvedValue(updates);
 
-      expect(sut.getDefaults()).toEqual(systemConfigStub.defaults);
+      expect(sut.getDefaults()).toEqual(defaults);
       expect(configMock.load).not.toHaveBeenCalled();
     });
   });
@@ -89,12 +89,9 @@ describe(SystemConfigService.name, () => {
   describe('addValidator', () => {
     it('should call the validator on config changes', async () => {
       const validator: SystemConfigValidator = jest.fn();
-
       sut.addValidator(validator);
-
-      await sut.updateConfig(systemConfigStub.defaults);
-
-      expect(validator).toHaveBeenCalledWith(systemConfigStub.defaults);
+      await sut.updateConfig(defaults);
+      expect(validator).toHaveBeenCalledWith(defaults);
     });
   });
 
@@ -102,7 +99,7 @@ describe(SystemConfigService.name, () => {
     it('should return the default config', async () => {
       configMock.load.mockResolvedValue([]);
 
-      await expect(sut.getConfig()).resolves.toEqual(systemConfigStub.defaults);
+      await expect(sut.getConfig()).resolves.toEqual(defaults);
     });
 
     it('should merge the overrides', async () => {
@@ -172,7 +169,7 @@ describe(SystemConfigService.name, () => {
 
       await sut.refreshConfig();
 
-      expect(changeMock).toHaveBeenCalledWith(systemConfigStub.defaults);
+      expect(changeMock).toHaveBeenCalledWith(defaults);
 
       subscription.unsubscribe();
     });
