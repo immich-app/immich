@@ -379,7 +379,7 @@
   {/if}
 
   {#if shouldShowPhotoEditor}
-    <PhotoEditor {asset} />
+    <PhotoEditor {asset} on:close={() => (shouldShowPhotoEditor = false)} />
   {/if}
 </section>
 

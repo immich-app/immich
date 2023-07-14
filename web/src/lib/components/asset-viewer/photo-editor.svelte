@@ -26,6 +26,10 @@
   import AdjustElement from './photo-editor/adjust-element.svelte';
   import FilterCard from './photo-editor/filter-card.svelte';
 
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
+
   let editorElement: HTMLDivElement;
 
   let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'autofix';
@@ -149,7 +153,10 @@
   class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-[1fr_1fr_1fr_360px]"
 >
   <div class="col-start-1 col-span-3 row-start-1 row-span-1 z-[1000] transition-transform flex items-center">
-    <button class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3 ml-4">
+    <button
+      on:click={() => dispatch('close')}
+      class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3 ml-4"
+    >
       <Close />
     </button>
     <button
