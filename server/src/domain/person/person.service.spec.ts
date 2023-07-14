@@ -19,6 +19,7 @@ const responseDto: PersonResponseDto = {
   id: 'person-1',
   name: 'Person 1',
   thumbnailPath: '/path/to/thumbnail.jpg',
+  hidden: false,
 };
 
 describe(PersonService.name, () => {

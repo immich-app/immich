@@ -75,6 +75,10 @@
       console.error(error);
     }
   };
+
+  const countHidden = (): number => {
+    return people.reduce((count, obj) => count + (!obj.hidden ? 1 : 0), 0);
+  };
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -104,24 +108,26 @@
     />
   </section>
 
-  {#if people.length > 0}
+  {#if people.length > 0 && countHidden() != 0}
     <section class="px-4 py-4 text-sm">
       <h2>PEOPLE</h2>
 
       <div class="flex flex-wrap gap-2 mt-4">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
-            <ImageThumbnail
-              curve
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="90px"
-              heightStyle="90px"
-              thumbhash={null}
-            />
-            <p class="font-medium mt-1 truncate">{person.name}</p>
-          </a>
+          {#if !person.hidden}
+            <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+              <ImageThumbnail
+                curve
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="90px"
+                heightStyle="90px"
+                thumbhash={null}
+              />
+              <p class="font-medium mt-1 truncate">{person.name}</p>
+            </a>
+          {/if}
         {/each}
       </div>
     </section>

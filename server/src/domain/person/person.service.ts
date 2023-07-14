@@ -21,6 +21,7 @@ export class PersonService {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
+
     return (
       [...named, ...unnamed]
         // with thumbnails
@@ -52,6 +53,13 @@ export class PersonService {
 
     if (dto.name) {
       person = await this.repository.update({ id, name: dto.name });
+      const assets = await this.repository.getAssets(authUser.id, id);
+      const ids = assets.map((asset) => asset.id);
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    }
+
+    if (dto.hidden !== undefined) {
+      person = await this.repository.update({ id, hidden: dto.hidden });
       const assets = await this.repository.getAssets(authUser.id, id);
       const ids = assets.map((asset) => asset.id);
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });

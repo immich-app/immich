@@ -5895,12 +5895,16 @@
           },
           "thumbnailPath": {
             "type": "string"
+          },
+          "hidden": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "hidden"
         ]
       },
       "PersonUpdateDto": {
@@ -5913,6 +5917,10 @@
           "featureFaceAssetId": {
             "type": "string",
             "description": "Asset is used to get the feature face thumbnail."
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Person visibility"
           }
         }
       },

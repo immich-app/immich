@@ -8,7 +8,7 @@ import {
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';

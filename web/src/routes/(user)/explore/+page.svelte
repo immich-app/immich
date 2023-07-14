@@ -19,7 +19,6 @@
   }
 
   const MAX_ITEMS = 12;
-
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
@@ -35,26 +34,26 @@
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if data.people.length > MAX_ITEMS}
-          <a
-            href={AppRoute.PEOPLE}
-            class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
-            draggable="false">View All</a
-          >
-        {/if}
+        <a
+          href={AppRoute.PEOPLE}
+          class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+          draggable="false">View All</a
+        >
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-24 text-center">
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-            />
-            <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
-          </a>
+          {#if !person.hidden}
+            <a href="/people/{person.id}" class="w-24 text-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+            </a>
+          {/if}
         {/each}
       </div>
     </div>

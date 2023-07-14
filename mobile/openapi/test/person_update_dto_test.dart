@@ -28,6 +28,12 @@ void main() {
       // TODO
     });
 
+    // Person visibility
+    // bool hidden
+    test('to test the property `hidden`', () async {
+      // TODO
+    });
+
 
   });
 

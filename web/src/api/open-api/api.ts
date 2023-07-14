@@ -1813,6 +1813,12 @@ export interface PersonResponseDto {
      * @memberof PersonResponseDto
      */
     'thumbnailPath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PersonResponseDto
+     */
+    'hidden': boolean;
 }
 /**
  * 
@@ -1832,6 +1838,12 @@ export interface PersonUpdateDto {
      * @memberof PersonUpdateDto
      */
     'featureFaceAssetId'?: string;
+    /**
+     * Person visibility
+     * @type {boolean}
+     * @memberof PersonUpdateDto
+     */
+    'hidden'?: boolean;
 }
 /**
  * 
