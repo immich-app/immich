@@ -1818,7 +1818,7 @@ export interface PersonResponseDto {
      * @type {boolean}
      * @memberof PersonResponseDto
      */
-    'hidden': boolean;
+    'isHidden': boolean;
 }
 /**
  * 
@@ -1843,7 +1843,7 @@ export interface PersonUpdateDto {
      * @type {boolean}
      * @memberof PersonUpdateDto
      */
-    'hidden'?: boolean;
+    'isHidden'?: boolean;
 }
 /**
  * 

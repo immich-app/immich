@@ -37,5 +37,5 @@ export class PersonEntity {
   faces!: AssetFaceEntity[];
 
   @Column({ default: false })
-  hidden!: boolean;
+  isHidden!: boolean;
 }

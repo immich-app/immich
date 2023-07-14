@@ -1160,7 +1160,7 @@ export const personStub = {
     name: '',
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
-    hidden: false,
+    isHidden: false,
   }),
   withName: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1171,29 +1171,7 @@ export const personStub = {
     name: 'Person 1',
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
-    hidden: false,
-  }),
-  isHidden: Object.freeze<PersonEntity>({
-    id: 'person-1',
-    createdAt: new Date('2021-01-01'),
-    updatedAt: new Date('2021-01-01'),
-    ownerId: userEntityStub.admin.id,
-    owner: userEntityStub.admin,
-    name: 'Person 1',
-    thumbnailPath: '/path/to/thumbnail.jpg',
-    faces: [],
-    hidden: false,
-  }),
-  isnotHidden: Object.freeze<PersonEntity>({
-    id: 'person-1',
-    createdAt: new Date('2021-01-01'),
-    updatedAt: new Date('2021-01-01'),
-    ownerId: userEntityStub.admin.id,
-    owner: userEntityStub.admin,
-    name: 'Person 1',
-    thumbnailPath: '/path/to/thumbnail.jpg',
-    faces: [],
-    hidden: true,
+    isHidden: false,
   }),
   noThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1204,7 +1182,7 @@ export const personStub = {
     name: '',
     thumbnailPath: '',
     faces: [],
-    hidden: false,
+    isHidden: false,
   }),
   newThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1215,7 +1193,7 @@ export const personStub = {
     name: '',
     thumbnailPath: '/new/path/to/thumbnail.jpg',
     faces: [],
-    hidden: false,
+    isHidden: false,
   }),
   primaryPerson: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1226,7 +1204,7 @@ export const personStub = {
     name: 'Person 1',
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
-    hidden: false,
+    isHidden: false,
   }),
   mergePerson: Object.freeze<PersonEntity>({
     id: 'person-2',
@@ -1237,7 +1215,7 @@ export const personStub = {
     name: 'Person 2',
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
-    hidden: false,
+    isHidden: false,
   }),
 };
 

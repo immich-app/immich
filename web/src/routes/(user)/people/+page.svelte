@@ -1,6 +1,6 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout-people.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { PersonResponseDto, api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
@@ -18,26 +18,30 @@
 
   onMount(() => {
     // Save the initial number of "hidden" faces
-    initialHiddenValues = data.people.map((person: PersonResponseDto) => person.hidden);
+    initialHiddenValues = data.people.map((person: PersonResponseDto) => person.isHidden);
   });
 
+  const countHidden = (): number => {
+    return data.people.reduce((count: number, obj) => count + (!obj.isHidden ? 1 : 0), 0);
+  };
+
   const handleDoneClick = async () => {
-    // Reset the counter before checking changes
-    changeCounter = 0;
-
-    data.people.forEach(async (person: PersonResponseDto, index: number) => {
-      if (person.hidden !== initialHiddenValues[index]) {
-        changeCounter++;
-        await api.personApi.updatePerson({
-          id: person.id,
-          personUpdateDto: { hidden: person.hidden },
-        });
-
-        // Update the initial hidden value for the person
-        initialHiddenValues[index] = person.hidden;
-      }
-    });
     try {
+      // Reset the counter before checking changes
+      changeCounter = 0;
+
+      data.people.forEach(async (person: PersonResponseDto, index: number) => {
+        if (person.isHidden !== initialHiddenValues[index]) {
+          changeCounter++;
+          await api.personApi.updatePerson({
+            id: person.id,
+            personUpdateDto: { isHidden: person.isHidden },
+          });
+
+          // Update the initial hidden value for the person
+          initialHiddenValues[index] = person.isHidden;
+        }
+      });
       if (changeCounter > 0)
         notificationController.show({
           type: NotificationType.Info,
@@ -50,13 +54,20 @@
   };
 </script>
 
-<UserPageLayout user={data.user} showUploadButton bind:hidden on:doneClick={handleDoneClick} title="People">
-  {#if data.people.length > 0}
+<UserPageLayout
+  user={data.user}
+  fullscreen={true}
+  showUploadButton
+  bind:hidden
+  on:doneClick={handleDoneClick}
+  title="People"
+>
+  {#if (data.people.length > 0 && countHidden() > 0) || hidden}
     {#if !hidden}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
           {#each data.people as person (person.id)}
-            {#if !person.hidden}
+            {#if !person.isHidden}
               <div class="relative">
                 <a href="/people/{person.id}" draggable="false">
                   <div class="filter brightness-95 rounded-xl w-48">
@@ -86,9 +97,9 @@
           {#each data.people as person (person.id)}
             <div class="relative">
               <div class="filter brightness-95 rounded-xl w-48 h-48">
-                <button class="h-full w-full" on:click={() => (person.hidden = !person.hidden)}>
+                <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>
                   <ImageThumbnail
-                    hidden={person.hidden}
+                    hidden={person.isHidden}
                     shadow
                     url={api.getPeopleThumbnailUrl(person.id)}
                     altText={person.name}
@@ -108,7 +119,7 @@
         </div>
       </div>
     {/if}
-  {:else}
+  {:else if data.people.length == 0 || countHidden() == 0}
     <div class="flex items-center place-content-center w-full min-h-[calc(66vh_-_11rem)] dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <AccountOff size="3.5em" />

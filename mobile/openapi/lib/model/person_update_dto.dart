@@ -15,7 +15,7 @@ class PersonUpdateDto {
   PersonUpdateDto({
     this.name,
     this.featureFaceAssetId,
-    this.hidden,
+    this.isHidden,
   });
 
   /// Person name.
@@ -43,23 +43,23 @@ class PersonUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? hidden;
+  bool? isHidden;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
      other.name == name &&
      other.featureFaceAssetId == featureFaceAssetId &&
-     other.hidden == hidden;
+     other.isHidden == isHidden;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (name == null ? 0 : name!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
-    (hidden == null ? 0 : hidden!.hashCode);
+    (isHidden == null ? 0 : isHidden!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[name=$name, featureFaceAssetId=$featureFaceAssetId, hidden=$hidden]';
+  String toString() => 'PersonUpdateDto[name=$name, featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -73,10 +73,10 @@ class PersonUpdateDto {
     } else {
     //  json[r'featureFaceAssetId'] = null;
     }
-    if (this.hidden != null) {
-      json[r'hidden'] = this.hidden;
+    if (this.isHidden != null) {
+      json[r'isHidden'] = this.isHidden;
     } else {
-    //  json[r'hidden'] = null;
+    //  json[r'isHidden'] = null;
     }
     return json;
   }
@@ -91,7 +91,7 @@ class PersonUpdateDto {
       return PersonUpdateDto(
         name: mapValueOfType<String>(json, r'name'),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
-        hidden: mapValueOfType<bool>(json, r'hidden'),
+        isHidden: mapValueOfType<bool>(json, r'isHidden'),
       );
     }
     return null;

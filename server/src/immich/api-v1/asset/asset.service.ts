@@ -280,7 +280,13 @@ export class AssetService {
     const asset = await this._assetRepository.getById(assetId);
 
     if (allowExif) {
-      return mapAsset(asset);
+      const data = mapAsset(asset);
+
+      if (data.people) {
+        data.people = data.people.filter((person) => !person.isHidden);
+      }
+
+      return data;
     } else {
       return mapAssetWithoutExif(asset);
     }

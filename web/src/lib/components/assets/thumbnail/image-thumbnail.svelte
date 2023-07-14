@@ -20,7 +20,7 @@
 <img
   style:width={widthStyle}
   style:height={heightStyle}
-  style:filter={hidden ? 'grayscale(60%)' : 'none'}
+  style:filter={hidden ? 'grayscale(75%)' : 'none'}
   src={url}
   alt={altText}
   class="object-cover transition duration-300"
@@ -33,7 +33,9 @@
   on:image-load|once={() => (complete = true)}
 />
 {#if hidden}
-  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+  <div
+    class="absolute top-1/2 left-1/2 transform translate-x-[-50%] translate-y-[-50%] transition-opacity duration-2000"
+  >
     <EyeOffOutline size="2em" />
   </div>
 {/if}

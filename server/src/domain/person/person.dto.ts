@@ -24,7 +24,7 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsBoolean()
   @Transform(toBoolean)
-  hidden?: boolean;
+  isHidden?: boolean;
 }
 
 export class MergePersonDto {
@@ -36,7 +36,7 @@ export class PersonResponseDto {
   id!: string;
   name!: string;
   thumbnailPath!: string;
-  hidden!: boolean;
+  isHidden!: boolean;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {
@@ -44,7 +44,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     id: person.id,
     name: person.name,
     thumbnailPath: person.thumbnailPath,
-    hidden: person.hidden,
+    isHidden: person.isHidden,
   };
 }
 

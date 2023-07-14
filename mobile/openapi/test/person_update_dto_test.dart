@@ -29,8 +29,8 @@ void main() {
     });
 
     // Person visibility
-    // bool hidden
-    test('to test the property `hidden`', () async {
+    // bool isHidden
+    test('to test the property `isHidden`', () async {
       // TODO
     });
 

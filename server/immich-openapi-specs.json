@@ -5896,7 +5896,7 @@
           "thumbnailPath": {
             "type": "string"
           },
-          "hidden": {
+          "isHidden": {
             "type": "boolean"
           }
         },
@@ -5904,7 +5904,7 @@
           "id",
           "name",
           "thumbnailPath",
-          "hidden"
+          "isHidden"
         ]
       },
       "PersonUpdateDto": {
@@ -5918,7 +5918,7 @@
             "type": "string",
             "description": "Asset is used to get the feature face thumbnail."
           },
-          "hidden": {
+          "isHidden": {
             "type": "boolean",
             "description": "Person visibility"
           }
