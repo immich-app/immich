@@ -32,7 +32,7 @@ const update = (key: string, value: Partial<DownloadProgress> | null) => {
 
     const item = newState[key];
     Object.assign(item, value);
-    item.percentage = Math.floor((item.progress / item.total) * 100);
+    item.percentage = Math.min(Math.floor((item.progress / item.total) * 100), 100);
 
     return newState;
   });
