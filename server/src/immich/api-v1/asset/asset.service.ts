@@ -591,9 +591,11 @@ export class AssetService {
 
   private async sendFile(res: Res, filepath: string): Promise<void> {
     await fs.access(filepath, constants.R_OK);
+    const options = path.isAbsolute(filepath) ? {} : { root: process.cwd() };
+
     res.set('Cache-Control', 'private, max-age=86400, no-transform');
     res.header('Content-Type', mimeTypes.lookup(filepath));
-    res.sendFile(filepath, { root: process.cwd() }, (error: Error) => {
+    res.sendFile(filepath, options, (error: Error) => {
       if (!error) {
         return;
       }
