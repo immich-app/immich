@@ -378,7 +378,6 @@
   {#if isShowProfileImageCrop}
     <ProfileImageCropper
       {asset}
-      {publicSharedKey}
       on:close={() => (isShowProfileImageCrop = false)}
       on:close-viewer={handleCloseViewer}
     />
