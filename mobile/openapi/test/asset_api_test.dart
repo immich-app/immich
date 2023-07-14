@@ -60,11 +60,6 @@ void main() {
       // TODO
     });
 
-    //Future<AssetCountByUserIdResponseDto> getArchivedAssetCountByUserId() async
-    test('test getArchivedAssetCountByUserId', () async {
-      // TODO
-    });
-
     // Get a single asset's information
     //
     //Future<AssetResponseDto> getAssetById(String id, { String key }) async
@@ -82,13 +77,13 @@ void main() {
       // TODO
     });
 
-    //Future<AssetCountByUserIdResponseDto> getAssetCountByUserId() async
-    test('test getAssetCountByUserId', () async {
+    //Future<List<String>> getAssetSearchTerms() async
+    test('test getAssetSearchTerms', () async {
       // TODO
     });
 
-    //Future<List<String>> getAssetSearchTerms() async
-    test('test getAssetSearchTerms', () async {
+    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite }) async
+    test('test getAssetStats', () async {
       // TODO
     });
 
