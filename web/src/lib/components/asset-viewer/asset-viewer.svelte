@@ -379,7 +379,7 @@
   {/if}
 
   {#if shouldShowPhotoEditor}
-    <PhotoEditor />
+    <PhotoEditor {asset} />
   {/if}
 </section>
 

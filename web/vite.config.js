@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'path';
+import { isoImport } from 'vite-plugin-iso-import';
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -22,7 +23,7 @@ const config = {
       },
     },
   },
-  plugins: [sveltekit()],
+  plugins: [sveltekit(), isoImport()],
 };
 
 export default config;
