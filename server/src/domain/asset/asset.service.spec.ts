@@ -1,3 +1,4 @@
+import { AssetType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetEntityStub,
@@ -10,9 +11,9 @@ import {
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { IStorageRepository } from '../storage';
-import { IAssetRepository } from './asset.repository';
+import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService } from './asset.service';
-import { DownloadResponseDto } from './index';
+import { AssetStatsResponseDto, DownloadResponseDto } from './dto';
 import { mapAsset } from './response-dto';
 
 const downloadResponse: DownloadResponseDto = {
@@ -23,6 +24,19 @@ const downloadResponse: DownloadResponseDto = {
       size: 105_000,
     },
   ],
+};
+
+const stats: AssetStats = {
+  [AssetType.IMAGE]: 10,
+  [AssetType.VIDEO]: 23,
+  [AssetType.AUDIO]: 0,
+  [AssetType.OTHER]: 0,
+};
+
+const statResponse: AssetStatsResponseDto = {
+  images: 10,
+  videos: 23,
+  total: 33,
 };
 
 describe(AssetService.name, () => {
@@ -285,6 +299,32 @@ describe(AssetService.name, () => {
           },
         ],
       });
+    });
+  });
+
+  describe('getStatistics', () => {
+    it('should get the statistics for a user, excluding archived assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isArchived: false })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isArchived: false });
+    });
+
+    it('should get the statistics for a user for archived assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isArchived: true })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isArchived: true });
+    });
+
+    it('should get the statistics for a user for favorite assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isFavorite: true })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isFavorite: true });
+    });
+
+    it('should get the statistics for a user for all assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, {});
     });
   });
 });

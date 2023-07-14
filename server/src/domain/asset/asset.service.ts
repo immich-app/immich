@@ -9,6 +9,7 @@ import { HumanReadableSize, usePagination } from '../domain.util';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
+import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
 import { MapMarkerDto } from './dto/map-marker.dto';
 import { mapAsset, MapMarkerResponseDto } from './response-dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
@@ -154,5 +155,10 @@ export class AssetService {
     }
 
     throw new BadRequestException('assetIds, albumId, or userId is required');
+  }
+
+  async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
+    const stats = await this.assetRepository.getStatistics(authUser.id, dto);
+    return mapStats(stats);
   }
 }
