@@ -252,9 +252,7 @@
 
   {#if showNavigation}
     <div
-      class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-      }`}
+      class="row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] z-[999]"
       on:mouseenter={() => {
         halfLeftHover = true;
         halfRightHover = false;
@@ -266,7 +264,7 @@
       on:keydown={navigateAssetBackward}
     >
       <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
+        class="rounded-full p-3 transition text-gray-500 mx-4"
         class:navigation-button-hover={halfLeftHover}
         on:click={navigateAssetBackward}
       >
@@ -304,9 +302,7 @@
 
   {#if showNavigation}
     <div
-      class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-      }`}
+      class="row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] z-[999]"
       on:click={navigateAssetForward}
       on:keydown={navigateAssetForward}
       on:mouseenter={() => {
@@ -318,7 +314,7 @@
       }}
     >
       <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-white text-gray-500 mx-4"
+        class="rounded-full p-3 transition text-gray-500 mx-4"
         class:navigation-button-hover={halfRightHover}
         on:click={navigateAssetForward}
       >
@@ -381,6 +377,5 @@
   .navigation-button-hover {
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
     color: rgb(255 255 255 / var(--tw-text-opacity));
-    transition: all 150ms;
   }
 </style>
