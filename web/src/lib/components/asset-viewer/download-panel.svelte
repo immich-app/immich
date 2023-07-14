@@ -34,7 +34,7 @@
                 <div class="bg-immich-primary h-[7px] rounded-full" style={`width: ${download.percentage}%`} />
               </div>
               <p class="whitespace-nowrap min-w-[4em] text-right">
-                <span class="text-immich-primary">{download.percentage}</span>/100
+                <span class="text-immich-primary">{download.percentage}%</span>
               </p>
             </div>
           </div>
