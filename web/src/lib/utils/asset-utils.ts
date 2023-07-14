@@ -37,7 +37,6 @@ const downloadBlob = (data: Blob, filename: string) => {
 export const downloadArchive = async (
   fileName: string,
   options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
-  onDone?: () => void,
   key?: string,
 ) => {
   let downloadInfo: DownloadResponseDto | null = null;
@@ -85,8 +84,6 @@ export const downloadArchive = async (
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
-
-  onDone?.();
 };
 
 export const downloadFile = async (asset: AssetResponseDto, key?: string) => {

@@ -14,12 +14,13 @@
   const handleDownloadFiles = async () => {
     const assets = Array.from(getAssets());
     if (assets.length === 1) {
-      await downloadFile(assets[0], sharedLinkKey);
       clearSelect();
+      await downloadFile(assets[0], sharedLinkKey);
       return;
     }
 
-    await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) }, clearSelect, sharedLinkKey);
+    clearSelect();
+    await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) }, sharedLinkKey);
   };
 </script>
 
