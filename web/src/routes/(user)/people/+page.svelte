@@ -1,7 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout-people.svelte';
-  import { api } from '@api';
+  import { PersonResponseDto, api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
   import { onMount } from 'svelte';
@@ -18,14 +18,14 @@
 
   onMount(() => {
     // Save the initial number of "hidden" faces
-    initialHiddenValues = data.people.map((person) => person.hidden);
+    initialHiddenValues = data.people.map((person: PersonResponseDto) => person.hidden);
   });
 
   const handleDoneClick = async () => {
     // Reset the counter before checking changes
     changeCounter = 0;
 
-    data.people.forEach(async (person, index) => {
+    data.people.forEach(async (person: PersonResponseDto, index: number) => {
       if (person.hidden !== initialHiddenValues[index]) {
         changeCounter++;
         await api.personApi.updatePerson({
