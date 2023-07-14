@@ -38,7 +38,6 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -173,15 +172,6 @@ export class AssetController {
     return this.assetService.getAssetCountByTimeBucket(authUser, dto);
   }
 
-  @Get('/count-by-user-id')
-  getAssetCountByUserId(@AuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this.assetService.getAssetCountByUserId(authUser);
-  }
-
-  @Get('/stat/archive')
-  getArchivedAssetCountByUserId(@AuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this.assetService.getArchivedAssetCountByUserId(authUser);
-  }
   /**
    * Get all AssetEntity belong to the user
    */

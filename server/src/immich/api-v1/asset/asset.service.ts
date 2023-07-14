@@ -58,7 +58,6 @@ import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -534,14 +533,6 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
     const result = await this._assetRepository.getAssetCountByTimeBucket(userId, dto);
     return mapAssetCountByTimeBucket(result);
-  }
-
-  getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getAssetCountByUserId(authUser.id);
-  }
-
-  getArchivedAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
   }
 
   getExifPermission(authUser: AuthUserDto) {

@@ -1,5 +1,7 @@
 import {
   AssetSearchOptions,
+  AssetStats,
+  AssetStatsOptions,
   IAssetRepository,
   LivePhotoSearchOptions,
   MapMarker,
@@ -320,5 +322,39 @@ export class AssetRepository implements IAssetRepository {
       /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
       lon: asset.exifInfo!.longitude!,
     }));
+  }
+
+  async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
+    let builder = await this.repository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)`, 'count')
+      .addSelect(`asset.type`, 'type')
+      .where('"ownerId" = :ownerId', { ownerId })
+      .andWhere('asset.isVisible = true')
+      .groupBy('asset.type');
+
+    const { isArchived, isFavorite } = options;
+    if (isArchived !== undefined) {
+      builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
+    }
+
+    if (isFavorite !== undefined) {
+      builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    const items = await builder.getRawMany();
+
+    const result: AssetStats = {
+      [AssetType.AUDIO]: 0,
+      [AssetType.IMAGE]: 0,
+      [AssetType.VIDEO]: 0,
+      [AssetType.OTHER]: 0,
+    };
+
+    for (const item of items) {
+      result[item.type as AssetType] = Number(item.count) || 0;
+    }
+
+    return result;
   }
 }
