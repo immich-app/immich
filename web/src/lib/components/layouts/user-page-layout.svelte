@@ -15,10 +15,6 @@
   export let hidden = false;
   export let fullscreen = false;
 
-  const done = async () => {
-    hidden = !hidden;
-    console.log(hidden);
-  };
   const dispatch = createEventDispatcher();
   const handleDoneClick = () => {
     dispatch('doneClick');
@@ -47,7 +43,7 @@
           >
             <p class="font-medium">{title}</p>
             {#if fullscreen}
-              <IconButton on:click={() => done()}>
+              <IconButton on:click={() => hidden != hidden}>
                 <div class="flex items-center">
                   <EyeOutline size="1em" />
                   <p class="ml-2">Show & hide faces</p>

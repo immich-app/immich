@@ -22,7 +22,7 @@
   });
 
   const countHidden = (): number => {
-    return data.people.reduce((count: number, obj) => count + (!obj.isHidden ? 1 : 0), 0);
+    return data.people.reduce((count: number, obj: PersonResponseDto) => count + (!obj.isHidden ? 1 : 0), 0);
   };
 
   const handleDoneClick = async () => {
@@ -119,7 +119,7 @@
         </div>
       </div>
     {/if}
-  {:else if data.people.length == 0 || countHidden() == 0}
+  {:else}
     <div class="flex items-center place-content-center w-full min-h-[calc(66vh_-_11rem)] dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <AccountOff size="3.5em" />
