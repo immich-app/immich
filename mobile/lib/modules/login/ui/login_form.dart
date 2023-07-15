@@ -144,6 +144,9 @@ class LoginForm extends HookConsumerWidget {
               ref.read(backupProvider.notifier).resumeBackup();
             }
             AutoRouter.of(context).replace(const TabControllerRoute());
+
+            // Set offlineBrowing back to false on login
+            Store.put(StoreKey.offlineBrowsing, false);
           }
         } else {
           ImmichToast.show(

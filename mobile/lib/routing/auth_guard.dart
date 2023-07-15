@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthGuard extends AutoRouteGuard {
@@ -12,28 +13,48 @@ class AuthGuard extends AutoRouteGuard {
   AuthGuard(this._apiService);
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    try {
-      bool offlineBrowingIsAllowed = Store.get(StoreKey.offlineBrowsing);
-      if (offlineBrowingIsAllowed) {
-        resolver.next(true);
-        return;
-      }
+    var log = Logger("AuthGuard");
 
+    // Check if user set offline browsing access
+    bool offlineBrowingIsAllowed =
+        Store.tryGet(StoreKey.offlineBrowsing) == true;
+
+    bool resolveNext = false;
+
+    // If offline browsing is allowed, we allow the resolve to continue so we don't
+    // wait around for the validateAccessToken() to resolve
+    if (offlineBrowingIsAllowed) {
+      resolver.next(true);
+      resolveNext = true;
+    }
+
+    try {
       var res = await _apiService.authenticationApi.validateAccessToken();
+      // If token is valid and we haven't resolved yet, resolve
       if (res != null && res.authStatus) {
-        resolver.next(true);
+        if (!resolveNext) {
+          resolver.next(true);
+        }
       } else {
+        // Whenever the accessToken endpoint does resolve (if online), take the user back to Login
+        log.info("User token is invalid. Redirecting to login");
         router.replaceAll([const LoginRoute()]);
       }
     } on ApiException catch (e) {
-      if (e.code == HttpStatus.badRequest &&
+      if (offlineBrowingIsAllowed &&
+          e.code == HttpStatus.badRequest &&
           e.innerException is SocketException) {
         // offline?
-        resolver.next(true);
+        log.info(
+            "Unable to validate user token. User may be offline and offline browsing is allowed.");
       } else {
         debugPrint("Error [onNavigation] ${e.toString()}");
         router.replaceAll([const LoginRoute()]);
+        return;
       }
+    } catch (e) {
+      debugPrint("Error [onNavigation] ${e.toString()}");
+      router.replaceAll([const LoginRoute()]);
       return;
     }
   }
