@@ -14,6 +14,8 @@
   let selecthidden = false;
   let changeCounter = 0;
   let initialHiddenValues: boolean[] = data.people.map((person: PersonResponseDto) => person.isHidden);
+
+  // Get number of hidden and visible people
   let countpeople: PersonCountResponseDto = data.countpeople;
 
   const handleDoneClick = async () => {
@@ -29,13 +31,10 @@
             id: person.id,
             personUpdateDto: { isHidden: person.isHidden },
           });
-          if (person.isHidden) {
-            countpeople.hidden++;
-            countpeople.visible--;
-          } else {
-            countpeople.hidden--;
-            countpeople.visible++;
-          }
+
+          // Keeps track of the number of hidden/visible people, it helps to know whether to show "no people" or not
+          countpeople.hidden += person.isHidden ? 1 : -1;
+          countpeople.visible += person.isHidden ? -1 : 1;
 
           // Update the initial hidden values
           initialHiddenValues[index] = person.isHidden;
