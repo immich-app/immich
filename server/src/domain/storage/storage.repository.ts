@@ -1,9 +1,14 @@
-import { ReadStream } from 'fs';
+import { Readable } from 'stream';
 
 export interface ImmichReadStream {
-  stream: ReadStream;
-  type: string;
-  length: number;
+  stream: Readable;
+  type?: string;
+  length?: number;
+}
+
+export interface ImmichZipStream extends ImmichReadStream {
+  addFile: (inputPath: string, filename: string) => void;
+  finalize: () => Promise<void>;
 }
 
 export interface DiskUsage {
@@ -15,7 +20,8 @@ export interface DiskUsage {
 export const IStorageRepository = 'IStorageRepository';
 
 export interface IStorageRepository {
-  createReadStream(filepath: string, mimeType: string): Promise<ImmichReadStream>;
+  createZipStream(): ImmichZipStream;
+  createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string): Promise<void>;

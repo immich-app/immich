@@ -40,12 +40,12 @@ class ThemeSetting extends HookConsumerWidget {
       children: [
         SwitchListTile.adaptive(
           activeColor: Theme.of(context).primaryColor,
-          title: const Text(
+          title: Text(
             'theme_setting_system_theme_switch',
-            style: TextStyle(
-              fontSize: 12.0,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
           ).tr(),
           value: currentTheme.value == ThemeMode.system,
           onChanged: (bool isSystem) {
@@ -78,12 +78,12 @@ class ThemeSetting extends HookConsumerWidget {
         if (currentTheme.value != ThemeMode.system)
           SwitchListTile.adaptive(
             activeColor: Theme.of(context).primaryColor,
-            title: const Text(
+            title: Text(
               'theme_setting_dark_mode_switch',
-              style: TextStyle(
-                fontSize: 12.0,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ).tr(),
             value: ref.watch(immichThemeProvider) == ThemeMode.dark,
             onChanged: (bool isDark) {

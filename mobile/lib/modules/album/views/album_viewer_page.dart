@@ -18,7 +18,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
@@ -33,7 +32,6 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
-    bool? isTop;
 
     Future<bool> onWillPop() async {
       if (multiSelectEnabled.value) {
@@ -219,8 +217,6 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    final scroll = ScrollController();
-
     return Scaffold(
       appBar: album.when(
         data: (data) => AlbumViewerAppbar(
@@ -229,6 +225,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           userId: userId,
           selected: selection.value,
           selectionDisabled: disableSelection,
+          onAddPhotos: onAddPhotosPressed,
+          onAddUsers: onAddUsersPressed,
         ),
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
@@ -240,41 +238,17 @@ class AlbumViewerPage extends HookConsumerWidget {
             onTap: () {
               titleFocusNode.unfocus();
             },
-            child: NestedScrollView(
-              controller: scroll,
-              floatHeaderSlivers: true,
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                SliverToBoxAdapter(child: buildHeader(data)),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: ImmichSliverPersistentAppBarDelegate(
-                    minHeight: 50,
-                    maxHeight: 50,
-                    child: Container(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      child: buildControlButton(data),
-                    ),
-                  ),
-                )
-              ],
-              body: ImmichAssetGrid(
-                renderList: data.renderList,
-                listener: selectionListener,
-                selectionActive: multiSelectEnabled.value,
-                showMultiSelectIndicator: false,
-                visibleItemsListener: (start, end) {
-                  final top = start.index == 0 && start.itemLeadingEdge == 0.0;
-                  if (top != isTop) {
-                    isTop = top;
-                    scroll.animateTo(
-                      top
-                          ? scroll.position.minScrollExtent
-                          : scroll.position.maxScrollExtent,
-                      duration: const Duration(milliseconds: 500),
-                      curve: top ? Curves.easeOut : Curves.easeIn,
-                    );
-                  }
-                },
+            child: ImmichAssetGrid(
+              renderList: data.renderList,
+              listener: selectionListener,
+              selectionActive: multiSelectEnabled.value,
+              showMultiSelectIndicator: false,
+              topWidget: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildHeader(data),
+                  if (data.isRemote) buildControlButton(data),
+                ],
               ),
             ),
           ),

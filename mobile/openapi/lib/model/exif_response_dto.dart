@@ -243,31 +243,31 @@ class ExifResponseDto {
         model: mapValueOfType<String>(json, r'model'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
-            : num.parse(json[r'exifImageWidth'].toString()),
+            : num.parse('${json[r'exifImageWidth']}'),
         exifImageHeight: json[r'exifImageHeight'] == null
             ? null
-            : num.parse(json[r'exifImageHeight'].toString()),
+            : num.parse('${json[r'exifImageHeight']}'),
         orientation: mapValueOfType<String>(json, r'orientation'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
-        modifyDate: mapDateTime(json, r'modifyDate', ''),
+        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
+        modifyDate: mapDateTime(json, r'modifyDate', r''),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         fNumber: json[r'fNumber'] == null
             ? null
-            : num.parse(json[r'fNumber'].toString()),
+            : num.parse('${json[r'fNumber']}'),
         focalLength: json[r'focalLength'] == null
             ? null
-            : num.parse(json[r'focalLength'].toString()),
+            : num.parse('${json[r'focalLength']}'),
         iso: json[r'iso'] == null
             ? null
-            : num.parse(json[r'iso'].toString()),
+            : num.parse('${json[r'iso']}'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         latitude: json[r'latitude'] == null
             ? null
-            : num.parse(json[r'latitude'].toString()),
+            : num.parse('${json[r'latitude']}'),
         longitude: json[r'longitude'] == null
             ? null
-            : num.parse(json[r'longitude'].toString()),
+            : num.parse('${json[r'longitude']}'),
         city: mapValueOfType<String>(json, r'city'),
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),

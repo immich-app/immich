@@ -1,6 +1,6 @@
 # Server Commands
 
-The `immich-server` docker image comes preinstalled with an administrative CLI (`immich`) that supports the following commands:
+The `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:
 
 | Command                  | Description                           |
 | ------------------------ | ------------------------------------- |

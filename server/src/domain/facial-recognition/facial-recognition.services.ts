@@ -83,7 +83,16 @@ export class FacialRecognitionService {
 
       const faceId: AssetFaceId = { assetId: asset.id, personId };
 
-      await this.faceRepository.create({ ...faceId, embedding });
+      await this.faceRepository.create({
+        ...faceId,
+        embedding,
+        imageHeight: rest.imageHeight,
+        imageWidth: rest.imageWidth,
+        boundingBoxX1: rest.boundingBox.x1,
+        boundingBoxX2: rest.boundingBox.x2,
+        boundingBoxY1: rest.boundingBox.y1,
+        boundingBoxY2: rest.boundingBox.y2,
+      });
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
     }
 

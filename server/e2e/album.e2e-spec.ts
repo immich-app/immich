@@ -1,13 +1,13 @@
 import {
   AlbumResponseDto,
   AuthService,
+  AuthUserDto,
   CreateAlbumDto,
   SharedLinkCreateDto,
   SharedLinkResponseDto,
   UserService,
 } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
-import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';

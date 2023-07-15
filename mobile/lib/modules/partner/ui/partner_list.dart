@@ -23,7 +23,14 @@ class PartnerList extends HookConsumerWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
       leading: userAvatar(context, p, radius: 30),
-      title: Text("${p.firstName} ${p.lastName}"),
+      title: Text(
+        "${p.firstName} ${p.lastName}'s photos",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
       onTap: () => AutoRouter.of(context).push(PartnerDetailRoute(partner: p)),
     );
   }

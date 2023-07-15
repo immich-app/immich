@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 
 export enum GetAssetThumbnailFormatEnum {
   JPEG = 'JPEG',
@@ -8,6 +8,7 @@ export enum GetAssetThumbnailFormatEnum {
 
 export class GetAssetThumbnailDto {
   @IsOptional()
+  @IsEnum(GetAssetThumbnailFormatEnum)
   @ApiProperty({
     type: String,
     enum: GetAssetThumbnailFormatEnum,

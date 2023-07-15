@@ -1,49 +1,42 @@
 import {
+  AccessCore,
   AssetResponseDto,
   AuthUserDto,
   getLivePhotoMotionFilename,
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
-  ImmichReadStream,
-  isSidecarFileType,
-  isSupportedFileType,
   IStorageRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
+  mimeTypes,
+  Permission,
+  UploadFile,
 } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
-import { createReadStream, stat } from 'fs';
+import { constants } from 'fs';
 import fs from 'fs/promises';
-import mime from 'mime-types';
 import path from 'path';
 import { QueryFailedError, Repository } from 'typeorm';
-import { promisify } from 'util';
-import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { DownloadDto } from './dto/download-library.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -60,7 +53,6 @@ import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -68,28 +60,22 @@ import { CuratedLocationsResponseDto } from './response-dto/curated-locations-re
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
-const fileInfo = promisify(stat);
-
-interface ServableFile {
-  filepath: string;
-  contentType: string;
-}
-
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private assetCore: AssetCore;
+  private access: AccessCore;
 
   constructor(
-    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    private downloadService: DownloadService,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
+    this.access = new AccessCore(accessRepository);
   }
 
   public async uploadFile(
@@ -143,16 +129,12 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
-    const assetPathType = mime.lookup(dto.assetPath) as string;
-    if (!isSupportedFileType(assetPathType)) {
-      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    if (!mimeTypes.isAsset(dto.assetPath)) {
+      throw new BadRequestException(`Unsupported file type ${dto.assetPath}`);
     }
 
-    if (dto.sidecarPath) {
-      const sidecarType = mime.lookup(dto.sidecarPath) as string;
-      if (!isSidecarFileType(sidecarType)) {
-        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
-      }
+    if (dto.sidecarPath && !mimeTypes.isSidecar(dto.sidecarPath)) {
+      throw new BadRequestException(`Unsupported sidecar file type`);
     }
 
     for (const filepath of [dto.assetPath, dto.sidecarPath]) {
@@ -160,7 +142,7 @@ export class AssetService {
         continue;
       }
 
-      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
+      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
       if (!exists) {
         throw new BadRequestException('File does not exist');
       }
@@ -172,7 +154,6 @@ export class AssetService {
 
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      mimeType: assetPathType,
       originalPath: dto.assetPath,
       originalName: path.parse(dto.assetPath).name,
     };
@@ -208,32 +189,21 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    if (dto.userId && dto.userId !== authUser.id) {
-      await this.checkUserAccess(authUser, dto.userId);
-    }
-    const assets = await this._assetRepository.getAllByUserId(dto.userId || authUser.id, dto);
-
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetByTimeBucket(
-    authUser: AuthUserDto,
-    getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
-  ): Promise<AssetResponseDto[]> {
-    if (getAssetByTimeBucketDto.userId) {
-      await this.checkUserAccess(authUser, getAssetByTimeBucketDto.userId);
-    }
-
-    const assets = await this._assetRepository.getAssetByTimeBucket(
-      getAssetByTimeBucketDto.userId || authUser.id,
-      getAssetByTimeBucketDto,
-    );
-
+  public async getAssetByTimeBucket(authUser: AuthUserDto, dto: GetAssetByTimeBucketDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const assets = await this._assetRepository.getAssetByTimeBucket(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
-    await this.checkAssetsAccess(authUser, [assetId]);
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
 
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
@@ -246,7 +216,7 @@ export class AssetService {
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.checkAssetsAccess(authUser, [assetId], true);
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, assetId);
 
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
@@ -260,70 +230,19 @@ export class AssetService {
     return mapAsset(updatedAsset);
   }
 
-  public async downloadLibrary(authUser: AuthUserDto, dto: DownloadDto) {
-    this.checkDownloadAccess(authUser);
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
+  async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
+    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
-    return this.downloadService.downloadArchive(dto.name || `library`, assets);
-  }
-
-  public async downloadFiles(authUser: AuthUserDto, dto: DownloadFilesDto) {
-    this.checkDownloadAccess(authUser);
-    await this.checkAssetsAccess(authUser, [...dto.assetIds]);
-
-    const assetToDownload = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assetToDownload.push(asset);
-
-      // Get live photo asset
-      if (asset.livePhotoVideoId) {
-        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
-        assetToDownload.push(livePhotoAsset);
-      }
-    }
-
-    const now = new Date().toISOString();
-    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
-  }
-
-  public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
-    this.checkDownloadAccess(authUser);
-    await this.checkAssetsAccess(authUser, [assetId]);
-
-    try {
-      const asset = await this._assetRepository.get(assetId);
-      if (asset && asset.originalPath && asset.mimeType) {
-        return this.storageRepository.createReadStream(asset.originalPath, asset.mimeType);
-      }
-    } catch (e) {
-      Logger.error(`Error download asset ${e}`, 'downloadFile');
-      throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
-    }
-
-    throw new NotFoundException();
-  }
-
-  async getAssetThumbnail(
-    authUser: AuthUserDto,
-    assetId: string,
-    query: GetAssetThumbnailDto,
-    res: Res,
-    headers: Record<string, string>,
-  ) {
-    await this.checkAssetsAccess(authUser, [assetId]);
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
 
     try {
-      const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers);
+      await this.sendFile(res, this.getThumbnailPath(asset, query.format));
     } catch (e) {
       res.header('Cache-Control', 'none');
-      Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
+      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
       throw new InternalServerErrorException(
         `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
         { cause: e as Error },
@@ -331,103 +250,37 @@ export class AssetService {
     }
   }
 
-  public async serveFile(
-    authUser: AuthUserDto,
-    assetId: string,
-    query: ServeFileDto,
-    res: Res,
-    headers: Record<string, string>,
-  ) {
-    await this.checkAssetsAccess(authUser, [assetId]);
-
-    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
+  public async serveFile(authUser: AuthUserDto, assetId: string, query: ServeFileDto, res: Res) {
+    // this is not quite right as sometimes this returns the original still
+    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
 
-    // Handle Sending Images
-    if (asset.type == AssetType.IMAGE) {
-      try {
-        const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
-        return this.streamFile(filepath, res, headers, contentType);
-      } catch (e) {
-        Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
-        throw new InternalServerErrorException(
-          e,
-          `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
-        );
-      }
-    } else {
-      try {
-        // Handle Video
-        let videoPath = asset.originalPath;
-        let mimeType = asset.mimeType;
+    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
-        await fs.access(videoPath, R_OK | W_OK);
+    const filepath =
+      asset.type === AssetType.IMAGE
+        ? this.getServePath(asset, query, allowOriginalFile)
+        : asset.encodedVideoPath || asset.originalPath;
 
-        if (asset.encodedVideoPath) {
-          videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
-          mimeType = asset.encodedVideoPath == '' ? asset.mimeType : 'video/mp4';
-        }
-
-        const { size } = await fileInfo(videoPath);
-        const range = headers.range;
-
-        if (range) {
-          /** Extracting Start and End value from Range Header */
-          const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
-          let start = parseInt(startStr, 10);
-          let end = endStr ? parseInt(endStr, 10) : size - 1;
-
-          if (!isNaN(start) && isNaN(end)) {
-            start = start;
-            end = size - 1;
-          }
-          if (isNaN(start) && !isNaN(end)) {
-            start = size - end;
-            end = size - 1;
-          }
-
-          // Handle unavailable range request
-          if (start >= size || end >= size) {
-            console.error('Bad Request');
-            // Return the 416 Range Not Satisfiable.
-            res.status(416).set({ 'Content-Range': `bytes */${size}` });
-
-            throw new BadRequestException('Bad Request Range');
-          }
-
-          /** Sending Partial Content With HTTP Code 206 */
-          res.status(206).set({
-            'Content-Range': `bytes ${start}-${end}/${size}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': end - start + 1,
-            'Content-Type': mimeType,
-          });
-
-          const videoStream = createReadStream(videoPath, { start, end });
-
-          return new StreamableFile(videoStream);
-        }
-
-        return this.streamFile(videoPath, res, headers, mimeType);
-      } catch (e) {
-        this.logger.error(`Error serving VIDEO asset=${asset.id}`);
-        throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
-      }
-    }
+    await this.sendFile(res, filepath);
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    await this.checkAssetsAccess(authUser, dto.ids, true);
-
     const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
     const ids = dto.ids.slice();
     for (const id of ids) {
+      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
+      if (!hasAccess) {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        continue;
+      }
+
       const asset = await this._assetRepository.get(id);
       if (!asset) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
@@ -605,76 +458,12 @@ export class AssetService {
 
   async getAssetCountByTimeBucket(
     authUser: AuthUserDto,
-    getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
+    dto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
-    if (getAssetCountByTimeBucketDto.userId !== undefined) {
-      await this.checkUserAccess(authUser, getAssetCountByTimeBucketDto.userId);
-    }
-
-    const result = await this._assetRepository.getAssetCountByTimeBucket(
-      getAssetCountByTimeBucketDto.userId || authUser.id,
-      getAssetCountByTimeBucketDto,
-    );
-
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const result = await this._assetRepository.getAssetCountByTimeBucket(userId, dto);
     return mapAssetCountByTimeBucket(result);
-  }
-
-  getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getAssetCountByUserId(authUser.id);
-  }
-
-  getArchivedAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
-  }
-
-  private async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
-    const sharedLinkId = authUser.sharedLinkId;
-
-    for (const assetId of assetIds) {
-      if (sharedLinkId) {
-        const canAccess = await this.accessRepository.hasSharedLinkAssetAccess(sharedLinkId, assetId);
-        if (canAccess) {
-          continue;
-        }
-
-        throw new ForbiddenException();
-      }
-
-      const isOwner = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
-      if (isOwner) {
-        continue;
-      }
-
-      if (mustBeOwner) {
-        throw new ForbiddenException();
-      }
-
-      const isPartnerShared = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
-      if (isPartnerShared) {
-        continue;
-      }
-
-      const isAlbumShared = await this.accessRepository.hasAlbumAssetAccess(authUser.id, assetId);
-      if (isAlbumShared) {
-        continue;
-      }
-
-      throw new ForbiddenException();
-    }
-  }
-
-  private async checkUserAccess(authUser: AuthUserDto, userId: string) {
-    // Check if userId shares assets with authUser
-    const canAccess = await this.accessRepository.hasPartnerAccess(authUser.id, userId);
-    if (!canAccess) {
-      throw new ForbiddenException();
-    }
-  }
-
-  private checkDownloadAccess(authUser: AuthUserDto) {
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      throw new ForbiddenException();
-    }
   }
 
   getExifPermission(authUser: AuthUserDto) {
@@ -684,66 +473,67 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath && asset.webpPath.length > 0) {
+        if (asset.webpPath) {
           return asset.webpPath;
         }
+        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
+          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): ServableFile {
+  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+    const mimeType = mimeTypes.lookup(asset.originalPath);
+
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && asset.mimeType != 'image/gif') {
+    if (query.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+      return asset.resizePath;
     }
 
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
-      return { filepath: asset.originalPath, contentType: asset.mimeType as string };
+    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+      return asset.originalPath;
     }
 
     if (asset.webpPath && asset.webpPath.length > 0) {
-      return { filepath: asset.webpPath, contentType: 'image/webp' };
+      return asset.webpPath;
     }
 
     if (!asset.resizePath) {
       throw new Error('resizePath not set');
     }
 
-    return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+    return asset.resizePath;
   }
 
-  private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
-    if (contentType) {
-      res.header('Content-Type', contentType);
-    }
+  private async sendFile(res: Res, filepath: string): Promise<void> {
+    await fs.access(filepath, constants.R_OK);
+    const options = path.isAbsolute(filepath) ? {} : { root: process.cwd() };
 
-    // etag
-    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
-    const etag = `W/"${size}-${mtimeNs}"`;
-    res.setHeader('ETag', etag);
-    if (etag === headers['if-none-match']) {
-      res.status(304);
-      return;
-    }
+    res.set('Cache-Control', 'private, max-age=86400, no-transform');
+    res.header('Content-Type', mimeTypes.lookup(filepath));
+    res.sendFile(filepath, options, (error: Error) => {
+      if (!error) {
+        return;
+      }
 
-    await fs.access(filepath, R_OK);
-
-    return new StreamableFile(createReadStream(filepath));
+      if (error.message !== 'Request aborted') {
+        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
+      }
+    });
   }
 }

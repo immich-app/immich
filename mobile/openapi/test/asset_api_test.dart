@@ -43,20 +43,13 @@ void main() {
       // TODO
     });
 
+    //Future<MultipartFile> downloadArchive(AssetIdsDto assetIdsDto, { String key }) async
+    test('test downloadArchive', () async {
+      // TODO
+    });
+
     //Future<MultipartFile> downloadFile(String id, { String key }) async
     test('test downloadFile', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> downloadFiles(DownloadFilesDto downloadFilesDto, { String key }) async
-    test('test downloadFiles', () async {
-      // TODO
-    });
-
-    // Current this is not used in any UI element
-    //
-    //Future<MultipartFile> downloadLibrary({ String name, num skip, String key }) async
-    test('test downloadLibrary', () async {
       // TODO
     });
 
@@ -64,11 +57,6 @@ void main() {
     //
     //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
     test('test getAllAssets', () async {
-      // TODO
-    });
-
-    //Future<AssetCountByUserIdResponseDto> getArchivedAssetCountByUserId() async
-    test('test getArchivedAssetCountByUserId', () async {
       // TODO
     });
 
@@ -89,13 +77,13 @@ void main() {
       // TODO
     });
 
-    //Future<AssetCountByUserIdResponseDto> getAssetCountByUserId() async
-    test('test getAssetCountByUserId', () async {
+    //Future<List<String>> getAssetSearchTerms() async
+    test('test getAssetSearchTerms', () async {
       // TODO
     });
 
-    //Future<List<String>> getAssetSearchTerms() async
-    test('test getAssetSearchTerms', () async {
+    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite }) async
+    test('test getAssetStats', () async {
       // TODO
     });
 
@@ -111,6 +99,11 @@ void main() {
 
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
+      // TODO
+    });
+
+    //Future<DownloadResponseDto> getDownloadInfo({ List<String> assetIds, String albumId, String userId, num archiveSize, String key }) async
+    test('test getDownloadInfo', () async {
       // TODO
     });
 
@@ -153,7 +146,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isReadOnly, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isReadOnly, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

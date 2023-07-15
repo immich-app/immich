@@ -2,6 +2,7 @@ import { IStorageRepository } from '@app/domain';
 
 export const newStorageRepositoryMock = (): jest.Mocked<IStorageRepository> => {
   return {
+    createZipStream: jest.fn(),
     createReadStream: jest.fn(),
     unlink: jest.fn(),
     unlinkDir: jest.fn().mockResolvedValue(true),

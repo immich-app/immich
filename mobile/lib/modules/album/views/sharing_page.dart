@@ -236,7 +236,7 @@ class SharingPage extends HookConsumerWidget {
           SliverToBoxAdapter(child: buildTopBottons()),
           if (partner.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
+              padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
                 child: const Text(
                   "partner_page_title",
@@ -246,11 +246,7 @@ class SharingPage extends HookConsumerWidget {
             ),
           if (partner.isNotEmpty) PartnerList(partner: partner),
           SliverPadding(
-            padding: EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: partner.isEmpty ? 0 : 16,
-            ),
+            padding: const EdgeInsets.all(12),
             sliver: SliverToBoxAdapter(
               child: const Text(
                 "sharing_page_album",

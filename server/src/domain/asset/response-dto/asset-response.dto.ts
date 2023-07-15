@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { mapFace, PersonResponseDto } from '../../person';
+import { mapFace, PersonResponseDto } from '../../person/person.dto';
 import { mapTag, TagResponseDto } from '../../tag';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { mapSmartInfo, SmartInfoResponseDto } from './smart-info-response.dto';
@@ -23,7 +23,6 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
-  mimeType!: string | null;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -50,7 +49,6 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
@@ -77,7 +75,6 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,

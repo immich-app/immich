@@ -22,15 +22,21 @@ class SettingsSwitchListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
       value: valueNotifier.value,
-      onChanged: !enabled ? null : (value) {
-        valueNotifier.value = value;
-        appSettingService.setSetting(settingsEnum, value);
-      },
-      activeColor: Theme
-        .of(context)
-        .primaryColor,
+      onChanged: !enabled
+          ? null
+          : (value) {
+              valueNotifier.value = value;
+              appSettingService.setSetting(settingsEnum, value);
+            },
+      activeColor: Theme.of(context).primaryColor,
       dense: true,
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        title,
+        style: Theme.of(context)
+            .textTheme
+            .labelLarge
+            ?.copyWith(fontWeight: FontWeight.bold),
+      ),
       subtitle: subtitle != null ? Text(subtitle!) : null,
     );
   }

@@ -113,7 +113,7 @@ class SharedLinkEditDto {
 
       return SharedLinkEditDto(
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', ''),
+        expiresAt: mapDateTime(json, r'expiresAt', r''),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         showExif: mapValueOfType<bool>(json, r'showExif'),
