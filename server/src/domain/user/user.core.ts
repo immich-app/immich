@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
+import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
-import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user.repository';
 
 const SALT_ROUNDS = 10;
@@ -67,13 +67,13 @@ export class UserCore {
     }
   }
 
-  async createUser(createUserDto: CreateUserDto | CreateAdminDto | CreateUserOAuthDto): Promise<UserEntity> {
-    const user = await this.userRepository.getByEmail(createUserDto.email);
+  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+    const user = await this.userRepository.getByEmail(dto.email);
     if (user) {
       throw new BadRequestException('User exists');
     }
 
-    if (!(createUserDto as CreateAdminDto).isAdmin) {
+    if (!dto.isAdmin) {
       const localAdmin = await this.userRepository.getAdmin();
       if (!localAdmin) {
         throw new BadRequestException('The first registered account must the administrator.');
@@ -81,9 +81,12 @@ export class UserCore {
     }
 
     try {
-      const payload: Partial<UserEntity> = { ...createUserDto };
+      const payload: Partial<UserEntity> = { ...dto };
       if (payload.password) {
         payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
+      }
+      if (payload.storageLabel) {
+        payload.storageLabel = sanitize(payload.storageLabel);
       }
       return this.userRepository.create(payload);
     } catch (e) {

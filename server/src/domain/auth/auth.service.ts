@@ -240,11 +240,19 @@ export class AuthService {
       }
 
       this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
+      this.logger.verbose(`OAuth Profile: ${JSON.stringify(profile)}`);
+
+      let storageLabel: string | null = profile[config.oauth.storageLabelClaim as keyof OAuthProfile] as string;
+      if (typeof storageLabel !== 'string') {
+        storageLabel = null;
+      }
+
       user = await this.userCore.createUser({
         firstName: profile.given_name || '',
         lastName: profile.family_name || '',
         email: profile.email,
         oauthId: profile.sub,
+        storageLabel,
       });
     }
 

@@ -157,6 +157,16 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
+          label="STORAGE LABEL CLAIM"
+          desc="Automatically set the user's storage label to the value of this claim."
+          bind:value={oauthConfig.storageLabelClaim}
+          required={true}
+          disabled={!oauthConfig.storageLabelClaim}
+          isEdited={!(oauthConfig.storageLabelClaim == savedConfig.storageLabelClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
           label="BUTTON TEXT"
           bind:value={oauthConfig.buttonText}
           required={false}
