@@ -1,4 +1,4 @@
-import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository, IStorageRepository, JobName, mimeTypes } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
@@ -19,13 +19,11 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
   createAssetDto.deviceAssetId = 'deviceAssetId';
   createAssetDto.deviceId = 'deviceId';
-  createAssetDto.assetType = AssetType.OTHER;
   createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.isFavorite = false;
@@ -50,7 +48,6 @@ const _getAsset_1 = () => {
   asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
   asset_1.isArchived = false;
-  asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
@@ -75,7 +72,6 @@ const _getAsset_2 = () => {
   asset_2.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_2.isFavorite = false;
   asset_2.isArchived = false;
-  asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
   asset_2.encodedVideoPath = '';
   asset_2.duration = '0:00:00.000000';
@@ -97,24 +93,6 @@ const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
   result1.timeBucket = '2022-07-01T00:00:00.000Z';
 
   return [result1, result2];
-};
-
-const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
-  const result = new AssetCountByUserIdResponseDto();
-
-  result.videos = 2;
-  result.photos = 2;
-
-  return result;
-};
-
-const _getArchivedAssetsCountByUserId = (): AssetCountByUserIdResponseDto => {
-  const result = new AssetCountByUserIdResponseDto();
-
-  result.videos = 1;
-  result.photos = 2;
-
-  return result;
 };
 
 describe('AssetService', () => {
@@ -142,13 +120,9 @@ describe('AssetService', () => {
       getSearchPropertiesByUserId: jest.fn(),
       getAssetByTimeBucket: jest.fn(),
       getAssetsByChecksums: jest.fn(),
-      getAssetCountByUserId: jest.fn(),
-      getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
       getByOriginalPath: jest.fn(),
     };
-
-    cryptoMock = newCryptoRepositoryMock();
 
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
@@ -163,6 +137,84 @@ describe('AssetService', () => {
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
+  });
+
+  describe('mime types linting', () => {
+    describe('profile', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.profile);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.profile);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.profile);
+        expect(keys).toEqual([...keys].sort());
+      });
+    });
+
+    describe('image', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.image);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.image);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.image).filter((key) => key in mimeTypes.profile === false);
+        expect(keys).toEqual([...keys].sort());
+      });
+
+      it('should contain only image mime types', () => {
+        expect(Object.values(mimeTypes.image)).toEqual(
+          Object.values(mimeTypes.image).filter((mimeType) => mimeType.startsWith('image/')),
+        );
+      });
+    });
+
+    describe('video', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.video);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.video);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.video);
+        expect(keys).toEqual([...keys].sort());
+      });
+
+      it('should contain only video mime types', () => {
+        expect(Object.values(mimeTypes.video)).toEqual(
+          Object.values(mimeTypes.video).filter((mimeType) => mimeType.startsWith('video/')),
+        );
+      });
+    });
+
+    describe('sidecar', () => {
+      it('should contain only lowercase mime types', () => {
+        const keys = Object.keys(mimeTypes.sidecar);
+        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+        const values = Object.values(mimeTypes.sidecar);
+        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+      });
+
+      it('should be a sorted list', () => {
+        const keys = Object.keys(mimeTypes.sidecar);
+        expect(keys).toEqual([...keys].sort());
+      });
+    });
+
+    describe('sidecar', () => {
+      it('should contain only be xml mime type', () => {
+        expect(Object.values(mimeTypes.sidecar)).toEqual(
+          Object.values(mimeTypes.sidecar).filter((mimeType) => mimeType === 'application/xml'),
+        );
+      });
+    });
   });
 
   describe('uploadFile', () => {
@@ -260,20 +312,6 @@ describe('AssetService', () => {
 
     expect(result.totalCount).toEqual(assetCountByTimeBucket.reduce((a, b) => a + b.count, 0));
     expect(result.buckets.length).toEqual(2);
-  });
-
-  it('get asset count by user id', async () => {
-    const assetCount = _getAssetCountByUserId();
-    assetRepositoryMock.getAssetCountByUserId.mockResolvedValue(assetCount);
-
-    await expect(sut.getAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
-  });
-
-  it('get archived asset count by user id', async () => {
-    const assetCount = _getArchivedAssetsCountByUserId();
-    assetRepositoryMock.getArchivedAssetCountByUserId.mockResolvedValue(assetCount);
-
-    await expect(sut.getArchivedAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
   });
 
   describe('deleteAll', () => {

@@ -56,7 +56,7 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ---
 
-## Uploading exiting libraries
+## Uploading existing libraries
 
 ### Run via Docker
 

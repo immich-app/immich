@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, SystemConfigFFmpegDto, SystemConfigFFmpegDtoTranscodeEnum } from '@api';
+  import { api, AudioCodec, SystemConfigFFmpegDto, TranscodePolicy, VideoCodec } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
@@ -113,9 +113,9 @@
             desc="Opus is the highest quality option, but has lower compatibility with old devices or software."
             bind:value={ffmpegConfig.targetAudioCodec}
             options={[
-              { value: 'aac', text: 'aac' },
-              { value: 'mp3', text: 'mp3' },
-              { value: 'opus', text: 'opus' },
+              { value: AudioCodec.Aac, text: 'aac' },
+              { value: AudioCodec.Mp3, text: 'mp3' },
+              { value: AudioCodec.Opus, text: 'opus' },
             ]}
             name="acodec"
             isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
@@ -126,9 +126,9 @@
             desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files."
             bind:value={ffmpegConfig.targetVideoCodec}
             options={[
-              { value: 'h264', text: 'h264' },
-              { value: 'hevc', text: 'hevc' },
-              { value: 'vp9', text: 'vp9' },
+              { value: VideoCodec.H264, text: 'h264' },
+              { value: VideoCodec.Hevc, text: 'hevc' },
+              { value: VideoCodec.Vp9, text: 'vp9' },
             ]}
             name="vcodec"
             isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
@@ -167,22 +167,22 @@
           />
 
           <SettingSelect
-            label="TRANSCODE"
+            label="TRANSCODE POLICY"
             desc="Policy for when a video should be transcoded."
             bind:value={ffmpegConfig.transcode}
             name="transcode"
             options={[
-              { value: SystemConfigFFmpegDtoTranscodeEnum.All, text: 'All videos' },
+              { value: TranscodePolicy.All, text: 'All videos' },
               {
-                value: SystemConfigFFmpegDtoTranscodeEnum.Optimal,
+                value: TranscodePolicy.Optimal,
                 text: 'Videos higher than target resolution or not in the desired format',
               },
               {
-                value: SystemConfigFFmpegDtoTranscodeEnum.Required,
+                value: TranscodePolicy.Required,
                 text: 'Only videos not in the desired format',
               },
               {
-                value: SystemConfigFFmpegDtoTranscodeEnum.Disabled,
+                value: TranscodePolicy.Disabled,
                 text: "Don't transcode any videos, may break playback on some clients",
               },
             ]}

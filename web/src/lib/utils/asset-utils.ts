@@ -1,5 +1,5 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { clearDownload, updateDownload } from '$lib/stores/download';
+import { downloadManager } from '$lib/stores/download';
 import { AddAssetsResponseDto, api, AssetApiGetDownloadInfoRequest, AssetResponseDto, DownloadResponseDto } from '@api';
 import { handleError } from './handle-error';
 
@@ -37,7 +37,6 @@ const downloadBlob = (data: Blob, filename: string) => {
 export const downloadArchive = async (
   fileName: string,
   options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
-  onDone?: () => void,
   key?: string,
 ) => {
   let downloadInfo: DownloadResponseDto | null = null;
@@ -58,62 +57,77 @@ export const downloadArchive = async (
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
     const archiveName = fileName.replace('.zip', `${suffix}.zip`);
 
-    let downloadKey = `${archiveName}`;
+    let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
       downloadKey = `${archiveName} (${i + 1}/${downloadInfo.archives.length})`;
     }
 
-    updateDownload(downloadKey, 0);
+    const abort = new AbortController();
+    downloadManager.add(downloadKey, archive.size, abort);
 
     try {
       const { data } = await api.assetApi.downloadArchive(
         { assetIdsDto: { assetIds: archive.assetIds }, key },
         {
           responseType: 'blob',
-          onDownloadProgress: (event) => updateDownload(downloadKey, Math.floor((event.loaded / archive.size) * 100)),
+          signal: abort.signal,
+          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
         },
       );
 
       downloadBlob(data, archiveName);
     } catch (e) {
       handleError(e, 'Unable to download files');
-      clearDownload(downloadKey);
+      downloadManager.clear(downloadKey);
       return;
     } finally {
-      setTimeout(() => clearDownload(downloadKey), 3_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
-
-  onDone?.();
 };
 
 export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
-  const filenames = [`${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`];
+  const assets = [
+    {
+      filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
+      id: asset.id,
+      size: asset.exifInfo?.fileSizeInByte || 0,
+    },
+  ];
   if (asset.livePhotoVideoId) {
-    filenames.push(`${asset.originalFileName}.mov`);
+    assets.push({
+      filename: `${asset.originalFileName}.mov`,
+      id: asset.livePhotoVideoId,
+      size: 0,
+    });
   }
 
-  for (const filename of filenames) {
+  for (const { filename, id, size } of assets) {
+    const downloadKey = filename;
+
     try {
-      updateDownload(filename, 0);
+      const abort = new AbortController();
+      downloadManager.add(downloadKey, size, abort);
 
       const { data } = await api.assetApi.downloadFile(
-        { id: asset.id, key },
+        { id, key },
         {
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {
             if (event.lengthComputable) {
-              updateDownload(filename, Math.floor((event.loaded / event.total) * 100));
+              downloadManager.update(downloadKey, event.loaded, event.total);
             }
           },
+          signal: abort.signal,
         },
       );
 
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);
+      downloadManager.clear(downloadKey);
     } finally {
-      setTimeout(() => clearDownload(filename), 3_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
 };
@@ -134,66 +148,6 @@ export function getFilenameExtension(filename: string): string {
 export function getAssetFilename(asset: AssetResponseDto): string {
   const fileExtension = getFilenameExtension(asset.originalPath);
   return `${asset.originalFileName}.${fileExtension}`;
-}
-
-/**
- * Returns the MIME type of the file and an empty string when not found.
- */
-export function getFileMimeType(file: File): string {
-  const mimeTypes: Record<string, string> = {
-    '3fr': 'image/x-hasselblad-3fr',
-    '3gp': 'video/3gpp',
-    ari: 'image/x-arriflex-ari',
-    arw: 'image/x-sony-arw',
-    avi: 'video/avi',
-    avif: 'image/avif',
-    cap: 'image/x-phaseone-cap',
-    cin: 'image/x-phantom-cin',
-    cr2: 'image/x-canon-cr2',
-    cr3: 'image/x-canon-cr3',
-    crw: 'image/x-canon-crw',
-    dcr: 'image/x-kodak-dcr',
-    dng: 'image/x-adobe-dng',
-    erf: 'image/x-epson-erf',
-    fff: 'image/x-hasselblad-fff',
-    flv: 'video/x-flv',
-    gif: 'image/gif',
-    heic: 'image/heic',
-    heif: 'image/heif',
-    iiq: 'image/x-phaseone-iiq',
-    insp: 'image/jpeg',
-    insv: 'video/mp4',
-    jpeg: 'image/jpeg',
-    jpg: 'image/jpeg',
-    jxl: 'image/jxl',
-    k25: 'image/x-kodak-k25',
-    kdc: 'image/x-kodak-kdc',
-    m2ts: 'video/mp2t',
-    mkv: 'video/x-matroska',
-    mov: 'video/quicktime',
-    mp4: 'video/mp4',
-    mpg: 'video/mpeg',
-    mrw: 'image/x-minolta-mrw',
-    mts: 'video/mp2t',
-    nef: 'image/x-nikon-nef',
-    orf: 'image/x-olympus-orf',
-    ori: 'image/x-olympus-ori',
-    pef: 'image/x-pentax-pef',
-    png: 'image/png',
-    raf: 'image/x-fuji-raf',
-    raw: 'image/x-panasonic-raw',
-    rwl: 'image/x-leica-rwl',
-    sr2: 'image/x-sony-sr2',
-    srf: 'image/x-sony-srf',
-    srw: 'image/x-samsung-srw',
-    tiff: 'image/tiff',
-    webm: 'video/webm',
-    webp: 'image/webp',
-    wmv: 'video/x-ms-wmv',
-    x3f: 'image/x-sigma-x3f',
-  };
-  // Return the MIME type determined by the browser or the MIME type based on the file extension.
-  return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
 }
 
 function isRotated90CW(orientation: number) {

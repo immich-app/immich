@@ -18,6 +18,7 @@ class ThumbnailImage extends HookConsumerWidget {
   final bool multiselectEnabled;
   final Function? onSelect;
   final Function? onDeselect;
+  final int heroOffset;
 
   const ThumbnailImage({
     Key? key,
@@ -31,6 +32,7 @@ class ThumbnailImage extends HookConsumerWidget {
     this.multiselectEnabled = false,
     this.onDeselect,
     this.onSelect,
+    this.heroOffset = 0,
   }) : super(key: key);
 
   @override
@@ -63,6 +65,7 @@ class ThumbnailImage extends HookConsumerWidget {
               initialIndex: index,
               loadAsset: loadAsset,
               totalAssets: totalAssets,
+              heroOffset: heroOffset,
             ),
           );
         }
@@ -72,32 +75,7 @@ class ThumbnailImage extends HookConsumerWidget {
         HapticFeedback.heavyImpact();
       },
       child: Hero(
-        createRectTween: (begin, end) {
-          double? top;
-          // Uses the [BoxFit.contain] algorithm
-          if (asset.width != null && asset.height != null) {
-            final assetAR = asset.width! / asset.height!;
-            final w = MediaQuery.of(context).size.width;
-            final deviceAR = MediaQuery.of(context).size.aspectRatio;
-            if (deviceAR < assetAR) {
-              top = asset.height! * w / asset.width!;
-            } else {
-              top = 0;
-            }
-            // get the height offset
-          }
-
-          return MaterialRectCenterArcTween(
-            begin: Rect.fromLTRB(
-              0,
-              top ?? 0.0,
-              MediaQuery.of(context).size.width,
-              MediaQuery.of(context).size.height,
-            ),
-            end: end,
-          );
-        },
-        tag: asset.id,
+        tag: asset.id + heroOffset,
         child: Stack(
           children: [
             Container(

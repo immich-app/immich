@@ -2,13 +2,13 @@
   import { goto } from '$app/navigation';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, oauth, OAuthConfigResponseDto } from '@api';
+  import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
+  import { OAuthConfigResponseDto, api, oauth } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
 
-  let error: string;
+  let errorMessage: string;
   let email = '';
   let password = '';
   let oauthError: string;
@@ -53,7 +53,7 @@
 
   const login = async () => {
     try {
-      error = '';
+      errorMessage = '';
       loading = true;
 
       const { data } = await api.authenticationApi.login({
@@ -70,8 +70,8 @@
 
       dispatch('success');
       return;
-    } catch (e) {
-      error = 'Incorrect email or password';
+    } catch (error) {
+      errorMessage = (await getServerErrorMessage(error)) || 'Incorrect email or password';
       loading = false;
       return;
     }
@@ -80,9 +80,9 @@
 
 {#if authConfig.passwordLoginEnabled}
   <form on:submit|preventDefault={login} class="flex flex-col gap-5 mt-5">
-    {#if error}
+    {#if errorMessage}
       <p class="text-red-400" transition:fade>
-        {error}
+        {errorMessage}
       </p>
     {/if}
 

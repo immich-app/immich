@@ -1,6 +1,8 @@
 import {
   AssetIdsDto,
   AssetService,
+  AssetStatsDto,
+  AssetStatsResponseDto,
   AuthUserDto,
   DownloadDto,
   DownloadResponseDto,
@@ -52,5 +54,10 @@ export class AssetController {
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   downloadFile(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.downloadFile(authUser, id).then(asStreamableFile);
+  }
+
+  @Get('statistics')
+  getAssetStats(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+    return this.service.getStatistics(authUser, dto);
   }
 }

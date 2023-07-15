@@ -40,6 +40,7 @@ export enum SystemConfigKey {
   OAUTH_CLIENT_ID = 'oauth.clientId',
   OAUTH_CLIENT_SECRET = 'oauth.clientSecret',
   OAUTH_SCOPE = 'oauth.scope',
+  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
   OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
   OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
@@ -51,11 +52,23 @@ export enum SystemConfigKey {
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
-export enum TranscodePreset {
+export enum TranscodePolicy {
   ALL = 'all',
   OPTIMAL = 'optimal',
   REQUIRED = 'required',
   DISABLED = 'disabled',
+}
+
+export enum VideoCodec {
+  H264 = 'h264',
+  HEVC = 'hevc',
+  VP9 = 'vp9',
+}
+
+export enum AudioCodec {
+  MP3 = 'mp3',
+  AAC = 'aac',
+  OPUS = 'opus',
 }
 
 export interface SystemConfig {
@@ -63,12 +76,12 @@ export interface SystemConfig {
     crf: number;
     threads: number;
     preset: string;
-    targetVideoCodec: string;
-    targetAudioCodec: string;
+    targetVideoCodec: VideoCodec;
+    targetAudioCodec: AudioCodec;
     targetResolution: string;
     maxBitrate: string;
     twoPass: boolean;
-    transcode: TranscodePreset;
+    transcode: TranscodePolicy;
   };
   job: Record<QueueName, { concurrency: number }>;
   oauth: {
@@ -77,6 +90,7 @@ export interface SystemConfig {
     clientId: string;
     clientSecret: string;
     scope: string;
+    storageLabelClaim: string;
     buttonText: string;
     autoRegister: boolean;
     autoLaunch: boolean;

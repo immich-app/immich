@@ -26,18 +26,23 @@ void main() {
       // TODO
     });
 
-    // String preset
-    test('to test the property `preset`', () async {
-      // TODO
-    });
-
-    // String targetVideoCodec
+    // VideoCodec targetVideoCodec
     test('to test the property `targetVideoCodec`', () async {
       // TODO
     });
 
-    // String targetAudioCodec
+    // AudioCodec targetAudioCodec
     test('to test the property `targetAudioCodec`', () async {
+      // TODO
+    });
+
+    // TranscodePolicy transcode
+    test('to test the property `transcode`', () async {
+      // TODO
+    });
+
+    // String preset
+    test('to test the property `preset`', () async {
       // TODO
     });
 
@@ -53,11 +58,6 @@ void main() {
 
     // bool twoPass
     test('to test the property `twoPass`', () async {
-      // TODO
-    });
-
-    // String transcode
-    test('to test the property `transcode`', () async {
       // TODO
     });
 

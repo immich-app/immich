@@ -32,6 +32,19 @@ function HomepageHeader() {
         </div>
 
         <img src="/img/immich-screenshots.png" alt="logo" />
+
+        <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
+          <div className="h-24">
+            <a href="https://play.google.com/store/apps/details?id=app.alextran.immich">
+              <img className="h-24" alt="Get it on Google Play" src="/img/google-play-badge.png" />
+            </a>
+          </div>
+          <div className="h-24">
+            <a href="https://apps.apple.com/sg/app/immich/id1613945652">
+              <img className="h-24 sm:p-3.5 p-3" alt="Download on the App Store" src="/img/ios-app-store-badge.svg" />
+            </a>
+          </div>
+        </div>
       </section>
     </header>
   );
@@ -40,7 +53,7 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   return (
     <Layout
-      title={`Home`}
+      title="Home"
       description="immich Self-hosted photo and video backup solution directly from your mobile phone "
       noFooter={true}
     >

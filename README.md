@@ -20,6 +20,7 @@
 <p align="center">
   <a href="README_zh_CN.md">中文</a>
   <a href="README_tr_TR.md">Türkçe</a>
+  <a href="README_ca_ES.md">Català</a>
 </p>
 
 ## Disclaimer

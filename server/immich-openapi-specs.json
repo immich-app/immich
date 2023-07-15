@@ -984,38 +984,6 @@
         ]
       }
     },
-    "/asset/count-by-user-id": {
-      "get": {
-        "operationId": "getAssetCountByUserId",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -1608,17 +1576,34 @@
         ]
       }
     },
-    "/asset/stat/archive": {
+    "/asset/statistics": {
       "get": {
-        "operationId": "getArchivedAssetCountByUserId",
-        "parameters": [],
+        "operationId": "getAssetStats",
+        "parameters": [
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                  "$ref": "#/components/schemas/AssetStatsResponseDto"
                 }
               }
             }
@@ -2671,6 +2656,61 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/AssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/person/{id}/merge": {
+      "post": {
+        "operationId": "mergePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePersonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   }
                 }
               }
@@ -4328,7 +4368,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.66.1",
+    "version": "1.67.2",
     "contact": {}
   },
   "tags": [],
@@ -4731,38 +4771,6 @@
           "buckets"
         ]
       },
-      "AssetCountByUserIdResponseDto": {
-        "type": "object",
-        "properties": {
-          "audio": {
-            "type": "integer",
-            "default": 0
-          },
-          "photos": {
-            "type": "integer",
-            "default": 0
-          },
-          "videos": {
-            "type": "integer",
-            "default": 0
-          },
-          "other": {
-            "type": "integer",
-            "default": 0
-          },
-          "total": {
-            "type": "integer",
-            "default": 0
-          }
-        },
-        "required": [
-          "audio",
-          "photos",
-          "videos",
-          "other",
-          "total"
-        ]
-      },
       "AssetFileUploadResponseDto": {
         "type": "object",
         "properties": {
@@ -4866,10 +4874,6 @@
           "isArchived": {
             "type": "boolean"
           },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
           "duration": {
             "type": "string"
           },
@@ -4915,9 +4919,27 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
-          "mimeType",
           "duration",
           "checksum"
+        ]
+      },
+      "AssetStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "images",
+          "videos",
+          "total"
         ]
       },
       "AssetTypeEnum": {
@@ -4927,6 +4949,14 @@
           "VIDEO",
           "AUDIO",
           "OTHER"
+        ]
+      },
+      "AudioCodec": {
+        "type": "string",
+        "enum": [
+          "mp3",
+          "aac",
+          "opus"
         ]
       },
       "AuthDeviceResponseDto": {
@@ -4958,6 +4988,30 @@
           "current",
           "deviceType",
           "deviceOS"
+        ]
+      },
+      "BulkIdResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "success"
         ]
       },
       "ChangePasswordDto": {
@@ -5066,9 +5120,6 @@
       "CreateAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
           "assetData": {
             "type": "string",
             "format": "binary"
@@ -5084,9 +5135,6 @@
           "isReadOnly": {
             "type": "boolean",
             "default": false
-          },
-          "fileExtension": {
-            "type": "string"
           },
           "deviceAssetId": {
             "type": "string"
@@ -5116,9 +5164,7 @@
           }
         },
         "required": [
-          "assetType",
           "assetData",
-          "fileExtension",
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
@@ -5489,9 +5535,6 @@
       "ImportAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
           "isReadOnly": {
             "type": "boolean",
             "default": true
@@ -5530,7 +5573,6 @@
           }
         },
         "required": [
-          "assetType",
           "assetPath",
           "deviceAssetId",
           "deviceId",
@@ -5751,6 +5793,21 @@
         "required": [
           "title",
           "assets"
+        ]
+      },
+      "MergePersonDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "OAuthCallbackDto": {
@@ -6347,13 +6404,16 @@
           "threads": {
             "type": "integer"
           },
-          "preset": {
-            "type": "string"
-          },
           "targetVideoCodec": {
-            "type": "string"
+            "$ref": "#/components/schemas/VideoCodec"
           },
           "targetAudioCodec": {
+            "$ref": "#/components/schemas/AudioCodec"
+          },
+          "transcode": {
+            "$ref": "#/components/schemas/TranscodePolicy"
+          },
+          "preset": {
             "type": "string"
           },
           "targetResolution": {
@@ -6364,27 +6424,18 @@
           },
           "twoPass": {
             "type": "boolean"
-          },
-          "transcode": {
-            "type": "string",
-            "enum": [
-              "all",
-              "optimal",
-              "required",
-              "disabled"
-            ]
           }
         },
         "required": [
           "crf",
           "threads",
-          "preset",
           "targetVideoCodec",
           "targetAudioCodec",
+          "transcode",
+          "preset",
           "targetResolution",
           "maxBitrate",
-          "twoPass",
-          "transcode"
+          "twoPass"
         ]
       },
       "SystemConfigJobDto": {
@@ -6452,6 +6503,9 @@
           "scope": {
             "type": "string"
           },
+          "storageLabelClaim": {
+            "type": "string"
+          },
           "buttonText": {
             "type": "string"
           },
@@ -6474,6 +6528,7 @@
           "clientId",
           "clientSecret",
           "scope",
+          "storageLabelClaim",
           "buttonText",
           "autoRegister",
           "autoLaunch",
@@ -6602,6 +6657,15 @@
         "enum": [
           "day",
           "month"
+        ]
+      },
+      "TranscodePolicy": {
+        "type": "string",
+        "enum": [
+          "all",
+          "optimal",
+          "required",
+          "disabled"
         ]
       },
       "UpdateAlbumDto": {
@@ -6803,6 +6867,14 @@
         },
         "required": [
           "authStatus"
+        ]
+      },
+      "VideoCodec": {
+        "type": "string",
+        "enum": [
+          "h264",
+          "hevc",
+          "vp9"
         ]
       }
     }

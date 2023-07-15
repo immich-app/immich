@@ -1,8 +1,8 @@
-import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
+import { AuthUserDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
 import { AssetEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
   constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
@@ -17,7 +17,6 @@ export class AssetCore {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
 
-      mimeType: file.mimeType,
       checksum: file.checksum,
       originalPath: file.originalPath,
 
@@ -27,7 +26,7 @@ export class AssetCore {
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
 
-      type: dto.assetType,
+      type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
