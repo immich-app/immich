@@ -99,6 +99,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
 
+      _apiService.authenticationApi
+          .logout()
+          .then((_) => log.info("Logout was successfull for $userEmail"))
+          .onError(
+            (error, stackTrace) =>
+                log.severe("Error logging out $userEmail", error, stackTrace),
+          );
+
       await Future.wait([
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
@@ -106,15 +114,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       ]);
 
       state = state.copyWith(isAuthenticated: false);
-
-
-      _apiService.authenticationApi
-          .logout()
-          .then((value) => log.info("Logout was successfull for $userEmail"))
-          .onError(
-            (error, stackTrace) =>
-                log.severe("Error logging out $userEmail", error, stackTrace),
-          );
     } catch (e) {
       log.severe("Error logging out $e");
     }
