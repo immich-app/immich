@@ -26,7 +26,7 @@ class AdvancedSettings extends HookConsumerWidget {
         isEnabled.value = appSettingService.getSetting<bool>(
           AppSettingsEnum.advancedTroubleshooting,
         );
-        isEnabled.value = appSettingService.getSetting<bool>(
+        offlineBrowsing.value = appSettingService.getSetting<bool>(
           AppSettingsEnum.offlineBrowsing,
         );
         levelId.value = appSettingService.getSetting(AppSettingsEnum.logLevel);
