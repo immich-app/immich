@@ -37,12 +37,14 @@ class GalleryViewerPage extends HookConsumerWidget {
   final Asset Function(int index) loadAsset;
   final int totalAssets;
   final int initialIndex;
+  final int heroOffset;
 
   GalleryViewerPage({
     super.key,
     required this.initialIndex,
     required this.loadAsset,
     required this.totalAssets,
+    this.heroOffset = 0,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -131,7 +133,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
 
-        if (asset.isLocal) {
+        if (!asset.isRemote ||
+            asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
           // Preload the local asset
           precacheImage(localImageProvider(asset), context);
         } else {
@@ -459,7 +462,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     });
 
     ImageProvider imageProvider(Asset asset) {
-      if (asset.isLocal) {
+      if (!asset.isRemote ||
+          asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
         return localImageProvider(asset);
       } else {
         if (isLoadOriginal.value) {
@@ -518,7 +522,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               loadingBuilder: isLoadPreview.value
                   ? (context, event) {
                       final a = asset();
-                      if (!a.isLocal) {
+                      if (!a.isLocal ||
+                          (a.isRemote &&
+                              Store.get(StoreKey.preferRemoteImage, false))) {
                         // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                         // Three-Stage Loading (WEBP -> JPEG -> Original)
                         final webPThumbnail = CachedNetworkImage(
@@ -585,7 +591,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id,
+                      tag: asset.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
@@ -602,7 +608,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id,
+                      tag: asset.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,

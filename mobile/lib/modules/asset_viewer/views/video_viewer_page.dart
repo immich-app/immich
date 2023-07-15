@@ -73,8 +73,12 @@ class VideoViewerPage extends HookConsumerWidget {
           placeholder: placeholder,
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
-          const Center(
-            child: ImmichLoadingIndicator(),
+          SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: const Center(
+              child: ImmichLoadingIndicator(),
+            ),
           ),
       ],
     );

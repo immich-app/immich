@@ -1,8 +1,8 @@
+import { APIKeyEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
-import { APIKeyCreateResponseDto, APIKeyResponseDto, mapKey } from './api-key-response.dto';
-import { APIKeyCreateDto } from './api-key.dto';
+import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto } from './api-key.dto';
 import { IKeyRepository } from './api-key.repository';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class APIKeyService {
       userId: authUser.id,
     });
 
-    return { secret, apiKey: mapKey(entity) };
+    return { secret, apiKey: this.map(entity) };
   }
 
   async update(authUser: AuthUserDto, id: string, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
@@ -29,9 +29,9 @@ export class APIKeyService {
       throw new BadRequestException('API Key not found');
     }
 
-    return this.repository.update(authUser.id, id, {
-      name: dto.name,
-    });
+    const key = await this.repository.update(authUser.id, id, { name: dto.name });
+
+    return this.map(key);
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
@@ -48,11 +48,20 @@ export class APIKeyService {
     if (!key) {
       throw new BadRequestException('API Key not found');
     }
-    return mapKey(key);
+    return this.map(key);
   }
 
   async getAll(authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
     const keys = await this.repository.getByUserId(authUser.id);
-    return keys.map(mapKey);
+    return keys.map((key) => this.map(key));
+  }
+
+  private map(entity: APIKeyEntity): APIKeyResponseDto {
+    return {
+      id: entity.id,
+      name: entity.name,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
   }
 }

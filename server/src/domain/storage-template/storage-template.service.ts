@@ -1,13 +1,25 @@
-import { AssetEntity, SystemConfig } from '@app/infra/entities';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import handlebar from 'handlebars';
+import * as luxon from 'luxon';
+import path from 'node:path';
+import sanitize from 'sanitize-filename';
 import { IAssetRepository } from '../asset/asset.repository';
-import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository } from '../storage/storage.repository';
-import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import {
+  INITIAL_SYSTEM_CONFIG,
+  ISystemConfigRepository,
+  supportedDayTokens,
+  supportedHourTokens,
+  supportedMinuteTokens,
+  supportedMonthTokens,
+  supportedSecondTokens,
+  supportedYearTokens,
+} from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { IUserRepository } from '../user/user.repository';
-import { StorageTemplateCore } from './storage-template.core';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;
@@ -17,7 +29,9 @@ export interface MoveAssetMetadata {
 @Injectable()
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
-  private core: StorageTemplateCore;
+  private configCore: SystemConfigCore;
+  private storageCore = new StorageCore();
+  private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -26,7 +40,10 @@ export class StorageTemplateService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.core = new StorageTemplateCore(configRepository, config, storageRepository);
+    this.storageTemplate = this.compile(config.storageTemplate.template);
+    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore.addValidator((config) => this.validate(config));
+    this.configCore.config$.subscribe((config) => this.onConfig(config));
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -48,28 +65,26 @@ export class StorageTemplateService {
   }
 
   async handleMigration() {
-    try {
-      console.time('migrating-time');
+    this.logger.log('Starting storage template migration');
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination),
+    );
+    const users = await this.userRepository.getList();
 
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-        this.assetRepository.getAll(pagination),
-      );
-      const users = await this.userRepository.getList();
-
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          const user = users.find((user) => user.id === asset.ownerId);
-          const storageLabel = user?.storageLabel || null;
-          const filename = asset.originalFileName || asset.id;
-          await this.moveAsset(asset, { storageLabel, filename });
-        }
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        const user = users.find((user) => user.id === asset.ownerId);
+        const storageLabel = user?.storageLabel || null;
+        const filename = asset.originalFileName || asset.id;
+        await this.moveAsset(asset, { storageLabel, filename });
       }
-
-      this.logger.debug('Cleaning up empty directories...');
-      await this.storageRepository.removeEmptyDirs(APP_MEDIA_LOCATION);
-    } finally {
-      console.timeEnd('migrating-time');
     }
+
+    this.logger.debug('Cleaning up empty directories...');
+    const libraryFolder = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    await this.storageRepository.removeEmptyDirs(libraryFolder);
+
+    this.logger.log('Finished storage template migration');
 
     return true;
   }
@@ -81,7 +96,7 @@ export class StorageTemplateService {
       return;
     }
 
-    const destination = await this.core.getTemplatePath(asset, metadata);
+    const destination = await this.getTemplatePath(asset, metadata);
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
 
@@ -120,5 +135,119 @@ export class StorageTemplateService {
       }
     }
     return asset;
+  }
+
+  private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {
+    const { storageLabel, filename } = metadata;
+
+    try {
+      const source = asset.originalPath;
+      const ext = path.extname(source).split('.').pop() as string;
+      const sanitized = sanitize(path.basename(filename, `.${ext}`));
+      const rootPath = this.storageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+      const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+      const fullPath = path.normalize(path.join(rootPath, storagePath));
+      let destination = `${fullPath}.${ext}`;
+
+      if (!fullPath.startsWith(rootPath)) {
+        this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
+        return source;
+      }
+
+      if (source === destination) {
+        return source;
+      }
+
+      /**
+       * In case of migrating duplicate filename to a new path, we need to check if it is already migrated
+       * Due to the mechanism of appending +1, +2, +3, etc to the filename
+       *
+       * Example:
+       * Source = upload/abc/def/FullSizeRender+7.heic
+       * Expected Destination = upload/abc/def/FullSizeRender.heic
+       *
+       * The file is already at the correct location, but since there are other FullSizeRender.heic files in the
+       * destination, it was renamed to FullSizeRender+7.heic.
+       *
+       * The lines below will be used to check if the differences between the source and destination is only the
+       * +7 suffix, and if so, it will be considered as already migrated.
+       */
+      if (source.startsWith(fullPath) && source.endsWith(`.${ext}`)) {
+        const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
+        const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
+        if (hasDuplicationAnnotation) {
+          return source;
+        }
+      }
+
+      let duplicateCount = 0;
+
+      while (true) {
+        const exists = await this.storageRepository.checkFileExists(destination);
+        if (!exists) {
+          break;
+        }
+
+        duplicateCount++;
+        destination = `${fullPath}+${duplicateCount}.${ext}`;
+      }
+
+      return destination;
+    } catch (error: any) {
+      this.logger.error(`Unable to get template path for ${filename}`, error);
+      return asset.originalPath;
+    }
+  }
+
+  private validate(config: SystemConfig) {
+    const testAsset = {
+      fileCreatedAt: new Date(),
+      originalPath: '/upload/test/IMG_123.jpg',
+      type: AssetType.IMAGE,
+    } as AssetEntity;
+    try {
+      this.render(this.compile(config.storageTemplate.template), testAsset, 'IMG_123', 'jpg');
+    } catch (e) {
+      this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
+      throw new Error(`Invalid storage template: ${e}`);
+    }
+  }
+
+  private onConfig(config: SystemConfig) {
+    this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
+    this.storageTemplate = this.compile(config.storageTemplate.template);
+  }
+
+  private compile(template: string) {
+    return handlebar.compile(template, {
+      knownHelpers: undefined,
+      strict: true,
+    });
+  }
+
+  private render(template: HandlebarsTemplateDelegate<any>, asset: AssetEntity, filename: string, ext: string) {
+    const substitutions: Record<string, string> = {
+      filename,
+      ext,
+      filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
+      filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
+    };
+
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt);
+
+    const dateTokens = [
+      ...supportedYearTokens,
+      ...supportedMonthTokens,
+      ...supportedDayTokens,
+      ...supportedHourTokens,
+      ...supportedMinuteTokens,
+      ...supportedSecondTokens,
+    ];
+
+    for (const token of dateTokens) {
+      substitutions[token] = dt.toFormat(token);
+    }
+
+    return template(substitutions);
   }
 }

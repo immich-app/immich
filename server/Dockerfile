@@ -10,7 +10,6 @@ RUN npm ci
 
 COPY . .
 
-
 FROM builder as prod
 
 RUN npm run build

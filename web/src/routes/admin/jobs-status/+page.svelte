@@ -1,27 +1,27 @@
 <script lang="ts">
-	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-	import { api } from '@api';
-	import { onDestroy, onMount } from 'svelte';
-	import type { PageData } from './$types';
+  import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+  import { api } from '@api';
+  import { onDestroy, onMount } from 'svelte';
+  import type { PageData } from './$types';
 
-	export let data: PageData;
-	let timer: NodeJS.Timer;
+  export let data: PageData;
+  let timer: NodeJS.Timer;
 
-	$: jobs = data.jobs;
+  $: jobs = data.jobs;
 
-	const load = async () => {
-		const { data } = await api.jobApi.getAllJobsStatus();
-		jobs = data;
-	};
+  const load = async () => {
+    const { data } = await api.jobApi.getAllJobsStatus();
+    jobs = data;
+  };
 
-	onMount(async () => {
-		await load();
-		timer = setInterval(load, 5_000);
-	});
+  onMount(async () => {
+    await load();
+    timer = setInterval(load, 5_000);
+  });
 
-	onDestroy(() => {
-		clearInterval(timer);
-	});
+  onDestroy(() => {
+    clearInterval(timer);
+  });
 </script>
 
 <JobsPanel {jobs} />

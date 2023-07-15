@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
   }
+  if (value is AudioCodec) {
+    return AudioCodecTypeTransformer().encode(value).toString();
+  }
   if (value is DeleteAssetStatus) {
     return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
@@ -78,6 +81,12 @@ String parameterToString(dynamic value) {
   }
   if (value is TimeGroupEnum) {
     return TimeGroupEnumTypeTransformer().encode(value).toString();
+  }
+  if (value is TranscodePolicy) {
+    return TranscodePolicyTypeTransformer().encode(value).toString();
+  }
+  if (value is VideoCodec) {
+    return VideoCodecTypeTransformer().encode(value).toString();
   }
   return value.toString();
 }

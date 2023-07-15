@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -8,15 +9,23 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
+import 'package:immich_mobile/modules/backup/services/backup_verification.service.dart';
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
+import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wakelock/wakelock.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -25,6 +34,9 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
+    final settingsService = ref.watch(appSettingsServiceProvider);
+    final showBackupFix = Platform.isAndroid &&
+        settingsService.getSetting(AppSettingsEnum.advancedTroubleshooting);
 
     final appRefreshDisabled =
         Platform.isIOS && settings?.appRefreshEnabled != true;
@@ -37,6 +49,7 @@ class BackupControllerPage extends HookConsumerWidget {
         ? false
         : true;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final checkInProgress = useState(false);
 
     useEffect(
       () {
@@ -59,6 +72,104 @@ class BackupControllerPage extends HookConsumerWidget {
       [],
     );
 
+    Future<void> performDeletion(List<Asset> assets) async {
+      try {
+        checkInProgress.value = true;
+        ImmichToast.show(
+          context: context,
+          msg: "Deleting ${assets.length} assets on the server...",
+        );
+        await ref.read(assetProvider.notifier).deleteAssets(assets);
+        ImmichToast.show(
+          context: context,
+          msg: "Deleted ${assets.length} assets on the server. "
+              "You can now start a manual backup",
+          toastType: ToastType.success,
+        );
+      } finally {
+        checkInProgress.value = false;
+      }
+    }
+
+    void performBackupCheck() async {
+      try {
+        checkInProgress.value = true;
+        if (backupState.allUniqueAssets.length >
+            backupState.selectedAlbumsBackupAssetsIds.length) {
+          ImmichToast.show(
+            context: context,
+            msg: "Backup all assets before starting this check!",
+            toastType: ToastType.error,
+          );
+          return;
+        }
+        final connection = await Connectivity().checkConnectivity();
+        if (connection != ConnectivityResult.wifi) {
+          ImmichToast.show(
+            context: context,
+            msg: "Make sure to be connected to unmetered Wi-Fi",
+            toastType: ToastType.error,
+          );
+          return;
+        }
+        Wakelock.enable();
+        const limit = 100;
+        final toDelete = await ref
+            .read(backupVerificationServiceProvider)
+            .findWronglyBackedUpAssets(limit: limit);
+        if (toDelete.isEmpty) {
+          ImmichToast.show(
+            context: context,
+            msg: "Did not find any corrupt asset backups!",
+            toastType: ToastType.success,
+          );
+        } else {
+          await showDialog(
+            context: context,
+            builder: (context) => ConfirmDialog(
+              onOk: () => performDeletion(toDelete),
+              title: "Corrupt backups!",
+              ok: "Delete",
+              content:
+                  "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
+                  "Run the check again to find more.\n"
+                  "Do you want to delete the corrupt asset backups now?",
+            ),
+          );
+        }
+      } finally {
+        Wakelock.disable();
+        checkInProgress.value = false;
+      }
+    }
+
+    Widget buildCheckCorruptBackups() {
+      return ListTile(
+        leading: Icon(
+          Icons.warning_rounded,
+          color: Theme.of(context).primaryColor,
+        ),
+        title: const Text(
+          "Check for corrupt asset backups",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        isThreeLine: true,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Run this check only over Wi-Fi and once all assets "
+                "have been backed-up. The procedure might take a few minutes."),
+            ElevatedButton(
+              onPressed: checkInProgress.value ? null : performBackupCheck,
+              child: checkInProgress.value
+                  ? const CircularProgressIndicator()
+                  : const Text("Perform check"),
+            ),
+          ],
+        ),
+      );
+    }
+
     Widget buildStorageInformation() {
       return ListTile(
         leading: Icon(
@@ -69,6 +180,7 @@ class BackupControllerPage extends HookConsumerWidget {
           "backup_controller_page_server_storage",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ).tr(),
+        isThreeLine: true,
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Column(
@@ -648,6 +760,8 @@ class BackupControllerPage extends HookConsumerWidget {
                       : buildBackgroundBackupController())
                   : buildBackgroundBackupController(),
             ),
+            if (showBackupFix) const Divider(),
+            if (showBackupFix) buildCheckCorruptBackups(),
             const Divider(),
             buildStorageInformation(),
             const Divider(),

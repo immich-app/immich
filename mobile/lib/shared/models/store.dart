@@ -174,6 +174,7 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>(114, type: bool),
   offlineBrowsing<bool>(115, type: bool),
   logLevel<int>(116, type: int),
+  preferRemoteImage<bool>(117, type: bool),
   ;
 
   const StoreKey(

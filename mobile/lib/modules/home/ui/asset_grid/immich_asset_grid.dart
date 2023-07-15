@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -52,84 +53,61 @@ class ImmichAssetGrid extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var settings = ref.watch(appSettingsServiceProvider);
 
-    // Needs to suppress hero animations when navigating to this widget
-    final enableHeroAnimations = useState(false);
-    final transitionDuration = ModalRoute.of(context)?.transitionDuration;
-
     final perRow = useState(
       assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!,
     );
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
 
-    useEffect(
-      () {
-        // Wait for transition to complete, then re-enable
-        if (transitionDuration == null) {
-          // No route transition found, maybe we opened this up first
-          enableHeroAnimations.value = true;
-        } else {
-          // Unfortunately, using the transition animation itself didn't
-          // seem to work reliably. So instead, wait until the duration of the
-          // animation has elapsed to re-enable the hero animations
-          Future.delayed(transitionDuration).then((_) {
-            enableHeroAnimations.value = true;
-          });
-        }
-        return null;
-      },
-      [],
-    );
-
-    Future<bool> onWillPop() async {
-      enableHeroAnimations.value = false;
-      return true;
+    /// assets need different hero tags across tabs / modals
+    /// otherwise, hero animations are performed across tabs (looks buggy!)
+    int heroOffset() {
+      const int range = 1152921504606846976; // 2^60
+      final tabScope = TabsRouterScope.of(context);
+      if (tabScope != null) {
+        final int tabIndex = tabScope.controller.activeIndex;
+        return tabIndex * range;
+      }
+      return range * 7;
     }
 
     Widget buildAssetGridView(RenderList renderList) {
-      return WillPopScope(
-        onWillPop: onWillPop,
-        child: HeroMode(
-          enabled: enableHeroAnimations.value,
-          child: RawGestureDetector(
-            gestures: {
-              CustomScaleGestureRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                          CustomScaleGestureRecognizer>(
-                      () => CustomScaleGestureRecognizer(),
-                      (CustomScaleGestureRecognizer scale) {
-                scale.onStart = (details) {
-                  baseScaleFactor.value = scaleFactor.value;
-                };
+      return RawGestureDetector(
+        gestures: {
+          CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+                  CustomScaleGestureRecognizer>(
+              () => CustomScaleGestureRecognizer(),
+              (CustomScaleGestureRecognizer scale) {
+            scale.onStart = (details) {
+              baseScaleFactor.value = scaleFactor.value;
+            };
 
-                scale.onUpdate = (details) {
-                  scaleFactor.value =
-                      max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
-                  if (7 - scaleFactor.value.toInt() != perRow.value) {
-                    perRow.value = 7 - scaleFactor.value.toInt();
-                  }
-                };
-                scale.onEnd = (details) {};
-              })
-            },
-            child: ImmichAssetGridView(
-              onRefresh: onRefresh,
-              assetsPerRow: perRow.value,
-              listener: listener,
-              showStorageIndicator: showStorageIndicator ??
-                  settings.getSetting(AppSettingsEnum.storageIndicator),
-              renderList: renderList,
-              margin: margin,
-              selectionActive: selectionActive,
-              preselectedAssets: preselectedAssets,
-              canDeselect: canDeselect,
-              dynamicLayout: dynamicLayout ??
-                  settings.getSetting(AppSettingsEnum.dynamicLayout),
-              showMultiSelectIndicator: showMultiSelectIndicator,
-              visibleItemsListener: visibleItemsListener,
-              topWidget: topWidget,
-            ),
-          ),
+            scale.onUpdate = (details) {
+              scaleFactor.value =
+                  max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
+              if (7 - scaleFactor.value.toInt() != perRow.value) {
+                perRow.value = 7 - scaleFactor.value.toInt();
+              }
+            };
+          })
+        },
+        child: ImmichAssetGridView(
+          onRefresh: onRefresh,
+          assetsPerRow: perRow.value,
+          listener: listener,
+          showStorageIndicator: showStorageIndicator ??
+              settings.getSetting(AppSettingsEnum.storageIndicator),
+          renderList: renderList,
+          margin: margin,
+          selectionActive: selectionActive,
+          preselectedAssets: preselectedAssets,
+          canDeselect: canDeselect,
+          dynamicLayout: dynamicLayout ??
+              settings.getSetting(AppSettingsEnum.dynamicLayout),
+          showMultiSelectIndicator: showMultiSelectIndicator,
+          visibleItemsListener: visibleItemsListener,
+          topWidget: topWidget,
+          heroOffset: heroOffset(),
         ),
       );
     }

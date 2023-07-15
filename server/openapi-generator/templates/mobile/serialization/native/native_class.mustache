@@ -66,7 +66,7 @@ class {{{classname}}} {
     {{/isNullable}}
     {{#isDateTime}}
       {{#pattern}}
-      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
+      json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
         : this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
       {{/pattern}}
@@ -76,7 +76,7 @@ class {{{classname}}} {
     {{/isDateTime}}
     {{#isDate}}
       {{#pattern}}
-      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
+      json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
         : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
       {{/pattern}}
@@ -117,10 +117,10 @@ class {{{classname}}} {
       return {{{classname}}}(
   {{#vars}}
     {{#isDateTime}}
-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', '{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
     {{/isDateTime}}
     {{#isDate}}
-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', '{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
@@ -200,9 +200,9 @@ class {{{classname}}} {
             {{/isMap}}
             {{^isMap}}
               {{#isNumber}}
-        {{{name}}}: json[r'{{{baseName}}}'] == null
+        {{{name}}}: {{#isNullable}}json[r'{{{baseName}}}'] == null
             ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
-            : {{{datatypeWithEnum}}}.parse(json[r'{{{baseName}}}'].toString()),
+            : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
               {{/isNumber}}
               {{^isNumber}}
                 {{^isEnum}}

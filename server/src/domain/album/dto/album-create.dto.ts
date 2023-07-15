@@ -1,6 +1,6 @@
-import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { ValidateUUID } from '../../domain.util';
 
 export class CreateAlbumDto {
   @IsNotEmpty()

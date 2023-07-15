@@ -72,7 +72,7 @@ class AdminSignupResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
       );
     }
     return null;

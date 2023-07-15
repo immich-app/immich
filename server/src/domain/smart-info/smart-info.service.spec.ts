@@ -91,13 +91,13 @@ describe(SmartInfoService.name, () => {
       });
     });
 
-    it('should no update the smart info if no tags were returned', async () => {
+    it('should always overwrite old tags', async () => {
       machineMock.classifyImage.mockResolvedValue([]);
 
       await sut.handleClassifyImage({ id: asset.id });
 
       expect(machineMock.classifyImage).toHaveBeenCalled();
-      expect(smartMock.upsert).not.toHaveBeenCalled();
+      expect(smartMock.upsert).toHaveBeenCalled();
     });
   });
 
