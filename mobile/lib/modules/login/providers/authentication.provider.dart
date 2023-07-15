@@ -92,10 +92,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
-  Future<bool> logout() async {
+  Future<void> logout() async {
+    var log = Logger('AuthenticationNotifier');
     try {
+
+      String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
+
       await Future.wait([
-        _apiService.authenticationApi.logout(),
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
@@ -103,10 +106,16 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       state = state.copyWith(isAuthenticated: false);
 
-      return true;
+
+      _apiService.authenticationApi
+          .logout()
+          .then((value) => log.info("Logout was successfull for $userEmail"))
+          .onError(
+            (error, stackTrace) =>
+                log.severe("Error logging out $userEmail", error, stackTrace),
+          );
     } catch (e) {
-      debugPrint("Error logging out $e");
-      return false;
+      log.severe("Error logging out $e");
     }
   }
 
