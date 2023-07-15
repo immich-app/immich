@@ -1,5 +1,4 @@
 import { UserEntity } from '@app/infra/entities';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
   id!: string;
