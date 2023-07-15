@@ -14,6 +14,7 @@ import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
