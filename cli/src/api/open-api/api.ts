@@ -1743,6 +1743,43 @@ export interface OAuthConfigDto {
 /**
  * 
  * @export
+ * @interface OAuthConfigResponseDto
+ */
+export interface OAuthConfigResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'passwordLoginEnabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'url'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'buttonText'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
+    'autoLaunch'?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface PersonResponseDto
  */
 export interface PersonResponseDto {
@@ -8077,7 +8114,7 @@ export const OAuthApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async generateConfig(oAuthConfigDto: OAuthConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async generateConfig(oAuthConfigDto: OAuthConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OAuthConfigResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.generateConfig(oAuthConfigDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -8134,7 +8171,7 @@ export const OAuthApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        generateConfig(requestParameters: OAuthApiGenerateConfigRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+        generateConfig(requestParameters: OAuthApiGenerateConfigRequest, options?: AxiosRequestConfig): AxiosPromise<OAuthConfigResponseDto> {
             return localVarFp.generateConfig(requestParameters.oAuthConfigDto, options).then((request) => request(axios, basePath));
         },
         /**

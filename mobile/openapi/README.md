@@ -236,6 +236,7 @@ Class | Method | HTTP request | Description
  - [MergePersonDto](doc//MergePersonDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
+ - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
