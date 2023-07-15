@@ -16,8 +16,18 @@ void main() {
   // final instance = ServerMediaTypesResponseDto();
 
   group('test ServerMediaTypesResponseDto', () {
-    // List<String> mimeTypes (default value: const [])
-    test('to test the property `mimeTypes`', () async {
+    // Object video
+    test('to test the property `video`', () async {
+      // TODO
+    });
+
+    // Object image
+    test('to test the property `image`', () async {
+      // TODO
+    });
+
+    // Object sidecar
+    test('to test the property `sidecar`', () async {
       // TODO
     });
 

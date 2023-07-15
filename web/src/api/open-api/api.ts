@@ -2093,10 +2093,22 @@ export interface ServerInfoResponseDto {
 export interface ServerMediaTypesResponseDto {
     /**
      * 
-     * @type {Array<string>}
+     * @type {object}
      * @memberof ServerMediaTypesResponseDto
      */
-    'mimeTypes': Array<string>;
+    'video': object;
+    /**
+     * 
+     * @type {object}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'image': object;
+    /**
+     * 
+     * @type {object}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'sidecar': object;
 }
 /**
  * 

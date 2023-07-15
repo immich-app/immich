@@ -13,26 +13,38 @@ part of openapi.api;
 class ServerMediaTypesResponseDto {
   /// Returns a new [ServerMediaTypesResponseDto] instance.
   ServerMediaTypesResponseDto({
-    this.mimeTypes = const [],
+    required this.video,
+    required this.image,
+    required this.sidecar,
   });
 
-  List<String> mimeTypes;
+  Object video;
+
+  Object image;
+
+  Object sidecar;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerMediaTypesResponseDto &&
-     other.mimeTypes == mimeTypes;
+     other.video == video &&
+     other.image == image &&
+     other.sidecar == sidecar;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (mimeTypes.hashCode);
+    (video.hashCode) +
+    (image.hashCode) +
+    (sidecar.hashCode);
 
   @override
-  String toString() => 'ServerMediaTypesResponseDto[mimeTypes=$mimeTypes]';
+  String toString() => 'ServerMediaTypesResponseDto[video=$video, image=$image, sidecar=$sidecar]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'mimeTypes'] = this.mimeTypes;
+      json[r'video'] = this.video;
+      json[r'image'] = this.image;
+      json[r'sidecar'] = this.sidecar;
     return json;
   }
 
@@ -44,9 +56,9 @@ class ServerMediaTypesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerMediaTypesResponseDto(
-        mimeTypes: json[r'mimeTypes'] is Iterable
-            ? (json[r'mimeTypes'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        video: mapValueOfType<Object>(json, r'video')!,
+        image: mapValueOfType<Object>(json, r'image')!,
+        sidecar: mapValueOfType<Object>(json, r'sidecar')!,
       );
     }
     return null;
@@ -94,7 +106,9 @@ class ServerMediaTypesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'mimeTypes',
+    'video',
+    'image',
+    'sidecar',
   };
 }
 
