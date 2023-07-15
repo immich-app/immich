@@ -40,6 +40,7 @@ export enum SystemConfigKey {
   OAUTH_CLIENT_ID = 'oauth.clientId',
   OAUTH_CLIENT_SECRET = 'oauth.clientSecret',
   OAUTH_SCOPE = 'oauth.scope',
+  OAUTH_STORAGE_LABEL_CLAIM = 'oauth.storageLabelClaim',
   OAUTH_AUTO_LAUNCH = 'oauth.autoLaunch',
   OAUTH_BUTTON_TEXT = 'oauth.buttonText',
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
@@ -89,6 +90,7 @@ export interface SystemConfig {
     clientId: string;
     clientSecret: string;
     scope: string;
+    storageLabelClaim: string;
     buttonText: string;
     autoRegister: boolean;
     autoLaunch: boolean;

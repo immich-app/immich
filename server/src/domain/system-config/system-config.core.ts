@@ -48,6 +48,7 @@ export const defaults = Object.freeze<SystemConfig>({
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    storageLabelClaim: 'preferred_username',
     buttonText: 'Login with OAuth',
     autoRegister: true,
     autoLaunch: false,

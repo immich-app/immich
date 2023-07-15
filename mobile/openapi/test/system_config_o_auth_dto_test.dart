@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String storageLabelClaim
+    test('to test the property `storageLabelClaim`', () async {
+      // TODO
+    });
+
     // String buttonText
     test('to test the property `buttonText`', () async {
       // TODO
