@@ -5,7 +5,7 @@
   import EyeOutline from 'svelte-material-icons/EyeOutline.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import { fly } from 'svelte/transition';
-  import type { UserResponseDto } from '@api';
+  import type { PersonCountResponseDto, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
@@ -14,6 +14,7 @@
   export let title: string | undefined = undefined;
   export let selecthidden = false;
   export let fullscreen = false;
+  export let countpeople: PersonCountResponseDto | undefined = undefined;
 
   const dispatch = createEventDispatcher();
   const handleDoneClick = () => {
@@ -42,7 +43,7 @@
             class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
           >
             <p class="font-medium">{title}</p>
-            {#if fullscreen}
+            {#if fullscreen && countpeople && countpeople.total > 0}
               <IconButton on:click={() => (selecthidden = !selecthidden)}>
                 <div class="flex items-center">
                   <EyeOutline size="1em" />

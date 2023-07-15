@@ -184,7 +184,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getPersonCount**
-> StatResponseDto getPersonCount()
+> PersonCountResponseDto getPersonCount()
 
 
 
@@ -221,7 +221,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**StatResponseDto**](StatResponseDto.md)
+[**PersonCountResponseDto**](PersonCountResponseDto.md)
 
 ### Authorization
 

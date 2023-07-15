@@ -193,7 +193,7 @@ class PersonApi {
     );
   }
 
-  Future<StatResponseDto?> getPersonCount() async {
+  Future<PersonCountResponseDto?> getPersonCount() async {
     final response = await getPersonCountWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -202,7 +202,7 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StatResponseDto',) as StatResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonCountResponseDto',) as PersonCountResponseDto;
     
     }
     return null;

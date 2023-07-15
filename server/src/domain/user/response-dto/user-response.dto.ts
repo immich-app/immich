@@ -17,15 +17,6 @@ export class UserResponseDto {
   oauthId!: string;
 }
 
-export class StatResponseDto {
-  @ApiProperty({ type: 'integer' })
-  hidden!: number;
-  @ApiProperty({ type: 'integer' })
-  visible!: number;
-  @ApiProperty({ type: 'integer' })
-  total!: number;
-}
-
 export function mapUser(entity: UserEntity): UserResponseDto {
   return {
     id: entity.id,

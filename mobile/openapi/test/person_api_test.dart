@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<StatResponseDto> getPersonCount() async
+    //Future<PersonCountResponseDto> getPersonCount() async
     test('test getPersonCount', () async {
       // TODO
     });

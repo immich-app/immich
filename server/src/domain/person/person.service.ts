@@ -1,11 +1,10 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { StatResponseDto } from '..';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, MergePersonDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
+import { mapPerson, MergePersonDto, PersonCountResponseDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
@@ -43,7 +42,7 @@ export class PersonService {
     return this.findOrFail(authUser, id).then(mapPerson);
   }
 
-  async getPersonCount(authUser: AuthUserDto): Promise<StatResponseDto> {
+  async getPersonCount(authUser: AuthUserDto): Promise<PersonCountResponseDto> {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     return {
       hidden: people.filter((obj) => obj.isHidden === true).length,

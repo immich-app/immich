@@ -72,6 +72,7 @@ doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
 doc/PersonApi.md
+doc/PersonCountResponseDto.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
@@ -98,7 +99,6 @@ doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
-doc/StatResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -208,6 +208,7 @@ lib/model/merge_person_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/person_count_response_dto.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
@@ -231,7 +232,6 @@ lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
-lib/model/stat_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
@@ -323,6 +323,7 @@ test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
 test/person_api_test.dart
+test/person_count_response_dto_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
@@ -349,7 +350,6 @@ test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
-test/stat_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart

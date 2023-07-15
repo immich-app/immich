@@ -4,10 +4,10 @@ import {
   BulkIdResponseDto,
   ImmichReadStream,
   MergePersonDto,
+  PersonCountResponseDto,
   PersonResponseDto,
   PersonService,
   PersonUpdateDto,
-  StatResponseDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -49,7 +49,7 @@ export class PersonController {
   }
 
   @Get('/count')
-  getPersonCount(@AuthUser() authUser: AuthUserDto): Promise<StatResponseDto> {
+  getPersonCount(@AuthUser() authUser: AuthUserDto): Promise<PersonCountResponseDto> {
     return this.service.getPersonCount(authUser);
   }
 

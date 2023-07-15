@@ -1,7 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { PersonResponseDto, StatResponseDto, api } from '@api';
+  import { PersonResponseDto, PersonCountResponseDto, api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
   import { handleError } from '$lib/utils/handle-error';
@@ -14,7 +14,7 @@
   let selecthidden = false;
   let changeCounter = 0;
   let initialHiddenValues: boolean[] = data.people.map((person: PersonResponseDto) => person.isHidden);
-  let countpeople: StatResponseDto = data.countpeople;
+  let countpeople: PersonCountResponseDto = data.countpeople;
 
   const handleDoneClick = async () => {
     try {
@@ -57,6 +57,7 @@
   user={data.user}
   fullscreen={true}
   showUploadButton
+  bind:countpeople
   bind:selecthidden
   on:doneClick={handleDoneClick}
   title="People"

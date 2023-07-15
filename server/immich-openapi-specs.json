@@ -2575,7 +2575,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StatResponseDto"
+                  "$ref": "#/components/schemas/PersonCountResponseDto"
                 }
               }
             }
@@ -5925,6 +5925,25 @@
           "passwordLoginEnabled"
         ]
       },
+      "PersonCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "integer"
+          },
+          "visible": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hidden",
+          "visible",
+          "total"
+        ]
+      },
       "PersonResponseDto": {
         "type": "object",
         "properties": {
@@ -6444,25 +6463,6 @@
             }
           }
         }
-      },
-      "StatResponseDto": {
-        "type": "object",
-        "properties": {
-          "hidden": {
-            "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
-          },
-          "total": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "hidden",
-          "visible",
-          "total"
-        ]
       },
       "SystemConfigDto": {
         "type": "object",

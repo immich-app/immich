@@ -1792,6 +1792,31 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
+ * @interface PersonCountResponseDto
+ */
+export interface PersonCountResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof PersonCountResponseDto
+     */
+    'hidden': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PersonCountResponseDto
+     */
+    'visible': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PersonCountResponseDto
+     */
+    'total': number;
+}
+/**
+ * 
+ * @export
  * @interface PersonResponseDto
  */
 export interface PersonResponseDto {
@@ -2416,31 +2441,6 @@ export interface SmartInfoResponseDto {
      * @memberof SmartInfoResponseDto
      */
     'objects'?: Array<string> | null;
-}
-/**
- * 
- * @export
- * @interface StatResponseDto
- */
-export interface StatResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof StatResponseDto
-     */
-    'hidden': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof StatResponseDto
-     */
-    'visible': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof StatResponseDto
-     */
-    'total': number;
 }
 /**
  * 
@@ -9040,7 +9040,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPersonCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatResponseDto>> {
+        async getPersonCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonCountResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonCount(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9118,7 +9118,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPersonCount(options?: AxiosRequestConfig): AxiosPromise<StatResponseDto> {
+        getPersonCount(options?: AxiosRequestConfig): AxiosPromise<PersonCountResponseDto> {
             return localVarFp.getPersonCount(options).then((request) => request(axios, basePath));
         },
         /**
