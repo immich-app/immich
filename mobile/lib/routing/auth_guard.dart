@@ -46,7 +46,8 @@ class AuthGuard extends AutoRouteGuard {
           e.innerException is SocketException) {
         // offline?
         log.info(
-            "Unable to validate user token. User may be offline and offline browsing is allowed.");
+          "Unable to validate user token. User may be offline and offline browsing is allowed.",
+        );
       } else {
         debugPrint("Error [onNavigation] ${e.toString()}");
         router.replaceAll([const LoginRoute()]);
