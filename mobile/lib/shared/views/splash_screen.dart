@@ -20,10 +20,6 @@ class SplashScreenPage extends HookConsumerWidget {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
-    final bool offlineAccessAllowed = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting<bool>(AppSettingsEnum.offlineBrowsing);
-
     void performLoggingIn() async {
       bool isSuccess = false;
       bool deviceIsOffline = false;
@@ -40,10 +36,10 @@ class SplashScreenPage extends HookConsumerWidget {
             await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
                   accessToken: accessToken,
                   serverUrl: serverUrl,
-                  offlineLogin: offlineAccessAllowed && deviceIsOffline,
+                  offlineLogin: deviceIsOffline,
                 );
       }
-      if (offlineAccessAllowed && deviceIsOffline) {
+      if (deviceIsOffline) {
         AutoRouter.of(context).replace(const TabControllerRoute());
       } else if (isSuccess) {
         final hasPermission =

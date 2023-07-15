@@ -15,34 +15,17 @@ class AuthGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     var log = Logger("AuthGuard");
 
-    // Check if user set offline browsing access
-    bool offlineBrowingIsAllowed =
-        Store.tryGet(StoreKey.offlineBrowsing) == true;
-
-    bool resolveNext = false;
-
-    // If offline browsing is allowed, we allow the resolve to continue so we don't
-    // wait around for the validateAccessToken() to resolve
-    if (offlineBrowingIsAllowed) {
-      resolver.next(true);
-      resolveNext = true;
-    }
+    resolver.next(true);
 
     try {
       var res = await _apiService.authenticationApi.validateAccessToken();
-      // If token is valid and we haven't resolved yet, resolve
-      if (res != null && res.authStatus) {
-        if (!resolveNext) {
-          resolver.next(true);
-        }
-      } else {
-        // Whenever the accessToken endpoint does resolve (if online), take the user back to Login
+      if (res == null || res.authStatus != true) {
+        // If the access token is invalid, take user back to login
         log.info("User token is invalid. Redirecting to login");
         router.replaceAll([const LoginRoute()]);
       }
     } on ApiException catch (e) {
-      if (offlineBrowingIsAllowed &&
-          e.code == HttpStatus.badRequest &&
+      if (e.code == HttpStatus.badRequest &&
           e.innerException is SocketException) {
         // offline?
         log.info(
