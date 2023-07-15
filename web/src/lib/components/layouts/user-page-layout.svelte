@@ -18,6 +18,7 @@
 
   const dispatch = createEventDispatcher();
   const handleDoneClick = () => {
+    selecthidden = !selecthidden;
     dispatch('doneClick');
   };
 </script>
@@ -72,10 +73,12 @@
       class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
     >
       <p class="font-medium">Show & hide faces</p>
-      <IconButton on:click={() => (selecthidden = !selecthidden)}>
-        <div class="flex items-center">
-          <button on:click|preventDefault={handleDoneClick}>Done</button>
-        </div>
+      <IconButton
+        on:click={() => {
+          handleDoneClick();
+        }}
+      >
+        Done
       </IconButton>
       <div class="absolute top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8">
         <slot />

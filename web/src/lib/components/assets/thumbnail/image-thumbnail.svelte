@@ -33,9 +33,7 @@
   on:image-load|once={() => (complete = true)}
 />
 {#if hidden}
-  <div
-    class="absolute top-1/2 left-1/2 transform translate-x-[-50%] translate-y-[-50%] transition-opacity duration-2000"
-  >
+  <div class="absolute top-1/2 left-1/2 transform translate-x-[-50%] translate-y-[-50%]">
     <EyeOffOutline size="2em" />
   </div>
 {/if}
