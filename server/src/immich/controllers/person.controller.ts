@@ -7,8 +7,9 @@ import {
   PersonResponseDto,
   PersonService,
   PersonUpdateDto,
+  StatResponseDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -26,16 +27,19 @@ export class PersonController {
   constructor(private service: PersonService) {}
 
   @Get()
-  getAllPeople(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
-    return this.service.getAll(authUser);
+  getAllPeople(
+    @AuthUser() authUser: AuthUserDto,
+    @Query('areHidden') areHidden: boolean,
+  ): Promise<PersonResponseDto[]> {
+    return this.service.getAll(authUser, areHidden);
   }
 
-  @Get(':id')
+  @Get('/personById/:id')
   getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(authUser, id);
   }
 
-  @Put(':id')
+  @Put('/personById/:id')
   updatePerson(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -44,7 +48,12 @@ export class PersonController {
     return this.service.update(authUser, id, dto);
   }
 
-  @Get(':id/thumbnail')
+  @Get('/count')
+  getPersonCount(@AuthUser() authUser: AuthUserDto): Promise<StatResponseDto> {
+    return this.service.getPersonCount(authUser);
+  }
+
+  @Get('/personById/:id/thumbnail')
   @ApiOkResponse({
     content: {
       'image/jpeg': { schema: { type: 'string', format: 'binary' } },
@@ -54,12 +63,12 @@ export class PersonController {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
   }
 
-  @Get(':id/assets')
+  @Get('/personById/:id/assets')
   getPersonAssets(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(authUser, id);
   }
 
-  @Post(':id/merge')
+  @Post('/personById/:id/merge')
   mergePerson(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,

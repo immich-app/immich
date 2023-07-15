@@ -42,7 +42,7 @@ describe(PersonService.name, () => {
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
-      await expect(sut.getAll(authStub.admin)).resolves.toEqual([responseDto]);
+      await expect(sut.getAll(authStub.admin, false)).resolves.toEqual([responseDto]);
       expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
     });
   });

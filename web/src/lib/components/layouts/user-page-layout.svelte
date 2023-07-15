@@ -12,7 +12,7 @@
   export let hideNavbar = false;
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
-  export let hidden = false;
+  export let selecthidden = false;
   export let fullscreen = false;
 
   const dispatch = createEventDispatcher();
@@ -21,7 +21,7 @@
   };
 </script>
 
-{#if !hidden}
+{#if !selecthidden}
   <header>
     {#if !hideNavbar}
       <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
@@ -43,7 +43,7 @@
           >
             <p class="font-medium">{title}</p>
             {#if fullscreen}
-              <IconButton on:click={() => hidden != hidden}>
+              <IconButton on:click={() => (selecthidden = !selecthidden)}>
                 <div class="flex items-center">
                   <EyeOutline size="1em" />
                   <p class="ml-2">Show & hide faces</p>
@@ -71,7 +71,7 @@
       class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
     >
       <p class="font-medium">Show & hide faces</p>
-      <IconButton on:click={() => (hidden = !hidden)}>
+      <IconButton on:click={() => (selecthidden = !selecthidden)}>
         <div class="flex items-center">
           <button on:click|preventDefault={handleDoneClick}>Done</button>
         </div>

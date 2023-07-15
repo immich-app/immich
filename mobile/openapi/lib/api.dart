@@ -127,6 +127,7 @@ part 'model/shared_link_response_dto.dart';
 part 'model/shared_link_type.dart';
 part 'model/sign_up_dto.dart';
 part 'model/smart_info_response_dto.dart';
+part 'model/stat_response_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_job_dto.dart';

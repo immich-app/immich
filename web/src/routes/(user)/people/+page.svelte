@@ -1,10 +1,9 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { PersonResponseDto, api } from '@api';
+  import { PersonResponseDto, StatResponseDto, api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
-  import { onMount } from 'svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     NotificationType,
@@ -12,24 +11,17 @@
   } from '$lib/components/shared-components/notification/notification';
 
   export let data: PageData;
-  export let hidden = false;
+  let selecthidden = false;
   let changeCounter = 0;
-  let initialHiddenValues: boolean[] = [];
-
-  onMount(() => {
-    // Save the initial number of "hidden" faces
-    initialHiddenValues = data.people.map((person: PersonResponseDto) => person.isHidden);
-  });
-
-  const countHidden = (): number => {
-    return data.people.reduce((count: number, obj: PersonResponseDto) => count + (!obj.isHidden ? 1 : 0), 0);
-  };
+  let initialHiddenValues: boolean[] = data.people.map((person: PersonResponseDto) => person.isHidden);
+  let countpeople: StatResponseDto = data.countpeople;
 
   const handleDoneClick = async () => {
     try {
       // Reset the counter before checking changes
       changeCounter = 0;
 
+      // Check if the visibility for each persons has been changed
       data.people.forEach(async (person: PersonResponseDto, index: number) => {
         if (person.isHidden !== initialHiddenValues[index]) {
           changeCounter++;
@@ -37,8 +29,15 @@
             id: person.id,
             personUpdateDto: { isHidden: person.isHidden },
           });
+          if (person.isHidden) {
+            countpeople.hidden++;
+            countpeople.visible--;
+          } else {
+            countpeople.hidden--;
+            countpeople.visible++;
+          }
 
-          // Update the initial hidden value for the person
+          // Update the initial hidden values
           initialHiddenValues[index] = person.isHidden;
         }
       });
@@ -48,7 +47,7 @@
           message: `Visibility changed for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`,
         });
     } catch (error) {
-      handleError(error, `Unable to change the visibility for remove asset from`);
+      handleError(error, `Unable to change the visibility for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`);
     }
     changeCounter = 0;
   };
@@ -58,12 +57,12 @@
   user={data.user}
   fullscreen={true}
   showUploadButton
-  bind:hidden
+  bind:selecthidden
   on:doneClick={handleDoneClick}
   title="People"
 >
-  {#if (data.people.length > 0 && countHidden() > 0) || hidden}
-    {#if !hidden}
+  {#if countpeople.visible > 0 || selecthidden}
+    {#if !selecthidden}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
           {#each data.people as person (person.id)}

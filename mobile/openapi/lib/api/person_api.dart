@@ -17,7 +17,10 @@ class PersonApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'GET /person' operation and returns the [Response].
-  Future<Response> getAllPeopleWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [bool] areHidden (required):
+  Future<Response> getAllPeopleWithHttpInfo(bool areHidden,) async {
     // ignore: prefer_const_declarations
     final path = r'/person';
 
@@ -27,6 +30,8 @@ class PersonApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'areHidden', areHidden));
 
     const contentTypes = <String>[];
 
@@ -42,8 +47,11 @@ class PersonApi {
     );
   }
 
-  Future<List<PersonResponseDto>?> getAllPeople() async {
-    final response = await getAllPeopleWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [bool] areHidden (required):
+  Future<List<PersonResponseDto>?> getAllPeople(bool areHidden,) async {
+    final response = await getAllPeopleWithHttpInfo(areHidden,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -60,13 +68,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /person/personById/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}'
+    final path = r'/person/personById/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -108,13 +116,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'GET /person/personById/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonAssetsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/assets'
+    final path = r'/person/personById/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -159,13 +167,54 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/thumbnail' operation and returns the [Response].
+  /// Performs an HTTP 'GET /person/count' operation and returns the [Response].
+  Future<Response> getPersonCountWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/person/count';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<StatResponseDto?> getPersonCount() async {
+    final response = await getPersonCountWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StatResponseDto',) as StatResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /person/personById/{id}/thumbnail' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonThumbnailWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/thumbnail'
+    final path = r'/person/personById/{id}/thumbnail'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -207,7 +256,7 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /person/{id}/merge' operation and returns the [Response].
+  /// Performs an HTTP 'POST /person/personById/{id}/merge' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -215,7 +264,7 @@ class PersonApi {
   /// * [MergePersonDto] mergePersonDto (required):
   Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/merge'
+    final path = r'/person/personById/{id}/merge'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -262,7 +311,7 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /person/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /person/personById/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -270,7 +319,7 @@ class PersonApi {
   /// * [PersonUpdateDto] personUpdateDto (required):
   Future<Response> updatePersonWithHttpInfo(String id, PersonUpdateDto personUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}'
+    final path = r'/person/personById/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

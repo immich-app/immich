@@ -30,11 +30,11 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  {#if people.length > 0}
+  {#if data.countpeople.total > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if data.people.length > 0}
+        {#if data.countpeople.total > 0}
           <a
             href={AppRoute.PEOPLE}
             class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
@@ -44,18 +44,16 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
-          {#if !person.isHidden}
-            <a href="/people/{person.id}" class="w-24 text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
-            </a>
-          {/if}
+          <a href="/people/{person.id}" class="w-24 text-center">
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(person.id)}
+              altText={person.name}
+              widthStyle="100%"
+            />
+            <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+          </a>
         {/each}
       </div>
     </div>

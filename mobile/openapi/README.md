@@ -131,11 +131,12 @@ Class | Method | HTTP request | Description
 *PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
 *PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
-*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
-*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
-*PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
-*PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
-*PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
+*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/personById/{id} | 
+*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/personById/{id}/assets | 
+*PersonApi* | [**getPersonCount**](doc//PersonApi.md#getpersoncount) | **GET** /person/count | 
+*PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/personById/{id}/thumbnail | 
+*PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/personById/{id}/merge | 
+*PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/personById/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
@@ -261,6 +262,7 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [StatResponseDto](doc//StatResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)

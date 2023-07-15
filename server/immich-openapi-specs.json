@@ -2524,7 +2524,16 @@
     "/person": {
       "get": {
         "operationId": "getAllPeople",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "areHidden",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -2556,7 +2565,39 @@
         ]
       }
     },
-    "/person/{id}": {
+    "/person/count": {
+      "get": {
+        "operationId": "getPersonCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/person/personById/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -2648,7 +2689,7 @@
         ]
       }
     },
-    "/person/{id}/assets": {
+    "/person/personById/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -2693,7 +2734,7 @@
         ]
       }
     },
-    "/person/{id}/merge": {
+    "/person/personById/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
         "parameters": [
@@ -2748,7 +2789,7 @@
         ]
       }
     },
-    "/person/{id}/thumbnail": {
+    "/person/personById/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
         "parameters": [
@@ -6403,6 +6444,25 @@
             }
           }
         }
+      },
+      "StatResponseDto": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "integer"
+          },
+          "visible": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hidden",
+          "visible",
+          "total"
+        ]
       },
       "SystemConfigDto": {
         "type": "object",
