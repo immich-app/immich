@@ -5,6 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -18,23 +20,32 @@ class SplashScreenPage extends HookConsumerWidget {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
+    final bool offlineAccessAllowed = ref
+        .watch(appSettingsServiceProvider)
+        .getSetting<bool>(AppSettingsEnum.offlineBrowsing);
+
     void performLoggingIn() async {
       bool isSuccess = false;
+      bool deviceIsOffline = false;
       if (accessToken != null && serverUrl != null) {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(serverUrl);
         } catch (e) {
           // okay, try to continue anyway if offline
+          deviceIsOffline = true;
         }
 
         isSuccess =
             await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
                   accessToken: accessToken,
                   serverUrl: serverUrl,
+                  offlineLogin: offlineAccessAllowed && deviceIsOffline,
                 );
       }
-      if (isSuccess) {
+      if (offlineAccessAllowed && deviceIsOffline) {
+        AutoRouter.of(context).replace(const TabControllerRoute());
+      } else if (isSuccess) {
         final hasPermission =
             await ref.read(galleryPermissionNotifier.notifier).hasPermission;
         if (hasPermission) {

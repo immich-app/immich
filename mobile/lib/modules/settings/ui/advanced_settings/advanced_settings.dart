@@ -16,11 +16,16 @@ class AdvancedSettings extends HookConsumerWidget {
     final isEnabled =
         useState(AppSettingsEnum.advancedTroubleshooting.defaultValue);
     final levelId = useState(AppSettingsEnum.logLevel.defaultValue);
+    final offlineBrowsing =
+        useState(AppSettingsEnum.offlineBrowsing.defaultValue);
 
     useEffect(
       () {
         isEnabled.value = appSettingService.getSetting<bool>(
           AppSettingsEnum.advancedTroubleshooting,
+        );
+        isEnabled.value = appSettingService.getSetting<bool>(
+          AppSettingsEnum.offlineBrowsing,
         );
         levelId.value = appSettingService.getSetting(AppSettingsEnum.logLevel);
         return null;
@@ -45,6 +50,15 @@ class AdvancedSettings extends HookConsumerWidget {
         ),
       ).tr(),
       children: [
+        SettingsSwitchListTile(
+          enabled: true,
+          appSettingService: appSettingService,
+          valueNotifier: offlineBrowsing,
+          settingsEnum: AppSettingsEnum.offlineBrowsing,
+          title: "Offline Browsing",
+          subtitle:
+              "Warning: This will allow a user to disable internet access and have access to the app.",
+        ),
         SettingsSwitchListTile(
           enabled: true,
           appSettingService: appSettingService,

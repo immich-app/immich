@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
 
@@ -12,6 +13,12 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     try {
+      bool offlineBrowingIsAllowed = Store.get(StoreKey.offlineBrowsing);
+      if (offlineBrowingIsAllowed) {
+        resolver.next(true);
+        return;
+      }
+
       var res = await _apiService.authenticationApi.validateAccessToken();
       if (res != null && res.authStatus) {
         resolver.next(true);

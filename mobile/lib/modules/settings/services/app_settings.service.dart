@@ -44,6 +44,7 @@ enum AppSettingsEnum<T> {
     0,
   ),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
+  offlineBrowsing<bool>(StoreKey.offlineBrowsing, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5) // Level.INFO = 5
   ;
 

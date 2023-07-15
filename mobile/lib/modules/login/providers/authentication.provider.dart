@@ -14,6 +14,7 @@ import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
@@ -136,38 +137,62 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> setSuccessLoginInfo({
     required String accessToken,
     required String serverUrl,
+    bool offlineLogin = false,
   }) async {
     _apiService.setAccessToken(accessToken);
     UserResponseDto? userResponseDto;
-    try {
-      userResponseDto = await _apiService.userApi.getMyUserInfo();
-    } on ApiException catch (e) {
-      if (e.innerException is SocketException) {
-        state = state.copyWith(isAuthenticated: true);
+    String? deviceId;
+
+    if (offlineLogin) {
+      deviceId = Store.tryGet(StoreKey.deviceId);
+      User? offlineUser = Store.tryGet(StoreKey.currentUser);
+
+      if (deviceId != null && offlineUser != null) {
+        state = state.copyWith(
+          isAuthenticated: true,
+          userId: offlineUser.id,
+          userEmail: offlineUser.email,
+          firstName: offlineUser.firstName,
+          lastName: offlineUser.lastName,
+          profileImagePath: offlineUser.profileImagePath,
+          isAdmin: offlineUser.isAdmin,
+          shouldChangePassword: false,
+          deviceId: deviceId,
+        );
+        return false;
+      }
+    } else {
+      try {
+        userResponseDto = await _apiService.userApi.getMyUserInfo();
+      } on ApiException catch (e) {
+        if (e.innerException is SocketException) {
+          state = state.copyWith(isAuthenticated: true);
+        }
+      }
+
+      if (userResponseDto != null) {
+        deviceId = await FlutterUdid.consistentUdid;
+        Store.put(StoreKey.deviceId, deviceId);
+        Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
+        Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+        Store.put(StoreKey.serverUrl, serverUrl);
+        Store.put(StoreKey.accessToken, accessToken);
+
+        state = state.copyWith(
+          isAuthenticated: true,
+          userId: userResponseDto.id,
+          userEmail: userResponseDto.email,
+          firstName: userResponseDto.firstName,
+          lastName: userResponseDto.lastName,
+          profileImagePath: userResponseDto.profileImagePath,
+          isAdmin: userResponseDto.isAdmin,
+          shouldChangePassword: userResponseDto.shouldChangePassword,
+          deviceId: deviceId,
+        );
+        return true;
       }
     }
-
-    if (userResponseDto != null) {
-      final deviceId = await FlutterUdid.consistentUdid;
-      Store.put(StoreKey.deviceId, deviceId);
-      Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-      Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
-      Store.put(StoreKey.serverUrl, serverUrl);
-      Store.put(StoreKey.accessToken, accessToken);
-
-      state = state.copyWith(
-        isAuthenticated: true,
-        userId: userResponseDto.id,
-        userEmail: userResponseDto.email,
-        firstName: userResponseDto.firstName,
-        lastName: userResponseDto.lastName,
-        profileImagePath: userResponseDto.profileImagePath,
-        isAdmin: userResponseDto.isAdmin,
-        shouldChangePassword: userResponseDto.shouldChangePassword,
-        deviceId: deviceId,
-      );
-    }
-    return true;
+    return false;
   }
 }
 
