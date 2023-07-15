@@ -187,10 +187,10 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="text-sm px-4 w-1/4 text-ellipsis">{user.email}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis">{user.firstName}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis">{user.lastName}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis">
+            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.email}</td>
+            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.firstName}</td>
+            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.lastName}</td>
+            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">
               <div class="container flex flex-wrap mx-auto justify-center">
                 {#if user.externalPath}
                   <Check size="16" />
@@ -199,7 +199,7 @@
                 {/if}
               </div>
             </td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis">
+            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">
               {#if !isDeleted(user)}
                 <button
                   on:click={() => editUserHandler(user)}
