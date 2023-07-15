@@ -27,7 +27,7 @@ export class ServerStatsResponseDto {
 }
 
 export class ServerMediaTypesResponseDto {
-  video!: Record<string, string>;
-  image!: Record<string, string>;
-  sidecar!: Record<string, string>;
+  video!: string[];
+  image!: string[];
+  sidecar!: string[];
 }

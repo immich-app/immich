@@ -13,16 +13,16 @@ part of openapi.api;
 class ServerMediaTypesResponseDto {
   /// Returns a new [ServerMediaTypesResponseDto] instance.
   ServerMediaTypesResponseDto({
-    required this.video,
-    required this.image,
-    required this.sidecar,
+    this.video = const [],
+    this.image = const [],
+    this.sidecar = const [],
   });
 
-  Object video;
+  List<String> video;
 
-  Object image;
+  List<String> image;
 
-  Object sidecar;
+  List<String> sidecar;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerMediaTypesResponseDto &&
@@ -56,9 +56,15 @@ class ServerMediaTypesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerMediaTypesResponseDto(
-        video: mapValueOfType<Object>(json, r'video')!,
-        image: mapValueOfType<Object>(json, r'image')!,
-        sidecar: mapValueOfType<Object>(json, r'sidecar')!,
+        video: json[r'video'] is Iterable
+            ? (json[r'video'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        image: json[r'image'] is Iterable
+            ? (json[r'image'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        sidecar: json[r'sidecar'] is Iterable
+            ? (json[r'sidecar'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;

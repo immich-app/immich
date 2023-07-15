@@ -6143,13 +6143,22 @@
         "type": "object",
         "properties": {
           "video": {
-            "type": "object"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "image": {
-            "type": "object"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "sidecar": {
-            "type": "object"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [

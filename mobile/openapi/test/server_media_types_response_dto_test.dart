@@ -16,17 +16,17 @@ void main() {
   // final instance = ServerMediaTypesResponseDto();
 
   group('test ServerMediaTypesResponseDto', () {
-    // Object video
+    // List<String> video (default value: const [])
     test('to test the property `video`', () async {
       // TODO
     });
 
-    // Object image
+    // List<String> image (default value: const [])
     test('to test the property `image`', () async {
       // TODO
     });
 
-    // Object sidecar
+    // List<String> sidecar (default value: const [])
     test('to test the property `sidecar`', () async {
       // TODO
     });
