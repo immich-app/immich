@@ -1,12 +1,14 @@
 import { AssetEntity } from '@app/infra/entities';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
+import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { ImmichReadStream, IStorageRepository } from '../storage';
+import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
 import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
@@ -21,6 +23,12 @@ export enum UploadFieldName {
   PROFILE_DATA = 'file',
 }
 
+export interface UploadRequest {
+  authUser: AuthUserDto | null;
+  fieldName: UploadFieldName;
+  file: UploadFile;
+}
+
 export interface UploadFile {
   checksum: Buffer;
   originalPath: string;
@@ -28,14 +36,80 @@ export interface UploadFile {
 }
 
 export class AssetService {
+  private logger = new Logger(AssetService.name);
   private access: AccessCore;
+  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+  }
+
+  canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
+    this.access.requireUploadAccess(authUser);
+
+    const filename = file.originalName;
+
+    switch (fieldName) {
+      case UploadFieldName.ASSET_DATA:
+        if (mimeTypes.isAsset(filename)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.LIVE_PHOTO_DATA:
+        if (mimeTypes.isVideo(filename)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.SIDECAR_DATA:
+        if (mimeTypes.isSidecar(filename)) {
+          return true;
+        }
+        break;
+
+      case UploadFieldName.PROFILE_DATA:
+        if (mimeTypes.isProfile(filename)) {
+          return true;
+        }
+        break;
+    }
+
+    this.logger.error(`Unsupported file type ${filename}`);
+    throw new BadRequestException(`Unsupported file type ${filename}`);
+  }
+
+  getUploadFilename({ authUser, fieldName, file }: UploadRequest): string {
+    this.access.requireUploadAccess(authUser);
+
+    const originalExt = extname(file.originalName);
+
+    const lookup = {
+      [UploadFieldName.ASSET_DATA]: originalExt,
+      [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
+      [UploadFieldName.SIDECAR_DATA]: '.xmp',
+      [UploadFieldName.PROFILE_DATA]: originalExt,
+    };
+
+    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+  }
+
+  getUploadFolder({ authUser, fieldName }: UploadRequest): string {
+    authUser = this.access.requireUploadAccess(authUser);
+
+    let folder = this.storageCore.getFolderLocation(StorageFolder.UPLOAD, authUser.id);
+    if (fieldName === UploadFieldName.PROFILE_DATA) {
+      folder = this.storageCore.getFolderLocation(StorageFolder.PROFILE, authUser.id);
+    }
+
+    this.storageRepository.mkdirSync(folder);
+
+    return folder;
   }
 
   getMapMarkers(authUser: AuthUserDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
