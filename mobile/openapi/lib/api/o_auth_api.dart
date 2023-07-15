@@ -95,7 +95,7 @@ class OAuthApi {
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
-  Future<OAuthConfigResponseDto?> generateConfig(OAuthConfigDto oAuthConfigDto,) async {
+  Future<Object?> generateConfig(OAuthConfigDto oAuthConfigDto,) async {
     final response = await generateConfigWithHttpInfo(oAuthConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -104,7 +104,7 @@ class OAuthApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OAuthConfigResponseDto',) as OAuthConfigResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;

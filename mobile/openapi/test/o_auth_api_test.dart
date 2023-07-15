@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<OAuthConfigResponseDto> generateConfig(OAuthConfigDto oAuthConfigDto) async
+    //Future<Object> generateConfig(OAuthConfigDto oAuthConfigDto) async
     test('test generateConfig', () async {
       // TODO
     });
