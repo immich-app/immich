@@ -35,12 +35,7 @@
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(
-      `immich-shared.zip`,
-      { assetIds: assets.map((asset) => asset.id) },
-      undefined,
-      sharedLink.key,
-    );
+    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) }, sharedLink.key);
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
