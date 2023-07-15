@@ -69,7 +69,9 @@ export class ServerInfoService {
 
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return {
-      mimeTypes: [...Object.values(mimeTypes.video), ...Object.values(mimeTypes.image)],
+      video: mimeTypes.video,
+      image: mimeTypes.image,
+      sidecar: mimeTypes.sidecar,
     };
   }
 }

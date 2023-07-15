@@ -6142,15 +6142,20 @@
       "ServerMediaTypesResponseDto": {
         "type": "object",
         "properties": {
-          "mimeTypes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "video": {
+            "type": "object"
+          },
+          "image": {
+            "type": "object"
+          },
+          "sidecar": {
+            "type": "object"
           }
         },
         "required": [
-          "mimeTypes"
+          "video",
+          "image",
+          "sidecar"
         ]
       },
       "ServerPingResponse": {
