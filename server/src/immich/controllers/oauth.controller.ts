@@ -1,11 +1,11 @@
 import {
+  AuthService,
   AuthUserDto,
   LoginDetails,
   LoginResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   OAuthConfigResponseDto,
-  OAuthService,
   UserResponseDto,
 } from '@app/domain';
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
@@ -19,7 +19,7 @@ import { UseValidation } from '../app.utils';
 @Authenticated()
 @UseValidation()
 export class OAuthController {
-  constructor(private service: OAuthService) {}
+  constructor(private service: AuthService) {}
 
   @PublicRoute()
   @Get('mobile-redirect')
@@ -44,7 +44,7 @@ export class OAuthController {
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.service.login(dto, loginDetails);
+    const { response, cookie } = await this.service.callback(dto, loginDetails);
     res.header('Set-Cookie', cookie);
     return response;
   }
