@@ -20,6 +20,9 @@
   import Brightness6 from 'svelte-material-icons/Brightness6.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+  import FlipHorizontal from 'svelte-material-icons/FlipHorizontal.svelte';
+  import FlipVertical from 'svelte-material-icons/FlipVertical.svelte';
+  import FormatRotate90 from 'svelte-material-icons/FormatRotate90.svelte';
 
   import SuggestionsButton from './photo-editor/SuggestionsButton.svelte';
   import AspectRatioButton from './photo-editor/aspect-ratio-button.svelte';
@@ -93,12 +96,14 @@
     }
   };
 
-  const navigateEditTab = (button: 'autofix' | 'crop' | 'adjust' | 'filter') => {
+  const navigateEditTab = async (button: 'autofix' | 'crop' | 'adjust' | 'filter') => {
     activeButton = button;
     switch (activeButton) {
       case 'autofix':
         break;
       case 'crop':
+        await imageEditor.startDrawingMode('CROPPER');
+        setAspectRatio('free');
         break;
       case 'adjust':
         break;
@@ -108,16 +113,47 @@
     }
   };
 
-  const setAspectRatio = (ratio: aspectRatio) => {
+  const setAspectRatio = async (ratio: aspectRatio) => {
     aspectRatio = ratio;
+    // Switch for all aspect ratios
     switch (aspectRatio) {
       case 'free':
+        imageEditor.setCropzoneRect();
         break;
       case 'square':
+        imageEditor.setCropzoneRect(1 / 1);
         break;
       case 'original':
+        // const canvasSize = imageEditor.getCanvasSize();
+        // imageEditor.setCropzoneRect(canvasSize.width / canvasSize.height);
+        imageEditor.setCropzoneRect();
+        break;
+      case '16_9':
+        imageEditor.setCropzoneRect(16 / 9);
+        break;
+      case '9_16':
+        imageEditor.setCropzoneRect(9 / 16);
+        break;
+      case '5_4':
+        imageEditor.setCropzoneRect(5 / 4);
+        break;
+      case '4_5':
+        imageEditor.setCropzoneRect(4 / 5);
+        break;
+      case '4_3':
+        imageEditor.setCropzoneRect(4 / 3);
+        break;
+      case '3_4':
+        imageEditor.setCropzoneRect(3 / 4);
+        break;
+      case '3_2':
+        imageEditor.setCropzoneRect(3 / 2);
+        break;
+      case '2_3':
+        imageEditor.setCropzoneRect(2 / 3);
         break;
       default:
+        imageEditor.setCropzoneRect();
         break;
     }
   };
@@ -145,6 +181,11 @@
         break;
     }
   };
+
+  const resetCropAndRotate = async () => {
+    await imageEditor.resetFlip();
+    await imageEditor.setAngle(0);
+  };
 </script>
 
 <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" />
@@ -168,10 +209,42 @@
       <DotsVertical />
     </button>
   </div>
-  <div class="row-start-1 row-span-full col-start-1 col-span-3">
+  <div class="relative row-start-1 row-span-full col-start-1 col-span-3">
     <div class="h-full w-full flex justify-center">
       <div class="h-full w-full flex justify-center items-center" bind:this={editorElement} />
     </div>
+    {#if activeButton === 'crop'}
+      <div class="absolute bottom-0 h-26 bg-immich-dark-bg w-full px-4 py-2 flex items-center">
+        <!-- Crop Options -->
+        <div class="flex flex-col w-fit ml-6">
+          <button
+            on:click={() => imageEditor.flipX()}
+            class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+          >
+            <FlipHorizontal />
+          </button>
+          <button
+            on:click={() => imageEditor.flipY()}
+            class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+          >
+            <FlipVertical />
+          </button>
+        </div>
+        <button
+          on:click={() => imageEditor.rotate(90)}
+          class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+        >
+          <FormatRotate90 />
+        </button>
+
+        <button
+          class="ml-auto mr-20 rounded text-md text-immich-dark-primary border border-white hover:bg-immich-dark-primary/10 px-3 py-1.5 focus:bg-immich-dark-primary/20 focus:outline-none"
+          on:click={() => resetCropAndRotate()}
+        >
+          Reset
+        </button>
+      </div>
+    {/if}
   </div>
   <div
     class="col-start-4 col-span-1 row-start-1 row-span-1 z-[1000] transition-transform bg-immich-dark-gray pb-[16px] flex justify-evenly"
