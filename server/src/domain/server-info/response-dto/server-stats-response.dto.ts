@@ -25,3 +25,7 @@ export class ServerStatsResponseDto {
   })
   usageByUser: UsageByUserDto[] = [];
 }
+
+export class ServerMediaTypesResponseDto {
+  mimeTypes!: string[];
+}
