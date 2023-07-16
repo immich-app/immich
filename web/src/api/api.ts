@@ -100,7 +100,7 @@ export class ImmichApi {
   }
 
   public getPeopleThumbnailUrl(personId: string) {
-    const path = `/person/personById/${personId}/thumbnail`;
+    const path = `/person/${personId}/thumbnail`;
     return this.createUrl(path);
   }
 

@@ -3,7 +3,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
+  import { AssetTypeEnum, PersonCountResponseDto, PersonResponseDto, SearchExploreResponseDto, api } from '@api';
   import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
@@ -27,14 +27,24 @@
   $: things = getFieldItems(data.items, Field.OBJECTS);
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.people.slice(0, MAX_ITEMS);
+
+  let countpeople: PersonCountResponseDto = countIsHiddenStatus(data.people);
+
+  function countIsHiddenStatus(persons: PersonResponseDto[]): PersonCountResponseDto {
+    return {
+      total: persons.length,
+      hidden: persons.filter((person) => person.isHidden === true).length,
+      visible: persons.filter((person) => person.isHidden === false).length,
+    };
+  }
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  {#if data.countpeople.total > 0}
+  {#if countpeople.total > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if data.countpeople.total > 0}
+        {#if countpeople.total > 0}
           <a
             href={AppRoute.PEOPLE}
             class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
@@ -44,16 +54,18 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-24 text-center">
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-            />
-            <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
-          </a>
+          {#if person.isHidden}
+            <a href="/people/{person.id}" class="w-24 text-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+            </a>
+          {/if}
         {/each}
       </div>
     </div>

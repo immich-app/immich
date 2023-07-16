@@ -29,17 +29,22 @@ export class PersonController {
   @Get()
   getAllPeople(
     @AuthUser() authUser: AuthUserDto,
-    @Query('areHidden') areHidden: boolean,
+    @Query('withHidden') withHidden: boolean,
   ): Promise<PersonResponseDto[]> {
-    return this.service.getAll(authUser, areHidden);
+    return this.service.getAll(authUser, withHidden);
   }
 
-  @Get('/personById/:id')
+  @Get('statistics')
+  getPersonStats(@AuthUser() authUser: AuthUserDto): Promise<PersonCountResponseDto> {
+    return this.service.getPersonCount(authUser);
+  }
+
+  @Get(':id')
   getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(authUser, id);
   }
 
-  @Put('/personById/:id')
+  @Put(':id')
   updatePerson(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -48,12 +53,7 @@ export class PersonController {
     return this.service.update(authUser, id, dto);
   }
 
-  @Get('/count')
-  getPersonCount(@AuthUser() authUser: AuthUserDto): Promise<PersonCountResponseDto> {
-    return this.service.getPersonCount(authUser);
-  }
-
-  @Get('/personById/:id/thumbnail')
+  @Get(':id/thumbnail')
   @ApiOkResponse({
     content: {
       'image/jpeg': { schema: { type: 'string', format: 'binary' } },
@@ -63,12 +63,12 @@ export class PersonController {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
   }
 
-  @Get('/personById/:id/assets')
+  @Get(':id/assets')
   getPersonAssets(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(authUser, id);
   }
 
-  @Post('/personById/:id/merge')
+  @Post(':id/merge')
   mergePerson(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,

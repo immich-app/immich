@@ -16,7 +16,15 @@
   let initialHiddenValues: boolean[] = data.people.map((person: PersonResponseDto) => person.isHidden);
 
   // Get number of hidden and visible people
-  let countpeople: PersonCountResponseDto = data.countpeople;
+  let countpeople: PersonCountResponseDto = countIsHiddenStatus(data.people);
+
+  function countIsHiddenStatus(persons: PersonResponseDto[]): PersonCountResponseDto {
+    return {
+      total: persons.length,
+      hidden: persons.filter((obj) => obj.isHidden === true).length,
+      visible: persons.filter((obj) => obj.isHidden === false).length,
+    };
+  }
 
   const handleDoneClick = async () => {
     try {

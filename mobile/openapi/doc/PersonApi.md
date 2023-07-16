@@ -10,16 +10,16 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getAllPeople**](PersonApi.md#getallpeople) | **GET** /person | 
-[**getPerson**](PersonApi.md#getperson) | **GET** /person/personById/{id} | 
-[**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/personById/{id}/assets | 
-[**getPersonCount**](PersonApi.md#getpersoncount) | **GET** /person/count | 
-[**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/personById/{id}/thumbnail | 
-[**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/personById/{id}/merge | 
-[**updatePerson**](PersonApi.md#updateperson) | **PUT** /person/personById/{id} | 
+[**getPerson**](PersonApi.md#getperson) | **GET** /person/{id} | 
+[**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
+[**getPersonStats**](PersonApi.md#getpersonstats) | **GET** /person/statistics | 
+[**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
+[**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
+[**updatePerson**](PersonApi.md#updateperson) | **PUT** /person/{id} | 
 
 
 # **getAllPeople**
-> List<PersonResponseDto> getAllPeople(areHidden)
+> List<PersonResponseDto> getAllPeople(withHidden)
 
 
 
@@ -42,10 +42,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
-final areHidden = true; // bool | 
+final withHidden = true; // bool | 
 
 try {
-    final result = api_instance.getAllPeople(areHidden);
+    final result = api_instance.getAllPeople(withHidden);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->getAllPeople: $e\n');
@@ -56,7 +56,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **areHidden** | **bool**|  | 
+ **withHidden** | **bool**|  | 
 
 ### Return type
 
@@ -183,8 +183,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getPersonCount**
-> PersonCountResponseDto getPersonCount()
+# **getPersonStats**
+> PersonCountResponseDto getPersonStats()
 
 
 
@@ -209,10 +209,10 @@ import 'package:openapi/api.dart';
 final api_instance = PersonApi();
 
 try {
-    final result = api_instance.getPersonCount();
+    final result = api_instance.getPersonStats();
     print(result);
 } catch (e) {
-    print('Exception when calling PersonApi->getPersonCount: $e\n');
+    print('Exception when calling PersonApi->getPersonStats: $e\n');
 }
 ```
 

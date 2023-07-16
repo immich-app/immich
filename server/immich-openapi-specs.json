@@ -2526,7 +2526,7 @@
         "operationId": "getAllPeople",
         "parameters": [
           {
-            "name": "areHidden",
+            "name": "withHidden",
             "required": true,
             "in": "query",
             "schema": {
@@ -2565,9 +2565,9 @@
         ]
       }
     },
-    "/person/count": {
+    "/person/statistics": {
       "get": {
-        "operationId": "getPersonCount",
+        "operationId": "getPersonStats",
         "parameters": [],
         "responses": {
           "200": {
@@ -2597,7 +2597,7 @@
         ]
       }
     },
-    "/person/personById/{id}": {
+    "/person/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -2689,7 +2689,7 @@
         ]
       }
     },
-    "/person/personById/{id}/assets": {
+    "/person/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -2734,7 +2734,7 @@
         ]
       }
     },
-    "/person/personById/{id}/merge": {
+    "/person/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
         "parameters": [
@@ -2789,7 +2789,7 @@
         ]
       }
     },
-    "/person/personById/{id}/thumbnail": {
+    "/person/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
         "parameters": [

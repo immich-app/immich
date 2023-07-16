@@ -17,23 +17,18 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
-  async getAll(authUser: AuthUserDto, areHidden: boolean): Promise<PersonResponseDto[]> {
+  async getAll(authUser: AuthUserDto, withHidden: boolean): Promise<PersonResponseDto[]> {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
-    if (areHidden)
-      return (
-        [...named, ...unnamed]
-          // with thumbnails
-          .filter((person) => !!person.thumbnailPath)
-          .filter((person) => !person.isHidden)
-          .map((person) => mapPerson(person))
-      );
+
+    console.log(withHidden);
 
     return (
       [...named, ...unnamed]
         // with thumbnails
         .filter((person) => !!person.thumbnailPath)
+        .filter((person) => !withHidden || !person.isHidden)
         .map((person) => mapPerson(person))
     );
   }
