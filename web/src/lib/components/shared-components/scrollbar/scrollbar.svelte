@@ -39,7 +39,7 @@
   let animationTick = false;
 
   const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
-  $: offset = $isAlbumAssetSelectionOpen ? 100 : 71;
+  $: offset = $isAlbumAssetSelectionOpen ? 100 : 76;
   const dispatchClick = createEventDispatcher<OnScrollbarClick>();
   const dispatchDrag = createEventDispatcher<OnScrollbarDrag>();
   $: {
