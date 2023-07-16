@@ -13,6 +13,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
   import { assetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -31,6 +32,7 @@
   let isShowDeleteConfirmation = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
+  let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
@@ -246,6 +248,7 @@
       on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
       on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
       on:toggleArchive={toggleArchive}
+      on:asProfileImage={() => (isShowProfileImageCrop = true)}
     />
   </div>
 
@@ -331,6 +334,14 @@
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>
     </ConfirmDialogue>
+  {/if}
+
+  {#if isShowProfileImageCrop}
+    <ProfileImageCropper
+      {asset}
+      on:close={() => (isShowProfileImageCrop = false)}
+      on:close-viewer={handleCloseViewer}
+    />
   {/if}
 </section>
 
