@@ -202,7 +202,7 @@
 
             {#key currentAsset.id}
               <img
-                transition:fade|local
+                transition:fade
                 class="rounded-2xl w-full h-full object-contain transition-all"
                 src={api.getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
                 alt=""

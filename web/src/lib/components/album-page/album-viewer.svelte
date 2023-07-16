@@ -235,7 +235,7 @@
   };
 
   const downloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id }, undefined, sharedLink?.key);
+    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id }, sharedLink?.key);
   };
 
   const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {

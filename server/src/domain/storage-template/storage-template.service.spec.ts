@@ -4,7 +4,6 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
-  systemConfigStub,
   userEntityStub,
 } from '@test';
 import { when } from 'jest-when';
@@ -12,6 +11,7 @@ import { StorageTemplateService } from '.';
 import { IAssetRepository } from '../asset';
 import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
+import { defaults } from '../system-config/system-config.core';
 import { IUserRepository } from '../user';
 
 describe(StorageTemplateService.name, () => {
@@ -31,7 +31,7 @@ describe(StorageTemplateService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new StorageTemplateService(assetMock, configMock, systemConfigStub.defaults, storageMock, userMock);
+    sut = new StorageTemplateService(assetMock, configMock, defaults, storageMock, userMock);
   });
 
   describe('handle template migration', () => {

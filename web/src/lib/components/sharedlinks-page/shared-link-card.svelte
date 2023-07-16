@@ -103,6 +103,7 @@
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div
               class="hover:cursor-pointer"
               title="Go to share page"

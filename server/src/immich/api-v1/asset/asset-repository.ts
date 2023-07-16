@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not } from 'typeorm';
@@ -11,7 +11,6 @@ import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-cou
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
@@ -38,8 +37,6 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, dto: GetAssetCountByTimeBucketDto): Promise<AssetCountByTimeBucket[]>;
-  getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
-  getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
@@ -54,35 +51,6 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
   ) {}
-
-  async getAssetCountByUserId(ownerId: string): Promise<AssetCountByUserIdResponseDto> {
-    // Get asset count by AssetType
-    const items = await this.assetRepository
-      .createQueryBuilder('asset')
-      .select(`COUNT(asset.id)`, 'count')
-      .addSelect(`asset.type`, 'type')
-      .where('"ownerId" = :ownerId', { ownerId: ownerId })
-      .andWhere('asset.isVisible = true')
-      .groupBy('asset.type')
-      .getRawMany();
-
-    return this.getAssetCount(items);
-  }
-
-  async getArchivedAssetCountByUserId(ownerId: string): Promise<AssetCountByUserIdResponseDto> {
-    // Get archived asset count by AssetType
-    const items = await this.assetRepository
-      .createQueryBuilder('asset')
-      .select(`COUNT(asset.id)`, 'count')
-      .addSelect(`asset.type`, 'type')
-      .where('"ownerId" = :ownerId', { ownerId: ownerId })
-      .andWhere('asset.isVisible = true')
-      .andWhere('asset.isArchived = true')
-      .groupBy('asset.type')
-      .getRawMany();
-
-    return this.getAssetCount(items);
-  }
 
   async getAssetByTimeBucket(userId: string, dto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
     // Get asset entity from a list of time buckets
@@ -335,29 +303,6 @@ export class AssetRepository implements IAssetRepository {
       },
     });
     return assets.map((asset) => asset.deviceAssetId);
-  }
-
-  private getAssetCount(items: any): AssetCountByUserIdResponseDto {
-    const assetCountByUserId = new AssetCountByUserIdResponseDto();
-
-    // asset type to dto property mapping
-    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
-      [AssetType.AUDIO]: 'audio',
-      [AssetType.IMAGE]: 'photos',
-      [AssetType.VIDEO]: 'videos',
-      [AssetType.OTHER]: 'other',
-    };
-
-    for (const item of items) {
-      const count = Number(item.count) || 0;
-      const assetType = item.type as AssetType;
-      const type = map[assetType];
-
-      assetCountByUserId[type] = count;
-      assetCountByUserId.total += count;
-    }
-
-    return assetCountByUserId;
   }
 
   getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null> {

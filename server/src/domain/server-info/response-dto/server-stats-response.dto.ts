@@ -25,3 +25,9 @@ export class ServerStatsResponseDto {
   })
   usageByUser: UsageByUserDto[] = [];
 }
+
+export class ServerMediaTypesResponseDto {
+  video!: string[];
+  image!: string[];
+  sidecar!: string[];
+}

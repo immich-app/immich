@@ -984,38 +984,6 @@
         ]
       }
     },
-    "/asset/count-by-user-id": {
-      "get": {
-        "operationId": "getAssetCountByUserId",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -1608,17 +1576,34 @@
         ]
       }
     },
-    "/asset/stat/archive": {
+    "/asset/statistics": {
       "get": {
-        "operationId": "getArchivedAssetCountByUserId",
-        "parameters": [],
+        "operationId": "getAssetStats",
+        "parameters": [
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                  "$ref": "#/components/schemas/AssetStatsResponseDto"
                 }
               }
             }
@@ -3096,6 +3081,27 @@
         ]
       }
     },
+    "/server-info/media-types": {
+      "get": {
+        "operationId": "getSupportedMediaTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/ping": {
       "get": {
         "operationId": "pingServer",
@@ -4424,7 +4430,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.66.1",
+    "version": "1.67.2",
     "contact": {}
   },
   "tags": [],
@@ -4827,38 +4833,6 @@
           "buckets"
         ]
       },
-      "AssetCountByUserIdResponseDto": {
-        "type": "object",
-        "properties": {
-          "audio": {
-            "type": "integer",
-            "default": 0
-          },
-          "photos": {
-            "type": "integer",
-            "default": 0
-          },
-          "videos": {
-            "type": "integer",
-            "default": 0
-          },
-          "other": {
-            "type": "integer",
-            "default": 0
-          },
-          "total": {
-            "type": "integer",
-            "default": 0
-          }
-        },
-        "required": [
-          "audio",
-          "photos",
-          "videos",
-          "other",
-          "total"
-        ]
-      },
       "AssetFileUploadResponseDto": {
         "type": "object",
         "properties": {
@@ -5009,6 +4983,25 @@
           "isArchived",
           "duration",
           "checksum"
+        ]
+      },
+      "AssetStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "images",
+          "videos",
+          "total"
         ]
       },
       "AssetTypeEnum": {
@@ -6214,6 +6207,34 @@
           "diskAvailable"
         ]
       },
+      "ServerMediaTypesResponseDto": {
+        "type": "object",
+        "properties": {
+          "video": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sidecar": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "video",
+          "image",
+          "sidecar"
+        ]
+      },
       "ServerPingResponse": {
         "type": "object",
         "properties": {
@@ -6599,6 +6620,9 @@
           "scope": {
             "type": "string"
           },
+          "storageLabelClaim": {
+            "type": "string"
+          },
           "buttonText": {
             "type": "string"
           },
@@ -6621,6 +6645,7 @@
           "clientId",
           "clientSecret",
           "scope",
+          "storageLabelClaim",
           "buttonText",
           "autoRegister",
           "autoLaunch",

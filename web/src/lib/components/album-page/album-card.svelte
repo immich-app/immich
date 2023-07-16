@@ -58,6 +58,7 @@
   };
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="group hover:cursor-pointer mt-4 border-[3px] border-transparent dark:hover:border-immich-dark-primary/75 hover:border-immich-primary/75 rounded-3xl p-5 relative"
   on:click={() => dispatchClick('click', album)}

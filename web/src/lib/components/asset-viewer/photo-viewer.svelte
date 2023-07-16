@@ -9,6 +9,7 @@
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
+  export let element: HTMLDivElement | undefined = undefined;
   let imgElement: HTMLDivElement;
 
   let assetData: string;
@@ -99,7 +100,11 @@
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div
+  bind:this={element}
+  transition:fade={{ duration: 150 }}
+  class="flex place-items-center place-content-center h-full select-none"
+>
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}

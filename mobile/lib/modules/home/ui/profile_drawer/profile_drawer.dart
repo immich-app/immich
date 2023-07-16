@@ -33,14 +33,12 @@ class ProfileDrawer extends HookConsumerWidget {
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () async {
-          bool res = await ref.watch(authenticationProvider.notifier).logout();
+          await ref.watch(authenticationProvider.notifier).logout();
 
-          if (res) {
-            ref.watch(backupProvider.notifier).cancelBackup();
-            ref.watch(assetProvider.notifier).clearAllAsset();
-            ref.watch(websocketProvider.notifier).disconnect();
-            AutoRouter.of(context).replace(const LoginRoute());
-          }
+          ref.watch(backupProvider.notifier).cancelBackup();
+          ref.watch(assetProvider.notifier).clearAllAsset();
+          ref.watch(websocketProvider.notifier).disconnect();
+          AutoRouter.of(context).replace(const LoginRoute());
         },
       );
     }

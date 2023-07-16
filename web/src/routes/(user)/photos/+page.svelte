@@ -10,22 +10,22 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { assetInteractionStore, isMultiSelectStoreState, selectedAssets } from '$lib/stores/asset-interaction.store';
   import { assetStore } from '$lib/stores/assets.store';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { api } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
-  import { api } from '@api';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
 
   export let data: PageData;
   let assetCount = 1;
 
   onMount(async () => {
-    const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
-    assetCount = allAssetCount.total;
+    const { data: stats } = await api.assetApi.getAssetStats();
+    assetCount = stats.total;
   });
 
   onDestroy(() => {

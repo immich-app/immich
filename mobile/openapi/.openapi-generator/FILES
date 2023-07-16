@@ -23,11 +23,11 @@ doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
 doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
-doc/AssetCountByUserIdResponseDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
+doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
@@ -89,6 +89,7 @@ doc/SearchFacetResponseDto.md
 doc/SearchResponseDto.md
 doc/ServerInfoApi.md
 doc/ServerInfoResponseDto.md
+doc/ServerMediaTypesResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
@@ -164,11 +165,11 @@ lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
 lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
-lib/model/asset_count_by_user_id_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
+lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
@@ -223,6 +224,7 @@ lib/model/search_facet_count_response_dto.dart
 lib/model/search_facet_response_dto.dart
 lib/model/search_response_dto.dart
 lib/model/server_info_response_dto.dart
+lib/model/server_media_types_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
@@ -274,11 +276,11 @@ test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
 test/asset_count_by_time_bucket_response_dto_test.dart
 test/asset_count_by_time_bucket_test.dart
-test/asset_count_by_user_id_response_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
+test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
@@ -340,6 +342,7 @@ test/search_facet_response_dto_test.dart
 test/search_response_dto_test.dart
 test/server_info_api_test.dart
 test/server_info_response_dto_test.dart
+test/server_media_types_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_version_reponse_dto_test.dart

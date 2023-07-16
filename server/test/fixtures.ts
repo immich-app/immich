@@ -5,7 +5,6 @@ import {
   AuthUserDto,
   ExifResponseDto,
   mapUser,
-  QueueName,
   SearchResult,
   SharedLinkResponseDto,
   TagResponseDto,
@@ -19,19 +18,17 @@ import {
   AssetEntity,
   AssetFaceEntity,
   AssetType,
-  AudioCodec,
   ExifEntity,
   PartnerEntity,
   PersonEntity,
   SharedLinkEntity,
   SharedLinkType,
-  SystemConfig,
+  SystemConfigEntity,
+  SystemConfigKey,
   TagEntity,
   TagType,
-  TranscodePolicy,
   UserEntity,
   UserTokenEntity,
-  VideoCodec,
 } from '@app/infra/entities';
 
 const today = new Date();
@@ -704,91 +701,28 @@ export const keyStub = {
   } as APIKeyEntity),
 };
 
-export const systemConfigStub = {
-  defaults: Object.freeze({
-    ffmpeg: {
-      crf: 23,
-      threads: 0,
-      preset: 'ultrafast',
-      targetAudioCodec: AudioCodec.AAC,
-      targetResolution: '720',
-      targetVideoCodec: VideoCodec.H264,
-      maxBitrate: '0',
-      twoPass: false,
-      transcode: TranscodePolicy.REQUIRED,
-    },
-    job: {
-      [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-      [QueueName.CLIP_ENCODING]: { concurrency: 2 },
-      [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-      [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
-      [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
-      [QueueName.SEARCH]: { concurrency: 5 },
-      [QueueName.SIDECAR]: { concurrency: 5 },
-      [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
-      [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
-      [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
-    },
-    oauth: {
-      autoLaunch: false,
-      autoRegister: true,
-      buttonText: 'Login with OAuth',
-      clientId: '',
-      clientSecret: '',
-      enabled: false,
-      issuerUrl: '',
-      mobileOverrideEnabled: false,
-      mobileRedirectUri: '',
-      scope: 'openid email profile',
-    },
-    passwordLogin: {
-      enabled: true,
-    },
-    storageTemplate: {
-      template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-    },
-  } as SystemConfig),
-  enabled: Object.freeze({
-    passwordLogin: {
-      enabled: true,
-    },
-    oauth: {
-      enabled: true,
-      autoRegister: true,
-      buttonText: 'OAuth',
-      autoLaunch: false,
-    },
-  } as SystemConfig),
-  disabled: Object.freeze({
-    passwordLogin: {
-      enabled: false,
-    },
-    oauth: {
-      enabled: false,
-      buttonText: 'OAuth',
-      issuerUrl: 'http://issuer,',
-      autoLaunch: false,
-    },
-  } as SystemConfig),
-  noAutoRegister: {
-    oauth: {
-      enabled: true,
-      autoRegister: false,
-      autoLaunch: false,
-    },
-    passwordLogin: { enabled: true },
-  } as SystemConfig,
-  override: {
-    oauth: {
-      enabled: true,
-      autoRegister: true,
-      autoLaunch: false,
-      buttonText: 'OAuth',
-      mobileOverrideEnabled: true,
-      mobileRedirectUri: 'http://mobile-redirect',
-    },
-    passwordLogin: { enabled: true },
-  } as SystemConfig,
+export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
+  defaults: [],
+  enabled: [
+    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
+    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
+    { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: false },
+    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
+  ],
+  disabled: [{ key: SystemConfigKey.PASSWORD_LOGIN_ENABLED, value: false }],
+  noAutoRegister: [
+    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
+    { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: false },
+    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: false },
+    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
+  ],
+  override: [
+    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
+    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
+    { key: SystemConfigKey.OAUTH_MOBILE_OVERRIDE_ENABLED, value: true },
+    { key: SystemConfigKey.OAUTH_MOBILE_REDIRECT_URI, value: 'http://mobile-redirect' },
+    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
+  ],
 };
 
 export const loginResponseStub = {
