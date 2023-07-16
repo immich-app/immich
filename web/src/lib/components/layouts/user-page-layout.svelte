@@ -7,6 +7,7 @@
   import { fly } from 'svelte/transition';
   import type { UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
+  import { quintOut } from 'svelte/easing';
 
   export let user: UserResponseDto;
   export let hideNavbar = false;
@@ -23,51 +24,48 @@
   };
 </script>
 
-{#if !selectHidden}
-  <header>
-    {#if !hideNavbar}
-      <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+<header>
+  {#if !hideNavbar}
+    <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+  {/if}
+
+  <slot name="header" />
+</header>
+<main
+  class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
+>
+  <slot name="sidebar">
+    <SideBar />
+  </slot>
+  <slot name="content">
+    {#if title}
+      <section class="relative">
+        <div
+          class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
+        >
+          <p class="font-medium">{title}</p>
+          {#if fullscreen && countTotalPerson && countTotalPerson > 0}
+            <IconButton on:click={() => (selectHidden = !selectHidden)}>
+              <div class="flex items-center">
+                <EyeOutline size="1em" />
+                <p class="ml-2">Show & hide faces</p>
+              </div>
+            </IconButton>
+          {/if}
+          <slot name="buttons" />
+        </div>
+
+        <div class="absolute overflow-y-auto top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8">
+          <slot />
+        </div>
+      </section>
     {/if}
-
-    <slot name="header" />
-  </header>
-  <main
-    class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
-  >
-    <slot name="sidebar">
-      <SideBar />
-    </slot>
-    <slot name="content">
-      {#if title}
-        <section class="relative">
-          <div
-            class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
-          >
-            <p class="font-medium">{title}</p>
-            {#if fullscreen && countTotalPerson && countTotalPerson > 0}
-              <IconButton on:click={() => (selectHidden = !selectHidden)}>
-                <div class="flex items-center">
-                  <EyeOutline size="1em" />
-                  <p class="ml-2">Show & hide faces</p>
-                </div>
-              </IconButton>
-            {/if}
-            <slot name="buttons" />
-          </div>
-
-          <div
-            class="absolute overflow-y-auto top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8"
-          >
-            <slot />
-          </div>
-        </section>
-      {/if}
-    </slot>
-  </main>
-{:else}
-  <main
-    class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
-    transition:fly={{ y: -100, duration: 300 }}
+  </slot>
+</main>
+{#if selectHidden}
+  <section
+    transition:fly={{ y: 500, duration: 100, easing: quintOut }}
+    class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
   >
     <div
       class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
@@ -84,5 +82,5 @@
         <slot />
       </div>
     </div>
-  </main>
+  </section>
 {/if}

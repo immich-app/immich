@@ -21,7 +21,7 @@
 
   // Get number of person and visible persons
   let countTotalPerson = data.people.length;
-  let countVisiblePersons = data.people.filter((person: PersonResponseDto) => person.isHidden === true).length;
+  let countVisiblePersons = data.people.filter((person: PersonResponseDto) => person.isHidden === false).length;
 
   const handleDoneClick = async () => {
     try {
