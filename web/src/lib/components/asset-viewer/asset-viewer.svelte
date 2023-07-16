@@ -250,7 +250,6 @@
   </div>
 
   {#if showNavigation}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="row-start-2 row-span-1 col-start-1 column-span-1 justify-self-start mb-[60px] z-[999]">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
@@ -284,7 +283,6 @@
   </div>
 
   {#if showNavigation}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="row-start-2 row-span-1 col-start-4 col-span-1 justify-self-end mb-[60px] z-[999]">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
