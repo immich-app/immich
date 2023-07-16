@@ -19,9 +19,9 @@
     initialHiddenValues[person.id] = person.isHidden;
   });
 
-  // Get number of person and visible persons
-  let countTotalPerson = data.people.total;
-  let countVisiblePersons = data.people.visible;
+  // Get number of person and visible people
+  let countTotalPeople = data.people.total;
+  let countVisiblePeople = data.people.visible;
 
   const handleDoneClick = async () => {
     try {
@@ -44,18 +44,21 @@
           initialHiddenValues[index] = person.isHidden;
 
           // Update the count of hidden/visible people
-          countVisiblePersons += person.isHidden ? -1 : 1;
+          countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
 
       if (changeCounter > 0) {
         notificationController.show({
           type: NotificationType.Info,
-          message: `Visibility changed for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`,
+          message: `Visibility changed for ${changeCounter} ${changeCounter <= 1 ? 'person' : 'people'}`,
         });
       }
     } catch (error) {
-      handleError(error, `Unable to change the visibility for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`);
+      handleError(
+        error,
+        `Unable to change the visibility for ${changeCounter} ${changeCounter <= 1 ? 'person' : 'people'}`,
+      );
     }
   };
 </script>
@@ -64,12 +67,12 @@
   user={data.user}
   fullscreen={true}
   showUploadButton
-  bind:countTotalPerson
+  bind:countTotalPeople
   bind:selectHidden
   on:doneClick={handleDoneClick}
   title="People"
 >
-  {#if countVisiblePersons > 0 || selectHidden}
+  {#if countVisiblePeople > 0 || selectHidden}
     {#if !selectHidden}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">

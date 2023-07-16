@@ -15,7 +15,7 @@
   export let title: string | undefined = undefined;
   export let selectHidden = false;
   export let fullscreen = false;
-  export let countTotalPerson: number | undefined = undefined;
+  export let countTotalPeople: number | undefined = undefined;
 
   const dispatch = createEventDispatcher();
   const handleDoneClick = () => {
@@ -44,7 +44,7 @@
           class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
         >
           <p class="font-medium">{title}</p>
-          {#if fullscreen && countTotalPerson && countTotalPerson > 0}
+          {#if fullscreen && countTotalPeople && countTotalPeople > 0}
             <IconButton on:click={() => (selectHidden = !selectHidden)}>
               <div class="flex items-center">
                 <EyeOutline size="1em" />
