@@ -23,6 +23,7 @@
   import FlipHorizontal from 'svelte-material-icons/FlipHorizontal.svelte';
   import FlipVertical from 'svelte-material-icons/FlipVertical.svelte';
   import FormatRotate90 from 'svelte-material-icons/FormatRotate90.svelte';
+  import TriangleSmallUp from 'svelte-material-icons/TriangleSmallUp.svelte';
 
   import SuggestionsButton from './photo-editor/SuggestionsButton.svelte';
   import AspectRatioButton from './photo-editor/aspect-ratio-button.svelte';
@@ -34,6 +35,10 @@
   const dispatch = createEventDispatcher();
 
   let editorElement: HTMLDivElement;
+
+  let angle = 0;
+  let angleSlider: HTMLElement;
+  let angleSliderHandle: HTMLElement;
 
   let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'autofix';
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
@@ -102,7 +107,8 @@
       case 'autofix':
         break;
       case 'crop':
-        setAspectRatio('free');
+        await setAspectRatio('free');
+        initAngleSlider();
         break;
       case 'adjust':
         break;
@@ -158,6 +164,52 @@
     }
   };
 
+  //function for dragging the angle selection slider
+  const initAngleSlider = async () => {
+    console.log('initAngleSlider');
+    let pos1 = 0,
+      pos2 = 0,
+      pos3 = 0,
+      pos4 = 0;
+
+    const closeDragElement = () => {
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+    };
+
+    const elementDrag = async (e: MouseEvent) => {
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos3 = e.clientX;
+      // set the element's new position:
+      let a = angleSlider.offsetLeft - pos1;
+      if (a < 0) {
+        a = Math.max(a, -125);
+      } else {
+        a = Math.min(a, 125);
+      }
+      angle = Math.round((a / 125) * 45);
+      await imageEditor.stopDrawingMode();
+      await imageEditor.setAngle(angle);
+      //await setAspectRatio(aspectRatio);
+      let b = a + 'px';
+      angleSliderHandle.style.left = b;
+      angleSlider.style.left = b;
+    };
+
+    const dragMouseDown = (e: MouseEvent) => {
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    };
+    angleSliderHandle.onmousedown = dragMouseDown;
+  };
+
   const navigateEdit = (edit: activeEdit) => {
     console.log('navigateEdit');
     let revert = false;
@@ -183,8 +235,12 @@
   };
 
   const resetCropAndRotate = async () => {
+    //TODO: Revert all crop and rotate changes to the image by looking at the original image or revert history
     await imageEditor.stopDrawingMode();
     await imageEditor.setAngle(0);
+    angleSliderHandle.style.left = '0';
+    angleSlider.style.left = '0';
+    angle = 0;
     await imageEditor.resetFlip().catch(() => {});
     await setAspectRatio('free');
   };
@@ -204,6 +260,21 @@
     await imageEditor.rotate(angle);
     await setAspectRatio(aspectRatio);
   };
+
+  const applyCrop = async () => {
+    await imageEditor.crop(await imageEditor.getCropzoneRect());
+    await setAspectRatio('free');
+  };
+
+  // Temporary function
+  const save = async () => {
+    const data = await imageEditor.toDataURL();
+    const blob = await fetch(data).then((res) => res.blob());
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'test.png';
+    a.click();
+  };
 </script>
 
 <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" />
@@ -219,6 +290,7 @@
       <Close />
     </button>
     <button
+      on:click={() => save()}
       class=" ml-auto rounded-md bg-immich-dark-primary p-[6px] px-4 mr-5 text-black hover:bg-immich-dark-primary/80"
     >
       Save
@@ -232,29 +304,112 @@
       <div class="h-full w-full flex justify-center items-center" bind:this={editorElement} />
     </div>
     {#if activeButton === 'crop'}
-      <div class="absolute bottom-0 h-26 bg-immich-dark-bg w-full px-4 py-2 flex items-center">
-        <!-- Crop Options -->
-        <div class="flex flex-col w-fit ml-6">
-          <button
-            on:click={() => flipHorizontal()}
-            class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
-          >
-            <FlipHorizontal />
-          </button>
-          <button on:click={() => flipVertical()} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
-            <FlipVertical />
-          </button>
-        </div>
-        <button on:click={() => rotate(90)} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
-          <FormatRotate90 />
-        </button>
+      <div class="gap-0 absolute bottom-0 py-2 h-26 bg-immich-dark-bg w-full px-4 flex justify-center">
+        <div class="w-full h-full max-w-[750px] grid grid-cols-[1fr,1fr,500px,2fr] grid-rows-1 items-center">
+          <!-- Crop Options -->
+          <div class="flex flex-col h-full w-full justify-center bg-black z-10">
+            <button
+              on:click={() => flipHorizontal()}
+              class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+            >
+              <FlipHorizontal />
+            </button>
 
-        <button
-          class="ml-auto mr-20 rounded text-md text-immich-dark-primary border border-white hover:bg-immich-dark-primary/10 px-3 py-1.5 focus:bg-immich-dark-primary/20 focus:outline-none"
-          on:click={() => resetCropAndRotate()}
-        >
-          Reset
-        </button>
+            <button
+              on:click={() => flipVertical()}
+              class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+            >
+              <FlipVertical />
+            </button>
+          </div>
+          <div class="w-full h-full bg-black z-10 items-center justify-center flex">
+            <button on:click={() => rotate(90)} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
+              <FormatRotate90 />
+            </button>
+          </div>
+
+          <div class="relative w-[500px] h-[50px] z-0">
+            <!-- Angle selector slider -->
+            <div
+              bind:this={angleSlider}
+              class="absolute w-full h-full angle-slider grid grid-cols-[repeat(13,1fr)] grid-rows-2 text-center justify-around text-xs"
+            >
+              <div>-90°</div>
+              <div>-75°</div>
+              <div>-60°</div>
+              <div>-45°</div>
+              <div>-30°</div>
+              <div>-15°</div>
+              <div>0°</div>
+              <div>15°</div>
+              <div>30°</div>
+              <div>45°</div>
+              <div>60°</div>
+              <div>75°</div>
+              <div>90°</div>
+              <div class="row-start-2 col-start-1 col-end-[14] grid grid-cols-[repeat(39,1fr)]">
+                <div />
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div>.</div>
+                <div />
+              </div>
+            </div>
+            <div class="absolute w-full h-full angle-slider-shadow" />
+            <div bind:this={angleSliderHandle} class="absolute w-full h-full angle-slider z-20" />
+            <div class="absolute left-[calc(50%-2.5rem)] text-lg text-white px-8 angle-slider-selection">
+              <div class="-mt-1.5">
+                {angle}°
+              </div>
+              <div class="mt-1.5">
+                <TriangleSmallUp />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-black w-full h-full flex items-center justify-center z-10">
+            <button
+              class=" rounded text-md text-immich-dark-primary border border-white hover:bg-immich-dark-primary/10 px-3 py-1.5 focus:bg-immich-dark-primary/20 focus:outline-none"
+              on:click={() => resetCropAndRotate()}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
     {/if}
   </div>
@@ -314,7 +469,7 @@
         <!-- Suggestions -->
         <div class="mb-4 text-immich-gray/60">Suggestions</div>
         <SuggestionsButton
-          buttonName="Optimized"
+          buttonName="Enhanced"
           isActive={activeEdit === 'optimized'}
           on:click={() => navigateEdit('optimized')}
         >
@@ -381,6 +536,12 @@
             <SquareOutline />
           </AspectRatioButton>
         </div>
+        <button
+          on:click={() => applyCrop()}
+          class="mt-5 ml-0 mr-auto rounded-md bg-immich-dark-primary p-[6px] px-4 text-black hover:bg-immich-dark-primary/80"
+        >
+          Apply
+        </button>
       </div>
     {:else if activeButton === 'adjust'}
       <div class="px-6 pt-2 gap-y-2 grid">
@@ -440,5 +601,29 @@
   }
   .active:focus {
     background-color: rgba(173, 203, 250, 0.15);
+  }
+
+  .angle-slider-shadow {
+    background: rgb(0, 0, 0);
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(9, 9, 121, 0) 30%,
+      rgba(5, 108, 186, 0) 70%,
+      rgba(0, 0, 0, 1) 100%
+    );
+  }
+  .angle-slider {
+    left: 0px;
+  }
+  .angle-slider-selection {
+    background: rgb(0, 0, 0);
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 1) 33%,
+      rgba(0, 0, 0, 1) 66%,
+      rgba(0, 0, 0, 0) 100%
+    );
   }
 </style>
