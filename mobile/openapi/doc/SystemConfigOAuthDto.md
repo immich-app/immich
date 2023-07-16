@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **clientId** | **String** |  | 
 **clientSecret** | **String** |  | 
 **scope** | **String** |  | 
+**storageLabelClaim** | **String** |  | 
 **buttonText** | **String** |  | 
 **autoRegister** | **bool** |  | 
 **autoLaunch** | **bool** |  | 

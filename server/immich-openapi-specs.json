@@ -6503,6 +6503,9 @@
           "scope": {
             "type": "string"
           },
+          "storageLabelClaim": {
+            "type": "string"
+          },
           "buttonText": {
             "type": "string"
           },
@@ -6525,6 +6528,7 @@
           "clientId",
           "clientSecret",
           "scope",
+          "storageLabelClaim",
           "buttonText",
           "autoRegister",
           "autoLaunch",
