@@ -19,7 +19,7 @@ class SplashScreenPage extends HookConsumerWidget {
     final apiService = ref.watch(apiServiceProvider);
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final accessToken = Store.tryGet(StoreKey.accessToken);
-    final _log = Logger("SplashScreenPage");
+    final log = Logger("SplashScreenPage");
 
     void performLoggingIn() async {
       bool isSuccess = false;
@@ -32,12 +32,12 @@ class SplashScreenPage extends HookConsumerWidget {
           // okay, try to continue anyway if offline
           if (e.code == 503) {
             deviceIsOffline = true;
-            _log.fine("Device seems to be offline upon launch");
+            log.fine("Device seems to be offline upon launch");
           } else {
-            _log.severe(e);
+            log.severe(e);
           }
         } catch (e) {
-          _log.severe(e);
+          log.severe(e);
         }
 
         isSuccess =
