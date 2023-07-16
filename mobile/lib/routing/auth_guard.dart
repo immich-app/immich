@@ -9,10 +9,10 @@ import 'package:openapi/api.dart';
 
 class AuthGuard extends AutoRouteGuard {
   final ApiService _apiService;
+  final log = Logger("AuthGuard");
   AuthGuard(this._apiService);
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    var log = Logger("AuthGuard");
 
     resolver.next(true);
 
@@ -20,14 +20,14 @@ class AuthGuard extends AutoRouteGuard {
       var res = await _apiService.authenticationApi.validateAccessToken();
       if (res == null || res.authStatus != true) {
         // If the access token is invalid, take user back to login
-        log.info("User token is invalid. Redirecting to login");
+        log.fine("User token is invalid. Redirecting to login");
         router.replaceAll([const LoginRoute()]);
       }
     } on ApiException catch (e) {
       if (e.code == HttpStatus.badRequest &&
           e.innerException is SocketException) {
         // offline?
-        log.info(
+        log.fine(
           "Unable to validate user token. User may be offline and offline browsing is allowed.",
         );
       } else {
