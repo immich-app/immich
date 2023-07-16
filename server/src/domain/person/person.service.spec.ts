@@ -116,6 +116,21 @@ describe(PersonService.name, () => {
       });
     });
 
+    it('should update a person visibility', async () => {
+      personMock.getById.mockResolvedValue(personStub.hidden);
+      personMock.update.mockResolvedValue(personStub.withName);
+      personMock.getAssets.mockResolvedValue([assetEntityStub.image]);
+
+      await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
+
+      expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ASSET,
+        data: { ids: [assetEntityStub.image.id] },
+      });
+    });
+
     it("should update a person's thumbnailPath", async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
