@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future<ServerMediaTypesResponseDto> getSupportedMediaTypes() async
+    test('test getSupportedMediaTypes', () async {
+      // TODO
+    });
+
     //Future<ServerPingResponse> pingServer() async
     test('test pingServer', () async {
       // TODO

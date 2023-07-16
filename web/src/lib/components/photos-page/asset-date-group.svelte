@@ -153,6 +153,7 @@
     {@const dateGroupTitle = formatGroupTitle(DateTime.fromISO(assetsInDateGroup[0].fileCreatedAt).startOf('day'))}
     <!-- Asset Group By Date -->
 
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex flex-col mt-5"
       on:mouseenter={() => {

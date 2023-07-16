@@ -3040,6 +3040,27 @@
         ]
       }
     },
+    "/server-info/media-types": {
+      "get": {
+        "operationId": "getSupportedMediaTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/ping": {
       "get": {
         "operationId": "pingServer",
@@ -6118,6 +6139,34 @@
           "diskAvailable"
         ]
       },
+      "ServerMediaTypesResponseDto": {
+        "type": "object",
+        "properties": {
+          "video": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sidecar": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "video",
+          "image",
+          "sidecar"
+        ]
+      },
       "ServerPingResponse": {
         "type": "object",
         "properties": {
@@ -6503,6 +6552,9 @@
           "scope": {
             "type": "string"
           },
+          "storageLabelClaim": {
+            "type": "string"
+          },
           "buttonText": {
             "type": "string"
           },
@@ -6525,6 +6577,7 @@
           "clientId",
           "clientSecret",
           "scope",
+          "storageLabelClaim",
           "buttonText",
           "autoRegister",
           "autoLaunch",

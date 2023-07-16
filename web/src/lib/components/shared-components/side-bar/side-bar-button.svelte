@@ -15,6 +15,7 @@
   const onButtonClicked = () => dispatch('selected');
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   on:click={onButtonClicked}
   on:keydown={onButtonClicked}

@@ -39,7 +39,7 @@
   let animationTick = false;
 
   const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
-  $: offset = $isAlbumAssetSelectionOpen ? 100 : 71;
+  $: offset = $isAlbumAssetSelectionOpen ? 100 : 76;
   const dispatchClick = createEventDispatcher<OnScrollbarClick>();
   const dispatchDrag = createEventDispatcher<OnScrollbarDrag>();
   $: {
@@ -91,6 +91,7 @@
   };
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="immich-scrubbable-scrollbar"
   class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none"

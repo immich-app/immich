@@ -24,6 +24,7 @@
 />
 
 {#if dragStartTarget}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="fixed inset-0 w-full h-full z-[1000] flex flex-col items-center justify-center bg-gray-100/90 dark:bg-immich-dark-bg/90 text-immich-dark-gray dark:text-immich-gray"
     transition:fade={{ duration: 250 }}

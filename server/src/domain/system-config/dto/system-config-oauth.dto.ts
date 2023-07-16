@@ -26,6 +26,9 @@ export class SystemConfigOAuthDto {
   scope!: string;
 
   @IsString()
+  storageLabelClaim!: string;
+
+  @IsString()
   buttonText!: string;
 
   @IsBoolean()

@@ -141,6 +141,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
+*ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
 *SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
@@ -251,6 +252,7 @@ Class | Method | HTTP request | Description
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
+ - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
