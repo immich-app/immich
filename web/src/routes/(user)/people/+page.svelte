@@ -1,7 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { PersonResponseDto, PersonCountResponseDto, api } from '@api';
+  import { PersonResponseDto, api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
   import { handleError } from '$lib/utils/handle-error';
@@ -11,7 +11,7 @@
   } from '$lib/components/shared-components/notification/notification';
 
   export let data: PageData;
-  let selecthidden = false;
+  let selectHidden = false;
   let changeCounter = 0;
   let initialHiddenValues: Record<string, boolean> = {};
 
@@ -19,12 +19,9 @@
     initialHiddenValues[person.id] = person.isHidden;
   });
 
-  // Get number of hidden and visible people
-  let countpeople: PersonCountResponseDto = {
-    total: data.people.length,
-    hidden: data.people.filter((obj) => obj.isHidden === true).length,
-    visible: data.people.filter((obj) => obj.isHidden === false).length,
-  };
+  // Get number of person and visible persons
+  let countTotalPerson = data.people.length;
+  let countVisiblePersons = data.people.filter((person: PersonResponseDto) => person.isHidden === true).length;
 
   const handleDoneClick = async () => {
     try {
@@ -47,13 +44,7 @@
           initialHiddenValues[index] = person.isHidden;
 
           // Update the count of hidden/visible people
-          if (person.isHidden) {
-            countpeople.hidden++;
-            countpeople.visible--;
-          } else {
-            countpeople.hidden--;
-            countpeople.visible++;
-          }
+          countVisiblePersons += person.isHidden ? -1 : 1;
         }
       }
 
@@ -73,13 +64,13 @@
   user={data.user}
   fullscreen={true}
   showUploadButton
-  bind:countpeople
-  bind:selecthidden
+  bind:countTotalPerson
+  bind:selectHidden
   on:doneClick={handleDoneClick}
   title="People"
 >
-  {#if countpeople.visible > 0 || selecthidden}
-    {#if !selecthidden}
+  {#if countVisiblePersons > 0 || selectHidden}
+    {#if !selectHidden}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
           {#each data.people as person (person.id)}

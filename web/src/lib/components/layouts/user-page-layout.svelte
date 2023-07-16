@@ -5,25 +5,25 @@
   import EyeOutline from 'svelte-material-icons/EyeOutline.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import { fly } from 'svelte/transition';
-  import type { PersonCountResponseDto, UserResponseDto } from '@api';
+  import type { UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
   export let hideNavbar = false;
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
-  export let selecthidden = false;
+  export let selectHidden = false;
   export let fullscreen = false;
-  export let countpeople: PersonCountResponseDto | undefined = undefined;
+  export let countTotalPerson: number | undefined = undefined;
 
   const dispatch = createEventDispatcher();
   const handleDoneClick = () => {
-    selecthidden = !selecthidden;
+    selectHidden = !selectHidden;
     dispatch('doneClick');
   };
 </script>
 
-{#if !selecthidden}
+{#if !selectHidden}
   <header>
     {#if !hideNavbar}
       <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
@@ -44,8 +44,8 @@
             class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
           >
             <p class="font-medium">{title}</p>
-            {#if fullscreen && countpeople && countpeople.total > 0}
-              <IconButton on:click={() => (selecthidden = !selecthidden)}>
+            {#if fullscreen && countTotalPerson && countTotalPerson > 0}
+              <IconButton on:click={() => (selectHidden = !selectHidden)}>
                 <div class="flex items-center">
                   <EyeOutline size="1em" />
                   <p class="ml-2">Show & hide faces</p>

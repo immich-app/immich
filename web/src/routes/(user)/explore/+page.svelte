@@ -3,7 +3,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetTypeEnum, PersonCountResponseDto, PersonResponseDto, SearchExploreResponseDto, api } from '@api';
+  import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
   import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
@@ -27,20 +27,14 @@
   $: things = getFieldItems(data.items, Field.OBJECTS);
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.people.slice(0, MAX_ITEMS);
-
-  let countpeople: PersonCountResponseDto = {
-    total: data.people.length,
-    hidden: data.people.filter((obj) => obj.isHidden === true).length,
-    visible: data.people.filter((obj) => obj.isHidden === false).length,
-  };
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  {#if countpeople.total > 0}
+  {#if data.people.length > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if countpeople.total > 0}
+        {#if data.people.length > 0}
           <a
             href={AppRoute.PEOPLE}
             class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
