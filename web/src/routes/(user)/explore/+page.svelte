@@ -44,18 +44,16 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
-          {#if !person.isHidden}
-            <a href="/people/{person.id}" class="w-24 text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
-            </a>
-          {/if}
+          <a href="/people/{person.id}" class="w-24 text-center">
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(person.id)}
+              altText={person.name}
+              widthStyle="100%"
+            />
+            <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+          </a>
         {/each}
       </div>
     </div>
