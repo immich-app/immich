@@ -17,6 +17,7 @@
   import { assetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
 
   export let asset: AssetResponseDto;
@@ -25,8 +26,6 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   const dispatch = createEventDispatcher();
-  let halfLeftHover = false;
-  let halfRightHover = false;
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
@@ -251,28 +250,8 @@
   </div>
 
   {#if showNavigation}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-      }`}
-      on:mouseenter={() => {
-        halfLeftHover = true;
-        halfRightHover = false;
-      }}
-      on:mouseleave={() => {
-        halfLeftHover = false;
-      }}
-      on:click={navigateAssetBackward}
-      on:keydown={navigateAssetBackward}
-    >
-      <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
-        class:navigation-button-hover={halfLeftHover}
-        on:click={navigateAssetBackward}
-      >
-        <ChevronLeft size="36" />
-      </button>
+    <div class="row-start-2 row-span-1 col-start-1 column-span-1 justify-self-start mb-[60px] z-[999]">
+      <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
   {/if}
 
@@ -304,28 +283,8 @@
   </div>
 
   {#if showNavigation}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-      }`}
-      on:click={navigateAssetForward}
-      on:keydown={navigateAssetForward}
-      on:mouseenter={() => {
-        halfLeftHover = false;
-        halfRightHover = true;
-      }}
-      on:mouseleave={() => {
-        halfRightHover = false;
-      }}
-    >
-      <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-white text-gray-500 mx-4"
-        class:navigation-button-hover={halfRightHover}
-        on:click={navigateAssetForward}
-      >
-        <ChevronRight size="36" />
-      </button>
+    <div class="row-start-2 row-span-1 col-start-4 col-span-1 justify-self-end mb-[60px] z-[999]">
+      <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
 
@@ -378,11 +337,5 @@
 <style>
   #immich-asset-viewer {
     contain: layout;
-  }
-
-  .navigation-button-hover {
-    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-    color: rgb(255 255 255 / var(--tw-text-opacity));
-    transition: all 150ms;
   }
 </style>
