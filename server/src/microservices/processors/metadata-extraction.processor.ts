@@ -49,7 +49,7 @@ export class MetadataExtractionProcessor {
   }
 
   async init(deleteCache = false) {
-    this.logger.warn(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
+    this.logger.log(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
     if (!this.reverseGeocodingEnabled) {
       return;
     }
