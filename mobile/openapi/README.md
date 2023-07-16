@@ -239,6 +239,7 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
+ - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PersonCountResponseDto](doc//PersonCountResponseDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)

@@ -15,13 +15,13 @@
   let changeCounter = 0;
   let initialHiddenValues: Record<string, boolean> = {};
 
-  data.people.forEach((person: PersonResponseDto) => {
+  data.people.people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
 
   // Get number of person and visible persons
-  let countTotalPerson = data.people.length;
-  let countVisiblePersons = data.people.filter((person: PersonResponseDto) => person.isHidden === false).length;
+  let countTotalPerson = data.people.total;
+  let countVisiblePersons = data.people.visible;
 
   const handleDoneClick = async () => {
     try {
@@ -29,7 +29,7 @@
       let changeCounter = 0;
 
       // Check if the visibility for each person has been changed
-      for (const person of data.people) {
+      for (const person of data.people.people) {
         const index = person.id;
         const initialHiddenValue = initialHiddenValues[index];
 
@@ -73,7 +73,7 @@
     {#if !selectHidden}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
-          {#each data.people as person (person.id)}
+          {#each data.people.people as person (person.id)}
             {#if !person.isHidden}
               <div class="relative">
                 <a href="/people/{person.id}" draggable="false">
@@ -101,7 +101,7 @@
     {:else}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
-          {#each data.people as person (person.id)}
+          {#each data.people.people as person (person.id)}
             <div class="relative">
               <div class="filter brightness-95 rounded-xl w-48 h-48">
                 <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>

@@ -1780,6 +1780,31 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
+ * @interface PeopleResponseDto
+ */
+export interface PeopleResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof PeopleResponseDto
+     */
+    'total': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PeopleResponseDto
+     */
+    'visible': number;
+    /**
+     * 
+     * @type {Array<PersonResponseDto>}
+     * @memberof PeopleResponseDto
+     */
+    'people': Array<PersonResponseDto>;
+}
+/**
+ * 
+ * @export
  * @interface PersonCountResponseDto
  */
 export interface PersonCountResponseDto {
@@ -9044,7 +9069,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllPeople(withHidden: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
+        async getAllPeople(withHidden: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAllPeople(withHidden, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9125,7 +9150,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllPeople(withHidden: boolean, options?: any): AxiosPromise<Array<PersonResponseDto>> {
+        getAllPeople(withHidden: boolean, options?: any): AxiosPromise<PeopleResponseDto> {
             return localVarFp.getAllPeople(withHidden, options).then((request) => request(axios, basePath));
         },
         /**

@@ -1,7 +1,7 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -47,6 +47,13 @@ export class PersonResponseDto {
   name!: string;
   thumbnailPath!: string;
   isHidden!: boolean;
+}
+
+export class PeopleResponseDto {
+  total!: number;
+  visible!: number;
+  @IsArray()
+  people!: PersonResponseDto[];
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {

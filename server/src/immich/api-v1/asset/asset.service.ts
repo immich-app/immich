@@ -209,13 +209,7 @@ export class AssetService {
     const asset = await this._assetRepository.getById(assetId);
 
     if (allowExif) {
-      const data = mapAsset(asset);
-
-      if (data.people) {
-        data.people = data.people.filter((person) => !person.isHidden);
-      }
-
-      return data;
+      return mapAsset(asset);
     } else {
       return mapAssetWithoutExif(asset);
     }

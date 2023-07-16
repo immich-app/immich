@@ -19,7 +19,7 @@ Method | HTTP request | Description
 
 
 # **getAllPeople**
-> List<PersonResponseDto> getAllPeople(withHidden)
+> PeopleResponseDto getAllPeople(withHidden)
 
 
 
@@ -60,7 +60,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<PersonResponseDto>**](PersonResponseDto.md)
+[**PeopleResponseDto**](PeopleResponseDto.md)
 
 ### Authorization
 

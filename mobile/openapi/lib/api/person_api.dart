@@ -50,7 +50,7 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [bool] withHidden (required):
-  Future<List<PersonResponseDto>?> getAllPeople(bool withHidden,) async {
+  Future<PeopleResponseDto?> getAllPeople(bool withHidden,) async {
     final response = await getAllPeopleWithHttpInfo(withHidden,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -59,11 +59,8 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
-        .cast<PersonResponseDto>()
-        .toList();
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PeopleResponseDto',) as PeopleResponseDto;
+    
     }
     return null;
   }

@@ -71,6 +71,7 @@ doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
+doc/PeopleResponseDto.md
 doc/PersonApi.md
 doc/PersonCountResponseDto.md
 doc/PersonResponseDto.md
@@ -209,6 +210,7 @@ lib/model/merge_person_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/people_response_dto.dart
 lib/model/person_count_response_dto.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
@@ -324,6 +326,7 @@ test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
+test/people_response_dto_test.dart
 test/person_api_test.dart
 test/person_count_response_dto_test.dart
 test/person_response_dto_test.dart

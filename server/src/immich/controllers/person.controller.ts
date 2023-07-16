@@ -4,6 +4,7 @@ import {
   BulkIdResponseDto,
   ImmichReadStream,
   MergePersonDto,
+  PeopleResponseDto,
   PersonCountResponseDto,
   PersonResponseDto,
   PersonService,
@@ -30,7 +31,7 @@ export class PersonController {
   getAllPeople(
     @AuthUser() authUser: AuthUserDto,
     @Query('withHidden') withHidden: boolean,
-  ): Promise<PersonResponseDto[]> {
+  ): Promise<PeopleResponseDto> {
     return this.service.getAll(authUser, withHidden);
   }
 

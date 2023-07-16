@@ -26,15 +26,15 @@
 
   $: things = getFieldItems(data.items, Field.OBJECTS);
   $: places = getFieldItems(data.items, Field.CITY);
-  $: people = data.people.slice(0, MAX_ITEMS);
+  $: people = data.people.people.slice(0, MAX_ITEMS);
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  {#if data.people.length > 0}
+  {#if data.people.total > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if data.people.length > 0}
+        {#if data.people.total > 0}
           <a
             href={AppRoute.PEOPLE}
             class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"

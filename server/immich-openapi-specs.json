@@ -2525,10 +2525,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
-                  }
+                  "$ref": "#/components/schemas/PeopleResponseDto"
                 }
               }
             }
@@ -5916,6 +5913,28 @@
         "required": [
           "enabled",
           "passwordLoginEnabled"
+        ]
+      },
+      "PeopleResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "number"
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "visible",
+          "people"
         ]
       },
       "PersonCountResponseDto": {

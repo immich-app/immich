@@ -4,7 +4,14 @@ import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, MergePersonDto, PersonCountResponseDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
+import {
+  mapPerson,
+  MergePersonDto,
+  PeopleResponseDto,
+  PersonCountResponseDto,
+  PersonResponseDto,
+  PersonUpdateDto,
+} from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
@@ -17,20 +24,21 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
-  async getAll(authUser: AuthUserDto, withHidden: boolean): Promise<PersonResponseDto[]> {
+  async getAll(authUser: AuthUserDto, withHidden: boolean): Promise<PeopleResponseDto> {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
 
-    console.log(withHidden);
+    const persons: PersonResponseDto[] = [...named, ...unnamed]
+      // with thumbnails
+      .filter((person) => !!person.thumbnailPath)
+      .map((person) => mapPerson(person));
 
-    return (
-      [...named, ...unnamed]
-        // with thumbnails
-        .filter((person) => !!person.thumbnailPath)
-        .filter((person) => !withHidden || !person.isHidden)
-        .map((person) => mapPerson(person))
-    );
+    return {
+      people: persons.filter((person) => withHidden || !person.isHidden),
+      total: persons.length,
+      visible: persons.filter((person: PersonResponseDto) => person.isHidden === false).length,
+    };
   }
 
   getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
