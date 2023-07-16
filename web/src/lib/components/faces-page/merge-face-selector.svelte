@@ -26,7 +26,7 @@
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: true });
-    people = data;
+    people = data.people;
   });
 
   const onClose = () => {

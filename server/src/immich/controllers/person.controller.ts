@@ -2,6 +2,7 @@ import {
   AssetResponseDto,
   AuthUserDto,
   BulkIdResponseDto,
+  HiddenPersonDto,
   ImmichReadStream,
   MergePersonDto,
   PeopleResponseDto,
@@ -10,7 +11,7 @@ import {
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile, ValidationPipe } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -30,7 +31,7 @@ export class PersonController {
   @Get()
   getAllPeople(
     @AuthUser() authUser: AuthUserDto,
-    @Query('withHidden') withHidden: boolean,
+    @Query(new ValidationPipe({ transform: true })) withHidden: HiddenPersonDto,
   ): Promise<PeopleResponseDto> {
     return this.service.getAll(authUser, withHidden);
   }
