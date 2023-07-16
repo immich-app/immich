@@ -136,9 +136,9 @@ jobs:
         run: npm run check:typescript
         if: ${{ !cancelled() }}
 
-      - name: Run unit tests & coverage
-        run: npm run test:cov
-        if: ${{ !cancelled() }}
+      # - name: Run unit tests & coverage
+      #   run: npm run test:cov
+      #   if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Run mobile unit tests

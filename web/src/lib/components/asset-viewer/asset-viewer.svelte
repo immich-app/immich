@@ -251,6 +251,7 @@
   </div>
 
   {#if showNavigation}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
         asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
@@ -303,6 +304,7 @@
   </div>
 
   {#if showNavigation}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
         asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'

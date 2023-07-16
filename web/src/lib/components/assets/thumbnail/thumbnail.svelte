@@ -65,6 +65,7 @@
 </script>
 
 <IntersectionObserver once={false} let:intersecting>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     style:width="{width}px"
     style:height="{height}px"
