@@ -88,6 +88,7 @@ doc/SearchFacetResponseDto.md
 doc/SearchResponseDto.md
 doc/ServerInfoApi.md
 doc/ServerInfoResponseDto.md
+doc/ServerMediaTypesResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
@@ -221,6 +222,7 @@ lib/model/search_facet_count_response_dto.dart
 lib/model/search_facet_response_dto.dart
 lib/model/search_response_dto.dart
 lib/model/server_info_response_dto.dart
+lib/model/server_media_types_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
@@ -337,6 +339,7 @@ test/search_facet_response_dto_test.dart
 test/search_response_dto_test.dart
 test/server_info_api_test.dart
 test/server_info_response_dto_test.dart
+test/server_media_types_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_version_reponse_dto_test.dart

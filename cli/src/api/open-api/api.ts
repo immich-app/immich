@@ -2088,6 +2088,31 @@ export interface ServerInfoResponseDto {
 /**
  * 
  * @export
+ * @interface ServerMediaTypesResponseDto
+ */
+export interface ServerMediaTypesResponseDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'video': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'image': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'sidecar': Array<string>;
+}
+/**
+ * 
+ * @export
  * @interface ServerPingResponse
  */
 export interface ServerPingResponse {
@@ -9725,6 +9750,35 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getSupportedMediaTypes: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/server-info/media-types`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         pingServer: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/server-info/ping`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9791,6 +9845,15 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getSupportedMediaTypes(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerMediaTypesResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSupportedMediaTypes(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async pingServer(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerPingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pingServer(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -9828,6 +9891,14 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          */
         getStats(options?: AxiosRequestConfig): AxiosPromise<ServerStatsResponseDto> {
             return localVarFp.getStats(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSupportedMediaTypes(options?: AxiosRequestConfig): AxiosPromise<ServerMediaTypesResponseDto> {
+            return localVarFp.getSupportedMediaTypes(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9875,6 +9946,16 @@ export class ServerInfoApi extends BaseAPI {
      */
     public getStats(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).getStats(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServerInfoApi
+     */
+    public getSupportedMediaTypes(options?: AxiosRequestConfig) {
+        return ServerInfoApiFp(this.configuration).getSupportedMediaTypes(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

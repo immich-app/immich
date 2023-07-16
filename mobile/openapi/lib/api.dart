@@ -118,6 +118,7 @@ part 'model/search_facet_count_response_dto.dart';
 part 'model/search_facet_response_dto.dart';
 part 'model/search_response_dto.dart';
 part 'model/server_info_response_dto.dart';
+part 'model/server_media_types_response_dto.dart';
 part 'model/server_ping_response.dart';
 part 'model/server_stats_response_dto.dart';
 part 'model/server_version_reponse_dto.dart';
