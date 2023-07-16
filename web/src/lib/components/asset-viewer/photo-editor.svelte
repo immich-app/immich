@@ -102,7 +102,6 @@
       case 'autofix':
         break;
       case 'crop':
-        await imageEditor.startDrawingMode('CROPPER');
         setAspectRatio('free');
         break;
       case 'adjust':
@@ -116,6 +115,7 @@
   const setAspectRatio = async (ratio: aspectRatio) => {
     aspectRatio = ratio;
     // Switch for all aspect ratios
+    await imageEditor.startDrawingMode('CROPPER');
     switch (aspectRatio) {
       case 'free':
         imageEditor.setCropzoneRect();
@@ -183,8 +183,26 @@
   };
 
   const resetCropAndRotate = async () => {
-    await imageEditor.resetFlip();
+    await imageEditor.stopDrawingMode();
     await imageEditor.setAngle(0);
+    await imageEditor.resetFlip().catch(() => {});
+    await setAspectRatio('free');
+  };
+
+  const flipVertical = async () => {
+    await imageEditor.stopDrawingMode();
+    await imageEditor.flipY();
+    await setAspectRatio(aspectRatio);
+  };
+  const flipHorizontal = async () => {
+    await imageEditor.stopDrawingMode();
+    await imageEditor.flipX();
+    await setAspectRatio(aspectRatio);
+  };
+  const rotate = async (angle: number) => {
+    await imageEditor.stopDrawingMode();
+    await imageEditor.rotate(angle);
+    await setAspectRatio(aspectRatio);
   };
 </script>
 
@@ -218,22 +236,16 @@
         <!-- Crop Options -->
         <div class="flex flex-col w-fit ml-6">
           <button
-            on:click={() => imageEditor.flipX()}
+            on:click={() => flipHorizontal()}
             class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
           >
             <FlipHorizontal />
           </button>
-          <button
-            on:click={() => imageEditor.flipY()}
-            class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
-          >
+          <button on:click={() => flipVertical()} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
             <FlipVertical />
           </button>
         </div>
-        <button
-          on:click={() => imageEditor.rotate(90)}
-          class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
-        >
+        <button on:click={() => rotate(90)} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
           <FormatRotate90 />
         </button>
 
