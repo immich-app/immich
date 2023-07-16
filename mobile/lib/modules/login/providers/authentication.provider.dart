@@ -148,15 +148,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     User? user;
 
     bool retResult = false;
+    User? offlineUser = Store.tryGet(StoreKey.currentUser);
 
-    if (offlineLogin) {
-      User? offlineUser = Store.tryGet(StoreKey.currentUser);
-
-      if (offlineUser != null) {
-        user = offlineUser;
-        retResult = false;
-      }
-  
+    if (offlineLogin && offlineUser != null) {
+      user = offlineUser;
+      retResult = false;
     } else {
       UserResponseDto? userResponseDto;
       try {

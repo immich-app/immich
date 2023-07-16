@@ -8,6 +8,8 @@ import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.pr
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -17,6 +19,7 @@ class SplashScreenPage extends HookConsumerWidget {
     final apiService = ref.watch(apiServiceProvider);
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final accessToken = Store.tryGet(StoreKey.accessToken);
+    final _log = Logger("SplashScreenPage");
 
     void performLoggingIn() async {
       bool isSuccess = false;
@@ -25,9 +28,16 @@ class SplashScreenPage extends HookConsumerWidget {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(serverUrl);
-        } catch (e) {
+        } on ApiException catch (e) {
           // okay, try to continue anyway if offline
-          deviceIsOffline = true;
+          if (e.code == 503) {
+            deviceIsOffline = true;
+            _log.fine("Device seems to be offline upon launch");
+          } else {
+            _log.severe(e);
+          }
+        } catch (e) {
+          _log.severe(e);
         }
 
         isSuccess =

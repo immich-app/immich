@@ -64,7 +64,9 @@ class ApiService {
   Future<String> _resolveEndpoint(String serverUrl) async {
     final url = sanitizeUrl(serverUrl);
 
-    await _isEndpointAvailable(serverUrl);
+    if (!await _isEndpointAvailable(serverUrl)) {
+      throw ApiException(503, "Server is not reachable");
+    }
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
@@ -74,7 +76,7 @@ class ApiService {
     return url;
   }
 
-  Future<void> _isEndpointAvailable(String serverUrl) async {
+  Future<bool> _isEndpointAvailable(String serverUrl) async {
     final Client client = Client();
 
     if (!serverUrl.endsWith('/api')) {
@@ -89,12 +91,12 @@ class ApiService {
             Uri.parse(serverUrl),
           )
           .timeout(const Duration(seconds: 5));
-      return;
     } on TimeoutException catch (_) {
-      rethrow;
+      return false;
     } on SocketException catch (_) {
-      rethrow;
+      return false;
     }
+    return true;
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
