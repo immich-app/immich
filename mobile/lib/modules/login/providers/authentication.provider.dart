@@ -37,6 +37,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   final ApiService _apiService;
   final Isar _db;
+  final _log = Logger("AuthenticationNotifier");
 
   Future<bool> login(
     String email,
@@ -159,6 +160,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     bool retResult = false;
     User? offlineUser = Store.tryGet(StoreKey.currentUser);
 
+    // If the user is offline and there is a user saved on the device,
+    // if not try an online login
     if (offlineLogin && offlineUser != null) {
       user = offlineUser;
       retResult = false;
@@ -184,22 +187,23 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
         retResult = true;
       }
+      else {
+        _log.severe("Unable to get user information from the server.");
+        return false;
+      }
     }
 
-    if (user != null) {
-      // Create state with user info saved on device (offline) or fetched from server
-      state = state.copyWith(
-        isAuthenticated: true,
-        userId: user.id,
-        userEmail: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImagePath: user.profileImagePath,
-        isAdmin: user.isAdmin,
-        shouldChangePassword: shouldChangePassword,
-        deviceId: deviceId,
-      );
-    }
+    state = state.copyWith(
+      isAuthenticated: true,
+      userId: user.id,
+      userEmail: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImagePath: user.profileImagePath,
+      isAdmin: user.isAdmin,
+      shouldChangePassword: shouldChangePassword,
+      deviceId: deviceId,
+    );
 
     return retResult;
   }

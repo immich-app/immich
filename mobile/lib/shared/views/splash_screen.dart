@@ -47,9 +47,13 @@ class SplashScreenPage extends HookConsumerWidget {
                   offlineLogin: deviceIsOffline,
                 );
       }
-      if (deviceIsOffline) {
+
+      // If the device is offline and there is a currentUser stored locallly
+      // Proceed into the app
+      if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
         AutoRouter.of(context).replace(const TabControllerRoute());
       } else if (isSuccess) {
+        // If device was able to login through the internet successfully
         final hasPermission =
             await ref.read(galleryPermissionNotifier.notifier).hasPermission;
         if (hasPermission) {
@@ -58,6 +62,7 @@ class SplashScreenPage extends HookConsumerWidget {
         }
         AutoRouter.of(context).replace(const TabControllerRoute());
       } else {
+        // User was unable to login through either offline or online methods
         AutoRouter.of(context).replace(const LoginRoute());
       }
     }
