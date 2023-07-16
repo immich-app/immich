@@ -5003,14 +5003,15 @@
         "type": "object"
       },
       "AssetStatsResponseDto": {
+        "type": "object",
         "properties": {
           "images": {
             "type": "integer"
           },
-          "total": {
+          "videos": {
             "type": "integer"
           },
-          "videos": {
+          "total": {
             "type": "integer"
           }
         },
@@ -5018,8 +5019,7 @@
           "images",
           "videos",
           "total"
-        ],
-        "type": "object"
+        ]
       },
       "AssetTypeEnum": {
         "enum": [
