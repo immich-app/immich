@@ -75,18 +75,15 @@ class ChangePasswordForm extends HookConsumerWidget {
                               .changePassword(passwordController.value.text);
 
                           if (isSuccess) {
-                            bool res = await ref
+                            await ref
                                 .read(authenticationProvider.notifier)
                                 .logout();
 
-                            if (res) {
-                              ref.read(backupProvider.notifier).cancelBackup();
-                              ref.read(assetProvider.notifier).clearAllAsset();
-                              ref.read(websocketProvider.notifier).disconnect();
+                            ref.read(backupProvider.notifier).cancelBackup();
+                            ref.read(assetProvider.notifier).clearAllAsset();
+                            ref.read(websocketProvider.notifier).disconnect();
 
-                              AutoRouter.of(context)
-                                  .replace(const LoginRoute());
-                            }
+                            AutoRouter.of(context).replace(const LoginRoute());
                           }
                         }
                       },
