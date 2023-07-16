@@ -28,15 +28,11 @@
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.people.slice(0, MAX_ITEMS);
 
-  let countpeople: PersonCountResponseDto = countIsHiddenStatus(data.people);
-
-  function countIsHiddenStatus(persons: PersonResponseDto[]): PersonCountResponseDto {
-    return {
-      total: persons.length,
-      hidden: persons.filter((person) => person.isHidden === true).length,
-      visible: persons.filter((person) => person.isHidden === false).length,
-    };
-  }
+  let countpeople: PersonCountResponseDto = {
+    total: data.people.length,
+    hidden: data.people.filter((obj) => obj.isHidden === true).length,
+    visible: data.people.filter((obj) => obj.isHidden === false).length,
+  };
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
@@ -54,7 +50,7 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
-          {#if person.isHidden}
+          {#if !person.isHidden}
             <a href="/people/{person.id}" class="w-24 text-center">
               <ImageThumbnail
                 circle

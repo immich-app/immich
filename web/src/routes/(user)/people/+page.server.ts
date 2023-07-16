@@ -8,7 +8,7 @@ export const load = (async ({ locals, parent }) => {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  const { data: people } = await locals.api.personApi.getAllPeople({ withHidden: true });
+  const { data: people } = await locals.api.personApi.getAllPeople({ withHidden: false });
   return {
     user,
     people,

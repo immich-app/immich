@@ -13,50 +13,59 @@
   export let data: PageData;
   let selecthidden = false;
   let changeCounter = 0;
-  let initialHiddenValues: boolean[] = data.people.map((person: PersonResponseDto) => person.isHidden);
+  let initialHiddenValues: Record<string, boolean> = {};
+
+  data.people.forEach((person: PersonResponseDto) => {
+    initialHiddenValues[person.id] = person.isHidden;
+  });
 
   // Get number of hidden and visible people
-  let countpeople: PersonCountResponseDto = countIsHiddenStatus(data.people);
-
-  function countIsHiddenStatus(persons: PersonResponseDto[]): PersonCountResponseDto {
-    return {
-      total: persons.length,
-      hidden: persons.filter((obj) => obj.isHidden === true).length,
-      visible: persons.filter((obj) => obj.isHidden === false).length,
-    };
-  }
+  let countpeople: PersonCountResponseDto = {
+    total: data.people.length,
+    hidden: data.people.filter((obj) => obj.isHidden === true).length,
+    visible: data.people.filter((obj) => obj.isHidden === false).length,
+  };
 
   const handleDoneClick = async () => {
     try {
       // Reset the counter before checking changes
-      changeCounter = 0;
+      let changeCounter = 0;
 
-      // Check if the visibility for each persons has been changed
-      data.people.forEach(async (person: PersonResponseDto, index: number) => {
-        if (person.isHidden !== initialHiddenValues[index]) {
+      // Check if the visibility for each person has been changed
+      for (const person of data.people) {
+        const index = person.id;
+        const initialHiddenValue = initialHiddenValues[index];
+
+        if (person.isHidden !== initialHiddenValue) {
           changeCounter++;
           await api.personApi.updatePerson({
             id: person.id,
             personUpdateDto: { isHidden: person.isHidden },
           });
 
-          // Keeps track of the number of hidden/visible people, it helps to know whether to show "no people" or not
-          countpeople.hidden += person.isHidden ? 1 : -1;
-          countpeople.visible += person.isHidden ? -1 : 1;
-
           // Update the initial hidden values
           initialHiddenValues[index] = person.isHidden;
+
+          // Update the count of hidden/visible people
+          if (person.isHidden) {
+            countpeople.hidden++;
+            countpeople.visible--;
+          } else {
+            countpeople.hidden--;
+            countpeople.visible++;
+          }
         }
-      });
-      if (changeCounter > 0)
+      }
+
+      if (changeCounter > 0) {
         notificationController.show({
           type: NotificationType.Info,
           message: `Visibility changed for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`,
         });
+      }
     } catch (error) {
       handleError(error, `Unable to change the visibility for ${changeCounter} person${changeCounter <= 1 ? '' : 's'}`);
     }
-    changeCounter = 0;
   };
 </script>
 
