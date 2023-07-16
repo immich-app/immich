@@ -91,6 +91,7 @@
   };
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="immich-scrubbable-scrollbar"
   class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none"

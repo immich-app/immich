@@ -331,6 +331,8 @@ class ApiClient {
           return SearchResponseDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
+        case 'ServerMediaTypesResponseDto':
+          return ServerMediaTypesResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':

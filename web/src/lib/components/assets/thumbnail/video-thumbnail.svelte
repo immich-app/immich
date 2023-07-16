@@ -36,6 +36,7 @@
     </span>
   {/if}
 
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     class="pt-2 pr-2"
     on:mouseenter={() => {
