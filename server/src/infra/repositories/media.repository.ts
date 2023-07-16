@@ -73,7 +73,7 @@ export class MediaRepository implements IMediaRepository {
         .map((stream) => ({
           height: stream.height || 0,
           width: stream.width || 0,
-          codecName: stream.codec_name,
+          codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),

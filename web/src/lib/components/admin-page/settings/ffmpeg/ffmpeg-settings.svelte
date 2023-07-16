@@ -191,7 +191,7 @@
 
           <SettingSelect
             label="HARDWARE ACCELERATION"
-            desc="Experimental. Use hardware to transcode instead of software. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure."
+            desc="Experimental. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
             bind:value={ffmpegConfig.accel}
             name="accel"
             options={[

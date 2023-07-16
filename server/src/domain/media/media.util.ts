@@ -1,4 +1,5 @@
-import { VideoCodec } from '@app/infra/entities';
+import { TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { readdirSync } from 'fs';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   BitrateDistribution,
@@ -7,7 +8,6 @@ import {
   VideoCodecSWConfig,
   VideoStreamInfo,
 } from './media.repository';
-import { readdirSync } from 'fs';
 class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
 
@@ -84,7 +84,7 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   eligibleForTwoPass() {
-    if (!this.config.twoPass) {
+    if (!this.config.twoPass || this.config.accel !== TranscodeHWAccel.DISABLED) {
       return false;
     }
 
@@ -245,7 +245,7 @@ export class NVENCConfig extends BaseConfig implements VideoCodecHWConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
-    if (this.eligibleForTwoPass()) {
+    if (bitrates.max > 0 && this.config.twoPass) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,

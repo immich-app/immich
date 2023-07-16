@@ -1,4 +1,4 @@
-import { AssetType, SystemConfigKey, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetType, SystemConfigKey, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -8,6 +8,7 @@ import {
   newSystemConfigRepositoryMock,
   probeStub,
 } from '@test';
+import fs from 'fs';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
@@ -31,6 +32,7 @@ describe(MediaService.name, () => {
     storageMock = newStorageRepositoryMock();
 
     sut = new MediaService(assetMock, jobMock, mediaMock, storageMock, configMock);
+    jest.spyOn(fs, 'readdirSync').mockReturnValue(['renderD128'] as unknown as fs.Dirent[]);
   });
 
   it('should be defined', () => {
@@ -754,6 +756,429 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: [
             '-vcodec hevc',
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should skip transcoding for audioless videos with optimal policy if video codec is correct', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.noAudioStreams);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: '1080p' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should return false if hwaccel is enabled for an unsupported codec', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.VP9 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await expect(sut.handleVideoConversion({ id: assetEntityStub.video.id })).resolves.toEqual(false);
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should return false if hwaccel option is invalid', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: 'invalid' }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await expect(sut.handleVideoConversion({ id: assetEntityStub.video.id })).resolves.toEqual(false);
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should set two pass options for nvenc when enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
+          outputOptions: [
+            `-vcodec h264_nvenc`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-tune hq',
+            '-qmin 0',
+            '-g 250',
+            '-bf 3',
+            '-b_ref_mode middle',
+            '-temporal-aq 1',
+            '-rc-lookahead 20',
+            '-i_qfactor 0.75',
+            '-b_qfactor 1.1',
+            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-preset p1',
+            '-b:v 6897k',
+            '-maxrate 10000k',
+            '-bufsize 6897k',
+            '-multipass 2',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set vbr options for nvenc when max bitrate is enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
+          outputOptions: [
+            `-vcodec h264_nvenc`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-tune hq',
+            '-qmin 0',
+            '-g 250',
+            '-bf 3',
+            '-b_ref_mode middle',
+            '-temporal-aq 1',
+            '-rc-lookahead 20',
+            '-i_qfactor 0.75',
+            '-b_qfactor 1.1',
+            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-preset p1',
+            '-cq:v 23',
+            '-maxrate 10000k',
+            '-bufsize 6897k',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set cq options for nvenc when max bitrate is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
+          outputOptions: [
+            `-vcodec h264_nvenc`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-tune hq',
+            '-qmin 0',
+            '-g 250',
+            '-bf 3',
+            '-b_ref_mode middle',
+            '-temporal-aq 1',
+            '-rc-lookahead 20',
+            '-i_qfactor 0.75',
+            '-b_qfactor 1.1',
+            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-preset p1',
+            '-cq:v 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should omit preset for nvenc if invalid', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC },
+        { key: SystemConfigKey.FFMPEG_PRESET, value: 'invalid' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
+          outputOptions: [
+            `-vcodec h264_nvenc`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-tune hq',
+            '-qmin 0',
+            '-g 250',
+            '-bf 3',
+            '-b_ref_mode middle',
+            '-temporal-aq 1',
+            '-rc-lookahead 20',
+            '-i_qfactor 0.75',
+            '-b_qfactor 1.1',
+            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-cq:v 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should ignore two pass for nvenc if max bitrate is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.NVENC }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
+          outputOptions: [
+            `-vcodec h264_nvenc`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-tune hq',
+            '-qmin 0',
+            '-g 250',
+            '-bf 3',
+            '-b_ref_mode middle',
+            '-temporal-aq 1',
+            '-rc-lookahead 20',
+            '-i_qfactor 0.75',
+            '-b_qfactor 1.1',
+            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-preset p1',
+            '-cq:v 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set options for qsv', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_qsv`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-2:720',
+            '-preset 7',
+            '-global_quality 23',
+            '-maxrate 10000k',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should omit preset for qsv if invalid', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV },
+        { key: SystemConfigKey.FFMPEG_PRESET, value: 'invalid' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_qsv`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-2:720',
+            '-global_quality 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set vbr options for vaapi when max bitrate is enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_vaapi`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-compression_level 7',
+            '-b:v 6897k',
+            '-maxrate 10000k',
+            '-minrate 3448.5k',
+            '-rc_mode 3',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set cq options for vaapi when max bitrate is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_vaapi`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-compression_level 7',
+            '-qp 23',
+            '-global_quality 23',
+            '-rc_mode 1',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should omit preset for vaapi if invalid', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI },
+        { key: SystemConfigKey.FFMPEG_PRESET, value: 'invalid' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_vaapi`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-qp 23',
+            '-global_quality 23',
+            '-rc_mode 1',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should prefer gpu for vaapi if available', async () => {
+      jest.spyOn(fs, 'readdirSync').mockReturnValue(['card0', 'renderD129', 'renderD128'] as unknown as fs.Dirent[]);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card0', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_vaapi`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-compression_level 7',
+            '-qp 23',
+            '-global_quality 23',
+            '-rc_mode 1',
+          ],
+          twoPass: false,
+        },
+      );
+
+      jest.spyOn(fs, 'readdirSync').mockReturnValue(['renderD129', 'renderD128'] as unknown as fs.Dirent[]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD129', '-filter_hw_device accel'],
+          outputOptions: [
+            `-vcodec h264_vaapi`,
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-compression_level 7',
+            '-qp 23',
+            '-global_quality 23',
+            '-rc_mode 1',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should fallback to sw transcoding if hw transcoding fails', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      mediaMock.transcode.mockRejectedValueOnce(new Error('error'));
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledTimes(2);
+      expect(mediaMock.transcode).toHaveBeenLastCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-vcodec h264',
             '-acodec aac',
             '-movflags faststart',
             '-fps_mode passthrough',
