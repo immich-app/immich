@@ -3,6 +3,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
+  fileStub,
   IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
@@ -66,30 +67,92 @@ const uploadFile = {
   },
 };
 
+const validImages = [
+  '.3fr',
+  '.ari',
+  '.arw',
+  '.avif',
+  '.cap',
+  '.cin',
+  '.cr2',
+  '.cr3',
+  '.crw',
+  '.dcr',
+  '.dng',
+  '.erf',
+  '.fff',
+  '.gif',
+  '.heic',
+  '.heif',
+  '.iiq',
+  '.jpeg',
+  '.jpg',
+  '.jxl',
+  '.k25',
+  '.kdc',
+  '.mrw',
+  '.nef',
+  '.orf',
+  '.ori',
+  '.pef',
+  '.png',
+  '.raf',
+  '.raw',
+  '.rwl',
+  '.sr2',
+  '.srf',
+  '.srw',
+  '.tiff',
+  '.webp',
+  '.x3f',
+];
+
+const validVideos = [
+  //
+  '.3gp',
+  '.avi',
+  '.flv',
+  '.m2ts',
+  '.mkv',
+  '.mov',
+  '.mp4',
+  '.mpg',
+  '.mts',
+  '.webm',
+  '.wmv',
+];
+
 const uploadTests = [
   {
-    label: 'asset',
+    label: 'asset images',
     fieldName: UploadFieldName.ASSET_DATA,
-    filetypes: Object.keys({ ...mimeTypes.image, ...mimeTypes.video }),
-    invalid: ['.xml', '.html'],
+    valid: validImages,
+    invalid: ['.html', '.xml'],
+  },
+  {
+    label: 'asset videos',
+    fieldName: UploadFieldName.ASSET_DATA,
+    valid: validVideos,
+    invalid: ['.html', '.xml'],
   },
   {
     label: 'live photo',
     fieldName: UploadFieldName.LIVE_PHOTO_DATA,
-    filetypes: Object.keys(mimeTypes.video),
-    invalid: ['.xml', '.html', '.jpg', '.jpeg'],
+    valid: validVideos,
+    invalid: ['.html', '.jpeg', '.jpg', '.xml'],
   },
   {
     label: 'sidecar',
     fieldName: UploadFieldName.SIDECAR_DATA,
-    filetypes: Object.keys(mimeTypes.sidecar),
-    invalid: ['.xml', '.html', '.jpg', '.jpeg', '.mov', '.mp4'],
+    valid: ['.xmp'],
+    invalid: ['.html', '.jpeg', '.jpg', '.mov', '.mp4', '.xml'],
   },
   {
     label: 'profile',
     fieldName: UploadFieldName.PROFILE_DATA,
     filetypes: Object.keys(mimeTypes.profile),
-    invalid: ['.xml', '.html', '.cr2', '.arf', '.mov', '.mp4'],
+    valid: ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'],
+    invalid: ['.arf', '.cr2', '.html', '.mov', '.mp4', '.xml'],
   },
 ];
 
@@ -117,13 +180,21 @@ describe(AssetService.name, () => {
       expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
     });
 
-    for (const { fieldName, filetypes, invalid } of uploadTests) {
+    for (const { fieldName, valid, invalid } of uploadTests) {
       describe(`${fieldName}`, () => {
-        for (const filetype of filetypes) {
+        it('should be sorted (valid)', () => {
+          expect(valid).toEqual([...valid].sort());
+        });
+
+        for (const filetype of valid) {
           it(`should accept ${filetype}`, () => {
             expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
           });
         }
+
+        it('should be sorted (invalid)', () => {
+          expect(valid).toEqual([...valid].sort());
+        });
 
         for (const filetype of invalid) {
           it(`should reject ${filetype}`, () => {
