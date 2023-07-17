@@ -5,12 +5,12 @@ import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import {
-  HiddenPersonDto,
   mapPerson,
   MergePersonDto,
   PeopleResponseDto,
   PersonCountResponseDto,
   PersonResponseDto,
+  PersonSearchDto,
   PersonUpdateDto,
 } from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
@@ -25,7 +25,7 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
-  async getAll(authUser: AuthUserDto, dto: HiddenPersonDto): Promise<PeopleResponseDto> {
+  async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);

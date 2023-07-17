@@ -2,12 +2,12 @@ import {
   AssetResponseDto,
   AuthUserDto,
   BulkIdResponseDto,
-  HiddenPersonDto,
   ImmichReadStream,
   MergePersonDto,
   PeopleResponseDto,
   PersonCountResponseDto,
   PersonResponseDto,
+  PersonSearchDto,
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
@@ -31,7 +31,7 @@ export class PersonController {
   @Get()
   getAllPeople(
     @AuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) withHidden: HiddenPersonDto,
+    @Query(new ValidationPipe({ transform: true })) withHidden: PersonSearchDto,
   ): Promise<PeopleResponseDto> {
     return this.service.getAll(authUser, withHidden);
   }

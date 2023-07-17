@@ -8750,13 +8750,11 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
     return {
         /**
          * 
-         * @param {boolean} withHidden 
+         * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllPeople: async (withHidden: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'withHidden' is not null or undefined
-            assertParamExists('getAllPeople', 'withHidden', withHidden)
+        getAllPeople: async (withHidden?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/person`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9065,11 +9063,11 @@ export const PersonApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {boolean} withHidden 
+         * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllPeople(withHidden: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
+        async getAllPeople(withHidden?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAllPeople(withHidden, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9146,11 +9144,11 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
     return {
         /**
          * 
-         * @param {boolean} withHidden 
+         * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllPeople(withHidden: boolean, options?: any): AxiosPromise<PeopleResponseDto> {
+        getAllPeople(withHidden?: boolean, options?: any): AxiosPromise<PeopleResponseDto> {
             return localVarFp.getAllPeople(withHidden, options).then((request) => request(axios, basePath));
         },
         /**
@@ -9222,7 +9220,7 @@ export interface PersonApiGetAllPeopleRequest {
      * @type {boolean}
      * @memberof PersonApiGetAllPeople
      */
-    readonly withHidden: boolean
+    readonly withHidden?: boolean
 }
 
 /**
@@ -9323,7 +9321,7 @@ export class PersonApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof PersonApi
      */
-    public getAllPeople(requestParameters: PersonApiGetAllPeopleRequest, options?: AxiosRequestConfig) {
+    public getAllPeople(requestParameters: PersonApiGetAllPeopleRequest = {}, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getAllPeople(requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
     }
 

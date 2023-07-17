@@ -16,7 +16,6 @@
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
   export let selectHidden = false;
-  export let fullscreen = false;
   export let countTotalPeople: number | undefined = undefined;
 
   const dispatch = createEventDispatcher();
@@ -46,7 +45,7 @@
           class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
         >
           <p class="font-medium">{title}</p>
-          {#if fullscreen && countTotalPeople && countTotalPeople > 0}
+          {#if countTotalPeople && countTotalPeople > 0}
             <IconButton on:click={() => (selectHidden = !selectHidden)}>
               <div class="flex items-center">
                 <EyeOutline size="1em" />
@@ -72,17 +71,16 @@
     <div
       class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full h-16"
     >
-      <div class="flex ml-8 items-center">
-        <CircleIconButton
-          logo={Close}
-          on:click={() => {
-            selectHidden = !selectHidden;
-          }}
-        />
-        <p class="ml-4">Show & hide faces</p>
-      </div>
-
-      <div class="flex mr-8">
+      <div class="flex items-center justify-between p-8 w-full">
+        <div class="flex items-center">
+          <CircleIconButton
+            logo={Close}
+            on:click={() => {
+              selectHidden = !selectHidden;
+            }}
+          />
+          <p class="ml-4">Show & hide faces</p>
+        </div>
         <IconButton
           on:click={() => {
             handleDoneClick();

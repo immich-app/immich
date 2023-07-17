@@ -18,7 +18,7 @@ class PersonService {
 
   Future<List<PersonResponseDto>?> getCuratedPeople() async {
     try {
-      final peopleResponseDto = await _apiService.personApi.getAllPeople(false);
+      final peopleResponseDto = await _apiService.personApi.getAllPeople();
       return peopleResponseDto?.people;
     } catch (e) {
       debugPrint("Error [getCuratedPeople] ${e.toString()}");

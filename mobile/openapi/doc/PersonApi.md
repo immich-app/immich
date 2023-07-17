@@ -56,7 +56,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **withHidden** | **bool**|  | 
+ **withHidden** | **bool**|  | [optional] [default to false]
 
 ### Return type
 

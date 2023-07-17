@@ -65,7 +65,6 @@
 
 <UserPageLayout
   user={data.user}
-  fullscreen={true}
   showUploadButton
   bind:countTotalPeople
   bind:selectHidden

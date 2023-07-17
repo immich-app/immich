@@ -2512,9 +2512,10 @@
         "parameters": [
           {
             "name": "withHidden",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
+              "default": false,
               "type": "boolean"
             }
           }
