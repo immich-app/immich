@@ -132,7 +132,6 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
 *PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
 *PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
-*PersonApi* | [**getPersonStats**](doc//PersonApi.md#getpersonstats) | **GET** /person/statistics | 
 *PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 *PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
@@ -240,7 +239,6 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
- - [PersonCountResponseDto](doc//PersonCountResponseDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)

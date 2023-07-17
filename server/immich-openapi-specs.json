@@ -2548,38 +2548,6 @@
         ]
       }
     },
-    "/person/statistics": {
-      "get": {
-        "operationId": "getPersonStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PersonCountResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Person"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/person/{id}": {
       "get": {
         "operationId": "getPerson",
@@ -5936,25 +5904,6 @@
           "total",
           "visible",
           "people"
-        ]
-      },
-      "PersonCountResponseDto": {
-        "type": "object",
-        "properties": {
-          "hidden": {
-            "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
-          },
-          "total": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "hidden",
-          "visible",
-          "total"
         ]
       },
       "PersonResponseDto": {

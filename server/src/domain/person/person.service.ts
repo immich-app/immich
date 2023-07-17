@@ -8,7 +8,6 @@ import {
   mapPerson,
   MergePersonDto,
   PeopleResponseDto,
-  PersonCountResponseDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
@@ -38,21 +37,12 @@ export class PersonService {
     return {
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
       total: persons.length,
-      visible: persons.filter((person: PersonResponseDto) => person.isHidden === false).length,
+      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
     };
   }
 
   getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
     return this.findOrFail(authUser, id).then(mapPerson);
-  }
-
-  async getPersonCount(authUser: AuthUserDto): Promise<PersonCountResponseDto> {
-    const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
-    return {
-      hidden: people.filter((obj) => obj.isHidden === true).length,
-      visible: people.filter((obj) => obj.isHidden === false).length,
-      total: people.length,
-    };
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
@@ -72,15 +62,8 @@ export class PersonService {
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     let person = await this.findOrFail(authUser, id);
 
-    if (dto.name) {
-      person = await this.repository.update({ id, name: dto.name });
-      const assets = await this.repository.getAssets(authUser.id, id);
-      const ids = assets.map((asset) => asset.id);
-      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
-    }
-
-    if (dto.isHidden !== undefined) {
-      person = await this.repository.update({ id, isHidden: dto.isHidden });
+    if (dto.name || dto.isHidden !== undefined) {
+      person = await this.repository.update({ id, name: dto.name, isHidden: dto.isHidden });
       const assets = await this.repository.getAssets(authUser.id, id);
       const ids = assets.map((asset) => asset.id);
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });

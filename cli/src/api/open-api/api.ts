@@ -1805,31 +1805,6 @@ export interface PeopleResponseDto {
 /**
  * 
  * @export
- * @interface PersonCountResponseDto
- */
-export interface PersonCountResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof PersonCountResponseDto
-     */
-    'hidden': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PersonCountResponseDto
-     */
-    'visible': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PersonCountResponseDto
-     */
-    'total': number;
-}
-/**
- * 
- * @export
  * @interface PersonResponseDto
  */
 export interface PersonResponseDto {
@@ -8833,44 +8808,6 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getPersonStats: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/person/statistics`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9049,15 +8986,6 @@ export const PersonApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getPersonStats(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonCountResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonStats(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9124,14 +9052,6 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          */
         getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getPersonAssets(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getPersonStats(options?: AxiosRequestConfig): AxiosPromise<PersonCountResponseDto> {
-            return localVarFp.getPersonStats(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9299,16 +9219,6 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonAssets(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof PersonApi
-     */
-    public getPersonStats(options?: AxiosRequestConfig) {
-        return PersonApiFp(this.configuration).getPersonStats(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<PersonCountResponseDto> getPersonStats() async
-    test('test getPersonStats', () async {
-      // TODO
-    });
-
     //Future<MultipartFile> getPersonThumbnail(String id) async
     test('test getPersonThumbnail', () async {
       // TODO

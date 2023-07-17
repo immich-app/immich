@@ -1,7 +1,6 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -27,15 +26,6 @@ export class PersonUpdateDto {
   isHidden?: boolean;
 }
 
-export class PersonCountResponseDto {
-  @ApiProperty({ type: 'integer' })
-  hidden!: number;
-  @ApiProperty({ type: 'integer' })
-  visible!: number;
-  @ApiProperty({ type: 'integer' })
-  total!: number;
-}
-
 export class MergePersonDto {
   @ValidateUUID({ each: true })
   ids!: string[];
@@ -57,7 +47,6 @@ export class PersonResponseDto {
 export class PeopleResponseDto {
   total!: number;
   visible!: number;
-  @IsArray()
   people!: PersonResponseDto[];
 }
 

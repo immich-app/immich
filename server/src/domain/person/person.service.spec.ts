@@ -77,18 +77,6 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('getPersonStats', () => {
-    it('should get the stats for all people', async () => {
-      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
-      await expect(sut.getPersonCount(authStub.admin)).resolves.toEqual({
-        hidden: 1,
-        visible: 1,
-        total: 2,
-      });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
-    });
-  });
-
   describe('getById', () => {
     it('should throw a bad request when person is not found', async () => {
       personMock.getById.mockResolvedValue(null);
