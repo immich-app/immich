@@ -69,6 +69,7 @@
   };
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor()}

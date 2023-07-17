@@ -13,7 +13,6 @@ part of openapi.api;
 class ImportAssetDto {
   /// Returns a new [ImportAssetDto] instance.
   ImportAssetDto({
-    required this.assetType,
     this.isReadOnly = true,
     required this.assetPath,
     this.sidecarPath,
@@ -26,8 +25,6 @@ class ImportAssetDto {
     this.isVisible,
     this.duration,
   });
-
-  AssetTypeEnum assetType;
 
   bool isReadOnly;
 
@@ -77,7 +74,6 @@ class ImportAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ImportAssetDto &&
-     other.assetType == assetType &&
      other.isReadOnly == isReadOnly &&
      other.assetPath == assetPath &&
      other.sidecarPath == sidecarPath &&
@@ -93,7 +89,6 @@ class ImportAssetDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetType.hashCode) +
     (isReadOnly.hashCode) +
     (assetPath.hashCode) +
     (sidecarPath == null ? 0 : sidecarPath!.hashCode) +
@@ -107,11 +102,10 @@ class ImportAssetDto {
     (duration == null ? 0 : duration!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetType=$assetType, isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
+  String toString() => 'ImportAssetDto[isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetType'] = this.assetType;
       json[r'isReadOnly'] = this.isReadOnly;
       json[r'assetPath'] = this.assetPath;
     if (this.sidecarPath != null) {
@@ -150,7 +144,6 @@ class ImportAssetDto {
       final json = value.cast<String, dynamic>();
 
       return ImportAssetDto(
-        assetType: AssetTypeEnum.fromJson(json[r'assetType'])!,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         assetPath: mapValueOfType<String>(json, r'assetPath')!,
         sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
@@ -209,7 +202,6 @@ class ImportAssetDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetType',
     'assetPath',
     'deviceAssetId',
     'deviceId',

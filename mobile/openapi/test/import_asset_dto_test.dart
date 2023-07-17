@@ -16,11 +16,6 @@ void main() {
   // final instance = ImportAssetDto();
 
   group('test ImportAssetDto', () {
-    // AssetTypeEnum assetType
-    test('to test the property `assetType`', () async {
-      // TODO
-    });
-
     // bool isReadOnly (default value: true)
     test('to test the property `isReadOnly`', () async {
       // TODO

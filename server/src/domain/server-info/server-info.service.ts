@@ -1,9 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { serverVersion } from '../domain.constant';
+import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
-import { ServerInfoResponseDto, ServerPingResponse, ServerStatsResponseDto, UsageByUserDto } from './response-dto';
+import {
+  ServerInfoResponseDto,
+  ServerMediaTypesResponseDto,
+  ServerPingResponse,
+  ServerStatsResponseDto,
+  UsageByUserDto,
+} from './response-dto';
 
 @Injectable()
 export class ServerInfoService {
@@ -59,5 +65,13 @@ export class ServerInfoService {
     }
 
     return serverStats;
+  }
+
+  getSupportedMediaTypes(): ServerMediaTypesResponseDto {
+    return {
+      video: [...Object.keys(mimeTypes.video)],
+      image: [...Object.keys(mimeTypes.image)],
+      sidecar: [...Object.keys(mimeTypes.sidecar)],
+    };
   }
 }

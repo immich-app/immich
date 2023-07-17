@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -50,12 +51,25 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsServiceProvider);
+    var settings = ref.watch(appSettingsServiceProvider);
+
     final perRow = useState(
       assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!,
     );
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
+
+    /// assets need different hero tags across tabs / modals
+    /// otherwise, hero animations are performed across tabs (looks buggy!)
+    int heroOffset() {
+      const int range = 1152921504606846976; // 2^60
+      final tabScope = TabsRouterScope.of(context);
+      if (tabScope != null) {
+        final int tabIndex = tabScope.controller.activeIndex;
+        return tabIndex * range;
+      }
+      return range * 7;
+    }
 
     Widget buildAssetGridView(RenderList renderList) {
       return RawGestureDetector(
@@ -93,6 +107,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           showMultiSelectIndicator: showMultiSelectIndicator,
           visibleItemsListener: visibleItemsListener,
           topWidget: topWidget,
+          heroOffset: heroOffset(),
         ),
       );
     }

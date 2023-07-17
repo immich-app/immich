@@ -6,12 +6,13 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
-  isSupportedFileType,
   IStorageRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
+  mimeTypes,
   Permission,
+  UploadFile,
 } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
@@ -24,11 +25,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
-import { constants, createReadStream } from 'fs';
+import { constants } from 'fs';
 import fs from 'fs/promises';
-import mime from 'mime-types';
 import path from 'path';
-import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
@@ -36,7 +35,7 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
@@ -54,18 +53,12 @@ import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-
-interface ServableFile {
-  filepath: string;
-  contentType: string;
-}
 
 @Injectable()
 export class AssetService {
@@ -136,15 +129,12 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
-    const assetPathType = mime.lookup(dto.assetPath) as string;
-    if (!isSupportedFileType(assetPathType)) {
-      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    if (!mimeTypes.isAsset(dto.assetPath)) {
+      throw new BadRequestException(`Unsupported file type ${dto.assetPath}`);
     }
 
-    if (dto.sidecarPath) {
-      if (path.extname(dto.sidecarPath).toLowerCase() !== '.xmp') {
-        throw new BadRequestException(`Unsupported sidecar file type`);
-      }
+    if (dto.sidecarPath && !mimeTypes.isSidecar(dto.sidecarPath)) {
+      throw new BadRequestException(`Unsupported sidecar file type`);
     }
 
     for (const filepath of [dto.assetPath, dto.sidecarPath]) {
@@ -164,7 +154,6 @@ export class AssetService {
 
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      mimeType: assetPathType,
       originalPath: dto.assetPath,
       originalName: path.parse(dto.assetPath).name,
     };
@@ -241,13 +230,7 @@ export class AssetService {
     return mapAsset(updatedAsset);
   }
 
-  async getAssetThumbnail(
-    authUser: AuthUserDto,
-    assetId: string,
-    query: GetAssetThumbnailDto,
-    res: Res,
-    headers: Record<string, string>,
-  ) {
+  async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
     await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
     const asset = await this._assetRepository.get(assetId);
@@ -256,8 +239,7 @@ export class AssetService {
     }
 
     try {
-      const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers);
+      await this.sendFile(res, this.getThumbnailPath(asset, query.format));
     } catch (e) {
       res.header('Cache-Control', 'none');
       this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -268,46 +250,23 @@ export class AssetService {
     }
   }
 
-  public async serveFile(
-    authUser: AuthUserDto,
-    assetId: string,
-    query: ServeFileDto,
-    res: Res,
-    headers: Record<string, string>,
-  ) {
+  public async serveFile(authUser: AuthUserDto, assetId: string, query: ServeFileDto, res: Res) {
     // this is not quite right as sometimes this returns the original still
     await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
-
-    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
 
-    // Handle Sending Images
-    if (asset.type == AssetType.IMAGE) {
-      try {
-        const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
-        return this.streamFile(filepath, res, headers, contentType);
-      } catch (e) {
-        this.logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
-        throw new InternalServerErrorException(
-          e,
-          `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
-        );
-      }
-    } else {
-      try {
-        const videoPath = asset.encodedVideoPath ? asset.encodedVideoPath : asset.originalPath;
-        const mimeType = asset.encodedVideoPath ? 'video/mp4' : asset.mimeType;
+    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
-        return this.streamFile(videoPath, res, headers, mimeType);
-      } catch (e: Error | any) {
-        this.logger.error(`Error serving VIDEO asset=${asset.id}`, e?.stack);
-        throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
-      }
-    }
+    const filepath =
+      asset.type === AssetType.IMAGE
+        ? this.getServePath(asset, query, allowOriginalFile)
+        : asset.encodedVideoPath || asset.originalPath;
+
+    await this.sendFile(res, filepath);
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
@@ -507,14 +466,6 @@ export class AssetService {
     return mapAssetCountByTimeBucket(result);
   }
 
-  getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getAssetCountByUserId(authUser.id);
-  }
-
-  getArchivedAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
-  }
-
   getExifPermission(authUser: AuthUserDto) {
     return !authUser.isPublicUser || authUser.isShowExif;
   }
@@ -522,110 +473,67 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath && asset.webpPath.length > 0) {
+        if (asset.webpPath) {
           return asset.webpPath;
         }
+        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
+          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): ServableFile {
+  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+    const mimeType = mimeTypes.lookup(asset.originalPath);
+
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && asset.mimeType != 'image/gif') {
+    if (query.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+      return asset.resizePath;
     }
 
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
-      return { filepath: asset.originalPath, contentType: asset.mimeType as string };
+    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+      return asset.originalPath;
     }
 
     if (asset.webpPath && asset.webpPath.length > 0) {
-      return { filepath: asset.webpPath, contentType: 'image/webp' };
+      return asset.webpPath;
     }
 
     if (!asset.resizePath) {
       throw new Error('resizePath not set');
     }
 
-    return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+    return asset.resizePath;
   }
 
-  private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+  private async sendFile(res: Res, filepath: string): Promise<void> {
     await fs.access(filepath, constants.R_OK);
-    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
+    const options = path.isAbsolute(filepath) ? {} : { root: process.cwd() };
 
-    if (contentType) {
-      res.header('Content-Type', contentType);
-    }
+    res.set('Cache-Control', 'private, max-age=86400, no-transform');
+    res.header('Content-Type', mimeTypes.lookup(filepath));
+    res.sendFile(filepath, options, (error: Error) => {
+      if (!error) {
+        return;
+      }
 
-    const range = this.setResRange(res, headers, Number(size));
-
-    // etag
-    const etag = `W/"${size}-${mtimeNs}"`;
-    res.setHeader('ETag', etag);
-    if (etag === headers['if-none-match']) {
-      res.status(304);
-      return;
-    }
-
-    const stream = createReadStream(filepath, range);
-    return await pipeline(stream, res).catch((err) => {
-      if (err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
-        this.logger.error(err);
+      if (error.message !== 'Request aborted') {
+        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
       }
     });
-  }
-
-  private setResRange(res: Res, headers: Record<string, string>, size: number) {
-    if (!headers.range) {
-      return {};
-    }
-
-    /** Extracting Start and End value from Range Header */
-    const [startStr, endStr] = headers.range.replace(/bytes=/, '').split('-');
-    let start = parseInt(startStr, 10);
-    let end = endStr ? parseInt(endStr, 10) : size - 1;
-
-    if (!isNaN(start) && isNaN(end)) {
-      start = start;
-      end = size - 1;
-    }
-
-    if (isNaN(start) && !isNaN(end)) {
-      start = size - end;
-      end = size - 1;
-    }
-
-    // Handle unavailable range request
-    if (start >= size || end >= size) {
-      console.error('Bad Request');
-      res.status(416).set({ 'Content-Range': `bytes */${size}` });
-
-      throw new BadRequestException('Bad Request Range');
-    }
-
-    res.status(206).set({
-      'Content-Range': `bytes ${start}-${end}/${size}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Length': end - start + 1,
-    });
-
-    return { start, end };
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -39,7 +41,9 @@ class ControlBottomAppBar extends ConsumerWidget {
       return Row(
         children: [
           ControlBoxButton(
-            iconData: Icons.ios_share_rounded,
+            iconData: Platform.isAndroid
+                ? Icons.share_rounded
+                : Icons.ios_share_rounded,
             label: "control_bottom_app_bar_share".tr(),
             onPressed: enabled ? onShare : null,
           ),

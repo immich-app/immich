@@ -1,18 +1,22 @@
-import { BadRequestException } from '@nestjs/common';
+import { AssetType } from '@app/infra/entities';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
   IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { ICryptoRepository } from '../crypto';
+import { mimeTypes } from '../domain.constant';
 import { IStorageRepository } from '../storage';
-import { IAssetRepository } from './asset.repository';
-import { AssetService } from './asset.service';
-import { DownloadResponseDto } from './index';
+import { AssetStats, IAssetRepository } from './asset.repository';
+import { AssetService, UploadFieldName } from './asset.service';
+import { AssetStatsResponseDto, DownloadResponseDto } from './dto';
 import { mapAsset } from './response-dto';
 
 const downloadResponse: DownloadResponseDto = {
@@ -25,10 +29,75 @@ const downloadResponse: DownloadResponseDto = {
   ],
 };
 
+const stats: AssetStats = {
+  [AssetType.IMAGE]: 10,
+  [AssetType.VIDEO]: 23,
+  [AssetType.AUDIO]: 0,
+  [AssetType.OTHER]: 0,
+};
+
+const statResponse: AssetStatsResponseDto = {
+  images: 10,
+  videos: 23,
+  total: 33,
+};
+
+const uploadFile = {
+  nullAuth: {
+    authUser: null,
+    fieldName: UploadFieldName.ASSET_DATA,
+    file: {
+      checksum: Buffer.from('checksum', 'utf8'),
+      originalPath: 'upload/admin/image.jpeg',
+      originalName: 'image.jpeg',
+    },
+  },
+  filename: (fieldName: UploadFieldName, filename: string) => {
+    return {
+      authUser: authStub.admin,
+      fieldName,
+      file: {
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('checksum', 'utf8'),
+        originalPath: `upload/admin/${filename}`,
+        originalName: filename,
+      },
+    };
+  },
+};
+
+const uploadTests = [
+  {
+    label: 'asset',
+    fieldName: UploadFieldName.ASSET_DATA,
+    filetypes: Object.keys({ ...mimeTypes.image, ...mimeTypes.video }),
+    invalid: ['.xml', '.html'],
+  },
+  {
+    label: 'live photo',
+    fieldName: UploadFieldName.LIVE_PHOTO_DATA,
+    filetypes: Object.keys(mimeTypes.video),
+    invalid: ['.xml', '.html', '.jpg', '.jpeg'],
+  },
+  {
+    label: 'sidecar',
+    fieldName: UploadFieldName.SIDECAR_DATA,
+    filetypes: Object.keys(mimeTypes.sidecar),
+    invalid: ['.xml', '.html', '.jpg', '.jpeg', '.mov', '.mp4'],
+  },
+  {
+    label: 'profile',
+    fieldName: UploadFieldName.PROFILE_DATA,
+    filetypes: Object.keys(mimeTypes.profile),
+    invalid: ['.xml', '.html', '.cr2', '.arf', '.mov', '.mp4'],
+  },
+];
+
 describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   it('should work', () => {
@@ -38,8 +107,83 @@ describe(AssetService.name, () => {
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, storageMock);
+    sut = new AssetService(accessMock, assetMock, cryptoMock, storageMock);
+  });
+
+  describe('canUpload', () => {
+    it('should require an authenticated user', () => {
+      expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    for (const { fieldName, filetypes, invalid } of uploadTests) {
+      describe(`${fieldName}`, () => {
+        for (const filetype of filetypes) {
+          it(`should accept ${filetype}`, () => {
+            expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
+          });
+        }
+
+        for (const filetype of invalid) {
+          it(`should reject ${filetype}`, () => {
+            expect(() => sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toThrowError(
+              BadRequestException,
+            );
+          });
+        }
+      });
+    }
+  });
+
+  describe('getUploadFilename', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFilename(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should be the original extension for asset upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+
+    it('should be the mov extension for live photo upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.LIVE_PHOTO_DATA, 'image.mp4'))).toEqual(
+        'random-uuid.mov',
+      );
+    });
+
+    it('should be the xmp extension for sidecar upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.SIDECAR_DATA, 'image.html'))).toEqual(
+        'random-uuid.xmp',
+      );
+    });
+
+    it('should be the original extension for profile upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+  });
+
+  describe('getUploadFolder', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should return profile for profile uploads', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'upload/profile/admin_id',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+    });
+
+    it('should return upload for everything else', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'upload/upload/admin_id',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+    });
   });
 
   describe('getMapMarkers', () => {
@@ -156,10 +300,7 @@ describe(AssetService.name, () => {
 
       await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
 
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(
-        assetEntityStub.image.originalPath,
-        assetEntityStub.image.mimeType,
-      );
+      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetEntityStub.image.originalPath, 'image/jpeg');
     });
 
     it('should download an archive', async () => {
@@ -288,6 +429,32 @@ describe(AssetService.name, () => {
           },
         ],
       });
+    });
+  });
+
+  describe('getStatistics', () => {
+    it('should get the statistics for a user, excluding archived assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isArchived: false })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isArchived: false });
+    });
+
+    it('should get the statistics for a user for archived assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isArchived: true })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isArchived: true });
+    });
+
+    it('should get the statistics for a user for favorite assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, { isFavorite: true })).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, { isFavorite: true });
+    });
+
+    it('should get the statistics for a user for all assets', async () => {
+      assetMock.getStatistics.mockResolvedValue(stats);
+      await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
+      expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, {});
     });
   });
 });

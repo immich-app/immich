@@ -37,6 +37,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<BulkIdResponseDto>> mergePerson(String id, MergePersonDto mergePersonDto) async
+    test('test mergePerson', () async {
+      // TODO
+    });
+
     //Future<PersonResponseDto> updatePerson(String id, PersonUpdateDto personUpdateDto) async
     test('test updatePerson', () async {
       // TODO

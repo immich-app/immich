@@ -10,20 +10,33 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { assetInteractionStore, isMultiSelectStoreState, selectedAssets } from '$lib/stores/asset-interaction.store';
   import { assetStore } from '$lib/stores/assets.store';
-  import { onDestroy } from 'svelte';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { api } from '@api';
+  import { onDestroy, onMount } from 'svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
+  let assetCount = 1;
+
+  onMount(async () => {
+    const { data: stats } = await api.assetApi.getAssetStats();
+    assetCount = stats.total;
+  });
 
   onDestroy(() => {
     assetInteractionStore.clearMultiselect();
   });
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+
+  const handleUpload = async () => {
+    openFileUploadDialog();
+  };
 </script>
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectStoreState} showUploadButton>
@@ -45,6 +58,11 @@
       </AssetSelectControlBar>
     {/if}
   </svelte:fragment>
-
-  <AssetGrid slot="content" showMemoryLane />
+  <svelte:fragment slot="content">
+    {#if assetCount}
+      <AssetGrid showMemoryLane />
+    {:else}
+      <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={handleUpload} />
+    {/if}
+  </svelte:fragment>
 </UserPageLayout>

@@ -1,6 +1,7 @@
 import {
   ServerInfoResponseDto,
   ServerInfoService,
+  ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
   ServerVersionReponseDto,
@@ -38,5 +39,11 @@ export class ServerInfoController {
   @Get('/stats')
   getStats(): Promise<ServerStatsResponseDto> {
     return this.service.getStats();
+  }
+
+  @PublicRoute()
+  @Get('/media-types')
+  getSupportedMediaTypes(): ServerMediaTypesResponseDto {
+    return this.service.getSupportedMediaTypes();
   }
 }

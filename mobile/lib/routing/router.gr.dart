@@ -70,6 +70,7 @@ class _$AppRouter extends RootStackRouter {
           initialIndex: args.initialIndex,
           loadAsset: args.loadAsset,
           totalAssets: args.totalAssets,
+          heroOffset: args.heroOffset,
         ),
       );
     },
@@ -290,8 +291,8 @@ class _$AppRouter extends RootStackRouter {
         child: const AllPeoplePage(),
       );
     },
-    VerticalRouteView.name: (routeData) {
-      final args = routeData.argsAs<VerticalRouteViewArgs>();
+    MemoryRoute.name: (routeData) {
+      final args = routeData.argsAs<MemoryRouteArgs>();
       return MaterialPageX<dynamic>(
         routeData: routeData,
         child: MemoryPage(
@@ -506,7 +507,7 @@ class _$AppRouter extends RootStackRouter {
         ),
         RouteConfig(
           AlbumViewerRoute.name,
-          path: '/album-viewer-page',
+          path: '/',
           guards: [
             authGuard,
             duplicateGuard,
@@ -601,8 +602,8 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
-          VerticalRouteView.name,
-          path: '/vertical-page-view',
+          MemoryRoute.name,
+          path: '/memory-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -680,6 +681,7 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
     required int initialIndex,
     required Asset Function(int) loadAsset,
     required int totalAssets,
+    int heroOffset = 0,
   }) : super(
           GalleryViewerRoute.name,
           path: '/gallery-viewer-page',
@@ -688,6 +690,7 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
             initialIndex: initialIndex,
             loadAsset: loadAsset,
             totalAssets: totalAssets,
+            heroOffset: heroOffset,
           ),
         );
 
@@ -700,6 +703,7 @@ class GalleryViewerRouteArgs {
     required this.initialIndex,
     required this.loadAsset,
     required this.totalAssets,
+    this.heroOffset = 0,
   });
 
   final Key? key;
@@ -710,9 +714,11 @@ class GalleryViewerRouteArgs {
 
   final int totalAssets;
 
+  final int heroOffset;
+
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets}';
+    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset}';
   }
 }
 
@@ -1014,7 +1020,7 @@ class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
     required int albumId,
   }) : super(
           AlbumViewerRoute.name,
-          path: '/album-viewer-page',
+          path: '/',
           args: AlbumViewerRouteArgs(
             key: key,
             albumId: albumId,
@@ -1302,26 +1308,26 @@ class AllPeopleRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [MemoryPage]
-class VerticalRouteView extends PageRouteInfo<VerticalRouteViewArgs> {
-  VerticalRouteView({
+class MemoryRoute extends PageRouteInfo<MemoryRouteArgs> {
+  MemoryRoute({
     required List<Memory> memories,
     required int memoryIndex,
     Key? key,
   }) : super(
-          VerticalRouteView.name,
-          path: '/vertical-page-view',
-          args: VerticalRouteViewArgs(
+          MemoryRoute.name,
+          path: '/memory-page',
+          args: MemoryRouteArgs(
             memories: memories,
             memoryIndex: memoryIndex,
             key: key,
           ),
         );
 
-  static const String name = 'VerticalRouteView';
+  static const String name = 'MemoryRoute';
 }
 
-class VerticalRouteViewArgs {
-  const VerticalRouteViewArgs({
+class MemoryRouteArgs {
+  const MemoryRouteArgs({
     required this.memories,
     required this.memoryIndex,
     this.key,
@@ -1335,7 +1341,7 @@ class VerticalRouteViewArgs {
 
   @override
   String toString() {
-    return 'VerticalRouteViewArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+    return 'MemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
 }
 

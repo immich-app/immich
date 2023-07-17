@@ -87,11 +87,6 @@ void main() {
       // TODO
     });
 
-    // String mimeType
-    test('to test the property `mimeType`', () async {
-      // TODO
-    });
-
     // String duration
     test('to test the property `duration`', () async {
       // TODO

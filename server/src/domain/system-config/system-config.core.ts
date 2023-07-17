@@ -1,9 +1,11 @@
 import {
+  AudioCodec,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
   SystemConfigValue,
-  TranscodePreset,
+  TranscodePolicy,
+  VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
@@ -14,17 +16,17 @@ import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
-const defaults = Object.freeze<SystemConfig>({
+export const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
     crf: 23,
     threads: 0,
     preset: 'ultrafast',
-    targetVideoCodec: 'h264',
-    targetAudioCodec: 'aac',
+    targetVideoCodec: VideoCodec.H264,
+    targetAudioCodec: AudioCodec.AAC,
     targetResolution: '720',
     maxBitrate: '0',
     twoPass: false,
-    transcode: TranscodePreset.REQUIRED,
+    transcode: TranscodePolicy.REQUIRED,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
@@ -46,6 +48,7 @@ const defaults = Object.freeze<SystemConfig>({
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     scope: 'openid email profile',
+    storageLabelClaim: 'preferred_username',
     buttonText: 'Login with OAuth',
     autoRegister: true,
     autoLaunch: false,

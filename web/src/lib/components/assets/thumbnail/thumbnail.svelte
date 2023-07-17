@@ -65,6 +65,7 @@
 </script>
 
 <IntersectionObserver once={false} let:intersecting>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     style:width="{width}px"
     style:height="{height}px"
@@ -84,9 +85,7 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            on:keydown|preventDefault
-            on:keyup|preventDefault
-            class="absolute p-2"
+            class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
