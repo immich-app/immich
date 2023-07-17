@@ -122,6 +122,11 @@ export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
         },
       );
 
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Downloading asset ${asset.originalFileName}`,
+      });
+
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);

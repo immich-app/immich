@@ -20,6 +20,7 @@
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
@@ -35,7 +36,7 @@
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -65,22 +66,33 @@
     }
   };
 
-  const handleKeyboardPress = (key: string) => {
+  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
     switch (key) {
-      case 'Escape':
-        closeViewer();
-        return;
-      case 'Delete':
-        isShowDeleteConfirmation = true;
-        return;
-      case 'i':
-        $isShowDetail = !$isShowDetail;
+      case 'a':
+      case 'A':
+        if (shiftKey) toggleArchive();
         return;
       case 'ArrowLeft':
         navigateAssetBackward();
         return;
       case 'ArrowRight':
         navigateAssetForward();
+        return;
+      case 'd':
+      case 'D':
+        if (shiftKey) downloadFile(asset, publicSharedKey);
+        return;
+      case 'Delete':
+        isShowDeleteConfirmation = true;
+        return;
+      case 'Escape':
+        closeViewer();
+        return;
+      case 'f':
+        toggleFavorite();
+        return;
+      case 'i':
+        $isShowDetail = !$isShowDetail;
         return;
     }
   };
@@ -135,15 +147,24 @@
   };
 
   const toggleFavorite = async () => {
-    const { data } = await api.assetApi.updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        isFavorite: !asset.isFavorite,
-      },
-    });
+    try {
+      const { data } = await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          isFavorite: !asset.isFavorite,
+        },
+      });
 
-    asset.isFavorite = data.isFavorite;
-    assetStore.updateAsset(asset.id, data.isFavorite);
+      asset.isFavorite = data.isFavorite;
+      assetStore.updateAsset(asset.id, data.isFavorite);
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+      });
+    } catch (error) {
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} favorites`);
+    }
   };
 
   const openAlbumPicker = (shared: boolean) => {
@@ -206,11 +227,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      console.error(error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: `Error ${asset.isArchived ? 'archiving' : 'unarchiving'} asset, check console for more details`,
-      });
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
