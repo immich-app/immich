@@ -42,10 +42,48 @@ describe(PersonService.name, () => {
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
-      await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
+      await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
         total: 1,
         visible: 1,
         people: [responseDto],
+      });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+    });
+    it('should get all visible people with thumbnails', async () => {
+      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
+        total: 2,
+        visible: 1,
+        people: [responseDto],
+      });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+    });
+    it('should get all hidden and visible people with thumbnails', async () => {
+      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
+        total: 2,
+        visible: 1,
+        people: [
+          responseDto,
+          {
+            id: 'person-1',
+            name: '',
+            thumbnailPath: '/path/to/thumbnail.jpg',
+            isHidden: true,
+          },
+        ],
+      });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+    });
+  });
+
+  describe('getPersonStats', () => {
+    it('should get the stats for all people', async () => {
+      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      await expect(sut.getPersonCount(authStub.admin)).resolves.toEqual({
+        hidden: 1,
+        visible: 1,
+        total: 2,
       });
       expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
     });
