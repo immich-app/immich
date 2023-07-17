@@ -1,8 +1,7 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
+import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import type { AssetFileUploadResponseDto } from '@api';
 import axios from 'axios';
-import { combineLatestAll, filter, firstValueFrom, from, mergeMap, of } from 'rxjs';
 import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 
 const extensions = [
@@ -70,9 +69,9 @@ export const openFileUploadDialog = async (
         if (!target.files) {
           return;
         }
-        const files = Array.from<File>(target.files);
+        const files = Array.from(target.files);
 
-        resolve(await fileUploadHandler(files, albumId, sharedKey));
+        resolve(fileUploadHandler(files, albumId, sharedKey));
       };
 
       fileSelector.click();
@@ -88,16 +87,33 @@ export const fileUploadHandler = async (
   albumId: string | undefined = undefined,
   sharedKey: string | undefined = undefined,
 ) => {
-  return firstValueFrom(
-    from(files).pipe(
-      filter((file) => extensions.includes('.' + getFilenameExtension(file.name))),
-      mergeMap(async (file) => of(await fileUploader(file, albumId, sharedKey)), 2),
-      combineLatestAll(),
-    ),
-  );
+  const iterable = {
+    files: files.filter((file) => extensions.some((ext) => file.name.endsWith(ext)))[Symbol.iterator](),
+
+    async *[Symbol.asyncIterator]() {
+      for (const file of this.files) {
+        yield fileUploader(file, albumId, sharedKey);
+      }
+    },
+  };
+
+  const concurrency = 2;
+  // TODO: use Array.fromAsync instead when it's available universally.
+  return Promise.all([...Array(concurrency)].map(() => fromAsync(iterable))).then((res) => res.flat());
 };
 
-//TODO: should probably use the @api SDK
+// polyfill for Array.fromAsync.
+//
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync
+const fromAsync = async function <T>(iterable: AsyncIterable<T>) {
+  const result = [];
+  for await (const value of iterable) {
+    result.push(value);
+  }
+  return result;
+};
+
+// TODO: should probably use the @api SDK
 async function fileUploader(
   asset: File,
   albumId: string | undefined = undefined,
@@ -122,7 +138,7 @@ async function fileUploader(
       progress: 0,
     });
 
-    const response = await axios.post(`/api/asset/upload`, formData, {
+    const response = await axios.post('/api/asset/upload', formData, {
       params: {
         key: sharedKey,
       },

@@ -70,7 +70,6 @@
     "leaflet.markercluster": "^1.5.3",
     "lodash-es": "^4.17.21",
     "luxon": "^3.2.1",
-    "rxjs": "^7.8.0",
     "socket.io-client": "^4.6.1",
     "svelte-local-storage-store": "^0.5.0",
     "svelte-material-icons": "^3.0.5",
