@@ -25,7 +25,6 @@ class SearchPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
     final curatedLocation = ref.watch(getCuratedLocationProvider);
-    final curatedObjects = ref.watch(getCuratedObjectProvider);
     final curatedPeople = ref.watch(getCuratedPeopleProvider);
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     double imageSize = MediaQuery.of(context).size.width / 3;
@@ -128,40 +127,6 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
-    buildThings() {
-      return SizedBox(
-        height: imageSize,
-        child: curatedObjects.when(
-          loading: () => SizedBox(
-            height: imageSize,
-            child: const Center(child: ImmichLoadingIndicator()),
-          ),
-          error: (err, stack) => SizedBox(
-            height: imageSize,
-            child: Center(child: Text('Error: $err')),
-          ),
-          data: (objects) => CuratedRow(
-            content: objects
-                .map(
-                  (o) => CuratedContent(
-                    id: o.id,
-                    label: o.object,
-                  ),
-                )
-                .toList(),
-            imageSize: imageSize,
-            onTap: (content, index) {
-              AutoRouter.of(context).push(
-                SearchResultRoute(
-                  searchTerm: 'm:${content.label}',
-                ),
-              );
-            },
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: ImmichSearchBar(
         searchFocusNode: searchFocusNode,
@@ -191,13 +156,6 @@ class SearchPage extends HookConsumerWidget {
                   top: 0,
                 ),
                 buildPlaces(),
-                SearchRowTitle(
-                  title: "search_page_things".tr(),
-                  onViewAllPressed: () => AutoRouter.of(context).push(
-                    const CuratedObjectRoute(),
-                  ),
-                ),
-                buildThings(),
                 const SizedBox(height: 24.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),

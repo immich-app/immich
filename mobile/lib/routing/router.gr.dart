@@ -111,12 +111,6 @@ class _$AppRouter extends RootStackRouter {
         child: const CuratedLocationPage(),
       );
     },
-    CuratedObjectRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: const CuratedObjectPage(),
-      );
-    },
     CreateAlbumRoute.name: (routeData) {
       final args = routeData.argsAs<CreateAlbumRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -442,14 +436,6 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
-          CuratedObjectRoute.name,
-          path: '/curated-object-page',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
-        ),
-        RouteConfig(
           CreateAlbumRoute.name,
           path: '/create-album-page',
           guards: [
@@ -507,7 +493,7 @@ class _$AppRouter extends RootStackRouter {
         ),
         RouteConfig(
           AlbumViewerRoute.name,
-          path: '/',
+          path: '/album-viewer-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -840,18 +826,6 @@ class CuratedLocationRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [CuratedObjectPage]
-class CuratedObjectRoute extends PageRouteInfo<void> {
-  const CuratedObjectRoute()
-      : super(
-          CuratedObjectRoute.name,
-          path: '/curated-object-page',
-        );
-
-  static const String name = 'CuratedObjectRoute';
-}
-
-/// generated route for
 /// [CreateAlbumPage]
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
   CreateAlbumRoute({
@@ -1020,7 +994,7 @@ class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
     required int albumId,
   }) : super(
           AlbumViewerRoute.name,
-          path: '/',
+          path: '/album-viewer-page',
           args: AlbumViewerRouteArgs(
             key: key,
             albumId: albumId,
