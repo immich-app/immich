@@ -3,6 +3,7 @@
   "modulePaths": ["<rootDir>"],
   "rootDir": ".",
   "globalSetup": "<rootDir>/e2e/setup.ts",
+  "maxWorkers": 1,
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {

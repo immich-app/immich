@@ -5456,8 +5456,9 @@
       "CreateAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+          "libraryId": {
+            "type": "string",
+            "format": "uuid"
           },
           "assetData": {
             "type": "string",
@@ -5896,8 +5897,9 @@
       "ImportAssetDto": {
         "type": "object",
         "properties": {
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+          "libraryId": {
+            "type": "string",
+            "format": "uuid"
           },
           "isReadOnly": {
             "type": "boolean",
@@ -5941,7 +5943,7 @@
           }
         },
         "required": [
-          "assetType",
+          "libraryId",
           "assetPath",
           "deviceAssetId",
           "deviceId",

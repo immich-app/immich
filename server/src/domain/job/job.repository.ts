@@ -1,4 +1,6 @@
+import { Queue, Worker } from 'bullmq';
 import { JobName, QueueName } from './job.constants';
+
 import {
   IAssetFaceJob,
   IBaseJob,
@@ -99,4 +101,6 @@ export interface IJobRepository {
   empty(name: QueueName): Promise<void>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
+  getQueue(queue: QueueName): Queue;
+  getWorker(queueName: QueueName): Worker<any, any, string>;
 }

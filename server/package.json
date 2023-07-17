@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.20.13",
-    "@nestjs/bullmq": "^1.1.0",
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.2.1",
@@ -54,7 +53,6 @@
     "archiver": "^5.3.1",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
-    "bullmq": "^3.14.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
@@ -76,6 +74,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "sanitize-filename": "^1.6.3",
+    "segfault-handler": "^1.3.0",
     "sharp": "^0.31.3",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.11",
@@ -83,6 +82,7 @@
     "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
+    "@nestjs/bullmq": "^10.0.1",
     "@nestjs/cli": "^9.1.8",
     "@nestjs/schematics": "^9.0.4",
     "@nestjs/testing": "^9.2.1",
@@ -107,6 +107,7 @@
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
+    "bullmq": "^4.3.0",
     "dotenv": "^14.2.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",
@@ -136,7 +137,10 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": [
+      ".*\\.spec\\.ts$",
+      ".*\\.e2e-spec\\.ts$"
+    ],
     "transform": {
       "^.+\\.ts$": "ts-jest"
     },
