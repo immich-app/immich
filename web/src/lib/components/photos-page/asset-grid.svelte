@@ -26,6 +26,10 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import MemoryLane from './memory-lane.svelte';
 
+  import { AppRoute } from '$lib/constants';
+  import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
+
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
   export let showMemoryLane = false;
@@ -35,7 +39,10 @@
   let assetGridElement: HTMLElement;
   let bucketInfo: AssetCountByTimeBucketResponseDto;
 
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
   onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
     const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
       getAssetCountByTimeBucketDto: {
         timeGroup: TimeGroupEnum.Month,
@@ -67,8 +74,20 @@
   });
 
   onDestroy(() => {
+    if (browser) document.removeEventListener('keydown', handleKeyboardPress);
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (event.key === '/') event.preventDefault();
+    if (!$isViewingAssetStoreState) {
+      switch (event.key) {
+        case '/':
+          goto(AppRoute.EXPLORE);
+          return;
+      }
+    }
+  };
 
   function intersectedHandler(event: CustomEvent) {
     const el = event.detail.container as HTMLElement;
@@ -128,14 +147,14 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if (e.shiftKey && e.key !== '/') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if (e.shiftKey && e.key !== '/') {
       e.preventDefault();
       shiftKeyIsDown = false;
     }

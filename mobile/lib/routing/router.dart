@@ -30,7 +30,6 @@ import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
-import 'package:immich_mobile/modules/search/views/curated_object_page.dart';
 import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
@@ -87,7 +86,6 @@ part 'router.gr.dart';
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: CuratedLocationPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: CuratedObjectPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: CreateAlbumPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),

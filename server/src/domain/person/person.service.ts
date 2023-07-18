@@ -62,7 +62,7 @@ export class PersonService {
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     let person = await this.findOrFail(authUser, id);
 
-    if (dto.name || dto.isHidden !== undefined) {
+    if (dto.name != undefined || dto.isHidden !== undefined) {
       person = await this.repository.update({ id, name: dto.name, isHidden: dto.isHidden });
       const assets = await this.repository.getAssets(authUser.id, id);
       const ids = assets.map((asset) => asset.id);
