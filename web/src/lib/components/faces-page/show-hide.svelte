@@ -13,6 +13,10 @@
     selectHidden = !selectHidden;
     dispatch('doneClick');
   };
+  const handleCloseClick = () => {
+    selectHidden = !selectHidden;
+    dispatch('closeClick');
+  };
 </script>
 
 {#if selectHidden}
@@ -28,7 +32,7 @@
           <CircleIconButton
             logo={Close}
             on:click={() => {
-              selectHidden = !selectHidden;
+              handleCloseClick();
             }}
           />
           <p class="ml-4">Show & hide faces</p>
