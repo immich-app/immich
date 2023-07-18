@@ -26,11 +26,12 @@
 
   $: things = getFieldItems(data.items, Field.OBJECTS);
   $: places = getFieldItems(data.items, Field.CITY);
-  $: people = data.people.people.slice(0, MAX_ITEMS);
+  $: people = data.response.people.slice(0, MAX_ITEMS);
+  $: hasPeople = data.response.total > 0;
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  {#if data.people.total > 0}
+  {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>

@@ -75,8 +75,8 @@
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <IconButton on:click={() => (selectHidden = !selectHidden)}>
-        <div class="flex items-center">
-          <EyeOutline size="1em" />
+        <div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+          <EyeOutline size="18" />
           <p class="ml-2">Show & hide faces</p>
         </div>
       </IconButton>
