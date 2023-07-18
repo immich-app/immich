@@ -1,10 +1,8 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { api } from '@api';
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
-
+  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   export let data: PageData;
 </script>
 
@@ -13,25 +11,7 @@
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
         {#each data.people as person (person.id)}
-          <div class="relative">
-            <a href="/people/{person.id}" draggable="false">
-              <div class="filter brightness-95 rounded-xl w-48">
-                <ImageThumbnail
-                  shadow
-                  url={api.getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  widthStyle="100%"
-                />
-              </div>
-              {#if person.name}
-                <span
-                  class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-                >
-                  {person.name}
-                </span>
-              {/if}
-            </a>
-          </div>
+          <PeopleCard {person} />
         {/each}
       </div>
     </div>
