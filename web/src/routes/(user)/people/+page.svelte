@@ -18,27 +18,29 @@
   let changeCounter = 0;
   let initialHiddenValues: Record<string, boolean> = {};
 
-  data.people.people.forEach((person: PersonResponseDto) => {
-    initialHiddenValues[person.id] = person.isHidden;
-  });
-
-  // Get number of person and visible people
+  let people = data.people.people;
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
 
+  people.forEach((person: PersonResponseDto) => {
+    initialHiddenValues[person.id] = person.isHidden;
+  });
+
   const handleCloseClick = () => {
-    for (const person of data.people.people) {
+    selectHidden = false;
+    people.forEach((person: PersonResponseDto) => {
       person.isHidden = initialHiddenValues[person.id];
-    }
+    });
   };
 
   const handleDoneClick = async () => {
+    selectHidden = false;
     try {
       // Reset the counter before checking changes
       let changeCounter = 0;
 
       // Check if the visibility for each person has been changed
-      for (const person of data.people.people) {
+      for (const person of people) {
         if (person.isHidden !== initialHiddenValues[person.id]) {
           changeCounter++;
           await api.personApi.updatePerson({
@@ -69,7 +71,7 @@
   };
 </script>
 
-<UserPageLayout bind:user={data.user} title="People">
+<UserPageLayout user={data.user} title="People">
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <IconButton on:click={() => (selectHidden = !selectHidden)}>
@@ -84,29 +86,31 @@
   {#if countVisiblePeople > 0}
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
-        {#each data.people.people as person (person.id)}
-          {#if !person.isHidden}
-            <div class="relative">
-              <a href="/people/{person.id}" draggable="false">
-                <div class="filter brightness-95 rounded-xl w-48">
-                  <ImageThumbnail
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    widthStyle="100%"
-                  />
-                </div>
-                {#if person.name}
-                  <span
-                    class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-                  >
-                    {person.name}
-                  </span>
-                {/if}
-              </a>
-            </div>
-          {/if}
-        {/each}
+        {#key selectHidden}
+          {#each people as person (person.id)}
+            {#if !person.isHidden}
+              <div class="relative">
+                <a href="/people/{person.id}" draggable="false">
+                  <div class="filter brightness-95 rounded-xl w-48">
+                    <ImageThumbnail
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="100%"
+                    />
+                  </div>
+                  {#if person.name}
+                    <span
+                      class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+                    >
+                      {person.name}
+                    </span>
+                  {/if}
+                </a>
+              </div>
+            {/if}
+          {/each}
+        {/key}
       </div>
     </div>
   {:else}
@@ -118,32 +122,33 @@
     </div>
   {/if}
 </UserPageLayout>
-
-<ShowHide bind:selectHidden on:doneClick={handleDoneClick} on:closeClick={handleCloseClick}>
-  <div class="pl-4">
-    <div class="flex flex-row flex-wrap gap-1">
-      {#each data.people.people as person (person.id)}
-        <div class="relative">
-          <div class="filter brightness-95 rounded-xl w-48 h-48">
-            <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>
-              <ImageThumbnail
-                hidden={person.isHidden}
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-            </button>
+{#if selectHidden}
+  <ShowHide on:doneClick={handleDoneClick} on:closeClick={handleCloseClick}>
+    <div class="pl-4">
+      <div class="flex flex-row flex-wrap gap-1">
+        {#each people as person (person.id)}
+          <div class="relative">
+            <div class="filter brightness-95 rounded-xl w-48 h-48">
+              <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>
+                <ImageThumbnail
+                  bind:hidden={person.isHidden}
+                  shadow
+                  url={api.getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  widthStyle="100%"
+                />
+              </button>
+            </div>
+            {#if person.name}
+              <span
+                class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+              >
+                {person.name}
+              </span>
+            {/if}
           </div>
-          {#if person.name}
-            <span
-              class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-            >
-              {person.name}
-            </span>
-          {/if}
-        </div>
-      {/each}
+        {/each}
+      </div>
     </div>
-  </div>
-</ShowHide>
+  </ShowHide>
+{/if}

@@ -34,13 +34,11 @@
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
         <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
-        {#if data.people.total > 0}
-          <a
-            href={AppRoute.PEOPLE}
-            class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
-            draggable="false">View All</a
-          >
-        {/if}
+        <a
+          href={AppRoute.PEOPLE}
+          class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+          draggable="false">View All</a
+        >
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each people as person (person.id)}
