@@ -9,6 +9,9 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import ShowHide from '$lib/components/faces-page/show-hide.svelte';
+  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+  import EyeOutline from 'svelte-material-icons/EyeOutline.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -63,14 +66,16 @@
   };
 </script>
 
-<UserPageLayout
-  user={data.user}
-  showUploadButton
-  bind:countTotalPeople
-  bind:selectHidden
-  on:doneClick={handleDoneClick}
-  title="People"
->
+<UserPageLayout user={data.user} on:doneClick={handleDoneClick} title="People">
+  {#if countTotalPeople && countTotalPeople > 0}
+    <IconButton on:click={() => (selectHidden = !selectHidden)} slot="buttons">
+      <div class="flex items-center">
+        <EyeOutline size="1em" />
+        <p class="ml-2">Show & hide faces</p>
+      </div>
+    </IconButton>
+  {/if}
+
   {#if countVisiblePeople > 0 || selectHidden}
     {#if !selectHidden}
       <div class="pl-4">
@@ -137,3 +142,32 @@
     </div>
   {/if}
 </UserPageLayout>
+
+<ShowHide bind:selectHidden on:doneClick={handleDoneClick}>
+  <div class="pl-4">
+    <div class="flex flex-row flex-wrap gap-1">
+      {#each data.people.people as person (person.id)}
+        <div class="relative">
+          <div class="filter brightness-95 rounded-xl w-48 h-48">
+            <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>
+              <ImageThumbnail
+                hidden={person.isHidden}
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+            </button>
+          </div>
+          {#if person.name}
+            <span
+              class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+            >
+              {person.name}
+            </span>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  </div>
+</ShowHide>
