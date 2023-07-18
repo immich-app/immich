@@ -17,7 +17,7 @@
   <slot name="header" />
 </header>
 <main
-  class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
+  class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
 >
   <slot name="sidebar">
     <SideBar />
@@ -26,13 +26,13 @@
     {#if title}
       <section class="relative">
         <div
-          class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
+          class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
           <p class="font-medium">{title}</p>
           <slot name="buttons" />
         </div>
 
-        <div class="absolute overflow-y-auto top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8">
+        <div class="immich-scrollbar absolute top-16 h-[calc(100%-theme(spacing.16))] w-full overflow-y-auto p-4 pb-8">
           <slot />
         </div>
       </section>

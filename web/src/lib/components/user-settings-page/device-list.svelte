@@ -71,13 +71,13 @@
 <section class="my-4">
   {#if currentDevice}
     <div class="mb-6">
-      <h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">CURRENT DEVICE</h3>
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">CURRENT DEVICE</h3>
       <DeviceCard device={currentDevice} />
     </div>
   {/if}
   {#if otherDevices.length > 0}
     <div class="mb-6">
-      <h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">OTHER DEVICES</h3>
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">OTHER DEVICES</h3>
       {#each otherDevices as device, i}
         <DeviceCard {device} on:delete={() => (deleteDevice = device)} />
         {#if i !== otherDevices.length - 1}
@@ -85,7 +85,7 @@
         {/if}
       {/each}
     </div>
-    <h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">LOG OUT ALL DEVICES</h3>
+    <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">LOG OUT ALL DEVICES</h3>
     <div class="flex justify-end">
       <Button color="red" size="sm" on:click={() => (deleteAll = true)}>Log Out All Devices</Button>
     </div>

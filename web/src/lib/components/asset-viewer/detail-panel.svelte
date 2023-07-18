@@ -80,20 +80,20 @@
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
-      class="rounded-full p-3 flex place-items-center place-content-center hover:bg-gray-200 transition-colors dark:text-immich-dark-fg dark:hover:bg-gray-900"
+      class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
       on:click={() => dispatch('close')}
     >
       <Close size="24" />
     </button>
 
-    <p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
+    <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
   <section class="mx-4 mt-10">
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
-      text-base text-black bg-transparent dark:text-white border-b focus:border-b-2 border-gray-500 w-full focus:border-immich-primary dark:focus:border-immich-dark-primary transition-all resize-none overflow-hidden outline-none disabled:border-none"
+      w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
       placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
       style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
       on:focusin={handleFocusIn}
@@ -108,7 +108,7 @@
     <section class="px-4 py-4 text-sm">
       <h2>PEOPLE</h2>
 
-      <div class="flex flex-wrap gap-2 mt-4">
+      <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
           <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
             <ImageThumbnail
@@ -120,7 +120,7 @@
               heightStyle="90px"
               thumbhash={null}
             />
-            <p class="font-medium mt-1 truncate">{person.name}</p>
+            <p class="mt-1 truncate font-medium">{person.name}</p>
           </a>
         {/each}
       </div>
@@ -178,7 +178,7 @@
           <p class="break-all">
             {getAssetFilename(asset)}
           </p>
-          <div class="flex text-sm gap-2">
+          <div class="flex gap-2 text-sm">
             {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
               {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                 <p>
@@ -200,7 +200,7 @@
 
         <div>
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
-          <div class="flex text-sm gap-2">
+          <div class="flex gap-2 text-sm">
             <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
 
             {#if asset.exifInfo.exposureTime}
@@ -227,10 +227,10 @@
 
         <div>
           <p>{asset.exifInfo.city}</p>
-          <div class="flex text-sm gap-2">
+          <div class="flex gap-2 text-sm">
             <p>{asset.exifInfo.state}</p>
           </div>
-          <div class="flex text-sm gap-2">
+          <div class="flex gap-2 text-sm">
             <p>{asset.exifInfo.country}</p>
           </div>
         </div>
@@ -258,7 +258,7 @@
 <section class="p-2 dark:text-immich-dark-fg">
   <div class="px-4 py-4">
     {#if albums.length > 0}
-      <p class="text-sm pb-4">APPEARS IN</p>
+      <p class="pb-4 text-sm">APPEARS IN</p>
     {/if}
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
@@ -271,14 +271,14 @@
           <div>
             <img
               alt={album.albumName}
-              class="w-[50px] h-[50px] object-cover rounded"
+              class="h-[50px] w-[50px] rounded object-cover"
               src={album.albumThumbnailAssetId &&
                 api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
               draggable="false"
             />
           </div>
 
-          <div class="mt-auto mb-auto">
+          <div class="mb-auto mt-auto">
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
             <div class="flex gap-2 text-sm">
               <p>{album.assetCount} items</p>

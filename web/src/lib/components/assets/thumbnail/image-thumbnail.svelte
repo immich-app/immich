@@ -33,7 +33,7 @@
   on:image-load|once={() => (complete = true)}
 />
 {#if hidden}
-  <div class="absolute top-1/2 left-1/2 transform translate-x-[-50%] translate-y-[-50%]">
+  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
     <EyeOffOutline size="2em" />
   </div>
 {/if}
@@ -44,7 +44,7 @@
     style:height={heightStyle}
     src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
     alt={altText}
-    class="absolute object-cover top-0"
+    class="absolute top-0 object-cover"
     class:rounded-lg={curve}
     class:shadow-lg={shadow}
     class:rounded-full={circle}

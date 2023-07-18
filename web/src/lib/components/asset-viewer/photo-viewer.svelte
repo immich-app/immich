@@ -103,7 +103,7 @@
 <div
   bind:this={element}
   transition:fade={{ duration: 150 }}
-  class="flex place-items-center place-content-center h-full select-none"
+  class="flex h-full select-none place-content-center place-items-center"
 >
   {#await loadAssetData()}
     <LoadingSpinner />
@@ -113,7 +113,7 @@
         transition:fade={{ duration: 150 }}
         src={assetData}
         alt={asset.id}
-        class="object-contain h-full w-full"
+        class="h-full w-full object-contain"
         draggable="false"
       />
     </div>

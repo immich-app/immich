@@ -66,9 +66,9 @@
       name="q"
       class="w-full transition-all {grayTheme
         ? 'dark:bg-immich-dark-gray'
-        : 'dark:bg-immich-dark-bg'} text-immich-fg/75 dark:text-immich-dark-fg px-14 py-4 {showBigSearchBar
-        ? 'rounded-t-3xl bg-white  border border-gray-200 dark:border-gray-800'
-        : 'rounded-3xl bg-gray-200 border border-transparent'}"
+        : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showBigSearchBar
+        ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
+        : 'rounded-3xl border border-transparent bg-gray-200'}"
       placeholder="Search your photos"
       required
       pattern="^(?!m:$).*$"
@@ -79,7 +79,7 @@
     <div class="absolute inset-y-0 right-0 flex items-center pr-4">
       <button
         type="reset"
-        class="dark:text-immich-dark-fg/75 hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 rounded-full p-2 active:bg-immich-primary/10 dark:active:bg-immich-dark-primary/[.35]"
+        class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
       >
         <Close size="1.5em" />
       </button>
@@ -89,23 +89,23 @@
   {#if showBigSearchBar}
     <div
       transition:fly={{ y: 25, duration: 250 }}
-      class="w-full pb-5 absolute bg-white transition-all rounded-b-3xl shadow-2xl border border-gray-200 dark:bg-immich-dark-gray dark:border-gray-800 dark:text-gray-300"
+      class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
     >
       <div class="px-5 pt-5 text-xs">
         <p>
           Smart search is enabled by default, to search for metadata use the syntax <span
-            class="font-mono p-2 font-semibold text-immich-primary dark:text-immich-dark-primary bg-gray-100 rounded-lg dark:bg-gray-900 leading-7"
+            class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
             >m:your-search-term</span
           >
         </p>
       </div>
 
       {#if $savedSearchTerms.length > 0}
-        <div class="px-5 pt-5 text-xs flex justify-between">
+        <div class="flex justify-between px-5 pt-5 text-xs">
           <p>RECENT SEARCHES</p>
           <button
             type="button"
-            class="text-immich-primary dark:text-immich-dark-primary font-semibold p-2 hover:bg-immich-primary/25 rounded-lg"
+            class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
             on:click={clearSearchTerm}>Clear all</button
           >
         </div>
@@ -114,7 +114,7 @@
       {#each $savedSearchTerms as savedSearchTerm, i (i)}
         <button
           type="button"
-          class="w-full hover:bg-gray-100 dark:hover:bg-gray-500/10 px-5 py-3 cursor-pointer flex gap-3 text-black dark:text-gray-300"
+          class="flex w-full cursor-pointer gap-3 px-5 py-3 text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
           on:click={() => {
             value = savedSearchTerm;
             onSearch(false);

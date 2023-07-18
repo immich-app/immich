@@ -25,20 +25,20 @@
 
 <button
   on:click={() => dispatcher('album')}
-  class="w-full flex gap-4 px-6 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+  class="flex w-full gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
 >
   <div class="h-12 w-12 rounded-xl bg-slate-300">
     {#if album.albumThumbnailAssetId}
       <img
         src={api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)}
         alt={album.albumName}
-        class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
+        class={`z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg`}
         data-testid="album-image"
         draggable="false"
       />
     {/if}
   </div>
-  <div class="h-12 flex flex-col items-start justify-center">
+  <div class="flex h-12 flex-col items-start justify-center">
     <span>{albumNameArray[0]}<b>{albumNameArray[1]}</b>{albumNameArray[2]}</span>
     <span class="flex gap-1 text-sm">
       {#if variant === 'simple'}

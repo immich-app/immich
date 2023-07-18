@@ -33,23 +33,23 @@
   };
 </script>
 
-<section id="dashboard-navbar" class="fixed h-[var(--navbar-height)] w-screen z-[900] text-sm">
+<section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <div
-    class="grid h-full md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
+    class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
-    <a data-sveltekit-preload-data="hover" class="flex gap-2 md:mx-6 mx-4 place-items-center" href={AppRoute.PHOTOS}>
+    <a data-sveltekit-preload-data="hover" class="mx-4 flex place-items-center gap-2 md:mx-6" href={AppRoute.PHOTOS}>
       <ImmichLogo height="35" width="35" />
-      <h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary md:block hidden">
+      <h1 class="hidden font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary md:block">
         IMMICH
       </h1>
     </a>
     <div class="flex justify-between gap-16 pr-6">
-      <div class="w-full max-w-5xl flex-1 pl-4 sm:block hidden">
+      <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
         <SearchBar grayTheme={true} />
       </div>
 
-      <section class="flex gap-4 place-items-center justify-end max-sm:w-full">
-        <a href={AppRoute.SEARCH} id="search-button" class="sm:hidden pl-4">
+      <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
+        <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
           <IconButton title="Search">
             <div class="flex gap-2">
               <Magnify size="1.5em" />
@@ -64,7 +64,7 @@
             <LinkButton on:click={() => dispatch('uploadClicked')}>
               <div class="flex gap-2">
                 <TrayArrowUp size="1.5em" />
-                <span class="md:block hidden">Upload</span>
+                <span class="hidden md:block">Upload</span>
               </div>
             </LinkButton>
           </div>
@@ -72,18 +72,18 @@
 
         {#if user.isAdmin}
           <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-            <div class="sm:block hidden">
+            <div class="hidden sm:block">
               <LinkButton>
                 <span
                   class={$page.url.pathname.includes('/admin')
-                    ? 'text-immich-primary dark:text-immich-dark-primary underline item'
+                    ? 'item text-immich-primary underline dark:text-immich-dark-primary'
                     : ''}
                 >
                   Administration
                 </span>
               </LinkButton>
             </div>
-            <div class="sm:hidden block">
+            <div class="block sm:hidden">
               <IconButton title="Administration">
                 <Cog
                   size="1.5em"
@@ -94,7 +94,7 @@
               </IconButton>
               <hr
                 class={$page.url.pathname.includes('/admin')
-                  ? 'block border-1 w-2/3 mx-auto border-immich-primary dark:border-immich-dark-primary'
+                  ? 'border-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
                   : 'hidden'}
               />
             </div>
@@ -117,7 +117,7 @@
             <div
               in:fade={{ delay: 500, duration: 150 }}
               out:fade={{ delay: 200, duration: 150 }}
-              class="absolute -bottom-12 right-5 border bg-gray-500 dark:bg-immich-dark-gray text-[12px] text-gray-100 p-2 rounded-md shadow-md dark:border-immich-dark-gray"
+              class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
               <p>{user.firstName} {user.lastName}</p>
               <p>{user.email}</p>

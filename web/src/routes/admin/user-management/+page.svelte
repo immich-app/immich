@@ -145,41 +145,41 @@
 
   {#if shouldShowInfoPanel}
     <FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
-      <div class="border bg-white shadow-sm w-[500px] max-w-[95vw] rounded-3xl p-8 text-sm">
-        <h1 class="font-medium text-immich-primary text-lg mb-4">Password reset success</h1>
+      <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
+        <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
 
         <p>
           The user's password has been reset to the default <code
-            class="font-bold bg-gray-200 px-2 py-1 rounded-md text-immich-primary">password</code
+            class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary">password</code
           >
           <br />
           Please inform the user, and they will need to change the password at the next log-on.
         </p>
 
-        <div class="flex w-full mt-6">
+        <div class="mt-6 flex w-full">
           <Button fullwidth on:click={() => (shouldShowInfoPanel = false)}>Done</Button>
         </div>
       </div>
     </FullScreenModal>
   {/if}
 
-  <table class="text-left w-full my-5 sm:block hidden">
+  <table class="my-5 hidden w-full text-left sm:block">
     <thead
-      class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray"
+      class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="text-center w-1/4 font-medium text-sm">Email</th>
-        <th class="text-center w-1/4 font-medium text-sm">First name</th>
-        <th class="text-center w-1/4 font-medium text-sm">Last name</th>
-        <th class="text-center w-1/4 font-medium text-sm">Can import</th>
-        <th class="text-center w-1/4 font-medium text-sm">Action</th>
+        <th class="w-1/4 text-center text-sm font-medium">Email</th>
+        <th class="w-1/4 text-center text-sm font-medium">First name</th>
+        <th class="w-1/4 text-center text-sm font-medium">Last name</th>
+        <th class="w-1/4 text-center text-sm font-medium">Can import</th>
+        <th class="w-1/4 text-center text-sm font-medium">Action</th>
       </tr>
     </thead>
-    <tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray">
+    <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#if allUsers}
         {#each allUsers as user, i}
           <tr
-            class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
+            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
               isDeleted(user)
                 ? 'bg-red-300 dark:bg-red-900'
                 : i % 2 == 0
@@ -187,11 +187,11 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.email}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.firstName}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">{user.lastName}</td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">
-              <div class="container flex flex-wrap mx-auto justify-center">
+            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.email}</td>
+            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.firstName}</td>
+            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.lastName}</td>
+            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">
+              <div class="container mx-auto flex flex-wrap justify-center">
                 {#if user.externalPath}
                   <Check size="16" />
                 {:else}
@@ -199,18 +199,18 @@
                 {/if}
               </div>
             </td>
-            <td class="text-sm px-4 w-1/4 text-ellipsis break-all">
+            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">
               {#if !isDeleted(user)}
                 <button
                   on:click={() => editUserHandler(user)}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                 >
                   <PencilOutline size="16" />
                 </button>
                 {#if user.id !== data.user.id}
                   <button
                     on:click={() => deleteUserHandler(user)}
-                    class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
                     <TrashCanOutline size="16" />
                   </button>
@@ -219,7 +219,7 @@
               {#if isDeleted(user)}
                 <button
                   on:click={() => restoreUserHandler(user)}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   title={`scheduled removal on ${getDeleteDate(user)}`}
                 >
                   <DeleteRestore size="16" />
@@ -232,23 +232,23 @@
     </tbody>
   </table>
 
-  <table class="text-left w-full my-5 block sm:hidden">
+  <table class="my-5 block w-full text-left sm:hidden">
     <thead
-      class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray"
+      class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="text-center w-1/2 font-medium text-sm flex justify-around">
+        <th class="flex w-1/2 justify-around text-center text-sm font-medium">
           <span>Name</span>
           <span>Email</span>
         </th>
-        <th class="text-center w-1/2 font-medium text-sm">Action</th>
+        <th class="w-1/2 text-center text-sm font-medium">Action</th>
       </tr>
     </thead>
-    <tbody class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray">
+    <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#if allUsers}
         {#each allUsers as user, i}
           <tr
-            class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
+            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
               isDeleted(user)
                 ? 'bg-red-300 dark:bg-red-900'
                 : i % 2 == 0
@@ -256,21 +256,21 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="text-sm px-4 w-2/3 text-ellipsis">
+            <td class="w-2/3 text-ellipsis px-4 text-sm">
               <span>{user.firstName} {user.lastName}</span>
               <span>{user.email}</span>
             </td>
-            <td class="text-sm px-4 w-1/3 text-ellipsis">
+            <td class="w-1/3 text-ellipsis px-4 text-sm">
               {#if !isDeleted(user)}
                 <button
                   on:click={() => editUserHandler(user)}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 max-sm:mb-1 transition-all duration-150 hover:bg-immich-primary/75"
+                  class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1 sm:p-3"
                 >
                   <PencilOutline size="16" />
                 </button>
                 <button
                   on:click={() => deleteUserHandler(user)}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
+                  class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 sm:p-3"
                 >
                   <TrashCanOutline size="16" />
                 </button>
@@ -278,7 +278,7 @@
               {#if isDeleted(user)}
                 <button
                   on:click={() => restoreUserHandler(user)}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
+                  class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 sm:p-3"
                   title={`scheduled removal on ${getDeleteDate(user)}`}
                 >
                   <DeleteRestore size="16" />

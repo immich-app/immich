@@ -15,7 +15,7 @@
 </script>
 
 <div
-  class="flex place-items-center max-w-lg rounded-lg border dark:border-transparent p-2 bg-gray-100 dark:bg-gray-700"
+  class="flex max-w-lg place-items-center rounded-lg border bg-gray-100 p-2 dark:border-transparent dark:bg-gray-700"
   use:clickOutside
   on:outclick={() => dispatch('cancel')}
 >
@@ -28,14 +28,14 @@
     heightStyle="2rem"
   />
   <form
-    class="ml-4 flex justify-between w-full gap-16"
+    class="ml-4 flex w-full justify-between gap-16"
     autocomplete="off"
     on:submit|preventDefault={() => dispatch('change', name)}
   >
     <!-- svelte-ignore a11y-autofocus -->
     <input
       autofocus
-      class="gap-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
+      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
       type="text"
       placeholder="New name or nickname"
       bind:value={name}

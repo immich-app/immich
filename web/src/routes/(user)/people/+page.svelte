@@ -153,12 +153,12 @@
   {#if showChangeNameModal}
     <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
       <div
-        class="bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
+        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div
-          class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
+          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
         >
-          <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">Change name</h1>
+          <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Change name</h1>
         </div>
 
         <form on:submit|preventDefault={submitNameChange} autocomplete="off">

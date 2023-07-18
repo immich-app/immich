@@ -50,7 +50,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={registerAdmin} method="post" class="flex flex-col gap-5 mt-5">
+<form on:submit|preventDefault={registerAdmin} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="email">Admin Email</label>
     <input class="immich-form-input" id="email" name="email" type="email" autocomplete="email" required />

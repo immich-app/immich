@@ -17,15 +17,15 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute right-[25px] top-[75px] bg-gray-200 dark:bg-immich-dark-gray dark:border dark:border-immich-dark-gray shadow-lg rounded-3xl w-[360px] z-[100]"
+  class="absolute right-[25px] top-[75px] z-[100] w-[360px] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
 >
   <div
-    class="flex flex-col items-center justify-center gap-4 bg-white dark:bg-immich-dark-primary/10 rounded-3xl mx-4 mt-4 p-4"
+    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <UserAvatar size="lg" {user} />
 
     <div>
-      <p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium text-center">
+      <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
         {user.firstName}
         {user.lastName}
       </p>
@@ -34,7 +34,7 @@
 
     <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
       <Button color="dark-gray" size="sm" shadow={false} border>
-        <div class="flex gap-2 place-items-center place-content-center px-2">
+        <div class="flex place-content-center place-items-center gap-2 px-2">
           <Cog size="18" />
           Account Settings
         </div>
@@ -44,7 +44,7 @@
 
   <div class="mb-4 flex flex-col">
     <button
-      class="py-3 w-full font-medium flex place-items-center gap-2 hover:bg-immich-primary/10 text-gray-500 dark:text-gray-300 place-content-center"
+      class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
       on:click={() => dispatch('logout')}
     >
       <Logout size={24} />
