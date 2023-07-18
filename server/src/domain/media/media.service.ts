@@ -155,7 +155,7 @@ export class MediaService {
 
     let transcodeOptions;
     try {
-      transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
     } catch (err) {
       this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
       return false;
@@ -170,7 +170,7 @@ export class MediaService {
         this.logger.error(`Error occurred during transcoding. Retrying with ${config.accel} acceleration disabled.`);
       }
       config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
       await this.mediaRepository.transcode(input, output, transcodeOptions);
     }
 
@@ -234,11 +234,12 @@ export class MediaService {
     }
   }
 
-  getCodecConfig(config: SystemConfigFFmpegDto) {
+  async getCodecConfig(config: SystemConfigFFmpegDto) {
     if (!config.accel || config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
     } else {
-      return this.getHWCodecConfig(config);
+      const devices = await this.storageRepository.readdir('/dev/dri');
+      return this.getHWCodecConfig(config, devices);
     }
   }
 
@@ -255,17 +256,17 @@ export class MediaService {
     }
   }
 
-  private getHWCodecConfig(config: SystemConfigFFmpegDto) {
+  private getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = []) {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC:
         handler = new NVENCConfig(config);
         break;
       case TranscodeHWAccel.QSV:
-        handler = new QSVConfig(config);
+        handler = new QSVConfig(config, devices);
         break;
       case TranscodeHWAccel.VAAPI:
-        handler = new VAAPIConfig(config);
+        handler = new VAAPIConfig(config, devices);
         break;
       default:
         throw new UnsupportedMediaTypeException(`${config.accel} acceleration is unsupported`);

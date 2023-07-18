@@ -6,7 +6,7 @@ services:
     image: immich-server-dev:latest
     build:
       context: ../server
-      dockerfile: Dockerfile.accel
+      dockerfile: Dockerfile
       target: builder
     command: npm run start:debug immich
     volumes:
@@ -52,7 +52,7 @@ services:
     #   service: hwaccel
     build:
       context: ../server
-      dockerfile: Dockerfile.accel
+      dockerfile: Dockerfile
       target: builder
     command: npm run start:debug microservices
     volumes:

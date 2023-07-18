@@ -92,4 +92,8 @@ export class FilesystemProvider implements IStorageRepository {
       total: stats.blocks * stats.bsize,
     };
   }
+
+  async readdir(folder: string): Promise<string[]> {
+    return fs.readdir(folder);
+  }
 }

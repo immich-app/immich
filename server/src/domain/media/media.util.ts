@@ -1,5 +1,4 @@
 import { TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
-import { readdirSync } from 'fs';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   BitrateDistribution,
@@ -144,6 +143,34 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 }
 
+export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
+  protected devices: string[];
+
+  constructor(protected config: SystemConfigFFmpegDto, devices: string[] = []) {
+    super(config);
+    this.devices = this.validateDevices(devices);
+  }
+
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+  }
+
+  validateDevices(devices: string[]) {
+    return devices
+      .filter((device) => device.startsWith('renderD') || device.startsWith('card'))
+      .sort((a, b) => {
+        // order GPU devices first
+        if (a.startsWith('card') && b.startsWith('renderD')) {
+          return -1;
+        } else if (a.startsWith('renderD') && b.startsWith('card')) {
+          return 1;
+        } else {
+          return -a.localeCompare(b);
+        }
+      });
+  }
+}
+
 export class H264Config extends BaseConfig {
   getThreadOptions() {
     if (this.config.threads <= 0) {
@@ -197,7 +224,7 @@ export class VP9Config extends BaseConfig {
   }
 }
 
-export class NVENCConfig extends BaseConfig implements VideoCodecHWConfig {
+export class NVENCConfig extends BaseHWConfig {
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC];
   }
@@ -268,12 +295,11 @@ export class NVENCConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 }
 
-export class QSVConfig extends BaseConfig implements VideoCodecHWConfig {
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
-  }
-
+export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
+    if (!this.devices.includes('renderD128')) {
+      throw Error('No QSV device found');
+    }
     return ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'];
   }
 
@@ -317,22 +343,12 @@ export class QSVConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 }
 
-export class VAAPIConfig extends BaseConfig implements VideoCodecHWConfig {
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
-  }
-
+export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    const devices = readdirSync('/dev/dri/');
-    let device;
-    if (devices.includes('card0')) {
-      device = 'card0';
-    } else if (devices.includes('renderD129')) {
-      device = 'renderD129';
-    } else {
-      device = 'renderD128';
+    if (!this.devices) {
+      throw Error('No VAAPI device found');
     }
-    return [`-init_hw_device vaapi=accel:/dev/dri/${device}`, '-filter_hw_device accel'];
+    return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
   }
 
   getBaseOutputOptions() {
