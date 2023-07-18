@@ -69,7 +69,6 @@ services:
       - database
       - immich-server
       - typesense
-    restart: always
 
   immich-web:
     container_name: immich_web

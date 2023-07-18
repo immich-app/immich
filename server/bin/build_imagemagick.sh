@@ -8,8 +8,6 @@ wget https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_VERSION}.t
 sha256sum -c imagemagick.sha256
 tar -xvf ${IMAGEMAGICK_VERSION}.tar.gz -C ImageMagick --strip-components=1
 rm ${IMAGEMAGICK_VERSION}.tar.gz
-# curl -L https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_VERSION}.tar.gz \
-# | tee >(sha256sum -c imagemagick.sha256) | tar -zxv -C ImageMagick --strip-components=1
 cd ImageMagick
 ./configure --with-modules
 make -j$(nproc)
