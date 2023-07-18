@@ -1,4 +1,5 @@
 import { AuthService, AuthUserDto, JobCommand, JobService, LibraryService, QueueName, UserService } from '@app/domain';
+import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
 import { AppService } from '@app/immich/app.service';
 import { LibraryType } from '@app/infra/entities';
@@ -20,12 +21,16 @@ describe('Asset', () => {
   let database: DataSource;
   let authService: AuthService;
   let appService: AppService;
+  let assetService: AssetService;
+
   let microAppService: MicroAppService;
   let userService: UserService;
 
   let jobRepository: JobRepository;
   let libraryService: LibraryService;
   let jobService: JobService;
+
+  let adminUser: AuthUserDto;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -39,6 +44,7 @@ describe('Asset', () => {
     libraryService = app.get(LibraryService);
     jobService = app.get(JobService);
     appService = app.get(AppService);
+    assetService = app.get(AssetService);
     userService = app.get(UserService);
     microAppService = app.get(MicroAppService);
     database = app.get(DataSource);
@@ -56,35 +62,44 @@ describe('Asset', () => {
         firstName: 'one',
         lastName: 'test',
       });
-      const adminUser = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
+      adminUser = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
 
       const library = await libraryService.create(adminUser, { libraryType: LibraryType.IMPORT, name: 'Library' });
 
+      // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
       await libraryService.setImportPaths(adminUser, library.id, { importPaths: ['e2e/assets/nature'] });
 
       await libraryService.refresh(adminUser, library.id, {});
+
+      let isFinished = false;
+
+      // TODO: this shouldn't be a while loop
+      while (!isFinished) {
+        const jobStatus = await jobService.getAllJobsStatus();
+
+        let jobsActive = false;
+        Object.values(jobStatus).forEach((job) => {
+          if (job.queueStatus.isActive) {
+            jobsActive = true;
+          }
+        });
+
+        if (!jobsActive) {
+          isFinished = true;
+        }
+      }
+
+      // Library has been refreshed now
     });
 
     it('scans the library', async () => {
-      const queueEvents = new QueueEvents(QueueName.LIBRARY, {
-        connection: {
-          host: process.env.REDIS_HOSTNAME,
-          port: Number(process.env.REDIS_PORT),
-        },
-      });
-
-      const c = jobService.getQueue(QueueName.LIBRARY);
-      const jobs = await c.getJobs();
-
-      // Segfaults here
-      const d = await jobs[1].waitUntilFinished(queueEvents);
-
-      console.log(d);
-
+      const assets = await assetService.getAllAssets(adminUser, { withoutThumbs: true });
+      console.log(assets);
       const jobStatus = await jobService.getAllJobsStatus();
       console.log(jobStatus);
 
-      expect(true).toBe(false);
+      // Should have imported the 7 test assets
+      expect(assets).toHaveLength(7);
     });
   });
 
