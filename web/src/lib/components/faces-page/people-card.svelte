@@ -22,7 +22,6 @@
   };
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div id="people-card" class="relative">
   <a href="/people/{person.id}" draggable="false">
     <div class="filter brightness-95 rounded-xl w-48">

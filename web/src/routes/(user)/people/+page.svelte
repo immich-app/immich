@@ -37,7 +37,7 @@
           personUpdateDto: { name: personName },
         });
 
-        data.people = data.people.map((person) => {
+        data.people = data.people.map((person: PersonResponseDto) => {
           if (person.id === updatedPerson.id) {
             return updatedPerson;
           }
