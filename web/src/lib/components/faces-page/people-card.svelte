@@ -24,12 +24,12 @@
 
 <div id="people-card" class="relative">
   <a href="/people/{person.id}" draggable="false">
-    <div class="filter brightness-95 rounded-xl w-48">
+    <div class="w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
     </div>
     {#if person.name}
       <span
-        class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+        class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center font-medium text-white backdrop-blur-[1px] hover:cursor-pointer"
       >
         {person.name}
       </span>
@@ -37,7 +37,7 @@
   </a>
 
   <button
-    class="absolute top-2 right-2 z-20"
+    class="absolute right-2 top-2 z-20"
     on:click|stopPropagation|preventDefault={() => {
       showContextMenu = !showContextMenu;
     }}
@@ -59,6 +59,6 @@
 
 {#if showContextMenu}
   <Portal target="body">
-    <div class="absolute top-0 left-0 heyo w-screen h-screen bg-transparent z-10" />
+    <div class="heyo absolute left-0 top-0 z-10 h-screen w-screen bg-transparent" />
   </Portal>
 {/if}

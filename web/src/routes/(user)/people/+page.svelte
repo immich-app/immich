@@ -68,10 +68,10 @@
         </div>
       </div>
     {:else}
-      <div class="flex items-center place-content-center w-full min-h-[calc(66vh_-_11rem)] dark:text-white">
+      <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
         <div class="flex flex-col content-center items-center text-center">
           <AccountOff size="3.5em" />
-          <p class="font-medium text-3xl mt-5">No people</p>
+          <p class="mt-5 text-3xl font-medium">No people</p>
         </div>
       </div>
     {/if}
@@ -80,12 +80,12 @@
   {#if showChangeNameModal}
     <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
       <div
-        class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div
-          class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
         >
-          <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Change name</h1>
+          <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Change name</h1>
         </div>
 
         <form on:submit|preventDefault={submitNameChange} autocomplete="off">
@@ -95,7 +95,7 @@
             <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
           </div>
 
-          <div class="flex w-full px-4 gap-4 mt-8">
+          <div class="mt-8 flex w-full gap-4 px-4">
             <Button
               color="gray"
               fullwidth

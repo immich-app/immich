@@ -34,11 +34,11 @@
   {#if people.length > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
-        <p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">People</p>
         {#if data.people.length > MAX_ITEMS}
           <a
             href={AppRoute.PEOPLE}
-            class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+            class="pr-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
             draggable="false">View All</a
           >
         {/if}
@@ -53,7 +53,7 @@
               altText={person.name}
               widthStyle="100%"
             />
-            <p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+            <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
           </a>
         {/each}
       </div>
@@ -63,18 +63,18 @@
   {#if places.length > 0}
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 dark:text-immich-dark-fg font-medium">Places</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">Places</p>
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item}
           <a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
             <div
-              class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] flex justify-center"
+              class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
               <Thumbnail thumbnailSize={156} asset={item.data} readonly />
             </div>
             <span
-              class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+              class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
             >
               {item.value}
             </span>
@@ -87,18 +87,18 @@
   {#if things.length > 0}
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 dark:text-immich-dark-fg font-medium">Things</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">Things</p>
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each things as item}
           <a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
             <div
-              class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center flex"
+              class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
               <Thumbnail thumbnailSize={156} asset={item.data} readonly />
             </div>
             <span
-              class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+              class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
             >
               {item.value}
             </span>
@@ -108,15 +108,15 @@
     </div>
   {/if}
 
-  <hr class="dark:border-immich-dark-gray mb-4" />
+  <hr class="mb-4 dark:border-immich-dark-gray" />
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
     <div class="flex flex-col gap-6 dark:text-immich-dark-fg">
       <p class="text-sm">YOUR ACTIVITY</p>
       <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
         <a
           href={AppRoute.FAVORITES}
-          class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
+          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           draggable="false"
         >
           <HeartMultipleOutline size={24} />
@@ -124,7 +124,7 @@
         </a>
         <a
           href="/search?recent=true"
-          class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
+          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           draggable="false"
         >
           <ClockOutline size={24} />
@@ -137,7 +137,7 @@
       <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
         <a
           href="/search?type={AssetTypeEnum.Video}"
-          class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
+          class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
         >
           <PlayCircleOutline size={24} />
           <span>Videos</span>
@@ -145,7 +145,7 @@
         <div>
           <a
             href="/search?motion=true"
-            class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
+            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           >
             <MotionPlayOutline size={24} />
             <span>Motion photos</span>

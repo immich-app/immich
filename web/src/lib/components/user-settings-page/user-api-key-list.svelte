@@ -116,43 +116,43 @@
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
-    <div class="flex justify-end mb-2">
+    <div class="mb-2 flex justify-end">
       <Button size="sm" on:click={() => (newKey = { name: 'API Key' })}>New API Key</Button>
     </div>
 
     {#if keys.length > 0}
-      <table class="text-left w-full">
+      <table class="w-full text-left">
         <thead
-          class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray"
+          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
           <tr class="flex w-full place-items-center">
-            <th class="text-center w-1/3 font-medium text-sm">Name</th>
-            <th class="text-center w-1/3 font-medium text-sm">Created</th>
-            <th class="text-center w-1/3 font-medium text-sm">Action</th>
+            <th class="w-1/3 text-center text-sm font-medium">Name</th>
+            <th class="w-1/3 text-center text-sm font-medium">Created</th>
+            <th class="w-1/3 text-center text-sm font-medium">Action</th>
           </tr>
         </thead>
-        <tbody class="overflow-y-auto rounded-md w-full block border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#each keys as key, i}
             {#key key.id}
               <tr
-                class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
+                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
                   i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
-                <td class="text-sm px-4 w-1/3 text-ellipsis">{key.name}</td>
-                <td class="text-sm px-4 w-1/3 text-ellipsis"
+                <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
+                <td class="w-1/3 text-ellipsis px-4 text-sm"
                   >{new Date(key.createdAt).toLocaleDateString($locale, format)}
                 </td>
-                <td class="text-sm px-4 w-1/3 text-ellipsis">
+                <td class="w-1/3 text-ellipsis px-4 text-sm">
                   <button
                     on:click={() => (editKey = key)}
-                    class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
                     <PencilOutline size="16" />
                   </button>
                   <button
                     on:click={() => (deleteKey = key)}
-                    class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
                     <TrashCanOutline size="16" />
                   </button>

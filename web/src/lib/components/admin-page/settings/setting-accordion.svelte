@@ -7,8 +7,8 @@
   const toggle = () => (isOpen = !isOpen);
 </script>
 
-<div class="border-b-[1px] border-gray-200 dark:border-gray-700 py-4">
-  <div class="flex justify-between place-items-center">
+<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
+  <div class="flex place-items-center justify-between">
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
@@ -20,7 +20,7 @@
     <button
       on:click={toggle}
       aria-expanded={isOpen}
-      class="immich-circle-icon-button hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20 rounded-full p-3 flex place-items-center place-content-center transition-all"
+      class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20"
     >
       <svg
         style="tran"

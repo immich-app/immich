@@ -98,7 +98,7 @@
 </script>
 
 {#if assets.length > 0}
-  <div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
+  <div class="flex w-full flex-wrap gap-1 pb-20" bind:clientWidth={viewWidth}>
     {#each assets as asset (asset.id)}
       <div animate:flip={{ duration: 500 }}>
         <Thumbnail

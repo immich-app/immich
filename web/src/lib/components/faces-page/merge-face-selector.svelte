@@ -75,7 +75,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar on:close-button-click={onClose}>
     <svelte:fragment slot="leading">
@@ -99,12 +99,12 @@
       >
     </svelte:fragment>
   </ControlAppBar>
-  <section class="pt-[100px] px-[70px] bg-immich-bg dark:bg-immich-dark-bg">
+  <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
-      <div class="place-items-center place-content-center mb-10 h-[200px]">
-        <p class="uppercase mb-4 dark:text-white text-center">Choose matching faces to merge</p>
+      <div class="mb-10 h-[200px] place-content-center place-items-center">
+        <p class="mb-4 text-center uppercase dark:text-white">Choose matching faces to merge</p>
 
-        <div class="grid grid-flow-col-dense place-items-center place-content-center gap-4">
+        <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
               <FaceThumbnail border circle {person} selectable thumbnailSize={120} on:click={() => onSelect(person)} />
@@ -118,10 +118,10 @@
         </div>
       </div>
       <div
-        class="p-10 overflow-y-auto rounded-3xl bg-gray-200 dark:bg-immich-dark-gray"
+        class="overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
-        <div class="grid grid-col-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-8">
+        <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
           {#each unselectedPeople as person (person.id)}
             <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
           {/each}

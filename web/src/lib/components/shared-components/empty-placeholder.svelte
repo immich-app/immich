@@ -13,16 +13,16 @@
   <div
     on:click={actionHandler}
     on:keydown={actionHandler}
-    class="border dark:border-immich-dark-gray {hoverClasses} p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
+    class="border dark:border-immich-dark-gray {hoverClasses} m-auto mt-10 flex w-[50%] flex-col place-content-center place-items-center rounded-3xl bg-gray-50 p-5 dark:bg-immich-dark-gray"
   >
     <img src={empty1Url} {alt} width="500" draggable="false" />
-    <p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">{text}</p>
+    <p class="text-immich-text-gray-500 text-center dark:text-immich-dark-fg">{text}</p>
   </div>
 {:else}
   <div
-    class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
+    class="m-auto mt-10 flex w-[50%] flex-col place-content-center place-items-center rounded-3xl border bg-gray-50 p-5 dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
     <img src={empty1Url} {alt} width="500" draggable="false" />
-    <p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">{text}</p>
+    <p class="text-immich-text-gray-500 text-center dark:text-immich-dark-fg">{text}</p>
   </div>
 {/if}

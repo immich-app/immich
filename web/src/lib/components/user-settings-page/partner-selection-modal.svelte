@@ -37,22 +37,22 @@
 
 <BaseModal on:close={() => dispatch('close')}>
   <svelte:fragment slot="title">
-    <span class="flex gap-2 place-items-center">
+    <span class="flex place-items-center gap-2">
       <ImmichLogo width={24} />
       <p class="font-medium">Add partner</p>
     </span>
   </svelte:fragment>
 
-  <div class="max-h-[300px] overflow-y-auto immich-scrollbar">
+  <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
         <button
           on:click={() => selectUser(user)}
-          class="w-full flex place-items-center gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+          class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           {#if selectedUsers.includes(user)}
             <span
-              class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-bg rounded-full w-12 h-12 border flex place-items-center place-content-center text-3xl dark:border-immich-dark-gray"
+              class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
               >✓</span
             >
           {:else}
@@ -71,7 +71,7 @@
         </button>
       {/each}
     {:else}
-      <p class="text-sm p-5">
+      <p class="p-5 text-sm">
         Looks like you shared your photos with all users or you don't have any user to share with.
       </p>
     {/if}

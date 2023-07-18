@@ -111,12 +111,12 @@
       </svelte:fragment>
 
       {#if !galleryInView}
-        <div class="flex place-items-center place-content-center overflow-hidden gap-2">
+        <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
           <CircleIconButton logo={paused ? Play : Pause} forceDark on:click={() => (paused = !paused)} />
 
           {#each currentMemory.assets as _, i}
             <button class="relative w-full py-2" on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}>
-              <span class="absolute left-0 w-full h-[2px] bg-gray-500" />
+              <span class="absolute left-0 h-[2px] w-full bg-gray-500" />
               {#await resetPromise}
                 <span class="absolute left-0 h-[2px] bg-white" style:width={`${i < assetIndex ? 100 : 0}%`} />
               {:then}
@@ -139,7 +139,7 @@
 
     {#if galleryInView}
       <div
-        class="sticky top-20 flex place-content-center place-items-center z-30 transition-opacity"
+        class="sticky top-20 z-30 flex place-content-center place-items-center transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -149,28 +149,28 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="pt-20 overflow-hidden">
+    <section class="overflow-hidden pt-20">
       <div
-        class="flex w-[300%] h-[calc(100vh_-_180px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
+        class="ml-[-100%] box-border flex h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
         <div
-          class="rounded-2xl w-[20vw] h-1/2"
+          class="h-1/2 w-[20vw] rounded-2xl"
           class:opacity-25={previousMemory}
           class:opacity-0={!previousMemory}
           class:hover:opacity-70={previousMemory}
         >
-          <button class="rounded-2xl h-full w-full relative" disabled={!previousMemory} on:click={toPreviousMemory}>
+          <button class="relative h-full w-full rounded-2xl" disabled={!previousMemory} on:click={toPreviousMemory}>
             <img
-              class="rounded-2xl h-full w-full object-cover"
+              class="h-full w-full rounded-2xl object-cover"
               src={previousMemory ? api.getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
               alt=""
               draggable="false"
             />
 
             {#if previousMemory}
-              <div class="absolute right-4 bottom-4 text-white text-left">
-                <p class="font-semibold text-xs text-gray-200">PREVIOUS</p>
+              <div class="absolute bottom-4 right-4 text-left text-white">
+                <p class="text-xs font-semibold text-gray-200">PREVIOUS</p>
                 <p class="text-xl">{previousMemory.title}</p>
               </div>
             {/if}
@@ -179,19 +179,19 @@
 
         <!-- CURRENT MEMORY -->
         <div
-          class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
+          class="main-view relative flex h-full w-[70vw] place-content-center place-items-center rounded-2xl bg-black"
         >
-          <div class="bg-black w-full h-full rounded-2xl">
+          <div class="h-full w-full rounded-2xl bg-black">
             <!-- CONTROL BUTTONS -->
-            <div class="absolute h-full flex justify-between w-full">
-              <div class="flex h-full flex-col place-content-center place-items-center ml-4">
+            <div class="absolute flex h-full w-full justify-between">
+              <div class="ml-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoBack}
                     <CircleIconButton logo={ChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
                   {/if}
                 </div>
               </div>
-              <div class="flex h-full flex-col place-content-center place-items-center mr-4">
+              <div class="mr-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoForward}
                     <CircleIconButton logo={ChevronRight} backgroundColor="#202123" on:click={toNext} />
@@ -203,14 +203,14 @@
             {#key currentAsset.id}
               <img
                 transition:fade
-                class="rounded-2xl w-full h-full object-contain transition-all"
+                class="h-full w-full rounded-2xl object-contain transition-all"
                 src={api.getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
                 alt=""
                 draggable="false"
               />
             {/key}
 
-            <div class="absolute top-4 left-8 text-white text-sm font-medium">
+            <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>
                 {DateTime.fromISO(currentMemory.assets[0].fileCreatedAt).toLocaleString(DateTime.DATE_FULL)}
               </p>
@@ -224,22 +224,22 @@
 
         <!-- NEXT MEMORY -->
         <div
-          class="rounded-xl w-[20vw] h-1/2"
+          class="h-1/2 w-[20vw] rounded-xl"
           class:opacity-25={nextMemory}
           class:opacity-0={!nextMemory}
           class:hover:opacity-70={nextMemory}
         >
-          <button class="rounded-2xl h-full w-full relative" on:click={toNextMemory} disabled={!nextMemory}>
+          <button class="relative h-full w-full rounded-2xl" on:click={toNextMemory} disabled={!nextMemory}>
             <img
-              class="rounded-2xl h-full w-full object-cover"
+              class="h-full w-full rounded-2xl object-cover"
               src={nextMemory ? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG') : noThumbnailUrl}
               alt=""
               draggable="false"
             />
 
             {#if nextMemory}
-              <div class="absolute left-4 bottom-4 text-white text-left">
-                <p class="font-semibold text-xs text-gray-200">UP NEXT</p>
+              <div class="absolute bottom-4 left-4 text-left text-white">
+                <p class="text-xs font-semibold text-gray-200">UP NEXT</p>
                 <p class="text-xl">{nextMemory.title}</p>
               </div>
             {/if}
@@ -252,7 +252,7 @@
 
     <section class="bg-immich-dark-gray pl-4">
       <div
-        class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
+        class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
         class:opacity-0={galleryInView}
         class:opacity-100={!galleryInView}
       >

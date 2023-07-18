@@ -245,9 +245,9 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-4"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
 >
-  <div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
+  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
     <AssetViewerNavBar
       {asset}
       isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -270,17 +270,17 @@
   </div>
 
   {#if showNavigation}
-    <div class="row-start-2 row-span-1 col-start-1 column-span-1 justify-self-start mb-[60px] z-[999]">
+    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
   {/if}
 
-  <div class="row-start-1 row-span-full col-start-1 col-span-4">
+  <div class="col-span-4 col-start-1 row-span-full row-start-1">
     {#key asset.id}
       {#if !asset.resized}
-        <div class="h-full w-full flex justify-center">
+        <div class="flex h-full w-full justify-center">
           <div
-            class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
+            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -303,7 +303,7 @@
   </div>
 
   {#if showNavigation}
-    <div class="row-start-2 row-span-1 col-start-4 col-span-1 justify-self-end mb-[60px] z-[999]">
+    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
@@ -312,7 +312,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
+      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel

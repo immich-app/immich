@@ -37,7 +37,7 @@
     style:height={heightStyle}
     src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
     alt={altText}
-    class="absolute object-cover top-0"
+    class="absolute top-0 object-cover"
     class:rounded-lg={curve}
     class:shadow-lg={shadow}
     class:rounded-full={circle}

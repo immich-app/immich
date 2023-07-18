@@ -46,12 +46,12 @@
 </script>
 
 <div
-  class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[1001] bg-gradient-to-b from-black/40"
+  class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
     <CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
   </div>
-  <div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
+  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showMotionPlayButton}
       {#if isMotionPhotoPlaying}
         <CircleIconButton

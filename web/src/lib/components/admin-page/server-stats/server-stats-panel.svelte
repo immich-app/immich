@@ -29,20 +29,20 @@
   <div>
     <p class="text-sm dark:text-immich-dark-fg">TOTAL USAGE</p>
 
-    <div class="mt-5 justify-between lg:flex hidden">
+    <div class="mt-5 hidden justify-between lg:flex">
       <StatsCard logo={CameraIris} title="PHOTOS" value={stats.photos} />
       <StatsCard logo={PlayCircle} title="VIDEOS" value={stats.videos} />
       <StatsCard logo={Memory} title="STORAGE" value={statsUsage} unit={statsUsageUnit} />
     </div>
-    <div class="mt-5 lg:hidden flex">
-      <div class="bg-immich-gray dark:bg-immich-dark-gray rounded-3xl p-5 flex flex-col justify-between">
+    <div class="mt-5 flex lg:hidden">
+      <div class="flex flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
             <CameraIris size="25" />
             <p>PHOTOS</p>
           </div>
 
-          <div class="relative text-center font-mono font-semibold text-2xl">
+          <div class="relative text-center font-mono text-2xl font-semibold">
             <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.photos)}</span><span
               class="text-immich-primary dark:text-immich-dark-primary">{stats.photos}</span
             >
@@ -54,7 +54,7 @@
             <p>VIDEOS</p>
           </div>
 
-          <div class="relative text-center font-mono font-semibold text-2xl">
+          <div class="relative text-center font-mono text-2xl font-semibold">
             <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.videos)}</span><span
               class="text-immich-primary dark:text-immich-dark-primary">{stats.videos}</span
             >
@@ -66,11 +66,11 @@
             <p>STORAGE</p>
           </div>
 
-          <div class="relative text-center font-mono font-semibold text-2xl flex">
+          <div class="relative flex text-center font-mono text-2xl font-semibold">
             <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(statsUsage)}</span><span
               class="text-immich-primary dark:text-immich-dark-primary">{statsUsage}</span
             >
-            <span class="text-center my-auto ml-2 text-base font-light text-gray-400">{statsUsageUnit}</span>
+            <span class="my-auto ml-2 text-center text-base font-light text-gray-400">{statsUsageUnit}</span>
           </div>
         </div>
       </div>
@@ -79,28 +79,28 @@
 
   <div>
     <p class="text-sm dark:text-immich-dark-fg">USER USAGE DETAIL</p>
-    <table class="text-left w-full mt-5">
+    <table class="mt-5 w-full text-left">
       <thead
-        class="border rounded-md mb-4 bg-gray-50 dark:bg-immich-dark-gray dark:border-immich-dark-gray flex text-immich-primary dark:text-immich-dark-primary w-full h-12"
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
         <tr class="flex w-full place-items-center">
-          <th class="text-center w-1/4 font-medium text-sm">User</th>
-          <th class="text-center w-1/4 font-medium text-sm">Photos</th>
-          <th class="text-center w-1/4 font-medium text-sm">Videos</th>
-          <th class="text-center w-1/4 font-medium text-sm">Size</th>
+          <th class="w-1/4 text-center text-sm font-medium">User</th>
+          <th class="w-1/4 text-center text-sm font-medium">Photos</th>
+          <th class="w-1/4 text-center text-sm font-medium">Videos</th>
+          <th class="w-1/4 text-center text-sm font-medium">Size</th>
         </tr>
       </thead>
       <tbody
-        class="overflow-y-auto rounded-md w-full max-h-[320px] block border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each stats.usageByUser as user (user.userId)}
           <tr
-            class="text-center flex place-items-center w-full h-[50px] even:bg-immich-bg even:dark:bg-immich-dark-gray/50 odd:bg-immich-gray odd:dark:bg-immich-dark-gray/75"
+            class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
           >
-            <td class="text-sm px-2 w-1/4 text-ellipsis">{user.userFirstName} {user.userLastName}</td>
-            <td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString($locale)}</td>
-            <td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString($locale)}</td>
-            <td class="text-sm px-2 w-1/4 text-ellipsis">{asByteUnitString(user.usage, $locale)}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userFirstName} {user.userLastName}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.photos.toLocaleString($locale)}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">{asByteUnitString(user.usage, $locale)}</td>
           </tr>
         {/each}
       </tbody>

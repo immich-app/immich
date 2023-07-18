@@ -86,7 +86,7 @@
       <svelte:fragment slot="leading">
         <a
           data-sveltekit-preload-data="hover"
-          class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
+          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
           href="https://immich.app"
         >
           <ImmichLogo height="30" width="30" />
@@ -105,7 +105,7 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
+  <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
     <GalleryViewer {assets} {sharedLink} bind:selectedAssets viewFrom="shared-link-page" />
   </section>
 </section>

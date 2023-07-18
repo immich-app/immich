@@ -25,12 +25,12 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar on:close-button-click={onClose}>
     <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
   </ControlAppBar>
-  <section class="pt-[100px] pl-[70px] bg-immich-bg dark:bg-immich-dark-bg">
+  <section class="bg-immich-bg pl-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <AssetSelectionViewer {assets} on:select={handleSelectedAsset} />
   </section>
 </section>

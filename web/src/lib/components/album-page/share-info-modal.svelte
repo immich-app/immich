@@ -73,19 +73,19 @@
 {#if !selectedRemoveUser}
   <BaseModal on:close={() => dispatch('close')}>
     <svelte:fragment slot="title">
-      <span class="flex gap-2 place-items-center">
+      <span class="flex place-items-center gap-2">
         <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
       </span>
     </svelte:fragment>
 
-    <section class="max-h-[400px] overflow-y-auto immich-scrollbar pb-4">
+    <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       {#each album.sharedUsers as user}
         <div
-          class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
-          <div class="flex gap-4 place-items-center">
+          <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" autoColor />
-            <p class="font-medium text-sm">{user.firstName} {user.lastName}</p>
+            <p class="text-sm font-medium">{user.firstName} {user.lastName}</p>
           </div>
 
           <div id={`icon-${user.id}`} class="flex place-items-center">
@@ -108,7 +108,7 @@
             {:else if user.id == currentUser?.id}
               <button
                 on:click={() => (selectedRemoveUser = user)}
-                class="text-sm text-immich-primary dark:text-immich-dark-primary font-medium transition-colors hover:text-immich-primary/75"
+                class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >Leave</button
               >
             {/if}

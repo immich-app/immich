@@ -23,7 +23,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute top-0 left-0 w-full h-full py-[160px] bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg py-[160px] dark:bg-immich-dark-bg"
 >
   <ControlAppBar on:close-button-click={() => dispatch('close')}>
     <svelte:fragment slot="leading">
@@ -42,7 +42,7 @@
     </svelte:fragment>
   </ControlAppBar>
 
-  <section class="flex flex-wrap gap-14 px-20 overflow-y-auto">
+  <section class="flex flex-wrap gap-14 overflow-y-auto px-20">
     <!-- Image grid -->
     <div class="flex flex-wrap gap-[2px]">
       {#each album.assets as asset}

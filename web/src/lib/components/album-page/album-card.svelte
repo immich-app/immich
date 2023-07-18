@@ -60,7 +60,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="group hover:cursor-pointer mt-4 border-[3px] border-transparent dark:hover:border-immich-dark-primary/75 hover:border-immich-primary/75 rounded-3xl p-5 relative"
+  class="group relative mt-4 rounded-3xl border-[3px] border-transparent p-5 hover:cursor-pointer hover:border-immich-primary/75 dark:hover:border-immich-dark-primary/75"
   on:click={() => dispatchClick('click', album)}
   on:keydown={() => dispatchClick('click', album)}
   data-testid="album-card"
@@ -69,7 +69,7 @@
   {#if showContextMenu}
     <div
       id={`icon-${album.id}`}
-      class="absolute top-6 right-6 z-10"
+      class="absolute right-6 top-6 z-10"
       on:click|stopPropagation|preventDefault={showAlbumContextMenu}
       data-testid="context-button-parent"
     >
@@ -79,16 +79,16 @@
     </div>
   {/if}
 
-  <div class={`aspect-square relative`}>
+  <div class={`relative aspect-square`}>
     <img
       src={imageData}
       alt={album.id}
-      class={`object-cover h-full w-full transition-all z-0 rounded-3xl duration-300 hover:shadow-lg`}
+      class={`z-0 h-full w-full rounded-3xl object-cover transition-all duration-300 hover:shadow-lg`}
       data-testid="album-image"
       draggable="false"
     />
     <div
-      class="w-full h-full absolute top-0 rounded-3xl {isSharingView
+      class="absolute top-0 h-full w-full rounded-3xl {isSharingView
         ? 'group-hover:bg-yellow-800/25'
         : 'group-hover:bg-indigo-800/25'} "
     />
@@ -96,14 +96,14 @@
 
   <div class="mt-4">
     <p
-      class="text-xl font-semibold dark:text-immich-dark-primary text-immich-primary w-full truncate"
+      class="w-full truncate text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
       data-testid="album-name"
       title={album.albumName}
     >
       {album.albumName}
     </p>
 
-    <span class="text-sm flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
+    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
       {#if showItemCount}
         <p>
           {album.assetCount.toLocaleString($locale)}
