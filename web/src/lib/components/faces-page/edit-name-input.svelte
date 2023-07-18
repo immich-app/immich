@@ -38,7 +38,6 @@
       class="gap-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
       type="text"
       placeholder="New name or nickname"
-      required
       bind:value={name}
     />
     <Button size="sm" type="submit">Done</Button>
