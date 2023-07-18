@@ -3,16 +3,29 @@
   import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   export let data: PageData;
+
+  let showChangeNameModal = false;
+
+  const handleChangeName = (event: CustomEvent) => {
+    showChangeNameModal = true;
+    console.log(event.detail);
+  };
+
+  const handleMergeFaces = (event: CustomEvent) => {
+    console.log(event.detail);
+  };
 </script>
 
 <UserPageLayout user={data.user} showUploadButton title="People">
-  <section class="people-page">
+  <section>
     {#if data.people.length > 0}
       <div class="pl-4">
         <div class="flex flex-row flex-wrap gap-1">
           {#each data.people as person (person.id)}
-            <PeopleCard {person} />
+            <PeopleCard {person} on:change-name={handleChangeName} on:merge-faces={handleMergeFaces} />
           {/each}
         </div>
       </div>
@@ -25,4 +38,30 @@
       </div>
     {/if}
   </section>
+
+  {#if showChangeNameModal}
+    <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
+      <div
+        class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+      >
+        <div
+          class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+        >
+          <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">HELLO WORLD</h1>
+        </div>
+
+        <form on:submit|preventDefault={() => {}} autocomplete="off">
+          <div class="m-4 flex flex-col gap-2">
+            <label class="immich-form-label" for="email">Name</label>
+            <input class="immich-form-input" id="name" name="name" type="text" />
+          </div>
+
+          <div class="flex w-full px-4 gap-4 mt-8">
+            <Button color="gray" fullwidth on:click={() => {}}>Cancel</Button>
+            <Button type="submit" fullwidth>Ok</Button>
+          </div>
+        </form>
+      </div>
+    </FullScreenModal>
+  {/if}
 </UserPageLayout>
