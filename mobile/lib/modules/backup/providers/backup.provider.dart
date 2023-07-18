@@ -569,7 +569,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Check if this device is enable backup by the user
     if (state.autoBackup) {
-      // check if backup is alreayd in process - then return
+      // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
         log.info("[_resumeBackup] Backup is already in progress - abort");
         return;
@@ -594,7 +594,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         .findAll();
     final List<BackupAlbum> excludedBackupAlbums = await _db.backupAlbums
         .filter()
-        .selectionEqualTo(BackupSelection.select)
+        .selectionEqualTo(BackupSelection.exclude)
         .findAll();
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
