@@ -67,14 +67,16 @@
 </script>
 
 <UserPageLayout user={data.user} on:doneClick={handleDoneClick} title="People">
-  {#if countTotalPeople && countTotalPeople > 0}
-    <IconButton on:click={() => (selectHidden = !selectHidden)} slot="buttons">
-      <div class="flex items-center">
-        <EyeOutline size="1em" />
-        <p class="ml-2">Show & hide faces</p>
-      </div>
-    </IconButton>
-  {/if}
+  <svelte:fragment slot="buttons">
+    {#if countTotalPeople > 0}
+      <IconButton on:click={() => (selectHidden = !selectHidden)}>
+        <div class="flex items-center">
+          <EyeOutline size="1em" />
+          <p class="ml-2">Show & hide faces</p>
+        </div>
+      </IconButton>
+    {/if}
+  </svelte:fragment>
 
   {#if countVisiblePeople > 0 || selectHidden}
     {#if !selectHidden}
