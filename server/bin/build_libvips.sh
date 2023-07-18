@@ -11,7 +11,7 @@ rm vips-${LIBVIPS_VERSION}.tar.xz
 cd libvips
 meson setup build --buildtype=release --libdir=lib -Dintrospection=false
 cd build
-ninja test
+# ninja test  # tests set concurrency too high for arm/v7
 ninja install
 cd .. && rm -rf libvips
 ldconfig /usr/local/lib
