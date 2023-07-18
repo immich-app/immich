@@ -45,7 +45,7 @@
     data-testid="context-button-parent"
     id={`icon-${person.id}`}
   >
-    <IconButton color="transparent-gray">
+    <IconButton color="transparent-primary">
       <DotsVertical size="20" />
     </IconButton>
 

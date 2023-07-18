@@ -5,17 +5,53 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import { api, type PersonResponseDto } from '@api';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
   export let data: PageData;
 
   let showChangeNameModal = false;
+  let personName = '';
+  let edittingPerson: PersonResponseDto | null = null;
 
-  const handleChangeName = (event: CustomEvent) => {
+  const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
     showChangeNameModal = true;
+    personName = detail.name;
+    edittingPerson = detail;
+  };
+
+  const handleMergeFaces = (event: CustomEvent<PersonResponseDto>) => {
     console.log(event.detail);
   };
 
-  const handleMergeFaces = (event: CustomEvent) => {
-    console.log(event.detail);
+  const submitNameChange = async () => {
+    try {
+      if (edittingPerson) {
+        const { data: updatedPerson } = await api.personApi.updatePerson({
+          id: edittingPerson.id,
+          personUpdateDto: { name: personName },
+        });
+
+        data.people = data.people.map((person) => {
+          if (person.id === updatedPerson.id) {
+            return updatedPerson;
+          }
+          return person;
+        });
+
+        showChangeNameModal = false;
+
+        notificationController.show({
+          message: 'Change name succesfully',
+          type: NotificationType.Info,
+        });
+      }
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
   };
 </script>
 
@@ -47,17 +83,24 @@
         <div
           class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
         >
-          <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">HELLO WORLD</h1>
+          <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Change name</h1>
         </div>
 
-        <form on:submit|preventDefault={() => {}} autocomplete="off">
+        <form on:submit|preventDefault={submitNameChange} autocomplete="off">
           <div class="m-4 flex flex-col gap-2">
             <label class="immich-form-label" for="email">Name</label>
-            <input class="immich-form-input" id="name" name="name" type="text" />
+            <!-- svelte-ignore a11y-autofocus -->
+            <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
           </div>
 
           <div class="flex w-full px-4 gap-4 mt-8">
-            <Button color="gray" fullwidth on:click={() => {}}>Cancel</Button>
+            <Button
+              color="gray"
+              fullwidth
+              on:click={() => {
+                showChangeNameModal = false;
+              }}>Cancel</Button
+            >
             <Button type="submit" fullwidth>Ok</Button>
           </div>
         </form>
