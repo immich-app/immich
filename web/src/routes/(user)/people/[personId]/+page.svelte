@@ -29,6 +29,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
+  import { onMount } from 'svelte';
 
   export let data: PageData;
   let isEditingName = false;
@@ -42,6 +43,12 @@
 
   $: showAssets = !showMergeFacePanel && !showFaceThumbnailSelection;
 
+  onMount(() => {
+    const action = $page.url.searchParams.get('action');
+    if (action == 'merge') {
+      showMergeFacePanel = true;
+    }
+  });
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {

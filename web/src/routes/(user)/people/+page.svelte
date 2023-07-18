@@ -11,6 +11,8 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { goto } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
   export let data: PageData;
 
   let showChangeNameModal = false;
@@ -24,7 +26,7 @@
   };
 
   const handleMergeFaces = (event: CustomEvent<PersonResponseDto>) => {
-    console.log(event.detail);
+    goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
   };
 
   const submitNameChange = async () => {
