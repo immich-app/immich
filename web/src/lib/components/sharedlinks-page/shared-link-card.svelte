@@ -59,7 +59,7 @@
 </script>
 
 <div
-  class="w-full flex gap-4 dark:text-immich-gray transition-all border-b border-gray-200 dark:border-gray-600 hover:border-immich-primary dark:hover:border-immich-dark-primary py-4"
+  class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
     {#await getAssetInfo()}
@@ -69,7 +69,7 @@
         id={asset.id}
         src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
         alt={asset.id}
-        class="object-cover w-[100px] h-[100px] rounded-lg"
+        class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"
         draggable="false"
       />
@@ -78,10 +78,10 @@
 
   <div class="flex flex-col justify-between">
     <div class="info-top">
-      <div class="text-xs font-mono font-semibold text-gray-500 dark:text-gray-400">
+      <div class="font-mono text-xs font-semibold text-gray-500 dark:text-gray-400">
         {#if link.expiresAt}
           {#if isExpired(link.expiresAt)}
-            <p class="text-red-600 dark:text-red-400 font-bold">Expired</p>
+            <p class="font-bold text-red-600 dark:text-red-400">Expired</p>
           {:else}
             <p>
               Expires {getCountDownExpirationDate()}
@@ -93,7 +93,7 @@
       </div>
 
       <div class="text-sm">
-        <div class="flex gap-2 place-items-center text-immich-primary dark:text-immich-dark-primary">
+        <div class="flex place-items-center gap-2 text-immich-primary dark:text-immich-dark-primary">
           {#if link.type === SharedLinkType.Album}
             <p>
               {link.album?.albumName.toUpperCase()}
@@ -122,7 +122,7 @@
     <div class="info-bottom flex gap-4">
       {#if link.allowUpload}
         <div
-          class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[80px]"
+          class="flex w-[80px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
           Upload
         </div>
@@ -130,7 +130,7 @@
 
       {#if link.allowDownload}
         <div
-          class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[100px]"
+          class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
           Download
         </div>
@@ -138,7 +138,7 @@
 
       {#if link.showExif}
         <div
-          class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[60px]"
+          class="flex w-[60px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
           EXIF
         </div>
@@ -146,7 +146,7 @@
     </div>
   </div>
 
-  <div class="flex-auto flex flex-col place-content-center place-items-end text-right">
+  <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
       <CircleIconButton logo={Delete} on:click={() => dispatch('delete')} />
       <CircleIconButton logo={CircleEditOutline} on:click={() => dispatch('edit')} />

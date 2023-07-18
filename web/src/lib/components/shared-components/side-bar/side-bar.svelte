@@ -80,9 +80,9 @@
     </SideBarButton>
   </a>
 
-  <div class="text-xs dark:text-immich-dark-fg transition-all duration-200">
-    <p class="p-6 hidden md:block group-hover:sm:block">LIBRARY</p>
-    <hr class="mt-8 mb-[31px] mx-4 block md:hidden group-hover:sm:hidden" />
+  <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
+    <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
+    <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
   </div>
   <a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
     <SideBarButton

@@ -62,16 +62,16 @@
   <svelte:fragment slot="leading">Shared links</svelte:fragment>
 </ControlAppBar>
 
-<section class="flex flex-col pb-[120px] mt-[120px]">
-  <div class="w-[50%] m-auto mb-4 dark:text-immich-gray">
+<section class="mt-[120px] flex flex-col pb-[120px]">
+  <div class="m-auto mb-4 w-[50%] dark:text-immich-gray">
     <p>Manage shared links</p>
   </div>
   {#if sharedLinks.length === 0}
-    <div class="w-[50%] m-auto bg-gray-100 flex place-items-center place-content-center rounded-lg p-12">
+    <div class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 p-12">
       <p>You don't have any shared links</p>
     </div>
   {:else}
-    <div class="flex flex-col w-[50%] m-auto">
+    <div class="m-auto flex w-[50%] flex-col">
       {#each sharedLinks as link (link.id)}
         <SharedLinkCard
           {link}

@@ -26,7 +26,7 @@
 {#if dragStartTarget}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
-    class="fixed inset-0 w-full h-full z-[1000] flex flex-col items-center justify-center bg-gray-100/90 dark:bg-immich-dark-bg/90 text-immich-dark-gray dark:text-immich-gray"
+    class="fixed inset-0 z-[1000] flex h-full w-full flex-col items-center justify-center bg-gray-100/90 text-immich-dark-gray dark:bg-immich-dark-bg/90 dark:text-immich-gray"
     transition:fade={{ duration: 250 }}
     on:dragover={(e) => {
       // Prevent browser from opening the dropped file.
@@ -34,7 +34,7 @@
       e.preventDefault();
     }}
   >
-    <ImmichLogo class="animate-bounce w-48 m-16" />
+    <ImmichLogo class="m-16 w-48 animate-bounce" />
     <div class="text-2xl">Drop files anywhere to upload</div>
   </div>
 {/if}

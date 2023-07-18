@@ -21,7 +21,7 @@
   });
 </script>
 
-<main class="grid h-screen pt-18 bg-immich-bg dark:bg-immich-dark-bg">
+<main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
   {#if $isMultiSelectStoreState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
       <DownloadAction />

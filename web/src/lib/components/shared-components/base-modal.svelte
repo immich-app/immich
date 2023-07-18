@@ -31,14 +31,14 @@
   id="immich-modal"
   style:z-index={zIndex}
   transition:fade={{ duration: 100, easing: quintOut }}
-  class="fixed top-0 left-0 w-full h-full bg-black/50 flex place-items-center place-content-center overflow-hidden"
+  class="fixed left-0 top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50"
 >
   <div
     use:clickOutside
     on:outclick={() => dispatch('close')}
-    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[450px] min-h-[200px] max-h-[600px] rounded-lg shadow-md"
+    class="max-h-[600px] min-h-[200px] w-[450px] rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
-    <div class="flex justify-between place-items-center px-5 py-3">
+    <div class="flex place-items-center justify-between px-5 py-3">
       <div>
         <slot name="title">
           <p>Modal Title</p>

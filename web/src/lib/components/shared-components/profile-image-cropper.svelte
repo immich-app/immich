@@ -65,21 +65,21 @@
 
 <BaseModal on:close>
   <svelte:fragment slot="title">
-    <span class="flex gap-2 place-items-center">
+    <span class="flex place-items-center gap-2">
       <p class="font-medium">Set profile picture</p>
     </span>
   </svelte:fragment>
-  <div class="flex justify-center place-items-center items-center">
+  <div class="flex place-items-center items-center justify-center">
     <div
-      class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary dark:border-immich-dark-primary border-4 bg-immich-dark-primary dark:bg-immich-primary"
+      class="relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
     >
       <PhotoViewer bind:element={imgElement} {asset} />
     </div>
   </div>
-  <span class="p-4 flex justify-end">
+  <span class="flex justify-end p-4">
     <Button on:click={handleSetProfilePicture}>
       <p>Set as profile picture</p>
     </Button>
   </span>
-  <div class="max-h-[400px] flex flex-col mb-2" />
+  <div class="mb-2 flex max-h-[400px] flex-col" />
 </BaseModal>

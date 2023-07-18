@@ -94,7 +94,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="immich-scrubbable-scrollbar"
-  class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none"
+  class="fixed right-0 z-[100] select-none bg-immich-bg hover:cursor-row-resize"
   style:width={isDragging ? '100vw' : '60px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
   on:mouseenter={() => (isHover = true)}
@@ -109,7 +109,7 @@
 >
   {#if isHover}
     <div
-      class="border-b-2 border-immich-primary dark:border-immich-dark-primary w-[100px] right-0 pr-6 py-1 text-sm pl-1 font-medium absolute bg-immich-bg dark:bg-immich-dark-gray z-[100] pointer-events-none rounded-tl-md shadow-lg dark:text-immich-dark-fg"
+      class="pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 pl-1 pr-6 text-sm font-medium shadow-lg dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       style:top={currentMouseYLocation + 'px'}
     >
       {hoveredDate?.toLocaleString('default', { month: 'short' })}
@@ -120,7 +120,7 @@
   <!-- Scroll Position Indicator Line -->
   {#if !isDragging}
     <div
-      class="absolute right-0 w-10 h-[2px] bg-immich-primary dark:bg-immich-dark-primary"
+      class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top={scrollbarPosition + 'px'}
     />
   {/if}
@@ -139,7 +139,7 @@
         {#if segment.height > 8}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 pr-5 z-10 text-xs font-medium dark:text-immich-dark-fg"
+            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
           >
             {groupDate.getFullYear()}
           </div>
@@ -147,7 +147,7 @@
       {:else if segment.height > 5}
         <div
           aria-label={segment.timeGroup + ' ' + segment.count}
-          class="absolute right-0 rounded-full h-[4px] w-[4px] mr-3 bg-gray-300 block"
+          class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"
         />
       {/if}
     </div>

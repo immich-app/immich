@@ -11,19 +11,19 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div
-    class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full h-16"
+    class="absolute flex h-16 w-full place-items-center justify-between border-b dark:border-immich-dark-gray dark:text-immich-dark-fg"
   >
-    <div class="flex items-center justify-between p-8 w-full">
+    <div class="flex w-full items-center justify-between p-8">
       <div class="flex items-center">
         <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
         <p class="ml-4">Show & hide faces</p>
       </div>
       <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
     </div>
-    <div class="absolute top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8">
+    <div class="immich-scrollbar absolute top-16 h-[calc(100%-theme(spacing.16))] w-full p-4 pb-8">
       <slot />
     </div>
   </div>

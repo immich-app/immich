@@ -22,7 +22,7 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
     controls
     class="h-full object-contain"
@@ -35,7 +35,7 @@
   </video>
 
   {#if isVideoLoading}
-    <div class="absolute flex place-items-center place-content-center">
+    <div class="absolute flex place-content-center place-items-center">
       <LoadingSpinner />
     </div>
   {/if}

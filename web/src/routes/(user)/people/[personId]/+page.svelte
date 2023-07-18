@@ -120,7 +120,7 @@
 {/if}
 
 <!-- Face information block -->
-<section class="pt-24 px-4 sm:px-6 flex place-items-center">
+<section class="flex place-items-center px-4 pt-24 sm:px-6">
   {#if isEditingName}
     <EditNameInput
       person={data.person}
@@ -145,9 +145,9 @@
       on:click={() => (isEditingName = true)}
     >
       {#if data.person.name}
-        <p class="font-medium py-2">{data.person.name}</p>
+        <p class="py-2 font-medium">{data.person.name}</p>
       {:else}
-        <p class="font-medium w-fit">Add a name</p>
+        <p class="w-fit font-medium">Add a name</p>
         <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
       {/if}
     </button>
@@ -156,8 +156,8 @@
 
 <!-- Gallery Block -->
 {#if showAssets}
-  <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-    <section class="overflow-y-scroll relative immich-scrollbar">
+  <section class="relative mb-12 bg-immich-bg pt-8 dark:bg-immich-dark-bg sm:px-4">
+    <section class="immich-scrollbar relative overflow-y-scroll">
       <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
         <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
       </section>

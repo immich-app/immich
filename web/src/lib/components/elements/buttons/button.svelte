@@ -59,7 +59,7 @@
   {disabled}
   {title}
   on:click
-  class="inline-flex justify-center items-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
+  class="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
     color
   ]} {sizeClasses[size]}"
   class:rounded-lg={rounded === 'lg'}

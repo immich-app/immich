@@ -20,9 +20,9 @@
 
 <FullScreenModal on:clickOutside={() => dispatch('close')}>
   <div
-    class="flex flex-col gap-8 border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-96 max-w-lg rounded-3xl"
+    class="flex w-96 max-w-lg flex-col gap-8 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
-    <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium self-center">Map Settings</h1>
+    <h1 class="self-center text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Map Settings</h1>
 
     <form
       on:submit|preventDefault={() => dispatch('save', settings)}
@@ -32,8 +32,8 @@
       <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
-          <div class="flex justify-between items-center gap-8">
-            <label class="immich-form-label text-sm shrink-0" for="date-after">Date after</label>
+          <div class="flex items-center justify-between gap-8">
+            <label class="immich-form-label shrink-0 text-sm" for="date-after">Date after</label>
             <input
               class="immich-form-input w-40"
               type="date"
@@ -42,8 +42,8 @@
               bind:value={settings.dateAfter}
             />
           </div>
-          <div class="flex justify-between items-center gap-8">
-            <label class="immich-form-label text-sm shrink-0" for="date-before">Date before</label>
+          <div class="flex items-center justify-between gap-8">
+            <label class="immich-form-label shrink-0 text-sm" for="date-before">Date before</label>
             <input class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
           </div>
           <div class="flex justify-center text-xs">
@@ -104,7 +104,7 @@
         </div>
       {/if}
 
-      <div class="flex w-full gap-4 mt-4">
+      <div class="mt-4 flex w-full gap-4">
         <Button color="gray" size="sm" fullwidth on:click={() => dispatch('close')}>Cancel</Button>
         <Button type="submit" size="sm" fullwidth>Save</Button>
       </div>

@@ -41,16 +41,16 @@
 <UserPageLayout user={data.user} title={data.meta.title}>
   <div class="flex" slot="buttons">
     <LinkButton on:click={createSharedAlbum}>
-      <div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <PlusBoxOutline size="18" class="shrink-0" />
-        <span class="max-sm:text-xs leading-none">Create shared album</span>
+        <span class="leading-none max-sm:text-xs">Create shared album</span>
       </div>
     </LinkButton>
 
     <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
-      <div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Link size="18" class="shrink-0" />
-        <span class="max-sm:text-xs leading-none">Shared links</span>
+        <span class="leading-none max-sm:text-xs">Shared links</span>
       </div>
     </LinkButton>
   </div>
@@ -59,14 +59,14 @@
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
         <div>
-          <p class="mb-4 dark:text-immich-dark-fg font-medium">Partners</p>
+          <p class="mb-4 font-medium dark:text-immich-dark-fg">Partners</p>
         </div>
 
         <div class="flex flex-row flex-wrap gap-4">
           {#each data.partners as partner (partner.id)}
             <a
               href="/partners/{partner.id}"
-              class="flex rounded-lg gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+              class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="md" autoColor />
               <div class="text-left">
@@ -83,12 +83,12 @@
         </div>
       </div>
 
-      <hr class="dark:border-immich-dark-gray mb-4" />
+      <hr class="mb-4 dark:border-immich-dark-gray" />
     {/if}
 
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 dark:text-immich-dark-fg font-medium">Albums</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">Albums</p>
       </div>
 
       <div>
@@ -104,10 +104,10 @@
         <!-- Empty List -->
         {#if data.sharedAlbums.length === 0}
           <div
-            class="border dark:border-immich-dark-gray p-5 md:w-[500px] w-2/3 m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
+            class="m-auto mt-10 flex w-2/3 flex-col place-content-center place-items-center rounded-3xl border bg-gray-50 p-5 dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[500px]"
           >
             <img src={empty2Url} alt="Empty shared album" width="500" draggable="false" />
-            <p class="text-center text-immich-text-gray-500">
+            <p class="text-immich-text-gray-500 text-center">
               Create a shared album to share photos and videos with people in your network
             </p>
           </div>
