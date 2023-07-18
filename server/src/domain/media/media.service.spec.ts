@@ -8,7 +8,6 @@ import {
   newSystemConfigRepositoryMock,
   probeStub,
 } from '@test';
-import fs from 'fs';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
