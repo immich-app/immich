@@ -18,21 +18,10 @@
   >
     <div class="flex items-center justify-between p-8 w-full">
       <div class="flex items-center">
-        <CircleIconButton
-          logo={Close}
-          on:click={() => {
-            dispatch('closeClick');
-          }}
-        />
+        <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
         <p class="ml-4">Show & hide faces</p>
       </div>
-      <IconButton
-        on:click={() => {
-          dispatch('doneClick');
-        }}
-      >
-        Done
-      </IconButton>
+      <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
     </div>
     <div class="absolute top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8">
       <slot />
