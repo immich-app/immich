@@ -1,6 +1,7 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { IsOptional, IsString } from 'class-validator';
-import { ValidateUUID } from '../domain.util';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
   /**
@@ -16,6 +17,13 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsString()
   featureFaceAssetId?: string;
+
+  /**
+   * Person visibility
+   */
+  @IsOptional()
+  @IsBoolean()
+  isHidden?: boolean;
 }
 
 export class MergePersonDto {
@@ -23,10 +31,23 @@ export class MergePersonDto {
   ids!: string[];
 }
 
+export class PersonSearchDto {
+  @IsBoolean()
+  @Transform(toBoolean)
+  withHidden?: boolean = false;
+}
+
 export class PersonResponseDto {
   id!: string;
   name!: string;
   thumbnailPath!: string;
+  isHidden!: boolean;
+}
+
+export class PeopleResponseDto {
+  total!: number;
+  visible!: number;
+  people!: PersonResponseDto[];
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {
@@ -34,6 +55,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     id: person.id,
     name: person.name,
     thumbnailPath: person.thumbnailPath,
+    isHidden: person.isHidden,
   };
 }
 

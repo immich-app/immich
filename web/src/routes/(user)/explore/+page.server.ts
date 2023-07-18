@@ -9,11 +9,11 @@ export const load = (async ({ locals, parent }) => {
   }
 
   const { data: items } = await locals.api.searchApi.getExploreData();
-  const { data: people } = await locals.api.personApi.getAllPeople();
+  const { data: response } = await locals.api.personApi.getAllPeople({ withHidden: false });
   return {
     user,
     items,
-    people,
+    response,
     meta: {
       title: 'Explore',
     },

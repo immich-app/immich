@@ -17,7 +17,10 @@ class PersonApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'GET /person' operation and returns the [Response].
-  Future<Response> getAllPeopleWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [bool] withHidden:
+  Future<Response> getAllPeopleWithHttpInfo({ bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/person';
 
@@ -27,6 +30,10 @@ class PersonApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
 
     const contentTypes = <String>[];
 
@@ -42,8 +49,11 @@ class PersonApi {
     );
   }
 
-  Future<List<PersonResponseDto>?> getAllPeople() async {
-    final response = await getAllPeopleWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [bool] withHidden:
+  Future<PeopleResponseDto?> getAllPeople({ bool? withHidden, }) async {
+    final response = await getAllPeopleWithHttpInfo( withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -51,11 +61,8 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
-        .cast<PersonResponseDto>()
-        .toList();
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PeopleResponseDto',) as PeopleResponseDto;
+    
     }
     return null;
   }

@@ -18,7 +18,7 @@ Method | HTTP request | Description
 
 
 # **getAllPeople**
-> List<PersonResponseDto> getAllPeople()
+> PeopleResponseDto getAllPeople(withHidden)
 
 
 
@@ -41,9 +41,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
+final withHidden = true; // bool | 
 
 try {
-    final result = api_instance.getAllPeople();
+    final result = api_instance.getAllPeople(withHidden);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->getAllPeople: $e\n');
@@ -51,11 +52,14 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **withHidden** | **bool**|  | [optional] [default to false]
 
 ### Return type
 
-[**List<PersonResponseDto>**](PersonResponseDto.md)
+[**PeopleResponseDto**](PeopleResponseDto.md)
 
 ### Authorization
 

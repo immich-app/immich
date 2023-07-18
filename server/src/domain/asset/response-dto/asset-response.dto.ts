@@ -54,7 +54,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: entity.faces?.map(mapFace),
+    people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
   };
 }

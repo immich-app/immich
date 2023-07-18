@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** | Person name. | [optional] 
 **featureFaceAssetId** | **String** | Asset is used to get the feature face thumbnail. | [optional] 
+**isHidden** | **bool** | Person visibility | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

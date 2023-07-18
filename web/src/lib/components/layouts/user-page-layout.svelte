@@ -16,7 +16,6 @@
 
   <slot name="header" />
 </header>
-
 <main
   class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
 >

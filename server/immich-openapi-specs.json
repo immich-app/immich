@@ -2509,17 +2509,24 @@
     "/person": {
       "get": {
         "operationId": "getAllPeople",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
-                  }
+                  "$ref": "#/components/schemas/PeopleResponseDto"
                 }
               }
             }
@@ -5877,6 +5884,28 @@
           "passwordLoginEnabled"
         ]
       },
+      "PeopleResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "number"
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "visible",
+          "people"
+        ]
+      },
       "PersonResponseDto": {
         "type": "object",
         "properties": {
@@ -5888,12 +5917,16 @@
           },
           "thumbnailPath": {
             "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "isHidden"
         ]
       },
       "PersonUpdateDto": {
@@ -5906,6 +5939,10 @@
           "featureFaceAssetId": {
             "type": "string",
             "description": "Asset is used to get the feature face thumbnail."
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Person visibility"
           }
         }
       },

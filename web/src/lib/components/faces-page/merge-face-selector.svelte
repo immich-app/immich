@@ -25,8 +25,8 @@
   $: unselectedPeople = people.filter((source) => !selectedPeople.includes(source) && source.id !== person.id);
 
   onMount(async () => {
-    const { data } = await api.personApi.getAllPeople();
-    people = data;
+    const { data } = await api.personApi.getAllPeople({ withHidden: true });
+    people = data.people;
   });
 
   const onClose = () => {

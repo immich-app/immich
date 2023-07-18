@@ -19,6 +19,7 @@ const responseDto: PersonResponseDto = {
   id: 'person-1',
   name: 'Person 1',
   thumbnailPath: '/path/to/thumbnail.jpg',
+  isHidden: false,
 };
 
 describe(PersonService.name, () => {
@@ -41,7 +42,37 @@ describe(PersonService.name, () => {
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
-      await expect(sut.getAll(authStub.admin)).resolves.toEqual([responseDto]);
+      await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
+        total: 1,
+        visible: 1,
+        people: [responseDto],
+      });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+    });
+    it('should get all visible people with thumbnails', async () => {
+      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
+        total: 2,
+        visible: 1,
+        people: [responseDto],
+      });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+    });
+    it('should get all hidden and visible people with thumbnails', async () => {
+      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
+        total: 2,
+        visible: 1,
+        people: [
+          responseDto,
+          {
+            id: 'person-1',
+            name: '',
+            thumbnailPath: '/path/to/thumbnail.jpg',
+            isHidden: true,
+          },
+        ],
+      });
       expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
     });
   });
@@ -105,6 +136,21 @@ describe(PersonService.name, () => {
 
       expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ASSET,
+        data: { ids: [assetEntityStub.image.id] },
+      });
+    });
+
+    it('should update a person visibility', async () => {
+      personMock.getById.mockResolvedValue(personStub.hidden);
+      personMock.update.mockResolvedValue(personStub.withName);
+      personMock.getAssets.mockResolvedValue([assetEntityStub.image]);
+
+      await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
+
+      expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetEntityStub.image.id] },

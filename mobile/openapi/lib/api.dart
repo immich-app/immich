@@ -104,6 +104,7 @@ part 'model/merge_person_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_config_response_dto.dart';
+part 'model/people_response_dto.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_update_dto.dart';
 part 'model/queue_status_dto.dart';

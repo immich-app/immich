@@ -17,7 +17,7 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
-    //Future<List<PersonResponseDto>> getAllPeople() async
+    //Future<PeopleResponseDto> getAllPeople({ bool withHidden }) async
     test('test getAllPeople', () async {
       // TODO
     });
