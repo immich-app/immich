@@ -29,6 +29,7 @@
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { isSearchEnabled } from '$lib/stores/search.store';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
@@ -74,12 +75,22 @@
   });
 
   onDestroy(() => {
-    if (browser) document.removeEventListener('keydown', handleKeyboardPress);
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (event.key === '/') event.preventDefault();
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (event.key === '/') {
+      event.preventDefault();
+    }
+
     if (!$isViewingAssetStoreState) {
       switch (event.key) {
         case '/':
@@ -147,13 +158,20 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
+    if ($isSearchEnabled) {
+      return;
+    }
+
     if (e.shiftKey && e.key !== '/') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
-
   const onKeyUp = (e: KeyboardEvent) => {
+    if ($isSearchEnabled) {
+      return;
+    }
+
     if (e.shiftKey && e.key !== '/') {
       e.preventDefault();
       shiftKeyIsDown = false;

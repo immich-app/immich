@@ -3,7 +3,7 @@
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import { goto } from '$app/navigation';
-  import { savedSearchTerms } from '$lib/stores/search.store';
+  import { isSearchEnabled, savedSearchTerms } from '$lib/stores/search.store';
   import { fly } from 'svelte/transition';
   export let value = '';
   export let grayTheme: boolean;
@@ -43,6 +43,16 @@
   const clearSearchTerm = () => {
     $savedSearchTerms = [];
   };
+
+  const onFocusIn = () => {
+    showBigSearchBar = true;
+    $isSearchEnabled = true;
+  };
+
+  const onFocusOut = () => {
+    showBigSearchBar = false;
+    $isSearchEnabled = false;
+  };
 </script>
 
 <form
@@ -52,8 +62,8 @@
   action={AppRoute.SEARCH}
   on:reset={() => (value = '')}
   on:submit|preventDefault={() => onSearch(true)}
-  on:focusin={() => (showBigSearchBar = true)}
-  on:focusout={() => (showBigSearchBar = false)}
+  on:focusin={onFocusIn}
+  on:focusout={onFocusOut}
 >
   <label>
     <div class="absolute inset-y-0 left-0 flex items-center pl-6">
