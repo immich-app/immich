@@ -147,14 +147,13 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.shiftKey && e.key !== '/') {
+    if (e.key === 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
-
   const onKeyUp = (e: KeyboardEvent) => {
-    if (e.shiftKey && e.key !== '/') {
+    if (e.key === 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = false;
     }
