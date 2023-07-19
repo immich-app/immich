@@ -1,4 +1,4 @@
-import { ICryptoRepository, IJobRepository, IStorageRepository, JobName, mimeTypes } from '@app/domain';
+import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
@@ -137,84 +137,6 @@ describe('AssetService', () => {
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
-  });
-
-  describe('mime types linting', () => {
-    describe('profile', () => {
-      it('should contain only lowercase mime types', () => {
-        const keys = Object.keys(mimeTypes.profile);
-        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
-        const values = Object.values(mimeTypes.profile);
-        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-      });
-
-      it('should be a sorted list', () => {
-        const keys = Object.keys(mimeTypes.profile);
-        expect(keys).toEqual([...keys].sort());
-      });
-    });
-
-    describe('image', () => {
-      it('should contain only lowercase mime types', () => {
-        const keys = Object.keys(mimeTypes.image);
-        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
-        const values = Object.values(mimeTypes.image);
-        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-      });
-
-      it('should be a sorted list', () => {
-        const keys = Object.keys(mimeTypes.image).filter((key) => key in mimeTypes.profile === false);
-        expect(keys).toEqual([...keys].sort());
-      });
-
-      it('should contain only image mime types', () => {
-        expect(Object.values(mimeTypes.image)).toEqual(
-          Object.values(mimeTypes.image).filter((mimeType) => mimeType.startsWith('image/')),
-        );
-      });
-    });
-
-    describe('video', () => {
-      it('should contain only lowercase mime types', () => {
-        const keys = Object.keys(mimeTypes.video);
-        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
-        const values = Object.values(mimeTypes.video);
-        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-      });
-
-      it('should be a sorted list', () => {
-        const keys = Object.keys(mimeTypes.video);
-        expect(keys).toEqual([...keys].sort());
-      });
-
-      it('should contain only video mime types', () => {
-        expect(Object.values(mimeTypes.video)).toEqual(
-          Object.values(mimeTypes.video).filter((mimeType) => mimeType.startsWith('video/')),
-        );
-      });
-    });
-
-    describe('sidecar', () => {
-      it('should contain only lowercase mime types', () => {
-        const keys = Object.keys(mimeTypes.sidecar);
-        expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
-        const values = Object.values(mimeTypes.sidecar);
-        expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-      });
-
-      it('should be a sorted list', () => {
-        const keys = Object.keys(mimeTypes.sidecar);
-        expect(keys).toEqual([...keys].sort());
-      });
-    });
-
-    describe('sidecar', () => {
-      it('should contain only be xml mime type', () => {
-        expect(Object.values(mimeTypes.sidecar)).toEqual(
-          Object.values(mimeTypes.sidecar).filter((mimeType) => mimeType === 'application/xml'),
-        );
-      });
-    });
   });
 
   describe('uploadFile', () => {

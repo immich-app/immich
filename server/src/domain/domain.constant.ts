@@ -30,70 +30,73 @@ export function assertMachineLearningEnabled() {
   }
 }
 
-const profile: Record<string, string> = {
-  '.avif': 'image/avif',
-  '.dng': 'image/x-adobe-dng',
-  '.heic': 'image/heic',
-  '.heif': 'image/heif',
-  '.jpeg': 'image/jpeg',
-  '.jpg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
+const image: Record<string, string[]> = {
+  '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
+  '.ari': ['image/ari', 'image/x-arriflex-ari'],
+  '.arw': ['image/arw', 'image/x-sony-arw'],
+  '.avif': ['image/avif'],
+  '.cap': ['image/cap', 'image/x-phaseone-cap'],
+  '.cin': ['image/cin', 'image/x-phantom-cin'],
+  '.cr2': ['image/cr2', 'image/x-canon-cr2'],
+  '.cr3': ['image/cr3', 'image/x-canon-cr3'],
+  '.crw': ['image/crw', 'image/x-canon-crw'],
+  '.dcr': ['image/dcr', 'image/x-kodak-dcr'],
+  '.dng': ['image/dng', 'image/x-adobe-dng'],
+  '.erf': ['image/erf', 'image/x-epson-erf'],
+  '.fff': ['image/fff', 'image/x-hasselblad-fff'],
+  '.gif': ['image/gif'],
+  '.heic': ['image/heic'],
+  '.heif': ['image/heif'],
+  '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
+  '.jpeg': ['image/jpeg'],
+  '.jpg': ['image/jpeg'],
+  '.jxl': ['image/jxl'],
+  '.k25': ['image/k25', 'image/x-kodak-k25'],
+  '.kdc': ['image/kdc', 'image/x-kodak-kdc'],
+  '.mrw': ['image/mrw', 'image/x-minolta-mrw'],
+  '.nef': ['image/nef', 'image/x-nikon-nef'],
+  '.orf': ['image/orf', 'image/x-olympus-orf'],
+  '.ori': ['image/ori', 'image/x-olympus-ori'],
+  '.pef': ['image/pef', 'image/x-pentax-pef'],
+  '.png': ['image/png'],
+  '.raf': ['image/raf', 'image/x-fuji-raf'],
+  '.raw': ['image/raw', 'image/x-panasonic-raw'],
+  '.rwl': ['image/rwl', 'image/x-leica-rwl'],
+  '.sr2': ['image/sr2', 'image/x-sony-sr2'],
+  '.srf': ['image/srf', 'image/x-sony-srf'],
+  '.srw': ['image/srw', 'image/x-samsung-srw'],
+  '.tiff': ['image/tiff'],
+  '.webp': ['image/webp'],
+  '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
 
-const image: Record<string, string> = {
-  ...profile,
-  '.3fr': 'image/x-hasselblad-3fr',
-  '.ari': 'image/x-arriflex-ari',
-  '.arw': 'image/x-sony-arw',
-  '.cap': 'image/x-phaseone-cap',
-  '.cin': 'image/x-phantom-cin',
-  '.cr2': 'image/x-canon-cr2',
-  '.cr3': 'image/x-canon-cr3',
-  '.crw': 'image/x-canon-crw',
-  '.dcr': 'image/x-kodak-dcr',
-  '.erf': 'image/x-epson-erf',
-  '.fff': 'image/x-hasselblad-fff',
-  '.gif': 'image/gif',
-  '.iiq': 'image/x-phaseone-iiq',
-  '.k25': 'image/x-kodak-k25',
-  '.kdc': 'image/x-kodak-kdc',
-  '.mrw': 'image/x-minolta-mrw',
-  '.nef': 'image/x-nikon-nef',
-  '.orf': 'image/x-olympus-orf',
-  '.ori': 'image/x-olympus-ori',
-  '.pef': 'image/x-pentax-pef',
-  '.raf': 'image/x-fuji-raf',
-  '.raw': 'image/x-panasonic-raw',
-  '.rwl': 'image/x-leica-rwl',
-  '.sr2': 'image/x-sony-sr2',
-  '.srf': 'image/x-sony-srf',
-  '.srw': 'image/x-samsung-srw',
-  '.tiff': 'image/tiff',
-  '.x3f': 'image/x-sigma-x3f',
+const profileExtensions = ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'];
+const profile: Record<string, string[]> = Object.fromEntries(
+  Object.entries(image).filter(([key]) => profileExtensions.includes(key)),
+);
+
+const video: Record<string, string[]> = {
+  '.3gp': ['video/3gpp'],
+  '.avi': ['video/avi', 'video/msvideo', 'video/vnd.avi', 'video/x-msvideo'],
+  '.flv': ['video/x-flv'],
+  '.m2ts': ['video/mp2t'],
+  '.mkv': ['video/x-matroska'],
+  '.mov': ['video/quicktime'],
+  '.mp4': ['video/mp4'],
+  '.mpg': ['video/mpeg'],
+  '.mts': ['video/mp2t'],
+  '.webm': ['video/webm'],
+  '.wmv': ['video/x-ms-wmv'],
 };
 
-const video: Record<string, string> = {
-  '.3gp': 'video/3gpp',
-  '.avi': 'video/x-msvideo',
-  '.flv': 'video/x-flv',
-  '.mkv': 'video/x-matroska',
-  '.mov': 'video/quicktime',
-  '.mp2t': 'video/mp2t',
-  '.mp4': 'video/mp4',
-  '.mpeg': 'video/mpeg',
-  '.webm': 'video/webm',
-  '.wmv': 'video/x-ms-wmv',
+const sidecar: Record<string, string[]> = {
+  '.xmp': ['application/xml', 'text/xml'],
 };
 
-const sidecar: Record<string, string> = {
-  '.xmp': 'application/xml',
-};
+const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
-const isType = (filename: string, lookup: Record<string, string>) => !!lookup[extname(filename).toLowerCase()];
-const getType = (filename: string, lookup: Record<string, string>) => lookup[extname(filename).toLowerCase()];
 const lookup = (filename: string) =>
-  getType(filename, { ...image, ...video, ...sidecar }) || 'application/octet-stream';
+  ({ ...image, ...video, ...sidecar }[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream');
 
 export const mimeTypes = {
   image,
@@ -107,14 +110,12 @@ export const mimeTypes = {
   isVideo: (filename: string) => isType(filename, video),
   lookup,
   assetType: (filename: string) => {
-    const contentType = lookup(filename).split('/')[0];
-    switch (contentType) {
-      case 'image':
-        return AssetType.IMAGE;
-      case 'video':
-        return AssetType.VIDEO;
-      default:
-        return AssetType.OTHER;
+    const contentType = lookup(filename);
+    if (contentType.startsWith('image/')) {
+      return AssetType.IMAGE;
+    } else if (contentType.startsWith('video/')) {
+      return AssetType.VIDEO;
     }
+    return AssetType.OTHER;
   },
 };
