@@ -75,7 +75,10 @@
   });
 
   onDestroy(() => {
-    if (browser) document.removeEventListener('keydown', handleKeyboardPress);
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
 
