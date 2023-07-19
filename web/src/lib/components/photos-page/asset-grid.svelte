@@ -147,6 +147,7 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
+    console.log(e.key, e.shiftKey);
     if (e.key === 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = true;
