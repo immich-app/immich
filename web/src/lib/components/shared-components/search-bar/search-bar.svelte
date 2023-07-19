@@ -67,7 +67,7 @@
 >
   <label>
     <div class="absolute inset-y-0 left-0 flex items-center pl-6">
-      <div class="dark:text-immich-dark-fg/75 pointer-events-none">
+      <div class="pointer-events-none dark:text-immich-dark-fg/75">
         <Magnify size="1.5em" />
       </div>
     </div>
@@ -76,7 +76,7 @@
       name="q"
       class="w-full transition-all {grayTheme
         ? 'dark:bg-immich-dark-gray'
-        : 'dark:bg-immich-dark-bg'} text-immich-fg/75 dark:text-immich-dark-fg px-14 py-4 {showBigSearchBar
+        : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showBigSearchBar
         ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
         : 'rounded-3xl border border-transparent bg-gray-200'}"
       placeholder="Search your photos"
@@ -89,7 +89,7 @@
     <div class="absolute inset-y-0 right-0 flex items-center pr-4">
       <button
         type="reset"
-        class="hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35] rounded-full p-2"
+        class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
       >
         <Close size="1.5em" />
       </button>
@@ -99,12 +99,12 @@
   {#if showBigSearchBar}
     <div
       transition:fly={{ y: 25, duration: 250 }}
-      class="dark:bg-immich-dark-gray absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:text-gray-300"
+      class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
     >
       <div class="px-5 pt-5 text-xs">
         <p>
           Smart search is enabled by default, to search for metadata use the syntax <span
-            class="text-immich-primary dark:text-immich-dark-primary rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 dark:bg-gray-900"
+            class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
             >m:your-search-term</span
           >
         </p>
@@ -115,7 +115,7 @@
           <p>RECENT SEARCHES</p>
           <button
             type="button"
-            class="text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary rounded-lg p-2 font-semibold"
+            class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
             on:click={clearSearchTerm}>Clear all</button
           >
         </div>
