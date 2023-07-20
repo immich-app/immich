@@ -14,7 +14,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg bg-scroll dark:bg-immich-dark-bg"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div
     class="absolute flex h-16 w-full place-items-center justify-between border-b dark:border-immich-dark-gray dark:text-immich-dark-fg"

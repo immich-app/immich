@@ -20,7 +20,6 @@
 
   export let data: PageData;
   let selectHidden = false;
-  let changeCounter = 0;
   let initialHiddenValues: Record<string, boolean> = {};
 
   let people = data.people.people;
