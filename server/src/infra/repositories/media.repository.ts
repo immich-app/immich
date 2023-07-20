@@ -81,7 +81,7 @@ export class MediaRepository implements IMediaRepository {
           codecType: stream.codec_type,
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
-          hdr: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+          isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')

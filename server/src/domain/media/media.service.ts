@@ -81,7 +81,7 @@ export class MediaService {
         }
         const options = {
           resizeOptions: { format: 'jpeg', size: JPEG_THUMBNAIL_SIZE } as ResizeOptions,
-          toneMap: mainVideoStream.hdr,
+          toneMap: mainVideoStream.isHDR,
         };
         await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
@@ -235,10 +235,10 @@ export class MediaService {
         return true;
 
       case TranscodePolicy.REQUIRED:
-        return !allTargetsMatching;
+        return !allTargetsMatching || videoStream.isHDR;
 
       case TranscodePolicy.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetRes;
+        return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
 
       default:
         return false;

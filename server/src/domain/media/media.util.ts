@@ -24,7 +24,7 @@ class BaseConfig implements VideoCodecSWConfig {
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
-    if (stream.hdr) {
+    if (stream.isHDR) {
       filters.push('zscale=t=linear');
       filters.push('tonemap=hable:desat=0');
       filters.push('zscale=p=709:t=709:m=709');

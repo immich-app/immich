@@ -14,7 +14,7 @@ export interface VideoStreamInfo {
   codecName?: string;
   codecType?: string;
   frameCount: number;
-  hdr: boolean;
+  isHDR: boolean;
 }
 
 export interface AudioStreamInfo {
