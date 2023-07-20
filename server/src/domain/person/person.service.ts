@@ -100,13 +100,17 @@ export class PersonService {
   async updatePeople(authUser: AuthUserDto, dto: PeopleUpdateDto): Promise<PersonResponseDto[]> {
     const peopleReponse: PersonResponseDto[] = [];
     for (const person of dto.people) {
-      peopleReponse.push(
-        await this.update(authUser, person.id, {
-          isHidden: person.isHidden,
-          name: person.name,
-          featureFaceAssetId: person.featureFaceAssetId,
-        }),
-      );
+      try {
+        peopleReponse.push(
+          await this.update(authUser, person.id, {
+            isHidden: person.isHidden,
+            name: person.name,
+            featureFaceAssetId: person.featureFaceAssetId,
+          }),
+        );
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to update ${person.id}: ${error}`, error?.stack);
+      }
     }
     return peopleReponse;
   }
