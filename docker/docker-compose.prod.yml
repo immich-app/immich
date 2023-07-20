@@ -1,0 +1,114 @@
+version: "3.8"
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: immich-server:latest
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    command: ["./start-server.sh"]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - database
+      - typesense
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+  
+  immich-microservices:
+    container_name: immich_microservices
+    image: immich-microservices:latest
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    command: ["./start-microservices.sh"]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - immich-server
+      - typesense
+    restart: always
+
+  immich-web:
+    container_name: immich_web
+    image: immich-web:latest
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - immich-server
+
+  typesense:
+    container_name: immich_typesense
+    image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/data
+    logging:
+      driver: none
+    volumes:
+      - tsdata:/data
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      PG_DATA: /var/lib/postgresql/data
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  immich-proxy:
+    container_name: immich_proxy
+    image: immich-proxy:latest
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile
+    ports:
+      - 2283:8080
+    logging:
+      driver: none
+    depends_on:
+      - immich-server
+    restart: always
+
+volumes:
+  pgdata:
+  model-cache:
+  tsdata:
