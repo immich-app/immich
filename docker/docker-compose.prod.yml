@@ -7,7 +7,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-server.sh"]
+    command: [ "start.sh", "immich" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -36,7 +36,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-microservices.sh"]
+    command: [ "start.sh", "microservices" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
