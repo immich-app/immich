@@ -31,7 +31,7 @@ COPY --from=prod /usr/src/app/bin ./bin
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 COPY package.json package-lock.json ./
-COPY start*.sh ./
+COPY start.sh ./
 
 RUN npm link && npm cache clean --force
 
