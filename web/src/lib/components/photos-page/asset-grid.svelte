@@ -162,17 +162,18 @@
       return;
     }
 
-    if (e.shiftKey && e.key !== '/') {
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
+
   const onKeyUp = (e: KeyboardEvent) => {
     if ($isSearchEnabled) {
       return;
     }
 
-    if (e.shiftKey && e.key !== '/') {
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = false;
     }
