@@ -11,13 +11,25 @@ from ..schemas import ModelType
 from .base import InferenceModel
 
 
-class CLIPSTEncoder(InferenceModel):
+_ST_TO_CLIP_SERVER_MODEL_NAME = {
+    "clip-ViT-B-16": "ViT-B-16::openai",
+    "clip-ViT-B-32": "ViT-B-32::openai",
+    "clip-ViT-B-32-multilingual-v1": "M-CLIP/XLM-Roberta-Large-Vit-B-32",
+    "clip-ViT-L-14": "ViT-L-14::openai"
+}
+
+
+class CLIPEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
     def download(self, **model_kwargs: Any) -> None:
         # downloading logic is adapted from clip-server's CLIPOnnxModel class
         if not self.model_name in _MODELS:
-            raise ValueError(f"Unknown model name {self.model_name}.")
+            if self.model_name in _ST_TO_CLIP_SERVER_MODEL_NAME:
+                print(f"Warning: Sentence-Transformer model names are no longer supported. The best match for '{self.model_name}' is '{_ST_TO_CLIP_SERVER_MODEL_NAME[self.model_name]}'. See https://clip-as-service.jina.ai/user-guides/benchmark/ for more info on the model catalog.")
+                self.model_name = _ST_TO_CLIP_SERVER_MODEL_NAME[self.model_name]
+            else:
+                raise ValueError(f"Unknown model name {self.model_name}.")
         for model_name, model_md5 in _MODELS[self.model_name]:
             if not self.cache_dir / model_name.split("/")[1]:
                 download_model(
