@@ -5,7 +5,7 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, type PersonResponseDto } from '@api';
+  import { api, PeopleUpdateItem, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -27,31 +27,28 @@
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
 
+  let showLoadingSpinner = false;
+
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
 
   const handleCloseClick = () => {
-    selectHidden = false;
-    people.forEach((person: PersonResponseDto) => {
+    for (const person of people) {
       person.isHidden = initialHiddenValues[person.id];
-    });
+    }
+    showLoadingSpinner = false;
+    selectHidden = false;
   };
 
   const handleDoneClick = async () => {
-    selectHidden = false;
+    showLoadingSpinner = true;
+    let changed: PeopleUpdateItem[] = [];
     try {
-      // Reset the counter before checking changes
-      let changeCounter = 0;
-
       // Check if the visibility for each person has been changed
       for (const person of people) {
         if (person.isHidden !== initialHiddenValues[person.id]) {
-          changeCounter++;
-          await api.personApi.updatePerson({
-            id: person.id,
-            personUpdateDto: { isHidden: person.isHidden },
-          });
+          changed.push({ id: person.id, isHidden: person.isHidden });
 
           // Update the initial hidden values
           initialHiddenValues[person.id] = person.isHidden;
@@ -60,19 +57,25 @@
           countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
+      if (changed.length > 0)
+        await api.personApi.updatePeople({
+          peopleUpdateDto: { people: changed },
+        });
 
-      if (changeCounter > 0) {
+      if (changed.length > 0) {
         notificationController.show({
           type: NotificationType.Info,
-          message: `Visibility changed for ${changeCounter} ${changeCounter <= 1 ? 'person' : 'people'}`,
+          message: `Visibility changed for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
         });
       }
     } catch (error) {
       handleError(
         error,
-        `Unable to change the visibility for ${changeCounter} ${changeCounter <= 1 ? 'person' : 'people'}`,
+        `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
     }
+    showLoadingSpinner = false;
+    selectHidden = false;
   };
 
   let showChangeNameModal = false;
@@ -184,7 +187,7 @@
   {/if}
 </UserPageLayout>
 {#if selectHidden}
-  <ShowHide on:doneClick={handleDoneClick} on:closeClick={handleCloseClick}>
+  <ShowHide on:doneClick={handleDoneClick} on:closeClick={handleCloseClick} bind:showLoadingSpinner>
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
         {#each people as person (person.id)}

@@ -8,6 +8,7 @@ import {
   mapPerson,
   MergePersonDto,
   PeopleResponseDto,
+  PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
@@ -94,6 +95,20 @@ export class PersonService {
     }
 
     return mapPerson(person);
+  }
+
+  async updatePeople(authUser: AuthUserDto, dto: PeopleUpdateDto): Promise<PersonResponseDto[]> {
+    const peopleReponse: PersonResponseDto[] = [];
+    for (const person of dto.people) {
+      peopleReponse.push(
+        await this.update(authUser, person.id, {
+          isHidden: person.isHidden,
+          name: person.name,
+          featureFaceAssetId: person.featureFaceAssetId,
+        }),
+      );
+    }
+    return peopleReponse;
   }
 
   async handlePersonCleanup() {
