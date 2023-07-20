@@ -295,7 +295,7 @@
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
 {#if showShortcuts}
-  <ShowShortcuts bind:showShortcuts />
+  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
