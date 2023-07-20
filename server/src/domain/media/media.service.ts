@@ -73,7 +73,17 @@ export class MediaService {
         break;
       case AssetType.VIDEO:
         this.logger.log('Generating video thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+        const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainVideoStream(videoStreams);
+        if (!mainVideoStream) {
+          this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+          return false;
+        }
+        const options = {
+          resizeOptions: { format: 'jpeg', size: JPEG_THUMBNAIL_SIZE } as ResizeOptions,
+          toneMap: mainVideoStream.hdr,
+        };
+        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
     }
@@ -208,8 +218,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
-        audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 

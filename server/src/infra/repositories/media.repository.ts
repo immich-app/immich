@@ -1,4 +1,11 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import {
+  CropOptions,
+  ExtractThumbnailOptions,
+  IMediaRepository,
+  ResizeOptions,
+  TranscodeOptions,
+  VideoInfo,
+} from '@app/domain';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
@@ -23,33 +30,29 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    switch (options.format) {
-      case 'webp':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .webp()
-          .rotate()
-          .toFile(output);
-        return;
-
-      case 'jpeg':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .jpeg()
-          .rotate()
-          .toFile(output);
-        return;
-    }
+    await sharp(input, { failOnError: false })
+      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+      .rotate()
+      .toFormat(options.format)
+      .toFile(output);
   }
 
-  extractVideoThumbnail(input: string, output: string, size: number) {
+  extractVideoThumbnail(
+    input: string,
+    output: string,
+    { resizeOptions, toneMap }: ExtractThumbnailOptions,
+  ): Promise<void> {
+    let filter = `-vf scale='min(${resizeOptions.size},iw)':'min(${resizeOptions.size},ih)':force_original_aspect_ratio=increase`;
+    if (resizeOptions.format === 'jpeg') {
+      filter += `:out_color_matrix=bt601:out_range=pc`;
+    }
+    if (toneMap) {
+      filter += `,zscale=t=linear,tonemap=hable,zscale=p=709:t=709:m=709`;
+    }
+
     return new Promise<void>((resolve, reject) => {
       ffmpeg(input)
-        .outputOptions([
-          '-ss 00:00:00.000',
-          '-frames:v 1',
-          `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
-        ])
+        .outputOptions(['-ss 00:00:00.000', '-frames:v 1', filter])
         .output(output)
         .on('error', (err, stdout, stderr) => {
           this.logger.error(stderr);
@@ -78,6 +81,7 @@ export class MediaRepository implements IMediaRepository {
           codecType: stream.codec_type,
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+          hdr: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')

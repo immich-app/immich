@@ -14,6 +14,7 @@ export interface VideoStreamInfo {
   codecName?: string;
   codecType?: string;
   frameCount: number;
+  hdr: boolean;
 }
 
 export interface AudioStreamInfo {
@@ -38,6 +39,11 @@ export interface CropOptions {
   left: number;
   width: number;
   height: number;
+}
+
+export interface ExtractThumbnailOptions {
+  resizeOptions: ResizeOptions;
+  toneMap: boolean;
 }
 
 export interface TranscodeOptions {
@@ -68,7 +74,7 @@ export interface IMediaRepository {
   generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video
-  extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
+  extractVideoThumbnail(input: string, output: string, options: ExtractThumbnailOptions): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
 }
