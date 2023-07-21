@@ -39,10 +39,59 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
-    return AppBar(
-      foregroundColor: Colors.grey[100],
-      backgroundColor: Colors.transparent,
-      leading: IconButton(
+    Widget buildLivePhotoButton() {
+      return IconButton(
+        onPressed: () {
+          onToggleMotionVideo();
+        },
+        icon: isPlayingMotionVideo
+            ? Icon(
+                Icons.motion_photos_pause_outlined,
+                color: Colors.grey[200],
+              )
+            : Icon(
+                Icons.play_circle_outline_rounded,
+                color: Colors.grey[200],
+              ),
+      );
+    }
+
+    Widget buildMoreInfoButton() {
+      return IconButton(
+        onPressed: () {
+          onMoreInfoPressed();
+        },
+        icon: Icon(
+          Icons.info_outline_rounded,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildDownloadButton() {
+      return IconButton(
+        onPressed: onDownloadPressed,
+        icon: Icon(
+          Icons.cloud_download_outlined,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildAddToAlbumButtom() {
+      return IconButton(
+        onPressed: () {
+          onAddToAlbumPressed();
+        },
+        icon: Icon(
+          Icons.add,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildBackButton() {
+      return IconButton(
         onPressed: () {
           AutoRouter.of(context).pop();
         },
@@ -51,54 +100,22 @@ class TopControlAppBar extends HookConsumerWidget {
           size: 20.0,
           color: Colors.grey[200],
         ),
-      ),
+      );
+    }
+
+    return AppBar(
+      foregroundColor: Colors.grey[100],
+      backgroundColor: Colors.transparent,
+      leading: buildBackButton(),
       actionsIconTheme: const IconThemeData(
         size: iconSize,
       ),
       actions: [
         if (asset.isRemote) buildFavoriteButton(),
-        if (asset.livePhotoVideoId != null)
-          IconButton(
-            onPressed: () {
-              onToggleMotionVideo();
-            },
-            icon: isPlayingMotionVideo
-                ? Icon(
-                    Icons.motion_photos_pause_outlined,
-                    color: Colors.grey[200],
-                  )
-                : Icon(
-                    Icons.play_circle_outline_rounded,
-                    color: Colors.grey[200],
-                  ),
-          ),
-        if (asset.storage == AssetState.remote)
-          IconButton(
-            onPressed: onDownloadPressed,
-            icon: Icon(
-              Icons.cloud_download_outlined,
-              color: Colors.grey[200],
-            ),
-          ),
-        if (asset.isRemote)
-          IconButton(
-            onPressed: () {
-              onAddToAlbumPressed();
-            },
-            icon: Icon(
-              Icons.add,
-              color: Colors.grey[200],
-            ),
-          ),
-        IconButton(
-          onPressed: () {
-            onMoreInfoPressed();
-          },
-          icon: Icon(
-            Icons.info_outline_rounded,
-            color: Colors.grey[200],
-          ),
-        ),
+        if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
+        if (asset.isRemote) buildDownloadButton(),
+        if (asset.isRemote) buildAddToAlbumButtom(),
+        buildMoreInfoButton()
       ],
     );
   }
