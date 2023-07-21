@@ -65,8 +65,7 @@ class ImmichImage extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.grey),
                   ),
                 )
-              : Transform.scale(
-                  scale: 0.2,
+              : Center(
                   child: const CircularProgressIndicator(),
                 ));
         },
@@ -107,8 +106,7 @@ class ImmichImage extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.grey),
           );
         }
-        return Transform.scale(
-          scale: 0.2,
+        return Center(
           child: CircularProgressIndicator.adaptive(
             value: downloadProgress.progress,
           ),
