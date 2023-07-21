@@ -94,6 +94,31 @@
     edittingPerson = detail;
   };
 
+  const handleHideFace = async (event: CustomEvent<PersonResponseDto>) => {
+    try {
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: event.detail.id,
+        personUpdateDto: { isHidden: true },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      showChangeNameModal = false;
+
+      notificationController.show({
+        message: 'Changed visibility succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to hide person');
+    }
+  };
+
   const handleMergeFaces = (event: CustomEvent<PersonResponseDto>) => {
     goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
   };
@@ -144,7 +169,12 @@
         {#key selectHidden}
           {#each people as person (person.id)}
             {#if !person.isHidden}
-              <PeopleCard {person} on:change-name={handleChangeName} on:merge-faces={handleMergeFaces} />
+              <PeopleCard
+                {person}
+                on:change-name={handleChangeName}
+                on:merge-faces={handleMergeFaces}
+                on:hide-face={handleHideFace}
+              />
             {/if}
           {/each}
         {/key}

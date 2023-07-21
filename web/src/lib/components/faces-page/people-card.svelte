@@ -20,6 +20,10 @@
   const onMergeFacesClicked = () => {
     dispatch('merge-faces', person);
   };
+
+  const onHideFaceClicked = () => {
+    dispatch('hide-face', person);
+  };
 </script>
 
 <div id="people-card" class="relative">
@@ -50,6 +54,7 @@
 
     {#if showContextMenu}
       <ContextMenu on:outclick={() => (showContextMenu = false)}>
+        <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
         <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
         <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
       </ContextMenu>
