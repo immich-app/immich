@@ -10,6 +10,8 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart' as store;
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:openapi/api.dart' as api;
+import 'package:photo_manager/photo_manager.dart';
 
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
@@ -42,8 +44,9 @@ class MemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        memoryAssetPageController.jumpToPage(
-          (currentAssetIndex + 1),
+        memoryAssetPageController.nextPage(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 500),
         );
       } else {
         // Go to the next memory since we are at the end of our assets
@@ -93,20 +96,45 @@ class MemoryPage extends HookConsumerWidget {
         asset = memories[nextMemoryIndex].assets.first;
       }
 
-      // Gets the url and precaches it
-      final url = getThumbnailUrl(asset);
+      // Gets the thumbnail url and precaches it
+      final precaches = <Future<dynamic>>[];
+
       final authToken = 'Bearer ${store.Store.get(store.StoreKey.accessToken)}';
-      final provider = CachedNetworkImageProvider(
-        url,
-        cacheKey: getThumbnailCacheKey(
-          asset,
-        ),
+      final thumbnailUrl = getThumbnailUrl(asset);
+      final thumbnailCacheKey = getThumbnailCacheKey(asset);
+      final thumbnailProvider = CachedNetworkImageProvider(
+        thumbnailUrl,
+        cacheKey: thumbnailCacheKey,
         headers: {"Authorization": authToken},
       );
-      await precacheImage(
-        provider,
-        context,
-      );
+
+      precaches.add(precacheImage(thumbnailProvider, context));
+
+      // Precache the local image
+      if (!asset.isRemote &&
+          (asset.isLocal ||
+              !store.Store.get(store.StoreKey.preferRemoteImage, false))) {
+        final provider = AssetEntityImageProvider(
+          asset.local!,
+          isOriginal: false,
+          thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
+        );
+        precaches.add(precacheImage(provider, context));
+      } else {
+        // Precache the remote image since we are not using local images
+        final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
+        final cacheKey =
+            getThumbnailCacheKey(asset, type: api.ThumbnailFormat.JPEG);
+        final provider = CachedNetworkImageProvider(
+          url,
+          cacheKey: cacheKey,
+          headers: {"Authorization": authToken},
+        );
+
+        precaches.add(precacheImage(provider, context));
+      }
+
+      await Future.wait(precaches);
     }
 
     // Precache the next page right away if we are on the first page
