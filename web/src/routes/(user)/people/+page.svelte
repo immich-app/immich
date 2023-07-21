@@ -56,15 +56,22 @@
           countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
-      if (changed.length > 0)
-        await api.personApi.updatePeople({
+      if (changed.length > 0) {
+        const { data: results } = await api.personApi.updatePeople({
           peopleUpdateDto: { people: changed },
         });
-
-      if (changed.length > 0) {
+        const count = results.filter(({ success }) => success).length;
+        if (results.length - count > 0) {
+          notificationController.show({
+            type: NotificationType.Error,
+            message: `Unable to change the visibility for ${results.length - count} ${
+              results.length - count <= 1 ? 'person' : 'people'
+            }`,
+          });
+        }
         notificationController.show({
           type: NotificationType.Info,
-          message: `Visibility changed for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
+          message: `Visibility changed for ${count} ${count <= 1 ? 'person' : 'people'}`,
         });
       }
     } catch (error) {

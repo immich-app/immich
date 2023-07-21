@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<PersonResponseDto>> updatePeople(PeopleUpdateDto peopleUpdateDto) async
+    //Future<List<BulkIdResponseDto>> updatePeople(PeopleUpdateDto peopleUpdateDto) async
     test('test updatePeople', () async {
       // TODO
     });

@@ -296,7 +296,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updatePeople**
-> List<PersonResponseDto> updatePeople(peopleUpdateDto)
+> List<BulkIdResponseDto> updatePeople(peopleUpdateDto)
 
 
 
@@ -337,7 +337,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<PersonResponseDto>**](PersonResponseDto.md)
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
 
 ### Authorization
 

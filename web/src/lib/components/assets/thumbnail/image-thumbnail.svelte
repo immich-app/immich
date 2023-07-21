@@ -15,29 +15,33 @@
   export let circle = false;
   export let hidden = false;
   let complete = false;
+
+  let color = 'white';
 </script>
 
-<img
-  style:width={widthStyle}
-  style:height={heightStyle}
-  style:filter={hidden ? 'grayscale(75%)' : 'none'}
-  src={url}
-  alt={altText}
-  class="object-cover transition duration-300"
-  class:rounded-lg={curve}
-  class:shadow-lg={shadow}
-  class:rounded-full={circle}
-  class:opacity-0={!thumbhash && !complete}
-  draggable="false"
-  use:imageLoad
-  on:image-load|once={() => (complete = true)}
-/>
-{#if hidden}
-  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <EyeOffOutline size="2em" />
-  </div>
-{/if}
-
+<button on:mouseenter={() => (color = 'black')} on:mouseleave={() => (color = 'white')}>
+  <img
+    style:width={widthStyle}
+    style:height={heightStyle}
+    style:filter={hidden ? 'grayscale(50%)' : 'none'}
+    style:opacity={hidden ? '0.5' : '1'}
+    src={url}
+    alt={altText}
+    class="object-cover transition duration-300"
+    class:rounded-lg={curve}
+    class:shadow-lg={shadow}
+    class:rounded-full={circle}
+    class:opacity-0={!thumbhash && !complete}
+    draggable="false"
+    use:imageLoad
+    on:image-load|once={() => (complete = true)}
+  />
+  {#if hidden}
+    <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+      <EyeOffOutline size="2em" {color} />
+    </div>
+  {/if}
+</button>
 {#if thumbhash && !complete}
   <img
     style:width={widthStyle}

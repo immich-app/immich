@@ -9099,7 +9099,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updatePeople(peopleUpdateDto: PeopleUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
+        async updatePeople(peopleUpdateDto: PeopleUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updatePeople(peopleUpdateDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9175,7 +9175,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updatePeople(requestParameters: PersonApiUpdatePeopleRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PersonResponseDto>> {
+        updatePeople(requestParameters: PersonApiUpdatePeopleRequest, options?: AxiosRequestConfig): AxiosPromise<Array<BulkIdResponseDto>> {
             return localVarFp.updatePeople(requestParameters.peopleUpdateDto, options).then((request) => request(axios, basePath));
         },
         /**

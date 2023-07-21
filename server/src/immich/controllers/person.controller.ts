@@ -34,7 +34,7 @@ export class PersonController {
   }
 
   @Put()
-  updatePeople(@AuthUser() authUser: AuthUserDto, @Body() dto: PeopleUpdateDto): Promise<PersonResponseDto[]> {
+  updatePeople(@AuthUser() authUser: AuthUserDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     return this.service.updatePeople(authUser, dto);
   }
 

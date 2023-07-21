@@ -2568,7 +2568,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   }
                 }
               }
@@ -5071,13 +5071,13 @@
             "type": "boolean"
           },
           "error": {
-            "type": "string",
             "enum": [
               "duplicate",
               "no_permission",
               "not_found",
               "unknown"
-            ]
+            ],
+            "type": "string"
           }
         },
         "required": [
