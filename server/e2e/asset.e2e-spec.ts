@@ -6,12 +6,9 @@ import { LibraryType } from '@app/infra/entities';
 import { JobRepository } from '@app/infra/repositories/job.repository';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Job, QueueEvents } from 'bullmq';
-import { queue } from 'sharp';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 import { MicroservicesModule } from 'src/microservices/microservices.module';
 import { DataSource } from 'typeorm';
-import { clearDb } from '../test/test-utils';
 
 jest.setTimeout(30000);
 
@@ -33,6 +30,8 @@ describe('Asset', () => {
   let adminUser: AuthUserDto;
 
   beforeAll(async () => {
+    jest.useRealTimers();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, MicroservicesModule],
     }).compile();
@@ -68,11 +67,9 @@ describe('Asset', () => {
 
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
       await libraryService.setImportPaths(adminUser, library.id, { importPaths: ['e2e/assets/nature'] });
-
       await libraryService.refresh(adminUser, library.id, {});
 
       let isFinished = false;
-
       // TODO: this shouldn't be a while loop
       while (!isFinished) {
         const jobStatus = await jobService.getAllJobsStatus();
@@ -84,11 +81,11 @@ describe('Asset', () => {
           }
         });
 
-        if (!jobsActive) {
+        if (!jobsActive && jobStatus[QueueName.LIBRARY].jobCounts.completed > 0) {
           isFinished = true;
         }
       }
-
+      console.log('Library has been refreshed now');
       // Library has been refreshed now
     });
 
