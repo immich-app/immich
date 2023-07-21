@@ -110,15 +110,23 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
-        if (useGrayBoxPlaceholder) {
-          return const DecoratedBox(
-            decoration: BoxDecoration(color: Colors.grey),
-          );
-        }
-        return Center(
-          child: CircularProgressIndicator.adaptive(
-            value: downloadProgress.progress,
-          ),
+        // Show loading if desired
+        return Stack(
+          children: [
+            if (useGrayBoxPlaceholder)
+              const SizedBox.square(
+                dimension: 250,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                ),
+              ),
+            if (useProgressIndicator)
+              Center(
+                child: CircularProgressIndicator.adaptive(
+                  value: downloadProgress.progress,
+                ),
+              ),
+          ],
         );
       },
       errorWidget: (context, url, error) {
