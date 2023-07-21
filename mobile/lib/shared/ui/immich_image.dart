@@ -15,12 +15,14 @@ class ImmichImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.useGrayBoxPlaceholder = true,
+    this.useGrayBoxPlaceholder = false,
+    this.useProgressIndicator = false,
     this.type = api.ThumbnailFormat.WEBP,
     super.key,
   });
   final Asset? asset;
   final bool useGrayBoxPlaceholder;
+  final bool useProgressIndicator;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -58,16 +60,23 @@ class ImmichImage extends StatelessWidget {
           if (wasSynchronouslyLoaded || frame != null) {
             return child;
           }
-          return (useGrayBoxPlaceholder
-              ? const SizedBox.square(
+
+          // Show loading if desired
+          return Stack(
+            children: [
+              if (useGrayBoxPlaceholder)
+                const SizedBox.square(
                   dimension: 250,
                   child: DecoratedBox(
                     decoration: BoxDecoration(color: Colors.grey),
                   ),
-                )
-              : const Center(
+                ),
+              if (useProgressIndicator)
+                const Center(
                   child: CircularProgressIndicator(),
-                ));
+                ),
+            ],
+          );
         },
         errorBuilder: (context, error, stackTrace) {
           if (error is PlatformException &&
