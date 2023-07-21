@@ -15,7 +15,7 @@ class ImmichImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.useGrayBoxPlaceholder = false,
+    this.useGrayBoxPlaceholder = true,
     this.type = api.ThumbnailFormat.WEBP,
     super.key,
   });
@@ -65,8 +65,8 @@ class ImmichImage extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.grey),
                   ),
                 )
-              : Center(
-                  child: const CircularProgressIndicator(),
+              : const Center(
+                  child: CircularProgressIndicator(),
                 ));
         },
         errorBuilder: (context, error, stackTrace) {
