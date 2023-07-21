@@ -3,7 +3,7 @@ FROM node:18.16.0-alpine3.18@sha256:9036ddb8252ba7089c2c83eb2b0dcaf74ff1069e8ddf
 
 WORKDIR /usr/src/app
 EXPOSE 3000
-RUN apk add --no-cache setpriv
+RUN apk add --no-cache setpriv tini
 
 FROM base as builder
 
@@ -39,6 +39,6 @@ COPY --from=prod /usr/src/app/build ./build
 COPY package.json package-lock.json ./
 COPY entrypoint.sh ./
 
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 CMD ["entrypoint.sh"]
