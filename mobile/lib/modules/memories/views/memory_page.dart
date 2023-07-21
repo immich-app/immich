@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -7,11 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart' as store;
-import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:intl/intl.dart';
 import 'package:openapi/api.dart' as api;
-import 'package:photo_manager/photo_manager.dart';
 
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
@@ -99,40 +96,20 @@ class MemoryPage extends HookConsumerWidget {
       // Gets the thumbnail url and precaches it
       final precaches = <Future<dynamic>>[];
 
-      final authToken = 'Bearer ${store.Store.get(store.StoreKey.accessToken)}';
-      final thumbnailUrl = getThumbnailUrl(asset);
-      final thumbnailCacheKey = getThumbnailCacheKey(asset);
-      final thumbnailProvider = CachedNetworkImageProvider(
-        thumbnailUrl,
-        cacheKey: thumbnailCacheKey,
-        headers: {"Authorization": authToken},
+      precaches.add(
+        ImmichImage.precacheAsset(
+          asset,
+          context,
+          type: api.ThumbnailFormat.WEBP,
+        ),
       );
-
-      precaches.add(precacheImage(thumbnailProvider, context));
-
-      // Precache the local image
-      if (!asset.isRemote &&
-          (asset.isLocal ||
-              !store.Store.get(store.StoreKey.preferRemoteImage, false))) {
-        final provider = AssetEntityImageProvider(
-          asset.local!,
-          isOriginal: false,
-          thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
-        );
-        precaches.add(precacheImage(provider, context));
-      } else {
-        // Precache the remote image since we are not using local images
-        final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
-        final cacheKey =
-            getThumbnailCacheKey(asset, type: api.ThumbnailFormat.JPEG);
-        final provider = CachedNetworkImageProvider(
-          url,
-          cacheKey: cacheKey,
-          headers: {"Authorization": authToken},
-        );
-
-        precaches.add(precacheImage(provider, context));
-      }
+      precaches.add(
+        ImmichImage.precacheAsset(
+          asset,
+          context,
+          type: api.ThumbnailFormat.JPEG,
+        ),
+      );
 
       await Future.wait(precaches);
     }
