@@ -27,4 +27,5 @@ ENV NODE_ENV=production \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY app .
-ENTRYPOINT ["tini", "--", "python", "-m", "app.main"]
+ENTRYPOINT ["tini", "--"]
+CMD ["python", "-m", "app.main"]
