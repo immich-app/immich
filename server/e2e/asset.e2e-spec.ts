@@ -21,9 +21,7 @@ describe('Asset', () => {
   let assetService: AssetService;
 
   let microAppService: MicroAppService;
-  let userService: UserService;
 
-  let jobRepository: JobRepository;
   let libraryService: LibraryService;
   let jobService: JobService;
 
