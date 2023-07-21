@@ -1,10 +1,14 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart' as store;
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:intl/intl.dart';
 
 class MemoryPage extends HookConsumerWidget {
@@ -36,11 +40,15 @@ class MemoryPage extends HookConsumerWidget {
     }
 
     toNextAsset(int currentAssetIndex) {
-      (currentAssetIndex + 1 < currentMemory.value.assets.length)
-          ? memoryAssetPageController.jumpToPage(
-              (currentAssetIndex + 1),
-            )
-          : toNextMemory();
+      if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
+        // Go to the next asset
+        memoryAssetPageController.jumpToPage(
+          (currentAssetIndex + 1),
+        );
+      } else {
+        // Go to the next memory since we are at the end of our assets
+        toNextMemory();
+      }
     }
 
     updateProgressText() {
@@ -55,10 +63,63 @@ class MemoryPage extends HookConsumerWidget {
       updateProgressText();
     }
 
+    /// Downloads and caches the image for the asset at this [currentMemory]'s index
+    precacheAsset(int index) async {
+      // Guard index out of range
+      if (index < 0) {
+        return;
+      }
+
+      late Asset asset;
+      if (index < currentMemory.value.assets.length) {
+        // Uses the next asset in this current memory
+        asset = currentMemory.value.assets[index];
+      } else {
+        // Precache the first asset in the next memory if available
+        final currentMemoryIndex = memories.indexOf(currentMemory.value);
+
+        // Guard no memory found
+        if (currentMemoryIndex == -1) {
+          return;
+        }
+
+        final nextMemoryIndex = currentMemoryIndex + 1;
+        // Guard no next memory
+        if (nextMemoryIndex >= memories.length) {
+          return;
+        }
+
+        // Get the first asset from the next memory
+        asset = memories[nextMemoryIndex].assets.first;
+      }
+
+      // Gets the url and precaches it
+      final url = getThumbnailUrl(asset);
+      final authToken = 'Bearer ${store.Store.get(store.StoreKey.accessToken)}';
+      final provider = CachedNetworkImageProvider(
+        url,
+        cacheKey: getThumbnailCacheKey(
+          asset,
+        ),
+        headers: {"Authorization": authToken},
+      );
+      await precacheImage(
+        provider,
+        context,
+      );
+    }
+
+    // Precache the next page right away if we are on the first page
+    if (currentAssetPage.value == 0) {
+      Future.delayed(const Duration(milliseconds: 200))
+          .then((_) => precacheAsset(1));
+    }
+
     onAssetChanged(int otherIndex) {
       HapticFeedback.selectionClick();
 
       currentAssetPage.value = otherIndex;
+      precacheAsset(otherIndex + 1);
       updateProgressText();
     }
 
