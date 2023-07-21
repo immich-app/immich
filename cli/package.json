@@ -40,10 +40,29 @@
     "yaml": "^2.3.1"
   },
   "scripts": {
+    "build": "tsc --project tsconfig.build.json",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "prepack": "yarn build ",
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check ."
+  },
+  "jest": {
+    "clearMocks": true,
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": ".",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "<rootDir>/src/**/*.(t|j)s"
+    ],
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node"
   }
 }
