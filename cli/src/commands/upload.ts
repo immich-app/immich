@@ -70,11 +70,13 @@ export default class Upload extends BaseCommand {
         if (options.import) {
           const importData = {
             assetPath: asset.path,
+            sidecarPath: asset.sidecarPath,
             deviceAssetId: asset.deviceAssetId,
             deviceId: this.deviceId,
             fileCreatedAt: asset.fileCreatedAt,
             fileModifiedAt: asset.fileModifiedAt,
             isFavorite: false,
+            isReadOnly: options.readOnly,
           };
 
           if (!this.dryRun) {
