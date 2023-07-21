@@ -238,8 +238,7 @@ export class MediaService {
     if (!config.accel || config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
     } else {
-      const devices = await this.storageRepository.readdir('/dev/dri');
-      return this.getHWCodecConfig(config, devices);
+      return this.getHWCodecConfig(config);
     }
   }
 
@@ -256,16 +255,19 @@ export class MediaService {
     }
   }
 
-  private getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = []) {
+  private async getHWCodecConfig(config: SystemConfigFFmpegDto) {
     let handler: VideoCodecHWConfig;
+    let devices: string[];
     switch (config.accel) {
       case TranscodeHWAccel.NVENC:
         handler = new NVENCConfig(config);
         break;
       case TranscodeHWAccel.QSV:
+        devices = await this.storageRepository.readdir('/dev/dri');
         handler = new QSVConfig(config, devices);
         break;
       case TranscodeHWAccel.VAAPI:
+        devices = await this.storageRepository.readdir('/dev/dri');
         handler = new VAAPIConfig(config, devices);
         break;
       default:

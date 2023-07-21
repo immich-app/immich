@@ -113,7 +113,8 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getScaling(stream: VideoStreamInfo) {
     const targetResolution = this.getTargetResolution(stream);
-    return this.isVideoVertical(stream) ? `${targetResolution}:-2` : `-2:${targetResolution}`;
+    const mult = this.config.accel === TranscodeHWAccel.QSV ? 1 : 2; // QSV doesn't support scaling numbers below -1
+    return this.isVideoVertical(stream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
   isVideoRotated(stream: VideoStreamInfo) {
@@ -330,7 +331,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const options = [`-global_quality ${this.config.crf}`];
+    const options = [`-global_quality ${this.config.crf}`, '-look_ahead 1'];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
