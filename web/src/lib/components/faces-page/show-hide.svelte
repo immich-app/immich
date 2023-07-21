@@ -6,10 +6,14 @@
   import IconButton from '../elements/buttons/icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import Restart from 'svelte-material-icons/Restart.svelte';
+  import Eye from 'svelte-material-icons/Eye.svelte';
+  import EyeOff from 'svelte-material-icons/EyeOff.svelte';
 
   const dispatch = createEventDispatcher();
 
   export let showLoadingSpinner: boolean;
+  export let toggleVisibility: boolean;
 </script>
 
 <section
@@ -24,11 +28,25 @@
         <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
         <p class="ml-4">Show & hide faces</p>
       </div>
-      {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
-      {:else}
-        <LoadingSpinner />
-      {/if}
+      <div class="flex items-center justify-end">
+        <div class="mr-8 flex items-center">
+          <CircleIconButton
+            title="Reset faces visibility"
+            logo={Restart}
+            on:click={() => dispatch('reset-visibility')}
+          />
+          <CircleIconButton
+            title="Toggle visibility"
+            logo={toggleVisibility ? Eye : EyeOff}
+            on:click={() => dispatch('toggle-visibility')}
+          />
+        </div>
+        {#if !showLoadingSpinner}
+          <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
+        {:else}
+          <LoadingSpinner />
+        {/if}
+      </div>
     </div>
     <div class="immich-scrollbar absolute top-16 bg-immich-bg p-4 pb-8 dark:bg-immich-dark-bg">
       <slot />

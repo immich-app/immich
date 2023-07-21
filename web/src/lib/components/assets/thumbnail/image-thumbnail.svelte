@@ -19,7 +19,7 @@
   let color = 'white';
 </script>
 
-<button on:mouseenter={() => (color = 'black')} on:mouseleave={() => (color = 'white')}>
+<button class="h-full w-full" on:mouseenter={() => (color = 'black')} on:mouseleave={() => (color = 'white')}>
   <img
     style:width={widthStyle}
     style:height={heightStyle}

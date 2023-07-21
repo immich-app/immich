@@ -27,6 +27,7 @@
   let countVisiblePeople = data.people.visible;
 
   let showLoadingSpinner = false;
+  let toggleVisibility = false;
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -36,8 +37,33 @@
     for (const person of people) {
       person.isHidden = initialHiddenValues[person.id];
     }
+    // trigger reactivity
+    people = people;
+
+    // Reset variables used on the "Show & hide faces"   modal
     showLoadingSpinner = false;
     selectHidden = false;
+    toggleVisibility = false;
+  };
+
+  const handleResetVisibility = () => {
+    for (const person of people) {
+      person.isHidden = initialHiddenValues[person.id];
+    }
+
+    // trigger reactivity
+    people = people;
+  };
+
+  const handleToggleVisibility = () => {
+    toggleVisibility = !toggleVisibility;
+    console.log(toggleVisibility);
+    for (const person of people) {
+      person.isHidden = toggleVisibility;
+    }
+
+    // trigger reactivity
+    people = people;
   };
 
   const handleDoneClick = async () => {
@@ -80,8 +106,10 @@
         `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
     }
+    // Reset variables used on the "Show & hide faces"   modal
     showLoadingSpinner = false;
     selectHidden = false;
+    toggleVisibility = false;
   };
 
   let showChangeNameModal = false;
@@ -107,6 +135,12 @@
         }
         return person;
       });
+
+      people.forEach((person: PersonResponseDto) => {
+        initialHiddenValues[person.id] = person.isHidden;
+      });
+
+      countVisiblePeople--;
 
       showChangeNameModal = false;
 
@@ -166,18 +200,16 @@
   {#if countVisiblePeople > 0}
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
-        {#key selectHidden}
-          {#each people as person (person.id)}
-            {#if !person.isHidden}
-              <PeopleCard
-                {person}
-                on:change-name={handleChangeName}
-                on:merge-faces={handleMergeFaces}
-                on:hide-face={handleHideFace}
-              />
-            {/if}
-          {/each}
-        {/key}
+        {#each people as person (person.id)}
+          {#if !person.isHidden}
+            <PeopleCard
+              {person}
+              on:change-name={handleChangeName}
+              on:merge-faces={handleMergeFaces}
+              on:hide-face={handleHideFace}
+            />
+          {/if}
+        {/each}
       </div>
     </div>
   {:else}
@@ -223,7 +255,14 @@
   {/if}
 </UserPageLayout>
 {#if selectHidden}
-  <ShowHide on:doneClick={handleDoneClick} on:closeClick={handleCloseClick} bind:showLoadingSpinner>
+  <ShowHide
+    on:doneClick={handleDoneClick}
+    on:closeClick={handleCloseClick}
+    on:reset-visibility={handleResetVisibility}
+    on:toggle-visibility={handleToggleVisibility}
+    bind:showLoadingSpinner
+    bind:toggleVisibility
+  >
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
         {#each people as person (person.id)}
