@@ -39,6 +39,6 @@ COPY --from=prod /usr/src/app/build ./build
 COPY package.json package-lock.json ./
 COPY entrypoint.sh ./
 
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["tini", "--"]
 
-CMD ["entrypoint.sh"]
+CMD ["./entrypoint.sh"]

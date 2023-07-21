@@ -25,4 +25,4 @@ if [ "$REDIS_PASSWORD_FILE" ]; then
 	unset REDIS_PASSWORD_FILE
 fi
 
-exec tini -- node dist/main $1
+exec node dist/main $1

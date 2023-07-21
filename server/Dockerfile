@@ -39,4 +39,4 @@ VOLUME /usr/src/app/upload
 
 EXPOSE 3001
 
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["tini", "--"]
