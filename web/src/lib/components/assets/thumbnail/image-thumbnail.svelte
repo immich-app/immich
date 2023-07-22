@@ -16,10 +16,10 @@
   export let hidden = false;
   let complete = false;
 
-  let color = 'white';
+  let eyeColor = 'white';
 </script>
 
-<button class="h-full w-full" on:mouseenter={() => (color = 'black')} on:mouseleave={() => (color = 'white')}>
+<button class="w-full" on:mouseenter={() => (eyeColor = 'black')} on:mouseleave={() => (eyeColor = 'white')}>
   <img
     style:width={widthStyle}
     style:height={heightStyle}
@@ -38,7 +38,7 @@
   />
   {#if hidden}
     <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-      <EyeOffOutline size="2em" {color} />
+      <EyeOffOutline size="2em" color={eyeColor} />
     </div>
   {/if}
 </button>
