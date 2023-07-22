@@ -25,6 +25,7 @@ class MemoryPage extends HookConsumerWidget {
     final memoryPageController = usePageController(initialPage: memoryIndex);
     final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
+    final previousMemoryIndex = useState(memoryIndex);
     final currentAssetPage = useState(0);
     final assetProgress = useState(
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
@@ -54,13 +55,6 @@ class MemoryPage extends HookConsumerWidget {
     updateProgressText() {
       assetProgress.value =
           "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
-    }
-
-    onMemoryChanged(int otherIndex) {
-      HapticFeedback.mediumImpact();
-      currentMemory.value = memories[otherIndex];
-      currentAssetPage.value = 0;
-      updateProgressText();
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
@@ -122,13 +116,12 @@ class MemoryPage extends HookConsumerWidget {
 
     onAssetChanged(int otherIndex) {
       HapticFeedback.selectionClick();
-
       currentAssetPage.value = otherIndex;
       precacheAsset(otherIndex + 1);
       updateProgressText();
     }
 
-    buildBottomInfo() {
+    buildBottomInfo(Memory memory) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -137,7 +130,7 @@ class MemoryPage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  currentMemory.value.title,
+                  memory.title,
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 11.0,
@@ -146,7 +139,7 @@ class MemoryPage extends HookConsumerWidget {
                 ),
                 Text(
                   DateFormat.yMMMMd().format(
-                    currentMemory.value.assets[0].fileCreatedAt,
+                    memory.assets[0].fileCreatedAt,
                   ),
                   style: const TextStyle(
                     color: Colors.white,
@@ -161,44 +154,66 @@ class MemoryPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: PageView.builder(
-          scrollDirection: Axis.vertical,
-          controller: memoryPageController,
-          onPageChanged: onMemoryChanged,
-          itemCount: memories.length,
-          itemBuilder: (context, mIndex) {
-            // Build horizontal page
-            return Column(
-              children: [
-                Expanded(
-                  child: PageView.builder(
-                    controller: memoryAssetPageController,
-                    onPageChanged: onAssetChanged,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: memories[mIndex].assets.length,
-                    itemBuilder: (context, index) {
-                      final asset = memories[mIndex].assets[index];
-                      return Container(
-                        color: Colors.black,
-                        child: MemoryCard(
-                          asset: asset,
-                          onTap: () => toNextAsset(index),
-                          onClose: () => AutoRouter.of(context).pop(),
-                          rightCornerText: assetProgress.value,
-                          title: memories[mIndex].title,
-                          showTitle: index == 0,
-                        ),
-                      );
-                    },
+    /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
+     * when the page in the **center** of the viewer changes. We want to reset currentAssetPage only when the final
+     * page during the end of scroll is different than the current page
+     */
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification notification) {
+        if (notification.depth == 0) {
+          var currentPageNumber = memoryPageController.page!.toInt();
+          currentMemory.value = memories[currentPageNumber];
+          if (notification is ScrollStartNotification) {
+            assetProgress.value = "";
+          } else if (notification is ScrollEndNotification) {
+            HapticFeedback.mediumImpact();
+            if (currentPageNumber != previousMemoryIndex.value) {
+              currentAssetPage.value = 0;
+              previousMemoryIndex.value = currentPageNumber;
+            }
+            updateProgressText();
+          }
+        }
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
+          child: PageView.builder(
+            scrollDirection: Axis.vertical,
+            controller: memoryPageController,
+            itemCount: memories.length,
+            itemBuilder: (context, mIndex) {
+              // Build horizontal page
+              return Column(
+                children: [
+                  Expanded(
+                    child: PageView.builder(
+                      controller: memoryAssetPageController,
+                      onPageChanged: onAssetChanged,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: memories[mIndex].assets.length,
+                      itemBuilder: (context, index) {
+                        final asset = memories[mIndex].assets[index];
+                        return Container(
+                          color: Colors.black,
+                          child: MemoryCard(
+                            asset: asset,
+                            onTap: () => toNextAsset(index),
+                            onClose: () => AutoRouter.of(context).pop(),
+                            rightCornerText: assetProgress.value,
+                            title: memories[mIndex].title,
+                            showTitle: index == 0,
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                buildBottomInfo(),
-              ],
-            );
-          },
+                  buildBottomInfo(memories[mIndex]),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
