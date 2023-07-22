@@ -328,7 +328,7 @@ class LoginForm extends HookConsumerWidget {
                   ),
             if (!isOauthEnable.value && !isPasswordLoginEnable.value)
               const Center(
-                child: Text("Login has been disabled."),
+                child: Text('login_disabled'),
               ),
             const SizedBox(height: 12),
             TextButton.icon(
