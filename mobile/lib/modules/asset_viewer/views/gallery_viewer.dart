@@ -499,6 +499,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             PhotoViewGallery.builder(
               scaleStateChangedCallback: (state) {
                 isZoomed.value = state != PhotoViewScaleState.initial;
+                ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
               pageController: controller,
               scrollPhysics: isZoomed.value
