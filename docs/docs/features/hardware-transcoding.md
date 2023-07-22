@@ -1,10 +1,10 @@
-# Hardware Transcoding
+# Hardware Transcoding [Experimental]
 
 This feature allows you to use a GPU or Intel Quick Sync to accelerate transcoding and reduce CPU load.
 Note that hardware transcoding is much less efficient for file sizes.
 As this is a new feature, it is still experimental and may not work on all systems.
 
-## Supported APIs:
+## Supported APIs
 
 - NVENC
   - NVIDIA GPUs
@@ -13,7 +13,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 - VAAPI
   - GPUs
 
-## Limitations:
+## Limitations
 
 - The instructions and configurations here are specific to Docker Compose. Other container engines may require different configuration.
 - Only Linux and Windows (through WSL2) servers are supported.

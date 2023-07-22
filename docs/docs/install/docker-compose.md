@@ -25,9 +25,17 @@ wget https://github.com/immich-app/immich/releases/latest/download/docker-compos
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
 
+```bash title="(Optional) Get hwaccel.yml file"
+wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
+```
+
 or by downloading from your browser and moving the files to the directory that you created.
 
 Note: If you downloaded the files from your browser, also ensure that you rename `example.env` to `.env`.
+
+:::info
+Optionally, you can use the [`hwaccel.yml`][hw-file] file to enable hardware acceleration for transcoding. See the [Hardware Transcoding](/docs/features/hardware-transcoding.md) guide for info on how to set this up.
+:::
 
 ### Step 2 - Populate the .env file with custom values
 
@@ -186,4 +194,5 @@ Immich is currently under heavy development, which means you can expect breaking
 
 [compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 [env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
+[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
 [watchtower]: https://containrrr.dev/watchtower/
