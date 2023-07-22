@@ -1059,6 +1059,15 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should return false for qsv if no hw devices', async () => {
+      storageMock.readdir.mockResolvedValue([]);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await expect(sut.handleVideoConversion({ id: assetEntityStub.video.id })).resolves.toEqual(false);
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
     it('should set vbr options for vaapi when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
@@ -1150,7 +1159,7 @@ describe(MediaService.name, () => {
     });
 
     it('should prefer gpu for vaapi if available', async () => {
-      storageMock.readdir.mockResolvedValue(['card0', 'renderD129', 'renderD128']);
+      storageMock.readdir.mockResolvedValue(['renderD129', 'card1', 'card0', 'renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
       assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
@@ -1159,7 +1168,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card0', '-filter_hw_device accel'],
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel'],
           outputOptions: [
             `-vcodec h264_vaapi`,
             '-acodec aac',
@@ -1226,6 +1235,15 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
+    });
+
+    it('should return false for vaapi if no hw devices', async () => {
+      storageMock.readdir.mockResolvedValue([]);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await expect(sut.handleVideoConversion({ id: assetEntityStub.video.id })).resolves.toEqual(false);
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
   });
 });

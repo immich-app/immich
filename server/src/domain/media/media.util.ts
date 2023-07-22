@@ -338,7 +338,7 @@ export class QSVConfig extends BaseHWConfig {
 
 export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (!this.devices) {
+    if (this.devices.length === 0) {
       throw Error('No VAAPI device found');
     }
     return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
