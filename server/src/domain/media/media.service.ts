@@ -270,11 +270,11 @@ export class MediaService {
         handler = new VAAPIConfig(config, devices);
         break;
       default:
-        throw new UnsupportedMediaTypeException(`${config.accel} acceleration is unsupported`);
+        throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);
     }
     if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
       throw new UnsupportedMediaTypeException(
-        `${config.accel} acceleration does not support codec '${config.targetVideoCodec
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()
         }'. Supported codecs: ${handler.getSupportedCodecs()}`,
       );
     }
