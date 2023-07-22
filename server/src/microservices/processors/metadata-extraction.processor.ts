@@ -22,7 +22,6 @@ import tz_lookup from '@photostructure/tz-lookup';
 import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
-import { log } from 'node:console';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
