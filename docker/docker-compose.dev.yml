@@ -31,7 +31,6 @@ services:
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
-    command: python main.py
     ports:
       - 3003:3003
     volumes:
