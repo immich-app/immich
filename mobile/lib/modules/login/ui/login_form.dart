@@ -307,16 +307,16 @@ class LoginForm extends HookConsumerWidget {
                       if (isOauthEnable.value) ...[
                         if (isPasswordLoginEnable.value)
                           Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Divider(
+                              color: Brightness.dark ==
+                                      Theme.of(context).brightness
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                           ),
-                          child: Divider(
-                            color:
-                                Brightness.dark == Theme.of(context).brightness
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                        ),
                         OAuthLoginButton(
                           serverEndpointController: serverEndpointController,
                           buttonLabel: oAuthButtonLabel.value,
@@ -327,8 +327,8 @@ class LoginForm extends HookConsumerWidget {
                     ],
                   ),
             if (!isOauthEnable.value && !isPasswordLoginEnable.value)
-              const Center(
-                child: Text('login_disabled'),
+              Center(
+                child: const Text('login_disabled').tr(),
               ),
             const SizedBox(height: 12),
             TextButton.icon(
