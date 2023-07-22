@@ -123,11 +123,7 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  async addExtractedLivePhoto(
-    sourceAsset: AssetEntity,
-    video: string,
-    created: Date | null,
-  ): Promise<AssetEntity> {
+  async addExtractedLivePhoto(sourceAsset: AssetEntity, video: string, created: Date | null): Promise<AssetEntity> {
     if (sourceAsset.livePhotoVideoId) {
       const [liveAsset] = await this.assetRepository.getByIds([sourceAsset.livePhotoVideoId]);
       // already exists so no need to generate ID.
@@ -208,12 +204,7 @@ export class MetadataExtractionProcessor {
     if (!foundMotionPhoto || motionPhotoLength == 0) {
       return null;
     }
-    return this.extractEmbeddedVideo(
-      asset,
-      motionPhotoOffsetFromEnd,
-      motionPhotoLength,
-      fileCreatedAt,
-    );
+    return this.extractEmbeddedVideo(asset, motionPhotoOffsetFromEnd, motionPhotoLength, fileCreatedAt);
   }
 
   private async extractEmbeddedVideo(
