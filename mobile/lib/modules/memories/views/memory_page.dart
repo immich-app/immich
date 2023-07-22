@@ -5,7 +5,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:intl/intl.dart';
+import 'package:openapi/api.dart' as api;
 
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
@@ -37,11 +40,16 @@ class MemoryPage extends HookConsumerWidget {
     }
 
     toNextAsset(int currentAssetIndex) {
-      (currentAssetIndex + 1 < currentMemory.value.assets.length)
-          ? memoryAssetPageController.jumpToPage(
-              (currentAssetIndex + 1),
-            )
-          : toNextMemory();
+      if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
+        // Go to the next asset
+        memoryAssetPageController.nextPage(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 500),
+        );
+      } else {
+        // Go to the next memory since we are at the end of our assets
+        toNextMemory();
+      }
     }
 
     updateProgressText() {
@@ -49,9 +57,67 @@ class MemoryPage extends HookConsumerWidget {
           "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
+    /// Downloads and caches the image for the asset at this [currentMemory]'s index
+    precacheAsset(int index) async {
+      // Guard index out of range
+      if (index < 0) {
+        return;
+      }
+
+      late Asset asset;
+      if (index < currentMemory.value.assets.length) {
+        // Uses the next asset in this current memory
+        asset = currentMemory.value.assets[index];
+      } else {
+        // Precache the first asset in the next memory if available
+        final currentMemoryIndex = memories.indexOf(currentMemory.value);
+
+        // Guard no memory found
+        if (currentMemoryIndex == -1) {
+          return;
+        }
+
+        final nextMemoryIndex = currentMemoryIndex + 1;
+        // Guard no next memory
+        if (nextMemoryIndex >= memories.length) {
+          return;
+        }
+
+        // Get the first asset from the next memory
+        asset = memories[nextMemoryIndex].assets.first;
+      }
+
+      // Gets the thumbnail url and precaches it
+      final precaches = <Future<dynamic>>[];
+
+      precaches.add(
+        ImmichImage.precacheAsset(
+          asset,
+          context,
+          type: api.ThumbnailFormat.WEBP,
+        ),
+      );
+      precaches.add(
+        ImmichImage.precacheAsset(
+          asset,
+          context,
+          type: api.ThumbnailFormat.JPEG,
+        ),
+      );
+
+      await Future.wait(precaches);
+    }
+
+    // Precache the next page right away if we are on the first page
+    if (currentAssetPage.value == 0) {
+      Future.delayed(const Duration(milliseconds: 200))
+          .then((_) => precacheAsset(1));
+    }
+
     onAssetChanged(int otherIndex) {
       HapticFeedback.selectionClick();
       currentAssetPage.value = otherIndex;
+      precacheAsset(otherIndex + 1);
       updateProgressText();
     }
 
