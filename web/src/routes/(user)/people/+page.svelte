@@ -57,7 +57,6 @@
 
   const handleToggleVisibility = () => {
     toggleVisibility = !toggleVisibility;
-    console.log(toggleVisibility);
     for (const person of people) {
       person.isHidden = toggleVisibility;
     }
@@ -106,7 +105,7 @@
         `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
     }
-    // Reset variables used on the "Show & hide faces"   modal
+    // Reset variables used on the "Show & hide faces" modal
     showLoadingSpinner = false;
     selectHidden = false;
     toggleVisibility = false;
