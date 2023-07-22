@@ -145,6 +145,9 @@ export class PersonService {
       }
     }
 
+    // Re-index all faces in typesense for up-to-date search results
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
+
     return results;
   }
 
