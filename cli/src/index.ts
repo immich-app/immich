@@ -35,7 +35,7 @@ program
       .default(false),
   )
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS').default(false))
-  .addOption(new Option('--no-read-only', 'Import files without read-only protection, allowing Immich to manage them').default(true))
+  .addOption(new Option('--no-read-only', 'Import files without read-only protection, allowing Immich to manage them'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => {
     options.import = true;
