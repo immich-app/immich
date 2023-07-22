@@ -16,32 +16,32 @@
   export let hidden = false;
   let complete = false;
 
-  let eyeColor = 'white';
+  export let eyeColor = 'white';
 </script>
 
-<button class="w-full" on:mouseenter={() => (eyeColor = 'black')} on:mouseleave={() => (eyeColor = 'white')}>
-  <img
-    style:width={widthStyle}
-    style:height={heightStyle}
-    style:filter={hidden ? 'grayscale(50%)' : 'none'}
-    style:opacity={hidden ? '0.5' : '1'}
-    src={url}
-    alt={altText}
-    class="object-cover transition duration-300"
-    class:rounded-lg={curve}
-    class:shadow-lg={shadow}
-    class:rounded-full={circle}
-    class:opacity-0={!thumbhash && !complete}
-    draggable="false"
-    use:imageLoad
-    on:image-load|once={() => (complete = true)}
-  />
-  {#if hidden}
-    <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-      <EyeOffOutline size="2em" color={eyeColor} />
-    </div>
-  {/if}
-</button>
+<img
+  style:width={widthStyle}
+  style:height={heightStyle}
+  style:filter={hidden ? 'grayscale(50%)' : 'none'}
+  style:opacity={hidden ? '0.5' : '1'}
+  src={url}
+  alt={altText}
+  class="object-cover transition duration-300"
+  class:rounded-lg={curve}
+  class:shadow-lg={shadow}
+  class:rounded-full={circle}
+  class:opacity-0={!thumbhash && !complete}
+  draggable="false"
+  use:imageLoad
+  on:image-load|once={() => (complete = true)}
+/>
+
+{#if hidden}
+  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+    <EyeOffOutline size="2em" color={eyeColor} />
+  </div>
+{/if}
+
 {#if thumbhash && !complete}
   <img
     style:width={widthStyle}

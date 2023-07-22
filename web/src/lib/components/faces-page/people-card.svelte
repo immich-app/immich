@@ -28,16 +28,9 @@
 
 <div id="people-card" class="relative">
   <a href="/people/{person.id}" draggable="false">
-    <div class="w-48 rounded-xl brightness-95 filter">
+    <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
     </div>
-    {#if person.name}
-      <span
-        class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center font-medium text-white backdrop-blur-[1px] hover:cursor-pointer"
-      >
-        {person.name}
-      </span>
-    {/if}
   </a>
 
   <button

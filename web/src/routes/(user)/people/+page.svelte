@@ -24,6 +24,8 @@
   let selectHidden = false;
   let initialHiddenValues: Record<string, boolean> = {};
 
+  let eyeColorMap: Record<string, string> = {};
+
   let people = data.people.people;
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
@@ -103,6 +105,7 @@
           countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
+
       if (changed.length > 0) {
         const { data: results } = await api.personApi.updatePeople({
           peopleUpdateDto: { people: changed },
@@ -289,23 +292,27 @@
         {#each people as person (person.id)}
           <div class="relative">
             <div class="h-48 w-48 rounded-xl brightness-95 filter">
-              <button class="h-full w-full" on:click={() => (person.isHidden = !person.isHidden)}>
+              <button
+                class="h-full w-full"
+                on:click={() => (person.isHidden = !person.isHidden)}
+                on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
+                on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
+              >
                 <ImageThumbnail
                   bind:hidden={person.isHidden}
                   shadow
                   url={api.getPeopleThumbnailUrl(person.id)}
                   altText={person.name}
                   widthStyle="100%"
+                  bind:eyeColor={eyeColorMap[person.id]}
                 />
+                {#if person.name}
+                  <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+                    {person.name}
+                  </span>
+                {/if}
               </button>
             </div>
-            {#if person.name}
-              <span
-                class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center font-medium text-white backdrop-blur-[1px] hover:cursor-pointer"
-              >
-                {person.name}
-              </span>
-            {/if}
           </div>
         {/each}
       </div>
