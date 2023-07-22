@@ -17,6 +17,8 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import EyeOutline from 'svelte-material-icons/EyeOutline.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
 
   export let data: PageData;
   let selectHidden = false;
@@ -32,6 +34,26 @@
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
+  onMount(() => {
+    document.addEventListener('keydown', onKeyboardPress);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case 'Escape':
+        handleCloseClick();
+        return;
+    }
+  };
 
   const handleCloseClick = () => {
     for (const person of people) {
