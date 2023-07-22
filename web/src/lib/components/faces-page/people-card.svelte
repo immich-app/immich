@@ -31,6 +31,11 @@
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
     </div>
+    {#if person.name}
+      <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+        {person.name}
+      </span>
+    {/if}
   </a>
 
   <button
