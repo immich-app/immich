@@ -21,35 +21,30 @@
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div
-    class="absolute flex h-16 w-full place-items-center justify-between border-b dark:border-immich-dark-gray dark:text-immich-dark-fg"
+    class="flex h-16 w-full items-center justify-between border-b p-1 dark:border-immich-dark-gray dark:text-immich-dark-fg md:p-8"
   >
-    <div class="flex w-full items-center justify-between p-8">
-      <div class="flex items-center">
-        <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
-        <p class="ml-4">Show & hide faces</p>
-      </div>
-      <div class="flex items-center justify-end">
-        <div class="mr-8 flex items-center">
-          <CircleIconButton
-            title="Reset faces visibility"
-            logo={Restart}
-            on:click={() => dispatch('reset-visibility')}
-          />
-          <CircleIconButton
-            title="Toggle visibility"
-            logo={toggleVisibility ? Eye : EyeOff}
-            on:click={() => dispatch('toggle-visibility')}
-          />
-        </div>
-        {#if !showLoadingSpinner}
-          <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
-        {:else}
-          <LoadingSpinner />
-        {/if}
-      </div>
+    <div class="flex items-center">
+      <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
+      <p class="ml-4 hidden sm:block">Show & hide faces</p>
     </div>
-    <div class="immich-scrollbar absolute top-16 bg-immich-bg p-4 pb-8 dark:bg-immich-dark-bg">
-      <slot />
+    <div class="flex items-center justify-end">
+      <div class="flex items-center md:mr-8">
+        <CircleIconButton title="Reset faces visibility" logo={Restart} on:click={() => dispatch('reset-visibility')} />
+        <CircleIconButton
+          title="Toggle visibility"
+          logo={toggleVisibility ? Eye : EyeOff}
+          on:click={() => dispatch('toggle-visibility')}
+        />
+      </div>
+      {#if !showLoadingSpinner}
+        <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
+      {:else}
+        <LoadingSpinner />
+      {/if}
     </div>
+  </div>
+
+  <div class="flex w-full flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 md:pt-4">
+    <slot />
   </div>
 </section>

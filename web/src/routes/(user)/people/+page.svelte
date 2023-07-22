@@ -287,35 +287,27 @@
     bind:showLoadingSpinner
     bind:toggleVisibility
   >
-    <div class="pl-4">
-      <div class="flex flex-row flex-wrap gap-1">
-        {#each people as person (person.id)}
-          <div class="relative">
-            <div class="h-48 w-48 rounded-xl brightness-95 filter">
-              <button
-                class="h-full w-full"
-                on:click={() => (person.isHidden = !person.isHidden)}
-                on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
-                on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
-              >
-                <ImageThumbnail
-                  bind:hidden={person.isHidden}
-                  shadow
-                  url={api.getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  widthStyle="100%"
-                  bind:eyeColor={eyeColorMap[person.id]}
-                />
-                {#if person.name}
-                  <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-                    {person.name}
-                  </span>
-                {/if}
-              </button>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
+    {#each people as person (person.id)}
+      <button
+        class="relative h-36 w-36 md:h-48 md:w-48"
+        on:click={() => (person.isHidden = !person.isHidden)}
+        on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
+        on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
+      >
+        <ImageThumbnail
+          bind:hidden={person.isHidden}
+          shadow
+          url={api.getPeopleThumbnailUrl(person.id)}
+          altText={person.name}
+          widthStyle="100%"
+          bind:eyeColor={eyeColorMap[person.id]}
+        />
+        {#if person.name}
+          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+            {person.name}
+          </span>
+        {/if}
+      </button>
+    {/each}
   </ShowHide>
 {/if}
