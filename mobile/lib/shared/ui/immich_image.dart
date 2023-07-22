@@ -16,11 +16,13 @@ class ImmichImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
+    this.useProgressIndicator = false,
     this.type = api.ThumbnailFormat.WEBP,
     super.key,
   });
   final Asset? asset;
   final bool useGrayBoxPlaceholder;
+  final bool useProgressIndicator;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -58,17 +60,23 @@ class ImmichImage extends StatelessWidget {
           if (wasSynchronouslyLoaded || frame != null) {
             return child;
           }
-          return (useGrayBoxPlaceholder
-              ? const SizedBox.square(
+
+          // Show loading if desired
+          return Stack(
+            children: [
+              if (useGrayBoxPlaceholder)
+                const SizedBox.square(
                   dimension: 250,
                   child: DecoratedBox(
                     decoration: BoxDecoration(color: Colors.grey),
                   ),
-                )
-              : Transform.scale(
-                  scale: 0.2,
-                  child: const CircularProgressIndicator(),
-                ));
+                ),
+              if (useProgressIndicator)
+                const Center(
+                  child: CircularProgressIndicator(),
+                ),
+            ],
+          );
         },
         errorBuilder: (context, error, stackTrace) {
           if (error is PlatformException &&
@@ -102,19 +110,27 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
-        if (useGrayBoxPlaceholder) {
-          return const DecoratedBox(
-            decoration: BoxDecoration(color: Colors.grey),
-          );
-        }
-        return Transform.scale(
-          scale: 2,
-          child: Center(
-            child: CircularProgressIndicator.adaptive(
-              strokeWidth: 1,
-              value: downloadProgress.progress,
-            ),
-          ),
+        // Show loading if desired
+        return Stack(
+          children: [
+            if (useGrayBoxPlaceholder)
+              const SizedBox.square(
+                dimension: 250,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                ),
+              ),
+            if (useProgressIndicator)
+              Transform.scale(
+                scale: 2,
+                child: Center(
+                  child: CircularProgressIndicator.adaptive(
+                    strokeWidth: 1,
+                    value: downloadProgress.progress,
+                  ),
+                ),
+              ),
+          ],
         );
       },
       errorWidget: (context, url, error) {
