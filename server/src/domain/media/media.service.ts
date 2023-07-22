@@ -167,7 +167,9 @@ export class MediaService {
     } catch (err) {
       this.logger.error(err);
       if (config.accel && config.accel !== TranscodeHWAccel.DISABLED) {
-        this.logger.error(`Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`);
+        this.logger.error(
+          `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
+        );
       }
       config.accel = TranscodeHWAccel.DISABLED;
       transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
@@ -206,7 +208,8 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
+        audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
@@ -274,8 +277,7 @@ export class MediaService {
     }
     if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
       throw new UnsupportedMediaTypeException(
-        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()
-        }'. Supported codecs: ${handler.getSupportedCodecs()}`,
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
       );
     }
 
