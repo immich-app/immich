@@ -195,7 +195,7 @@
             bind:value={ffmpegConfig.accel}
             name="accel"
             options={[
-              { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires Nvidia GPU)' },
+              { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
               {
                 value: TranscodeHWAccel.Qsv,
                 text: 'Quick Sync (requires 7th gen Intel CPU or later)',

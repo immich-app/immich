@@ -7,7 +7,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 ## Supported APIs:
 
 - NVENC
-  - Nvidia GPUs
+  - NVIDIA GPUs
 - Quick Sync
   - Intel CPUs
 - VAAPI
@@ -24,15 +24,17 @@ As this is a new feature, it is still experimental and may not work on all syste
   - This is mainly because the original video may not be hardware-decodable.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
-    - Notably, NVIDIA and AMD GPUs do not support VP9.
+    - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
   - Newer devices tend to have higher transcoding quality.
 
-## Setup:
+## Prerequisites
 
-### Nvidia GPU:
+#### NVIDIA GPU:
 
-- You need to have Nvidia drivers installed on the server.
+- You must have the official NVIDIA driver installed on the server.
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime](https://github.com/NVIDIA/nvidia-container-runtime/) installed.
+
+## Setup:
 
 1. If you do not already have it, download the latest `hwaccel.yml` file and ensure it's in the same folder as the `docker-compose.yml`.
 2. Uncomment the lines that apply to your system and desired usage.
