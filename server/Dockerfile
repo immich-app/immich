@@ -38,7 +38,7 @@ RUN sed -i -e's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sourc
 RUN apt-get update && apt-get install -yqq ffmpeg tini libheif1 libwebp7 libwebpdemux2 libwebpmux3 \
 libjpeg62-turbo libjxl0.7 libraw20 libtiff6 libspng0 libexif12 libgcc-s1 libglib2.0-0 \
 libgsf-1-114 liblcms2-2 liborc-0.4-0 libopenexr-3-1-30 liblqr-1-0 libltdl7 zlib1g \
-$(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) \
+mesa-va-drivers $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) \
 && apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=prod /usr/local/bin/magick /usr/local/bin/magick
