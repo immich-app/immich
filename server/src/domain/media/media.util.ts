@@ -13,7 +13,14 @@ class BaseConfig implements VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions(),
+      outputOptions: this.getBaseOutputOptions().concat([
+        `-acodec ${this.config.targetAudioCodec}`,
+        // Makes a second pass moving the moov atom to the
+        // beginning of the file for improved playback speed.
+        '-movflags faststart',
+        '-fps_mode passthrough',
+        '-v verbose',
+      ]),
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
@@ -32,14 +39,7 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions() {
-    return [
-      `-vcodec ${this.config.targetVideoCodec}`,
-      `-acodec ${this.config.targetAudioCodec}`,
-      // Makes a second pass moving the moov atom to the beginning of
-      // the file for improved playback speed.
-      '-movflags faststart',
-      '-fps_mode passthrough',
-    ];
+    return [`-vcodec ${this.config.targetVideoCodec}`];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
@@ -87,7 +87,7 @@ class BaseConfig implements VideoCodecSWConfig {
       return false;
     }
 
-    return this.isBitrateConstrained() || this.config.targetVideoCodec === 'vp9';
+    return this.isBitrateConstrained() || this.config.targetVideoCodec === VideoCodec.VP9;
   }
 
   getBitrateDistribution() {
@@ -237,9 +237,6 @@ export class NVENCConfig extends BaseHWConfig {
   getBaseOutputOptions() {
     return [
       `-vcodec ${this.config.targetVideoCodec}_nvenc`,
-      `-acodec ${this.config.targetAudioCodec}`,
-      '-movflags faststart',
-      '-fps_mode passthrough',
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
       '-qmin 0',
@@ -305,12 +302,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions() {
-    return [
-      `-vcodec ${this.config.targetVideoCodec}_qsv`,
-      `-acodec ${this.config.targetAudioCodec}`,
-      '-movflags faststart',
-      '-fps_mode passthrough',
-    ];
+    return [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-low_power 0'];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
@@ -331,7 +323,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const options = [`-global_quality ${this.config.crf}`, '-look_ahead 1'];
+    const options = [`-global_quality ${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
@@ -353,12 +345,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions() {
-    return [
-      `-vcodec ${this.config.targetVideoCodec}_vaapi`,
-      `-acodec ${this.config.targetAudioCodec}`,
-      '-movflags faststart',
-      '-fps_mode passthrough',
-    ];
+    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
