@@ -96,7 +96,6 @@ export const fileUploadHandler = async (
       }
     },
   };
-  console.log('fileUploadHandler', iterable.files);
 
   const concurrency = 2;
   // TODO: use Array.fromAsync instead when it's available universally.
