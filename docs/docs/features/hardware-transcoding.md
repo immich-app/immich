@@ -29,12 +29,12 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 ## Prerequisites
 
-#### NVIDIA GPU:
+#### NVIDIA GPU
 
 - You must have the official NVIDIA driver installed on the server.
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime](https://github.com/NVIDIA/nvidia-container-runtime/) installed.
 
-## Setup:
+## Setup
 
 1. If you do not already have it, download the latest `hwaccel.yml` file and ensure it's in the same folder as the `docker-compose.yml`.
 2. Uncomment the lines that apply to your system and desired usage.
