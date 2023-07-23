@@ -19,6 +19,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import ProposeMerge from '$lib/components/faces-page/propose-merge.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -137,12 +138,53 @@
   };
 
   let showChangeNameModal = false;
+  let showMergeModal = false;
   let personName = '';
+  let person1: PersonResponseDto;
+  let person2: PersonResponseDto;
   let edittingPerson: PersonResponseDto | null = null;
+
+  const handleMergeSameFace = async () => {
+    showMergeModal = false;
+    try {
+      if (edittingPerson) {
+        await api.personApi.mergePerson({
+          id: person2.id,
+          mergePersonDto: { ids: [person1.id] },
+        });
+        countVisiblePeople--;
+        people = people.filter((obj: PersonResponseDto) => obj.id !== person1.id);
+
+        notificationController.show({
+          message: 'Merge faces succesfully',
+          type: NotificationType.Info,
+        });
+      }
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+    if (person2.name != personName) {
+      try {
+        await api.personApi.updatePerson({ id: person2.id, personUpdateDto: { name: personName } });
+        for (const person of people) {
+          if (person.id === person2.id) {
+            person.name = personName;
+            break;
+          }
+        }
+
+        // trigger reactivity
+        people = people;
+      } catch (error) {
+        handleError(error, 'Unable to save name');
+      }
+    }
+  };
 
   const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
     showChangeNameModal = true;
     personName = detail.name;
+    person1 = detail;
     edittingPerson = detail;
   };
 
@@ -182,6 +224,21 @@
   };
 
   const submitNameChange = async () => {
+    showChangeNameModal = false;
+    for (const person of people) {
+      if (person.name === personName) {
+        person2 = person;
+        break;
+      }
+    }
+    if (person2 === undefined) {
+      await ChangeName();
+    } else {
+      showMergeModal = true;
+    }
+  };
+
+  const ChangeName = async () => {
     try {
       if (edittingPerson) {
         const { data: updatedPerson } = await api.personApi.updatePerson({
@@ -196,8 +253,6 @@
           return person;
         });
 
-        showChangeNameModal = false;
-
         notificationController.show({
           message: 'Change name succesfully',
           type: NotificationType.Info,
@@ -208,6 +263,19 @@
     }
   };
 </script>
+
+{#if showMergeModal}
+  <ProposeMerge
+    bind:person1
+    bind:person2
+    on:close={() => (showMergeModal = false)}
+    on:differentFaces={() => {
+      showMergeModal = false;
+      ChangeName();
+    }}
+    on:mergeFaces={() => handleMergeSameFace()}
+  />
+{/if}
 
 <UserPageLayout user={data.user} title="People">
   <svelte:fragment slot="buttons">

@@ -15,7 +15,7 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, api } from '@api';
+  import { AssetResponseDto, PersonResponseDto, api } from '@api';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
@@ -30,6 +30,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import { onMount } from 'svelte';
+  import ProposeMerge from '$lib/components/faces-page/propose-merge.svelte';
 
   export let data: PageData;
   let isEditingName = false;
@@ -37,6 +38,11 @@
   let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
+  let showMergeModal = false;
+  let people = data.people.people;
+  let person1: PersonResponseDto;
+  let person2: PersonResponseDto;
+
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
@@ -55,16 +61,6 @@
       previousRoute = from.url.href;
     }
   });
-
-  const handleNameChange = async (name: string) => {
-    try {
-      isEditingName = false;
-      data.person.name = name;
-      await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
-    } catch (error) {
-      handleError(error, 'Unable to save name');
-    }
-  };
 
   const onAssetDelete = (assetId: string) => {
     data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
@@ -91,7 +87,58 @@
       });
     }
   };
+
+  const handleMergeSameFace = async () => {
+    showMergeModal = false;
+    try {
+      await api.personApi.mergePerson({
+        id: person2.id,
+        mergePersonDto: { ids: [person1.id] },
+      });
+      goto(`${AppRoute.PEOPLE}/${person2.id}`);
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+  };
+
+  const handleNameChange = async (name: string) => {
+    for (const person of people) {
+      if (person.name === name) {
+        person2 = person;
+        break;
+      }
+    }
+
+    if (person2 === undefined) {
+      try {
+        isEditingName = false;
+        data.person.name = name;
+        await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
+      } catch (error) {
+        handleError(error, 'Unable to save name');
+      }
+    } else {
+      person1 = data.person;
+      showMergeModal = true;
+    }
+  };
 </script>
+
+{#if showMergeModal}
+  <ProposeMerge
+    bind:person1
+    bind:person2
+    on:close={() => (showMergeModal = false)}
+    on:differentFaces={() => {
+      showMergeModal = false;
+    }}
+    on:mergeFaces={() => handleMergeSameFace()}
+  />
+{/if}
 
 {#if isMultiSelectionMode}
   <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
