@@ -1,9 +1,46 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
+  /**
+   * Person name.
+   */
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  /**
+   * Asset is used to get the feature face thumbnail.
+   */
+  @IsOptional()
+  @IsString()
+  featureFaceAssetId?: string;
+
+  /**
+   * Person visibility
+   */
+  @IsOptional()
+  @IsBoolean()
+  isHidden?: boolean;
+}
+
+export class PeopleUpdateDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PeopleUpdateItem)
+  people!: PeopleUpdateItem[];
+}
+
+export class PeopleUpdateItem {
+  /**
+   * Person id.
+   */
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+
   /**
    * Person name.
    */

@@ -305,6 +305,10 @@ class ApiClient {
           return OAuthConfigResponseDto.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
+        case 'PeopleUpdateDto':
+          return PeopleUpdateDto.fromJson(value);
+        case 'PeopleUpdateItem':
+          return PeopleUpdateItem.fromJson(value);
         case 'PersonResponseDto':
           return PersonResponseDto.fromJson(value);
         case 'PersonUpdateDto':

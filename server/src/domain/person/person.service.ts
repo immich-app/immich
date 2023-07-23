@@ -8,6 +8,7 @@ import {
   mapPerson,
   MergePersonDto,
   PeopleResponseDto,
+  PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
@@ -96,6 +97,24 @@ export class PersonService {
     return mapPerson(person);
   }
 
+  async updatePeople(authUser: AuthUserDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    const results: BulkIdResponseDto[] = [];
+    for (const person of dto.people) {
+      try {
+        await this.update(authUser, person.id, {
+          isHidden: person.isHidden,
+          name: person.name,
+          featureFaceAssetId: person.featureFaceAssetId,
+        }),
+          results.push({ id: person.id, success: true });
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
+      }
+    }
+    return results;
+  }
+
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {
@@ -144,6 +163,9 @@ export class PersonService {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
+
+    // Re-index all faces in typesense for up-to-date search results
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
 
     return results;
   }

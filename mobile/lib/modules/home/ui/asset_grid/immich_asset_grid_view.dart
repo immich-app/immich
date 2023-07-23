@@ -341,8 +341,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             backgroundColor: Theme.of(context).hintColor,
             labelTextBuilder: _labelBuilder,
             labelConstraints: const BoxConstraints(maxHeight: 28),
-            scrollbarAnimationDuration: const Duration(seconds: 1),
-            scrollbarTimeToFade: const Duration(seconds: 4),
+            scrollbarAnimationDuration: const Duration(milliseconds: 300),
+            scrollbarTimeToFade: const Duration(milliseconds: 1000),
             child: listWidget,
           )
         : listWidget;

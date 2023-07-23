@@ -88,7 +88,7 @@ export const fileUploadHandler = async (
   sharedKey: string | undefined = undefined,
 ) => {
   const iterable = {
-    files: files.filter((file) => extensions.some((ext) => file.name.endsWith(ext)))[Symbol.iterator](),
+    files: files.filter((file) => extensions.some((ext) => file.name.toLowerCase().endsWith(ext)))[Symbol.iterator](),
 
     async *[Symbol.asyncIterator]() {
       for (const file of this.files) {

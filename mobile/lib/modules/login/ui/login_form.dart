@@ -36,6 +36,7 @@ class LoginForm extends HookConsumerWidget {
     final isLoading = useState<bool>(false);
     final isLoadingServer = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
+    final isPasswordLoginEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
@@ -69,9 +70,11 @@ class LoginForm extends HookConsumerWidget {
 
         if (loginConfig != null) {
           isOauthEnable.value = loginConfig.enabled;
+          isPasswordLoginEnable.value = loginConfig.passwordLoginEnabled;
           oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
         } else {
           isOauthEnable.value = false;
+          isPasswordLoginEnable.value = true;
         }
 
         serverEndpoint.value = endpoint;
@@ -82,6 +85,7 @@ class LoginForm extends HookConsumerWidget {
           toastType: ToastType.error,
         );
         isOauthEnable.value = false;
+        isPasswordLoginEnable.value = true;
         isLoadingServer.value = false;
         return false;
       } catch (e) {
@@ -91,6 +95,7 @@ class LoginForm extends HookConsumerWidget {
           toastType: ToastType.error,
         );
         isOauthEnable.value = false;
+        isPasswordLoginEnable.value = true;
         isLoadingServer.value = false;
         return false;
       }
@@ -262,18 +267,20 @@ class LoginForm extends HookConsumerWidget {
               style: Theme.of(context).textTheme.displaySmall,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 18),
-            EmailInput(
-              controller: usernameController,
-              focusNode: emailFocusNode,
-              onSubmit: passwordFocusNode.requestFocus,
-            ),
-            const SizedBox(height: 8),
-            PasswordInput(
-              controller: passwordController,
-              focusNode: passwordFocusNode,
-              onSubmit: login,
-            ),
+            if (isPasswordLoginEnable.value) ...[
+              const SizedBox(height: 18),
+              EmailInput(
+                controller: usernameController,
+                focusNode: emailFocusNode,
+                onSubmit: passwordFocusNode.requestFocus,
+              ),
+              const SizedBox(height: 8),
+              PasswordInput(
+                controller: passwordController,
+                focusNode: passwordFocusNode,
+                onSubmit: login,
+              ),
+            ],
 
             // Note: This used to have an AnimatedSwitcher, but was removed
             // because of https://github.com/flutter/flutter/issues/120874
@@ -295,19 +302,21 @@ class LoginForm extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 18),
-                      LoginButton(onPressed: login),
+                      if (isPasswordLoginEnable.value)
+                        LoginButton(onPressed: login),
                       if (isOauthEnable.value) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
+                        if (isPasswordLoginEnable.value)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Divider(
+                              color: Brightness.dark ==
+                                      Theme.of(context).brightness
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                           ),
-                          child: Divider(
-                            color:
-                                Brightness.dark == Theme.of(context).brightness
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                        ),
                         OAuthLoginButton(
                           serverEndpointController: serverEndpointController,
                           buttonLabel: oAuthButtonLabel.value,
@@ -317,6 +326,10 @@ class LoginForm extends HookConsumerWidget {
                       ],
                     ],
                   ),
+            if (!isOauthEnable.value && !isPasswordLoginEnable.value)
+              Center(
+                child: const Text('login_disabled').tr(),
+              ),
             const SizedBox(height: 12),
             TextButton.icon(
               icon: const Icon(Icons.arrow_back),
