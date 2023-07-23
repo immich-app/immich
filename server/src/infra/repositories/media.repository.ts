@@ -10,9 +10,7 @@ sharp.concurrency(0);
 
 export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
-  constructor() {
-    sharp.concurrency(0)
-  }
+
   crop(input: string, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOnError: false })
       .extract({

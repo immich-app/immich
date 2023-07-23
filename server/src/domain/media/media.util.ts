@@ -13,23 +13,10 @@ class BaseConfig implements VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions().concat([
-        `-acodec ${this.config.targetAudioCodec}`,
-        // Makes a second pass moving the moov atom to the
-        // beginning of the file for improved playback speed.
-        '-movflags faststart',
-        '-fps_mode passthrough',
-        '-v verbose',
-      ]),
+      outputOptions: this.getBaseOutputOptions(),
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
-    if (stream.isHDR && this.config.tonemap !== ToneMapping.DISABLED) {
-      filters.push('zscale=t=linear');
-      filters.push(`tonemap=${this.config.tonemap}:desat=0`);
-      const colors = this.getColors();
-      filters.push(`zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`);
-    }
     filters.push('format=yuv420p');
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
@@ -46,13 +33,24 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}`];
+    return [
+      `-acodec ${this.config.targetAudioCodec}`,
+      // Makes a second pass moving the moov atom to the
+      // beginning of the file for improved playback speed.
+      '-movflags faststart',
+      '-fps_mode passthrough',
+      '-v verbose'
+    ];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
     const options = [];
     if (this.shouldScale(stream)) {
       options.push(`scale=${this.getScaling(stream)}`);
+    }
+
+    if (stream.isHDR && this.config.tonemap !== ToneMapping.DISABLED) {
+      options.push(...this.getToneMapping())
     }
 
     return options;
@@ -157,6 +155,11 @@ class BaseConfig implements VideoCodecSWConfig {
       matrix: 'bt709',
     };
   }
+
+  getToneMapping() {
+    const colors = this.getColors();
+    return ['zscale=t=linear', `tonemap=${this.config.tonemap}:desat=0`, `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`];
+  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
@@ -172,9 +175,18 @@ export class ThumbnailConfig extends BaseConfig {
     return [];
   }
 
+  getScaling(stream: VideoStreamInfo) {
+    let options = super.getScaling(stream);
+    if (!stream.isHDR) {
+      options += ":out_color_matrix=bt601:range=pc";
+
+    }
+    return options
+  }
+
   getColors() {
     return {
-      // jpeg and webp only support bt.601, so we need to convert to that to avoid color shifts
+      // jpeg and webp only support bt.601, so we need to convert to that directly when tone-mapping to avoid color shifts
       primaries: 'bt470bg',
       transfer: '601',
       matrix: 'bt470bg',
@@ -211,6 +223,10 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class H264Config extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+  }
+
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
@@ -224,6 +240,10 @@ export class H264Config extends BaseConfig {
 }
 
 export class HEVCConfig extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+  }
+
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
@@ -237,6 +257,10 @@ export class HEVCConfig extends BaseConfig {
 }
 
 export class VP9Config extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+  }
+
   getPresetOptions() {
     const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {
@@ -285,6 +309,7 @@ export class NVENCConfig extends BaseHWConfig {
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
       '-b_qfactor 1.1',
+      ...super.getBaseOutputOptions()
     ];
   }
 
@@ -341,7 +366,7 @@ export class QSVConfig extends BaseHWConfig {
 
   getBaseOutputOptions() {
     // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-g 256', '-extbrc 1', '-refs 5', '-bf 7'];
+    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-g 256', '-extbrc 1', '-refs 5', '-bf 7', ...super.getBaseOutputOptions()];
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -391,7 +416,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`];
+    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`, ...super.getBaseOutputOptions()];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
