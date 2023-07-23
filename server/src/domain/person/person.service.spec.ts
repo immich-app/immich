@@ -188,6 +188,16 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('updateAll', () => {
+    it('should throw an error when personId is invalid', async () => {
+      personMock.getById.mockResolvedValue(null);
+      await expect(
+        sut.updatePeople(authStub.admin, { people: [{ id: 'person-1', name: 'Person 1' }] }),
+      ).resolves.toEqual([{ error: BulkIdErrorReason.UNKNOWN, id: 'person-1', success: false }]);
+      expect(personMock.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
       personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);

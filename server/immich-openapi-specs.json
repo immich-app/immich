@@ -2546,6 +2546,49 @@
             "api_key": []
           }
         ]
+      },
+      "put": {
+        "operationId": "updatePeople",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeopleUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
       }
     },
     "/person/{id}": {
@@ -5028,13 +5071,13 @@
             "type": "boolean"
           },
           "error": {
-            "type": "string",
             "enum": [
               "duplicate",
               "no_permission",
               "not_found",
               "unknown"
-            ]
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -5904,6 +5947,44 @@
           "total",
           "visible",
           "people"
+        ]
+      },
+      "PeopleUpdateDto": {
+        "type": "object",
+        "properties": {
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeopleUpdateItem"
+            }
+          }
+        },
+        "required": [
+          "people"
+        ]
+      },
+      "PeopleUpdateItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Person id."
+          },
+          "name": {
+            "type": "string",
+            "description": "Person name."
+          },
+          "featureFaceAssetId": {
+            "type": "string",
+            "description": "Asset is used to get the feature face thumbnail."
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Person visibility"
+          }
+        },
+        "required": [
+          "id"
         ]
       },
       "PersonResponseDto": {

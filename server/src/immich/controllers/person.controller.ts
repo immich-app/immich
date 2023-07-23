@@ -5,6 +5,7 @@ import {
   ImmichReadStream,
   MergePersonDto,
   PeopleResponseDto,
+  PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonService,
@@ -30,6 +31,11 @@ export class PersonController {
   @Get()
   getAllPeople(@AuthUser() authUser: AuthUserDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(authUser, withHidden);
+  }
+
+  @Put()
+  updatePeople(@AuthUser() authUser: AuthUserDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.updatePeople(authUser, dto);
   }
 
   @Get(':id')

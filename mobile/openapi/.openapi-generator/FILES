@@ -72,6 +72,8 @@ doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
 doc/PeopleResponseDto.md
+doc/PeopleUpdateDto.md
+doc/PeopleUpdateItem.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
@@ -210,6 +212,8 @@ lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
 lib/model/people_response_dto.dart
+lib/model/people_update_dto.dart
+lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
@@ -325,6 +329,8 @@ test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
 test/people_response_dto_test.dart
+test/people_update_dto_test.dart
+test/people_update_item_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
