@@ -73,7 +73,6 @@ export class MediaService {
         this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
-        this.logger.log('Generating video thumbnail');
         const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
         const mainVideoStream = this.getMainVideoStream(videoStreams);
         if (!mainVideoStream) {
