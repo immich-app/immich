@@ -5,6 +5,7 @@ import {
   SystemConfigKey,
   SystemConfigValue,
   TranscodeHWAccel,
+  ToneMapping,
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
@@ -28,6 +29,7 @@ export const defaults = Object.freeze<SystemConfig>({
     maxBitrate: '0',
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
+    tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
   },
   job: {
@@ -73,7 +75,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   public getDefaults(): SystemConfig {
     return defaults;

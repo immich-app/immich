@@ -1,11 +1,4 @@
-import {
-  CropOptions,
-  ExtractThumbnailOptions,
-  IMediaRepository,
-  ResizeOptions,
-  TranscodeOptions,
-  VideoInfo,
-} from '@app/domain';
+import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
@@ -35,32 +28,6 @@ export class MediaRepository implements IMediaRepository {
       .rotate()
       .toFormat(options.format)
       .toFile(output);
-  }
-
-  extractVideoThumbnail(
-    input: string,
-    output: string,
-    { resizeOptions, toneMap }: ExtractThumbnailOptions,
-  ): Promise<void> {
-    let filter = `-vf scale='min(${resizeOptions.size},iw)':'min(${resizeOptions.size},ih)':force_original_aspect_ratio=increase`;
-    if (resizeOptions.format === 'jpeg') {
-      filter += `:out_color_matrix=bt601:out_range=pc`;
-    }
-    if (toneMap) {
-      filter += `,zscale=t=linear,tonemap=hable,zscale=p=709:t=709:m=709`;
-    }
-
-    return new Promise<void>((resolve, reject) => {
-      ffmpeg(input)
-        .outputOptions(['-ss 00:00:00.000', '-frames:v 1', filter])
-        .output(output)
-        .on('error', (err, stdout, stderr) => {
-          this.logger.error(stderr);
-          reject(err);
-        })
-        .on('end', resolve)
-        .run();
-    });
   }
 
   async probe(input: string): Promise<VideoInfo> {

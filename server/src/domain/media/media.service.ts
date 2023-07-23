@@ -9,7 +9,7 @@ import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, VP9Config } from './media.util';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, ThumbnailConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -70,6 +70,7 @@ export class MediaService {
           size: JPEG_THUMBNAIL_SIZE,
           format: 'jpeg',
         });
+        this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
         this.logger.log('Generating video thumbnail');
@@ -79,11 +80,11 @@ export class MediaService {
           this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
           return false;
         }
-        const options = {
-          resizeOptions: { format: 'jpeg', size: JPEG_THUMBNAIL_SIZE } as ResizeOptions,
-          toneMap: mainVideoStream.isHDR,
-        };
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, options);
+        const { ffmpeg } = await this.configCore.getConfig();
+        const config = new ThumbnailConfig({ ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString() }).getOptions(
+          mainVideoStream,
+        );
+        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, config);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
     }

@@ -1,4 +1,4 @@
-import { TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   BitrateDistribution,
@@ -24,11 +24,13 @@ class BaseConfig implements VideoCodecSWConfig {
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
-    if (stream.isHDR) {
+    if (stream.isHDR && this.config.tonemap !== ToneMapping.DISABLED) {
       filters.push('zscale=t=linear');
-      filters.push('tonemap=hable:desat=0');
-      filters.push('zscale=p=709:t=709:m=709');
+      filters.push(`tonemap=${this.config.tonemap}:desat=0`);
+      const colors = this.getColors();
+      filters.push(`zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`);
     }
+    filters.push('format=yuv420p');
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
     }
@@ -146,6 +148,41 @@ class BaseConfig implements VideoCodecSWConfig {
   getPresetIndex() {
     const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
     return presets.indexOf(this.config.preset);
+  }
+
+  isHDR(stream: VideoStreamInfo) {
+    return stream.isHDR;
+  }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    };
+  }
+}
+
+export class ThumbnailConfig extends BaseConfig {
+  getBaseOutputOptions() {
+    return ['-ss 00:00:00.000', '-frames:v 1'];
+  }
+
+  getPresetOptions() {
+    return [];
+  }
+
+  getBitrateOptions() {
+    return [];
+  }
+
+  getColors() {
+    return {
+      // jpeg and webp only support bt.601, so we need to convert to that to avoid color shifts
+      primaries: 'bt470bg',
+      transfer: '601',
+      matrix: 'bt470bg',
+    };
   }
 }
 

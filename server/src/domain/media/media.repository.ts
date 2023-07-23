@@ -41,11 +41,6 @@ export interface CropOptions {
   height: number;
 }
 
-export interface ExtractThumbnailOptions {
-  resizeOptions: ResizeOptions;
-  toneMap: boolean;
-}
-
 export interface TranscodeOptions {
   inputOptions: string[];
   outputOptions: string[];
@@ -74,7 +69,6 @@ export interface IMediaRepository {
   generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video
-  extractVideoThumbnail(input: string, output: string, options: ExtractThumbnailOptions): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
 }

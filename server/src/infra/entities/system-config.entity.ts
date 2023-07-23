@@ -79,6 +79,13 @@ export enum TranscodeHWAccel {
   DISABLED = 'disabled',
 }
 
+export enum ToneMapping {
+  HABLE = 'hable',
+  MOBIUS = 'mobius',
+  REINHARD = 'reinhard',
+  DISABLED = 'disabled',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -91,6 +98,7 @@ export interface SystemConfig {
     twoPass: boolean;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
+    tonemap: ToneMapping;
   };
   job: Record<QueueName, { concurrency: number }>;
   oauth: {
