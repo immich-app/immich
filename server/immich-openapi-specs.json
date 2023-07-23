@@ -4973,6 +4973,9 @@
           "checksum": {
             "type": "string",
             "description": "base64 encoded sha1 hash"
+          },
+          "isPanorama": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -4991,7 +4994,8 @@
           "isFavorite",
           "isArchived",
           "duration",
-          "checksum"
+          "checksum",
+          "isPanorama"
         ]
       },
       "AssetStatsResponseDto": {

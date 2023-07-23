@@ -12,6 +12,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -103,7 +104,7 @@
       </div>
 
       <div
-        class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
+        class="dark:bg-immich-dark-gray absolute h-full w-full select-none bg-gray-100 transition-transform"
         class:scale-[0.85]={selected}
       >
         <!-- Gradient overlay on hover -->
@@ -121,6 +122,14 @@
         {#if showArchiveIcon && asset.isArchived}
           <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
             <ArchiveArrowDownOutline size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if asset.type === AssetTypeEnum.Image && asset.isPanorama}
+          <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Rotate360Icon size="24" />
+            </span>
           </div>
         {/if}
 
@@ -162,7 +171,7 @@
       </div>
       {#if selectionCandidate}
         <div
-          class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
+          class="bg-immich-primary absolute top-0 h-full w-full opacity-40"
           in:fade={{ duration: 100 }}
           out:fade={{ duration: 100 }}
         />

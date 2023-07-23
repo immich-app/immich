@@ -28,6 +28,7 @@ export class AssetCore {
 
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
+      isPanorama: false,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,

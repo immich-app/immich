@@ -44,6 +44,9 @@ export class ExifEntity {
   longitude!: number | null;
 
   @Column({ type: 'varchar', nullable: true })
+  projectionType!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   city!: string | null;
 
   @Index('IDX_live_photo_cid')
