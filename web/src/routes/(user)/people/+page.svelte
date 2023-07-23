@@ -33,6 +33,7 @@
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
+  let potentialMergePeople: PersonResponseDto[];
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -235,6 +236,13 @@
       if (person2 === undefined) {
         await ChangeName();
       } else {
+        potentialMergePeople = people
+          .filter(
+            (person: PersonResponseDto) =>
+              personName === person.name && person.id !== person2.id && person.id !== person1.id,
+          )
+          .slice(0, 3);
+
         showMergeModal = true;
       }
     }
@@ -270,6 +278,7 @@
   <ProposeMerge
     bind:person1
     bind:person2
+    bind:potentialMergePeople
     on:close={() => (showMergeModal = false)}
     on:differentFaces={() => {
       showMergeModal = false;

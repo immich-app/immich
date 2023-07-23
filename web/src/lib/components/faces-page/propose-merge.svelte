@@ -13,10 +13,22 @@
   export let person1: PersonResponseDto;
   export let person2: PersonResponseDto;
 
+  export let potentialMergePeople: PersonResponseDto[];
+
   const invert = () => {
     let temp: PersonResponseDto = person1;
     person1 = person2;
     person2 = temp;
+  };
+
+  let choosePersonToMerge = false;
+
+  const changePersonToMerge = (newperson: PersonResponseDto) => {
+    let temp = person2;
+    potentialMergePeople = potentialMergePeople.filter((person: PersonResponseDto) => person.id !== newperson.id);
+    person2 = newperson;
+    potentialMergePeople.push(temp);
+    choosePersonToMerge = false;
   };
 </script>
 
@@ -31,35 +43,57 @@
       </div>
 
       <div class="flex items-center justify-center px-2 py-4 md:px-4 md:py-4">
-        <!-- Code for the first person's thumbnail -->
-        <div class="flex h-28 w-28 items-center md:px-2">
-          <ImageThumbnail
-            circle
-            shadow
-            url={api.getPeopleThumbnailUrl(person1.id)}
-            altText={person1.name}
-            widthStyle="100%"
-          />
-        </div>
-        <div class="flex md:mx-2">
-          <CircleIconButton
-            logo={Merge}
+        {#if !choosePersonToMerge}
+          <!-- Code for the first person's thumbnail -->
+          <div class="flex h-28 w-28 items-center md:px-2">
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(person1.id)}
+              altText={person1.name}
+              widthStyle="100%"
+            />
+          </div>
+          <div class="flex md:mx-2">
+            <CircleIconButton
+              logo={Merge}
+              on:click={() => {
+                invert();
+              }}
+            />
+          </div>
+          <!-- Code for the second person's thumbnail -->
+          <button
+            class="flex h-28 w-28 items-center md:px-2"
             on:click={() => {
-              invert();
+              if (potentialMergePeople.length > 0) {
+                choosePersonToMerge = !choosePersonToMerge;
+              }
             }}
-          />
-        </div>
-        <!-- Code for the second person's thumbnail -->
-        <div class="flex h-28 w-28 items-center md:px-2">
-          <ImageThumbnail
-            circle
-            shadow
-            url={api.getPeopleThumbnailUrl(person2.id)}
-            altText={person2.name}
-            widthStyle="100%"
-          />
-        </div>
+          >
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(person2.id)}
+              altText={person2.name}
+              widthStyle="100%"
+            />
+          </button>
+        {:else}
+          {#each potentialMergePeople as person (person.id)}
+            <button class="flex h-28 w-28 items-center md:px-2" on:click={() => changePersonToMerge(person)}>
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+            </button>
+          {/each}
+        {/if}
       </div>
+
       <div class="flex px-4 md:px-8 md:pt-4">
         <h1 class="text-xl text-gray-500 dark:text-gray-300">Are these the same face?</h1>
       </div>
