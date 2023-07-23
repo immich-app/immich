@@ -18,10 +18,10 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="bg-immich-bg dark:bg-immich-dark-bg absolute left-0 top-0 z-[9999] h-full w-full"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div
-    class="dark:border-immich-dark-gray dark:text-immich-dark-fg sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:bg-black md:p-8"
+    class="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
       <CircleIconButton logo={Close} on:click={() => dispatch('closeClick')} />
@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <div class="bg-immich-bg dark:bg-immich-dark-bg flex w-full flex-wrap gap-1 p-2 pb-8 md:px-8 md:pt-4">
+  <div class="flex w-full flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 md:pt-4">
     <slot />
   </div>
 </section>
