@@ -225,16 +225,18 @@
 
   const submitNameChange = async () => {
     showChangeNameModal = false;
-    for (const person of people) {
-      if (person.name === personName) {
-        person2 = person;
-        break;
+    if (edittingPerson) {
+      for (const person of people) {
+        if (person.name === personName && person.id !== edittingPerson.id) {
+          person2 = person;
+          break;
+        }
       }
-    }
-    if (person2 === undefined) {
-      await ChangeName();
-    } else {
-      showMergeModal = true;
+      if (person2 === undefined) {
+        await ChangeName();
+      } else {
+        showMergeModal = true;
+      }
     }
   };
 

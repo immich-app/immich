@@ -107,7 +107,7 @@
 
   const handleNameChange = async (name: string) => {
     for (const person of people) {
-      if (person.name === name) {
+      if (person.name === name && person.id !== data.person.id) {
         person2 = person;
         break;
       }
