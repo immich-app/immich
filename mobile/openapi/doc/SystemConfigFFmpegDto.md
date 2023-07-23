@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
 **crf** | **int** |  | 
 **maxBitrate** | **String** |  | 
+**tonemap** | [**ToneMapping**](ToneMapping.md) |  | 
 **preset** | **String** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 
 **targetResolution** | **String** |  | 

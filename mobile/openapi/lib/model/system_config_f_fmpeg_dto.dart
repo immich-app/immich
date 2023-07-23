@@ -16,6 +16,7 @@ class SystemConfigFFmpegDto {
     required this.accel,
     required this.crf,
     required this.maxBitrate,
+    required this.tonemap,
     required this.preset,
     required this.targetAudioCodec,
     required this.targetResolution,
@@ -30,6 +31,8 @@ class SystemConfigFFmpegDto {
   int crf;
 
   String maxBitrate;
+
+  ToneMapping tonemap;
 
   String preset;
 
@@ -50,6 +53,7 @@ class SystemConfigFFmpegDto {
      other.accel == accel &&
      other.crf == crf &&
      other.maxBitrate == maxBitrate &&
+     other.tonemap == tonemap &&
      other.preset == preset &&
      other.targetAudioCodec == targetAudioCodec &&
      other.targetResolution == targetResolution &&
@@ -64,6 +68,7 @@ class SystemConfigFFmpegDto {
     (accel.hashCode) +
     (crf.hashCode) +
     (maxBitrate.hashCode) +
+    (tonemap.hashCode) +
     (preset.hashCode) +
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
@@ -73,13 +78,14 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, tonemap=$tonemap, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accel'] = this.accel;
       json[r'crf'] = this.crf;
       json[r'maxBitrate'] = this.maxBitrate;
+      json[r'tonemap'] = this.tonemap;
       json[r'preset'] = this.preset;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
@@ -101,6 +107,7 @@ class SystemConfigFFmpegDto {
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
+        tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
         preset: mapValueOfType<String>(json, r'preset')!,
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
         targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
@@ -158,6 +165,7 @@ class SystemConfigFFmpegDto {
     'accel',
     'crf',
     'maxBitrate',
+    'tonemap',
     'preset',
     'targetAudioCodec',
     'targetResolution',

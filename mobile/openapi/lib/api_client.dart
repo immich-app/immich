@@ -369,6 +369,8 @@ class ApiClient {
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':
           return TimeBucketSizeTypeTransformer().decode(value);
+        case 'ToneMapping':
+          return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':

@@ -82,6 +82,9 @@ String parameterToString(dynamic value) {
   if (value is TimeBucketSize) {
     return TimeBucketSizeTypeTransformer().encode(value).toString();
   }
+  if (value is ToneMapping) {
+    return ToneMappingTypeTransformer().encode(value).toString();
+  }
   if (value is TranscodeHWAccel) {
     return TranscodeHWAccelTypeTransformer().encode(value).toString();
   }

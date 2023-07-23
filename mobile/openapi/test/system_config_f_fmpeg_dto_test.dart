@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // ToneMapping tonemap
+    test('to test the property `tonemap`', () async {
+      // TODO
+    });
+
     // String preset
     test('to test the property `preset`', () async {
       // TODO

@@ -272,6 +272,7 @@ Class | Method | HTTP request | Description
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)
+ - [ToneMapping](doc//ToneMapping.md)
  - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
