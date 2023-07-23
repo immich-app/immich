@@ -72,6 +72,7 @@
             }}
           >
             <ImageThumbnail
+              border={potentialMergePeople.length > 0 ? true : false}
               circle
               shadow
               url={api.getPeopleThumbnailUrl(person2.id)}

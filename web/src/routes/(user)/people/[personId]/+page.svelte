@@ -117,14 +117,15 @@
   };
 
   const handleNameChange = async (name: string) => {
+    let detectnew = false;
     for (const person of people) {
       if (person.name === name && person.id !== originalPerson.id) {
         person2 = person;
+        detectnew = true;
         break;
       }
     }
-    console.log('person2', person2);
-    if (person2 === undefined) {
+    if (!detectnew) {
       try {
         isEditingName = false;
         data.person.name = name;
@@ -138,7 +139,6 @@
         (person: PersonResponseDto) =>
           originalPerson.name === person.name && person.id !== person2.id && person.id !== person1.id,
       );
-      console.log(potentialMergePeople);
       showMergeModal = true;
     }
   };
