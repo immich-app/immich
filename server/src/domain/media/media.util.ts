@@ -150,10 +150,6 @@ class BaseConfig implements VideoCodecSWConfig {
     return presets.indexOf(this.config.preset);
   }
 
-  isHDR(stream: VideoStreamInfo) {
-    return stream.isHDR;
-  }
-
   getColors() {
     return {
       primaries: 'bt709',

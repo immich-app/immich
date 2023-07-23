@@ -4,6 +4,7 @@ import {
   SystemConfigEntity,
   SystemConfigKey,
   TranscodeHWAccel,
+  ToneMapping,
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
@@ -43,6 +44,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
+    tonemap: ToneMapping.HABLE,
   },
   oauth: {
     autoLaunch: true,

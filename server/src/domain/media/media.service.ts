@@ -81,10 +81,9 @@ export class MediaService {
           return false;
         }
         const { ffmpeg } = await this.configCore.getConfig();
-        const config = new ThumbnailConfig({ ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString() }).getOptions(
-          mainVideoStream,
-        );
-        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, config);
+        const config = { ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString(), twoPass: false }
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream);
+        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
     }
