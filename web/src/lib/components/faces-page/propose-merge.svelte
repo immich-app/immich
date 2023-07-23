@@ -84,6 +84,7 @@
           {#each potentialMergePeople as person (person.id)}
             <button class="flex h-28 w-28 items-center md:px-2" on:click={() => changePersonToMerge(person)}>
               <ImageThumbnail
+                border={true}
                 circle
                 shadow
                 url={api.getPeopleThumbnailUrl(person.id)}

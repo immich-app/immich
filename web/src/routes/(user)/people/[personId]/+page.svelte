@@ -42,8 +42,6 @@
   let people = data.people.people;
   let person1: PersonResponseDto;
   let person2: PersonResponseDto;
-  let textEntered = '';
-  let peopleDiscovery: PersonResponseDto[] = [];
   let originalPerson = { ...data.person };
   let potentialMergePeople: PersonResponseDto[];
 
@@ -52,13 +50,6 @@
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
 
   $: showAssets = !showMergeFacePanel && !showFaceThumbnailSelection;
-
-  $: {
-    if (textEntered != '')
-      peopleDiscovery = people
-        .filter((person: PersonResponseDto) => person.name.toLowerCase().startsWith(textEntered))
-        .slice(0, 12);
-  }
 
   onMount(() => {
     const action = $page.url.searchParams.get('action');
@@ -118,28 +109,30 @@
 
   const handleNameChange = async (name: string) => {
     let detectnew = false;
-    for (const person of people) {
-      if (person.name === name && person.id !== originalPerson.id) {
-        person2 = person;
-        detectnew = true;
-        break;
+    if (name != data.person.name) {
+      for (const person of people) {
+        if (person.name === name && person.id !== originalPerson.id) {
+          person2 = person;
+          detectnew = true;
+          break;
+        }
       }
-    }
-    if (!detectnew) {
-      try {
-        isEditingName = false;
-        data.person.name = name;
-        await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name: textEntered } });
-      } catch (error) {
-        handleError(error, 'Unable to save name');
+      if (!detectnew) {
+        try {
+          isEditingName = false;
+          data.person.name = name;
+          await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
+        } catch (error) {
+          handleError(error, 'Unable to save name');
+        }
+      } else {
+        person1 = data.person;
+        potentialMergePeople = people.filter(
+          (person: PersonResponseDto) =>
+            originalPerson.name === person.name && person.id !== person2.id && person.id !== person1.id,
+        );
+        showMergeModal = true;
       }
-    } else {
-      person1 = data.person;
-      potentialMergePeople = people.filter(
-        (person: PersonResponseDto) =>
-          originalPerson.name === person.name && person.id !== person2.id && person.id !== person1.id,
-      );
-      showMergeModal = true;
     }
   };
 </script>
@@ -150,8 +143,11 @@
     bind:person2
     bind:potentialMergePeople
     on:close={() => (showMergeModal = false)}
-    on:differentFaces={() => {
+    on:differentFaces={async () => {
       showMergeModal = false;
+      isEditingName = false;
+      data.person.name = person2.name;
+      await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name: person2.name } });
     }}
     on:mergeFaces={() => handleMergeSameFace()}
   />
@@ -186,47 +182,11 @@
 <!-- Face information block -->
 <section class="flex place-items-center px-4 pt-24 sm:px-6">
   {#if isEditingName}
-    <div class="max-w-lg rounded-lg">
-      <EditNameInput
-        bind:textEntered
-        bind:isEditingName
-        person={data.person}
-        on:change={(event) => handleNameChange(event.detail)}
-        on:outclick={() => (isEditingName = false)}
-      />
-      <div class="absolute z-[9999]">
-        <div class=" w-full border bg-gray-100 dark:border-transparent dark:bg-gray-700">
-          {#each peopleDiscovery as person (person.id)}
-            {#if person.name && person.id != data.person.id}
-              <div class="border-t dark:border-immich-dark-gray">
-                <button
-                  on:click={() => {
-                    textEntered = person.name;
-                    data.person.id = person.id;
-                    data.person.thumbnailPath = person.thumbnailPath;
-                  }}
-                >
-                  <div class=" m-2 flex items-center">
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-
-                    <div class="ml-4 flex w-full justify-between gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white">
-                      {person.name}
-                    </div>
-                  </div>
-                </button>
-              </div>
-            {/if}
-          {/each}
-        </div>
-      </div>
-    </div>
+    <EditNameInput
+      person={data.person}
+      on:change={(event) => handleNameChange(event.detail)}
+      on:cancel={() => (isEditingName = false)}
+    />
   {:else}
     <button on:click={() => (showFaceThumbnailSelection = true)}>
       <ImageThumbnail

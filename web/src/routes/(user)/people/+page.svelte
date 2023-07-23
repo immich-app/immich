@@ -227,7 +227,7 @@
   const submitNameChange = async () => {
     let detectnew = false;
     showChangeNameModal = false;
-    if (edittingPerson) {
+    if (edittingPerson && personName != edittingPerson.name) {
       for (const person of people) {
         if (person.name === personName && person.id !== edittingPerson.id) {
           person2 = person;
