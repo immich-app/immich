@@ -165,6 +165,8 @@ export class MetadataExtractionProcessor {
     newExif.longitude = longitude !== null ? parseLongitude(longitude) : null;
 
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
+    newExif.projectionType = getExifProperty('ProjectionType');
+
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
       const motionAsset = await this.assetRepository.findLivePhotoMatch({
         livePhotoCID: newExif.livePhotoCID,
@@ -203,8 +205,7 @@ export class MetadataExtractionProcessor {
     // Determine if the image is a panorama
     let isPanorama = false;
     if (newExif.exifImageHeight && newExif.exifImageWidth) {
-      const aspectRatio = newExif.exifImageWidth / newExif.exifImageHeight;
-      isPanorama = aspectRatio >= 2; // This is a standard way to determine if an image is a panorama
+      isPanorama = newExif.projectionType == 'equirectangular'; //currently support only for 360 equirectangular panoramas
     }
 
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });

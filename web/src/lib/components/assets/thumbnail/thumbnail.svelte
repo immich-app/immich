@@ -12,9 +12,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
-
 
   const dispatch = createEventDispatcher();
 

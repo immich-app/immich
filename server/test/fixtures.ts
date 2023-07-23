@@ -958,6 +958,7 @@ export const sharedLinkStub = {
             fps: 100,
             asset: null as any,
             exifTextSearchableColumn: '',
+            projectionType: null,
           },
           tags: [],
           sharedLinks: [],
