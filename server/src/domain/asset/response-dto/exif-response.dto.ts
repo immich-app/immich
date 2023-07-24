@@ -1,4 +1,4 @@
-import { ExifEntity } from '@app/infra/entities';
+import { ExifEntity, ProjectionType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExifResponseDto {
@@ -24,7 +24,7 @@ export class ExifResponseDto {
   state?: string | null = null;
   country?: string | null = null;
   description?: string | null = null;
-  projectionType?: string | null = null;
+  projectionType?: string = ProjectionType.NONE;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
