@@ -17,7 +17,6 @@ class BaseConfig implements VideoCodecSWConfig {
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
-    filters.push('format=yuv420p');
     if (filters.length > 0) {
       options.outputOptions.push(`-vf ${filters.join(',')}`);
     }
@@ -39,7 +38,7 @@ class BaseConfig implements VideoCodecSWConfig {
       // beginning of the file for improved playback speed.
       '-movflags faststart',
       '-fps_mode passthrough',
-      '-v verbose'
+      '-v verbose',
     ];
   }
 
@@ -50,8 +49,9 @@ class BaseConfig implements VideoCodecSWConfig {
     }
 
     if (stream.isHDR && this.config.tonemap !== ToneMapping.DISABLED) {
-      options.push(...this.getToneMapping())
+      options.push(...this.getToneMapping());
     }
+    options.push('format=yuv420p')
 
     return options;
   }
@@ -158,7 +158,11 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getToneMapping() {
     const colors = this.getColors();
-    return ['zscale=t=linear', `tonemap=${this.config.tonemap}:desat=0`, `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`];
+    return [
+      'zscale=t=linear',
+      `tonemap=${this.config.tonemap}:desat=0`,
+      `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
+    ];
   }
 }
 
@@ -178,10 +182,9 @@ export class ThumbnailConfig extends BaseConfig {
   getScaling(stream: VideoStreamInfo) {
     let options = super.getScaling(stream);
     if (!stream.isHDR) {
-      options += ":out_color_matrix=bt601:range=pc";
-
+      options += ':out_color_matrix=bt601:range=pc';
     }
-    return options
+    return options;
   }
 
   getColors() {
@@ -224,7 +227,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
 export class H264Config extends BaseConfig {
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
   }
 
   getThreadOptions() {
@@ -241,7 +244,7 @@ export class H264Config extends BaseConfig {
 
 export class HEVCConfig extends BaseConfig {
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
   }
 
   getThreadOptions() {
@@ -258,7 +261,7 @@ export class HEVCConfig extends BaseConfig {
 
 export class VP9Config extends BaseConfig {
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()]
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
   }
 
   getPresetOptions() {
@@ -309,7 +312,7 @@ export class NVENCConfig extends BaseHWConfig {
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
       '-b_qfactor 1.1',
-      ...super.getBaseOutputOptions()
+      ...super.getBaseOutputOptions(),
     ];
   }
 

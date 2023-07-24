@@ -132,15 +132,11 @@ describe(MediaService.name, () => {
       await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/asset-id.jpeg',
-        {
-          inputOptions: [],
-          outputOptions: ['-ss 00:00:00.000', '-frames:v 1', '-vf scale=-2:1440,format=yuv420p'],
-          twoPass: false,
-        },
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
+        inputOptions: [],
+        outputOptions: ['-ss 00:00:00.000', '-frames:v 1', '-vf scale=-2:1440:out_color_matrix=bt601:range=pc,format=yuv420p'],
+        twoPass: false,
+      });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
@@ -1277,7 +1273,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],

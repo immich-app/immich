@@ -9,7 +9,7 @@ import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, ThumbnailConfig, VP9Config } from './media.util';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -80,7 +80,7 @@ export class MediaService {
           return false;
         }
         const { ffmpeg } = await this.configCore.getConfig();
-        const config = { ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString(), twoPass: false }
+        const config = { ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString(), twoPass: false };
         const options = new ThumbnailConfig(config).getOptions(mainVideoStream);
         await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
@@ -217,7 +217,8 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
+        audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 

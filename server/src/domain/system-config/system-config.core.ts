@@ -4,8 +4,8 @@ import {
   SystemConfigEntity,
   SystemConfigKey,
   SystemConfigValue,
-  TranscodeHWAccel,
   ToneMapping,
+  TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
@@ -75,7 +75,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) { }
+  constructor(private repository: ISystemConfigRepository) {}
 
   public getDefaults(): SystemConfig {
     return defaults;
