@@ -1,7 +1,18 @@
 import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column';
 import { Entity } from 'typeorm/decorator/entity/Entity';
-import { AssetEntity, ProjectionType } from './asset.entity';
+import { AssetEntity } from './asset.entity';
+
+export enum ProjectionType {
+  EQUIRECTANGULAR = 'EQUIRECTANGULAR',
+  CUBEMAP = 'CUBEMAP',
+  CUBESTRIP = 'CUBESTRIP',
+  EQUIRECTANGULAR_STEREO = 'EQUIRECTANGULAR_STEREO',
+  CUBEMAP_STEREO = 'CUBEMAP_STEREO',
+  CUBESTRIP_STEREO = 'CUBESTRIP_STEREO',
+  CYLINDER = 'CYLINDER',
+  NONE = 'NONE',
+}
 
 @Entity('exif')
 export class ExifEntity {
@@ -43,8 +54,14 @@ export class ExifEntity {
   @Column({ type: 'float', nullable: true })
   longitude!: number | null;
 
-  @Column({ type: 'enum', enum: ProjectionType, enumName: 'projectionType', nullable: true })
-  projectionType!: string | null;
+  @Column({
+    type: 'enum',
+    enum: ProjectionType,
+    enumName: 'projectionType',
+    default: ProjectionType.NONE,
+    nullable: true,
+  })
+  projectionType!: ProjectionType | null;
 
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;

@@ -218,7 +218,6 @@ export const assetEntityStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: true,
-    projectionType: ProjectionType.DEFAULT,
     isArchived: false,
     duration: null,
     isVisible: true,
@@ -248,7 +247,6 @@ export const assetEntityStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: true,
-    projectionType: ProjectionType.DEFAULT,
     isArchived: false,
     duration: null,
     isVisible: true,
@@ -293,7 +291,6 @@ export const assetEntityStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
-    projectionType: ProjectionType.DEFAULT,
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -327,7 +324,6 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
-    projectionType: ProjectionType.DEFAULT,
   }),
   image1: Object.freeze<AssetEntity>({
     id: 'asset-id-1',
@@ -361,7 +357,6 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
-    projectionType: ProjectionType.DEFAULT,
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -395,7 +390,6 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 100_000,
     } as ExifEntity,
-    projectionType: ProjectionType.DEFAULT,
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -458,7 +452,6 @@ export const assetEntityStub = {
       longitude: 100,
       fileSizeInByte: 23_456,
     } as ExifEntity,
-    projectionType: ProjectionType.DEFAULT,
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -489,7 +482,6 @@ export const assetEntityStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: '/original/path.ext.xmp',
-    projectionType: ProjectionType.DEFAULT,
   }),
 };
 
@@ -650,7 +642,6 @@ const assetResponse: AssetResponseDto = {
   fileCreatedAt: today,
   updatedAt: today,
   isFavorite: false,
-  projectionType: ProjectionType.DEFAULT,
   isArchived: false,
   smartInfo: {
     tags: [],
@@ -888,12 +879,11 @@ export const sharedLinkStub = {
           encodedVideoPath: '',
           duration: null,
           isVisible: true,
-          projectionType: ProjectionType.DEFAULT,
           livePhotoVideo: null,
           livePhotoVideoId: null,
           originalFileName: 'asset_1.jpeg',
           exifInfo: {
-            projectionType: ProjectionType.DEFAULT,
+            projectionType: ProjectionType.NONE,
             livePhotoCID: null,
             assetId: 'id_1',
             description: 'description',

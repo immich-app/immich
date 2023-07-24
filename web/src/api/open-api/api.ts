@@ -697,12 +697,6 @@ export interface AssetResponseDto {
    * @memberof AssetResponseDto
    */
   checksum: string;
-  /**
-   *
-   * @type {ProjectionType}
-   * @memberof AssetResponseDto
-   */
-  projectionType: ProjectionTypeEnum;
 }
 
 /**
@@ -759,7 +753,7 @@ export const ProjectionTypeEnum = {
   Cubemap_Stereo: 'CUBEMAP_STEREO',
   Cubestrip_Stereo: 'CUBESTRIP_STEREO',
   Cylinder: 'CYLINDER',
-  Default: 'DEFAULT',
+  None: 'NONE',
 } as const;
 
 export type ProjectionTypeEnum = (typeof ProjectionTypeEnum)[keyof typeof ProjectionTypeEnum];
@@ -1336,6 +1330,12 @@ export interface ExifResponseDto {
    * @memberof ExifResponseDto
    */
   description?: string | null;
+  /**
+   *
+   * @type {ProjectionTypeEnum}
+   * @memberof ExifResponseDto
+   */
+  projectionType?: ProjectionTypeEnum;
 }
 /**
  *
@@ -1442,12 +1442,6 @@ export interface ImportAssetDto {
    * @memberof ImportAssetDto
    */
   isFavorite: boolean;
-  /**
-   *
-   * @type {ProjectionTypeEnum}
-   * @memberof ImportAssetDto
-   */
-  projectionType: ProjectionTypeEnum;
   /**
    *
    * @type {boolean}
@@ -7683,7 +7677,6 @@ export class AssetApi extends BaseAPI {
         requestParameters.fileCreatedAt,
         requestParameters.fileModifiedAt,
         requestParameters.isFavorite,
-        requestParameters.projectionType,
         requestParameters.key,
         requestParameters.livePhotoData,
         requestParameters.sidecarData,

@@ -4973,19 +4973,6 @@
           "checksum": {
             "type": "string",
             "description": "base64 encoded sha1 hash"
-          },
-          "projectionType": {
-            "enum": [
-              "EQUIRECTANGULAR",
-              "CUBEMAP",
-              "CUBESTRIP",
-              "EQUIRECTANGULAR_STEREO",
-              "CUBEMAP_STEREO",
-              "CUBESTRIP_STEREO",
-              "CYLINDER",
-              "DEFAULT"
-            ],
-            "type": "string"
           }
         },
         "required": [
@@ -5004,8 +4991,7 @@
           "isFavorite",
           "isArchived",
           "duration",
-          "checksum",
-          "projectionType"
+          "checksum"
         ]
       },
       "AssetStatsResponseDto": {
@@ -5564,6 +5550,11 @@
             "default": null
           },
           "description": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "projectionType": {
             "type": "string",
             "nullable": true,
             "default": null

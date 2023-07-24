@@ -336,7 +336,19 @@ export class MetadataExtractionProcessor {
         await this.extractEmbeddedVideo(asset, offset, null, fileCreatedAt);
       }
     }
-    newExif.projectionType = getExifProperty('ProjectionType');
+
+    const exifProperty = getExifProperty('ProjectionType');
+    let projectionType: ProjectionType | null = null; // Initialize it as null
+
+    if (exifProperty) {
+      const exifPropertyUpper = exifProperty.toUpperCase();
+
+      if (exifPropertyUpper in ProjectionType) {
+        projectionType = ProjectionType[exifPropertyUpper as keyof typeof ProjectionType];
+      }
+    }
+
+    newExif.projectionType = projectionType;
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
       const motionAsset = await this.assetRepository.findLivePhotoMatch({
@@ -373,13 +385,8 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    // Determine if the image is a panorama
-    let projectionType = ProjectionType.DEFAULT;
-    if (newExif.projectionType == 'equirectangular') {
-      projectionType = ProjectionType.EQUIRECTANGULAR; //currently support only for 360 equirectangular panoramas
-    }
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined, projectionType });
+    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined });
 
     return true;
   }

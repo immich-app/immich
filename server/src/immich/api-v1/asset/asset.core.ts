@@ -1,5 +1,5 @@
 import { AuthUserDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
-import { AssetEntity, ProjectionType, UserEntity } from '@app/infra/entities';
+import { AssetEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
@@ -28,7 +28,6 @@ export class AssetCore {
 
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
-      projectionType: ProjectionType.DEFAULT,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
