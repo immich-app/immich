@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ProjectionType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { mapFace, PersonResponseDto } from '../../person/person.dto';
 import { mapTag, TagResponseDto } from '../../tag';
@@ -31,7 +31,7 @@ export class AssetResponseDto {
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
-  isPanorama!: boolean;
+  projectionType!: ProjectionType;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -57,7 +57,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
-    isPanorama: entity.isPanorama,
+    projectionType: entity.projectionType,
   };
 }
 
@@ -84,6 +84,6 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
     checksum: entity.checksum.toString('base64'),
-    isPanorama: entity.isPanorama,
+    projectionType: entity.projectionType,
   };
 }

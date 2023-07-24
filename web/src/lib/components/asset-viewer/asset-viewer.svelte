@@ -1,6 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    AlbumResponseDto,
+    api,
+    AssetResponseDto,
+    AssetTypeEnum,
+    ProjectionTypeEnum,
+    SharedLinkResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -294,7 +301,7 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.isPanorama}
+        {:else if asset.projectionType == 'EQUIRECTANGULAR'}
           <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />

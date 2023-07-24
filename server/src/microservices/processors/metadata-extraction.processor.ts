@@ -14,7 +14,7 @@ import {
   usePagination,
   WithoutProperty,
 } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity, ProjectionType } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -374,12 +374,12 @@ export class MetadataExtractionProcessor {
     }
 
     // Determine if the image is a panorama
-    let isPanorama = false;
-    if (newExif.exifImageHeight && newExif.exifImageWidth) {
-      isPanorama = newExif.projectionType == 'equirectangular'; //currently support only for 360 equirectangular panoramas
+    let projectionType = ProjectionType.DEFAULT;
+    if (newExif.projectionType == 'equirectangular') {
+      projectionType = ProjectionType.EQUIRECTANGULAR; //currently support only for 360 equirectangular panoramas
     }
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined, isPanorama });
+    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined, projectionType });
 
     return true;
   }

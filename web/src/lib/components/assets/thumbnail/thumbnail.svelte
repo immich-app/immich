@@ -1,7 +1,7 @@
 <script lang="ts">
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
-  import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
+  import { api, AssetResponseDto, AssetTypeEnum, ProjectionTypeEnum, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
   import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
@@ -125,7 +125,7 @@
           </div>
         {/if}
 
-        {#if asset.type === AssetTypeEnum.Image && asset.isPanorama}
+        {#if asset.type === AssetTypeEnum.Image && asset.projectionType == ProjectionTypeEnum.Equirectangular}
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Rotate360Icon size="24" />

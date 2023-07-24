@@ -4974,8 +4974,18 @@
             "type": "string",
             "description": "base64 encoded sha1 hash"
           },
-          "isPanorama": {
-            "type": "boolean"
+          "projectionType": {
+            "enum": [
+              "EQUIRECTANGULAR",
+              "CUBEMAP",
+              "CUBESTRIP",
+              "EQUIRECTANGULAR_STEREO",
+              "CUBEMAP_STEREO",
+              "CUBESTRIP_STEREO",
+              "CYLINDER",
+              "DEFAULT"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -4995,7 +5005,7 @@
           "isArchived",
           "duration",
           "checksum",
-          "isPanorama"
+          "projectionType"
         ]
       },
       "AssetStatsResponseDto": {

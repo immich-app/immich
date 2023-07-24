@@ -82,8 +82,8 @@ export class AssetEntity {
   @Index()
   checksum!: Buffer; // sha1 checksum
 
-  @Column({ type: 'boolean', default: false })
-  isPanorama!: boolean;
+  @Column()
+  projectionType!: ProjectionType;
 
   @Column({ type: 'varchar', nullable: true })
   duration!: string | null;
@@ -134,6 +134,11 @@ export enum AssetType {
 
 export enum ProjectionType {
   EQUIRECTANGULAR = 'EQUIRECTANGULAR',
+  CUBEMAP = 'CUBEMAP',
+  CUBESTRIP = 'CUBESTRIP',
+  EQUIRECTANGULAR_STEREO = 'EQUIRECTANGULAR_STEREO',
+  CUBEMAP_STEREO = 'CUBEMAP_STEREO',
+  CUBESTRIP_STEREO = 'CUBESTRIP_STEREO',
   CYLINDER = 'CYLINDER',
   DEFAULT = 'DEFAULT',
 }
