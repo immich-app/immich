@@ -281,7 +281,8 @@
       {#if !asset.resized}
         <div class="flex h-full w-full justify-center">
           <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray">
+            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+          >
             <ImageBrokenVariant size="25%" />
           </div>
         </div>
