@@ -1,7 +1,7 @@
 import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column';
 import { Entity } from 'typeorm/decorator/entity/Entity';
-import { AssetEntity } from './asset.entity';
+import { AssetEntity, ProjectionType } from './asset.entity';
 
 @Entity('exif')
 export class ExifEntity {
@@ -43,7 +43,7 @@ export class ExifEntity {
   @Column({ type: 'float', nullable: true })
   longitude!: number | null;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'enum', enum: ProjectionType, enumName: 'projectionType', nullable: true })
   projectionType!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
