@@ -35,6 +35,9 @@
   const dispatch = createEventDispatcher();
 
   let editorElement: HTMLDivElement;
+  let imageElement: HTMLImageElement;
+  let imageWrapper: HTMLDivElement;
+  let cropElement: HTMLDivElement;
 
   let angle = 0;
   let angleSlider: HTMLElement;
@@ -43,6 +46,8 @@
   let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'crop';
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
   let activeEdit: activeEdit;
+
+  let aspectRatioNum = 1.5;
 
   type aspectRatio =
     | 'free'
@@ -77,7 +82,7 @@
       handleError(error, 'Failed to load asset data');
     }
     const result = await imageEditor.loadImageFromURL(assetData, 'test');
-    console.log(result);
+    imageElement.src = assetData;
   });
 
   const loadAssetData = async () => {
@@ -168,9 +173,7 @@
   const initAngleSlider = async () => {
     console.log('initAngleSlider');
     let pos1 = 0,
-      pos2 = 0,
-      pos3 = 0,
-      pos4 = 0;
+      pos2 = 0;
 
     const closeDragElement = () => {
       // stop moving when mouse button is released:
@@ -178,22 +181,63 @@
       document.onmousemove = null;
     };
 
+    // Set crop element aspect ratio
+
+    if (aspectRatioNum > 1) {
+      imageWrapper.style.width = '100%';
+      imageWrapper.style.height = 'auto';
+      imageWrapper.style.maxHeight = '100%';
+    } else {
+      imageWrapper.style.width = 'auto';
+      imageWrapper.style.height = '100%';
+      imageWrapper.style.maxWidth = '100%';
+    }
+
+    imageWrapper.style.aspectRatio = '' + aspectRatioNum;
+
     const elementDrag = async (e: MouseEvent) => {
       e.preventDefault();
       // calculate the new cursor position:
-      pos1 = pos3 - e.clientX;
-      pos3 = e.clientX;
+      pos1 = pos2 - e.clientX;
+      pos2 = e.clientX;
       // set the element's new position:
       let a = angleSlider.offsetLeft - pos1;
       if (a < 0) {
-        a = Math.max(a, -125/49*45);
+        a = Math.max(a, (-125 / 49) * 45);
       } else {
-        a = Math.min(a, 125/49*45);
+        a = Math.min(a, (125 / 49) * 45);
       }
       angle = Math.round((a / 125) * 49);
-      await imageEditor.stopDrawingMode();
-      await imageEditor.setAngle(angle);
-      //await setAspectRatio(aspectRatio);
+      angle = angle * -1;
+
+      imageElement.style.transform = `rotate(${angle}deg)`;
+
+      // const imageWrapperWidth = imageWrapper.offsetWidth;
+
+      // //TODO: Maybe use relative units instead of px
+      // const imageWrapperHeight = imageWrapper.offsetHeight - 112;
+
+      const x1 = Math.cos((angle * Math.PI) / 180) * imageElement.naturalWidth;
+      const x2 = Math.cos(((90 - angle) * Math.PI) / 180) * imageElement.naturalHeight;
+
+      const newWidth = Math.abs(x1) + Math.abs(x2);
+      const newImgWidth = (newWidth / imageElement.naturalWidth) * cropElement.offsetWidth;
+      console.log(newImgWidth);
+
+      const y1 = Math.cos((angle * Math.PI) / 180) * imageElement.naturalHeight;
+      const y2 = Math.cos(((90 - angle) * Math.PI) / 180) * imageElement.naturalWidth;
+
+      const newHeight = Math.abs(y1) + Math.abs(y2);
+      // const newImgHeight = (imageWrapperHeight / newHeight) * imageElement.naturalHeight;
+
+      //const newImgHeight = (newHeight / imageElement.naturalHeight) * cropElement.offsetHeight;
+      //console.log(newImgHeight);
+      //imageElement.style.height = `${newImgHeight}px`;
+
+      const newImgHeight = (imageElement.naturalHeight / imageElement.naturalWidth) * newImgWidth;
+      imageElement.style.height = `${newImgHeight}px`;
+      imageElement.style.width = `${newImgWidth}px`;
+
       let b = a + 'px';
       angleSliderHandle.style.left = b;
       angleSlider.style.left = b;
@@ -202,7 +246,7 @@
     const dragMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       // get the mouse cursor position at startup:
-      pos3 = e.clientX;
+      pos2 = e.clientX;
       document.onmouseup = closeDragElement;
       // call a function whenever the cursor moves:
       document.onmousemove = elementDrag;
@@ -241,6 +285,8 @@
     angleSliderHandle.style.left = '0';
     angleSlider.style.left = '0';
     angle = 0;
+    imageElement.style.transform = `rotate(${angle}deg)`;
+
     await imageEditor.resetFlip().catch(() => {});
     await setAspectRatio('free');
   };
@@ -280,59 +326,65 @@
 <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" />
 
 <div
-  class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-[1fr_1fr_1fr_360px]"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-[1fr_1fr_1fr_360px] grid-rows-[64px_1fr] overflow-y-hidden bg-black"
 >
-  <div class="col-start-1 col-span-3 row-start-1 row-span-1 z-[1000] transition-transform flex items-center">
+  <div class="z-[1000] col-span-3 col-start-1 row-span-1 row-start-1 flex items-center transition-transform">
     <button
       on:click={() => dispatch('close')}
-      class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3 ml-4"
+      class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white"
     >
       <Close />
     </button>
     <button
       on:click={() => save()}
-      class=" ml-auto rounded-md bg-immich-dark-primary p-[6px] px-4 mr-5 text-black hover:bg-immich-dark-primary/80"
+      class=" bg-immich-dark-primary hover:bg-immich-dark-primary/80 ml-auto mr-5 rounded-md p-[6px] px-4 text-black"
     >
       Save
     </button>
-    <button class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3 mr-4">
+    <button class="hover:bg-immich-gray/10 mr-4 rounded-full p-3 text-2xl text-white">
       <DotsVertical />
     </button>
   </div>
-  <div class="relative row-start-1 row-span-full col-start-1 col-span-3">
-    <div class="h-full w-full flex justify-center">
-      <div class="h-full w-full flex justify-center items-center" bind:this={editorElement} />
+  <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
+    <div class="flex h-full w-full justify-center">
+      <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
+      <div class="flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
+        <div class="relative h-full w-full items-center justify-center overflow-hidden" bind:this={imageWrapper}>
+          <img class="block" bind:this={imageElement} src="" alt="" />
+          <div bind:this={cropElement} class="absolute top-0 h-full w-full border-2 border-red-600" />
+        </div>
+      </div>
     </div>
     {#if activeButton === 'crop'}
-      <div class="gap-0 absolute bottom-0 py-2 h-26 bg-immich-dark-bg w-full px-4 flex justify-center">
-        <div class="w-full h-full max-w-[750px] grid grid-cols-[1fr,1fr,500px,2fr] grid-rows-1 items-center">
+      <div class="h-26 bg-immich-dark-bg absolute bottom-0 flex w-full justify-center gap-0 px-4 py-2">
+        <div class="grid h-full w-full max-w-[750px] grid-cols-[1fr,1fr,500px,2fr] grid-rows-1 items-center">
           <!-- Crop Options -->
-          <div class="flex flex-col h-full w-full justify-center bg-black z-10">
+          <div class="z-10 flex h-full w-full flex-col justify-center bg-black">
             <button
               on:click={() => flipHorizontal()}
-              class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
             >
               <FlipHorizontal />
             </button>
 
             <button
               on:click={() => flipVertical()}
-              class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3"
+              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
             >
               <FlipVertical />
             </button>
           </div>
-          <div class="w-full h-full bg-black z-10 items-center justify-center flex">
-            <button on:click={() => rotate(90)} class="rounded-full text-2xl text-white hover:bg-immich-gray/10 p-3">
+          <div class="z-10 flex h-full w-full items-center justify-center bg-black">
+            <button on:click={() => rotate(90)} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
               <FormatRotate90 />
             </button>
           </div>
 
-          <div class="relative w-[500px] h-[50px] z-0">
+          <div class="relative z-0 h-[50px] w-[500px]">
             <!-- Angle selector slider -->
             <div
               bind:this={angleSlider}
-              class="absolute w-full h-full angle-slider grid grid-cols-[repeat(13,1fr)] grid-rows-2 text-center justify-around text-xs"
+              class="angle-slider absolute grid h-full w-full grid-cols-[repeat(13,1fr)] grid-rows-2 justify-around text-center text-xs"
             >
               <div>-90°</div>
               <div>-75°</div>
@@ -347,7 +399,7 @@
               <div>60°</div>
               <div>75°</div>
               <div>90°</div>
-              <div class="row-start-2 col-start-1 col-end-[14] grid grid-cols-[repeat(39,1fr)]">
+              <div class="col-start-1 col-end-[14] row-start-2 grid grid-cols-[repeat(39,1fr)]">
                 <div />
                 <div>.</div>
                 <div>.</div>
@@ -389,9 +441,9 @@
                 <div />
               </div>
             </div>
-            <div class="absolute w-full h-full angle-slider-shadow" />
-            <div bind:this={angleSliderHandle} class="absolute w-full h-full angle-slider z-20" />
-            <div class="w-28 absolute left-[calc(50%-56px)] text-lg text-white angle-slider-selection">
+            <div class="angle-slider-shadow absolute h-full w-full" />
+            <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full" />
+            <div class="angle-slider-selection absolute left-[calc(50%-56px)] w-28 text-lg text-white">
               <div class="-mt-1.5 flex justify-center">
                 {angle}°
               </div>
@@ -401,9 +453,9 @@
             </div>
           </div>
 
-          <div class="bg-black w-full h-full flex items-center justify-center z-10">
+          <div class="z-10 flex h-full w-full items-center justify-center bg-black">
             <button
-              class=" rounded text-md text-immich-dark-primary border border-white hover:bg-immich-dark-primary/10 px-3 py-1.5 focus:bg-immich-dark-primary/20 focus:outline-none"
+              class=" text-md text-immich-dark-primary hover:bg-immich-dark-primary/10 focus:bg-immich-dark-primary/20 rounded border border-white px-3 py-1.5 focus:outline-none"
               on:click={() => resetCropAndRotate()}
             >
               Reset
@@ -414,60 +466,60 @@
     {/if}
   </div>
   <div
-    class="col-start-4 col-span-1 row-start-1 row-span-1 z-[1000] transition-transform bg-immich-dark-gray pb-[16px] flex justify-evenly"
+    class="bg-immich-dark-gray z-[1000] col-span-1 col-start-4 row-span-1 row-start-1 flex justify-evenly pb-[16px] transition-transform"
   >
     <button
       title="Suggestions"
       on:click={() => navigateEditTab('autofix')}
-      class="relative flex justify-center items-center w-1/4 text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary"
+      class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'autofix'}
     >
       <AutoFix size="1.5em" />
       <div
-        class="absolute bottom-0 rounded-t-full h-[3px] bg-immich-dark-primary w-6 hidden"
+        class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'autofix'}
       />
     </button>
     <button
       title="Crop & Rotate"
       on:click={() => navigateEditTab('crop')}
-      class="relative flex justify-center items-center w-1/4 text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary"
+      class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'crop'}
     >
       <CropRotate size="1.5em" />
       <div
-        class="absolute bottom-0 rounded-t-full h-[3px] bg-immich-dark-primary w-6 hidden"
+        class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'crop'}
       />
     </button><button
       title="Adjust"
       on:click={() => navigateEditTab('adjust')}
-      class="relative flex justify-center items-center w-1/4 text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary"
+      class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'adjust'}
     >
       <Tune size="1.5em" />
       <div
-        class="absolute bottom-0 rounded-t-full h-[3px] bg-immich-dark-primary w-6 hidden"
+        class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'adjust'}
       />
     </button><button
       title="Filter"
       on:click={() => navigateEditTab('filter')}
-      class="relative flex justify-center items-center w-1/4 text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary"
+      class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'filter'}
     >
       <ImageAutoAdjust size="1.5em" />
       <div
-        class="absolute bottom-0 rounded-t-full h-[3px] bg-immich-dark-primary w-6 hidden"
+        class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'filter'}
       />
     </button>
   </div>
-  <div class="row-start-2 row-span-full col-start-4 col-span-1 bg-immich-dark-gray overflow-auto">
+  <div class="bg-immich-dark-gray col-span-1 col-start-4 row-span-full row-start-2 overflow-auto">
     {#if activeButton === 'autofix'}
-      <div class="px-6 pt-2 gap-y-2 grid">
+      <div class="grid gap-y-2 px-6 pt-2">
         <!-- Suggestions -->
-        <div class="mb-4 text-immich-gray/60">Suggestions</div>
+        <div class="text-immich-gray/60 mb-4">Suggestions</div>
         <SuggestionsButton
           buttonName="Enhanced"
           isActive={activeEdit === 'optimized'}
@@ -490,9 +542,9 @@
         </SuggestionsButton>
       </div>
     {:else if activeButton === 'crop'}
-      <div class="px-6 pt-2 gap-y-2 grid">
+      <div class="grid gap-y-2 px-6 pt-2">
         <!-- Crop & Rotate -->
-        <div class="mb-4 text-immich-gray/60">Aspect Ratio</div>
+        <div class="text-immich-gray/60 mb-4">Aspect Ratio</div>
         <div class="grid grid-cols-2 gap-y-4">
           <AspectRatioButton on:click={() => setAspectRatio('free')} isActive={aspectRatio === 'free'} title="Free">
             <Fullscreen />
@@ -538,13 +590,13 @@
         </div>
         <button
           on:click={() => applyCrop()}
-          class="mt-5 ml-0 mr-auto rounded-md bg-immich-dark-primary p-[6px] px-4 text-black hover:bg-immich-dark-primary/80"
+          class="bg-immich-dark-primary hover:bg-immich-dark-primary/80 ml-0 mr-auto mt-5 rounded-md p-[6px] px-4 text-black"
         >
           Apply
         </button>
       </div>
     {:else if activeButton === 'adjust'}
-      <div class="px-6 pt-2 gap-y-2 grid">
+      <div class="grid gap-y-2 px-6 pt-2">
         <!-- Adjust -->
         <div class="grid gap-y-8">
           <AdjustElement title="HDR">
@@ -556,13 +608,13 @@
         </div>
       </div>
     {:else if activeButton === 'filter'}
-      <div class="px-6 pt-2 grid justify-center">
+      <div class="grid justify-center px-6 pt-2">
         <!-- Filter -->
         <div class="grid grid-cols-3 gap-x-3">
           <FilterCard title="Without" />
           <FilterCard title="Vivid" />
         </div>
-        <hr class="my-7 mx-4 border-1 border-immich-gray/10" />
+        <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
           <FilterCard title="Playa" />
           <FilterCard title="Honey" />
@@ -574,7 +626,7 @@
           <FilterCard title="Alpaca" />
           <FilterCard title="Modena" />
         </div>
-        <hr class="my-7 mx-4 border-1 border-immich-gray/10" />
+        <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
           <FilterCard title="West" />
           <FilterCard title="Metro" />
@@ -582,7 +634,7 @@
           <FilterCard title="Bazaar" />
           <FilterCard title="Ollie" />
         </div>
-        <hr class="my-7 mx-4 border-1 border-immich-gray/10" />
+        <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
           <FilterCard title="Onyx" />
           <FilterCard title="Eiffel" />
