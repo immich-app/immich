@@ -34,7 +34,7 @@ jobs:
         working-directory: ./mobile
 
   repo-analyze:
-    name: Run Dart Code Analysis
+    name: Run Qodada Code Analysis
     runs-on: ubuntu-latest
     steps:
       - name: "Qodana Scan"
