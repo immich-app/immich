@@ -104,7 +104,7 @@
       </div>
 
       <div
-        class="dark:bg-immich-dark-gray absolute h-full w-full select-none bg-gray-100 transition-transform"
+        class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
         class:scale-[0.85]={selected}
       >
         <!-- Gradient overlay on hover -->
@@ -171,7 +171,7 @@
       </div>
       {#if selectionCandidate}
         <div
-          class="bg-immich-primary absolute top-0 h-full w-full opacity-40"
+          class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
           in:fade={{ duration: 100 }}
           out:fade={{ duration: 100 }}
         />
