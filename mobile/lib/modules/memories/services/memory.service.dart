@@ -19,10 +19,9 @@ class MemoryService {
 
   MemoryService(this._apiService);
 
-  Future<List<Memory>?> getMemoryLane({DateTime? now}) async {
+  Future<List<Memory>?> getMemoryLane() async {
     try {
-      // Use the provided DateTime or default to now
-      now = now ?? DateTime.now();
+      final now = DateTime.now();
       final beginningOfDate = DateTime(now.year, now.month, now.day);
       final data = await _apiService.assetApi.getMemoryLane(
         beginningOfDate,
