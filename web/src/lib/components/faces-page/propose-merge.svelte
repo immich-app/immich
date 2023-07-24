@@ -15,6 +15,8 @@
 
   export let potentialMergePeople: PersonResponseDto[];
 
+  const title = person2.name;
+
   const invert = () => {
     let temp: PersonResponseDto = person1;
     person1 = person2;
@@ -24,10 +26,10 @@
   let choosePersonToMerge = false;
 
   const changePersonToMerge = (newperson: PersonResponseDto) => {
-    let temp = person2;
-    potentialMergePeople = potentialMergePeople.filter((person: PersonResponseDto) => person.id !== newperson.id);
-    person2 = newperson;
-    potentialMergePeople.push(temp);
+    const index = potentialMergePeople.indexOf(newperson);
+    let temp = potentialMergePeople[index];
+    potentialMergePeople[index] = person2;
+    person2 = temp;
     choosePersonToMerge = false;
   };
 </script>
@@ -39,7 +41,7 @@
     >
       <div class="relative flex items-center justify-between">
         <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
-          Merge faces - {person1.name}
+          Merge faces - {title}
         </h1>
         <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
       </div>
@@ -86,7 +88,11 @@
             <div class="px-2">
               <button on:click={() => (choosePersonToMerge = false)}> <ArrowLeft /></button>
             </div>
-            <div class="grid grid-cols-2 place-items-center gap-4 md:grid-cols-3">
+            <div
+              class="grid grid-cols-2 place-items-center gap-4 md:grid-cols-{potentialMergePeople.length == 2
+                ? '2'
+                : '3'} justify-self-center"
+            >
               {#each potentialMergePeople as person (person.id)}
                 <div class="h-20 w-20 md:h-28 md:w-28 md:p-2">
                   <button on:click={() => changePersonToMerge(person)}>
