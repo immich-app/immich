@@ -32,3 +32,12 @@ jobs:
       - name: Run dart analyze
         run: dart analyze --fatal-infos
         working-directory: ./mobile
+
+  repo-analyze:
+    name: Run Dart Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Qodana Scan"
+        uses: JetBrains/qodana-action@main
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
