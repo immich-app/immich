@@ -24,7 +24,9 @@ export class ExifResponseDto {
   state?: string | null = null;
   country?: string | null = null;
   description?: string | null = null;
-  projectionType?: string = ProjectionType.NONE;
+
+  @ApiProperty({ enumName: 'ProjectionTypeEnum', enum: ProjectionType })
+  projectionType: ProjectionType = ProjectionType.NONE;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {

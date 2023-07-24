@@ -1192,6 +1192,12 @@ export interface ExifResponseDto {
     'fileSizeInByte'?: number | null;
     /**
      * 
+     * @type {ProjectionTypeEnum}
+     * @memberof ExifResponseDto
+     */
+    'projectionType': ProjectionTypeEnum;
+    /**
+     * 
      * @type {string}
      * @memberof ExifResponseDto
      */
@@ -1304,13 +1310,9 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'description'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'projectionType'?: string | null;
 }
+
+
 /**
  * 
  * @export
@@ -1908,6 +1910,26 @@ export interface PersonUpdateDto {
      */
     'isHidden'?: boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const ProjectionTypeEnum = {
+    Equirectangular: 'EQUIRECTANGULAR',
+    Cubemap: 'CUBEMAP',
+    Cubestrip: 'CUBESTRIP',
+    EquirectangularStereo: 'EQUIRECTANGULAR_STEREO',
+    CubemapStereo: 'CUBEMAP_STEREO',
+    CubestripStereo: 'CUBESTRIP_STEREO',
+    Cylinder: 'CYLINDER',
+    None: 'NONE'
+} as const;
+
+export type ProjectionTypeEnum = typeof ProjectionTypeEnum[keyof typeof ProjectionTypeEnum];
+
+
 /**
  * 
  * @export
