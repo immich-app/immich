@@ -116,7 +116,7 @@ export class AssetRepository implements IAssetRepository {
       },
       order: {
         // Ensures correct order when paginating
-        createdAt: 'ASC',
+        createdAt: options.order ?? 'ASC',
       },
     });
   }

@@ -29,7 +29,7 @@ export class FacialRecognitionService {
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { order: 'DESC' })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 

@@ -11,6 +11,7 @@ export interface AssetStatsOptions {
 export interface AssetSearchOptions {
   isVisible?: boolean;
   type?: AssetType;
+  order?: 'ASC' | 'DESC';
 }
 
 export interface LivePhotoSearchOptions {
