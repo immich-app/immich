@@ -154,7 +154,7 @@
           mergePersonDto: { ids: [person1.id] },
         });
         countVisiblePeople--;
-        people = people.filter((obj: PersonResponseDto) => obj.id !== person1.id);
+        people = people.filter((person: PersonResponseDto) => person.id !== person1.id);
 
         notificationController.show({
           message: 'Merge faces succesfully',
@@ -237,6 +237,15 @@
       }
       if (!detectnew) {
         await ChangeName();
+
+        people.map((person: PersonResponseDto) => {
+          if (edittingPerson) {
+            if (person.id === edittingPerson.id) {
+              person.name = personName;
+            }
+            return person;
+          }
+        });
       } else {
         potentialMergePeople = people
           .filter(

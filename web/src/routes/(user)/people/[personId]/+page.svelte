@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
@@ -42,8 +42,8 @@
   let people = data.people.people;
   let person1: PersonResponseDto;
   let person2: PersonResponseDto;
-  let originalPerson = { ...data.person };
   let potentialMergePeople: PersonResponseDto[];
+  let personName = '';
 
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
@@ -95,11 +95,45 @@
     try {
       await api.personApi.mergePerson({
         id: person2.id,
-        mergePersonDto: { ids: [originalPerson.id] },
+        mergePersonDto: { ids: [person1.id] },
       });
-      goto(`${AppRoute.PEOPLE}/${person2.id}`);
+
+      people = people.filter((person: PersonResponseDto) => person.id !== person1.id);
+
+      if (person2.name != personName) {
+        ChangeName();
+        invalidateAll();
+        data.person = person2;
+      } else {
+        goto(`${AppRoute.PEOPLE}/${person2.id}`);
+        notificationController.show({
+          message: 'Merge faces succesfully',
+          type: NotificationType.Info,
+        });
+      }
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+  };
+
+  const ChangeName = async () => {
+    try {
+      isEditingName = false;
+
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: data.person.id,
+        personUpdateDto: { name: personName },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
       notificationController.show({
-        message: 'Merge faces succesfully',
+        message: 'Change name succesfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -108,29 +142,33 @@
   };
 
   const handleNameChange = async (name: string) => {
+    personName = name;
     let detectnew = false;
-    if (name != data.person.name) {
+    if (data.person.name != personName) {
       for (const person of people) {
-        if (person.name === name && person.id !== originalPerson.id) {
+        if (person.name === personName && person.id !== data.person.id) {
           person2 = person;
           detectnew = true;
           break;
         }
       }
       if (!detectnew) {
-        try {
-          isEditingName = false;
-          data.person.name = name;
-          await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
-        } catch (error) {
-          handleError(error, 'Unable to save name');
-        }
+        await ChangeName();
+        data.person.name = personName;
+        people.map((person: PersonResponseDto) => {
+          if (person.id === data.person.id) {
+            person.name = personName;
+          }
+          return person;
+        });
       } else {
         person1 = data.person;
-        potentialMergePeople = people.filter(
-          (person: PersonResponseDto) =>
-            originalPerson.name === person.name && person.id !== person2.id && person.id !== person1.id,
-        );
+        potentialMergePeople = people
+          .filter(
+            (person: PersonResponseDto) =>
+              personName === person.name && person.id !== person2.id && person.id !== person1.id,
+          )
+          .slice(0, 3);
         showMergeModal = true;
       }
     }
@@ -139,15 +177,14 @@
 
 {#if showMergeModal}
   <ProposeMerge
-    bind:person1={originalPerson}
+    bind:person1
     bind:person2
     bind:potentialMergePeople
     on:close={() => (showMergeModal = false)}
     on:differentFaces={async () => {
       showMergeModal = false;
       isEditingName = false;
-      data.person.name = person2.name;
-      await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name: person2.name } });
+      await ChangeName();
     }}
     on:mergeFaces={() => handleMergeSameFace()}
   />

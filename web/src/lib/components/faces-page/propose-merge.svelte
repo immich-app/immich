@@ -7,7 +7,7 @@
   import { api } from '@api';
   import Merge from 'svelte-material-icons/Merge.svelte';
   import Button from '../elements/buttons/button.svelte';
-
+  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   const dispatch = createEventDispatcher();
 
   export let person1: PersonResponseDto;
@@ -38,13 +38,14 @@
       class="w-[250px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[350px]"
     >
       <div class="relative flex items-center justify-between">
-        <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Merge faces</h1>
+        <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
+          Merge faces - {person1.name}
+        </h1>
         <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
       </div>
 
-      <div class="flex items-center justify-center px-2 py-4 md:px-4 md:py-4">
+      <div class="flex items-center justify-center px-2 py-4 md:h-36 md:px-4 md:py-4">
         {#if !choosePersonToMerge}
-          <!-- Code for the first person's thumbnail -->
           <div class="flex h-28 w-28 items-center md:px-2">
             <ImageThumbnail
               circle
@@ -62,7 +63,7 @@
               }}
             />
           </div>
-          <!-- Code for the second person's thumbnail -->
+
           <button
             class="flex h-28 w-28 items-center md:px-2"
             on:click={() => {
@@ -81,18 +82,28 @@
             />
           </button>
         {:else}
-          {#each potentialMergePeople as person (person.id)}
-            <button class="flex h-28 w-28 items-center md:px-2" on:click={() => changePersonToMerge(person)}>
-              <ImageThumbnail
-                border={true}
-                circle
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-            </button>
-          {/each}
+          <div class="grid w-full grid-cols-1 gap-2">
+            <div class="px-2">
+              <button on:click={() => (choosePersonToMerge = false)}> <ArrowLeft /></button>
+            </div>
+            <div class="grid grid-cols-2 place-items-center gap-4 md:grid-cols-3">
+              {#each potentialMergePeople as person (person.id)}
+                <div class="h-20 w-20 md:h-28 md:w-28 md:p-2">
+                  <button on:click={() => changePersonToMerge(person)}>
+                    <ImageThumbnail
+                      border={true}
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="100%"
+                      on:click={() => changePersonToMerge(person)}
+                    />
+                  </button>
+                </div>
+              {/each}
+            </div>
+          </div>
         {/if}
       </div>
 
