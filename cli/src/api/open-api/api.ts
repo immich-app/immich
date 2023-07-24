@@ -1304,6 +1304,12 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'description'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'projectionType'?: string | null;
 }
 /**
  * 
@@ -10998,6 +11004,7 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
             // authentication cookie required
 
             // authentication api_key required
@@ -12887,4 +12894,5 @@ export class UserApi extends BaseAPI {
         return UserApiFp(this.configuration).updateUser(requestParameters.updateUserDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
 

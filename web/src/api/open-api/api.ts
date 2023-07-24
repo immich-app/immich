@@ -1304,6 +1304,12 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'description'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'projectionType'?: string | null;
 }
 /**
  * 
@@ -4998,6 +5004,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             if (ifNoneMatch !== undefined && ifNoneMatch !== null) {
                 localVarHeaderParameter['if-none-match'] = String(ifNoneMatch);
             }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -12955,4 +12962,5 @@ export class UserApi extends BaseAPI {
         return UserApiFp(this.configuration).updateUser(requestParameters.updateUserDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
 
