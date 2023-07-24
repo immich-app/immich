@@ -337,11 +337,11 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    const exifProperty = getExifProperty('ProjectionType');
+    const exifProjectionType = getExifProperty('ProjectionType');
     let projectionType: ProjectionType | null = null; // Initialize it as null
 
-    if (exifProperty) {
-      const exifPropertyUpper = exifProperty.toUpperCase();
+    if (exifProjectionType) {
+      const exifPropertyUpper = exifProjectionType.toUpperCase();
 
       if (exifPropertyUpper in ProjectionType) {
         projectionType = ProjectionType[exifPropertyUpper as keyof typeof ProjectionType];
