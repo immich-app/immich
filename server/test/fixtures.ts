@@ -626,6 +626,7 @@ const assetInfo: ExifResponseDto = {
   state: 'state',
   country: 'country',
   description: 'description',
+  projectionType: ProjectionType.NONE,
 };
 
 const assetResponse: AssetResponseDto = {

@@ -104,7 +104,7 @@
       </div>
 
       <div
-        class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
+        class="dark:bg-immich-dark-gray absolute h-full w-full select-none bg-gray-100 transition-transform"
         class:scale-[0.85]={selected}
       >
         <!-- Gradient overlay on hover -->
@@ -125,7 +125,7 @@
           </div>
         {/if}
 
-{#if asset.type === AssetTypeEnum.Image && asset?.exifInfo.projectionType === ProjectionTypeEnum.Equirectangular}
+        {#if asset.type === AssetTypeEnum.Image && asset?.exifInfo?.projectionType === ProjectionTypeEnum.Equirectangular}
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Rotate360Icon size="24" />
@@ -171,7 +171,7 @@
       </div>
       {#if selectionCandidate}
         <div
-          class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
+          class="bg-immich-primary absolute top-0 h-full w-full opacity-40"
           in:fade={{ duration: 100 }}
           out:fade={{ duration: 100 }}
         />
