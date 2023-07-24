@@ -40,7 +40,7 @@
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
 
-  let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'autofix';
+  let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'crop';
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
   let activeEdit: activeEdit;
 
@@ -186,11 +186,11 @@
       // set the element's new position:
       let a = angleSlider.offsetLeft - pos1;
       if (a < 0) {
-        a = Math.max(a, -125);
+        a = Math.max(a, -125/49*45);
       } else {
-        a = Math.min(a, 125);
+        a = Math.min(a, 125/49*45);
       }
-      angle = Math.round((a / 125) * 45);
+      angle = Math.round((a / 125) * 49);
       await imageEditor.stopDrawingMode();
       await imageEditor.setAngle(angle);
       //await setAspectRatio(aspectRatio);
@@ -391,11 +391,11 @@
             </div>
             <div class="absolute w-full h-full angle-slider-shadow" />
             <div bind:this={angleSliderHandle} class="absolute w-full h-full angle-slider z-20" />
-            <div class="absolute left-[calc(50%-2.5rem)] text-lg text-white px-8 angle-slider-selection">
-              <div class="-mt-1.5">
+            <div class="w-28 absolute left-[calc(50%-56px)] text-lg text-white angle-slider-selection">
+              <div class="-mt-1.5 flex justify-center">
                 {angle}°
               </div>
-              <div class="mt-1.5">
+              <div class="mt-1.5 flex justify-center">
                 <TriangleSmallUp />
               </div>
             </div>
