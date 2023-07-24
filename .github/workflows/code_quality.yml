@@ -17,8 +17,6 @@ jobs:
     defaults:
       run:
         working-directory: ./server
-          ./mobile
-          ./web
 
     steps:
       - uses: actions/checkout@v3
