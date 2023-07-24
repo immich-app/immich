@@ -5,20 +5,20 @@
   export let showMessage = $$slots.message;
 </script>
 
-<section class="min-h-screen w-screen flex place-items-center place-content-center p-4">
+<section class="flex min-h-screen w-screen place-content-center place-items-center p-4">
   <div
-    class="flex flex-col gap-4 border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-full max-w-lg rounded-3xl"
+    class="flex w-full max-w-lg flex-col gap-4 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
-    <div class="flex flex-col place-items-center place-content-center gap-4 py-4">
+    <div class="flex flex-col place-content-center place-items-center gap-4 py-4">
       <ImmichLogo class="h-24 w-24" />
-      <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
       </h1>
     </div>
 
     {#if showMessage}
       <div
-        class="text-sm rounded-xl p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg w-full border-immich-primary border-2"
+        class="w-full rounded-xl border-2 border-immich-primary bg-immich-primary/5 p-4 text-sm font-medium text-immich-primary dark:border-immich-dark-bg dark:text-immich-dark-primary"
       >
         <slot name="message" />
       </div>

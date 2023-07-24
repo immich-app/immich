@@ -20,4 +20,9 @@ if [ "$DB_PASSWORD_FILE" ]; then
 	unset DB_PASSWORD_FILE
 fi
 
+if [ "$REDIS_PASSWORD_FILE" ]; then
+	export REDIS_PASSWORD=$(cat $REDIS_PASSWORD_FILE)
+	unset REDIS_PASSWORD_FILE
+fi
+
 exec node dist/main $1

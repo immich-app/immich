@@ -133,7 +133,7 @@
 <section class="dark:text-immich-dark-fg">
   {#await getConfigs() then}
     <div id="directory-path-builder" class="m-4">
-      <h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base">Variables</h3>
+      <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
 
       <section class="support-date">
         {#await getSupportDateTimeFormat()}
@@ -150,9 +150,9 @@
       </section>
 
       <div class="mt-4 flex flex-col">
-        <h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base">Template</h3>
+        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
 
-        <div class="text-xs my-2">
+        <div class="my-2 text-xs">
           <h4>PREVIEW</h4>
         </div>
 
@@ -167,17 +167,17 @@
           <code>{user.storageLabel || user.id}</code> is the user's Storage Label
         </p>
 
-        <p class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-lg mt-2">
+        <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
           <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
             >UPLOAD_LOCATION/{user.storageLabel || user.id}</span
           >/{parsedTemplate()}.jpg
         </p>
 
         <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
-          <div class="flex flex-col my-2">
+          <div class="my-2 flex flex-col">
             <label class="text-xs" for="presets">PRESET</label>
             <select
-              class="text-sm bg-slate-200 p-2 rounded-lg mt-2 dark:bg-gray-600 hover:cursor-pointer"
+              class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
               name="presets"
               id="preset-select"
               bind:value={selectedPreset}
@@ -202,7 +202,7 @@
             </div>
           </div>
 
-          <div id="migration-info" class="text-sm mt-4">
+          <div id="migration-info" class="mt-4 text-sm">
             <p>
               Template changes will only apply to new assets. To retroactively apply the template to previously uploaded
               assets, run the <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"

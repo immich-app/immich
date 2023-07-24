@@ -9,16 +9,16 @@
   export let isEdited = false;
 </script>
 
-<div class="flex justify-between place-items-center">
+<div class="flex place-items-center justify-between">
   <div>
-    <div class="flex place-items-center gap-1 h-[26px]">
+    <div class="flex h-[26px] place-items-center gap-1">
       <label class="immich-form-label text-sm" for={title}>
         {title}
       </label>
       {#if isEdited}
         <div
           transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-          class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
+          class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
         >
           Unsaved change
         </div>
@@ -28,8 +28,8 @@
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
 
-  <label class="relative inline-block flex-none w-[36px] h-[10px]">
-    <input class="opacity-0 w-0 h-0 disabled::cursor-not-allowed" type="checkbox" bind:checked on:click {disabled} />
+  <label class="relative inline-block h-[10px] w-[36px] flex-none">
+    <input class="disabled::cursor-not-allowed h-0 w-0 opacity-0" type="checkbox" bind:checked on:click {disabled} />
 
     {#if disabled}
       <span class="slider-disable" />

@@ -31,7 +31,7 @@ class MemoryLane extends HookConsumerWidget {
                           onTap: () {
                             HapticFeedback.heavyImpact();
                             AutoRouter.of(context).push(
-                              VerticalRouteView(
+                              MemoryRoute(
                                 memories: memories,
                                 memoryIndex: index,
                               ),

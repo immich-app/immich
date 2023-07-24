@@ -5,4 +5,5 @@ export class UploadOptionsDto {
   skipHash = false;
   delete = false;
   import = false;
+  readOnly = true;
 }

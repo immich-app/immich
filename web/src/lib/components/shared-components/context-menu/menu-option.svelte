@@ -4,7 +4,7 @@
 
 <button
   on:click
-  class="bg-slate-100 hover:bg-gray-200 text-immich-fg dark:text-immich-dark-bg p-4 w-full text-left text-sm font-medium focus:outline-none focus:ring-inset focus:ring-2"
+  class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
   role="menuitem"
 >
   {#if text}

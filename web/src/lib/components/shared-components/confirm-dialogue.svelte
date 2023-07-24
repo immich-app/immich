@@ -26,23 +26,23 @@
 
 <FullScreenModal on:clickOutside={handleCancel}>
   <div
-    class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
     <div
-      class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium pb-2">
+      <h1 class="pb-2 text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
       </h1>
     </div>
     <div>
-      <div class="px-4 py-5 text-md text-center">
+      <div class="text-md px-4 py-5 text-center">
         <slot name="prompt">
           <p>{prompt}</p>
         </slot>
       </div>
 
-      <div class="flex w-full px-4 gap-4 mt-4">
+      <div class="mt-4 flex w-full gap-4 px-4">
         {#if !hideCancelButton}
           <Button color={cancelColor} fullwidth on:click={handleCancel}>
             {cancelText}

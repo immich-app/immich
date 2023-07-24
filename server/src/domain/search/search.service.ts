@@ -199,6 +199,7 @@ export class SearchService {
     if (!this.enabled) {
       return false;
     }
+    await this.searchRepository.deleteAllFaces();
 
     // TODO: do this in batches based on searchIndexVersion
     const faces = this.patchFaces(await this.faceRepository.getAll());

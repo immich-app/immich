@@ -25,7 +25,7 @@
     {disabled}
     on:click={toggle}
     aria-expanded={isOpen}
-    class="bg-gray-200 w-full flex p-2 rounded-lg dark:bg-gray-600 place-items-center justify-between disabled:cursor-not-allowed dark:disabled:bg-gray-300 disabled:bg-gray-600"
+    class="flex w-full place-items-center justify-between rounded-lg bg-gray-200 p-2 disabled:cursor-not-allowed disabled:bg-gray-600 dark:bg-gray-600 dark:disabled:bg-gray-300"
   >
     <div>
       {selected}
@@ -49,14 +49,14 @@
   </button>
 
   {#if isOpen}
-    <div class="flex flex-col mt-2 absolute w-full">
+    <div class="absolute mt-2 flex w-full flex-col">
       {#each options.options as option}
         <button
           on:click={() => {
             selected = option;
             isOpen = false;
           }}
-          class="bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-700 w-full flex p-2 hover:bg-gray-300 transition-all"
+          class="flex w-full bg-gray-200 p-2 transition-all hover:bg-gray-300 dark:bg-gray-500 dark:hover:bg-gray-700"
         >
           {option}
         </button>

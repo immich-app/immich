@@ -28,17 +28,27 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
+  import { onMount } from 'svelte';
 
   export let data: PageData;
-
   let isEditingName = false;
-  let isSelectingFace = false;
+  let showFaceThumbnailSelection = false;
+  let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
 
+  $: showAssets = !showMergeFacePanel && !showFaceThumbnailSelection;
+
+  onMount(() => {
+    const action = $page.url.searchParams.get('action');
+    if (action == 'merge') {
+      showMergeFacePanel = true;
+    }
+  });
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {
@@ -64,7 +74,7 @@
   };
 
   const handleSelectFeaturePhoto = async (event: CustomEvent) => {
-    isSelectingFace = false;
+    showFaceThumbnailSelection = false;
 
     const { selectedAsset }: { selectedAsset: AssetResponseDto | undefined } = event.detail;
 
@@ -102,14 +112,15 @@
   <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
     <svelte:fragment slot="trailing">
       <AssetSelectContextMenu icon={DotsVertical} title="Menu">
-        <MenuOption text="Change feature photo" on:click={() => (isSelectingFace = true)} />
+        <MenuOption text="Change feature photo" on:click={() => (showFaceThumbnailSelection = true)} />
+        <MenuOption text="Merge face" on:click={() => (showMergeFacePanel = true)} />
       </AssetSelectContextMenu>
     </svelte:fragment>
   </ControlAppBar>
 {/if}
 
 <!-- Face information block -->
-<section class="pt-24 px-4 sm:px-6 flex place-items-center">
+<section class="flex place-items-center px-4 pt-24 sm:px-6">
   {#if isEditingName}
     <EditNameInput
       person={data.person}
@@ -117,7 +128,7 @@
       on:cancel={() => (isEditingName = false)}
     />
   {:else}
-    <button on:click={() => (isSelectingFace = true)}>
+    <button on:click={() => (showFaceThumbnailSelection = true)}>
       <ImageThumbnail
         circle
         shadow
@@ -134,9 +145,9 @@
       on:click={() => (isEditingName = true)}
     >
       {#if data.person.name}
-        <p class="font-medium py-2">{data.person.name}</p>
+        <p class="py-2 font-medium">{data.person.name}</p>
       {:else}
-        <p class="font-medium w-fit">Add a name</p>
+        <p class="w-fit font-medium">Add a name</p>
         <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
       {/if}
     </button>
@@ -144,9 +155,9 @@
 </section>
 
 <!-- Gallery Block -->
-{#if !isSelectingFace}
-  <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-    <section class="overflow-y-auto relative immich-scrollbar">
+{#if showAssets}
+  <section class="relative mb-12 bg-immich-bg pt-8 dark:bg-immich-dark-bg sm:px-4">
+    <section class="immich-scrollbar relative overflow-y-scroll">
       <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
         <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
       </section>
@@ -154,6 +165,10 @@
   </section>
 {/if}
 
-{#if isSelectingFace}
+{#if showFaceThumbnailSelection}
   <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
+{/if}
+
+{#if showMergeFacePanel}
+  <MergeFaceSelector person={data.person} on:go-back={() => (showMergeFacePanel = false)} />
 {/if}

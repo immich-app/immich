@@ -22,7 +22,7 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache ffmpeg imagemagick-dev libraw-dev perl vips-dev vips-heif vips-jxl vips-magick
+RUN apk add --no-cache ffmpeg imagemagick-dev libraw-dev perl tini vips-dev vips-heif vips-jxl vips-magick
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
@@ -39,4 +39,4 @@ VOLUME /usr/src/app/upload
 
 EXPOSE 3001
 
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/sh"]

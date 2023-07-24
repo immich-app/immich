@@ -25,7 +25,7 @@ app = FastAPI()
 
 
 def init_state() -> None:
-    app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
+    app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
 
 
 async def load_models() -> None:

@@ -9,6 +9,7 @@
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
+  export let element: HTMLDivElement | undefined = undefined;
   let imgElement: HTMLDivElement;
 
   let assetData: string;
@@ -45,6 +46,9 @@
   };
 
   const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
+    if (window.getSelection()?.type === 'Range') {
+      return;
+    }
     if ((metaKey || ctrlKey) && key === 'c') {
       await doCopy();
     }
@@ -96,7 +100,11 @@
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
 
-<div transition:fade={{ duration: 150 }} class="flex place-items-center place-content-center h-full select-none">
+<div
+  bind:this={element}
+  transition:fade={{ duration: 150 }}
+  class="flex h-full select-none place-content-center place-items-center"
+>
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}
@@ -105,7 +113,7 @@
         transition:fade={{ duration: 150 }}
         src={assetData}
         alt={asset.id}
-        class="object-contain h-full w-full"
+        class="h-full w-full object-contain"
         draggable="false"
       />
     </div>

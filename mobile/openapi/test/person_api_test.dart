@@ -17,7 +17,7 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
-    //Future<List<PersonResponseDto>> getAllPeople() async
+    //Future<PeopleResponseDto> getAllPeople({ bool withHidden }) async
     test('test getAllPeople', () async {
       // TODO
     });
@@ -34,6 +34,16 @@ void main() {
 
     //Future<MultipartFile> getPersonThumbnail(String id) async
     test('test getPersonThumbnail', () async {
+      // TODO
+    });
+
+    //Future<List<BulkIdResponseDto>> mergePerson(String id, MergePersonDto mergePersonDto) async
+    test('test mergePerson', () async {
+      // TODO
+    });
+
+    //Future<List<BulkIdResponseDto>> updatePeople(PeopleUpdateDto peopleUpdateDto) async
+    test('test updatePeople', () async {
       // TODO
     });
 

@@ -70,12 +70,13 @@ export default class Upload extends BaseCommand {
         if (options.import) {
           const importData = {
             assetPath: asset.path,
+            sidecarPath: asset.sidecarPath,
             deviceAssetId: asset.deviceAssetId,
-            assetType: asset.assetType,
             deviceId: this.deviceId,
             fileCreatedAt: asset.fileCreatedAt,
             fileModifiedAt: asset.fileModifiedAt,
             isFavorite: false,
+            isReadOnly: options.readOnly,
           };
 
           if (!this.dryRun) {
@@ -157,8 +158,6 @@ export default class Upload extends BaseCommand {
       uploadFormData.append('fileCreatedAt', asset.fileCreatedAt);
       uploadFormData.append('fileModifiedAt', asset.fileModifiedAt);
       uploadFormData.append('isFavorite', String(false));
-      uploadFormData.append('fileExtension', asset.fileExtension);
-      uploadFormData.append('assetType', asset.assetType);
       uploadFormData.append('assetData', asset.assetData, { filename: asset.path });
 
       if (asset.sidecarData) {

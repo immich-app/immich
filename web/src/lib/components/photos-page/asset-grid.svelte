@@ -2,14 +2,19 @@
   import { BucketPosition } from '$lib/models/asset-grid-state';
   import {
     assetInteractionStore,
+    assetSelectionCandidates,
+    assetSelectionStart,
     isMultiSelectStoreState,
     isViewingAssetStoreState,
     selectedAssets,
     viewingAssetStoreState,
   } from '$lib/stores/asset-interaction.store';
   import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
+  import { locale } from '$lib/stores/preferences.store';
+  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { UserResponseDto } from '@api';
   import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
+  import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -21,6 +26,12 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import MemoryLane from './memory-lane.svelte';
 
+  import { AppRoute } from '$lib/constants';
+  import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
+  import { isSearchEnabled } from '$lib/stores/search.store';
+  import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
+
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
   export let showMemoryLane = false;
@@ -29,8 +40,12 @@
   let viewportWidth = 0;
   let assetGridElement: HTMLElement;
   let bucketInfo: AssetCountByTimeBucketResponseDto;
+  let showShortcuts = false;
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
   onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
     const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
       getAssetCountByTimeBucketDto: {
         timeGroup: TimeGroupEnum.Month,
@@ -62,8 +77,33 @@
   });
 
   onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (event.key === '/') {
+      event.preventDefault();
+    }
+
+    if (!$isViewingAssetStoreState) {
+      switch (event.key) {
+        case '?':
+          if (event.shiftKey) showShortcuts = !showShortcuts;
+          return;
+        case '/':
+          goto(AppRoute.EXPLORE);
+          return;
+      }
+    }
+  };
 
   function intersectedHandler(event: CustomEvent) {
     const el = event.detail.container as HTMLElement;
@@ -123,14 +163,22 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = false;
     }
@@ -144,12 +192,6 @@
     selectAssetCandidates(lastAssetMouseEvent);
   }
 
-  const getLastSelectedAsset = () => {
-    let value;
-    for (value of $selectedAssets);
-    return value;
-  };
-
   const handleSelectAssetCandidates = (e: CustomEvent) => {
     const asset = e.detail.asset;
     if (asset) {
@@ -158,18 +200,84 @@
     lastAssetMouseEvent = asset;
   };
 
+  const handleSelectAssets = async (e: CustomEvent) => {
+    const asset = e.detail.asset;
+    if (!asset) {
+      return;
+    }
+
+    const rangeSelection = $assetSelectionCandidates.size > 0;
+    const deselect = $selectedAssets.has(asset);
+
+    // Select/deselect already loaded assets
+    if (deselect) {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      }
+      assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+    } else {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+      }
+      assetInteractionStore.addAssetToMultiselectGroup(asset);
+    }
+
+    assetInteractionStore.clearAssetSelectionCandidates();
+
+    if ($assetSelectionStart && rangeSelection) {
+      let startBucketIndex = $assetGridState.loadedAssets[$assetSelectionStart.id];
+      let endBucketIndex = $assetGridState.loadedAssets[asset.id];
+
+      if (endBucketIndex < startBucketIndex) {
+        [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
+      }
+
+      // Select/deselect assets in all intermediate buckets
+      for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        for (const asset of bucket.assets) {
+          if (deselect) {
+            assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+          } else {
+            assetInteractionStore.addAssetToMultiselectGroup(asset);
+          }
+        }
+      }
+
+      // Update date group selection
+      for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
+        const bucket = $assetGridState.buckets[bucketIndex];
+
+        // Split bucket into date groups and check each group
+        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
+
+        for (const dateGroup of assetsGroupByDate) {
+          const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
+          if (dateGroup.every((a) => $selectedAssets.has(a))) {
+            assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+          } else {
+            assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+          }
+        }
+      }
+    }
+
+    assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
+  };
+
   const selectAssetCandidates = (asset: AssetResponseDto) => {
     if (!shiftKeyIsDown) {
       return;
     }
 
-    const lastSelectedAsset = getLastSelectedAsset();
-    if (!lastSelectedAsset) {
+    const rangeStart = $assetSelectionStart;
+    if (!rangeStart) {
       return;
     }
 
-    let start = $assetGridState.assets.indexOf(asset);
-    let end = $assetGridState.assets.indexOf(lastSelectedAsset);
+    let start = $assetGridState.assets.indexOf(rangeStart);
+    let end = $assetGridState.assets.indexOf(asset);
 
     if (start > end) {
       [start, end] = [end, start];
@@ -187,6 +295,10 @@
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
+{#if showShortcuts}
+  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+{/if}
+
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
   <Scrollbar
     scrollbarHeight={viewportHeight}
@@ -199,7 +311,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="overflow-y-auto ml-4 mb-4 mr-[60px] scrollbar-hidden"
+  class="scrollbar-hidden mb-4 ml-4 mr-[60px] overflow-y-auto"
   bind:clientHeight={viewportHeight}
   bind:clientWidth={viewportWidth}
   bind:this={assetGridElement}
@@ -230,6 +342,7 @@
                 {isAlbumSelectionMode}
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={handleSelectAssetCandidates}
+                on:selectAssets={handleSelectAssets}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

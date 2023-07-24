@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isHidden
+    test('to test the property `isHidden`', () async {
+      // TODO
+    });
+
 
   });
 

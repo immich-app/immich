@@ -63,12 +63,3 @@ final getCuratedLocationProvider =
   var curatedLocation = await searchService.getCuratedLocation();
   return curatedLocation ?? [];
 });
-
-final getCuratedObjectProvider =
-    FutureProvider.autoDispose<List<CuratedObjectsResponseDto>>((ref) async {
-  final SearchService searchService = ref.watch(searchServiceProvider);
-
-  var curatedObject = await searchService.getCuratedObjects();
-
-  return curatedObject ?? [];
-});

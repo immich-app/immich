@@ -35,7 +35,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
+  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar
     on:close-button-click={() => {
@@ -56,14 +56,14 @@
     <svelte:fragment slot="trailing">
       <button
         on:click={handleSelectFromComputerClicked}
-        class="text-immich-primary dark:text-immich-dark-primary text-sm hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/25 transition-all px-6 py-2 rounded-lg font-medium"
+        class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
       >
         Select from computer
       </button>
       <Button size="sm" rounded="lg" disabled={$selectedAssets.size === 0} on:click={addSelectedAssets}>Done</Button>
     </svelte:fragment>
   </ControlAppBar>
-  <section class="pt-[100px] pl-[70px] grid h-screen bg-immich-bg dark:bg-immich-dark-bg">
+  <section class="grid h-screen bg-immich-bg pl-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <AssetGrid isAlbumSelectionMode={true} />
   </section>
 </section>

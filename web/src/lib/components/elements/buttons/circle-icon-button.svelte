@@ -16,7 +16,7 @@
   style:background-color={backgroundColor}
   style:--immich-icon-button-hover-color={hoverColor}
   class:dark:text-immich-dark-fg={!forceDark}
-  class="rounded-full p-3 flex place-items-center place-content-center transition-all
+  class="flex place-content-center place-items-center rounded-full p-3 transition-all
 	{isOpacity ? 'hover:bg-immich-bg/30' : 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}
   {forceDark && 'hover:text-black'}
   {hideMobile && 'hidden sm:flex'}"

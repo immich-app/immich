@@ -40,14 +40,14 @@
   });
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="fixed top-0 w-full bg-transparent z-[100]">
+<div in:fly={{ y: 10, duration: 200 }} class="fixed top-0 z-[100] w-full bg-transparent">
   <div
     id="asset-selection-app-bar"
-    class={`grid grid-cols-3 justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2 transition-all place-items-center ${tailwindClasses} dark:bg-immich-dark-gray ${
+    class={`grid grid-cols-3 justify-between ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
       forceDark && 'bg-immich-dark-gray text-white'
     }`}
   >
-    <div class="flex place-items-center gap-6 dark:text-immich-dark-fg justify-self-start">
+    <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
         <CircleIconButton
           on:click={() => dispatch('close-button-click')}
@@ -65,7 +65,7 @@
       <slot />
     </div>
 
-    <div class="flex place-items-center gap-1 mr-4 justify-self-end">
+    <div class="mr-4 flex place-items-center gap-1 justify-self-end">
       <slot name="trailing" />
     </div>
   </div>

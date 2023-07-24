@@ -17,13 +17,13 @@
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
   <div
-    class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
     <div
-      class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
       <KeyVariant size="4em" />
-      <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
       </h1>
     </div>
@@ -34,7 +34,7 @@
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
       </div>
 
-      <div class="flex w-full px-4 gap-4 mt-8">
+      <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
         <Button type="submit" fullwidth>{submitText}</Button>
       </div>

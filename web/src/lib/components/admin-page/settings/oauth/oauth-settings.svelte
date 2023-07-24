@@ -107,7 +107,7 @@
 <div class="mt-2">
   {#await getConfigs() then}
     <div in:fade={{ duration: 500 }}>
-      <form autocomplete="off" on:submit|preventDefault class="flex flex-col mx-4 gap-4 py-4">
+      <form autocomplete="off" on:submit|preventDefault class="mx-4 flex flex-col gap-4 py-4">
         <p class="text-sm dark:text-immich-dark-fg">
           For more details about this feature, refer to the <a
             href="http://immich.app/docs/administration/oauth#mobile-redirect-uri"
@@ -153,6 +153,16 @@
           required={true}
           disabled={!oauthConfig.enabled}
           isEdited={!(oauthConfig.scope == savedConfig.scope)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="STORAGE LABEL CLAIM"
+          desc="Automatically set the user's storage label to the value of this claim."
+          bind:value={oauthConfig.storageLabelClaim}
+          required={true}
+          disabled={!oauthConfig.storageLabelClaim}
+          isEdited={!(oauthConfig.storageLabelClaim == savedConfig.storageLabelClaim)}
         />
 
         <SettingInputField

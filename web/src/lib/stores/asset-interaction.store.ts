@@ -7,12 +7,25 @@ import { assetGridState, assetStore } from './assets.store';
 export const viewingAssetStoreState = writable<AssetResponseDto>();
 export const isViewingAssetStoreState = writable<boolean>(false);
 
-// Multi-Selection mode
+/**
+ * Multi-selection mode
+ */
 export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
+// Selected assets
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
+// Selected date groups
 export const selectedGroup = writable<Set<string>>(new Set());
+// If any asset selected
 export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
+
+/**
+ * Range selection
+ */
+// Candidates for the range selection. This set includes only loaded assets, so it improves highlight
+// performance. From the user's perspective, range is highlighted almost immediately
 export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
+// The beginning of the selection range
+export const assetSelectionStart = writable<AssetResponseDto | null>(null);
 
 function createAssetInteractionStore() {
   let _assetGridState = new AssetGridState();
@@ -21,6 +34,7 @@ function createAssetInteractionStore() {
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
   let _assetSelectionCandidates: Set<AssetResponseDto>;
+  let _assetSelectionStart: AssetResponseDto | null;
 
   // Subscriber
   assetGridState.subscribe((state) => {
@@ -47,6 +61,9 @@ function createAssetInteractionStore() {
     _assetSelectionCandidates = assets;
   });
 
+  assetSelectionStart.subscribe((asset) => {
+    _assetSelectionStart = asset;
+  });
   // Methods
 
   /**
@@ -155,6 +172,11 @@ function createAssetInteractionStore() {
     selectedGroup.set(_selectedGroup);
   };
 
+  const setAssetSelectionStart = (asset: AssetResponseDto | null) => {
+    _assetSelectionStart = asset;
+    assetSelectionStart.set(_assetSelectionStart);
+  };
+
   const setAssetSelectionCandidates = (assets: AssetResponseDto[]) => {
     _assetSelectionCandidates = new Set(assets);
     assetSelectionCandidates.set(_assetSelectionCandidates);
@@ -166,15 +188,20 @@ function createAssetInteractionStore() {
   };
 
   const clearMultiselect = () => {
+    // Multi-selection
     _selectedAssets.clear();
     _selectedGroup.clear();
-    _assetSelectionCandidates.clear();
     _assetsInAlbums = [];
+
+    // Range selection
+    _assetSelectionCandidates.clear();
+    _assetSelectionStart = null;
 
     selectedAssets.set(_selectedAssets);
     selectedGroup.set(_selectedGroup);
     assetsInAlbumStoreState.set(_assetsInAlbums);
     assetSelectionCandidates.set(_assetSelectionCandidates);
+    assetSelectionStart.set(_assetSelectionStart);
   };
 
   return {
@@ -188,6 +215,7 @@ function createAssetInteractionStore() {
     removeGroupFromMultiselectGroup,
     setAssetSelectionCandidates,
     clearAssetSelectionCandidates,
+    setAssetSelectionStart,
     clearMultiselect,
   };
 }

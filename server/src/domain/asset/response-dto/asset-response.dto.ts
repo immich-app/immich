@@ -23,7 +23,6 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
-  mimeType!: string | null;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -50,13 +49,12 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: entity.faces?.map(mapFace),
+    people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
   };
 }
@@ -77,7 +75,6 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
-    mimeType: entity.mimeType,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,

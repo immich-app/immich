@@ -1,9 +1,17 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { Paginated, PaginationOptions } from '../domain.util';
 
+export type AssetStats = Record<AssetType, number>;
+
+export interface AssetStatsOptions {
+  isFavorite?: boolean;
+  isArchived?: boolean;
+}
+
 export interface AssetSearchOptions {
   isVisible?: boolean;
   type?: AssetType;
+  order?: 'ASC' | 'DESC';
 }
 
 export interface LivePhotoSearchOptions {
@@ -55,4 +63,5 @@ export interface IAssetRepository {
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
 }

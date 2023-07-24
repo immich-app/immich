@@ -16,11 +16,13 @@ class ImmichImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
+    this.useProgressIndicator = false,
     this.type = api.ThumbnailFormat.WEBP,
     super.key,
   });
   final Asset? asset;
   final bool useGrayBoxPlaceholder;
+  final bool useProgressIndicator;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -58,17 +60,23 @@ class ImmichImage extends StatelessWidget {
           if (wasSynchronouslyLoaded || frame != null) {
             return child;
           }
-          return (useGrayBoxPlaceholder
-              ? const SizedBox.square(
+
+          // Show loading if desired
+          return Stack(
+            children: [
+              if (useGrayBoxPlaceholder)
+                const SizedBox.square(
                   dimension: 250,
                   child: DecoratedBox(
                     decoration: BoxDecoration(color: Colors.grey),
                   ),
-                )
-              : Transform.scale(
-                  scale: 0.2,
-                  child: const CircularProgressIndicator(),
-                ));
+                ),
+              if (useProgressIndicator)
+                const Center(
+                  child: CircularProgressIndicator(),
+                ),
+            ],
+          );
         },
         errorBuilder: (context, error, stackTrace) {
           if (error is PlatformException &&
@@ -102,16 +110,27 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
-        if (useGrayBoxPlaceholder) {
-          return const DecoratedBox(
-            decoration: BoxDecoration(color: Colors.grey),
-          );
-        }
-        return Transform.scale(
-          scale: 0.2,
-          child: CircularProgressIndicator.adaptive(
-            value: downloadProgress.progress,
-          ),
+        // Show loading if desired
+        return Stack(
+          children: [
+            if (useGrayBoxPlaceholder)
+              const SizedBox.square(
+                dimension: 250,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                ),
+              ),
+            if (useProgressIndicator)
+              Transform.scale(
+                scale: 2,
+                child: Center(
+                  child: CircularProgressIndicator.adaptive(
+                    strokeWidth: 1,
+                    value: downloadProgress.progress,
+                  ),
+                ),
+              ),
+          ],
         );
       },
       errorWidget: (context, url, error) {
@@ -127,5 +146,47 @@ class ImmichImage extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Precaches this asset for instant load the next time it is shown
+  static Future<void> precacheAsset(
+    Asset asset,
+    BuildContext context, {
+    type = api.ThumbnailFormat.WEBP,
+  }) {
+    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
+
+    if (type == api.ThumbnailFormat.WEBP) {
+      final thumbnailUrl = getThumbnailUrl(asset);
+      final thumbnailCacheKey = getThumbnailCacheKey(asset);
+      final thumbnailProvider = CachedNetworkImageProvider(
+        thumbnailUrl,
+        cacheKey: thumbnailCacheKey,
+        headers: {"Authorization": authToken},
+      );
+      return precacheImage(thumbnailProvider, context);
+    }
+    // Precache the local image
+    if (!asset.isRemote &&
+        (asset.isLocal || !Store.get(StoreKey.preferRemoteImage, false))) {
+      final provider = AssetEntityImageProvider(
+        asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
+      );
+      return precacheImage(provider, context);
+    } else {
+      // Precache the remote image since we are not using local images
+      final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
+      final cacheKey =
+          getThumbnailCacheKey(asset, type: api.ThumbnailFormat.JPEG);
+      final provider = CachedNetworkImageProvider(
+        url,
+        cacheKey: cacheKey,
+        headers: {"Authorization": authToken},
+      );
+
+      return precacheImage(provider, context);
+    }
   }
 }

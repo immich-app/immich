@@ -1,8 +1,7 @@
 import { toBoolean, toSanitized, UploadFieldName } from '@app/domain';
-import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAssetBase {
   @IsNotEmpty()
@@ -10,11 +9,6 @@ export class CreateAssetBase {
 
   @IsNotEmpty()
   deviceId!: string;
-
-  @IsNotEmpty()
-  @IsEnum(AssetType)
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
-  assetType!: AssetType;
 
   @IsNotEmpty()
   fileCreatedAt!: Date;
@@ -42,9 +36,6 @@ export class CreateAssetDto extends CreateAssetBase {
   @IsBoolean()
   @Transform(toBoolean)
   isReadOnly?: boolean = false;
-
-  @IsNotEmpty()
-  fileExtension!: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.

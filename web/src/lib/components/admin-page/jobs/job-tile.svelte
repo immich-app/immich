@@ -34,9 +34,9 @@
 </script>
 
 <div
-  class="flex sm:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-2xl sm:rounded-[35px] overflow-hidden"
+  class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]"
 >
-  <div class="flex flex-col w-full">
+  <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
       <JobTileStatus color="warning">Paused</JobTileStatus>
     {:else if queueStatus.isActive}
@@ -44,8 +44,8 @@
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
       <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
-        <span class="flex gap-2 items-center">
-          <svelte:component this={icon} size="1.25em" class="shrink-0 hidden sm:block" />
+        <span class="flex items-center gap-2">
+          <svelte:component this={icon} size="1.25em" class="hidden shrink-0 sm:block" />
           {title.toUpperCase()}
         </span>
         <div class="flex gap-2">
@@ -63,7 +63,7 @@
       </div>
 
       {#if subtitle}
-        <div class="text-sm dark:text-white whitespace-pre-line">{subtitle}</div>
+        <div class="whitespace-pre-line text-sm dark:text-white">{subtitle}</div>
       {/if}
 
       {#if slots?.description}
@@ -72,9 +72,9 @@
         </div>
       {/if}
 
-      <div class="flex w-full max-w-md mt-2 flex-col sm:flex-row">
+      <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray rounded-t-lg sm:rounded-l-lg sm:rounded-r-none"
+          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
         >
           <p>Active</p>
           <p class="text-2xl">
@@ -83,7 +83,7 @@
         </div>
 
         <div
-          class="{commonClasses} bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray rounded-b-lg sm:rounded-r-lg sm:rounded-l-none flex-row-reverse"
+          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-l-none sm:rounded-r-lg"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
@@ -93,7 +93,7 @@
       </div>
     </div>
   </div>
-  <div class="flex sm:flex-col flex-row sm:w-32 w-full overflow-hidden">
+  <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">
     {#if !isIdle}
       {#if waitingCount > 0}
         <JobTileButton color="gray" on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}>

@@ -1,4 +1,4 @@
-import { AuthUserDto, UploadFieldName, UploadFile } from '@app/domain';
+import { AssetService, UploadFieldName, UploadFile } from '@app/domain';
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
@@ -7,7 +7,6 @@ import { createHash } from 'crypto';
 import { NextFunction, RequestHandler } from 'express';
 import multer, { diskStorage, StorageEngine } from 'multer';
 import { Observable } from 'rxjs';
-import { AssetService } from './api-v1/asset/asset.service';
 import { AuthRequest } from './app.guard';
 
 export enum Route {
@@ -23,7 +22,6 @@ export interface ImmichFile extends Express.Multer.File {
 export function mapToUploadFile(file: ImmichFile): UploadFile {
   return {
     checksum: file.checksum,
-    mimeType: file.mimetype,
     originalPath: file.path,
     originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
   };
@@ -43,12 +41,6 @@ const callbackify = async <T>(fn: (...args: any[]) => T, callback: Callback<T>) 
     return callback(error);
   }
 };
-
-export interface UploadRequest {
-  authUser: AuthUserDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
 
 const asRequest = (req: AuthRequest, file: Express.Multer.File) => {
   return {

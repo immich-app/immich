@@ -186,6 +186,7 @@
   "login_form_save_login": "Stay logged in",
   "login_form_server_empty": "Enter a server URL.",
   "login_form_server_error": "Could not connect to server.",
+  "login_disabled": "Login has been disabled",
   "monthly_title_text_date_format": "MMMM y",
   "motion_photos_page_title": "Motion Photos",
   "notification_permission_dialog_cancel": "Cancel",
