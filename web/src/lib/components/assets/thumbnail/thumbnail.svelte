@@ -125,7 +125,7 @@
           </div>
         {/if}
 
-        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo && asset.exifInfo.projectionType == ProjectionTypeEnum.Equirectangular}
+{#if asset.type === AssetTypeEnum.Image && asset?.exifInfo.projectionType === ProjectionTypeEnum.Equirectangular}
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Rotate360Icon size="24" />
