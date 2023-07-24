@@ -59,7 +59,6 @@ export class ExifEntity {
     enum: ProjectionType,
     enumName: 'projectionType',
     default: ProjectionType.NONE,
-    nullable: true,
   })
   projectionType!: ProjectionType | null;
 
