@@ -14,9 +14,6 @@ jobs:
       contents: write
       pull-requests: write
       checks: write
-    defaults:
-      run:
-        working-directory: ./server
 
     steps:
       - uses: actions/checkout@v3
