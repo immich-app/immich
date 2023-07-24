@@ -338,7 +338,7 @@ export class MetadataExtractionProcessor {
     }
 
     const exifProjectionType = getExifProperty('ProjectionType');
-    let projectionType: ProjectionType | null = null; // Initialize it as null
+    let projectionType: ProjectionType = ProjectionType.NONE;
 
     if (exifProjectionType) {
       const exifPropertyUpper = exifProjectionType.toUpperCase();
