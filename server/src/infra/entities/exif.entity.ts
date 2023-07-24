@@ -60,7 +60,7 @@ export class ExifEntity {
     enumName: 'projectionType',
     default: ProjectionType.NONE,
   })
-  projectionType!: ProjectionType | null;
+  projectionType!: ProjectionType;
 
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;
