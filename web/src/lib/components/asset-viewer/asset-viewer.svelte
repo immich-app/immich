@@ -288,7 +288,7 @@
       {#if !asset.resized}
         <div class="flex h-full w-full justify-center">
           <div
-            class="px-auto dark:bg-immich-dark-gray flex aspect-square h-full items-center justify-center bg-gray-100"
+            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -322,7 +322,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="bg-immich-bg dark:border-l-immich-dark-gray dark:bg-immich-dark-bg z-[1002] row-span-full w-[360px] overflow-y-auto transition-all dark:border-l"
+      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel

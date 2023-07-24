@@ -5905,7 +5905,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
       fileCreatedAt: string,
       fileModifiedAt: string,
       isFavorite: boolean,
-      isPanorama: boolean,
+      projectionType: ProjectionTypeEnum,
       key?: string,
       livePhotoData?: File,
       sidecarData?: File,
