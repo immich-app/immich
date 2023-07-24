@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AssetResponseDto, api } from '@api';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import domtoimage from 'dom-to-image';
@@ -12,6 +12,10 @@
 
   const dispatch = createEventDispatcher();
   let imgElement: HTMLDivElement;
+
+  onMount(() => {
+    imgElement.style.width = '100%';
+  });
 
   const hasTransparentPixels = async (blob: Blob) => {
     const img = new Image();
@@ -71,7 +75,7 @@
   </svelte:fragment>
   <div class="flex place-items-center items-center justify-center">
     <div
-      class="relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
+      class="photoviewer-wrapper border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4"
     >
       <PhotoViewer bind:element={imgElement} {asset} />
     </div>
