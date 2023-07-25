@@ -77,7 +77,11 @@
             <button on:click={() => (choosePersonToMerge = false)}> <ArrowLeft /></button>
           </div>
           <div class="flex items-center justify-center">
-            <div class="grid grid-cols-2 md:grid-cols-{potentialMergePeople.length}">
+            <div
+              class="grid grid-cols-{potentialMergePeople.length >= 2
+                ? '2'
+                : '1'} md:grid-cols-{potentialMergePeople.length}"
+            >
               {#each potentialMergePeople as person (person.id)}
                 <div class="h-24 w-24 md:h-28 md:w-28">
                   <button class="p-2" on:click={() => changePersonToMerge(person)}>
