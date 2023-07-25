@@ -31,6 +31,7 @@
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import { onMount } from 'svelte';
   import SuggestMerge from '$lib/components/faces-page/suggest-merge.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let data: PageData;
   let isEditingName = false;
@@ -104,7 +105,7 @@
         ChangeName();
         invalidateAll();
       } else {
-        goto(`${AppRoute.PEOPLE}/${personMerge2.id}`);
+        goto(`${AppRoute.PEOPLE}/${personMerge2.id}`, { replaceState: true });
         notificationController.show({
           message: 'Merge faces succesfully',
           type: NotificationType.Info,
@@ -175,18 +176,20 @@
 </script>
 
 {#if showMergeModal}
-  <SuggestMerge
-    bind:personMerge1
-    bind:personMerge2
-    bind:potentialMergePeople
-    on:close={() => (showMergeModal = false)}
-    on:differentFaces={async () => {
-      showMergeModal = false;
-      isEditingName = false;
-      await ChangeName();
-    }}
-    on:mergeFaces={() => handleMergeSameFace()}
-  />
+  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
+    <SuggestMerge
+      bind:personMerge1
+      bind:personMerge2
+      bind:potentialMergePeople
+      on:close={() => (showMergeModal = false)}
+      on:differentFaces={async () => {
+        showMergeModal = false;
+        isEditingName = false;
+        await ChangeName();
+      }}
+      on:mergeFaces={() => handleMergeSameFace()}
+    />
+  </FullScreenModal>
 {/if}
 
 {#if isMultiSelectionMode}

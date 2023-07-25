@@ -294,17 +294,19 @@
 </script>
 
 {#if showMergeModal}
-  <SuggestMerge
-    bind:personMerge1
-    bind:personMerge2
-    bind:potentialMergePeople
-    on:close={() => (showMergeModal = false)}
-    on:differentFaces={() => {
-      showMergeModal = false;
-      ChangeName();
-    }}
-    on:mergeFaces={() => handleMergeSameFace()}
-  />
+  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
+    <SuggestMerge
+      bind:personMerge1
+      bind:personMerge2
+      {potentialMergePeople}
+      on:close={() => (showMergeModal = false)}
+      on:differentFaces={() => {
+        showMergeModal = false;
+        ChangeName();
+      }}
+      on:mergeFaces={() => handleMergeSameFace()}
+    />
+  </FullScreenModal>
 {/if}
 
 <UserPageLayout user={data.user} title="People">
