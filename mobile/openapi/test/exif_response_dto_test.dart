@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // ProjectionTypeEnum projectionType
+    test('to test the property `projectionType`', () async {
+      // TODO
+    });
+
     // String make
     test('to test the property `make`', () async {
       // TODO

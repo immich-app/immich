@@ -14,6 +14,7 @@ class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
     this.fileSizeInByte,
+    required this.projectionType,
     this.make,
     this.model,
     this.exifImageWidth,
@@ -36,6 +37,8 @@ class ExifResponseDto {
   });
 
   int? fileSizeInByte;
+
+  ProjectionTypeEnum projectionType;
 
   String? make;
 
@@ -78,6 +81,7 @@ class ExifResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.fileSizeInByte == fileSizeInByte &&
+     other.projectionType == projectionType &&
      other.make == make &&
      other.model == model &&
      other.exifImageWidth == exifImageWidth &&
@@ -102,6 +106,7 @@ class ExifResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
+    (projectionType.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
@@ -123,7 +128,7 @@ class ExifResponseDto {
     (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, projectionType=$projectionType, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -132,6 +137,7 @@ class ExifResponseDto {
     } else {
     //  json[r'fileSizeInByte'] = null;
     }
+      json[r'projectionType'] = this.projectionType;
     if (this.make != null) {
       json[r'make'] = this.make;
     } else {
@@ -239,6 +245,7 @@ class ExifResponseDto {
 
       return ExifResponseDto(
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
+        projectionType: ProjectionTypeEnum.fromJson(json[r'projectionType'])!,
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         exifImageWidth: json[r'exifImageWidth'] == null
@@ -319,6 +326,7 @@ class ExifResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'projectionType',
   };
 }
 

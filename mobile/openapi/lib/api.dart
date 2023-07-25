@@ -109,6 +109,7 @@ part 'model/people_update_dto.dart';
 part 'model/people_update_item.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_update_dto.dart';
+part 'model/projection_type_enum.dart';
 part 'model/queue_status_dto.dart';
 part 'model/remove_assets_dto.dart';
 part 'model/search_album_response_dto.dart';

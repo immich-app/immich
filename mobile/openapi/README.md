@@ -244,6 +244,7 @@ Class | Method | HTTP request | Description
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
+ - [ProjectionTypeEnum](doc//ProjectionTypeEnum.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
