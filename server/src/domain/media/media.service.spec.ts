@@ -1012,7 +1012,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-vcodec h264_qsv`,
             '-low_power 0',
@@ -1043,7 +1043,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
+          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-vcodec h264_qsv`,
             '-low_power 0',

@@ -295,10 +295,10 @@ export class NVENCConfig extends BaseHWConfig {
 
 export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (!this.devices.includes('renderD128')) {
+    if (!this.devices.length) {
       throw Error('No QSV device found');
     }
-    return ['-init_hw_device qsv=accel:/dev/dri/renderD128', '-filter_hw_device accel'];
+    return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions() {
