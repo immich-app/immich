@@ -10,26 +10,17 @@
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   const dispatch = createEventDispatcher();
 
-  export let person1: PersonResponseDto;
-  export let person2: PersonResponseDto;
-
+  export let personMerge1: PersonResponseDto;
+  export let personMerge2: PersonResponseDto;
   export let potentialMergePeople: PersonResponseDto[];
-
-  const title = person2.name;
-
-  const invert = () => {
-    let temp: PersonResponseDto = person1;
-    person1 = person2;
-    person2 = temp;
-  };
 
   let choosePersonToMerge = false;
 
+  const title = personMerge2.name;
+
   const changePersonToMerge = (newperson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newperson);
-    let temp = potentialMergePeople[index];
-    potentialMergePeople[index] = person2;
-    person2 = temp;
+    [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
 </script>
@@ -52,17 +43,15 @@
             <ImageThumbnail
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(person1.id)}
-              altText={person1.name}
+              url={api.getPeopleThumbnailUrl(personMerge1.id)}
+              altText={personMerge1.name}
               widthStyle="100%"
             />
           </div>
           <div class="flex md:mx-2">
             <CircleIconButton
               logo={Merge}
-              on:click={() => {
-                invert();
-              }}
+              on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
             />
           </div>
 
@@ -78,8 +67,8 @@
               border={potentialMergePeople.length > 0 ? true : false}
               circle
               shadow
-              url={api.getPeopleThumbnailUrl(person2.id)}
-              altText={person2.name}
+              url={api.getPeopleThumbnailUrl(personMerge2.id)}
+              altText={personMerge2.name}
               widthStyle="100%"
             />
           </button>

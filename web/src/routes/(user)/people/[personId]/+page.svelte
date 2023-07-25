@@ -40,8 +40,8 @@
   let selectedAssets: Set<AssetResponseDto> = new Set();
   let showMergeModal = false;
   let people = data.people.people;
-  let person1: PersonResponseDto;
-  let person2: PersonResponseDto;
+  let personMerge1: PersonResponseDto;
+  let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[];
   let personName = '';
 
@@ -94,18 +94,18 @@
     showMergeModal = false;
     try {
       await api.personApi.mergePerson({
-        id: person2.id,
-        mergePersonDto: { ids: [person1.id] },
+        id: personMerge2.id,
+        mergePersonDto: { ids: [personMerge1.id] },
       });
 
-      people = people.filter((person: PersonResponseDto) => person.id !== person1.id);
+      people = people.filter((person: PersonResponseDto) => person.id !== personMerge1.id);
 
-      if (person2.name != personName) {
+      if (personMerge2.name != personName) {
         ChangeName();
         invalidateAll();
-        data.person = person2;
+        data.person = personMerge2;
       } else {
-        goto(`${AppRoute.PEOPLE}/${person2.id}`);
+        goto(`${AppRoute.PEOPLE}/${personMerge2.id}`);
         notificationController.show({
           message: 'Merge faces succesfully',
           type: NotificationType.Info,
@@ -147,7 +147,7 @@
     if (data.person.name != personName) {
       for (const person of people) {
         if (person.name === personName && person.id !== data.person.id) {
-          person2 = person;
+          personMerge2 = person;
           detectnew = true;
           break;
         }
@@ -162,11 +162,11 @@
           return person;
         });
       } else {
-        person1 = data.person;
+        personMerge1 = data.person;
         potentialMergePeople = people
           .filter(
             (person: PersonResponseDto) =>
-              personName === person.name && person.id !== person2.id && person.id !== person1.id,
+              personName === person.name && person.id !== personMerge2.id && person.id !== personMerge1.id,
           )
           .slice(0, 3);
         showMergeModal = true;
@@ -177,8 +177,8 @@
 
 {#if showMergeModal}
   <ProposeMerge
-    bind:person1
-    bind:person2
+    bind:personMerge1
+    bind:personMerge2
     bind:potentialMergePeople
     on:close={() => (showMergeModal = false)}
     on:differentFaces={async () => {

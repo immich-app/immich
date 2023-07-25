@@ -35,6 +35,13 @@
   let toggleVisibility = false;
   let potentialMergePeople: PersonResponseDto[];
 
+  let showChangeNameModal = false;
+  let showMergeModal = false;
+  let personName = '';
+  let personMerge1: PersonResponseDto;
+  let personMerge2: PersonResponseDto;
+  let edittingPerson: PersonResponseDto | null = null;
+
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
@@ -138,23 +145,16 @@
     toggleVisibility = false;
   };
 
-  let showChangeNameModal = false;
-  let showMergeModal = false;
-  let personName = '';
-  let person1: PersonResponseDto;
-  let person2: PersonResponseDto;
-  let edittingPerson: PersonResponseDto | null = null;
-
   const handleMergeSameFace = async () => {
     showMergeModal = false;
     try {
       if (edittingPerson) {
         await api.personApi.mergePerson({
-          id: person2.id,
-          mergePersonDto: { ids: [person1.id] },
+          id: personMerge2.id,
+          mergePersonDto: { ids: [personMerge1.id] },
         });
         countVisiblePeople--;
-        people = people.filter((person: PersonResponseDto) => person.id !== person1.id);
+        people = people.filter((person: PersonResponseDto) => person.id !== personMerge1.id);
 
         notificationController.show({
           message: 'Merge faces succesfully',
@@ -164,11 +164,17 @@
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
-    if (person2.name != personName) {
+    if (personMerge2.name != personName) {
+      /*
+       *
+       * If the user merges one of the suggested people into the person he's editing it AND renames
+       * the person he's editing
+       *
+       */
       try {
-        await api.personApi.updatePerson({ id: person2.id, personUpdateDto: { name: personName } });
+        await api.personApi.updatePerson({ id: personMerge2.id, personUpdateDto: { name: personName } });
         for (const person of people) {
-          if (person.id === person2.id) {
+          if (person.id === personMerge2.id) {
             person.name = personName;
             break;
           }
@@ -185,7 +191,7 @@
   const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
     showChangeNameModal = true;
     personName = detail.name;
-    person1 = detail;
+    personMerge1 = detail;
     edittingPerson = detail;
   };
 
@@ -225,17 +231,19 @@
   };
 
   const submitNameChange = async () => {
-    let detectnew = false;
+    let detectSameName = false;
     showChangeNameModal = false;
     if (edittingPerson && personName != edittingPerson.name) {
+      // We check if another person has the same name as the name entered by the user
       for (const person of people) {
-        if (person.name === personName && person.id !== edittingPerson.id) {
-          person2 = person;
-          detectnew = true;
+        if (person.name === personName && person.id !== edittingPerson.id && !person.isHidden) {
+          personMerge2 = person;
+          detectSameName = true;
           break;
         }
       }
-      if (!detectnew) {
+
+      if (!detectSameName) {
         await ChangeName();
 
         people.map((person: PersonResponseDto) => {
@@ -247,10 +255,20 @@
           }
         });
       } else {
+        /*
+         *
+         * Upon identifying people sharing the same name, we create an array excluding the initially detected person
+         * and populate it with other people of the same name.
+         * The user can opt to merge the person they are editing with up to 3 other people from this array.
+         *
+         */
         potentialMergePeople = people
           .filter(
             (person: PersonResponseDto) =>
-              personName === person.name && person.id !== person2.id && person.id !== person1.id,
+              personName === person.name &&
+              person.id !== personMerge2.id &&
+              person.id !== personMerge1.id &&
+              !person.isHidden,
           )
           .slice(0, 3);
 
@@ -262,16 +280,9 @@
   const ChangeName = async () => {
     try {
       if (edittingPerson) {
-        const { data: updatedPerson } = await api.personApi.updatePerson({
+        await api.personApi.updatePerson({
           id: edittingPerson.id,
           personUpdateDto: { name: personName },
-        });
-
-        people = people.map((person: PersonResponseDto) => {
-          if (person.id === updatedPerson.id) {
-            return updatedPerson;
-          }
-          return person;
         });
 
         notificationController.show({
@@ -287,8 +298,8 @@
 
 {#if showMergeModal}
   <ProposeMerge
-    bind:person1
-    bind:person2
+    bind:personMerge1
+    bind:personMerge2
     bind:potentialMergePeople
     on:close={() => (showMergeModal = false)}
     on:differentFaces={() => {
