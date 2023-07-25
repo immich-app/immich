@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
+sharp.concurrency(0);
 
 export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
