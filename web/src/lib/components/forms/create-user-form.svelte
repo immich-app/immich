@@ -78,7 +78,7 @@
 </script>
 
 <div
-  class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-scroll rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
   <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />
@@ -128,7 +128,8 @@
     {#if success}
       <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
-    <div class="flex w-full p-4">
+    <div class="flex w-full gap-4 p-4">
+      <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>Cancel</Button>
       <Button type="submit" disabled={isCreatingUser} fullwidth>Create</Button>
     </div>
   </form>
