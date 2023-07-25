@@ -47,7 +47,7 @@
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
   let activeEdit: activeEdit;
 
-  let aspectRatioNum = 1.5;
+  let aspectRatioNum = 4 / 3;
 
   type aspectRatio =
     | 'free'
@@ -175,25 +175,39 @@
     let pos1 = 0,
       pos2 = 0;
 
+    //imageWrapper.style.marginTop = -(imageWrapper.offsetHeight - cropElement.offsetHeight) / 2 + 'px';
+    //imageWrapper.style.marginLeft = -(imageWrapper.offsetWidth - cropElement.offsetWidth) / 2 + 'px';
+
+    cropElement.style.aspectRatio = '' + aspectRatioNum;
+    if (aspectRatioNum > 1) {
+      cropElement.style.width = '100%';
+      cropElement.style.height = 'auto';
+      cropElement.style.maxHeight = '100%';
+    } else {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+      cropElement.style.maxWidth = '100%';
+    }
+
     const closeDragElement = () => {
       // stop moving when mouse button is released:
       document.onmouseup = null;
       document.onmousemove = null;
     };
 
-    // Set crop element aspect ratio
+    // // Set crop element aspect ratio
 
-    if (aspectRatioNum > 1) {
-      imageWrapper.style.width = '100%';
-      imageWrapper.style.height = 'auto';
-      imageWrapper.style.maxHeight = '100%';
-    } else {
-      imageWrapper.style.width = 'auto';
-      imageWrapper.style.height = '100%';
-      imageWrapper.style.maxWidth = '100%';
-    }
+    // if (aspectRatioNum > 1) {
+    //   imageWrapper.style.width = '100%';
+    //   imageWrapper.style.height = 'auto';
+    //   imageWrapper.style.maxHeight = '100%';
+    // } else {
+    //   imageWrapper.style.width = 'auto';
+    //   imageWrapper.style.height = '100%';
+    //   imageWrapper.style.maxWidth = '100%';
+    // }
 
-    imageWrapper.style.aspectRatio = '' + aspectRatioNum;
+    // imageWrapper.style.aspectRatio = '' + aspectRatioNum;
 
     const elementDrag = async (e: MouseEvent) => {
       e.preventDefault();
@@ -210,33 +224,42 @@
       angle = Math.round((a / 125) * 49);
       angle = angle * -1;
 
-      imageElement.style.transform = `rotate(${angle}deg)`;
+      imageWrapper.style.transform = `rotate(${angle}deg)`;
 
       // const imageWrapperWidth = imageWrapper.offsetWidth;
 
       // //TODO: Maybe use relative units instead of px
       // const imageWrapperHeight = imageWrapper.offsetHeight - 112;
 
-      const x1 = Math.cos((angle * Math.PI) / 180) * imageElement.naturalWidth;
-      const x2 = Math.cos(((90 - angle) * Math.PI) / 180) * imageElement.naturalHeight;
+      // Get image wrapper width and height
+      const imageWrapperWidth = imageWrapper.offsetWidth;
+      const imageWrapperHeight = imageWrapper.offsetHeight;
 
-      const newWidth = Math.abs(x1) + Math.abs(x2);
-      const newImgWidth = (newWidth / imageElement.naturalWidth) * cropElement.offsetWidth;
-      console.log(newImgWidth);
+      // Get crop element width and height
+      const cropElementWidth = cropElement.offsetWidth;
+      const cropElementHeight = cropElement.offsetHeight;
 
-      const y1 = Math.cos((angle * Math.PI) / 180) * imageElement.naturalHeight;
-      const y2 = Math.cos(((90 - angle) * Math.PI) / 180) * imageElement.naturalWidth;
+      console.log('cropElementWidth', cropElementWidth);
+      console.log('cropElementHeight', cropElementHeight);
+      console.log('angle', angle);
+      console.log(Math.cos((Math.abs(angle) * Math.PI) / 180));
 
-      const newHeight = Math.abs(y1) + Math.abs(y2);
-      // const newImgHeight = (imageWrapperHeight / newHeight) * imageElement.naturalHeight;
+      const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
+      const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
 
-      //const newImgHeight = (newHeight / imageElement.naturalHeight) * cropElement.offsetHeight;
-      //console.log(newImgHeight);
-      //imageElement.style.height = `${newImgHeight}px`;
+      const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
+      const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
 
-      const newImgHeight = (imageElement.naturalHeight / imageElement.naturalWidth) * newImgWidth;
-      imageElement.style.height = `${newImgHeight}px`;
-      imageElement.style.width = `${newImgWidth}px`;
+      if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
+        imageWrapper.style.width = `${x1 + x2}px`;
+        imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
+      } else {
+        imageWrapper.style.height = `${y1 + y2}px`;
+        imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
+      }
+
+      //imageWrapper.style.width = `${x1 + x2}px`;
+      //imageWrapper.style.height = `${y1 + y2}px`;
 
       let b = a + 'px';
       angleSliderHandle.style.left = b;
@@ -349,9 +372,16 @@
     <div class="flex h-full w-full justify-center">
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
-        <div class="relative h-full w-full items-center justify-center overflow-hidden" bind:this={imageWrapper}>
-          <img class="block" bind:this={imageElement} src="" alt="" />
-          <div bind:this={cropElement} class="absolute top-0 h-full w-full border-2 border-red-600" />
+        <div class="relative flex h-full w-full items-center justify-center">
+          <div>
+            <div bind:this={imageWrapper} class="">
+              <img class="h-full w-full" bind:this={imageElement} src="" alt="" />
+            </div>
+            <div
+              bind:this={cropElement}
+              class="absolute left-1/2 top-1/2 mx-auto h-full w-full -translate-x-1/2 -translate-y-1/2 border-2 border-red-600"
+            />
+          </div>
         </div>
       </div>
     </div>
