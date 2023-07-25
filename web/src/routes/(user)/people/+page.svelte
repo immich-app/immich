@@ -19,7 +19,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import ProposeMerge from '$lib/components/faces-page/propose-merge.svelte';
+  import SuggestMerge from '$lib/components/faces-page/suggest-merge.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -167,7 +167,7 @@
     if (personMerge2.name != personName) {
       /*
        *
-       * If the user merges one of the suggested people into the person he's editing it AND renames
+       * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
        * the person he's editing
        *
        */
@@ -245,21 +245,11 @@
 
       if (!detectSameName) {
         await ChangeName();
-
-        people.map((person: PersonResponseDto) => {
-          if (edittingPerson) {
-            if (person.id === edittingPerson.id) {
-              person.name = personName;
-            }
-            return person;
-          }
-        });
       } else {
         /*
          *
-         * Upon identifying people sharing the same name, we create an array excluding the initially detected person
-         * and populate it with other people of the same name.
-         * The user can opt to merge the person they are editing with up to 3 other people from this array.
+         * Upon identifying people sharing the same name, we create an array excluding the initially detected person and populate it with other people of the same name.
+         * With that strategy, the user can opt to merge the person they are editing with up to 4 people.
          *
          */
         potentialMergePeople = people
@@ -280,9 +270,16 @@
   const ChangeName = async () => {
     try {
       if (edittingPerson) {
-        await api.personApi.updatePerson({
+        const { data: updatedPerson } = await api.personApi.updatePerson({
           id: edittingPerson.id,
           personUpdateDto: { name: personName },
+        });
+
+        people = people.map((person: PersonResponseDto) => {
+          if (person.id === updatedPerson.id) {
+            return updatedPerson;
+          }
+          return person;
         });
 
         notificationController.show({
@@ -297,7 +294,7 @@
 </script>
 
 {#if showMergeModal}
-  <ProposeMerge
+  <SuggestMerge
     bind:personMerge1
     bind:personMerge2
     bind:potentialMergePeople

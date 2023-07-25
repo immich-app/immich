@@ -28,7 +28,7 @@
 <div class="absolute z-[99999] h-full w-full">
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50">
     <div
-      class="w-[250px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[350px]"
+      class="w-[250px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[375px]"
     >
       <div class="relative flex items-center justify-between">
         <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
@@ -39,7 +39,7 @@
 
       <div class="flex items-center justify-center px-2 py-4 md:h-36 md:px-4 md:py-4">
         {#if !choosePersonToMerge}
-          <div class="flex h-28 w-28 items-center md:px-2">
+          <div class="flex h-28 w-28 items-center md:h-32 md:w-32 md:px-2">
             <ImageThumbnail
               circle
               shadow
@@ -56,7 +56,7 @@
           </div>
 
           <button
-            class="flex h-28 w-28 items-center md:px-2"
+            class="flex h-28 w-28 items-center md:h-32 md:w-32 md:px-2"
             on:click={() => {
               if (potentialMergePeople.length > 0) {
                 choosePersonToMerge = !choosePersonToMerge;
@@ -77,26 +77,24 @@
             <div class="px-2">
               <button on:click={() => (choosePersonToMerge = false)}> <ArrowLeft /></button>
             </div>
-            <div
-              class="grid grid-cols-2 place-items-center gap-4 md:grid-cols-{potentialMergePeople.length == 2
-                ? '2'
-                : '3'} justify-self-center"
-            >
-              {#each potentialMergePeople as person (person.id)}
-                <div class="h-20 w-20 md:h-28 md:w-28 md:p-2">
-                  <button on:click={() => changePersonToMerge(person)}>
-                    <ImageThumbnail
-                      border={true}
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="100%"
-                      on:click={() => changePersonToMerge(person)}
-                    />
-                  </button>
-                </div>
-              {/each}
+            <div class="flex items-center justify-center">
+              <div class="grid grid-cols-2 md:grid-cols-{potentialMergePeople.length}">
+                {#each potentialMergePeople as person (person.id)}
+                  <div class="h-24 w-24 md:h-28 md:w-28">
+                    <button class="p-2" on:click={() => changePersonToMerge(person)}>
+                      <ImageThumbnail
+                        border={true}
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="100%"
+                        on:click={() => changePersonToMerge(person)}
+                      />
+                    </button>
+                  </div>
+                {/each}
+              </div>
             </div>
           </div>
         {/if}

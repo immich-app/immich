@@ -30,7 +30,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import { onMount } from 'svelte';
-  import ProposeMerge from '$lib/components/faces-page/propose-merge.svelte';
+  import SuggestMerge from '$lib/components/faces-page/suggest-merge.svelte';
 
   export let data: PageData;
   let isEditingName = false;
@@ -103,7 +103,6 @@
       if (personMerge2.name != personName) {
         ChangeName();
         invalidateAll();
-        data.person = personMerge2;
       } else {
         goto(`${AppRoute.PEOPLE}/${personMerge2.id}`);
         notificationController.show({
@@ -176,7 +175,7 @@
 </script>
 
 {#if showMergeModal}
-  <ProposeMerge
+  <SuggestMerge
     bind:personMerge1
     bind:personMerge2
     bind:potentialMergePeople
