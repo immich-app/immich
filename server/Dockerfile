@@ -1,21 +1,16 @@
 FROM node:18-bookworm@sha256:f4698d49371c8a9fa7dd78b97fb2a532213903066e47966542b3b1d403449da4 as builder
 
-ENV IMAGEMAGICK_VERSION=7.1.1-13
-ENV IMAGEMAGICK_SHA256=8e3ce1aaad19da9f2ca444072bcc631d193a219e3ee11c13ad6d3c895044142c
-ENV LIBVIPS_VERSION=8.14.2
-ENV LIBVIPS_SHA256=27dad021f0835a5ab14e541d02abd41e4c3bd012d2196438df5a9e754984f7ce
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -yqq ffmpeg build-essential ninja-build meson pkg-config \
+RUN apt-get update && apt-get install -yqq ffmpeg build-essential ninja-build meson pkg-config jq \
 libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libtiff5-dev \
 libjpeg62-turbo-dev libgsf-1-dev libspng-dev libraw-dev libjxl-dev libheif-dev \
 && apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # debian build for imagemagick has broken RAW support, so build manually
-COPY bin/build_imagemagick.sh .
-RUN ./build_imagemagick.sh
-COPY bin/build_libvips.sh .
-RUN ./build_libvips.sh
+COPY bin/build-imagemagick.sh bin/build-libvips.sh build-lock.json ./
+RUN ./build-imagemagick.sh
+RUN ./build-libvips.sh
 
 COPY package.json package-lock.json ./
 
@@ -30,7 +25,7 @@ RUN npm prune --omit=dev --omit=optional
 
 FROM node:18-bookworm-slim
 
-ENV NODE_ENV=production LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.2
+ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
@@ -49,6 +44,7 @@ COPY --from=prod /usr/local/include/vips/ /usr/local/include/vips/
 
 COPY --from=prod /usr/local/lib/ /usr/local/lib/
 
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.2
 RUN ldconfig /usr/local/lib
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
