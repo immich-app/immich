@@ -39,7 +39,7 @@
 
       <div class="flex items-center justify-center px-2 py-4 md:h-36 md:px-4 md:py-4">
         {#if !choosePersonToMerge}
-          <div class="flex h-28 w-28 items-center md:h-32 md:w-32 md:px-2">
+          <div class="flex h-28 w-28 items-center px-1 md:h-32 md:w-32 md:px-2">
             <ImageThumbnail
               circle
               shadow
@@ -48,7 +48,7 @@
               widthStyle="100%"
             />
           </div>
-          <div class="flex md:mx-2">
+          <div class="mx-0.5 flex md:mx-2">
             <CircleIconButton
               logo={Merge}
               on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
@@ -56,7 +56,7 @@
           </div>
 
           <button
-            class="flex h-28 w-28 items-center md:h-32 md:w-32 md:px-2"
+            class="flex h-28 w-28 items-center px-1 md:h-32 md:w-32 md:px-2"
             on:click={() => {
               if (potentialMergePeople.length > 0) {
                 choosePersonToMerge = !choosePersonToMerge;
