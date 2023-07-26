@@ -38,9 +38,8 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 - For VP9 to work:
   - You must have a 9th gen Intel CPU or newer
-  - If you have an 11th gen CPU or older, then you may need to follow [these][jellyfin-lp] instructions as Low-Power mode is required 
+  - If you have an 11th gen CPU or older, then you may need to follow [these][jellyfin-lp] instructions as Low-Power mode is required
   - Additionally, if the server specifically has an 11th gen CPU and is running kernel 5.15 (shipped with Ubuntu 22.04 LTS), then you will need to upgrade this kernel (from [Jellyfin docs][jellyfin-kernel-bug])
-
 
 ## Setup
 
@@ -54,7 +53,6 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 - You may want to choose a slower preset than for software transcoding to maintain quality and efficiency
 - While you can use VAAPI with Nvidia GPUs and Intel CPUs, prefer the more specific APIs since they're more optimized for their respective devices
-
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.yml
 [nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
