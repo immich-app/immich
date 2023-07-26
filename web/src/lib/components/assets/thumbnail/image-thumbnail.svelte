@@ -3,6 +3,7 @@
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
+  import EyeOffOutline from 'svelte-material-icons/EyeOffOutline.svelte';
 
   export let url: string;
   export let altText: string;
@@ -12,16 +13,20 @@
   export let curve = false;
   export let shadow = false;
   export let circle = false;
-
+  export let hidden = false;
   let complete = false;
+
+  export let eyeColor = 'white';
 </script>
 
 <img
   style:width={widthStyle}
   style:height={heightStyle}
+  style:filter={hidden ? 'grayscale(50%)' : 'none'}
+  style:opacity={hidden ? '0.5' : '1'}
   src={url}
   alt={altText}
-  class="object-cover transition-opacity duration-300"
+  class="object-cover transition duration-300"
   class:rounded-lg={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}
@@ -31,13 +36,19 @@
   on:image-load|once={() => (complete = true)}
 />
 
+{#if hidden}
+  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+    <EyeOffOutline size="2em" color={eyeColor} />
+  </div>
+{/if}
+
 {#if thumbhash && !complete}
   <img
     style:width={widthStyle}
     style:height={heightStyle}
     src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
     alt={altText}
-    class="absolute object-cover top-0"
+    class="absolute top-0 object-cover"
     class:rounded-lg={curve}
     class:shadow-lg={shadow}
     class:rounded-full={circle}

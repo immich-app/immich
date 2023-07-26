@@ -33,24 +33,24 @@
         type: NotificationType.Info,
       });
     }}
-    class="absolute right-6 bottom-6 z-[10000]"
+    class="absolute bottom-6 right-6 z-[10000]"
   >
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="bg-gray-200 p-4 text-sm w-[300px] rounded-lg shadow-sm border"
+        class="w-[300px] rounded-lg border bg-gray-200 p-4 text-sm shadow-sm"
       >
-        <div class="flex justify-between place-item-center mb-4">
+        <div class="place-item-center mb-4 flex justify-between">
           <p class="text-xs text-gray-500">UPLOADING {$uploadAssetsStore.length}</p>
           <button
             on:click={() => (showDetail = false)}
-            class="w-[20px] h-[20px] bg-gray-50 rounded-full flex place-items-center place-content-center transition-colors hover:bg-gray-100"
+            class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
           >
             <WindowMinimize />
           </button>
         </div>
 
-        <div class="max-h-[400px] overflow-y-auto pr-2 rounded-lg immich-scrollbar">
+        <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
           {#each $uploadAssetsStore as uploadAsset}
             {#key uploadAsset.id}
               <UploadAssetPreview {uploadAsset} />
@@ -63,14 +63,14 @@
         <button
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
-          class="absolute -top-4 -left-4 text-xs rounded-full w-10 h-10 p-5 flex place-items-center place-content-center bg-immich-primary text-gray-200"
+          class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
           {$uploadAssetsStore.length}
         </button>
         <button
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
-          class="bg-gray-300 p-5 rounded-full w-16 h-16 flex place-items-center place-content-center text-sm shadow-lg"
+          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-300 p-5 text-sm shadow-lg"
         >
           <div class="animate-pulse">
             <CloudUploadOutline size="30" color="#4250af" />

@@ -18,6 +18,7 @@ class SystemConfigOAuthDto {
     required this.clientId,
     required this.clientSecret,
     required this.scope,
+    required this.storageLabelClaim,
     required this.buttonText,
     required this.autoRegister,
     required this.autoLaunch,
@@ -34,6 +35,8 @@ class SystemConfigOAuthDto {
   String clientSecret;
 
   String scope;
+
+  String storageLabelClaim;
 
   String buttonText;
 
@@ -52,6 +55,7 @@ class SystemConfigOAuthDto {
      other.clientId == clientId &&
      other.clientSecret == clientSecret &&
      other.scope == scope &&
+     other.storageLabelClaim == storageLabelClaim &&
      other.buttonText == buttonText &&
      other.autoRegister == autoRegister &&
      other.autoLaunch == autoLaunch &&
@@ -66,6 +70,7 @@ class SystemConfigOAuthDto {
     (clientId.hashCode) +
     (clientSecret.hashCode) +
     (scope.hashCode) +
+    (storageLabelClaim.hashCode) +
     (buttonText.hashCode) +
     (autoRegister.hashCode) +
     (autoLaunch.hashCode) +
@@ -73,7 +78,7 @@ class SystemConfigOAuthDto {
     (mobileRedirectUri.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, buttonText=$buttonText, autoRegister=$autoRegister, autoLaunch=$autoLaunch, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
+  String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, storageLabelClaim=$storageLabelClaim, buttonText=$buttonText, autoRegister=$autoRegister, autoLaunch=$autoLaunch, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -82,6 +87,7 @@ class SystemConfigOAuthDto {
       json[r'clientId'] = this.clientId;
       json[r'clientSecret'] = this.clientSecret;
       json[r'scope'] = this.scope;
+      json[r'storageLabelClaim'] = this.storageLabelClaim;
       json[r'buttonText'] = this.buttonText;
       json[r'autoRegister'] = this.autoRegister;
       json[r'autoLaunch'] = this.autoLaunch;
@@ -103,6 +109,7 @@ class SystemConfigOAuthDto {
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
         scope: mapValueOfType<String>(json, r'scope')!,
+        storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
         autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
@@ -160,6 +167,7 @@ class SystemConfigOAuthDto {
     'clientId',
     'clientSecret',
     'scope',
+    'storageLabelClaim',
     'buttonText',
     'autoRegister',
     'autoLaunch',

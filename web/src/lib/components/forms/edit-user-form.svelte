@@ -67,13 +67,13 @@
 </script>
 
 <div
-  class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+  class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
   <div
-    class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+    class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
     <AccountEditOutline size="4em" />
-    <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Edit user</h1>
+    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
   </div>
 
   <form on:submit|preventDefault={editUser} autocomplete="off">
@@ -134,13 +134,13 @@
     </div>
 
     {#if error}
-      <p class="text-red-400 ml-4 text-sm">{error}</p>
+      <p class="ml-4 text-sm text-red-400">{error}</p>
     {/if}
 
     {#if success}
-      <p class="text-immich-primary ml-4 text-sm">{success}</p>
+      <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
-    <div class="flex w-full px-4 gap-4 mt-8">
+    <div class="mt-8 flex w-full gap-4 px-4">
       {#if canResetPassword}
         <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
           >Reset password</Button

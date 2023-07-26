@@ -984,38 +984,6 @@
         ]
       }
     },
-    "/asset/count-by-user-id": {
-      "get": {
-        "operationId": "getAssetCountByUserId",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -1608,17 +1576,34 @@
         ]
       }
     },
-    "/asset/stat/archive": {
+    "/asset/statistics": {
       "get": {
-        "operationId": "getArchivedAssetCountByUserId",
-        "parameters": [],
+        "operationId": "getAssetStats",
+        "parameters": [
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                  "$ref": "#/components/schemas/AssetStatsResponseDto"
                 }
               }
             }
@@ -2824,7 +2809,57 @@
     "/person": {
       "get": {
         "operationId": "getAllPeople",
+        "parameters": [
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeopleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updatePeople",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeopleUpdateDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -2833,7 +2868,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   }
                 }
               }
@@ -3352,6 +3387,27 @@
           {
             "api_key": []
           }
+        ]
+      }
+    },
+    "/server-info/media-types": {
+      "get": {
+        "operationId": "getSupportedMediaTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
         ]
       }
     },
@@ -4683,7 +4739,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.66.1",
+    "version": "1.69.0",
     "contact": {}
   },
   "tags": [],
@@ -5090,38 +5146,6 @@
           "buckets"
         ]
       },
-      "AssetCountByUserIdResponseDto": {
-        "type": "object",
-        "properties": {
-          "audio": {
-            "type": "integer",
-            "default": 0
-          },
-          "photos": {
-            "type": "integer",
-            "default": 0
-          },
-          "videos": {
-            "type": "integer",
-            "default": 0
-          },
-          "other": {
-            "type": "integer",
-            "default": 0
-          },
-          "total": {
-            "type": "integer",
-            "default": 0
-          }
-        },
-        "required": [
-          "audio",
-          "photos",
-          "videos",
-          "other",
-          "total"
-        ]
-      },
       "AssetFileUploadResponseDto": {
         "type": "object",
         "properties": {
@@ -5278,6 +5302,25 @@
           "checksum"
         ]
       },
+      "AssetStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "images",
+          "videos",
+          "total"
+        ]
+      },
       "AssetTypeEnum": {
         "type": "string",
         "enum": [
@@ -5336,13 +5379,13 @@
             "type": "boolean"
           },
           "error": {
-            "type": "string",
             "enum": [
               "duplicate",
               "no_permission",
               "not_found",
               "unknown"
-            ]
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -6284,6 +6327,66 @@
           "passwordLoginEnabled"
         ]
       },
+      "PeopleResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "visible": {
+            "type": "number"
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "visible",
+          "people"
+        ]
+      },
+      "PeopleUpdateDto": {
+        "type": "object",
+        "properties": {
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeopleUpdateItem"
+            }
+          }
+        },
+        "required": [
+          "people"
+        ]
+      },
+      "PeopleUpdateItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Person id."
+          },
+          "name": {
+            "type": "string",
+            "description": "Person name."
+          },
+          "featureFaceAssetId": {
+            "type": "string",
+            "description": "Asset is used to get the feature face thumbnail."
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Person visibility"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
       "PersonResponseDto": {
         "type": "object",
         "properties": {
@@ -6295,12 +6398,16 @@
           },
           "thumbnailPath": {
             "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "isHidden"
         ]
       },
       "PersonUpdateDto": {
@@ -6313,6 +6420,10 @@
           "featureFaceAssetId": {
             "type": "string",
             "description": "Asset is used to get the feature face thumbnail."
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "Person visibility"
           }
         }
       },
@@ -6557,6 +6668,34 @@
           "diskSize",
           "diskUse",
           "diskAvailable"
+        ]
+      },
+      "ServerMediaTypesResponseDto": {
+        "type": "object",
+        "properties": {
+          "video": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sidecar": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "video",
+          "image",
+          "sidecar"
         ]
       },
       "ServerPingResponse": {
@@ -6962,6 +7101,9 @@
           "scope": {
             "type": "string"
           },
+          "storageLabelClaim": {
+            "type": "string"
+          },
           "buttonText": {
             "type": "string"
           },
@@ -6984,6 +7126,7 @@
           "clientId",
           "clientSecret",
           "scope",
+          "storageLabelClaim",
           "buttonText",
           "autoRegister",
           "autoLaunch",

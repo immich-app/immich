@@ -102,7 +102,7 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-  <div class="h-full w-full isolate">
+  <div class="isolate h-full w-full">
     {#if leaflet}
       {@const { Map, TileLayer, AssetMarkerCluster, Control } = leaflet}
       <Map
@@ -129,7 +129,7 @@
         />
         <Control>
           <button
-            class="flex justify-center items-center bg-white text-black/70 w-8 h-8 font-bold rounded-sm border-2 border-black/20 hover:bg-gray-50 focus:bg-gray-50"
+            class="flex h-8 w-8 items-center justify-center rounded-sm border-2 border-black/20 bg-white font-bold text-black/70 hover:bg-gray-50 focus:bg-gray-50"
             title="Open map settings"
             on:click={() => (showSettingsModal = true)}
           >

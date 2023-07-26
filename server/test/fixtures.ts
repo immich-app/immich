@@ -5,7 +5,6 @@ import {
   AuthUserDto,
   ExifResponseDto,
   mapUser,
-  QueueName,
   SearchResult,
   SharedLinkResponseDto,
   TagResponseDto,
@@ -19,7 +18,6 @@ import {
   AssetEntity,
   AssetFaceEntity,
   AssetType,
-  AudioCodec,
   ExifEntity,
   LibraryEntity,
   LibraryType,
@@ -27,13 +25,12 @@ import {
   PersonEntity,
   SharedLinkEntity,
   SharedLinkType,
-  SystemConfig,
+  SystemConfigEntity,
+  SystemConfigKey,
   TagEntity,
   TagType,
-  TranscodePolicy,
   UserEntity,
   UserTokenEntity,
-  VideoCodec,
 } from '@app/infra/entities';
 
 const today = new Date();
@@ -830,10 +827,10 @@ export const systemConfigStub = {
       [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
       [QueueName.SEARCH]: { concurrency: 5 },
       [QueueName.SIDECAR]: { concurrency: 5 },
-      [QueueName.LIBRARY]: { concurrency: 1 },
       [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
       [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
       [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+      [QueueName.LIBRARY]: { concurrency: 1 },
     },
     oauth: {
       autoLaunch: false,
@@ -1269,6 +1266,18 @@ export const personStub = {
     name: '',
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    isHidden: false,
+  }),
+  hidden: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '/path/to/thumbnail.jpg',
+    faces: [],
+    isHidden: true,
   }),
   withName: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1279,6 +1288,7 @@ export const personStub = {
     name: 'Person 1',
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    isHidden: false,
   }),
   noThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1289,6 +1299,7 @@ export const personStub = {
     name: '',
     thumbnailPath: '',
     faces: [],
+    isHidden: false,
   }),
   newThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1299,6 +1310,7 @@ export const personStub = {
     name: '',
     thumbnailPath: '/new/path/to/thumbnail.jpg',
     faces: [],
+    isHidden: false,
   }),
   primaryPerson: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -1309,6 +1321,7 @@ export const personStub = {
     name: 'Person 1',
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
+    isHidden: false,
   }),
   mergePerson: Object.freeze<PersonEntity>({
     id: 'person-2',
@@ -1319,6 +1332,7 @@ export const personStub = {
     name: 'Person 2',
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
+    isHidden: false,
   }),
 };
 

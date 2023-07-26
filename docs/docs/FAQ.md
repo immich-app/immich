@@ -94,7 +94,7 @@ To remove the **Metadata** you can stop Immich and delete the volume.
 docker-compose down -v
 ```
 
-After removing the the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting an unwanted files or folders.
+After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting an unwanted files or folders.
 
 ### Why iOS app shows duplicate photos on the timeline while the web doesn't?
 

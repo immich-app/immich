@@ -140,7 +140,7 @@
 
 <BaseModal on:close={() => dispatch('close')}>
   <svelte:fragment slot="title">
-    <span class="flex gap-2 place-items-center">
+    <span class="flex place-items-center gap-2">
       <Link size={24} />
       {#if editingLink}
         <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
@@ -175,10 +175,10 @@
       {/if}
     {/if}
 
-    <div class="mt-4 mb-2">
+    <div class="mb-2 mt-4">
       <p class="text-xs">LINK OPTIONS</p>
     </div>
-    <div class="p-4 bg-gray-100 dark:bg-black/40 rounded-lg">
+    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40">
       <div class="flex flex-col">
         <div class="mb-2">
           <SettingInputField inputType={SettingInputFieldType.TEXT} label="Description" bind:value={description} />
@@ -198,11 +198,11 @@
 
         <div class="text-sm">
           {#if editingLink}
-            <p class="my-2 immich-form-label">
+            <p class="immich-form-label my-2">
               <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
             </p>
           {:else}
-            <p class="my-2 immich-form-label">Expire after</p>
+            <p class="immich-form-label my-2">Expire after</p>
           {/if}
 
           <DropdownButton

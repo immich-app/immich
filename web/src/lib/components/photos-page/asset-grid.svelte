@@ -26,6 +26,11 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import MemoryLane from './memory-lane.svelte';
 
+  import { AppRoute } from '$lib/constants';
+  import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
+  import { isSearchEnabled } from '$lib/stores/search.store';
+
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
   export let showMemoryLane = false;
@@ -35,7 +40,10 @@
   let assetGridElement: HTMLElement;
   let bucketInfo: AssetCountByTimeBucketResponseDto;
 
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
   onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
     const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
       getAssetCountByTimeBucketDto: {
         timeGroup: TimeGroupEnum.Month,
@@ -67,8 +75,30 @@
   });
 
   onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (event.key === '/') {
+      event.preventDefault();
+    }
+
+    if (!$isViewingAssetStoreState) {
+      switch (event.key) {
+        case '/':
+          goto(AppRoute.EXPLORE);
+          return;
+      }
+    }
+  };
 
   function intersectedHandler(event: CustomEvent) {
     const el = event.detail.container as HTMLElement;
@@ -128,14 +158,22 @@
   let shiftKeyIsDown = false;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = true;
     }
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'Shift') {
+    if ($isSearchEnabled) {
+      return;
+    }
+
+    if (e.key == 'Shift') {
       e.preventDefault();
       shiftKeyIsDown = false;
     }
@@ -264,7 +302,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="overflow-y-auto ml-4 mb-4 mr-[60px] scrollbar-hidden"
+  class="scrollbar-hidden mb-4 ml-4 mr-[60px] overflow-y-auto"
   bind:clientHeight={viewportHeight}
   bind:clientWidth={viewportWidth}
   bind:this={assetGridElement}

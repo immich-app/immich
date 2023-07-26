@@ -16,8 +16,8 @@ void main() {
   // final instance = ImportAssetDto();
 
   group('test ImportAssetDto', () {
-    // AssetTypeEnum assetType
-    test('to test the property `assetType`', () async {
+    // String libraryId
+    test('to test the property `libraryId`', () async {
       // TODO
     });
 

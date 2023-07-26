@@ -215,8 +215,6 @@ class ApiClient {
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
           return AssetCountByTimeBucketResponseDto.fromJson(value);
-        case 'AssetCountByUserIdResponseDto':
-          return AssetCountByUserIdResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -225,6 +223,8 @@ class ApiClient {
           return AssetIdsResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
+        case 'AssetStatsResponseDto':
+          return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
@@ -309,6 +309,12 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'PeopleResponseDto':
+          return PeopleResponseDto.fromJson(value);
+        case 'PeopleUpdateDto':
+          return PeopleUpdateDto.fromJson(value);
+        case 'PeopleUpdateItem':
+          return PeopleUpdateItem.fromJson(value);
         case 'PersonResponseDto':
           return PersonResponseDto.fromJson(value);
         case 'PersonUpdateDto':
@@ -339,6 +345,8 @@ class ApiClient {
           return SearchResponseDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
+        case 'ServerMediaTypesResponseDto':
+          return ServerMediaTypesResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':

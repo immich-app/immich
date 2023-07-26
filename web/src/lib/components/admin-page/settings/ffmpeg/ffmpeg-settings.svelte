@@ -79,7 +79,7 @@
   {#await getConfigs() then}
     <div in:fade={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault>
-        <div class="flex flex-col gap-4 ml-4 mt-4">
+        <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label="CONSTANT RATE FACTOR (-crf)"

@@ -21,7 +21,6 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     save: jest.fn(),
     findLivePhotoMatch: jest.fn(),
     getMapMarkers: jest.fn(),
-    remove: jest.fn(),
-    update: jest.fn(),
+    getStatistics: jest.fn(),
   };
 };

@@ -16,6 +16,7 @@ class PersonResponseDto {
     required this.id,
     required this.name,
     required this.thumbnailPath,
+    required this.isHidden,
   });
 
   String id;
@@ -24,27 +25,32 @@ class PersonResponseDto {
 
   String thumbnailPath;
 
+  bool isHidden;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
      other.id == id &&
      other.name == name &&
-     other.thumbnailPath == thumbnailPath;
+     other.thumbnailPath == thumbnailPath &&
+     other.isHidden == isHidden;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
     (name.hashCode) +
-    (thumbnailPath.hashCode);
+    (thumbnailPath.hashCode) +
+    (isHidden.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[id=$id, name=$name, thumbnailPath=$thumbnailPath]';
+  String toString() => 'PersonResponseDto[id=$id, name=$name, thumbnailPath=$thumbnailPath, isHidden=$isHidden]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
+      json[r'isHidden'] = this.isHidden;
     return json;
   }
 
@@ -59,6 +65,7 @@ class PersonResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        isHidden: mapValueOfType<bool>(json, r'isHidden')!,
       );
     }
     return null;
@@ -109,6 +116,7 @@ class PersonResponseDto {
     'id',
     'name',
     'thumbnailPath',
+    'isHidden',
   };
 }
 

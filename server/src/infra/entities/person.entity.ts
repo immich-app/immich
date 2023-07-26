@@ -35,4 +35,7 @@ export class PersonEntity {
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
   faces!: AssetFaceEntity[];
+
+  @Column({ default: false })
+  isHidden!: boolean;
 }

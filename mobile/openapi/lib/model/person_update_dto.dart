@@ -15,6 +15,7 @@ class PersonUpdateDto {
   PersonUpdateDto({
     this.name,
     this.featureFaceAssetId,
+    this.isHidden,
   });
 
   /// Person name.
@@ -35,19 +36,30 @@ class PersonUpdateDto {
   ///
   String? featureFaceAssetId;
 
+  /// Person visibility
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isHidden;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
      other.name == name &&
-     other.featureFaceAssetId == featureFaceAssetId;
+     other.featureFaceAssetId == featureFaceAssetId &&
+     other.isHidden == isHidden;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (name == null ? 0 : name!.hashCode) +
-    (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode);
+    (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
+    (isHidden == null ? 0 : isHidden!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[name=$name, featureFaceAssetId=$featureFaceAssetId]';
+  String toString() => 'PersonUpdateDto[name=$name, featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -60,6 +72,11 @@ class PersonUpdateDto {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
     //  json[r'featureFaceAssetId'] = null;
+    }
+    if (this.isHidden != null) {
+      json[r'isHidden'] = this.isHidden;
+    } else {
+    //  json[r'isHidden'] = null;
     }
     return json;
   }
@@ -74,6 +91,7 @@ class PersonUpdateDto {
       return PersonUpdateDto(
         name: mapValueOfType<String>(json, r'name'),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
+        isHidden: mapValueOfType<bool>(json, r'isHidden'),
       );
     }
     return null;

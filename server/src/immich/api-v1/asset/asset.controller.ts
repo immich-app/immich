@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -40,7 +38,6 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -111,39 +108,35 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get('/file/:id')
-  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   @ApiOkResponse({
     content: {
       'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
     },
   })
-  serveFile(
+  async serveFile(
     @AuthUser() authUser: AuthUserDto,
-    @Headers() headers: Record<string, string>,
-    @Response({ passthrough: true }) res: Res,
+    @Response() res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param() { id }: UUIDParamDto,
   ) {
-    return this.assetService.serveFile(authUser, id, query, res, headers);
+    await this.assetService.serveFile(authUser, id, query, res);
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
-  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   @ApiOkResponse({
     content: {
       'image/jpeg': { schema: { type: 'string', format: 'binary' } },
       'image/webp': { schema: { type: 'string', format: 'binary' } },
     },
   })
-  getAssetThumbnail(
+  async getAssetThumbnail(
     @AuthUser() authUser: AuthUserDto,
-    @Headers() headers: Record<string, string>,
-    @Response({ passthrough: true }) res: Res,
+    @Response() res: Res,
     @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
-    return this.assetService.getAssetThumbnail(authUser, id, query, res, headers);
+    await this.assetService.serveThumbnail(authUser, id, query, res);
   }
 
   @Get('/curated-objects')
@@ -179,15 +172,6 @@ export class AssetController {
     return this.assetService.getAssetCountByTimeBucket(authUser, dto);
   }
 
-  @Get('/count-by-user-id')
-  getAssetCountByUserId(@AuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this.assetService.getAssetCountByUserId(authUser);
-  }
-
-  @Get('/stat/archive')
-  getArchivedAssetCountByUserId(@AuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
-    return this.assetService.getArchivedAssetCountByUserId(authUser);
-  }
   /**
    * Get all AssetEntity belong to the user
    */

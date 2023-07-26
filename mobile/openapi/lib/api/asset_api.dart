@@ -440,47 +440,6 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/stat/archive' operation and returns the [Response].
-  Future<Response> getArchivedAssetCountByUserIdWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/stat/archive';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<AssetCountByUserIdResponseDto?> getArchivedAssetCountByUserId() async {
-    final response = await getArchivedAssetCountByUserIdWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetCountByUserIdResponseDto',) as AssetCountByUserIdResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Get a single asset's information
   ///
   /// Note: This method returns the HTTP [Response].
@@ -639,47 +598,6 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/count-by-user-id' operation and returns the [Response].
-  Future<Response> getAssetCountByUserIdWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/count-by-user-id';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<AssetCountByUserIdResponseDto?> getAssetCountByUserId() async {
-    final response = await getAssetCountByUserIdWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetCountByUserIdResponseDto',) as AssetCountByUserIdResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Performs an HTTP 'GET /asset/search-terms' operation and returns the [Response].
   Future<Response> getAssetSearchTermsWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -720,6 +638,64 @@ class AssetApi {
         .cast<String>()
         .toList();
 
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /asset/statistics' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/statistics';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, }) async {
+    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetStatsResponseDto',) as AssetStatsResponseDto;
+    
     }
     return null;
   }
@@ -1373,7 +1349,7 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
-  /// * [AssetTypeEnum] assetType:
+  /// * [String] libraryId:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
@@ -1388,7 +1364,7 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, AssetTypeEnum? assetType, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1407,9 +1383,9 @@ class AssetApi {
 
     bool hasFields = false;
     final mp = MultipartRequest('POST', Uri.parse(path));
-    if (assetType != null) {
+    if (libraryId != null) {
       hasFields = true;
-      mp.fields[r'assetType'] = parameterToString(assetType);
+      mp.fields[r'libraryId'] = parameterToString(libraryId);
     }
     if (assetData != null) {
       hasFields = true;
@@ -1497,7 +1473,7 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
-  /// * [AssetTypeEnum] assetType:
+  /// * [String] libraryId:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
@@ -1512,8 +1488,8 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, AssetTypeEnum? assetType, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
-    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, assetType: assetType, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
+  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -33,18 +33,18 @@
   {#if showMenu}
     <div
       transition:fly={{ y: -30, x: 30, duration: 200 }}
-      class="absolute top-5 right-0 min-w-[250px] bg-gray-100 dark:bg-gray-700 rounded-2xl py-4 shadow-lg dark:text-white text-black z-50 text-md flex flex-col"
+      class="text-md absolute right-0 top-5 z-50 flex min-w-[250px] flex-col rounded-2xl bg-gray-100 py-4 text-black shadow-lg dark:bg-gray-700 dark:text-white"
     >
       {#each options as option, index (option)}
         <button
-          class="hover:bg-gray-300 dark:hover:bg-gray-800 p-4 transition-all grid grid-cols-[20px,1fr] place-items-center gap-2"
+          class="grid grid-cols-[20px,1fr] place-items-center gap-2 p-4 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
           on:click={() => handleSelectOption(index)}
         >
           {#if value == option}
-            <div class="text-immich-primary dark:text-immich-dark-primary font-medium">
+            <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
               <Check size="18" />
             </div>
-            <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary font-medium">
+            <p class="justify-self-start font-medium text-immich-primary dark:text-immich-dark-primary">
               {option}
             </p>
           {:else}

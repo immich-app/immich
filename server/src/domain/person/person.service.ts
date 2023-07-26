@@ -4,7 +4,15 @@ import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, MergePersonDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
+import {
+  mapPerson,
+  MergePersonDto,
+  PeopleResponseDto,
+  PeopleUpdateDto,
+  PersonResponseDto,
+  PersonSearchDto,
+  PersonUpdateDto,
+} from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
@@ -17,16 +25,21 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
-  async getAll(authUser: AuthUserDto): Promise<PersonResponseDto[]> {
+  async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
-    return (
-      [...named, ...unnamed]
-        // with thumbnails
-        .filter((person) => !!person.thumbnailPath)
-        .map((person) => mapPerson(person))
-    );
+
+    const persons: PersonResponseDto[] = [...named, ...unnamed]
+      // with thumbnails
+      .filter((person) => !!person.thumbnailPath)
+      .map((person) => mapPerson(person));
+
+    return {
+      people: persons.filter((person) => dto.withHidden || !person.isHidden),
+      total: persons.length,
+      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
+    };
   }
 
   getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
@@ -50,8 +63,8 @@ export class PersonService {
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     let person = await this.findOrFail(authUser, id);
 
-    if (dto.name) {
-      person = await this.repository.update({ id, name: dto.name });
+    if (dto.name != undefined || dto.isHidden !== undefined) {
+      person = await this.repository.update({ id, name: dto.name, isHidden: dto.isHidden });
       const assets = await this.repository.getAssets(authUser.id, id);
       const ids = assets.map((asset) => asset.id);
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
@@ -82,6 +95,24 @@ export class PersonService {
     }
 
     return mapPerson(person);
+  }
+
+  async updatePeople(authUser: AuthUserDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    const results: BulkIdResponseDto[] = [];
+    for (const person of dto.people) {
+      try {
+        await this.update(authUser, person.id, {
+          isHidden: person.isHidden,
+          name: person.name,
+          featureFaceAssetId: person.featureFaceAssetId,
+        }),
+          results.push({ id: person.id, success: true });
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
+        results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
+      }
+    }
+    return results;
   }
 
   async handlePersonCleanup() {
@@ -132,6 +163,9 @@ export class PersonService {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
+
+    // Re-index all faces in typesense for up-to-date search results
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
 
     return results;
   }

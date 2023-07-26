@@ -1,5 +1,5 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { clearDownload, updateDownload } from '$lib/stores/download';
+import { downloadManager } from '$lib/stores/download';
 import { AddAssetsResponseDto, api, AssetApiGetDownloadInfoRequest, AssetResponseDto, DownloadResponseDto } from '@api';
 import { handleError } from './handle-error';
 
@@ -37,7 +37,6 @@ const downloadBlob = (data: Blob, filename: string) => {
 export const downloadArchive = async (
   fileName: string,
   options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
-  onDone?: () => void,
   key?: string,
 ) => {
   let downloadInfo: DownloadResponseDto | null = null;
@@ -58,62 +57,82 @@ export const downloadArchive = async (
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
     const archiveName = fileName.replace('.zip', `${suffix}.zip`);
 
-    let downloadKey = `${archiveName}`;
+    let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
       downloadKey = `${archiveName} (${i + 1}/${downloadInfo.archives.length})`;
     }
 
-    updateDownload(downloadKey, 0);
+    const abort = new AbortController();
+    downloadManager.add(downloadKey, archive.size, abort);
 
     try {
       const { data } = await api.assetApi.downloadArchive(
         { assetIdsDto: { assetIds: archive.assetIds }, key },
         {
           responseType: 'blob',
-          onDownloadProgress: (event) => updateDownload(downloadKey, Math.floor((event.loaded / archive.size) * 100)),
+          signal: abort.signal,
+          onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
         },
       );
 
       downloadBlob(data, archiveName);
     } catch (e) {
       handleError(e, 'Unable to download files');
-      clearDownload(downloadKey);
+      downloadManager.clear(downloadKey);
       return;
     } finally {
-      setTimeout(() => clearDownload(downloadKey), 3_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
-
-  onDone?.();
 };
 
 export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
-  const filenames = [`${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`];
+  const assets = [
+    {
+      filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
+      id: asset.id,
+      size: asset.exifInfo?.fileSizeInByte || 0,
+    },
+  ];
   if (asset.livePhotoVideoId) {
-    filenames.push(`${asset.originalFileName}.mov`);
+    assets.push({
+      filename: `${asset.originalFileName}.mov`,
+      id: asset.livePhotoVideoId,
+      size: 0,
+    });
   }
 
-  for (const filename of filenames) {
+  for (const { filename, id, size } of assets) {
+    const downloadKey = filename;
+
     try {
-      updateDownload(filename, 0);
+      const abort = new AbortController();
+      downloadManager.add(downloadKey, size, abort);
 
       const { data } = await api.assetApi.downloadFile(
-        { id: asset.id, key },
+        { id, key },
         {
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {
             if (event.lengthComputable) {
-              updateDownload(filename, Math.floor((event.loaded / event.total) * 100));
+              downloadManager.update(downloadKey, event.loaded, event.total);
             }
           },
+          signal: abort.signal,
         },
       );
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Downloading asset ${asset.originalFileName}`,
+      });
 
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);
+      downloadManager.clear(downloadKey);
     } finally {
-      setTimeout(() => clearDownload(filename), 3_000);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
 };

@@ -78,12 +78,12 @@
 </script>
 
 <div
-  class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+  class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
-  <div class="flex flex-col place-items-center place-content-center gap-4 px-4">
+  <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />
-    <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Create new user</h1>
-    <p class="text-sm border rounded-md p-4 font-mono text-gray-600 dark:border-immich-dark-bg dark:text-gray-300">
+    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Create new user</h1>
+    <p class="rounded-md border p-4 font-mono text-sm text-gray-600 dark:border-immich-dark-bg dark:text-gray-300">
       Please provide your user with the password, they will have to change it on their first sign in.
     </p>
   </div>
@@ -122,11 +122,11 @@
     </div>
 
     {#if error}
-      <p class="text-red-400 ml-4 text-sm">{error}</p>
+      <p class="ml-4 text-sm text-red-400">{error}</p>
     {/if}
 
     {#if success}
-      <p class="text-immich-primary ml-4 text-sm">{success}</p>
+      <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
     <div class="flex w-full p-4">
       <Button type="submit" disabled={isCreatingUser} fullwidth>Create</Button>

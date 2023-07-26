@@ -37,7 +37,7 @@
   <section
     id="memory-lane"
     bind:this={memoryLaneElement}
-    class="relative overflow-x-hidden whitespace-nowrap mt-5 transition-all"
+    class="relative mt-5 overflow-x-hidden whitespace-nowrap transition-all"
     bind:offsetWidth
     on:scroll={onScroll}
   >
@@ -46,7 +46,7 @@
         {#if canScrollLeft}
           <div class="absolute left-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
-              class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
+              class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollLeft}
             >
               <ChevronLeft size="36" /></button
@@ -56,7 +56,7 @@
         {#if canScrollRight}
           <div class="absolute right-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
-              class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
+              class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollRight}
             >
               <ChevronRight size="36" /></button
@@ -69,18 +69,18 @@
     <div class="inline-block" bind:offsetWidth={innerWidth}>
       {#each $memoryStore as memory, i (memory.title)}
         <button
-          class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
+          class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
           on:click={() => goto(`/memory?memory=${i}`)}
         >
           <img
-            class="rounded-xl h-full w-full object-cover"
+            class="h-full w-full rounded-xl object-cover"
             src={api.getAssetThumbnailUrl(memory.assets[0].id, 'JPEG')}
             alt={memory.title}
             draggable="false"
           />
-          <p class="absolute bottom-2 left-4 text-lg text-white z-10">{memory.title}</p>
+          <p class="absolute bottom-2 left-4 z-10 text-lg text-white">{memory.title}</p>
           <div
-            class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 transition-all"
+            class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
           />
         </button>
       {/each}

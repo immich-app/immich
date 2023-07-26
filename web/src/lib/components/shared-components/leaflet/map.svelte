@@ -37,7 +37,7 @@
   $: if (map) map.setView(center, zoom);
 </script>
 
-<div bind:this={container} class="w-full h-full" class:map-dark={allowDarkMode}>
+<div bind:this={container} class="h-full w-full" class:map-dark={allowDarkMode}>
   {#if map}
     <slot />
   {/if}

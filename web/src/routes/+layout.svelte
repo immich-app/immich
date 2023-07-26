@@ -72,7 +72,7 @@
 </svelte:head>
 
 <noscript
-  class="h-screen w-screen absolute z-[1000] flex place-items-center place-content-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+  class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
 >
   <FullscreenContainer title="Welcome to Immich">
     To use Immich, you must enable JavaScript or use a JavaScript compatible browser.

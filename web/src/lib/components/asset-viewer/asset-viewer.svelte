@@ -13,11 +13,14 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
   import { assetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
@@ -25,16 +28,15 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   const dispatch = createEventDispatcher();
-  let halfLeftHover = false;
-  let halfRightHover = false;
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
+  let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -64,22 +66,33 @@
     }
   };
 
-  const handleKeyboardPress = (key: string) => {
+  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
     switch (key) {
-      case 'Escape':
-        closeViewer();
-        return;
-      case 'Delete':
-        isShowDeleteConfirmation = true;
-        return;
-      case 'i':
-        $isShowDetail = !$isShowDetail;
+      case 'a':
+      case 'A':
+        if (shiftKey) toggleArchive();
         return;
       case 'ArrowLeft':
         navigateAssetBackward();
         return;
       case 'ArrowRight':
         navigateAssetForward();
+        return;
+      case 'd':
+      case 'D':
+        if (shiftKey) downloadFile(asset, publicSharedKey);
+        return;
+      case 'Delete':
+        isShowDeleteConfirmation = true;
+        return;
+      case 'Escape':
+        closeViewer();
+        return;
+      case 'f':
+        toggleFavorite();
+        return;
+      case 'i':
+        $isShowDetail = !$isShowDetail;
         return;
     }
   };
@@ -134,15 +147,24 @@
   };
 
   const toggleFavorite = async () => {
-    const { data } = await api.assetApi.updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        isFavorite: !asset.isFavorite,
-      },
-    });
+    try {
+      const { data } = await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          isFavorite: !asset.isFavorite,
+        },
+      });
 
-    asset.isFavorite = data.isFavorite;
-    assetStore.updateAsset(asset.id, data.isFavorite);
+      asset.isFavorite = data.isFavorite;
+      assetStore.updateAsset(asset.id, data.isFavorite);
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+      });
+    } catch (error) {
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} favorites`);
+    }
   };
 
   const openAlbumPicker = (shared: boolean) => {
@@ -205,11 +227,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      console.error(error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: `Error ${asset.isArchived ? 'archiving' : 'unarchiving'} asset, check console for more details`,
-      });
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -227,9 +245,9 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-4"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
 >
-  <div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
+  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
     <AssetViewerNavBar
       {asset}
       isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -247,40 +265,22 @@
       on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
       on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
       on:toggleArchive={toggleArchive}
+      on:asProfileImage={() => (isShowProfileImageCrop = true)}
     />
   </div>
 
   {#if showNavigation}
-    <div
-      class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-      }`}
-      on:mouseenter={() => {
-        halfLeftHover = true;
-        halfRightHover = false;
-      }}
-      on:mouseleave={() => {
-        halfLeftHover = false;
-      }}
-      on:click={navigateAssetBackward}
-      on:keydown={navigateAssetBackward}
-    >
-      <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
-        class:navigation-button-hover={halfLeftHover}
-        on:click={navigateAssetBackward}
-      >
-        <ChevronLeft size="36" />
-      </button>
+    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+      <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
   {/if}
 
-  <div class="row-start-1 row-span-full col-start-1 col-span-4">
+  <div class="col-span-4 col-start-1 row-span-full row-start-1">
     {#key asset.id}
       {#if !asset.resized}
-        <div class="h-full w-full flex justify-center">
+        <div class="flex h-full w-full justify-center">
           <div
-            class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
+            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -303,27 +303,8 @@
   </div>
 
   {#if showNavigation}
-    <div
-      class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
-        asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-      }`}
-      on:click={navigateAssetForward}
-      on:keydown={navigateAssetForward}
-      on:mouseenter={() => {
-        halfLeftHover = false;
-        halfRightHover = true;
-      }}
-      on:mouseleave={() => {
-        halfRightHover = false;
-      }}
-    >
-      <button
-        class="rounded-full p-3 hover:bg-gray-500 hover:text-white text-gray-500 mx-4"
-        class:navigation-button-hover={halfRightHover}
-        on:click={navigateAssetForward}
-      >
-        <ChevronRight size="36" />
-      </button>
+    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+      <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
 
@@ -331,7 +312,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
+      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
@@ -371,16 +352,18 @@
       </svelte:fragment>
     </ConfirmDialogue>
   {/if}
+
+  {#if isShowProfileImageCrop}
+    <ProfileImageCropper
+      {asset}
+      on:close={() => (isShowProfileImageCrop = false)}
+      on:close-viewer={handleCloseViewer}
+    />
+  {/if}
 </section>
 
 <style>
   #immich-asset-viewer {
     contain: layout;
-  }
-
-  .navigation-button-hover {
-    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-    color: rgb(255 255 255 / var(--tw-text-opacity));
-    transition: all 150ms;
   }
 </style>
