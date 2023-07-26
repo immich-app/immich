@@ -17,7 +17,16 @@
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
-  export let potentialMergePeople: PersonResponseDto[];
+  export let people: PersonResponseDto[];
+  let potentialMergePeople: PersonResponseDto[] = people
+    .filter(
+      (person: PersonResponseDto) =>
+        personMerge2.name === person.name &&
+        person.id !== personMerge2.id &&
+        person.id !== personMerge1.id &&
+        !person.isHidden,
+    )
+    .slice(0, 3);
 
   let choosePersonToMerge = false;
 

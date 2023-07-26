@@ -33,20 +33,6 @@
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
-  let potentialMergePeople: PersonResponseDto[];
-
-  $: {
-    if (personMerge1 && personMerge2)
-      potentialMergePeople = people
-        .filter(
-          (person: PersonResponseDto) =>
-            personName === person.name &&
-            person.id !== personMerge2.id &&
-            person.id !== personMerge1.id &&
-            !person.isHidden,
-        )
-        .slice(0, 3);
-  }
 
   let showChangeNameModal = false;
   let showMergeModal = false;
@@ -300,7 +286,7 @@
     <SuggestMerge
       {personMerge1}
       {personMerge2}
-      {potentialMergePeople}
+      {people}
       on:close={() => (showMergeModal = false)}
       on:reject={() => changeName()}
       on:confirm={(event) => handleMergeSameFace(event.detail)}
