@@ -19,7 +19,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import SuggestMerge from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -283,7 +283,7 @@
 
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <SuggestMerge
+    <MergeSuggestionModal
       {personMerge1}
       {personMerge2}
       {people}

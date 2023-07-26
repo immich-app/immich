@@ -30,7 +30,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import { onMount } from 'svelte';
-  import SuggestMerge from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let data: PageData;
@@ -164,7 +164,7 @@
 
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <SuggestMerge
+    <MergeSuggestionModal
       {personMerge1}
       {personMerge2}
       {people}
