@@ -207,10 +207,10 @@ export class AssetService {
 
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
-    let data = allowExif ? mapAsset(asset) : mapAssetWithoutExif(asset);
+    const data = allowExif ? mapAsset(asset) : mapAssetWithoutExif(asset);
 
     if (data.ownerId !== authUser.id) {
-      delete data.people;
+      data.people = [];
     }
 
     return data;
