@@ -19,7 +19,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import SuggestMerge from '$lib/components/faces-page/suggest-merge.svelte';
+  import SuggestMerge from '$lib/components/faces-page/merge-suggestion-modal.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -34,6 +34,19 @@
   let showLoadingSpinner = false;
   let toggleVisibility = false;
   let potentialMergePeople: PersonResponseDto[];
+
+  $: {
+    if (personMerge1 && personMerge2)
+      potentialMergePeople = people
+        .filter(
+          (person: PersonResponseDto) =>
+            personName === person.name &&
+            person.id !== personMerge2.id &&
+            person.id !== personMerge1.id &&
+            !person.isHidden,
+        )
+        .slice(0, 3);
+  }
 
   let showChangeNameModal = false;
   let showMergeModal = false;
@@ -145,26 +158,28 @@
     toggleVisibility = false;
   };
 
-  const handleMergeSameFace = async () => {
+  const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
+    let [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
     try {
-      if (edittingPerson) {
-        await api.personApi.mergePerson({
-          id: personMerge2.id,
-          mergePersonDto: { ids: [personMerge1.id] },
-        });
-        countVisiblePeople--;
-        people = people.filter((person: PersonResponseDto) => person.id !== personMerge1.id);
-
-        notificationController.show({
-          message: 'Merge faces succesfully',
-          type: NotificationType.Info,
-        });
+      if (!edittingPerson) {
+        return;
       }
+      await api.personApi.mergePerson({
+        id: personMerge2.id,
+        mergePersonDto: { ids: [personToMerge.id] },
+      });
+      countVisiblePeople--;
+      people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
-    if (personMerge2.name != personName) {
+    if (personToBeMergedIn.name != personName) {
       /*
        *
        * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
@@ -172,9 +187,9 @@
        *
        */
       try {
-        await api.personApi.updatePerson({ id: personMerge2.id, personUpdateDto: { name: personName } });
+        await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
         for (const person of people) {
-          if (person.id === personMerge2.id) {
+          if (person.id === personToBeMergedIn.id) {
             person.name = personName;
             break;
           }
@@ -230,63 +245,47 @@
     goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
   };
 
+  const rejectMergeFaces = async () => {
+    showMergeModal = false;
+    changeName();
+  };
+
   const submitNameChange = async () => {
-    let detectSameName = false;
     showChangeNameModal = false;
-    if (edittingPerson && personName != edittingPerson.name) {
+    if (edittingPerson && personName !== edittingPerson.name) {
       // We check if another person has the same name as the name entered by the user
-      for (const person of people) {
-        if (person.name === personName && person.id !== edittingPerson.id && !person.isHidden) {
-          personMerge2 = person;
-          detectSameName = true;
-          break;
-        }
-      }
 
-      if (!detectSameName) {
-        await ChangeName();
-      } else {
-        /*
-         *
-         * Upon identifying people sharing the same name, we create an array excluding the initially detected person and populate it with other people of the same name.
-         * With that strategy, the user can opt to merge the person they are editing with up to 4 people.
-         *
-         */
-        potentialMergePeople = people
-          .filter(
-            (person: PersonResponseDto) =>
-              personName === person.name &&
-              person.id !== personMerge2.id &&
-              person.id !== personMerge1.id &&
-              !person.isHidden,
-          )
-          .slice(0, 3);
-
+      const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
+      if (existingPerson) {
+        personMerge2 = existingPerson;
         showMergeModal = true;
+        return;
       }
+      changeName();
     }
   };
 
-  const ChangeName = async () => {
+  const changeName = async () => {
     try {
-      if (edittingPerson) {
-        const { data: updatedPerson } = await api.personApi.updatePerson({
-          id: edittingPerson.id,
-          personUpdateDto: { name: personName },
-        });
-
-        people = people.map((person: PersonResponseDto) => {
-          if (person.id === updatedPerson.id) {
-            return updatedPerson;
-          }
-          return person;
-        });
-
-        notificationController.show({
-          message: 'Change name succesfully',
-          type: NotificationType.Info,
-        });
+      if (!edittingPerson) {
+        return;
       }
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: edittingPerson.id,
+        personUpdateDto: { name: personName },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: 'Change name succesfully',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
@@ -296,15 +295,12 @@
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
     <SuggestMerge
-      bind:personMerge1
-      bind:personMerge2
+      {personMerge1}
+      {personMerge2}
       {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
-      on:differentFaces={() => {
-        showMergeModal = false;
-        ChangeName();
-      }}
-      on:mergeFaces={() => handleMergeSameFace()}
+      on:reject={() => rejectMergeFaces()}
+      on:confirm={(event) => handleMergeSameFace(event.detail)}
     />
   </FullScreenModal>
 {/if}
