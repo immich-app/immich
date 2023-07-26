@@ -105,7 +105,7 @@
   };
 
   const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
-    let [personToMerge, personToBeMergedIn] = response;
+    const [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
     try {
       await api.personApi.mergePerson({
@@ -118,25 +118,21 @@
       if (personToBeMergedIn.name != personName) {
         changeName();
         invalidateAll();
-      } else {
-        goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
-        notificationController.show({
-          message: 'Merge faces succesfully',
-          type: NotificationType.Info,
-        });
+        return;
       }
+      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
   };
 
-  const rejectMergeFaces = async () => {
+  const changeName = async () => {
     showMergeModal = false;
     data.person.name = personName;
-    changeName();
-  };
-
-  const changeName = async () => {
     try {
       isEditingName = false;
 
@@ -164,28 +160,29 @@
   const handleNameChange = async (name: string) => {
     personName = name;
 
-    if (data.person.name != personName) {
-      const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
-      if (existingPerson) {
-        personMerge2 = existingPerson;
-        personMerge1 = data.person;
-        showMergeModal = true;
-        return;
-      }
-      data.person.name = personName;
-      changeName();
+    if (data.person.name === personName) {
+      return;
     }
+
+    const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
+    if (existingPerson) {
+      personMerge2 = existingPerson;
+      personMerge1 = data.person;
+      showMergeModal = true;
+      return;
+    }
+    changeName();
   };
 </script>
 
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
     <SuggestMerge
-      bind:personMerge1
-      bind:personMerge2
-      bind:potentialMergePeople
+      {personMerge1}
+      {personMerge2}
+      {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
-      on:reject={() => rejectMergeFaces()}
+      on:reject={() => changeName()}
       on:confirm={(event) => handleMergeSameFace(event.detail)}
     />
   </FullScreenModal>
@@ -265,4 +262,8 @@
 
 {#if showFaceThumbnailSelection}
   <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
+{/if}
+
+{#if showMergeFacePanel}
+  <MergeFaceSelector person={data.person} on:go-back={() => (showMergeFacePanel = false)} />
 {/if}

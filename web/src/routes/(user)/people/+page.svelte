@@ -159,12 +159,13 @@
   };
 
   const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
-    let [personToMerge, personToBeMergedIn] = response;
+    const [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
+
+    if (!edittingPerson) {
+      return;
+    }
     try {
-      if (!edittingPerson) {
-        return;
-      }
       await api.personApi.mergePerson({
         id: personMerge2.id,
         mergePersonDto: { ids: [personToMerge.id] },
@@ -245,31 +246,33 @@
     goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
   };
 
-  const rejectMergeFaces = async () => {
-    showMergeModal = false;
+  const submitNameChange = async () => {
+    showChangeNameModal = false;
+    if (!edittingPerson) {
+      return;
+    }
+    if (personName === edittingPerson.name) {
+      return;
+    }
+    // We check if another person has the same name as the name entered by the user
+
+    const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
+    if (existingPerson) {
+      personMerge2 = existingPerson;
+      showMergeModal = true;
+      return;
+    }
     changeName();
   };
 
-  const submitNameChange = async () => {
-    showChangeNameModal = false;
-    if (edittingPerson && personName !== edittingPerson.name) {
-      // We check if another person has the same name as the name entered by the user
-
-      const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
-      if (existingPerson) {
-        personMerge2 = existingPerson;
-        showMergeModal = true;
-        return;
-      }
-      changeName();
-    }
-  };
-
   const changeName = async () => {
+    showMergeModal = false;
+    showChangeNameModal = false;
+
+    if (!edittingPerson) {
+      return;
+    }
     try {
-      if (!edittingPerson) {
-        return;
-      }
       const { data: updatedPerson } = await api.personApi.updatePerson({
         id: edittingPerson.id,
         personUpdateDto: { name: personName },
@@ -299,7 +302,7 @@
       {personMerge2}
       {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
-      on:reject={() => rejectMergeFaces()}
+      on:reject={() => changeName()}
       on:confirm={(event) => handleMergeSameFace(event.detail)}
     />
   </FullScreenModal>
