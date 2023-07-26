@@ -44,7 +44,6 @@ COPY --from=prod /usr/local/include/vips/ /usr/local/include/vips/
 
 COPY --from=prod /usr/local/lib/ /usr/local/lib/
 
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.2
 RUN ldconfig /usr/local/lib
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
