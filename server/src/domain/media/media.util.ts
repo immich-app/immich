@@ -163,11 +163,11 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
         // order GPU devices first
         if (a.startsWith('card') && b.startsWith('renderD')) {
           return -1;
-        } else if (a.startsWith('renderD') && b.startsWith('card')) {
-          return 1;
-        } else {
-          return -a.localeCompare(b);
         }
+        if (a.startsWith('renderD') && b.startsWith('card')) {
+          return 1;
+        }
+        return -a.localeCompare(b);
       });
   }
 }

@@ -2,6 +2,7 @@ import { DiskUsage, ImmichReadStream, ImmichZipStream, IStorageRepository } from
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs from 'fs/promises';
+import { readdir } from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
@@ -93,7 +94,5 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
-  async readdir(folder: string): Promise<string[]> {
-    return fs.readdir(folder);
-  }
+  readdir = readdir
 }

@@ -237,11 +237,10 @@ export class MediaService {
   }
 
   async getCodecConfig(config: SystemConfigFFmpegDto) {
-    if (!config.accel || config.accel === TranscodeHWAccel.DISABLED) {
+    if (config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
-    } else {
-      return this.getHWCodecConfig(config);
     }
+    return this.getHWCodecConfig(config);
   }
 
   private getSWCodecConfig(config: SystemConfigFFmpegDto) {
