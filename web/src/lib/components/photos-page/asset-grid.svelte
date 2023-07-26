@@ -30,6 +30,7 @@
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
   import { isSearchEnabled } from '$lib/stores/search.store';
+  import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
@@ -39,6 +40,7 @@
   let viewportWidth = 0;
   let assetGridElement: HTMLElement;
   let bucketInfo: AssetCountByTimeBucketResponseDto;
+  let showShortcuts = false;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -93,6 +95,9 @@
 
     if (!$isViewingAssetStoreState) {
       switch (event.key) {
+        case '?':
+          if (event.shiftKey) showShortcuts = !showShortcuts;
+          return;
         case '/':
           goto(AppRoute.EXPLORE);
           return;
@@ -289,6 +294,10 @@
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
+
+{#if showShortcuts}
+  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+{/if}
 
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
   <Scrollbar
