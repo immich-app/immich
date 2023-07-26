@@ -1015,7 +1015,10 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-vcodec h264_qsv`,
-            '-low_power 0',
+            '-g 256',
+            '-extbrc 1',
+            '-refs 5',
+            '-bf 7',
             '-acodec aac',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1024,6 +1027,7 @@ describe(MediaService.name, () => {
             '-preset 7',
             '-global_quality 23',
             '-maxrate 10000k',
+            '-bufsize 20000k',
           ],
           twoPass: false,
         },
@@ -1046,12 +1050,49 @@ describe(MediaService.name, () => {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
             `-vcodec h264_qsv`,
-            '-low_power 0',
+            '-g 256',
+            '-extbrc 1',
+            '-refs 5',
+            '-bf 7',
             '-acodec aac',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+            '-global_quality 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set low power mode for qsv if target video codec is vp9', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.QSV },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.VP9 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
+          outputOptions: [
+            `-vcodec vp9_qsv`,
+            '-g 256',
+            '-extbrc 1',
+            '-refs 5',
+            '-bf 7',
+            '-low_power 1',
+            '-acodec aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-v verbose',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+            '-preset 7',
             '-global_quality 23',
           ],
           twoPass: false,

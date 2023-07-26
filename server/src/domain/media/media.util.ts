@@ -8,7 +8,7 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
-  constructor(protected config: SystemConfigFFmpegDto) { }
+  constructor(protected config: SystemConfigFFmpegDto) {}
 
   getOptions(stream: VideoStreamInfo) {
     const options = {
@@ -303,7 +303,7 @@ export class QSVConfig extends BaseHWConfig {
 
   getBaseOutputOptions() {
     // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, "-g 256", "-extbrc 1", "-refs 5", "-bf 7"]
+    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-g 256', '-extbrc 1', '-refs 5', '-bf 7'];
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
