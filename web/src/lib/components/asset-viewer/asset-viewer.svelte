@@ -6,7 +6,7 @@
     AssetResponseDto,
     AssetTypeEnum,
     SharedLinkResponseDto,
-    ProjectionTypeEnum,
+    ProjectionType,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
@@ -301,7 +301,7 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.exifInfo?.projectionType === ProjectionTypeEnum.Equirectangular}
+        {:else if asset.exifInfo?.projectionType === ProjectionType.Equirectangular}
           <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />

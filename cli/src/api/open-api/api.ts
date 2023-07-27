@@ -1192,10 +1192,10 @@ export interface ExifResponseDto {
     'fileSizeInByte'?: number | null;
     /**
      * 
-     * @type {ProjectionTypeEnum}
+     * @type {ProjectionType}
      * @memberof ExifResponseDto
      */
-    'projectionType': ProjectionTypeEnum;
+    'projectionType': ProjectionType;
     /**
      * 
      * @type {string}
@@ -1916,7 +1916,7 @@ export interface PersonUpdateDto {
  * @enum {string}
  */
 
-export const ProjectionTypeEnum = {
+export const ProjectionType = {
     Equirectangular: 'EQUIRECTANGULAR',
     Cubemap: 'CUBEMAP',
     Cubestrip: 'CUBESTRIP',
@@ -1927,7 +1927,7 @@ export const ProjectionTypeEnum = {
     None: 'NONE'
 } as const;
 
-export type ProjectionTypeEnum = typeof ProjectionTypeEnum[keyof typeof ProjectionTypeEnum];
+export type ProjectionType = typeof ProjectionType[keyof typeof ProjectionType];
 
 
 /**

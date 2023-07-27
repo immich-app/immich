@@ -5459,7 +5459,7 @@
           },
           "projectionType": {
             "default": "NONE",
-            "$ref": "#/components/schemas/ProjectionTypeEnum"
+            "$ref": "#/components/schemas/ProjectionType"
           },
           "make": {
             "type": "string",
@@ -6034,7 +6034,7 @@
           }
         }
       },
-      "ProjectionTypeEnum": {
+      "ProjectionType": {
         "type": "string",
         "enum": [
           "EQUIRECTANGULAR",

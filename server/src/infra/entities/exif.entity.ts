@@ -55,9 +55,7 @@ export class ExifEntity {
   longitude!: number | null;
 
   @Column({
-    type: 'enum',
-    enum: ProjectionType,
-    enumName: 'projectionType',
+    type: 'varchar',
     default: ProjectionType.NONE,
   })
   projectionType!: ProjectionType;
