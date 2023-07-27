@@ -99,19 +99,17 @@
         id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-
-      if (personToBeMergedIn.name != personName) {
+      if (personToBeMergedIn.name != personName && data.person.id === personToBeMergedIn.id) {
         changeName();
         invalidateAll();
         return;
       }
       goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
-      notificationController.show({
-        message: 'Merge faces succesfully',
-        type: NotificationType.Info,
-      });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
@@ -151,7 +149,10 @@
       return;
     }
 
-    const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
+    const existingPerson = people.find(
+      (person: PersonResponseDto) =>
+        person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
+    );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;

@@ -27,7 +27,9 @@
   style:opacity={hidden ? '0.5' : '1'}
   src={url}
   alt={altText}
-  class="object-cover transition duration-300 {border ? 'border-[3px] border-immich-primary/75' : ''}"
+  class="object-cover transition duration-300 {border
+    ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
+    : ''}"
   class:rounded-lg={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}

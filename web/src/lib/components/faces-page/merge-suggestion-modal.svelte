@@ -21,7 +21,7 @@
   let potentialMergePeople: PersonResponseDto[] = people
     .filter(
       (person: PersonResponseDto) =>
-        personMerge2.name === person.name &&
+        personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
         person.id !== personMerge2.id &&
         person.id !== personMerge1.id &&
         !person.isHidden,
@@ -52,7 +52,7 @@
 
     <div class="flex items-center justify-center px-2 py-4 md:h-36 md:px-4 md:py-4">
       {#if !choosePersonToMerge}
-        <div class="flex h-28 w-28 items-center px-1 md:h-32 md:w-32 md:px-2">
+        <div class="flex h-20 w-20 items-center px-1 md:h-24 md:w-24 md:px-2">
           <ImageThumbnail
             circle
             shadow
@@ -69,6 +69,7 @@
         </div>
 
         <button
+          disabled={potentialMergePeople.length === 0}
           class="flex h-28 w-28 items-center px-1 md:h-32 md:w-32 md:px-2"
           on:click={() => {
             if (potentialMergePeople.length > 0) {
@@ -77,7 +78,7 @@
           }}
         >
           <ImageThumbnail
-            border={potentialMergePeople.length > 0 ? true : false}
+            border={potentialMergePeople.length !== 0}
             circle
             shadow
             url={api.getPeopleThumbnailUrl(personMerge2.id)}

@@ -166,7 +166,7 @@
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
-    if (personToBeMergedIn.name != personName) {
+    if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
        *
        * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
@@ -181,6 +181,10 @@
             break;
           }
         }
+        notificationController.show({
+          message: 'Change name succesfully',
+          type: NotificationType.Info,
+        });
 
         // trigger reactivity
         people = people;
@@ -242,7 +246,13 @@
     }
     // We check if another person has the same name as the name entered by the user
 
-    const existingPerson = people.find((person: PersonResponseDto) => person.name === personName);
+    const existingPerson = people.find(
+      (person: PersonResponseDto) =>
+        person.name.toLowerCase() === personName.toLowerCase() &&
+        edittingPerson &&
+        person.id !== edittingPerson.id &&
+        person.name,
+    );
     if (existingPerson) {
       personMerge2 = existingPerson;
       showMergeModal = true;
