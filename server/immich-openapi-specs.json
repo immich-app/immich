@@ -5457,10 +5457,6 @@
             "default": null,
             "format": "int64"
           },
-          "projectionType": {
-            "default": "NONE",
-            "$ref": "#/components/schemas/ProjectionType"
-          },
           "make": {
             "type": "string",
             "nullable": true,
@@ -5557,11 +5553,13 @@
             "type": "string",
             "nullable": true,
             "default": null
+          },
+          "projectionType": {
+            "type": "string",
+            "nullable": true,
+            "default": null
           }
-        },
-        "required": [
-          "projectionType"
-        ]
+        }
       },
       "GetAssetByTimeBucketDto": {
         "type": "object",
@@ -6033,19 +6031,6 @@
             "description": "Person visibility"
           }
         }
-      },
-      "ProjectionType": {
-        "type": "string",
-        "enum": [
-          "EQUIRECTANGULAR",
-          "CUBEMAP",
-          "CUBESTRIP",
-          "EQUIRECTANGULAR_STEREO",
-          "CUBEMAP_STEREO",
-          "CUBESTRIP_STEREO",
-          "CYLINDER",
-          "NONE"
-        ]
       },
       "QueueStatusDto": {
         "type": "object",

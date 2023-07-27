@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto, ProjectionType } from '@api';
+  import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -13,6 +13,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
+  import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
@@ -281,7 +282,7 @@
       {#if !asset.resized}
         <div class="flex h-full w-full justify-center">
           <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            class="px-auto dark:bg-immich-dark-gray flex aspect-square h-full items-center justify-center bg-gray-100"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -294,7 +295,7 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.Equirectangular}
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
           <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
@@ -315,7 +316,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="bg-immich-bg dark:border-l-immich-dark-gray dark:bg-immich-dark-bg z-[1002] row-span-full w-[360px] overflow-y-auto transition-all dark:border-l"
       translate="yes"
     >
       <DetailPanel
