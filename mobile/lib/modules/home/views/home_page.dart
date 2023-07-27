@@ -253,7 +253,7 @@ class HomePage extends HookConsumerWidget {
         } else {
           refreshCount.value++;
           // set counter back to 0 if user does not request refresh again
-          Timer(const Duration(seconds: 2), () {
+          Timer(const Duration(seconds: 4), () {
             refreshCount.value = 0;
           });
         }
