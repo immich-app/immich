@@ -31,6 +31,7 @@
   import { browser } from '$app/environment';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
@@ -296,7 +297,9 @@
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
 
 {#if showShortcuts}
-  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+  <FullScreenModal on:clickOutside={() => (showShortcuts = !showShortcuts)}>
+    <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+  </FullScreenModal>
 {/if}
 
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
