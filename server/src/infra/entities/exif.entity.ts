@@ -55,7 +55,7 @@ export class ExifEntity {
   longitude!: number | null;
 
   @Column({ type: 'varchar', default: ProjectionType.NONE })
-  projectionType!: ProjectionType;
+  projectionType!: ProjectionType | string;
 
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;

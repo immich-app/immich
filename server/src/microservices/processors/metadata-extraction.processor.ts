@@ -337,18 +337,11 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    const exifProjectionType = getExifProperty('ProjectionType');
-    let projectionType: ProjectionType = ProjectionType.NONE;
-
-    if (exifProjectionType) {
-      const exifPropertyUpper = exifProjectionType.toUpperCase();
-
-      if (exifPropertyUpper in ProjectionType) {
-        projectionType = exifPropertyUpper as ProjectionType;
-      }
+    const projectionType = getExifProperty('ProjectionType');
+    if (projectionType) {
+      newExif.projectionType = String(projectionType).toUpperCase();
     }
 
-    newExif.projectionType = projectionType;
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
       const motionAsset = await this.assetRepository.findLivePhotoMatch({
