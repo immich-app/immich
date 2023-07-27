@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AssetResponseDto, api } from '@api';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import domtoimage from 'dom-to-image';
@@ -12,6 +12,10 @@
 
   const dispatch = createEventDispatcher();
   let imgElement: HTMLDivElement;
+
+  onMount(() => {
+    imgElement.style.width = '100%';
+  });
 
   const hasTransparentPixels = async (blob: Blob) => {
     const img = new Image();

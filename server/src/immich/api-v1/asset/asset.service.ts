@@ -207,12 +207,13 @@ export class AssetService {
 
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
+    const data = allowExif ? mapAsset(asset) : mapAssetWithoutExif(asset);
 
-    if (allowExif) {
-      return mapAsset(asset);
-    } else {
-      return mapAssetWithoutExif(asset);
+    if (data.ownerId !== authUser.id) {
+      data.people = [];
     }
+
+    return data;
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

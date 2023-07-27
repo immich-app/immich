@@ -184,3 +184,24 @@ Typesense URL example JSON before encoding:
 | `MACHINE_LEARNING_CLASSIFICATION_MODEL`     | Classification Model           | `microsoft/resnet-50` | machine learning |
 | `MACHINE_LEARNING_CACHE_FOLDER`             | ML Cache Location              |       `/cache`        | machine learning |
 | `TRANSFORMERS_CACHE`                        | ML Transformers Cache Location |       `/cache`        | machine learning |
+
+## Docker Secrets
+
+The following variables support the use of [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) for additional security.
+
+To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
+the `_FILE` variable should be set to the path of a file containing the variable value.
+
+|  Regular Variable  | Equivalent Docker Secrets '\_FILE' Variable |
+| :----------------: | :-----------------------------------------: |
+|   `DB_HOSTNAME`    |      `DB_HOSTNAME_FILE`<sup>\*1</sup>       |
+| `DB_DATABASE_NAME` |    `DB_DATABASE_NAME_FILE`<sup>\*1</sup>    |
+|   `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
+|   `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
+|  `REDIS_PASSWORD`  |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
+
+\*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
+details on how to use Docker Secrets in the Postgres image.
+
+\*2: See [this comment](https://github.com/docker-library/redis/issues/46#issuecomment-335326234) for an example of how
+to use use a Docker secret for the password in the Redis container.
