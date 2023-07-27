@@ -313,8 +313,6 @@ class ApiClient {
           return PersonResponseDto.fromJson(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
-        case 'ProjectionType':
-          return ProjectionTypeTypeTransformer().decode(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'RemoveAssetsDto':

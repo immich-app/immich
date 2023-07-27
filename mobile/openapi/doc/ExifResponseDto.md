@@ -9,7 +9,6 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **fileSizeInByte** | **int** |  | [optional] 
-**projectionType** | [**ProjectionType**](ProjectionType.md) |  | 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
 **exifImageWidth** | **num** |  | [optional] 
@@ -29,6 +28,7 @@ Name | Type | Description | Notes
 **state** | **String** |  | [optional] 
 **country** | **String** |  | [optional] 
 **description** | **String** |  | [optional] 
+**projectionType** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

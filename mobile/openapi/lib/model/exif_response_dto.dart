@@ -14,7 +14,6 @@ class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
     this.fileSizeInByte,
-    required this.projectionType,
     this.make,
     this.model,
     this.exifImageWidth,
@@ -34,11 +33,10 @@ class ExifResponseDto {
     this.state,
     this.country,
     this.description,
+    this.projectionType,
   });
 
   int? fileSizeInByte;
-
-  ProjectionType projectionType;
 
   String? make;
 
@@ -78,10 +76,11 @@ class ExifResponseDto {
 
   String? description;
 
+  String? projectionType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.fileSizeInByte == fileSizeInByte &&
-     other.projectionType == projectionType &&
      other.make == make &&
      other.model == model &&
      other.exifImageWidth == exifImageWidth &&
@@ -100,13 +99,13 @@ class ExifResponseDto {
      other.city == city &&
      other.state == state &&
      other.country == country &&
-     other.description == description;
+     other.description == description &&
+     other.projectionType == projectionType;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
-    (projectionType.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
@@ -125,113 +124,118 @@ class ExifResponseDto {
     (city == null ? 0 : city!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
-    (description == null ? 0 : description!.hashCode);
+    (description == null ? 0 : description!.hashCode) +
+    (projectionType == null ? 0 : projectionType!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, projectionType=$projectionType, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description, projectionType=$projectionType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.fileSizeInByte != null) {
       json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
-      json[r'fileSizeInByte'] = null;
+    //  json[r'fileSizeInByte'] = null;
     }
-      json[r'projectionType'] = this.projectionType;
     if (this.make != null) {
       json[r'make'] = this.make;
     } else {
-      json[r'make'] = null;
+    //  json[r'make'] = null;
     }
     if (this.model != null) {
       json[r'model'] = this.model;
     } else {
-      json[r'model'] = null;
+    //  json[r'model'] = null;
     }
     if (this.exifImageWidth != null) {
       json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-      json[r'exifImageWidth'] = null;
+    //  json[r'exifImageWidth'] = null;
     }
     if (this.exifImageHeight != null) {
       json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-      json[r'exifImageHeight'] = null;
+    //  json[r'exifImageHeight'] = null;
     }
     if (this.orientation != null) {
       json[r'orientation'] = this.orientation;
     } else {
-      json[r'orientation'] = null;
+    //  json[r'orientation'] = null;
     }
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
     } else {
-      json[r'dateTimeOriginal'] = null;
+    //  json[r'dateTimeOriginal'] = null;
     }
     if (this.modifyDate != null) {
       json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
     } else {
-      json[r'modifyDate'] = null;
+    //  json[r'modifyDate'] = null;
     }
     if (this.timeZone != null) {
       json[r'timeZone'] = this.timeZone;
     } else {
-      json[r'timeZone'] = null;
+    //  json[r'timeZone'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
     } else {
-      json[r'lensModel'] = null;
+    //  json[r'lensModel'] = null;
     }
     if (this.fNumber != null) {
       json[r'fNumber'] = this.fNumber;
     } else {
-      json[r'fNumber'] = null;
+    //  json[r'fNumber'] = null;
     }
     if (this.focalLength != null) {
       json[r'focalLength'] = this.focalLength;
     } else {
-      json[r'focalLength'] = null;
+    //  json[r'focalLength'] = null;
     }
     if (this.iso != null) {
       json[r'iso'] = this.iso;
     } else {
-      json[r'iso'] = null;
+    //  json[r'iso'] = null;
     }
     if (this.exposureTime != null) {
       json[r'exposureTime'] = this.exposureTime;
     } else {
-      json[r'exposureTime'] = null;
+    //  json[r'exposureTime'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
     } else {
-      json[r'latitude'] = null;
+    //  json[r'latitude'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
-      json[r'longitude'] = null;
+    //  json[r'longitude'] = null;
     }
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
-      json[r'city'] = null;
+    //  json[r'city'] = null;
     }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
-      json[r'state'] = null;
+    //  json[r'state'] = null;
     }
     if (this.country != null) {
       json[r'country'] = this.country;
     } else {
-      json[r'country'] = null;
+    //  json[r'country'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-      json[r'description'] = null;
+    //  json[r'description'] = null;
+    }
+    if (this.projectionType != null) {
+      json[r'projectionType'] = this.projectionType;
+    } else {
+    //  json[r'projectionType'] = null;
     }
     return json;
   }
@@ -243,20 +247,8 @@ class ExifResponseDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "ExifResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "ExifResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return ExifResponseDto(
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        projectionType: ProjectionType.fromJson(json[r'projectionType'])!,
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         exifImageWidth: json[r'exifImageWidth'] == null
@@ -290,6 +282,7 @@ class ExifResponseDto {
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),
         description: mapValueOfType<String>(json, r'description'),
+        projectionType: mapValueOfType<String>(json, r'projectionType'),
       );
     }
     return null;
@@ -337,7 +330,6 @@ class ExifResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'projectionType',
   };
 }
 

@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // ProjectionType projectionType
-    test('to test the property `projectionType`', () async {
-      // TODO
-    });
-
     // String make
     test('to test the property `make`', () async {
       // TODO
@@ -118,6 +113,11 @@ void main() {
 
     // String description
     test('to test the property `description`', () async {
+      // TODO
+    });
+
+    // String projectionType
+    test('to test the property `projectionType`', () async {
       // TODO
     });
 

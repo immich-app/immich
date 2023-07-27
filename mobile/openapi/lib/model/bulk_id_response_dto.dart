@@ -47,7 +47,7 @@ class BulkIdResponseDto {
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
-      json[r'error'] = null;
+    //  json[r'error'] = null;
     }
     return json;
   }
@@ -58,17 +58,6 @@ class BulkIdResponseDto {
   static BulkIdResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "BulkIdResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "BulkIdResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return BulkIdResponseDto(
         id: mapValueOfType<String>(json, r'id')!,

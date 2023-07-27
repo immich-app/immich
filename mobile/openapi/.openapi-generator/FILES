@@ -77,7 +77,6 @@ doc/PeopleUpdateItem.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
-doc/ProjectionType.md
 doc/QueueStatusDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAlbumResponseDto.md
@@ -217,7 +216,6 @@ lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
-lib/model/projection_type.dart
 lib/model/queue_status_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_album_response_dto.dart
@@ -336,7 +334,6 @@ test/people_update_item_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
-test/projection_type_test.dart
 test/queue_status_dto_test.dart
 test/remove_assets_dto_test.dart
 test/search_album_response_dto_test.dart
