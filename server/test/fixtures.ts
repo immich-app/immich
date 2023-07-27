@@ -21,7 +21,6 @@ import {
   ExifEntity,
   PartnerEntity,
   PersonEntity,
-  ProjectionType,
   SharedLinkEntity,
   SharedLinkType,
   SystemConfigEntity,
@@ -626,7 +625,7 @@ const assetInfo: ExifResponseDto = {
   state: 'state',
   country: 'country',
   description: 'description',
-  projectionType: ProjectionType.NONE,
+  projectionType: null,
 };
 
 const assetResponse: AssetResponseDto = {
@@ -884,7 +883,7 @@ export const sharedLinkStub = {
           livePhotoVideoId: null,
           originalFileName: 'asset_1.jpeg',
           exifInfo: {
-            projectionType: ProjectionType.NONE,
+            projectionType: null,
             livePhotoCID: null,
             assetId: 'id_1',
             description: 'description',
