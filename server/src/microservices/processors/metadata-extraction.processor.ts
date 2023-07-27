@@ -344,7 +344,7 @@ export class MetadataExtractionProcessor {
       const exifPropertyUpper = exifProjectionType.toUpperCase();
 
       if (exifPropertyUpper in ProjectionType) {
-        projectionType = ProjectionType[exifPropertyUpper as keyof typeof ProjectionType];
+        projectionType = exifPropertyUpper as ProjectionType;
       }
     }
 
