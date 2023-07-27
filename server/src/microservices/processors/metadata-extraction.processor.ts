@@ -14,7 +14,7 @@ import {
   usePagination,
   WithoutProperty,
 } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity, ProjectionType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -341,7 +341,6 @@ export class MetadataExtractionProcessor {
     if (projectionType) {
       newExif.projectionType = String(projectionType).toUpperCase();
     }
-    newExif.projectionType = projectionType;
 
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
