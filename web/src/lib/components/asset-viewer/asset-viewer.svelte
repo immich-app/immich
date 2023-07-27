@@ -1,13 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import {
-    AlbumResponseDto,
-    api,
-    AssetResponseDto,
-    AssetTypeEnum,
-    SharedLinkResponseDto,
-    ProjectionType,
-  } from '@api';
+  import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto, ProjectionType } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
