@@ -337,15 +337,9 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    const exifProjectionType = getExifProperty('ProjectionType');
-    let projectionType: ProjectionType | string = ProjectionType.NONE;
-    if (exifProjectionType) {
-      const exifPropertyUpper = exifProjectionType.toUpperCase();
-      if (exifPropertyUpper in ProjectionType) {
-        projectionType = exifPropertyUpper as ProjectionType;
-      } else {
-        projectionType = exifPropertyUpper;
-      }
+    const projectionType = getExifProperty('ProjectionType');
+    if (projectionType) {
+      newExif.projectionType = String(projectionType).toUpperCase();
     }
     newExif.projectionType = projectionType;
 
