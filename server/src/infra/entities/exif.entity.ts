@@ -54,10 +54,7 @@ export class ExifEntity {
   @Column({ type: 'float', nullable: true })
   longitude!: number | null;
 
-  @Column({
-    type: 'varchar',
-    default: ProjectionType.NONE,
-  })
+  @Column({ type: 'varchar', default: ProjectionType.NONE })
   projectionType!: ProjectionType;
 
   @Column({ type: 'varchar', nullable: true })
