@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // ProjectionTypeEnum projectionType
+    // ProjectionType projectionType
     test('to test the property `projectionType`', () async {
       // TODO
     });

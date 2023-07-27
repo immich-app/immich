@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **fileSizeInByte** | **int** |  | [optional] 
-**projectionType** | [**ProjectionTypeEnum**](ProjectionTypeEnum.md) |  | 
+**projectionType** | [**ProjectionType**](ProjectionType.md) |  | 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
 **exifImageWidth** | **num** |  | [optional] 
