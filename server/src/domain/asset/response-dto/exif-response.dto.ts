@@ -25,7 +25,7 @@ export class ExifResponseDto {
   country?: string | null = null;
   description?: string | null = null;
 
-  @ApiProperty({ enumName: 'ProjectionTypeEnum', enum: ProjectionType })
+  @ApiProperty({ enumName: 'ProjectionType', enum: ProjectionType })
   projectionType: ProjectionType = ProjectionType.NONE;
 }
 
