@@ -8,6 +8,8 @@ import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.pr
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -17,24 +19,41 @@ class SplashScreenPage extends HookConsumerWidget {
     final apiService = ref.watch(apiServiceProvider);
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final accessToken = Store.tryGet(StoreKey.accessToken);
+    final log = Logger("SplashScreenPage");
 
     void performLoggingIn() async {
       bool isSuccess = false;
+      bool deviceIsOffline = false;
       if (accessToken != null && serverUrl != null) {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(serverUrl);
-        } catch (e) {
+        } on ApiException catch (e) {
           // okay, try to continue anyway if offline
+          if (e.code == 503) {
+            deviceIsOffline = true;
+            log.fine("Device seems to be offline upon launch");
+          } else {
+            log.severe(e);
+          }
+        } catch (e) {
+          log.severe(e);
         }
 
         isSuccess =
             await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
                   accessToken: accessToken,
                   serverUrl: serverUrl,
+                  offlineLogin: deviceIsOffline,
                 );
       }
-      if (isSuccess) {
+
+      // If the device is offline and there is a currentUser stored locallly
+      // Proceed into the app
+      if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
+        AutoRouter.of(context).replace(const TabControllerRoute());
+      } else if (isSuccess) {
+        // If device was able to login through the internet successfully
         final hasPermission =
             await ref.read(galleryPermissionNotifier.notifier).hasPermission;
         if (hasPermission) {
@@ -43,6 +62,7 @@ class SplashScreenPage extends HookConsumerWidget {
         }
         AutoRouter.of(context).replace(const TabControllerRoute());
       } else {
+        // User was unable to login through either offline or online methods
         AutoRouter.of(context).replace(const LoginRoute());
       }
     }
