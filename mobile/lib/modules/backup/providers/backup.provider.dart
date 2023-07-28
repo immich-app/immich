@@ -678,16 +678,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
-  void _showToast(BuildContext context, String msg, ToastType toastType) {
-    ImmichToast.show(
-      context: context,
-      msg: msg,
-      toastType: toastType,
-      gravity: ToastGravity.BOTTOM,
-      durationInSecond: 4,
-    );
-  }
-
   Future<bool> uploadAssets(
     BuildContext context,
     Iterable<Asset> allManualUploads,
@@ -697,20 +687,38 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final bool hasLock = await _backgroundService.acquireLock();
     if (!hasLock) {
       log.severe("[uploadAssets] could not acquire lock, exiting");
-      _showToast(context, "backup_manual_failed".tr(), ToastType.error);
+      ImmichToast.show(
+        context: context,
+        msg: "backup_manual_failed".tr(),
+        toastType: ToastType.error,
+        gravity: ToastGravity.BOTTOM,
+        durationInSecond: 4,
+      );
       return false;
     }
 
     // check if backup is already in process - then return
     if (state.backupProgress == BackUpProgressEnum.inProgress) {
       log.info("[uploadAssets] Backup is already in progress - abort");
-      _showToast(context, "backup_manual_in_progress".tr(), ToastType.info);
+      ImmichToast.show(
+        context: context,
+        msg: "backup_manual_in_progress".tr(),
+        toastType: ToastType.info,
+        gravity: ToastGravity.BOTTOM,
+        durationInSecond: 4,
+      );
       return false;
     }
 
     if (state.backupProgress == BackUpProgressEnum.inBackground) {
       log.info("[uploadAssets] Background backup is running - abort");
-      _showToast(context, "backup_manual_in_progress".tr(), ToastType.info);
+      ImmichToast.show(
+        context: context,
+        msg: "backup_manual_in_progress".tr(),
+        toastType: ToastType.info,
+        gravity: ToastGravity.BOTTOM,
+        durationInSecond: 4,
+      );
       return false;
     }
 
@@ -751,10 +759,22 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       bool hasErrors = false;
       if ((state.manualUploadFailures != 0 && state.manualUploadSuccess == 0) ||
           (!ok && !state.cancelToken.isCancelled)) {
-        _showToast(context, "backup_manual_failed".tr(), ToastType.error);
+        ImmichToast.show(
+          context: context,
+          msg: "backup_manual_failed".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+          durationInSecond: 4,
+        );
         hasErrors = true;
       } else if (state.manualUploadSuccess != 0) {
-        _showToast(context, "backup_manual_success".tr(), ToastType.success);
+        ImmichToast.show(
+          context: context,
+          msg: "backup_manual_success".tr(),
+          toastType: ToastType.success,
+          gravity: ToastGravity.BOTTOM,
+          durationInSecond: 4,
+        );
       }
 
       state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
