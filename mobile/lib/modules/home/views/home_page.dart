@@ -37,7 +37,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionMode = useState(AssetState.remote);
+    final selectionAssetState = useState(AssetState.remote);
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
@@ -82,7 +82,7 @@ class HomePage extends HookConsumerWidget {
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
-        selectionMode.value = selectedAssets.any((e) => e.isRemote)
+        selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
             ? AssetState.remote
             : AssetState.local;
       }
@@ -348,7 +348,6 @@ class HomePage extends HookConsumerWidget {
                 ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
-                getSelectionMode: () => selectionMode.value,
                 onShare: onShareAssets,
                 onFavorite: onFavoriteAssets,
                 onArchive: onArchiveAsset,
@@ -359,6 +358,7 @@ class HomePage extends HookConsumerWidget {
                 onCreateNewAlbum: onCreateNewAlbum,
                 onUpload: onUpload,
                 enabled: !processing.value,
+                selectionAssetState: selectionAssetState.value,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator())
           ],

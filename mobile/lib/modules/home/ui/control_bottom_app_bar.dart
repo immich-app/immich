@@ -17,12 +17,12 @@ class ControlBottomAppBar extends ConsumerWidget {
   final void Function() onDelete;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
-  final AssetState Function() getSelectionMode;
   final void Function() onUpload;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
   final bool enabled;
+  final AssetState selectionAssetState;
 
   const ControlBottomAppBar({
     Key? key,
@@ -34,17 +34,15 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.albums,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
-    required this.getSelectionMode,
     required this.onUpload,
+    this.selectionAssetState = AssetState.remote,
     this.enabled = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    var selectionMode = getSelectionMode();
-    var hasRemote = selectionMode == AssetState.merged ||
-        selectionMode == AssetState.remote;
+    var hasRemote = selectionAssetState == AssetState.remote;
 
     Widget renderActionButtons() {
       return Row(
