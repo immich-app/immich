@@ -100,9 +100,9 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: hasRemote ? 0.30 : 0.15,
-      minChildSize: 0.15,
-      maxChildSize: hasRemote ? 0.57 : 0.15,
+      initialChildSize: hasRemote ? 0.30 : 0.18,
+      minChildSize: 0.18,
+      maxChildSize: hasRemote ? 0.57 : 0.18,
       snap: true,
       builder: (
         BuildContext context,
