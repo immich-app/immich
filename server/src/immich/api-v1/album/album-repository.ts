@@ -36,7 +36,7 @@ export class AlbumRepository implements IAlbumRepository {
       },
       order: {
         assets: {
-          fileCreatedAt: 'ASC',
+          fileCreatedAt: 'DESC',
         },
       },
     });
