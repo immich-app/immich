@@ -19,7 +19,7 @@ platform :ios do
   desc "iOS Beta"
   lane :beta do
     increment_version_number(
-      version_number: "1.70.0"
+      version_number: "1.71.0"
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
