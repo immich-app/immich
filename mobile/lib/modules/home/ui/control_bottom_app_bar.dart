@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
+import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
@@ -17,6 +18,7 @@ class ControlBottomAppBar extends ConsumerWidget {
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final AssetState Function() getSelectionMode;
+  final void Function() onUpload;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
@@ -33,6 +35,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.getSelectionMode,
+    required this.onUpload,
     this.enabled = true,
   }) : super(key: key);
 
@@ -73,6 +76,21 @@ class ControlBottomAppBar extends ConsumerWidget {
                     )
                 : null,
           ),
+          if (!hasRemote)
+            ControlBoxButton(
+              iconData: Icons.backup_outlined,
+              label: "Upload",
+              onPressed: enabled
+                  ? () => showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return UploadDialog(
+                            onUpload: onUpload,
+                          );
+                        },
+                      )
+                  : null,
+            ),
           if (hasRemote)
             ControlBoxButton(
               iconData: Icons.archive,

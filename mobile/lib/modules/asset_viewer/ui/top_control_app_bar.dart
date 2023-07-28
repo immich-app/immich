@@ -13,11 +13,13 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
     required this.onFavorite,
+    required this.onUploadPressed,
     required this.isFavorite,
   }) : super(key: key);
 
   final Asset asset;
   final Function onMoreInfoPressed;
+  final VoidCallback? onUploadPressed;
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
@@ -90,6 +92,16 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    Widget buildUploadButton() {
+      return IconButton(
+        onPressed: onUploadPressed,
+        icon: Icon(
+          Icons.backup_outlined,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
     Widget buildBackButton() {
       return IconButton(
         onPressed: () {
@@ -113,6 +125,7 @@ class TopControlAppBar extends HookConsumerWidget {
       actions: [
         if (asset.isRemote) buildFavoriteButton(),
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
+        if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal) buildDownloadButton(),
         if (asset.isRemote) buildAddToAlbumButtom(),
         buildMoreInfoButton()
