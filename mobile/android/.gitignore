@@ -13,4 +13,4 @@ key.properties
 **/*.jks
 
 # Fastlane
-/fastlane/report.xml
+fastlane/report.xml
