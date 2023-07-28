@@ -85,7 +85,7 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
-      <div class="w-full max-w-2xl flex-1 pl-4">
+      <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
     </ControlAppBar>
