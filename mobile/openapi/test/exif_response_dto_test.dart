@@ -116,6 +116,11 @@ void main() {
       // TODO
     });
 
+    // String projectionType
+    test('to test the property `projectionType`', () async {
+      // TODO
+    });
+
 
   });
 

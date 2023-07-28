@@ -5553,6 +5553,11 @@
             "type": "string",
             "nullable": true,
             "default": null
+          },
+          "projectionType": {
+            "type": "string",
+            "nullable": true,
+            "default": null
           }
         }
       },

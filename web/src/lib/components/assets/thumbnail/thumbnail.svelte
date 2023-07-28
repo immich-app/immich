@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ProjectionType } from '$lib/constants';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
@@ -12,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -121,6 +123,14 @@
         {#if showArchiveIcon && asset.isArchived}
           <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
             <ArchiveArrowDownOutline size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Rotate360Icon size="24" />
+            </span>
           </div>
         {/if}
 

@@ -33,6 +33,7 @@ class ExifResponseDto {
     this.state,
     this.country,
     this.description,
+    this.projectionType,
   });
 
   int? fileSizeInByte;
@@ -75,6 +76,8 @@ class ExifResponseDto {
 
   String? description;
 
+  String? projectionType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.fileSizeInByte == fileSizeInByte &&
@@ -96,7 +99,8 @@ class ExifResponseDto {
      other.city == city &&
      other.state == state &&
      other.country == country &&
-     other.description == description;
+     other.description == description &&
+     other.projectionType == projectionType;
 
   @override
   int get hashCode =>
@@ -120,10 +124,11 @@ class ExifResponseDto {
     (city == null ? 0 : city!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
-    (description == null ? 0 : description!.hashCode);
+    (description == null ? 0 : description!.hashCode) +
+    (projectionType == null ? 0 : projectionType!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description, projectionType=$projectionType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -227,6 +232,11 @@ class ExifResponseDto {
     } else {
     //  json[r'description'] = null;
     }
+    if (this.projectionType != null) {
+      json[r'projectionType'] = this.projectionType;
+    } else {
+    //  json[r'projectionType'] = null;
+    }
     return json;
   }
 
@@ -272,6 +282,7 @@ class ExifResponseDto {
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),
         description: mapValueOfType<String>(json, r'description'),
+        projectionType: mapValueOfType<String>(json, r'projectionType'),
       );
     }
     return null;
