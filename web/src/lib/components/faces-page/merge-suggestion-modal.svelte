@@ -41,10 +41,10 @@
 
 <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
   <div
-    class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[250px] max-w-[125vw] rounded-3xl border shadow-sm md:w-[375px]"
+    class="w-[250px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[375px]"
   >
     <div class="relative flex items-center justify-between">
-      <h1 class="text-immich-primary dark:text-immich-dark-primary truncate px-4 py-4 font-medium">
+      <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
         Merge faces - {title}
       </h1>
       <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
@@ -70,7 +70,7 @@
 
         <button
           disabled={potentialMergePeople.length === 0}
-          class="border-immich-primary dark:border-immich-dark-primary flex h-28 w-28 items-center rounded-full border-2 px-1 md:h-32 md:w-32 md:px-2"
+          class="flex h-28 w-28 items-center rounded-full border-2 border-immich-primary px-1 dark:border-immich-dark-primary md:h-32 md:w-32 md:px-2"
           on:click={() => {
             if (potentialMergePeople.length > 0) {
               choosePersonToMerge = !choosePersonToMerge;
