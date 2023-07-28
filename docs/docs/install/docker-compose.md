@@ -166,6 +166,10 @@ docker-compose up -d     # or `docker compose up -d` based on your docker-compos
 For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.mdx) guide.
 :::
 
+:::tip
+Note that downloading container images might require you to authenticate to the GitHub Container Registry ([steps here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)).
+:::
+
 ### Step 4 - Upgrading
 
 If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
