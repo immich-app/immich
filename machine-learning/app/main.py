@@ -84,10 +84,10 @@ async def image_classification(
     status_code=200,
 )
 async def clip_encode_image(
-    image: Image.Image = Depends(dep_pil_image),
+    byte_image: bytes = Body(...),
 ) -> list[float]:
     model = await app.state.model_cache.get(settings.clip_image_model, ModelType.CLIP)
-    embedding = model.predict(image)
+    embedding = model.predict(byte_image)
     return embedding
 
 

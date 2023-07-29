@@ -35,6 +35,7 @@ class ImageClassifier(InferenceModel):
             model_kwargs={
                 "cache_dir": self.cache_dir,
                 "provider": model_kwargs.pop("provider", self.providers[0]),
+                "provider_options": model_kwargs.pop("provider_options", self.provider_options[0]),
                 **model_kwargs,
             },
         )
