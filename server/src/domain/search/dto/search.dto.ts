@@ -58,6 +58,11 @@ export class SearchDto {
   @IsOptional()
   'exifInfo.model'?: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  'exifInfo.projectionType'?: string;
+
   @IsString({ each: true })
   @IsArray()
   @IsOptional()
