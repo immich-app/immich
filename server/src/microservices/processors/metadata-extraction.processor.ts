@@ -336,6 +336,12 @@ export class MetadataExtractionProcessor {
         await this.extractEmbeddedVideo(asset, offset, null, fileCreatedAt);
       }
     }
+
+    const projectionType = getExifProperty('ProjectionType');
+    if (projectionType) {
+      newExif.projectionType = String(projectionType).toUpperCase();
+    }
+
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
       const motionAsset = await this.assetRepository.findLivePhotoMatch({

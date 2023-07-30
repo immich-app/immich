@@ -13,7 +13,7 @@
     UserResponseDto,
     api,
   } from '@api';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -43,6 +43,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
   import { downloadArchive } from '../../utils/asset-utils';
+  import { isViewingAssetStoreState } from '$lib/stores/asset-interaction.store';
 
   export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -119,7 +120,10 @@
     return startDateString === endDateString ? startDateString : `${startDateString} - ${endDateString}`;
   };
 
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
   onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
     currentAlbumName = album.albumName;
 
     try {
@@ -129,6 +133,26 @@
       console.log('Error [getMyUserInfo - album-viewer] ', e);
     }
   });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (!$isViewingAssetStoreState) {
+      switch (event.key) {
+        case 'Escape':
+          if (isMultiSelectionMode) {
+            multiSelectAsset = new Set();
+          } else {
+            goto(backUrl);
+          }
+          return;
+      }
+    }
+  };
 
   // Update Album Name
   $: {

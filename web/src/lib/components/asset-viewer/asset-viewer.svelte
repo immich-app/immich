@@ -12,6 +12,8 @@
   import DetailPanel from './detail-panel.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import PanoramaViewer from './panorama-viewer.svelte';
+  import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
@@ -293,6 +295,8 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
         {/if}

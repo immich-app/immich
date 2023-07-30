@@ -23,6 +23,9 @@
   import { AppRoute } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { flip } from 'svelte/animate';
+  import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { isViewingAssetStoreState } from '$lib/stores/asset-interaction.store';
 
   export let data: PageData;
 
@@ -31,6 +34,28 @@
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
   $: albums = data.results.albums.items;
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
+  onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (!$isViewingAssetStoreState) {
+      switch (event.key) {
+        case 'Escape':
+          goto(previousRoute);
+          return;
+      }
+    }
+  };
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
@@ -85,7 +110,7 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
-      <div class="w-full max-w-2xl flex-1 pl-4">
+      <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
     </ControlAppBar>

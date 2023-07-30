@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
@@ -15,7 +15,7 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, api } from '@api';
+  import { AssetResponseDto, PersonResponseDto, api } from '@api';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
@@ -30,6 +30,8 @@
   } from '$lib/components/shared-components/notification/notification';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import { onMount } from 'svelte';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let data: PageData;
   let isEditingName = false;
@@ -37,6 +39,13 @@
   let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
+  let showMergeModal = false;
+  let people = data.people.people;
+  let personMerge1: PersonResponseDto;
+  let personMerge2: PersonResponseDto;
+
+  let personName = '';
+
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
@@ -55,16 +64,6 @@
       previousRoute = from.url.href;
     }
   });
-
-  const handleNameChange = async (name: string) => {
-    try {
-      isEditingName = false;
-      data.person.name = name;
-      await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
-    } catch (error) {
-      handleError(error, 'Unable to save name');
-    }
-  };
 
   const onAssetDelete = (assetId: string) => {
     data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
@@ -91,7 +90,91 @@
       });
     }
   };
+
+  const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
+    const [personToMerge, personToBeMergedIn] = response;
+    showMergeModal = false;
+    try {
+      await api.personApi.mergePerson({
+        id: personToBeMergedIn.id,
+        mergePersonDto: { ids: [personToMerge.id] },
+      });
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
+      people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+      if (personToBeMergedIn.name != personName && data.person.id === personToBeMergedIn.id) {
+        changeName();
+        invalidateAll();
+        return;
+      }
+      goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+  };
+
+  const changeName = async () => {
+    showMergeModal = false;
+    data.person.name = personName;
+    try {
+      isEditingName = false;
+
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: data.person.id,
+        personUpdateDto: { name: personName },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: 'Change name succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+  };
+
+  const handleNameChange = async (name: string) => {
+    personName = name;
+
+    if (data.person.name === personName) {
+      return;
+    }
+
+    const existingPerson = people.find(
+      (person: PersonResponseDto) =>
+        person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
+    );
+    if (existingPerson) {
+      personMerge2 = existingPerson;
+      personMerge1 = data.person;
+      showMergeModal = true;
+      return;
+    }
+    changeName();
+  };
 </script>
+
+{#if showMergeModal}
+  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
+    <MergeSuggestionModal
+      {personMerge1}
+      {personMerge2}
+      {people}
+      on:close={() => (showMergeModal = false)}
+      on:reject={() => changeName()}
+      on:confirm={(event) => handleMergeSameFace(event.detail)}
+    />
+  </FullScreenModal>
+{/if}
 
 {#if isMultiSelectionMode}
   <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>

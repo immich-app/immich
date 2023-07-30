@@ -19,6 +19,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -32,6 +33,13 @@
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
+
+  let showChangeNameModal = false;
+  let showMergeModal = false;
+  let personName = '';
+  let personMerge1: PersonResponseDto;
+  let personMerge2: PersonResponseDto;
+  let edittingPerson: PersonResponseDto | null = null;
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -136,13 +144,60 @@
     toggleVisibility = false;
   };
 
-  let showChangeNameModal = false;
-  let personName = '';
-  let edittingPerson: PersonResponseDto | null = null;
+  const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
+    const [personToMerge, personToBeMergedIn] = response;
+    showMergeModal = false;
+
+    if (!edittingPerson) {
+      return;
+    }
+    try {
+      await api.personApi.mergePerson({
+        id: personMerge2.id,
+        mergePersonDto: { ids: [personToMerge.id] },
+      });
+      countVisiblePeople--;
+      people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+
+      notificationController.show({
+        message: 'Merge faces succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+    if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
+      /*
+       *
+       * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
+       * the person he's editing
+       *
+       */
+      try {
+        await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
+        for (const person of people) {
+          if (person.id === personToBeMergedIn.id) {
+            person.name = personName;
+            break;
+          }
+        }
+        notificationController.show({
+          message: 'Change name succesfully',
+          type: NotificationType.Info,
+        });
+
+        // trigger reactivity
+        people = people;
+      } catch (error) {
+        handleError(error, 'Unable to save name');
+      }
+    }
+  };
 
   const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
     showChangeNameModal = true;
     personName = detail.name;
+    personMerge1 = detail;
     edittingPerson = detail;
   };
 
@@ -182,32 +237,72 @@
   };
 
   const submitNameChange = async () => {
+    showChangeNameModal = false;
+    if (!edittingPerson) {
+      return;
+    }
+    if (personName === edittingPerson.name) {
+      return;
+    }
+    // We check if another person has the same name as the name entered by the user
+
+    const existingPerson = people.find(
+      (person: PersonResponseDto) =>
+        person.name.toLowerCase() === personName.toLowerCase() &&
+        edittingPerson &&
+        person.id !== edittingPerson.id &&
+        person.name,
+    );
+    if (existingPerson) {
+      personMerge2 = existingPerson;
+      showMergeModal = true;
+      return;
+    }
+    changeName();
+  };
+
+  const changeName = async () => {
+    showMergeModal = false;
+    showChangeNameModal = false;
+
+    if (!edittingPerson) {
+      return;
+    }
     try {
-      if (edittingPerson) {
-        const { data: updatedPerson } = await api.personApi.updatePerson({
-          id: edittingPerson.id,
-          personUpdateDto: { name: personName },
-        });
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: edittingPerson.id,
+        personUpdateDto: { name: personName },
+      });
 
-        people = people.map((person: PersonResponseDto) => {
-          if (person.id === updatedPerson.id) {
-            return updatedPerson;
-          }
-          return person;
-        });
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
 
-        showChangeNameModal = false;
-
-        notificationController.show({
-          message: 'Change name succesfully',
-          type: NotificationType.Info,
-        });
-      }
+      notificationController.show({
+        message: 'Change name succesfully',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
   };
 </script>
+
+{#if showMergeModal}
+  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
+    <MergeSuggestionModal
+      {personMerge1}
+      {personMerge2}
+      {people}
+      on:close={() => (showMergeModal = false)}
+      on:reject={() => changeName()}
+      on:confirm={(event) => handleMergeSameFace(event.detail)}
+    />
+  </FullScreenModal>
+{/if}
 
 <UserPageLayout user={data.user} title="People">
   <svelte:fragment slot="buttons">

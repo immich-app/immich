@@ -11,6 +11,7 @@
   import { flip } from 'svelte/animate';
   import { archivedAsset } from '$lib/stores/archived-asset.store';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
+  import { isViewingAssetStoreState } from '$lib/stores/asset-interaction.store';
 
   export let assets: AssetResponseDto[];
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -18,8 +19,6 @@
   export let disableAssetSelect = false;
   export let viewFrom: ViewFrom;
   export let showArchiveIcon = false;
-
-  let isShowAssetViewer = false;
 
   let selectedAsset: AssetResponseDto;
   let currentViewAssetIndex = 0;
@@ -34,7 +33,7 @@
 
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     selectedAsset = assets[currentViewAssetIndex];
-    isShowAssetViewer = true;
+    $isViewingAssetStoreState = true;
     pushState(selectedAsset.id);
   };
 
@@ -82,7 +81,7 @@
   };
 
   const closeViewer = () => {
-    isShowAssetViewer = false;
+    $isViewingAssetStoreState = false;
     history.pushState(null, '', `${$page.url.pathname}`);
   };
 
@@ -118,7 +117,7 @@
 {/if}
 
 <!-- Overlay Asset Viewer -->
-{#if isShowAssetViewer}
+{#if $isViewingAssetStoreState}
   <AssetViewer
     asset={selectedAsset}
     publicSharedKey={sharedLink?.key}

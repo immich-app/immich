@@ -4739,7 +4739,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.69.0",
+    "version": "1.71.0",
     "contact": {}
   },
   "tags": [],
@@ -5884,6 +5884,11 @@
             "default": null
           },
           "description": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "projectionType": {
             "type": "string",
             "nullable": true,
             "default": null
