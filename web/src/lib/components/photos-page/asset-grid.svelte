@@ -89,16 +89,19 @@
       return;
     }
 
-    if (event.key === '/') {
-      event.preventDefault();
-    }
-
     if (!$isViewingAssetStoreState) {
       switch (event.key) {
+        case 'Escape':
+          assetInteractionStore.clearMultiselect();
+          return;
         case '?':
-          if (event.shiftKey) showShortcuts = !showShortcuts;
+          if (event.shiftKey) {
+            event.preventDefault();
+            showShortcuts = !showShortcuts;
+          }
           return;
         case '/':
+          event.preventDefault();
           goto(AppRoute.EXPLORE);
           return;
       }

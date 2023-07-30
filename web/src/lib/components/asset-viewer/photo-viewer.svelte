@@ -93,7 +93,7 @@
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
-      wheelZoomRatio: 0.06,
+      wheelZoomRatio: 0.2,
     });
   }
 </script>
