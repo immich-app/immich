@@ -1,3 +1,5 @@
+
+
 import { AuthService, AuthUserDto, JobCommand, JobService, LibraryService, QueueName, UserService } from '@app/domain';
 import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
@@ -65,6 +67,7 @@ describe('Asset', () => {
       const library = await libraryService.create(adminUser, { libraryType: LibraryType.IMPORT, name: 'Library' });
 
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
+
       await libraryService.setImportPaths(adminUser, library.id, { importPaths: ['e2e/assets/nature'] });
       await libraryService.refresh(adminUser, library.id, {});
 

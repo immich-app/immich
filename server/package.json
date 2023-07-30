@@ -26,7 +26,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config jest-e2e.json --runInBand",
+    "test:e2e": "cross-env \"NODE_OPTIONS=--loader ts-node/esm\" node --es-module-specifier-resolution=node node_modules/.bin/jest  --no-cache --config jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
     "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./src/infra/database.config.ts",
@@ -107,6 +107,7 @@
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
     "bullmq": "^4.6.0",
+    "cross-env": "^7.0.3",
     "dotenv": "^14.2.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",
@@ -114,6 +115,7 @@
     "glob": "^10.3.1",
     "jest": "^29.6.1",
     "jest-extended": "^4.0.0",
+    "jest-light-runner": "^0.5.0",
     "jest-when": "^3.5.2",
     "mock-fs": "^5.2.0",
     "prettier": "^2.3.2",
@@ -126,6 +128,7 @@
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
+    "tsm": "^2.3.0",
     "typescript": "^4.9.4"
   },
   "jest": {
@@ -167,6 +170,10 @@
       "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
       "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
     },
-    "globalSetup": "<rootDir>/test/global-setup.js"
+    "globalSetup": "<rootDir>/test/global-setup.js",
+    "runner": "jest-light-runner",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ]
   }
 }
