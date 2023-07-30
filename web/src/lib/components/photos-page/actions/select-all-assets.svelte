@@ -18,9 +18,9 @@
       selecting = true;
 
       const assetGridState = get(assetStore);
-      for (let i = 0; i < assetGridState.buckets.length; i++) {
-        await assetStore.getAssetsByBucket(assetGridState.buckets[i].bucketDate, BucketPosition.Unknown);
-        for (const asset of assetGridState.buckets[i].assets) {
+      for (const bucket of assetGridState.buckets) {
+        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        for (const asset of bucket.assets) {
           assetInteractionStore.addAssetToMultiselectGroup(asset);
         }
       }
