@@ -1,6 +1,9 @@
+import asyncio
 import os
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from typing import Any
+from app.models.base import InferenceModel
 
 import cv2
 import numpy as np
@@ -25,25 +28,34 @@ app = FastAPI()
 
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
+    # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
+    app.state.thread_pool = ThreadPoolExecutor()
 
 
 async def load_models() -> None:
-    models = [
-        (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
-        (settings.clip_image_model, ModelType.CLIP),
-        (settings.clip_text_model, ModelType.CLIP),
-        (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION),
+    different_clip = settings.clip_image_model != settings.clip_text_model
+    models: list[tuple[str, ModelType, dict[str, Any]]] = [
+        (settings.classification_model, ModelType.IMAGE_CLASSIFICATION, {}),
+        (settings.clip_image_model, ModelType.CLIP, {"vision_only": different_clip}),
+        (settings.clip_text_model, ModelType.CLIP, {"text_only": different_clip}),
+        (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION, {}),
     ]
 
     # Get all models
-    for model_name, model_type in models:
-        await app.state.model_cache.get(model_name, model_type, eager=settings.eager_startup)
+    for model_name, model_type, model_kwargs in models:
+        if settings.eager_startup:
+            await app.state.model_cache.get(model_name, model_type, **model_kwargs)
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
     init_state()
     await load_models()
+
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    app.state.thread_pool.shutdown()
 
 
 def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
@@ -74,7 +86,7 @@ async def image_classification(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[str]:
     model = await app.state.model_cache.get(settings.classification_model, ModelType.IMAGE_CLASSIFICATION)
-    labels = model.predict(image)
+    labels = await predict(model, image)
     return labels
 
 
@@ -84,10 +96,10 @@ async def image_classification(
     status_code=200,
 )
 async def clip_encode_image(
-    byte_image: bytes = Body(...),
+    image: Image.Image = Depends(dep_pil_image),
 ) -> list[float]:
     model = await app.state.model_cache.get(settings.clip_image_model, ModelType.CLIP)
-    embedding = model.predict(byte_image)
+    embedding = await predict(model, image)
     return embedding
 
 
@@ -98,7 +110,7 @@ async def clip_encode_image(
 )
 async def clip_encode_text(payload: TextModelRequest) -> list[float]:
     model = await app.state.model_cache.get(settings.clip_text_model, ModelType.CLIP)
-    embedding = model.predict(payload.text)
+    embedding = await predict(model, payload.text)
     return embedding
 
 
@@ -111,8 +123,12 @@ async def facial_recognition(
     image: cv2.Mat = Depends(dep_cv_image),
 ) -> list[dict[str, Any]]:
     model = await app.state.model_cache.get(settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION)
-    faces = model.predict(image)
+    faces = await predict(model, image)
     return faces
+
+
+async def predict(model: InferenceModel, inputs: Any) -> Any:
+    return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict, inputs)
 
 
 if __name__ == "__main__":

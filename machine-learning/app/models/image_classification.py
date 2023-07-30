@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Any
 
-from huggingface_hub import snapshot_download
+from optimum.onnxruntime import ORTModelForImageClassification
 from optimum.pipelines import pipeline
 from PIL.Image import Image
+from transformers import AutoImageProcessor
 
 from ..config import settings
 from ..schemas import ModelType
@@ -24,21 +25,32 @@ class ImageClassifier(InferenceModel):
         super().__init__(model_name, cache_dir, **model_kwargs)
 
     def _download(self, **model_kwargs: Any) -> None:
-        snapshot_download(
-            cache_dir=self.cache_dir, repo_id=self.model_name, allow_patterns=["*.bin", "*.json", "*.txt"]
-        )
-
-    def _load(self, **model_kwargs: Any) -> None:
+        model_path = self.cache_dir / "model.onnx"
+        self.sess_options.optimized_model_filepath = model_path.as_posix()
         self.model = pipeline(
             self.model_type.value,
             self.model_name,
             model_kwargs={
                 "cache_dir": self.cache_dir,
-                "provider": model_kwargs.pop("provider", self.providers[0]),
-                "provider_options": model_kwargs.pop("provider_options", self.provider_options[0]),
+                "provider": self.providers[0],
+                "provider_options": self.provider_options[0],
+                "session_options": self.sess_options,
                 **model_kwargs,
             },
         )
+        self.model.model.config.save_pretrained(self.cache_dir)
+        if self.model.image_processor is not None:
+            self.model.image_processor.save_pretrained(self.cache_dir)
+
+    def _load(self, **model_kwargs: Any) -> None:
+        processor = AutoImageProcessor.from_pretrained(self.cache_dir)
+        model = ORTModelForImageClassification.from_pretrained(
+            self.cache_dir,
+            provider=self.providers[0],
+            provider_options=self.provider_options[0],
+            session_options=self.sess_options,
+        )
+        self.model = pipeline(self.model_type.value, model, feature_extractor=processor)
 
     def _predict(self, image: Image) -> list[str]:
         predictions: list[dict[str, Any]] = self.model(image)  # type: ignore

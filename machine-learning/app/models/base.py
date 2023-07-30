@@ -1,11 +1,14 @@
 from __future__ import annotations
+import os
 
+import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree
 from typing import Any
 from zipfile import BadZipFile
 
+import onnxruntime as ort
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf  # type: ignore
 
 from ..config import get_cache_dir
@@ -28,6 +31,11 @@ class InferenceModel(ABC):
         self.provider_options = model_kwargs.pop(
             "provider_options", [{"arena_extend_strategy": "kSameAsRequested"}] * len(self.providers)
         )
+        self.sess_options = PicklableSessionOptions()
+        # avoid thread contention between models
+        # self.sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+        self.sess_options.inter_op_num_threads = model_kwargs.pop("inter_op_num_threads", 1)
+        self.sess_options.intra_op_num_threads = model_kwargs.pop("intra_op_num_threads", 2)
 
         try:
             loader(**model_kwargs)
@@ -96,3 +104,14 @@ class InferenceModel(ABC):
         else:
             self.cache_dir.unlink()
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+
+# HF deep copies configs, so we need to make session options picklable
+class PicklableSessionOptions(ort.SessionOptions):
+    def __getstate__(self) -> bytes:
+        return pickle.dumps([(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))])
+
+    def __setstate__(self, state) -> None:
+        self.__init__()  # type: ignore
+        for attr, val in pickle.loads(state):
+            setattr(self, attr, val)

@@ -1114,6 +1114,20 @@ ssh = ["paramiko"]
 tqdm = ["tqdm"]
 
 [[package]]
+name = "ftfy"
+version = "6.1.1"
+description = "Fixes mojibake and other problems with Unicode, after the fact"
+optional = false
+python-versions = ">=3.7,<4"
+files = [
+    {file = "ftfy-6.1.1-py3-none-any.whl", hash = "sha256:0ffd33fce16b54cccaec78d6ec73d95ad370e5df5a25255c8966a6147bd667ca"},
+    {file = "ftfy-6.1.1.tar.gz", hash = "sha256:bfc2019f84fcd851419152320a6375604a0f1459c281b5b199b2cd0d2e727f8f"},
+]
+
+[package.dependencies]
+wcwidth = ">=0.2.5"
+
+[[package]]
 name = "gevent"
 version = "23.7.0"
 description = "Coroutine-based network library"
@@ -1824,6 +1838,30 @@ typing-extensions = ">=3.7.4.3"
 Werkzeug = ">=2.0.0"
 
 [[package]]
+name = "markdown-it-py"
+version = "3.0.0"
+description = "Python port of markdown-it. Markdown parsing, done right!"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "markdown-it-py-3.0.0.tar.gz", hash = "sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb"},
+    {file = "markdown_it_py-3.0.0-py3-none-any.whl", hash = "sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1"},
+]
+
+[package.dependencies]
+mdurl = ">=0.1,<1.0"
+
+[package.extras]
+benchmarking = ["psutil", "pytest", "pytest-benchmark"]
+code-style = ["pre-commit (>=3.0,<4.0)"]
+compare = ["commonmark (>=0.9,<1.0)", "markdown (>=3.4,<4.0)", "mistletoe (>=1.0,<2.0)", "mistune (>=2.0,<3.0)", "panflute (>=2.3,<3.0)"]
+linkify = ["linkify-it-py (>=1,<3)"]
+plugins = ["mdit-py-plugins"]
+profiling = ["gprof2dot"]
+rtd = ["jupyter_sphinx", "mdit-py-plugins", "myst-parser", "pyyaml", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinx_book_theme"]
+testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
+
+[[package]]
 name = "markupsafe"
 version = "2.1.3"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1942,6 +1980,17 @@ packaging = ">=20.0"
 pillow = ">=6.2.0"
 pyparsing = ">=2.3.1,<3.1"
 python-dateutil = ">=2.7"
+
+[[package]]
+name = "mdurl"
+version = "0.1.2"
+description = "Markdown URL utilities"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
+    {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
+]
 
 [[package]]
 name = "mpmath"
@@ -2341,6 +2390,31 @@ protobuf = "*"
 sympy = "*"
 
 [[package]]
+name = "open-clip-torch"
+version = "2.20.0"
+description = "OpenCLIP"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "open_clip_torch-2.20.0-py3-none-any.whl", hash = "sha256:6288207de5b0e1cdd7824ab58186dfc9757a05a3bfd7674d10b1005e3653b25d"},
+    {file = "open_clip_torch-2.20.0.tar.gz", hash = "sha256:735d599d24dbecc29ae6277bca5587152bf58b3fb0c961b734f448fc24040e85"},
+]
+
+[package.dependencies]
+ftfy = "*"
+huggingface-hub = "*"
+protobuf = "<4"
+regex = "*"
+sentencepiece = "*"
+timm = "*"
+torch = ">=1.9.0"
+torchvision = "*"
+tqdm = "*"
+
+[package.extras]
+training = ["braceexpand", "fsspec", "ftfy", "huggingface-hub", "pandas", "regex", "timm", "torch (>=1.9.0)", "torchvision", "tqdm", "transformers", "webdataset (>=0.2.5)"]
+
+[[package]]
 name = "opencv-python-headless"
 version = "4.8.0.76"
 description = "Wrapper package for OpenCV python bindings."
@@ -2624,24 +2698,33 @@ tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "protobuf"
-version = "4.24.1"
-description = ""
+version = "3.20.3"
+description = "Protocol Buffers"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "protobuf-4.24.1-cp310-abi3-win32.whl", hash = "sha256:d414199ca605eeb498adc4d2ba82aedc0379dca4a7c364ff9bc9a179aa28e71b"},
-    {file = "protobuf-4.24.1-cp310-abi3-win_amd64.whl", hash = "sha256:5906c5e79ff50fe38b2d49d37db5874e3c8010826f2362f79996d83128a8ed9b"},
-    {file = "protobuf-4.24.1-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:970c701ee16788d74f3de20938520d7a0aebc7e4fff37096a48804c80d2908cf"},
-    {file = "protobuf-4.24.1-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:fc361148e902949dcb953bbcb148c99fe8f8854291ad01107e4120361849fd0e"},
-    {file = "protobuf-4.24.1-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:5d32363d14aca6e5c9e9d5918ad8fb65b091b6df66740ae9de50ac3916055e43"},
-    {file = "protobuf-4.24.1-cp37-cp37m-win32.whl", hash = "sha256:df015c47d6855b8efa0b9be706c70bf7f050a4d5ac6d37fb043fbd95157a0e25"},
-    {file = "protobuf-4.24.1-cp37-cp37m-win_amd64.whl", hash = "sha256:d4af4fd9e9418e819be30f8df2a16e72fbad546a7576ac7f3653be92a6966d30"},
-    {file = "protobuf-4.24.1-cp38-cp38-win32.whl", hash = "sha256:302e8752c760549ed4c7a508abc86b25d46553c81989343782809e1a062a2ef9"},
-    {file = "protobuf-4.24.1-cp38-cp38-win_amd64.whl", hash = "sha256:06437f0d4bb0d5f29e3d392aba69600188d4be5ad1e0a3370e581a9bf75a3081"},
-    {file = "protobuf-4.24.1-cp39-cp39-win32.whl", hash = "sha256:0b2b224e9541fe9f046dd7317d05f08769c332b7e4c54d93c7f0f372dedb0b1a"},
-    {file = "protobuf-4.24.1-cp39-cp39-win_amd64.whl", hash = "sha256:bd39b9094a4cc003a1f911b847ab379f89059f478c0b611ba1215053e295132e"},
-    {file = "protobuf-4.24.1-py3-none-any.whl", hash = "sha256:55dd644adc27d2a624339332755fe077c7f26971045b469ebb9732a69ce1f2ca"},
-    {file = "protobuf-4.24.1.tar.gz", hash = "sha256:44837a5ed9c9418ad5d502f89f28ba102e9cd172b6668bc813f21716f9273348"},
+    {file = "protobuf-3.20.3-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:f4bd856d702e5b0d96a00ec6b307b0f51c1982c2bf9c0052cf9019e9a544ba99"},
+    {file = "protobuf-3.20.3-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:9aae4406ea63d825636cc11ffb34ad3379335803216ee3a856787bcf5ccc751e"},
+    {file = "protobuf-3.20.3-cp310-cp310-win32.whl", hash = "sha256:28545383d61f55b57cf4df63eebd9827754fd2dc25f80c5253f9184235db242c"},
+    {file = "protobuf-3.20.3-cp310-cp310-win_amd64.whl", hash = "sha256:67a3598f0a2dcbc58d02dd1928544e7d88f764b47d4a286202913f0b2801c2e7"},
+    {file = "protobuf-3.20.3-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:899dc660cd599d7352d6f10d83c95df430a38b410c1b66b407a6b29265d66469"},
+    {file = "protobuf-3.20.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:e64857f395505ebf3d2569935506ae0dfc4a15cb80dc25261176c784662cdcc4"},
+    {file = "protobuf-3.20.3-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:d9e4432ff660d67d775c66ac42a67cf2453c27cb4d738fc22cb53b5d84c135d4"},
+    {file = "protobuf-3.20.3-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:74480f79a023f90dc6e18febbf7b8bac7508420f2006fabd512013c0c238f454"},
+    {file = "protobuf-3.20.3-cp37-cp37m-win32.whl", hash = "sha256:b6cc7ba72a8850621bfec987cb72623e703b7fe2b9127a161ce61e61558ad905"},
+    {file = "protobuf-3.20.3-cp37-cp37m-win_amd64.whl", hash = "sha256:8c0c984a1b8fef4086329ff8dd19ac77576b384079247c770f29cc8ce3afa06c"},
+    {file = "protobuf-3.20.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:de78575669dddf6099a8a0f46a27e82a1783c557ccc38ee620ed8cc96d3be7d7"},
+    {file = "protobuf-3.20.3-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:f4c42102bc82a51108e449cbb32b19b180022941c727bac0cfd50170341f16ee"},
+    {file = "protobuf-3.20.3-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:44246bab5dd4b7fbd3c0c80b6f16686808fab0e4aca819ade6e8d294a29c7050"},
+    {file = "protobuf-3.20.3-cp38-cp38-win32.whl", hash = "sha256:c02ce36ec760252242a33967d51c289fd0e1c0e6e5cc9397e2279177716add86"},
+    {file = "protobuf-3.20.3-cp38-cp38-win_amd64.whl", hash = "sha256:447d43819997825d4e71bf5769d869b968ce96848b6479397e29fc24c4a5dfe9"},
+    {file = "protobuf-3.20.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:398a9e0c3eaceb34ec1aee71894ca3299605fa8e761544934378bbc6c97de23b"},
+    {file = "protobuf-3.20.3-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:bf01b5720be110540be4286e791db73f84a2b721072a3711efff6c324cdf074b"},
+    {file = "protobuf-3.20.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:daa564862dd0d39c00f8086f88700fdbe8bc717e993a21e90711acfed02f2402"},
+    {file = "protobuf-3.20.3-cp39-cp39-win32.whl", hash = "sha256:819559cafa1a373b7096a482b504ae8a857c89593cf3a25af743ac9ecbd23480"},
+    {file = "protobuf-3.20.3-cp39-cp39-win_amd64.whl", hash = "sha256:03038ac1cfbc41aa21f6afcbcd357281d7521b4157926f30ebecc8d4ea59dcb7"},
+    {file = "protobuf-3.20.3-py2.py3-none-any.whl", hash = "sha256:a7ca6d488aa8ff7f329d4c545b2dbad8ac31464f1d8b1c87ad1346717731e4db"},
+    {file = "protobuf-3.20.3.tar.gz", hash = "sha256:2e3427429c9cffebf259491be0af70189607f365c2f41c7c3764af6f337105f2"},
 ]
 
 [[package]]
@@ -2769,6 +2852,20 @@ typing-extensions = ">=4.2.0"
 [package.extras]
 dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
+
+[[package]]
+name = "pygments"
+version = "2.15.1"
+description = "Pygments is a syntax highlighting package written in Python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Pygments-2.15.1-py3-none-any.whl", hash = "sha256:db2db3deb4b4179f399a09054b023b6a586b76499d36965813c71aa8ed7b5fd1"},
+    {file = "Pygments-2.15.1.tar.gz", hash = "sha256:8ace4d3c1dd481894b2005f560ead0f9f19ee64fe983366be1a21e171d12775c"},
+]
+
+[package.extras]
+plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyparsing"
@@ -3257,6 +3354,24 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "rich"
+version = "13.5.0"
+description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
+optional = false
+python-versions = ">=3.7.0"
+files = [
+    {file = "rich-13.5.0-py3-none-any.whl", hash = "sha256:996670a7618ccce27c55ba6fc0142e6e343773e11d34c96566a17b71b0e6f179"},
+    {file = "rich-13.5.0.tar.gz", hash = "sha256:62c81e88dc078d2372858660e3d5566746870133e51321f852ccc20af5c7e7b2"},
+]
+
+[package.dependencies]
+markdown-it-py = ">=2.2.0"
+pygments = ">=2.13.0,<3.0.0"
+
+[package.extras]
+jupyter = ["ipywidgets (>=7.5.1,<9)"]
+
+[[package]]
 name = "roundrobin"
 version = "0.0.4"
 description = "Collection of roundrobin utilities"
@@ -3634,7 +3749,25 @@ files = [
 numpy = "*"
 
 [package.extras]
-all = ["defusedxml", "fsspec", "imagecodecs (>=2023.8.12)", "lxml", "matplotlib", "zarr"]
+all = ["defusedxml", "fsspec", "imagecodecs (>=2023.1.23)", "lxml", "matplotlib", "zarr"]
+
+[[package]]
+name = "timm"
+version = "0.9.2"
+description = "PyTorch Image Models"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "timm-0.9.2-py3-none-any.whl", hash = "sha256:8da40cc58ed32b0622bf87d8714f9b7023398ba4cfa8fa678578d2aefde4a909"},
+    {file = "timm-0.9.2.tar.gz", hash = "sha256:d0977cc5e02c69bda979fca8b52aa315a5f2cb64ebf8ad2c4631b1e452762c14"},
+]
+
+[package.dependencies]
+huggingface-hub = "*"
+pyyaml = "*"
+safetensors = "*"
+torch = ">=1.7"
+torchvision = "*"
 
 [[package]]
 name = "tokenizers"
@@ -3798,6 +3931,37 @@ torch = "2.0.1"
 
 [package.extras]
 scipy = ["scipy"]
+
+[[package]]
+name = "torchvision"
+version = "0.15.2+cpu"
+description = "image and video datasets and models for torch deep learning"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "torchvision-0.15.2+cpu-cp310-cp310-linux_x86_64.whl", hash = "sha256:aae0be6883d2cd5a23cb544ee0928288a27df0455430ef9dd6e631c5464095f5"},
+    {file = "torchvision-0.15.2+cpu-cp310-cp310-win_amd64.whl", hash = "sha256:44d4b8976b5aaf97811ec05cb526531ac08dc5c76c2f5bc1c919b9a653cbc206"},
+    {file = "torchvision-0.15.2+cpu-cp311-cp311-linux_x86_64.whl", hash = "sha256:1633c0b7ead69d2cd3fbe8aeaa146c76a68691bd3599facfffd2da925973e044"},
+    {file = "torchvision-0.15.2+cpu-cp311-cp311-win_amd64.whl", hash = "sha256:3ec9785df54906d1631c5574ba0df3cc3adcd43286774b93fbe82c97c4714977"},
+    {file = "torchvision-0.15.2+cpu-cp38-cp38-linux_x86_64.whl", hash = "sha256:af6bc2c7b0b8b2a32745e56f057a5956caf0d6031a94eb80b283dcd475d8feb0"},
+    {file = "torchvision-0.15.2+cpu-cp38-cp38-win_amd64.whl", hash = "sha256:f61cc175f75392c7565ad1144d2e511b14002d061a2fd31a73b045259eb9100e"},
+    {file = "torchvision-0.15.2+cpu-cp39-cp39-linux_x86_64.whl", hash = "sha256:e1e3988373afa29c813b140dbb5b7a074214813fd0ef97d2538966b9bd8d92d9"},
+    {file = "torchvision-0.15.2+cpu-cp39-cp39-win_amd64.whl", hash = "sha256:b9c2745a966d5ffcad7b17807ef3acf4149f497c80f5f4571f69a1817436e56f"},
+]
+
+[package.dependencies]
+numpy = "*"
+pillow = ">=5.3.0,<8.3.dev0 || >=8.4.dev0"
+requests = "*"
+torch = "2.0.1"
+
+[package.extras]
+scipy = ["scipy"]
+
+[package.source]
+type = "legacy"
+url = "https://download.pytorch.org/whl/cpu"
+reference = "pytorch-cpu"
 
 [[package]]
 name = "tqdm"
@@ -4388,4 +4552,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fad6ff7d30ea808bb062fecff18c3fdd38cc839c930188175e85f5a83b552c42"
+content-hash = "f3724ed290a146c2ac73c5fd42eb1f449028ac1027283fae93d372ac3b71f952"
