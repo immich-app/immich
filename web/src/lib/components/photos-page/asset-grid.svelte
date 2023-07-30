@@ -93,6 +93,7 @@
       switch (event.key) {
         case 'Escape':
           assetInteractionStore.clearMultiselect();
+          return;
         case '?':
           if (event.shiftKey) {
             event.preventDefault();
