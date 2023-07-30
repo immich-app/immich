@@ -156,7 +156,7 @@
             class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           >
             <Rotate360Icon size={24} />
-            <span>Panorama Photos</span>
+            <span>Panorama photos</span>
           </a>
         </div>
       </div>
