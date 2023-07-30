@@ -170,10 +170,6 @@
       "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
       "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
     },
-    "globalSetup": "<rootDir>/test/global-setup.js",
-    "runner": "jest-light-runner",
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ]
+    "globalSetup": "<rootDir>/test/global-setup.js"
   }
 }
