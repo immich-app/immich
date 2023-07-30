@@ -64,6 +64,11 @@ class MemoryPage extends HookConsumerWidget {
         return;
       }
 
+      // Context might be removed due to popping out of Memory Lane during Scroll handling
+      if (!context.mounted) {
+        return;
+      }
+
       late Asset asset;
       if (index < currentMemory.value.assets.length) {
         // Uses the next asset in this current memory
@@ -160,18 +165,49 @@ class MemoryPage extends HookConsumerWidget {
      */
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
+        // Calculate OverScroll manually using the number of pixels away from minScrollExtent and maxScrollExtent
+        // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
+        // or sum of vertical pixels of all memories for depth = 0
+        if (notification is ScrollUpdateNotification) {
+          final offset = notification.metrics.pixels;
+          // Vertical scroll handling
+          if (notification.depth == 0) {
+            if (offset < notification.metrics.minScrollExtent - 150 ||
+                offset > notification.metrics.maxScrollExtent + 150) {
+              AutoRouter.of(context).pop();
+              return true;
+            }
+          }
+          // Horizontal scroll handling
+          if (notification.depth == 1) {
+            final currentMemoryIndex = memories.indexOf(currentMemory.value);
+            final beyondFirstMemory = ((currentMemoryIndex - 1) < 0) &&
+                (offset < notification.metrics.minScrollExtent - 100);
+            final beyondLastMemory =
+                ((currentMemoryIndex + 1) >= memories.length) &&
+                    (offset > notification.metrics.maxScrollExtent + 100);
+            if (beyondFirstMemory || beyondLastMemory) {
+              AutoRouter.of(context).pop();
+              return true;
+            }
+          }
+        }
+
         if (notification.depth == 0) {
-          var currentPageNumber = memoryPageController.page!.toInt();
-          currentMemory.value = memories[currentPageNumber];
           if (notification is ScrollStartNotification) {
             assetProgress.value = "";
-          } else if (notification is ScrollEndNotification) {
+            return true;
+          }
+          var currentPageNumber = memoryPageController.page!.toInt();
+          currentMemory.value = memories[currentPageNumber];
+          if (notification is ScrollEndNotification) {
             HapticFeedback.mediumImpact();
             if (currentPageNumber != previousMemoryIndex.value) {
               currentAssetPage.value = 0;
               previousMemoryIndex.value = currentPageNumber;
             }
             updateProgressText();
+            return true;
           }
         }
         return false;
@@ -180,6 +216,9 @@ class MemoryPage extends HookConsumerWidget {
         backgroundColor: bgColor,
         body: SafeArea(
           child: PageView.builder(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
             itemCount: memories.length,
@@ -189,6 +228,9 @@ class MemoryPage extends HookConsumerWidget {
                 children: [
                   Expanded(
                     child: PageView.builder(
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ),
                       controller: memoryAssetPageController,
                       onPageChanged: onAssetChanged,
                       scrollDirection: Axis.horizontal,
