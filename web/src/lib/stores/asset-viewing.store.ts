@@ -21,6 +21,7 @@ function createAssetViewingStore() {
     },
     isViewing: {
       subscribe: viewState.subscribe,
+      set: viewState.set,
     },
     setAssetId,
     showAssetViewer,

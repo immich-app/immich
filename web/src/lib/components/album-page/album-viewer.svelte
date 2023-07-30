@@ -43,12 +43,14 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
   import { downloadArchive } from '../../utils/asset-utils';
-  import { isViewingAssetStoreState } from '$lib/stores/asset-interaction.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let isShowAssetSelection = false;
 
@@ -141,7 +143,7 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (!$isViewingAssetStoreState) {
+    if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
           if (isMultiSelectionMode) {

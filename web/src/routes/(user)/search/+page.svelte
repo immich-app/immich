@@ -25,9 +25,11 @@
   import { flip } from 'svelte/animate';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { isViewingAssetStoreState } from '$lib/stores/asset-interaction.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let data: PageData;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
@@ -48,7 +50,7 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (!$isViewingAssetStoreState) {
+    if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
           goto(previousRoute);
