@@ -144,8 +144,11 @@
     if (!$isViewingAssetStoreState) {
       switch (event.key) {
         case 'Escape':
-          if (isMultiSelectionMode) multiSelectAsset = new Set();
-          else goto(backUrl);
+          if (isMultiSelectionMode) {
+            multiSelectAsset = new Set();
+          } else {
+            goto(backUrl);
+          }
           return;
       }
     }
