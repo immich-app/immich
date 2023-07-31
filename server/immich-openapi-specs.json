@@ -2925,6 +2925,14 @@
             }
           },
           {
+            "name": "exifInfo.projectionType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "smartInfo.objects",
             "required": false,
             "in": "query",
