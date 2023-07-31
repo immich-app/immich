@@ -165,28 +165,30 @@ class MemoryPage extends HookConsumerWidget {
      */
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
-        // Calculate OverScroll manually using the number of pixels away from minScrollExtent and maxScrollExtent
+        // Calculate OverScroll manually using the number of pixels away from maxScrollExtent
         // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
         // or sum of vertical pixels of all memories for depth = 0
         if (notification is ScrollUpdateNotification) {
           final offset = notification.metrics.pixels;
-          // Vertical scroll handling
-          if (notification.depth == 0) {
-            if (offset < notification.metrics.minScrollExtent - 150 ||
-                offset > notification.metrics.maxScrollExtent + 150) {
-              AutoRouter.of(context).pop();
-              return true;
+          final isLastMemory =
+              (memories.indexOf(currentMemory.value) + 1) >= memories.length;
+          if (isLastMemory) {
+            // Vertical scroll handling only at the last asset.
+            // Tapping on the last asset instead of swiping will trigger the scroll
+            // implicitly which will trigger the below handling and thereby closes the
+            // memory lane as well
+            if (notification.depth == 0) {
+              final isLastAsset = (currentAssetPage.value + 1) ==
+                  currentMemory.value.assets.length;
+              if (isLastAsset &&
+                  (offset > notification.metrics.maxScrollExtent + 150)) {
+                AutoRouter.of(context).pop();
+                return true;
+              }
             }
-          }
-          // Horizontal scroll handling
-          if (notification.depth == 1) {
-            final currentMemoryIndex = memories.indexOf(currentMemory.value);
-            final beyondFirstMemory = ((currentMemoryIndex - 1) < 0) &&
-                (offset < notification.metrics.minScrollExtent - 100);
-            final beyondLastMemory =
-                ((currentMemoryIndex + 1) >= memories.length) &&
-                    (offset > notification.metrics.maxScrollExtent + 100);
-            if (beyondFirstMemory || beyondLastMemory) {
+            // Horizontal scroll handling
+            if (notification.depth == 1 &&
+                (offset > notification.metrics.maxScrollExtent + 100)) {
               AutoRouter.of(context).pop();
               return true;
             }
