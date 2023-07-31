@@ -1,4 +1,4 @@
-FROM node:18-bookworm@sha256:f4698d49371c8a9fa7dd78b97fb2a532213903066e47966542b3b1d403449da4 as builder
+FROM node:18-bookworm@sha256:c85dc4392f44f5de1d0d72dd20a088a542734445f99bed7aa8ac895c706d370d as builder
 
 WORKDIR /usr/src/app
 
@@ -7,6 +7,7 @@ RUN sed -i -e's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sourc
 RUN apt-get update && apt-get install -yqq build-essential ninja-build meson pkg-config jq \
 libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libtiff5-dev \
 libjpeg62-turbo-dev libgsf-1-dev libspng-dev libraw-dev libjxl-dev libheif-dev \
+mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) \
 && ./install-ffmpeg.sh && apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # debian build for imagemagick has broken RAW support, so build manually
@@ -25,13 +26,14 @@ FROM builder as prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM node:18-bookworm-slim
+FROM node:18-bookworm-slim@sha256:a0cca98f2896135d4c0386922211c1f90f98f27a58b8f2c07850d0fbe1c2104e
 
 ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
 COPY bin/install-ffmpeg.sh build-lock.json ./
+RUN sed -i -e's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get install -yqq tini libheif1 libwebp7 libwebpdemux2 libwebpmux3 mesa-va-drivers \
 libjpeg62-turbo libexpat1 librsvg2-2 libjxl0.7 libraw20 libtiff6 libspng0 libexif12 libgcc-s1 libglib2.0-0 \
 libgsf-1-114 libopenjp2-7 liblcms2-2 liborc-0.4-0 libopenexr-3-1-30 liblqr-1-0 libltdl7 zlib1g \
