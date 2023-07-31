@@ -3,6 +3,7 @@ FROM node:18-bookworm@sha256:f4698d49371c8a9fa7dd78b97fb2a532213903066e47966542b
 WORKDIR /usr/src/app
 
 COPY bin/install-ffmpeg.sh build-lock.json ./
+RUN sed -i -e's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get install -yqq build-essential ninja-build meson pkg-config jq \
 libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libtiff5-dev \
 libjpeg62-turbo-dev libgsf-1-dev libspng-dev libraw-dev libjxl-dev libheif-dev \
