@@ -239,6 +239,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     void handleSwipeUpDown(DragUpdateDetails details) {
       int sensitivity = 15;
       int dxThreshold = 50;
+      double ratioThreshold = 3.0;
 
       if (isZoomed.value) {
         return;
@@ -256,9 +257,10 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
-      if (details.delta.dy > sensitivity) {
+      final ratio = d.dy / max(d.dx.abs(), 1);
+      if (d.dy > sensitivity && ratio > ratioThreshold) {
         AutoRouter.of(context).pop();
-      } else if (details.delta.dy < -sensitivity) {
+      } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
     }
