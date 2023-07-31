@@ -257,7 +257,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
-      double ratio = d.dy / max(d.dx.abs(), 1);
+      final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
         AutoRouter.of(context).pop();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
