@@ -1093,7 +1093,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
-            '-global_quality 23',
+            '-q:v 23',
           ],
           twoPass: false,
         },

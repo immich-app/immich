@@ -329,7 +329,12 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const options = [`-global_quality ${this.config.crf}`];
+    const options = [];
+    if (this.config.targetVideoCodec !== VideoCodec.VP9) {
+      options.push(`-global_quality ${this.config.crf}`);
+    } else {
+      options.push(`-q:v ${this.config.crf}`);
+    }
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
