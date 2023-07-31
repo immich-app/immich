@@ -1,7 +1,7 @@
 import { SystemConfig } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
-  assetEntityStub,
+  assetStub,
   asyncTick,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
@@ -300,7 +300,7 @@ describe(JobService.name, () => {
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
         if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
-          assetMock.getByIds.mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
+          assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
         } else {
           assetMock.getByIds.mockResolvedValue([]);
         }

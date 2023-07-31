@@ -1,10 +1,10 @@
 import {
-  assetEntityStub,
+  assetStub,
   newAssetRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
-  userEntityStub,
+  userStub,
 } from '@test';
 import { when } from 'jest-when';
 import { StorageTemplateService } from '.';
@@ -49,11 +49,11 @@ describe(StorageTemplateService.name, () => {
 
     it('should handle an asset with a duplicate destination', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.save.mockResolvedValue(assetEntityStub.image);
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       when(storageMock.checkFileExists)
         .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.jpg')
@@ -68,7 +68,7 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(2);
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
       });
       expect(userMock.getList).toHaveBeenCalled();
@@ -78,13 +78,13 @@ describe(StorageTemplateService.name, () => {
       assetMock.getAll.mockResolvedValue({
         items: [
           {
-            ...assetEntityStub.image,
+            ...assetStub.image,
             originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
           },
         ],
         hasNextPage: false,
       });
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 
@@ -98,13 +98,13 @@ describe(StorageTemplateService.name, () => {
       assetMock.getAll.mockResolvedValue({
         items: [
           {
-            ...assetEntityStub.image,
+            ...assetStub.image,
             originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
           },
         ],
         hasNextPage: false,
       });
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 
@@ -116,11 +116,11 @@ describe(StorageTemplateService.name, () => {
 
     it('should move an asset', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.save.mockResolvedValue(assetEntityStub.image);
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 
@@ -130,18 +130,18 @@ describe(StorageTemplateService.name, () => {
         'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       });
     });
 
     it('should use the user storage label', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
-      assetMock.save.mockResolvedValue(assetEntityStub.image);
-      userMock.getList.mockResolvedValue([userEntityStub.storageLabel]);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      userMock.getList.mockResolvedValue([userStub.storageLabel]);
 
       await sut.handleMigration();
 
@@ -151,18 +151,18 @@ describe(StorageTemplateService.name, () => {
         'upload/library/label-1/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         originalPath: 'upload/library/label-1/2023/2023-02-23/asset-id.jpg',
       });
     });
 
     it('should not update the database if the move fails', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
       storageMock.moveFile.mockRejectedValue(new Error('Read only system'));
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 
@@ -176,17 +176,17 @@ describe(StorageTemplateService.name, () => {
 
     it('should move the asset back if the database fails', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
       assetMock.save.mockRejectedValue('Connection Error!');
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       });
       expect(storageMock.moveFile.mock.calls).toEqual([
@@ -199,15 +199,15 @@ describe(StorageTemplateService.name, () => {
       assetMock.getAll.mockResolvedValue({
         items: [
           {
-            ...assetEntityStub.image,
+            ...assetStub.image,
             originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
             isReadOnly: true,
           },
         ],
         hasNextPage: false,
       });
-      assetMock.save.mockResolvedValue(assetEntityStub.image);
-      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
 

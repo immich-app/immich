@@ -1,7 +1,7 @@
 import { AlbumResponseDto, AuthUserDto, mapUser } from '@app/domain';
 import { AlbumEntity, UserEntity } from '@app/infra/entities';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { userEntityStub } from '@test';
+import { userStub } from '@test';
 import { IAlbumRepository } from './album-repository';
 import { AlbumService } from './album.service';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -61,11 +61,11 @@ describe('Album service', () => {
     albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
       {
-        ...userEntityStub.user1,
+        ...userStub.user1,
         id: authUser.id,
       },
       {
-        ...userEntityStub.user1,
+        ...userStub.user1,
         id: sharedAlbumSharedAlsoWithId,
       },
     ];

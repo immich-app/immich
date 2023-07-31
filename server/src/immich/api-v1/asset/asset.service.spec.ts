@@ -2,7 +2,7 @@ import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
-  assetEntityStub,
+  assetStub,
   authStub,
   fileStub,
   IAccessRepositoryMock,
@@ -132,11 +132,11 @@ describe('AssetService', () => {
     sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, storageMock);
 
     when(assetRepositoryMock.get)
-      .calledWith(assetEntityStub.livePhotoStillAsset.id)
-      .mockResolvedValue(assetEntityStub.livePhotoStillAsset);
+      .calledWith(assetStub.livePhotoStillAsset.id)
+      .mockResolvedValue(assetStub.livePhotoStillAsset);
     when(assetRepositoryMock.get)
-      .calledWith(assetEntityStub.livePhotoMotionAsset.id)
-      .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
+      .calledWith(assetStub.livePhotoMotionAsset.id)
+      .mockResolvedValue(assetStub.livePhotoMotionAsset);
   });
 
   describe('uploadFile', () => {
@@ -185,8 +185,8 @@ describe('AssetService', () => {
       const error = new QueryFailedError('', [], '');
       (error as any).constraint = 'UQ_userid_checksum';
 
-      assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoMotionAsset);
-      assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoStillAsset);
+      assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
 
       await expect(
         sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
@@ -199,10 +199,10 @@ describe('AssetService', () => {
         [
           {
             name: JobName.METADATA_EXTRACTION,
-            data: { id: assetEntityStub.livePhotoMotionAsset.id, source: 'upload' },
+            data: { id: assetStub.livePhotoMotionAsset.id, source: 'upload' },
           },
         ],
-        [{ name: JobName.METADATA_EXTRACTION, data: { id: assetEntityStub.livePhotoStillAsset.id, source: 'upload' } }],
+        [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
     });
   });
@@ -263,9 +263,9 @@ describe('AssetService', () => {
     it('should delete a live photo', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
-      await expect(sut.deleteAll(authStub.user1, { ids: [assetEntityStub.livePhotoStillAsset.id] })).resolves.toEqual([
-        { id: assetEntityStub.livePhotoStillAsset.id, status: 'SUCCESS' },
-        { id: assetEntityStub.livePhotoMotionAsset.id, status: 'SUCCESS' },
+      await expect(sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id] })).resolves.toEqual([
+        { id: assetStub.livePhotoStillAsset.id, status: 'SUCCESS' },
+        { id: assetStub.livePhotoMotionAsset.id, status: 'SUCCESS' },
       ]);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
@@ -373,7 +373,7 @@ describe('AssetService', () => {
 
   describe('importFile', () => {
     it('should handle a file import', async () => {
-      assetRepositoryMock.create.mockResolvedValue(assetEntityStub.image);
+      assetRepositoryMock.create.mockResolvedValue(assetStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(
@@ -392,7 +392,7 @@ describe('AssetService', () => {
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetEntityStub.image]);
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetStub.image]);
       storageMock.checkFileExists.mockResolvedValue(true);
       cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
 
@@ -411,36 +411,36 @@ describe('AssetService', () => {
   describe('getAssetById', () => {
     it('should allow owner access', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
-      await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
+      await sut.getAssetById(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
     });
 
     it('should allow shared link access', async () => {
       accessMock.asset.hasSharedLinkAccess.mockResolvedValue(true);
-      assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
-      await sut.getAssetById(authStub.adminSharedLink, assetEntityStub.image.id);
+      assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
+      await sut.getAssetById(authStub.adminSharedLink, assetStub.image.id);
       expect(accessMock.asset.hasSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLinkId,
-        assetEntityStub.image.id,
+        assetStub.image.id,
       );
     });
 
     it('should allow partner sharing access', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
-      assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
-      await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
+      await sut.getAssetById(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
     });
 
     it('should allow shared album access', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
       accessMock.asset.hasAlbumAccess.mockResolvedValue(true);
-      assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
-      await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.asset.hasAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
+      await sut.getAssetById(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.hasAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
     });
 
     it('should throw an error for no access', async () => {
@@ -448,15 +448,13 @@ describe('AssetService', () => {
       accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
       accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
       accessMock.asset.hasAlbumAccess.mockResolvedValue(false);
-      await expect(sut.getAssetById(authStub.admin, assetEntityStub.image.id)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(sut.getAssetById(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
 
     it('should throw an error for an invalid shared link', async () => {
       accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
-      await expect(sut.getAssetById(authStub.adminSharedLink, assetEntityStub.image.id)).rejects.toBeInstanceOf(
+      await expect(sut.getAssetById(authStub.adminSharedLink, assetStub.image.id)).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(accessMock.asset.hasOwnerAccess).not.toHaveBeenCalled();

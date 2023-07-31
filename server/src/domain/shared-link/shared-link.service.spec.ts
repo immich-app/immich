@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   albumStub,
-  assetEntityStub,
+  assetStub,
   authStub,
   IAccessRepositoryMock,
   newAccessRepositoryMock,
@@ -136,20 +136,20 @@ describe(SharedLinkService.name, () => {
 
       await sut.create(authStub.admin, {
         type: SharedLinkType.INDIVIDUAL,
-        assetIds: [assetEntityStub.image.id],
+        assetIds: [assetStub.image.id],
         showExif: true,
         allowDownload: true,
         allowUpload: true,
       });
 
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.INDIVIDUAL,
         userId: authStub.admin.id,
         albumId: null,
         allowDownload: true,
         allowUpload: true,
-        assets: [{ id: assetEntityStub.image.id }],
+        assets: [{ id: assetStub.image.id }],
         description: null,
         expiresAt: null,
         showExif: true,
@@ -211,9 +211,9 @@ describe(SharedLinkService.name, () => {
       when(accessMock.asset.hasOwnerAccess).calledWith(authStub.admin.id, 'asset-3').mockResolvedValue(true);
 
       await expect(
-        sut.addAssets(authStub.admin, 'link-1', { assetIds: [assetEntityStub.image.id, 'asset-2', 'asset-3'] }),
+        sut.addAssets(authStub.admin, 'link-1', { assetIds: [assetStub.image.id, 'asset-2', 'asset-3'] }),
       ).resolves.toEqual([
-        { assetId: assetEntityStub.image.id, success: false, error: AssetIdErrorReason.DUPLICATE },
+        { assetId: assetStub.image.id, success: false, error: AssetIdErrorReason.DUPLICATE },
         { assetId: 'asset-2', success: false, error: AssetIdErrorReason.NO_PERMISSION },
         { assetId: 'asset-3', success: true },
       ]);
@@ -221,7 +221,7 @@ describe(SharedLinkService.name, () => {
       expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledTimes(2);
       expect(shareMock.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
-        assets: [assetEntityStub.image, { id: 'asset-3' }],
+        assets: [assetStub.image, { id: 'asset-3' }],
       });
     });
   });
@@ -239,9 +239,9 @@ describe(SharedLinkService.name, () => {
       shareMock.create.mockResolvedValue(sharedLinkStub.individual);
 
       await expect(
-        sut.removeAssets(authStub.admin, 'link-1', { assetIds: [assetEntityStub.image.id, 'asset-2'] }),
+        sut.removeAssets(authStub.admin, 'link-1', { assetIds: [assetStub.image.id, 'asset-2'] }),
       ).resolves.toEqual([
-        { assetId: assetEntityStub.image.id, success: true },
+        { assetId: assetStub.image.id, success: true },
         { assetId: 'asset-2', success: false, error: AssetIdErrorReason.NOT_FOUND },
       ]);
 
