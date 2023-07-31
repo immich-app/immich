@@ -9,6 +9,11 @@
       "name": "libvips",
       "version": "8.14.2",
       "sha256": "27dad021f0835a5ab14e541d02abd41e4c3bd012d2196438df5a9e754984f7ce"
+    },
+    {
+      "name": "ffmpeg",
+      "version": "6.0-4",
+      "sha256": "18d98b292b891cde86c2a08e5e989c3430e51a136cdc232bc4162fef3b4f0f44"
     }
   ]
 }
