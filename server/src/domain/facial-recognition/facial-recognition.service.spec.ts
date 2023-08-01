@@ -22,6 +22,8 @@ import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
+import { ISystemConfigRepository } from '../system-config/system-config.repository';
+import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 
 const croppedFace = Buffer.from('Cropped Face');
 
@@ -115,6 +117,7 @@ describe(FacialRecognitionService.name, () => {
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
 
     mediaMock.crop.mockResolvedValue(croppedFace);
 
@@ -181,7 +184,7 @@ describe(FacialRecognitionService.name, () => {
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
         imagePath: assetStub.image.resizePath,
-      });
+      }, { "minScore": 0.7, "modelName": "buffalo_l", "modelType": ModelType.FACIAL_RECOGNITION });
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
     });

@@ -68,7 +68,9 @@ export class FacialRecognitionService {
       return false;
     }
 
-    const { machineLearning: { facialRecognition } } = await this.configCore.getConfig();
+    const {
+      machineLearning: { facialRecognition },
+    } = await this.configCore.getConfig();
     const faces = await this.machineLearning.detectFaces(machineLearning.url, { imagePath: asset.resizePath }, facialRecognition);
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);

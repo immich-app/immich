@@ -3,51 +3,49 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
-import { CLIPTextConfig, CLIPVisionConfig, ClassificationConfig, FacialRecognitionConfig, ModelConfig } from '../../domain/system-config/dto/system-config-machine-learning.dto';
+import { ModelConfig } from '../../domain/system-config/dto/system-config-machine-learning.dto';
 
 const client = axios.create();
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private post<T>(url: string, formData: FormData): Promise<T> {
+  private post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
+    const formData = this.getFormData(input, config);
     return client.post<T>('/predict', formData, { headers: formData.getHeaders() }).then((res) => res.data);
   }
 
-  classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
-    const formData = this.getFormData(input, config);
-    formData.append('modelType', 'image-classification');
-    formData.append('minScore', config.minScore.toString());
-    return this.post<string[]>(url, formData);
+  classifyImage(url: string, input: VisionModelInput, config: ModelConfig): Promise<string[]> {
+    return this.post<string[]>(url, input, config);
   }
 
-  detectFaces(url: string, input: VisionModelInput, config: FacialRecognitionConfig): Promise<DetectFaceResult[]> {
-    const formData = this.getFormData(input, config);
-    formData.append('modelType', 'facial-recognition');
-    formData.append('minScore', config.minScore.toString());
-    return this.post<DetectFaceResult[]>(url, formData);
+  detectFaces(url: string, input: VisionModelInput, config: ModelConfig): Promise<DetectFaceResult[]> {
+    return this.post<DetectFaceResult[]>(url, input, config);
   }
 
-  encodeImage(url: string, input: VisionModelInput, config: CLIPVisionConfig): Promise<number[]> {
-    const formData = this.getFormData(input, config);
-    formData.append('modelType', 'clip');
-    return this.post<number[]>(url, formData);
+  encodeImage(url: string, input: VisionModelInput, config: ModelConfig): Promise<number[]> {
+    return this.post<number[]>(url, input, config);
   }
 
-  encodeText(url: string, input: TextModelInput, config: CLIPTextConfig): Promise<number[]> {
-    const formData = this.getFormData(input, config);
-    formData.append('modelType', 'clip');
-    return this.post<number[]>(url, formData);
+  encodeText(url: string, input: TextModelInput, config: ModelConfig): Promise<number[]> {
+    return this.post<number[]>(url, input, config);
   }
 
   getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): FormData {
     const formData = new FormData();
+    const { modelName, modelType, ...options } = config;
 
-    formData.append('modelName', config.modelName)
-    if ("imagePath" in input) {
+    formData.append('modelName', modelName);
+    formData.append('modelType', modelType);
+    if (options) {
+      formData.append('options', options);
+    }
+    if ('imagePath' in input) {
       const fileStream = createReadStream(input.imagePath);
       formData.append('image', fileStream);
-    } else {
+    } else if ('text' in input) {
       formData.append('text', input.text);
+    } else {
+      throw new Error('Invalid input');
     }
 
     return formData;

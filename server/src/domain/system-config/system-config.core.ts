@@ -17,6 +17,7 @@ import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { SystemConfigDto } from './dto';
+import { ModelType } from './dto/system-config-machine-learning.dto';
 import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
@@ -53,22 +54,26 @@ export const defaults = Object.freeze<SystemConfig>({
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
     classification: {
       enabled: true,
-      modelName: "microsoft/resnet-50",
+      modelName: 'microsoft/resnet-50',
+      modelType: ModelType.IMAGE_CLASSIFICATION,
       minScore: 0.9,
     },
     clipVision: {
       enabled: true,
-      modelName: "clip-ViT-B-32",
+      modelName: 'clip-ViT-B-32',
+      modelType: ModelType.CLIP,
     },
     clipText: {
       enabled: true,
-      modelName: "clip-ViT-B-32",
+      modelName: 'clip-ViT-B-32',
+      modelType: ModelType.CLIP,
     },
     facialRecognition: {
       enabled: true,
-      modelName: "buffalo_l",
+      modelName: 'buffalo_l',
+      modelType: ModelType.FACIAL_RECOGNITION,
       minScore: 0.7,
-    }
+    },
   },
   oauth: {
     enabled: false,
