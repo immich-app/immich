@@ -16,23 +16,23 @@ void main() {
   // final instance = AlbumResponseDto();
 
   group('test AlbumResponseDto', () {
+    // String albumName
+    test('to test the property `albumName`', () async {
+      // TODO
+    });
+
+    // String albumThumbnailAssetId
+    test('to test the property `albumThumbnailAssetId`', () async {
+      // TODO
+    });
+
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO
     });
 
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // String ownerId
-    test('to test the property `ownerId`', () async {
-      // TODO
-    });
-
-    // String albumName
-    test('to test the property `albumName`', () async {
+    // List<AssetResponseDto> assets (default value: const [])
+    test('to test the property `assets`', () async {
       // TODO
     });
 
@@ -41,13 +41,23 @@ void main() {
       // TODO
     });
 
-    // DateTime updatedAt
-    test('to test the property `updatedAt`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 
-    // String albumThumbnailAssetId
-    test('to test the property `albumThumbnailAssetId`', () async {
+    // DateTime lastModifiedAssetTimestamp
+    test('to test the property `lastModifiedAssetTimestamp`', () async {
+      // TODO
+    });
+
+    // UserResponseDto owner
+    test('to test the property `owner`', () async {
+      // TODO
+    });
+
+    // String ownerId
+    test('to test the property `ownerId`', () async {
       // TODO
     });
 
@@ -61,18 +71,8 @@ void main() {
       // TODO
     });
 
-    // List<AssetResponseDto> assets (default value: const [])
-    test('to test the property `assets`', () async {
-      // TODO
-    });
-
-    // UserResponseDto owner
-    test('to test the property `owner`', () async {
-      // TODO
-    });
-
-    // DateTime lastModifiedAssetTimestamp
-    test('to test the property `lastModifiedAssetTimestamp`', () async {
+    // DateTime updatedAt
+    test('to test the property `updatedAt`', () async {
       // TODO
     });
 

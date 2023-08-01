@@ -13,32 +13,32 @@ part of openapi.api;
 class DownloadArchiveInfo {
   /// Returns a new [DownloadArchiveInfo] instance.
   DownloadArchiveInfo({
-    required this.size,
     this.assetIds = const [],
+    required this.size,
   });
-
-  int size;
 
   List<String> assetIds;
 
+  int size;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadArchiveInfo &&
-     other.size == size &&
-     other.assetIds == assetIds;
+     other.assetIds == assetIds &&
+     other.size == size;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (size.hashCode) +
-    (assetIds.hashCode);
+    (assetIds.hashCode) +
+    (size.hashCode);
 
   @override
-  String toString() => 'DownloadArchiveInfo[size=$size, assetIds=$assetIds]';
+  String toString() => 'DownloadArchiveInfo[assetIds=$assetIds, size=$size]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'size'] = this.size;
       json[r'assetIds'] = this.assetIds;
+      json[r'size'] = this.size;
     return json;
   }
 
@@ -50,10 +50,10 @@ class DownloadArchiveInfo {
       final json = value.cast<String, dynamic>();
 
       return DownloadArchiveInfo(
-        size: mapValueOfType<int>(json, r'size')!,
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        size: mapValueOfType<int>(json, r'size')!,
       );
     }
     return null;
@@ -101,8 +101,8 @@ class DownloadArchiveInfo {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'size',
     'assetIds',
+    'size',
   };
 }
 

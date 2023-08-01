@@ -16,14 +16,14 @@ void main() {
   // final instance = AssetBulkUploadCheckItem();
 
   group('test AssetBulkUploadCheckItem', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // base64 or hex encoded sha1 hash
     // String checksum
     test('to test the property `checksum`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 

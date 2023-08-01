@@ -13,56 +13,56 @@ part of openapi.api;
 class AuthDeviceResponseDto {
   /// Returns a new [AuthDeviceResponseDto] instance.
   AuthDeviceResponseDto({
-    required this.id,
     required this.createdAt,
-    required this.updatedAt,
     required this.current,
-    required this.deviceType,
     required this.deviceOS,
+    required this.deviceType,
+    required this.id,
+    required this.updatedAt,
   });
-
-  String id;
 
   String createdAt;
 
-  String updatedAt;
-
   bool current;
-
-  String deviceType;
 
   String deviceOS;
 
+  String deviceType;
+
+  String id;
+
+  String updatedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthDeviceResponseDto &&
-     other.id == id &&
      other.createdAt == createdAt &&
-     other.updatedAt == updatedAt &&
      other.current == current &&
+     other.deviceOS == deviceOS &&
      other.deviceType == deviceType &&
-     other.deviceOS == deviceOS;
+     other.id == id &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (createdAt.hashCode) +
-    (updatedAt.hashCode) +
     (current.hashCode) +
+    (deviceOS.hashCode) +
     (deviceType.hashCode) +
-    (deviceOS.hashCode);
+    (id.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'AuthDeviceResponseDto[id=$id, createdAt=$createdAt, updatedAt=$updatedAt, current=$current, deviceType=$deviceType, deviceOS=$deviceOS]';
+  String toString() => 'AuthDeviceResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, id=$id, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'createdAt'] = this.createdAt;
-      json[r'updatedAt'] = this.updatedAt;
       json[r'current'] = this.current;
-      json[r'deviceType'] = this.deviceType;
       json[r'deviceOS'] = this.deviceOS;
+      json[r'deviceType'] = this.deviceType;
+      json[r'id'] = this.id;
+      json[r'updatedAt'] = this.updatedAt;
     return json;
   }
 
@@ -74,12 +74,12 @@ class AuthDeviceResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AuthDeviceResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         current: mapValueOfType<bool>(json, r'current')!,
-        deviceType: mapValueOfType<String>(json, r'deviceType')!,
         deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
+        deviceType: mapValueOfType<String>(json, r'deviceType')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }
     return null;
@@ -127,12 +127,12 @@ class AuthDeviceResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'createdAt',
-    'updatedAt',
     'current',
-    'deviceType',
     'deviceOS',
+    'deviceType',
+    'id',
+    'updatedAt',
   };
 }
 

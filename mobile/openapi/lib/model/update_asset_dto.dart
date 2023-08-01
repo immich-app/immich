@@ -13,13 +13,11 @@ part of openapi.api;
 class UpdateAssetDto {
   /// Returns a new [UpdateAssetDto] instance.
   UpdateAssetDto({
-    this.tagIds = const [],
-    this.isFavorite,
-    this.isArchived,
     this.description,
+    this.isArchived,
+    this.isFavorite,
+    this.tagIds = const [],
   });
-
-  List<String> tagIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -27,7 +25,7 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isFavorite;
+  String? description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -43,44 +41,46 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? description;
+  bool? isFavorite;
+
+  List<String> tagIds;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-     other.tagIds == tagIds &&
-     other.isFavorite == isFavorite &&
+     other.description == description &&
      other.isArchived == isArchived &&
-     other.description == description;
+     other.isFavorite == isFavorite &&
+     other.tagIds == tagIds;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (tagIds.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (description == null ? 0 : description!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (tagIds.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite, isArchived=$isArchived, description=$description]';
+  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite, tagIds=$tagIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'tagIds'] = this.tagIds;
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
+    if (this.description != null) {
+      json[r'description'] = this.description;
     } else {
-    //  json[r'isFavorite'] = null;
+    //  json[r'description'] = null;
     }
     if (this.isArchived != null) {
       json[r'isArchived'] = this.isArchived;
     } else {
     //  json[r'isArchived'] = null;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'description'] = null;
+    //  json[r'isFavorite'] = null;
     }
+      json[r'tagIds'] = this.tagIds;
     return json;
   }
 
@@ -92,12 +92,12 @@ class UpdateAssetDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAssetDto(
+        description: mapValueOfType<String>(json, r'description'),
+        isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isArchived: mapValueOfType<bool>(json, r'isArchived'),
-        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;

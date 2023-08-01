@@ -13,32 +13,32 @@ part of openapi.api;
 class AssetCountByTimeBucket {
   /// Returns a new [AssetCountByTimeBucket] instance.
   AssetCountByTimeBucket({
-    required this.timeBucket,
     required this.count,
+    required this.timeBucket,
   });
-
-  String timeBucket;
 
   int count;
 
+  String timeBucket;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetCountByTimeBucket &&
-     other.timeBucket == timeBucket &&
-     other.count == count;
+     other.count == count &&
+     other.timeBucket == timeBucket;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (timeBucket.hashCode) +
-    (count.hashCode);
+    (count.hashCode) +
+    (timeBucket.hashCode);
 
   @override
-  String toString() => 'AssetCountByTimeBucket[timeBucket=$timeBucket, count=$count]';
+  String toString() => 'AssetCountByTimeBucket[count=$count, timeBucket=$timeBucket]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'timeBucket'] = this.timeBucket;
       json[r'count'] = this.count;
+      json[r'timeBucket'] = this.timeBucket;
     return json;
   }
 
@@ -50,8 +50,8 @@ class AssetCountByTimeBucket {
       final json = value.cast<String, dynamic>();
 
       return AssetCountByTimeBucket(
-        timeBucket: mapValueOfType<String>(json, r'timeBucket')!,
         count: mapValueOfType<int>(json, r'count')!,
+        timeBucket: mapValueOfType<String>(json, r'timeBucket')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class AssetCountByTimeBucket {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'timeBucket',
     'count',
+    'timeBucket',
   };
 }
 

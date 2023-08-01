@@ -16,13 +16,13 @@ void main() {
   // final instance = CreateProfileImageResponseDto();
 
   group('test CreateProfileImageResponseDto', () {
-    // String userId
-    test('to test the property `userId`', () async {
+    // String profileImagePath
+    test('to test the property `profileImagePath`', () async {
       // TODO
     });
 
-    // String profileImagePath
-    test('to test the property `profileImagePath`', () async {
+    // String userId
+    test('to test the property `userId`', () async {
       // TODO
     });
 

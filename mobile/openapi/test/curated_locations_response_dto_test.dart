@@ -16,18 +16,8 @@ void main() {
   // final instance = CuratedLocationsResponseDto();
 
   group('test CuratedLocationsResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // String city
     test('to test the property `city`', () async {
-      // TODO
-    });
-
-    // String resizePath
-    test('to test the property `resizePath`', () async {
       // TODO
     });
 
@@ -38,6 +28,16 @@ void main() {
 
     // String deviceId
     test('to test the property `deviceId`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // String resizePath
+    test('to test the property `resizePath`', () async {
       // TODO
     });
 

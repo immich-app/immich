@@ -16,6 +16,16 @@ void main() {
   // final instance = OAuthConfigResponseDto();
 
   group('test OAuthConfigResponseDto', () {
+    // bool autoLaunch
+    test('to test the property `autoLaunch`', () async {
+      // TODO
+    });
+
+    // String buttonText
+    test('to test the property `buttonText`', () async {
+      // TODO
+    });
+
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO
@@ -28,16 +38,6 @@ void main() {
 
     // String url
     test('to test the property `url`', () async {
-      // TODO
-    });
-
-    // String buttonText
-    test('to test the property `buttonText`', () async {
-      // TODO
-    });
-
-    // bool autoLaunch
-    test('to test the property `autoLaunch`', () async {
       // TODO
     });
 

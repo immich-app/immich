@@ -8,13 +8,13 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**diskSizeRaw** | **int** |  | 
-**diskUseRaw** | **int** |  | 
-**diskAvailableRaw** | **int** |  | 
-**diskUsagePercentage** | **double** |  | 
-**diskSize** | **String** |  | 
-**diskUse** | **String** |  | 
 **diskAvailable** | **String** |  | 
+**diskAvailableRaw** | **int** |  | 
+**diskSize** | **String** |  | 
+**diskSizeRaw** | **int** |  | 
+**diskUsagePercentage** | **double** |  | 
+**diskUse** | **String** |  | 
+**diskUseRaw** | **int** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

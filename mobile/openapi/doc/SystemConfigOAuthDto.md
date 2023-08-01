@@ -8,17 +8,17 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**enabled** | **bool** |  | 
-**issuerUrl** | **String** |  | 
+**autoLaunch** | **bool** |  | 
+**autoRegister** | **bool** |  | 
+**buttonText** | **String** |  | 
 **clientId** | **String** |  | 
 **clientSecret** | **String** |  | 
-**scope** | **String** |  | 
-**storageLabelClaim** | **String** |  | 
-**buttonText** | **String** |  | 
-**autoRegister** | **bool** |  | 
-**autoLaunch** | **bool** |  | 
+**enabled** | **bool** |  | 
+**issuerUrl** | **String** |  | 
 **mobileOverrideEnabled** | **bool** |  | 
 **mobileRedirectUri** | **String** |  | 
+**scope** | **String** |  | 
+**storageLabelClaim** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

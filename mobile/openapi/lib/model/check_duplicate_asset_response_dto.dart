@@ -13,11 +13,9 @@ part of openapi.api;
 class CheckDuplicateAssetResponseDto {
   /// Returns a new [CheckDuplicateAssetResponseDto] instance.
   CheckDuplicateAssetResponseDto({
-    required this.isExist,
     this.id,
+    required this.isExist,
   });
-
-  bool isExist;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -27,28 +25,30 @@ class CheckDuplicateAssetResponseDto {
   ///
   String? id;
 
+  bool isExist;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CheckDuplicateAssetResponseDto &&
-     other.isExist == isExist &&
-     other.id == id;
+     other.id == id &&
+     other.isExist == isExist;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isExist.hashCode) +
-    (id == null ? 0 : id!.hashCode);
+    (id == null ? 0 : id!.hashCode) +
+    (isExist.hashCode);
 
   @override
-  String toString() => 'CheckDuplicateAssetResponseDto[isExist=$isExist, id=$id]';
+  String toString() => 'CheckDuplicateAssetResponseDto[id=$id, isExist=$isExist]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isExist'] = this.isExist;
     if (this.id != null) {
       json[r'id'] = this.id;
     } else {
     //  json[r'id'] = null;
     }
+      json[r'isExist'] = this.isExist;
     return json;
   }
 
@@ -60,8 +60,8 @@ class CheckDuplicateAssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return CheckDuplicateAssetResponseDto(
-        isExist: mapValueOfType<bool>(json, r'isExist')!,
         id: mapValueOfType<String>(json, r'id'),
+        isExist: mapValueOfType<bool>(json, r'isExist')!,
       );
     }
     return null;

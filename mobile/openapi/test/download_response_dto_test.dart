@@ -16,13 +16,13 @@ void main() {
   // final instance = DownloadResponseDto();
 
   group('test DownloadResponseDto', () {
-    // int totalSize
-    test('to test the property `totalSize`', () async {
+    // List<DownloadArchiveInfo> archives (default value: const [])
+    test('to test the property `archives`', () async {
       // TODO
     });
 
-    // List<DownloadArchiveInfo> archives (default value: const [])
-    test('to test the property `archives`', () async {
+    // int totalSize
+    test('to test the property `totalSize`', () async {
       // TODO
     });
 

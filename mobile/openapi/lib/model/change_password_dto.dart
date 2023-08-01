@@ -13,32 +13,32 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
-    required this.password,
     required this.newPassword,
+    required this.password,
   });
-
-  String password;
 
   String newPassword;
 
+  String password;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-     other.password == password &&
-     other.newPassword == newPassword;
+     other.newPassword == newPassword &&
+     other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (password.hashCode) +
-    (newPassword.hashCode);
+    (newPassword.hashCode) +
+    (password.hashCode);
 
   @override
-  String toString() => 'ChangePasswordDto[password=$password, newPassword=$newPassword]';
+  String toString() => 'ChangePasswordDto[newPassword=$newPassword, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'password'] = this.password;
       json[r'newPassword'] = this.newPassword;
+      json[r'password'] = this.password;
     return json;
   }
 
@@ -50,8 +50,8 @@ class ChangePasswordDto {
       final json = value.cast<String, dynamic>();
 
       return ChangePasswordDto(
-        password: mapValueOfType<String>(json, r'password')!,
         newPassword: mapValueOfType<String>(json, r'newPassword')!,
+        password: mapValueOfType<String>(json, r'password')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class ChangePasswordDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'password',
     'newPassword',
+    'password',
   };
 }
 

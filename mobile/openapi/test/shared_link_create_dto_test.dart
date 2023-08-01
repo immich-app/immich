@@ -16,18 +16,23 @@ void main() {
   // final instance = SharedLinkCreateDto();
 
   group('test SharedLinkCreateDto', () {
-    // SharedLinkType type
-    test('to test the property `type`', () async {
+    // String albumId
+    test('to test the property `albumId`', () async {
+      // TODO
+    });
+
+    // bool allowDownload (default value: true)
+    test('to test the property `allowDownload`', () async {
+      // TODO
+    });
+
+    // bool allowUpload (default value: false)
+    test('to test the property `allowUpload`', () async {
       // TODO
     });
 
     // List<String> assetIds (default value: const [])
     test('to test the property `assetIds`', () async {
-      // TODO
-    });
-
-    // String albumId
-    test('to test the property `albumId`', () async {
       // TODO
     });
 
@@ -41,18 +46,13 @@ void main() {
       // TODO
     });
 
-    // bool allowUpload (default value: false)
-    test('to test the property `allowUpload`', () async {
-      // TODO
-    });
-
-    // bool allowDownload (default value: true)
-    test('to test the property `allowDownload`', () async {
-      // TODO
-    });
-
     // bool showExif (default value: true)
     test('to test the property `showExif`', () async {
+      // TODO
+    });
+
+    // SharedLinkType type
+    test('to test the property `type`', () async {
       // TODO
     });
 

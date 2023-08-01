@@ -1347,7 +1347,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isReadOnly, isVisible, livePhotoData, sidecarData)
 
 
 
@@ -1377,15 +1377,15 @@ final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime |
 final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
 final key = key_example; // String | 
+final duration = duration_example; // String | 
+final isArchived = true; // bool | 
+final isReadOnly = true; // bool | 
+final isVisible = true; // bool | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
-final isReadOnly = true; // bool | 
-final isArchived = true; // bool | 
-final isVisible = true; // bool | 
-final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration);
+    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isReadOnly, isVisible, livePhotoData, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1403,12 +1403,12 @@ Name | Type | Description  | Notes
  **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
  **key** | **String**|  | [optional] 
+ **duration** | **String**|  | [optional] 
+ **isArchived** | **bool**|  | [optional] 
+ **isReadOnly** | **bool**|  | [optional] [default to false]
+ **isVisible** | **bool**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
- **isReadOnly** | **bool**|  | [optional] [default to false]
- **isArchived** | **bool**|  | [optional] 
- **isVisible** | **bool**|  | [optional] 
- **duration** | **String**|  | [optional] 
 
 ### Return type
 

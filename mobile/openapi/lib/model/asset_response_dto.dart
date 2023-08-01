@@ -13,57 +13,35 @@ part of openapi.api;
 class AssetResponseDto {
   /// Returns a new [AssetResponseDto] instance.
   AssetResponseDto({
-    required this.type,
-    required this.id,
+    required this.checksum,
     required this.deviceAssetId,
-    required this.ownerId,
     required this.deviceId,
-    required this.originalPath,
-    required this.originalFileName,
-    required this.resized,
-    required this.thumbhash,
-    required this.fileCreatedAt,
-    required this.fileModifiedAt,
-    required this.updatedAt,
-    required this.isFavorite,
-    required this.isArchived,
     required this.duration,
     this.exifInfo,
-    this.smartInfo,
+    required this.fileCreatedAt,
+    required this.fileModifiedAt,
+    required this.id,
+    required this.isArchived,
+    required this.isFavorite,
     this.livePhotoVideoId,
-    this.tags = const [],
+    required this.originalFileName,
+    required this.originalPath,
+    required this.ownerId,
     this.people = const [],
-    required this.checksum,
+    required this.resized,
+    this.smartInfo,
+    this.tags = const [],
+    required this.thumbhash,
+    required this.type,
+    required this.updatedAt,
   });
 
-  AssetTypeEnum type;
-
-  String id;
+  /// base64 encoded sha1 hash
+  String checksum;
 
   String deviceAssetId;
 
-  String ownerId;
-
   String deviceId;
-
-  String originalPath;
-
-  String originalFileName;
-
-  bool resized;
-
-  /// base64 encoded thumbhash
-  String? thumbhash;
-
-  DateTime fileCreatedAt;
-
-  DateTime fileModifiedAt;
-
-  DateTime updatedAt;
-
-  bool isFavorite;
-
-  bool isArchived;
 
   String duration;
 
@@ -75,6 +53,28 @@ class AssetResponseDto {
   ///
   ExifResponseDto? exifInfo;
 
+  DateTime fileCreatedAt;
+
+  DateTime fileModifiedAt;
+
+  String id;
+
+  bool isArchived;
+
+  bool isFavorite;
+
+  String? livePhotoVideoId;
+
+  String originalFileName;
+
+  String originalPath;
+
+  String ownerId;
+
+  List<PersonResponseDto> people;
+
+  bool resized;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -83,106 +83,106 @@ class AssetResponseDto {
   ///
   SmartInfoResponseDto? smartInfo;
 
-  String? livePhotoVideoId;
-
   List<TagResponseDto> tags;
 
-  List<PersonResponseDto> people;
+  /// base64 encoded thumbhash
+  String? thumbhash;
 
-  /// base64 encoded sha1 hash
-  String checksum;
+  AssetTypeEnum type;
+
+  DateTime updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-     other.type == type &&
-     other.id == id &&
+     other.checksum == checksum &&
      other.deviceAssetId == deviceAssetId &&
-     other.ownerId == ownerId &&
      other.deviceId == deviceId &&
-     other.originalPath == originalPath &&
-     other.originalFileName == originalFileName &&
-     other.resized == resized &&
-     other.thumbhash == thumbhash &&
-     other.fileCreatedAt == fileCreatedAt &&
-     other.fileModifiedAt == fileModifiedAt &&
-     other.updatedAt == updatedAt &&
-     other.isFavorite == isFavorite &&
-     other.isArchived == isArchived &&
      other.duration == duration &&
      other.exifInfo == exifInfo &&
-     other.smartInfo == smartInfo &&
+     other.fileCreatedAt == fileCreatedAt &&
+     other.fileModifiedAt == fileModifiedAt &&
+     other.id == id &&
+     other.isArchived == isArchived &&
+     other.isFavorite == isFavorite &&
      other.livePhotoVideoId == livePhotoVideoId &&
-     other.tags == tags &&
+     other.originalFileName == originalFileName &&
+     other.originalPath == originalPath &&
+     other.ownerId == ownerId &&
      other.people == people &&
-     other.checksum == checksum;
+     other.resized == resized &&
+     other.smartInfo == smartInfo &&
+     other.tags == tags &&
+     other.thumbhash == thumbhash &&
+     other.type == type &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (id.hashCode) +
+    (checksum.hashCode) +
     (deviceAssetId.hashCode) +
-    (ownerId.hashCode) +
     (deviceId.hashCode) +
-    (originalPath.hashCode) +
-    (originalFileName.hashCode) +
-    (resized.hashCode) +
-    (thumbhash == null ? 0 : thumbhash!.hashCode) +
-    (fileCreatedAt.hashCode) +
-    (fileModifiedAt.hashCode) +
-    (updatedAt.hashCode) +
-    (isFavorite.hashCode) +
-    (isArchived.hashCode) +
     (duration.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode) +
+    (fileCreatedAt.hashCode) +
+    (fileModifiedAt.hashCode) +
+    (id.hashCode) +
+    (isArchived.hashCode) +
+    (isFavorite.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (tags.hashCode) +
+    (originalFileName.hashCode) +
+    (originalPath.hashCode) +
+    (ownerId.hashCode) +
     (people.hashCode) +
-    (checksum.hashCode);
+    (resized.hashCode) +
+    (smartInfo == null ? 0 : smartInfo!.hashCode) +
+    (tags.hashCode) +
+    (thumbhash == null ? 0 : thumbhash!.hashCode) +
+    (type.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, thumbhash=$thumbhash, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
-      json[r'id'] = this.id;
+      json[r'checksum'] = this.checksum;
       json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'ownerId'] = this.ownerId;
       json[r'deviceId'] = this.deviceId;
-      json[r'originalPath'] = this.originalPath;
-      json[r'originalFileName'] = this.originalFileName;
-      json[r'resized'] = this.resized;
-    if (this.thumbhash != null) {
-      json[r'thumbhash'] = this.thumbhash;
-    } else {
-    //  json[r'thumbhash'] = null;
-    }
-      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
-      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
-      json[r'isFavorite'] = this.isFavorite;
-      json[r'isArchived'] = this.isArchived;
       json[r'duration'] = this.duration;
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
     //  json[r'exifInfo'] = null;
     }
-    if (this.smartInfo != null) {
-      json[r'smartInfo'] = this.smartInfo;
-    } else {
-    //  json[r'smartInfo'] = null;
-    }
+      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
+      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
+      json[r'id'] = this.id;
+      json[r'isArchived'] = this.isArchived;
+      json[r'isFavorite'] = this.isFavorite;
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
     //  json[r'livePhotoVideoId'] = null;
     }
-      json[r'tags'] = this.tags;
+      json[r'originalFileName'] = this.originalFileName;
+      json[r'originalPath'] = this.originalPath;
+      json[r'ownerId'] = this.ownerId;
       json[r'people'] = this.people;
-      json[r'checksum'] = this.checksum;
+      json[r'resized'] = this.resized;
+    if (this.smartInfo != null) {
+      json[r'smartInfo'] = this.smartInfo;
+    } else {
+    //  json[r'smartInfo'] = null;
+    }
+      json[r'tags'] = this.tags;
+    if (this.thumbhash != null) {
+      json[r'thumbhash'] = this.thumbhash;
+    } else {
+    //  json[r'thumbhash'] = null;
+    }
+      json[r'type'] = this.type;
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -194,27 +194,27 @@ class AssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetResponseDto(
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
-        id: mapValueOfType<String>(json, r'id')!,
+        checksum: mapValueOfType<String>(json, r'checksum')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
-        originalPath: mapValueOfType<String>(json, r'originalPath')!,
-        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        resized: mapValueOfType<bool>(json, r'resized')!,
-        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        tags: TagResponseDto.listFromJson(json[r'tags']),
+        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
+        originalPath: mapValueOfType<String>(json, r'originalPath')!,
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
-        checksum: mapValueOfType<String>(json, r'checksum')!,
+        resized: mapValueOfType<bool>(json, r'resized')!,
+        smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
+        tags: TagResponseDto.listFromJson(json[r'tags']),
+        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
+        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -262,22 +262,22 @@ class AssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
-    'id',
+    'checksum',
     'deviceAssetId',
-    'ownerId',
     'deviceId',
-    'originalPath',
-    'originalFileName',
-    'resized',
-    'thumbhash',
+    'duration',
     'fileCreatedAt',
     'fileModifiedAt',
-    'updatedAt',
-    'isFavorite',
+    'id',
     'isArchived',
-    'duration',
-    'checksum',
+    'isFavorite',
+    'originalFileName',
+    'originalPath',
+    'ownerId',
+    'resized',
+    'thumbhash',
+    'type',
+    'updatedAt',
   };
 }
 
