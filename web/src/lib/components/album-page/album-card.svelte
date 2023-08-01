@@ -52,7 +52,7 @@
   });
 
   const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
-    const { data } = await api.userApi.getUserById({ userId: album.ownerId });
+    const { data } = await api.userApi.getUserById({ id: album.ownerId });
 
     return data;
   };
