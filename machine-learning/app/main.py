@@ -48,8 +48,8 @@ def ping() -> str:
 
 @app.post("/predict")
 async def prediction(
-    model_name: str = Form(),
-    model_type: ModelType = Form(),
+    model_name: str = Form(alias="modelName"),
+    model_type: ModelType = Form(alias="modelType"),
     options: str | None = Form(default=None),
     text: str | None = Form(default=None),
     image: UploadFile | None = None,

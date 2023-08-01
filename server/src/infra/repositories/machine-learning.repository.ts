@@ -9,34 +9,34 @@ const client = axios.create();
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private post<T>(formData: FormData, endpoint: string): Promise<T> {
-    return client.post<T>(endpoint, formData, { headers: formData.getHeaders() }).then((res) => res.data);
+  private post<T>(url: string, formData: FormData): Promise<T> {
+    return client.post<T>('/predict', formData, { headers: formData.getHeaders() }).then((res) => res.data);
   }
 
   classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
     const formData = this.getFormData(input, config);
     formData.append('modelType', 'image-classification');
     formData.append('minScore', config.minScore.toString());
-    return this.post<string[]>(formData, `${url}/image-classifier/tag-image`);
+    return this.post<string[]>(url, formData);
   }
 
   detectFaces(url: string, input: VisionModelInput, config: FacialRecognitionConfig): Promise<DetectFaceResult[]> {
     const formData = this.getFormData(input, config);
     formData.append('modelType', 'facial-recognition');
     formData.append('minScore', config.minScore.toString());
-    return this.post<DetectFaceResult[]>(formData, `${url}/facial-recognition/detect-faces`);
+    return this.post<DetectFaceResult[]>(url, formData);
   }
 
   encodeImage(url: string, input: VisionModelInput, config: CLIPVisionConfig): Promise<number[]> {
     const formData = this.getFormData(input, config);
     formData.append('modelType', 'clip');
-    return this.post<number[]>(formData, `${url}/sentence-transformer/encode-image`);
+    return this.post<number[]>(url, formData);
   }
 
   encodeText(url: string, input: TextModelInput, config: CLIPTextConfig): Promise<number[]> {
     const formData = this.getFormData(input, config);
     formData.append('modelType', 'clip');
-    return client.post<number[]>(`${url}/sentence-transformer/encode-text`, { text: input }).then((res) => res.data);
+    return this.post<number[]>(url, formData);
   }
 
   getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): FormData {

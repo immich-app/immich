@@ -53,7 +53,7 @@ export const defaults = Object.freeze<SystemConfig>({
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
     classification: {
       enabled: true,
-      modelName: "microsoft/resnet50",
+      modelName: "microsoft/resnet-50",
       minScore: 0.9,
     },
     clipVision: {

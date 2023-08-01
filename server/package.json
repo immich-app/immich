@@ -61,6 +61,7 @@
     "exiftool-vendored": "^22.0.0",
     "exiftool-vendored.pl": "^12.54.0",
     "fluent-ffmpeg": "^2.1.2",
+    "form-data": "^4.0.0",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
     "immich": "^0.41.0",
