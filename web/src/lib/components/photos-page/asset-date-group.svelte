@@ -1,13 +1,4 @@
 <script lang="ts">
-  import {
-    assetInteractionStore,
-    assetSelectionCandidates,
-    assetsInAlbumStoreState,
-    isMultiSelectStoreState,
-    selectedAssets,
-    selectedGroup,
-  } from '$lib/stores/asset-interaction.store';
-  import { assetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
@@ -19,12 +10,21 @@
   import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
   export let isAlbumSelectionMode = false;
   export let viewportWidth: number;
+
+  export let assetStore: AssetStore;
+  export let assetInteractionStore: AssetInteractionStore;
+
+  const { selectedGroup, selectedAssets, assetsInAlbumState, assetSelectionCandidates, isMultiSelectState } =
+    assetInteractionStore;
 
   const dispatch = createEventDispatcher();
 
@@ -94,10 +94,10 @@
       return;
     }
 
-    if ($isMultiSelectStoreState) {
+    if ($isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
     } else {
-      assetInteractionStore.setViewingAsset(asset);
+      assetViewingStore.setAssetId(asset.id);
     }
   };
 
@@ -137,7 +137,7 @@
     // Show multi select icon on hover on date group
     hoveredDateGroup = dateGroupTitle;
 
-    if ($isMultiSelectStoreState) {
+    if ($isMultiSelectState) {
       dispatch('selectAssetCandidates', { asset });
     }
   };
@@ -207,9 +207,9 @@
               on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
               on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
               on:mouse-event={() => assetMouseEventHandler(dateGroupTitle, asset)}
-              selected={$selectedAssets.has(asset) || $assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
+              selected={$selectedAssets.has(asset) || $assetsInAlbumState.some(({ id }) => id === asset.id)}
               selectionCandidate={$assetSelectionCandidates.has(asset)}
-              disabled={$assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
+              disabled={$assetsInAlbumState.some(({ id }) => id === asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}
             />

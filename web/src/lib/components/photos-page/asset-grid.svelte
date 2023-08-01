@@ -1,15 +1,6 @@
 <script lang="ts">
   import { BucketPosition } from '$lib/models/asset-grid-state';
-  import {
-    assetInteractionStore,
-    assetSelectionCandidates,
-    assetSelectionStart,
-    isMultiSelectStoreState,
-    isViewingAssetStoreState,
-    selectedAssets,
-    viewingAssetStoreState,
-  } from '$lib/stores/asset-interaction.store';
-  import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { UserResponseDto } from '@api';
@@ -31,10 +22,19 @@
   import { browser } from '$app/environment';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
   export let showMemoryLane = false;
+
+  export let assetStore: AssetStore;
+  export let assetInteractionStore: AssetInteractionStore;
+
+  const { assetSelectionCandidates, assetSelectionStart, selectedAssets, isMultiSelectState } = assetInteractionStore;
+
+  let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
 
   let viewportHeight = 0;
   let viewportWidth = 0;
@@ -61,7 +61,7 @@
     // Get asset bucket if bucket height is smaller than viewport height
     let bucketsToFetchInitially: string[] = [];
     let initialBucketsHeight = 0;
-    $assetGridState.buckets.every((bucket) => {
+    $assetStore.buckets.every((bucket) => {
       if (initialBucketsHeight < viewportHeight) {
         initialBucketsHeight += bucket.bucketHeight;
         bucketsToFetchInitially.push(bucket.bucketDate);
@@ -89,7 +89,7 @@
       return;
     }
 
-    if (!$isViewingAssetStoreState) {
+    if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
           assetInteractionStore.clearMultiselect();
@@ -121,12 +121,18 @@
     assetGridElement.scrollBy(0, event.detail.heightDelta);
   }
 
-  const navigateToPreviousAsset = () => {
-    assetInteractionStore.navigateAsset('previous');
+  const navigateToPreviousAsset = async () => {
+    const prevAsset = await assetStore.getAdjacentAsset($viewingAsset.id, 'previous');
+    if (prevAsset) {
+      assetViewingStore.setAssetId(prevAsset);
+    }
   };
 
-  const navigateToNextAsset = () => {
-    assetInteractionStore.navigateAsset('next');
+  const navigateToNextAsset = async () => {
+    const nextAsset = await assetStore.getAdjacentAsset($viewingAsset.id, 'next');
+    if (nextAsset) {
+      assetViewingStore.setAssetId(nextAsset);
+    }
   };
 
   let lastScrollPosition = 0;
@@ -228,8 +234,8 @@
     assetInteractionStore.clearAssetSelectionCandidates();
 
     if ($assetSelectionStart && rangeSelection) {
-      let startBucketIndex = $assetGridState.loadedAssets[$assetSelectionStart.id];
-      let endBucketIndex = $assetGridState.loadedAssets[asset.id];
+      let startBucketIndex = $assetStore.loadedAssets[$assetSelectionStart.id];
+      let endBucketIndex = $assetStore.loadedAssets[asset.id];
 
       if (endBucketIndex < startBucketIndex) {
         [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
@@ -237,7 +243,7 @@
 
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
-        const bucket = $assetGridState.buckets[bucketIndex];
+        const bucket = $assetStore.buckets[bucketIndex];
         await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           if (deselect) {
@@ -250,7 +256,7 @@
 
       // Update date group selection
       for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
-        const bucket = $assetGridState.buckets[bucketIndex];
+        const bucket = $assetStore.buckets[bucketIndex];
 
         // Split bucket into date groups and check each group
         const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
@@ -279,18 +285,18 @@
       return;
     }
 
-    let start = $assetGridState.assets.indexOf(rangeStart);
-    let end = $assetGridState.assets.indexOf(asset);
+    let start = $assetStore.assets.indexOf(rangeStart);
+    let end = $assetStore.assets.indexOf(asset);
 
     if (start > end) {
       [start, end] = [end, start];
     }
 
-    assetInteractionStore.setAssetSelectionCandidates($assetGridState.assets.slice(start, end + 1));
+    assetInteractionStore.setAssetSelectionCandidates($assetStore.assets.slice(start, end + 1));
   };
 
   const onSelectStart = (e: Event) => {
-    if ($isMultiSelectStoreState && shiftKeyIsDown) {
+    if ($isMultiSelectState && shiftKeyIsDown) {
       e.preventDefault();
     }
   };
@@ -302,8 +308,9 @@
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
-{#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
+{#if bucketInfo && viewportHeight && $assetStore.timelineHeight > viewportHeight}
   <Scrollbar
+    {assetStore}
     scrollbarHeight={viewportHeight}
     scrollTop={lastScrollPosition}
     on:onscrollbarclick={(e) => handleScrollbarClick(e.detail)}
@@ -324,15 +331,12 @@
     {#if showMemoryLane}
       <MemoryLane />
     {/if}
-    <section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
-      {#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
+    <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
+      {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={async () => {
-            // If bucket is hidden and in loading state, cancel the request
-            if ($loadingBucketState[bucket.bucketDate]) {
-              await assetStore.cancelBucketRequest(bucket.cancelToken, bucket.bucketDate);
-            }
+            await assetStore.cancelBucketRequest(bucket.cancelToken, bucket.bucketDate);
           }}
           let:intersecting
           top={750}
@@ -342,6 +346,8 @@
           <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
             {#if intersecting}
               <AssetDateGroup
+                {assetStore}
+                {assetInteractionStore}
                 {isAlbumSelectionMode}
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={handleSelectAssetCandidates}
@@ -360,13 +366,14 @@
 </section>
 
 <Portal target="body">
-  {#if $isViewingAssetStoreState}
+  {#if $showAssetViewer}
     <AssetViewer
-      asset={$viewingAssetStoreState}
+      {assetStore}
+      asset={$viewingAsset}
       on:navigate-previous={navigateToPreviousAsset}
       on:navigate-next={navigateToNextAsset}
       on:close={() => {
-        assetInteractionStore.setIsViewingAsset(false);
+        assetViewingStore.showAssetViewer(false);
       }}
       on:archived={handleArchiveSuccess}
     />
