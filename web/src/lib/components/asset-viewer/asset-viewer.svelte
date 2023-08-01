@@ -166,7 +166,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
