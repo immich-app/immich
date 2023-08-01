@@ -1941,7 +1941,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -2006,7 +2006,7 @@
         "operationId": "logoutAuthDevices",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2041,7 +2041,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2097,7 +2097,7 @@
         "operationId": "logout",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -2129,7 +2129,7 @@
         "operationId": "validateAccessToken",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
