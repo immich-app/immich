@@ -9,10 +9,8 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
 
-from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
-
 
 class FaceRecognizer(InferenceModel):
     _model_type = ModelType.FACIAL_RECOGNITION
@@ -20,7 +18,7 @@ class FaceRecognizer(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        min_score: float = settings.min_face_score,
+        min_score: float = 0.7,
         cache_dir: Path | str | None = None,
         **model_kwargs: Any,
     ) -> None:
@@ -102,3 +100,6 @@ class FaceRecognizer(InferenceModel):
     @property
     def cached(self) -> bool:
         return self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx"))
+
+    def configure(self, **model_kwargs: Any) -> None:
+        self.det_model.det_thresh = model_kwargs.get("min_score", self.det_model.det_thresh)

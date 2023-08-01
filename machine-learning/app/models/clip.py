@@ -8,9 +8,9 @@ from clip_server.model.clip import BICUBIC, _convert_image_to_rgb
 from clip_server.model.clip_onnx import _MODELS, _S3_BUCKET_V2, CLIPOnnxModel, download_model
 from clip_server.model.pretrained_models import _VISUAL_MODEL_IMAGE_SIZE
 from clip_server.model.tokenization import Tokenizer
-from PIL.Image import Image
+from PIL import Image
 from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTensor
-
+from io import BytesIO
 from ..schemas import ModelType
 from .base import InferenceModel
 
@@ -74,9 +74,12 @@ class CLIPEncoder(InferenceModel):
             image_size = _VISUAL_MODEL_IMAGE_SIZE[CLIPOnnxModel.get_model_name(self.model_name)]
             self.transform = _transform_pil_image(image_size)
 
-    def _predict(self, image_or_text: Image | str) -> list[float]:
+    def _predict(self, image_or_text: Image.Image | str) -> list[float]:
+        if isinstance(image_or_text, bytes):
+            image_or_text = Image.open(BytesIO(image_or_text))
+
         match image_or_text:
-            case Image():
+            case Image.Image():
                 if self.mode == "text":
                     raise TypeError("Cannot encode image as text-only model")
                 pixel_values = self.transform(image_or_text)
