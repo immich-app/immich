@@ -32,7 +32,7 @@ export class FacialRecognitionService {
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
@@ -59,7 +59,7 @@ export class FacialRecognitionService {
 
   async handleRecognizeFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
@@ -68,7 +68,8 @@ export class FacialRecognitionService {
       return false;
     }
 
-    const faces = await this.machineLearning.detectFaces(machineLearning.url, { imagePath: asset.resizePath });
+    const { machineLearning: { facialRecognition } } = await this.configCore.getConfig();
+    const faces = await this.machineLearning.detectFaces(machineLearning.url, { imagePath: asset.resizePath }, facialRecognition);
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
@@ -115,7 +116,7 @@ export class FacialRecognitionService {
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 

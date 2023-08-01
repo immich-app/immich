@@ -47,12 +47,28 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
+
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
-    facialRecognitionEnabled: true,
-    tagImageEnabled: true,
-    clipEncodeEnabled: true,
+    classification: {
+      enabled: true,
+      modelName: "microsoft/resnet50",
+      minScore: 0.9,
+    },
+    clipVision: {
+      enabled: true,
+      modelName: "clip-ViT-B-32",
+    },
+    clipText: {
+      enabled: true,
+      modelName: "clip-ViT-B-32",
+    },
+    facialRecognition: {
+      enabled: true,
+      modelName: "buffalo_l",
+      minScore: 0.7,
+    }
   },
   oauth: {
     enabled: false,
@@ -105,7 +121,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
@@ -143,9 +159,9 @@ export class SystemConfigCore {
     const mlEnabled = config.machineLearning.enabled;
 
     return {
-      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clipEncodeEnabled,
-      [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognitionEnabled,
-      [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.tagImageEnabled,
+      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clipVision.enabled,
+      [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
+      [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
 

@@ -114,10 +114,25 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     url: string;
-    clipEncodeEnabled: boolean;
-    facialRecognitionEnabled: boolean;
-    tagImageEnabled: boolean;
-  };
+    classification: {
+      enabled: boolean;
+      modelName: string;
+      minScore: number;
+    }
+    clipVision: {
+      enabled: boolean;
+      modelName: string;
+    },
+    clipText: {
+      enabled: boolean;
+      modelName: string;
+    },
+    facialRecognition: {
+      enabled: boolean;
+      modelName: string;
+      minScore: number;
+    }
+  }
   oauth: {
     enabled: boolean;
     issuerUrl: string;
