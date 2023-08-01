@@ -331,7 +331,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: widget.renderList.elements.length + 1,
+      itemCount: widget.renderList.elements.length + (widget.topWidget != null ? 1 : 0),
       addRepaintBoundaries: true,
     );
 
