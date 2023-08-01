@@ -248,9 +248,9 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
+          req.fields['fileCreatedAt'] = entity.createDateTime.toUtc().toIso8601String();
           req.fields['fileModifiedAt'] =
-              entity.modifiedDateTime.toIso8601String();
+              entity.modifiedDateTime.toUtc().toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
           req.fields['duration'] = entity.videoDuration.toString();
 
