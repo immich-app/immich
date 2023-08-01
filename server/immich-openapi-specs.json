@@ -5370,9 +5370,8 @@
           }
         },
         "required": [
-          "modelName",
-          "modelType",
-          "enabled"
+          "enabled",
+          "modelName"
         ],
         "type": "object"
       },
@@ -5477,10 +5476,9 @@
           }
         },
         "required": [
-          "modelName",
-          "modelType",
           "minScore",
-          "enabled"
+          "enabled",
+          "modelName"
         ],
         "type": "object"
       },
@@ -6402,11 +6400,10 @@
           }
         },
         "required": [
-          "modelName",
-          "modelType",
           "minScore",
           "maxDistance",
-          "enabled"
+          "enabled",
+          "modelName"
         ],
         "type": "object"
       },

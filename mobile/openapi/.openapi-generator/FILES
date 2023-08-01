@@ -35,11 +35,14 @@ doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/BulkIdResponseDto.md
 doc/BulkIdsDto.md
+doc/CLIPConfig.md
+doc/CLIPMode.md
 doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
+doc/ClassificationConfig.md
 doc/CreateAlbumDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
@@ -68,6 +71,7 @@ doc/LogoutResponseDto.md
 doc/MapMarkerResponseDto.md
 doc/MemoryLaneResponseDto.md
 doc/MergePersonDto.md
+doc/ModelType.md
 doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
@@ -80,6 +84,7 @@ doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
+doc/RecognitionConfig.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
 doc/SearchAssetDto.md
@@ -189,6 +194,9 @@ lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
+lib/model/classification_config.dart
+lib/model/clip_config.dart
+lib/model/clip_mode.dart
 lib/model/create_album_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
@@ -216,6 +224,7 @@ lib/model/logout_response_dto.dart
 lib/model/map_marker_response_dto.dart
 lib/model/memory_lane_response_dto.dart
 lib/model/merge_person_dto.dart
+lib/model/model_type.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
@@ -225,6 +234,7 @@ lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
+lib/model/recognition_config.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
@@ -309,6 +319,9 @@ test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
+test/classification_config_test.dart
+test/clip_config_test.dart
+test/clip_mode_test.dart
 test/create_album_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
@@ -337,6 +350,7 @@ test/logout_response_dto_test.dart
 test/map_marker_response_dto_test.dart
 test/memory_lane_response_dto_test.dart
 test/merge_person_dto_test.dart
+test/model_type_test.dart
 test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
@@ -349,6 +363,7 @@ test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
+test/recognition_config_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
 test/search_asset_dto_test.dart
