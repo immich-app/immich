@@ -8,7 +8,7 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newUserRepositoryMock,
-  userEntityStub,
+  userStub,
 } from '@test';
 import _ from 'lodash';
 import { IAssetRepository } from '../asset';
@@ -326,12 +326,12 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([_.cloneDeep(albumStub.sharedWithAdmin)]);
       albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
-      userMock.get.mockResolvedValue(userEntityStub.user2);
+      userMock.get.mockResolvedValue(userStub.user2);
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.id] });
       expect(albumMock.update).toHaveBeenCalledWith({
         id: albumStub.sharedWithAdmin.id,
         updatedAt: expect.any(Date),
-        sharedUsers: [userEntityStub.admin, { id: authStub.user2.id }],
+        sharedUsers: [userStub.admin, { id: authStub.user2.id }],
       });
     });
   });
@@ -349,7 +349,7 @@ describe(AlbumService.name, () => {
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithUser]);
 
       await expect(
-        sut.removeUser(authStub.admin, albumStub.sharedWithUser.id, userEntityStub.user1.id),
+        sut.removeUser(authStub.admin, albumStub.sharedWithUser.id, userStub.user1.id),
       ).resolves.toBeUndefined();
 
       expect(albumMock.update).toHaveBeenCalledTimes(1);

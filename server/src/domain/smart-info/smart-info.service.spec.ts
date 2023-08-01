@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import {
-  assetEntityStub,
+  assetStub,
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
@@ -41,29 +41,25 @@ describe(SmartInfoService.name, () => {
   describe('handleQueueObjectTagging', () => {
     it('should queue the assets without tags', async () => {
       assetMock.getWithout.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
 
       await sut.handleQueueObjectTagging({ force: false });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
-      ]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.CLASSIFY_IMAGE, data: { id: assetStub.image.id } }]]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
     });
 
     it('should queue all the assets', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
 
       await sut.handleQueueObjectTagging({ force: true });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
-      ]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.CLASSIFY_IMAGE, data: { id: assetStub.image.id } }]]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });
@@ -104,25 +100,25 @@ describe(SmartInfoService.name, () => {
   describe('handleQueueEncodeClip', () => {
     it('should queue the assets without clip embeddings', async () => {
       assetMock.getWithout.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
     it('should queue all the assets', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });

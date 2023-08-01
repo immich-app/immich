@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
-  assetEntityStub,
+  assetStub,
   authStub,
   IAccessRepositoryMock,
   newAccessRepositoryMock,
@@ -246,7 +246,7 @@ describe(AssetService.name, () => {
   describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
       assetMock.getMapMarkers.mockResolvedValue(
-        [assetEntityStub.withLocation].map((asset) => ({
+        [assetStub.withLocation].map((asset) => ({
           id: asset.id,
 
           /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
@@ -261,7 +261,7 @@ describe(AssetService.name, () => {
 
       expect(markers).toHaveLength(1);
       expect(markers[0]).toEqual({
-        id: assetEntityStub.withLocation.id,
+        id: assetStub.withLocation.id,
         lat: 100,
         lon: 100,
       });
@@ -308,14 +308,14 @@ describe(AssetService.name, () => {
     it('should set the title correctly', async () => {
       when(assetMock.getByDate)
         .calledWith(authStub.admin.id, new Date('2022-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetEntityStub.image]);
+        .mockResolvedValue([assetStub.image]);
       when(assetMock.getByDate)
         .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetEntityStub.video]);
+        .mockResolvedValue([assetStub.video]);
 
       await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
-        { title: '1 year since...', assets: [mapAsset(assetEntityStub.image)] },
-        { title: '2 years since...', assets: [mapAsset(assetEntityStub.video)] },
+        { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
+        { title: '2 years since...', assets: [mapAsset(assetStub.video)] },
       ]);
 
       expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
@@ -352,12 +352,12 @@ describe(AssetService.name, () => {
       const stream = new Readable();
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
       storageMock.createReadStream.mockResolvedValue({ stream });
 
       await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
 
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetEntityStub.image.originalPath, 'image/jpeg');
+      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetStub.image.originalPath, 'image/jpeg');
     });
 
     it('should download an archive', async () => {
@@ -368,7 +368,7 @@ describe(AssetService.name, () => {
       };
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath, assetEntityStub.noWebpPath]);
+      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noWebpPath]);
       storageMock.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
@@ -388,7 +388,7 @@ describe(AssetService.name, () => {
       };
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath, assetEntityStub.noResizePath]);
+      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath, assetStub.noResizePath]);
       storageMock.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
@@ -408,7 +408,7 @@ describe(AssetService.name, () => {
 
     it('should return a list of archives (assetIds)', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image, assetEntityStub.video]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image, assetStub.video]);
 
       const assetIds = ['asset-1', 'asset-2'];
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
@@ -419,7 +419,7 @@ describe(AssetService.name, () => {
     it('should return a list of archives (albumId)', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       assetMock.getByAlbumId.mockResolvedValue({
-        items: [assetEntityStub.image, assetEntityStub.video],
+        items: [assetStub.image, assetStub.video],
         hasNextPage: false,
       });
 
@@ -431,7 +431,7 @@ describe(AssetService.name, () => {
 
     it('should return a list of archives (userId)', async () => {
       assetMock.getByUserId.mockResolvedValue({
-        items: [assetEntityStub.image, assetEntityStub.video],
+        items: [assetStub.image, assetStub.video],
         hasNextPage: false,
       });
 
@@ -445,10 +445,10 @@ describe(AssetService.name, () => {
     it('should split archives by size', async () => {
       assetMock.getByUserId.mockResolvedValue({
         items: [
-          { ...assetEntityStub.image, id: 'asset-1' },
-          { ...assetEntityStub.video, id: 'asset-2' },
-          { ...assetEntityStub.withLocation, id: 'asset-3' },
-          { ...assetEntityStub.noWebpPath, id: 'asset-4' },
+          { ...assetStub.image, id: 'asset-1' },
+          { ...assetStub.video, id: 'asset-2' },
+          { ...assetStub.withLocation, id: 'asset-3' },
+          { ...assetStub.noWebpPath, id: 'asset-4' },
         ],
         hasNextPage: false,
       });
@@ -470,18 +470,18 @@ describe(AssetService.name, () => {
     it('should include the video portion of a live photo', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       when(assetMock.getByIds)
-        .calledWith([assetEntityStub.livePhotoStillAsset.id])
-        .mockResolvedValue([assetEntityStub.livePhotoStillAsset]);
+        .calledWith([assetStub.livePhotoStillAsset.id])
+        .mockResolvedValue([assetStub.livePhotoStillAsset]);
       when(assetMock.getByIds)
-        .calledWith([assetEntityStub.livePhotoMotionAsset.id])
-        .mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
+        .calledWith([assetStub.livePhotoMotionAsset.id])
+        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
 
-      const assetIds = [assetEntityStub.livePhotoStillAsset.id];
+      const assetIds = [assetStub.livePhotoStillAsset.id];
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
         totalSize: 125_000,
         archives: [
           {
-            assetIds: [assetEntityStub.livePhotoStillAsset.id, assetEntityStub.livePhotoMotionAsset.id],
+            assetIds: [assetStub.livePhotoStillAsset.id, assetStub.livePhotoMotionAsset.id],
             size: 125_000,
           },
         ],
