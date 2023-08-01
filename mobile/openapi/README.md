@@ -202,6 +202,7 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
+ - [BulkIdsDto](doc//BulkIdsDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)

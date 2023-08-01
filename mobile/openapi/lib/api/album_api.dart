@@ -21,16 +21,16 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
+  /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> addAssetsToAlbumWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
+  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -58,11 +58,11 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
+  /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<List<AssetIdsResponseDto>?> addAssetsToAlbum(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
-    final response = await addAssetsToAlbumWithHttpInfo(id, assetIdsDto,  key: key, );
+  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -71,8 +71,8 @@ class AlbumApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList();
 
     }
@@ -383,14 +383,14 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> removeAssetFromAlbumWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> removeAssetFromAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -414,9 +414,9 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> removeAssetFromAlbum(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await removeAssetFromAlbumWithHttpInfo(id, assetIdsDto,);
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<List<BulkIdResponseDto>?> removeAssetFromAlbum(String id, BulkIdsDto bulkIdsDto,) async {
+    final response = await removeAssetFromAlbumWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -425,8 +425,8 @@ class AlbumApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList();
 
     }

@@ -67,6 +67,7 @@ part 'model/asset_type_enum.dart';
 part 'model/audio_codec.dart';
 part 'model/auth_device_response_dto.dart';
 part 'model/bulk_id_response_dto.dart';
+part 'model/bulk_ids_dto.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';
