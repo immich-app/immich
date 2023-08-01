@@ -1,12 +1,5 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
