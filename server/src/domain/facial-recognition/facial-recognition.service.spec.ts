@@ -20,10 +20,9 @@ import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
+import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
-import { ISystemConfigRepository } from '../system-config/system-config.repository';
-import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 
 const croppedFace = Buffer.from('Cropped Face');
 
@@ -182,9 +181,13 @@ describe(FacialRecognitionService.name, () => {
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
-      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: assetStub.image.resizePath,
-      }, { "minScore": 0.7, "modelName": "buffalo_l", "modelType": ModelType.FACIAL_RECOGNITION });
+      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: assetStub.image.resizePath,
+        },
+        { enabled: true, minScore: 0.7, modelName: 'buffalo_l', modelType: ModelType.FACIAL_RECOGNITION },
+      );
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
     });

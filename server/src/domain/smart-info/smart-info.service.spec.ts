@@ -10,10 +10,10 @@ import {
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { ISystemConfigRepository } from '../system-config';
+import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 import { SmartInfoService } from './smart-info.service';
-import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 
 const asset = {
   id: 'asset-1',
@@ -85,9 +85,13 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleClassifyImage({ id: asset.id });
 
-      expect(machineMock.classifyImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: 'path/to/resize.ext',
-      }, { "minScore": 0.9, "modelName": "microsoft/resnet-50", "modelType": ModelType.IMAGE_CLASSIFICATION });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: 'path/to/resize.ext',
+        },
+        { enabled: true, minScore: 0.9, modelName: 'microsoft/resnet-50', modelType: ModelType.IMAGE_CLASSIFICATION },
+      );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -146,9 +150,13 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleEncodeClip({ id: asset.id });
 
-      expect(machineMock.encodeImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: 'path/to/resize.ext',
-      }, { "modelName": "clip-ViT-B-32", "modelType": ModelType.CLIP });
+      expect(machineMock.encodeImage).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: 'path/to/resize.ext',
+        },
+        { enabled: true, modelName: 'clip-ViT-B-32', modelType: ModelType.CLIP },
+      );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],

@@ -52,8 +52,14 @@ export class SmartInfoService {
       return false;
     }
 
-    const { machineLearning: { classification } } = await this.configCore.getConfig();
-    const tags = await this.machineLearning.classifyImage(machineLearning.url, { imagePath: asset.resizePath }, classification);
+    const {
+      machineLearning: { classification },
+    } = await this.configCore.getConfig();
+    const tags = await this.machineLearning.classifyImage(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      classification,
+    );
     await this.repository.upsert({ assetId: asset.id, tags });
 
     return true;
@@ -91,8 +97,14 @@ export class SmartInfoService {
       return false;
     }
 
-    const { machineLearning: { clipVision } } = await this.configCore.getConfig();
-    const clipEmbedding = await this.machineLearning.encodeImage(machineLearning.url, { imagePath: asset.resizePath }, clipVision);
+    const {
+      machineLearning: { clipVision },
+    } = await this.configCore.getConfig();
+    const clipEmbedding = await this.machineLearning.encodeImage(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      clipVision,
+    );
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 
     return true;

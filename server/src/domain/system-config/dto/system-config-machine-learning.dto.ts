@@ -1,6 +1,6 @@
-import { IsBoolean, IsUrl, ValidateIf, IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
+import { Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUrl, Max, Min, ValidateIf } from 'class-validator';
 
 export enum ModelType {
   IMAGE_CLASSIFICATION = 'image-classification',
@@ -21,6 +21,9 @@ export class ModelConfig {
   modelType!: ModelType;
 
   @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
   @IsOptional()
   @ApiProperty({ type: 'integer' })
   minScore?: number;

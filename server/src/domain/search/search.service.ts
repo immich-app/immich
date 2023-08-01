@@ -128,7 +128,9 @@ export class SearchService {
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {
       case SearchStrategy.CLIP:
-        const { machineLearning: { clipText } } = await this.configCore.getConfig();
+        const {
+          machineLearning: { clipText },
+        } = await this.configCore.getConfig();
         const clip = await this.machineLearning.encodeText(machineLearning.url, { text: query }, clipText);
         assets = await this.searchRepository.vectorSearch(clip, filters);
         break;

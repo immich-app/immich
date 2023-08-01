@@ -40,9 +40,17 @@ export enum SystemConfigKey {
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
-  MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED = 'machineLearning.facialRecognitionEnabled',
-  MACHINE_LEARNING_TAG_IMAGE_ENABLED = 'machineLearning.tagImageEnabled',
-  MACHINE_LEARNING_CLIP_ENCODE_ENABLED = 'machineLearning.clipEncodeEnabled',
+
+  MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
+  MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
+  MACHINE_LEARNING_CLASSIFICATION_MIN_SCORE = 'machineLearning.classification.minScore',
+
+  MACHINE_LEARNING_CLIP_ENABLED = 'machineLearning.clip.enabled',
+  MACHINE_LEARNING_CLIP_MODEL_NAME = 'machineLearning.clip.enabled',
+
+  MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED = 'machineLearning.facialRecognition.enabled',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL_NAME = 'machineLearning.facialRecognition.modelName',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE = 'machineLearning.facialRecognition.minScore',
 
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
