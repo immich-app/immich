@@ -16,13 +16,9 @@ void main() {
   // final instance = AssetResponseDto();
 
   group('test AssetResponseDto', () {
-    // AssetTypeEnum type
-    test('to test the property `type`', () async {
-      // TODO
-    });
-
-    // String id
-    test('to test the property `id`', () async {
+    // base64 encoded sha1 hash
+    // String checksum
+    test('to test the property `checksum`', () async {
       // TODO
     });
 
@@ -31,59 +27,8 @@ void main() {
       // TODO
     });
 
-    // String ownerId
-    test('to test the property `ownerId`', () async {
-      // TODO
-    });
-
     // String deviceId
     test('to test the property `deviceId`', () async {
-      // TODO
-    });
-
-    // String originalPath
-    test('to test the property `originalPath`', () async {
-      // TODO
-    });
-
-    // String originalFileName
-    test('to test the property `originalFileName`', () async {
-      // TODO
-    });
-
-    // bool resized
-    test('to test the property `resized`', () async {
-      // TODO
-    });
-
-    // base64 encoded thumbhash
-    // String thumbhash
-    test('to test the property `thumbhash`', () async {
-      // TODO
-    });
-
-    // DateTime fileCreatedAt
-    test('to test the property `fileCreatedAt`', () async {
-      // TODO
-    });
-
-    // DateTime fileModifiedAt
-    test('to test the property `fileModifiedAt`', () async {
-      // TODO
-    });
-
-    // DateTime updatedAt
-    test('to test the property `updatedAt`', () async {
-      // TODO
-    });
-
-    // bool isFavorite
-    test('to test the property `isFavorite`', () async {
-      // TODO
-    });
-
-    // bool isArchived
-    test('to test the property `isArchived`', () async {
       // TODO
     });
 
@@ -97,8 +42,28 @@ void main() {
       // TODO
     });
 
-    // SmartInfoResponseDto smartInfo
-    test('to test the property `smartInfo`', () async {
+    // DateTime fileCreatedAt
+    test('to test the property `fileCreatedAt`', () async {
+      // TODO
+    });
+
+    // DateTime fileModifiedAt
+    test('to test the property `fileModifiedAt`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // bool isArchived
+    test('to test the property `isArchived`', () async {
+      // TODO
+    });
+
+    // bool isFavorite
+    test('to test the property `isFavorite`', () async {
       // TODO
     });
 
@@ -107,8 +72,18 @@ void main() {
       // TODO
     });
 
-    // List<TagResponseDto> tags (default value: const [])
-    test('to test the property `tags`', () async {
+    // String originalFileName
+    test('to test the property `originalFileName`', () async {
+      // TODO
+    });
+
+    // String originalPath
+    test('to test the property `originalPath`', () async {
+      // TODO
+    });
+
+    // String ownerId
+    test('to test the property `ownerId`', () async {
       // TODO
     });
 
@@ -117,9 +92,34 @@ void main() {
       // TODO
     });
 
-    // base64 encoded sha1 hash
-    // String checksum
-    test('to test the property `checksum`', () async {
+    // bool resized
+    test('to test the property `resized`', () async {
+      // TODO
+    });
+
+    // SmartInfoResponseDto smartInfo
+    test('to test the property `smartInfo`', () async {
+      // TODO
+    });
+
+    // List<TagResponseDto> tags (default value: const [])
+    test('to test the property `tags`', () async {
+      // TODO
+    });
+
+    // base64 encoded thumbhash
+    // String thumbhash
+    test('to test the property `thumbhash`', () async {
+      // TODO
+    });
+
+    // AssetTypeEnum type
+    test('to test the property `type`', () async {
+      // TODO
+    });
+
+    // DateTime updatedAt
+    test('to test the property `updatedAt`', () async {
       // TODO
     });
 

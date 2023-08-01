@@ -16,8 +16,8 @@ void main() {
   // final instance = AddAssetsResponseDto();
 
   group('test AddAssetsResponseDto', () {
-    // int successfullyAdded
-    test('to test the property `successfullyAdded`', () async {
+    // AlbumResponseDto album
+    test('to test the property `album`', () async {
       // TODO
     });
 
@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // AlbumResponseDto album
-    test('to test the property `album`', () async {
+    // int successfullyAdded
+    test('to test the property `successfullyAdded`', () async {
       // TODO
     });
 

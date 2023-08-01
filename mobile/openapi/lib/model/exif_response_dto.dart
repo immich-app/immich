@@ -13,179 +13,169 @@ part of openapi.api;
 class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
-    this.fileSizeInByte,
-    this.make,
-    this.model,
-    this.exifImageWidth,
-    this.exifImageHeight,
-    this.orientation,
+    this.city,
+    this.country,
     this.dateTimeOriginal,
-    this.modifyDate,
-    this.timeZone,
-    this.lensModel,
+    this.description,
+    this.exifImageHeight,
+    this.exifImageWidth,
+    this.exposureTime,
     this.fNumber,
+    this.fileSizeInByte,
     this.focalLength,
     this.iso,
-    this.exposureTime,
     this.latitude,
+    this.lensModel,
     this.longitude,
-    this.city,
-    this.state,
-    this.country,
-    this.description,
+    this.make,
+    this.model,
+    this.modifyDate,
+    this.orientation,
     this.projectionType,
+    this.state,
+    this.timeZone,
   });
 
-  int? fileSizeInByte;
+  String? city;
 
-  String? make;
-
-  String? model;
-
-  num? exifImageWidth;
-
-  num? exifImageHeight;
-
-  String? orientation;
+  String? country;
 
   DateTime? dateTimeOriginal;
 
-  DateTime? modifyDate;
+  String? description;
 
-  String? timeZone;
+  num? exifImageHeight;
 
-  String? lensModel;
+  num? exifImageWidth;
+
+  String? exposureTime;
 
   num? fNumber;
+
+  int? fileSizeInByte;
 
   num? focalLength;
 
   num? iso;
 
-  String? exposureTime;
-
   num? latitude;
+
+  String? lensModel;
 
   num? longitude;
 
-  String? city;
+  String? make;
 
-  String? state;
+  String? model;
 
-  String? country;
+  DateTime? modifyDate;
 
-  String? description;
+  String? orientation;
 
   String? projectionType;
 
+  String? state;
+
+  String? timeZone;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-     other.fileSizeInByte == fileSizeInByte &&
-     other.make == make &&
-     other.model == model &&
-     other.exifImageWidth == exifImageWidth &&
-     other.exifImageHeight == exifImageHeight &&
-     other.orientation == orientation &&
+     other.city == city &&
+     other.country == country &&
      other.dateTimeOriginal == dateTimeOriginal &&
-     other.modifyDate == modifyDate &&
-     other.timeZone == timeZone &&
-     other.lensModel == lensModel &&
+     other.description == description &&
+     other.exifImageHeight == exifImageHeight &&
+     other.exifImageWidth == exifImageWidth &&
+     other.exposureTime == exposureTime &&
      other.fNumber == fNumber &&
+     other.fileSizeInByte == fileSizeInByte &&
      other.focalLength == focalLength &&
      other.iso == iso &&
-     other.exposureTime == exposureTime &&
      other.latitude == latitude &&
+     other.lensModel == lensModel &&
      other.longitude == longitude &&
-     other.city == city &&
+     other.make == make &&
+     other.model == model &&
+     other.modifyDate == modifyDate &&
+     other.orientation == orientation &&
+     other.projectionType == projectionType &&
      other.state == state &&
-     other.country == country &&
-     other.description == description &&
-     other.projectionType == projectionType;
+     other.timeZone == timeZone;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
-    (make == null ? 0 : make!.hashCode) +
-    (model == null ? 0 : model!.hashCode) +
-    (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
-    (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
-    (orientation == null ? 0 : orientation!.hashCode) +
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (modifyDate == null ? 0 : modifyDate!.hashCode) +
-    (timeZone == null ? 0 : timeZone!.hashCode) +
-    (lensModel == null ? 0 : lensModel!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
+    (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
+    (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
+    (exposureTime == null ? 0 : exposureTime!.hashCode) +
     (fNumber == null ? 0 : fNumber!.hashCode) +
+    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (focalLength == null ? 0 : focalLength!.hashCode) +
     (iso == null ? 0 : iso!.hashCode) +
-    (exposureTime == null ? 0 : exposureTime!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
+    (lensModel == null ? 0 : lensModel!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
-    (city == null ? 0 : city!.hashCode) +
+    (make == null ? 0 : make!.hashCode) +
+    (model == null ? 0 : model!.hashCode) +
+    (modifyDate == null ? 0 : modifyDate!.hashCode) +
+    (orientation == null ? 0 : orientation!.hashCode) +
+    (projectionType == null ? 0 : projectionType!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (projectionType == null ? 0 : projectionType!.hashCode);
+    (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description, projectionType=$projectionType]';
+  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.fileSizeInByte != null) {
-      json[r'fileSizeInByte'] = this.fileSizeInByte;
+    if (this.city != null) {
+      json[r'city'] = this.city;
     } else {
-    //  json[r'fileSizeInByte'] = null;
+    //  json[r'city'] = null;
     }
-    if (this.make != null) {
-      json[r'make'] = this.make;
+    if (this.country != null) {
+      json[r'country'] = this.country;
     } else {
-    //  json[r'make'] = null;
-    }
-    if (this.model != null) {
-      json[r'model'] = this.model;
-    } else {
-    //  json[r'model'] = null;
-    }
-    if (this.exifImageWidth != null) {
-      json[r'exifImageWidth'] = this.exifImageWidth;
-    } else {
-    //  json[r'exifImageWidth'] = null;
-    }
-    if (this.exifImageHeight != null) {
-      json[r'exifImageHeight'] = this.exifImageHeight;
-    } else {
-    //  json[r'exifImageHeight'] = null;
-    }
-    if (this.orientation != null) {
-      json[r'orientation'] = this.orientation;
-    } else {
-    //  json[r'orientation'] = null;
+    //  json[r'country'] = null;
     }
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
     } else {
     //  json[r'dateTimeOriginal'] = null;
     }
-    if (this.modifyDate != null) {
-      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
+    if (this.description != null) {
+      json[r'description'] = this.description;
     } else {
-    //  json[r'modifyDate'] = null;
+    //  json[r'description'] = null;
     }
-    if (this.timeZone != null) {
-      json[r'timeZone'] = this.timeZone;
+    if (this.exifImageHeight != null) {
+      json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-    //  json[r'timeZone'] = null;
+    //  json[r'exifImageHeight'] = null;
     }
-    if (this.lensModel != null) {
-      json[r'lensModel'] = this.lensModel;
+    if (this.exifImageWidth != null) {
+      json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-    //  json[r'lensModel'] = null;
+    //  json[r'exifImageWidth'] = null;
+    }
+    if (this.exposureTime != null) {
+      json[r'exposureTime'] = this.exposureTime;
+    } else {
+    //  json[r'exposureTime'] = null;
     }
     if (this.fNumber != null) {
       json[r'fNumber'] = this.fNumber;
     } else {
     //  json[r'fNumber'] = null;
+    }
+    if (this.fileSizeInByte != null) {
+      json[r'fileSizeInByte'] = this.fileSizeInByte;
+    } else {
+    //  json[r'fileSizeInByte'] = null;
     }
     if (this.focalLength != null) {
       json[r'focalLength'] = this.focalLength;
@@ -197,45 +187,55 @@ class ExifResponseDto {
     } else {
     //  json[r'iso'] = null;
     }
-    if (this.exposureTime != null) {
-      json[r'exposureTime'] = this.exposureTime;
-    } else {
-    //  json[r'exposureTime'] = null;
-    }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
     } else {
     //  json[r'latitude'] = null;
+    }
+    if (this.lensModel != null) {
+      json[r'lensModel'] = this.lensModel;
+    } else {
+    //  json[r'lensModel'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
     //  json[r'longitude'] = null;
     }
-    if (this.city != null) {
-      json[r'city'] = this.city;
+    if (this.make != null) {
+      json[r'make'] = this.make;
     } else {
-    //  json[r'city'] = null;
+    //  json[r'make'] = null;
+    }
+    if (this.model != null) {
+      json[r'model'] = this.model;
+    } else {
+    //  json[r'model'] = null;
+    }
+    if (this.modifyDate != null) {
+      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
+    } else {
+    //  json[r'modifyDate'] = null;
+    }
+    if (this.orientation != null) {
+      json[r'orientation'] = this.orientation;
+    } else {
+    //  json[r'orientation'] = null;
+    }
+    if (this.projectionType != null) {
+      json[r'projectionType'] = this.projectionType;
+    } else {
+    //  json[r'projectionType'] = null;
     }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
     //  json[r'state'] = null;
     }
-    if (this.country != null) {
-      json[r'country'] = this.country;
+    if (this.timeZone != null) {
+      json[r'timeZone'] = this.timeZone;
     } else {
-    //  json[r'country'] = null;
-    }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
-    }
-    if (this.projectionType != null) {
-      json[r'projectionType'] = this.projectionType;
-    } else {
-    //  json[r'projectionType'] = null;
+    //  json[r'timeZone'] = null;
     }
     return json;
   }
@@ -248,41 +248,41 @@ class ExifResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ExifResponseDto(
-        fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        make: mapValueOfType<String>(json, r'make'),
-        model: mapValueOfType<String>(json, r'model'),
-        exifImageWidth: json[r'exifImageWidth'] == null
-            ? null
-            : num.parse('${json[r'exifImageWidth']}'),
+        city: mapValueOfType<String>(json, r'city'),
+        country: mapValueOfType<String>(json, r'country'),
+        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
+        description: mapValueOfType<String>(json, r'description'),
         exifImageHeight: json[r'exifImageHeight'] == null
             ? null
             : num.parse('${json[r'exifImageHeight']}'),
-        orientation: mapValueOfType<String>(json, r'orientation'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
-        modifyDate: mapDateTime(json, r'modifyDate', r''),
-        timeZone: mapValueOfType<String>(json, r'timeZone'),
-        lensModel: mapValueOfType<String>(json, r'lensModel'),
+        exifImageWidth: json[r'exifImageWidth'] == null
+            ? null
+            : num.parse('${json[r'exifImageWidth']}'),
+        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         fNumber: json[r'fNumber'] == null
             ? null
             : num.parse('${json[r'fNumber']}'),
+        fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         focalLength: json[r'focalLength'] == null
             ? null
             : num.parse('${json[r'focalLength']}'),
         iso: json[r'iso'] == null
             ? null
             : num.parse('${json[r'iso']}'),
-        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         latitude: json[r'latitude'] == null
             ? null
             : num.parse('${json[r'latitude']}'),
+        lensModel: mapValueOfType<String>(json, r'lensModel'),
         longitude: json[r'longitude'] == null
             ? null
             : num.parse('${json[r'longitude']}'),
-        city: mapValueOfType<String>(json, r'city'),
-        state: mapValueOfType<String>(json, r'state'),
-        country: mapValueOfType<String>(json, r'country'),
-        description: mapValueOfType<String>(json, r'description'),
+        make: mapValueOfType<String>(json, r'make'),
+        model: mapValueOfType<String>(json, r'model'),
+        modifyDate: mapDateTime(json, r'modifyDate', r''),
+        orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
+        state: mapValueOfType<String>(json, r'state'),
+        timeZone: mapValueOfType<String>(json, r'timeZone'),
       );
     }
     return null;

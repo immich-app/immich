@@ -13,43 +13,43 @@ part of openapi.api;
 class APIKeyResponseDto {
   /// Returns a new [APIKeyResponseDto] instance.
   APIKeyResponseDto({
+    required this.createdAt,
     required this.id,
     required this.name,
-    required this.createdAt,
     required this.updatedAt,
   });
+
+  DateTime createdAt;
 
   String id;
 
   String name;
 
-  DateTime createdAt;
-
   DateTime updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
+     other.createdAt == createdAt &&
      other.id == id &&
      other.name == name &&
-     other.createdAt == createdAt &&
      other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (createdAt.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'APIKeyResponseDto[id=$id, name=$name, createdAt=$createdAt, updatedAt=$updatedAt]';
+  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -62,9 +62,9 @@ class APIKeyResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -113,9 +113,9 @@ class APIKeyResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'createdAt',
     'id',
     'name',
-    'createdAt',
     'updatedAt',
   };
 }

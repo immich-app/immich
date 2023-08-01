@@ -14,67 +14,67 @@ class LoginResponseDto {
   /// Returns a new [LoginResponseDto] instance.
   LoginResponseDto({
     required this.accessToken,
-    required this.userId,
-    required this.userEmail,
     required this.firstName,
+    required this.isAdmin,
     required this.lastName,
     required this.profileImagePath,
-    required this.isAdmin,
     required this.shouldChangePassword,
+    required this.userEmail,
+    required this.userId,
   });
 
   String accessToken;
 
-  String userId;
-
-  String userEmail;
-
   String firstName;
+
+  bool isAdmin;
 
   String lastName;
 
   String profileImagePath;
 
-  bool isAdmin;
-
   bool shouldChangePassword;
+
+  String userEmail;
+
+  String userId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
      other.accessToken == accessToken &&
-     other.userId == userId &&
-     other.userEmail == userEmail &&
      other.firstName == firstName &&
+     other.isAdmin == isAdmin &&
      other.lastName == lastName &&
      other.profileImagePath == profileImagePath &&
-     other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword;
+     other.shouldChangePassword == shouldChangePassword &&
+     other.userEmail == userEmail &&
+     other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accessToken.hashCode) +
-    (userId.hashCode) +
-    (userEmail.hashCode) +
     (firstName.hashCode) +
+    (isAdmin.hashCode) +
     (lastName.hashCode) +
     (profileImagePath.hashCode) +
-    (isAdmin.hashCode) +
-    (shouldChangePassword.hashCode);
+    (shouldChangePassword.hashCode) +
+    (userEmail.hashCode) +
+    (userId.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, userId=$userId, userEmail=$userEmail, firstName=$firstName, lastName=$lastName, profileImagePath=$profileImagePath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, firstName=$firstName, isAdmin=$isAdmin, lastName=$lastName, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accessToken'] = this.accessToken;
-      json[r'userId'] = this.userId;
-      json[r'userEmail'] = this.userEmail;
       json[r'firstName'] = this.firstName;
+      json[r'isAdmin'] = this.isAdmin;
       json[r'lastName'] = this.lastName;
       json[r'profileImagePath'] = this.profileImagePath;
-      json[r'isAdmin'] = this.isAdmin;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'userEmail'] = this.userEmail;
+      json[r'userId'] = this.userId;
     return json;
   }
 
@@ -87,13 +87,13 @@ class LoginResponseDto {
 
       return LoginResponseDto(
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-        userEmail: mapValueOfType<String>(json, r'userEmail')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
+        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        userEmail: mapValueOfType<String>(json, r'userEmail')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
     return null;
@@ -142,13 +142,13 @@ class LoginResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accessToken',
-    'userId',
-    'userEmail',
     'firstName',
+    'isAdmin',
     'lastName',
     'profileImagePath',
-    'isAdmin',
     'shouldChangePassword',
+    'userEmail',
+    'userId',
   };
 }
 

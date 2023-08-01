@@ -16,23 +16,23 @@ void main() {
   // final instance = AssetBulkUploadCheckResult();
 
   group('test AssetBulkUploadCheckResult', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // String action
     test('to test the property `action`', () async {
       // TODO
     });
 
-    // String reason
-    test('to test the property `reason`', () async {
+    // String assetId
+    test('to test the property `assetId`', () async {
       // TODO
     });
 
-    // String assetId
-    test('to test the property `assetId`', () async {
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // String reason
+    test('to test the property `reason`', () async {
       // TODO
     });
 

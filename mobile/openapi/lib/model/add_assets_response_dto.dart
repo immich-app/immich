@@ -13,14 +13,10 @@ part of openapi.api;
 class AddAssetsResponseDto {
   /// Returns a new [AddAssetsResponseDto] instance.
   AddAssetsResponseDto({
-    required this.successfullyAdded,
-    this.alreadyInAlbum = const [],
     this.album,
+    this.alreadyInAlbum = const [],
+    required this.successfullyAdded,
   });
-
-  int successfullyAdded;
-
-  List<String> alreadyInAlbum;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -30,31 +26,35 @@ class AddAssetsResponseDto {
   ///
   AlbumResponseDto? album;
 
+  List<String> alreadyInAlbum;
+
+  int successfullyAdded;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AddAssetsResponseDto &&
-     other.successfullyAdded == successfullyAdded &&
+     other.album == album &&
      other.alreadyInAlbum == alreadyInAlbum &&
-     other.album == album;
+     other.successfullyAdded == successfullyAdded;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (successfullyAdded.hashCode) +
+    (album == null ? 0 : album!.hashCode) +
     (alreadyInAlbum.hashCode) +
-    (album == null ? 0 : album!.hashCode);
+    (successfullyAdded.hashCode);
 
   @override
-  String toString() => 'AddAssetsResponseDto[successfullyAdded=$successfullyAdded, alreadyInAlbum=$alreadyInAlbum, album=$album]';
+  String toString() => 'AddAssetsResponseDto[album=$album, alreadyInAlbum=$alreadyInAlbum, successfullyAdded=$successfullyAdded]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'successfullyAdded'] = this.successfullyAdded;
-      json[r'alreadyInAlbum'] = this.alreadyInAlbum;
     if (this.album != null) {
       json[r'album'] = this.album;
     } else {
     //  json[r'album'] = null;
     }
+      json[r'alreadyInAlbum'] = this.alreadyInAlbum;
+      json[r'successfullyAdded'] = this.successfullyAdded;
     return json;
   }
 
@@ -66,11 +66,11 @@ class AddAssetsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AddAssetsResponseDto(
-        successfullyAdded: mapValueOfType<int>(json, r'successfullyAdded')!,
+        album: AlbumResponseDto.fromJson(json[r'album']),
         alreadyInAlbum: json[r'alreadyInAlbum'] is Iterable
             ? (json[r'alreadyInAlbum'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        album: AlbumResponseDto.fromJson(json[r'album']),
+        successfullyAdded: mapValueOfType<int>(json, r'successfullyAdded')!,
       );
     }
     return null;
@@ -118,8 +118,8 @@ class AddAssetsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'successfullyAdded',
     'alreadyInAlbum',
+    'successfullyAdded',
   };
 }
 

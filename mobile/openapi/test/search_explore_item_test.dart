@@ -16,13 +16,13 @@ void main() {
   // final instance = SearchExploreItem();
 
   group('test SearchExploreItem', () {
-    // String value
-    test('to test the property `value`', () async {
+    // AssetResponseDto data
+    test('to test the property `data`', () async {
       // TODO
     });
 
-    // AssetResponseDto data
-    test('to test the property `data`', () async {
+    // String value
+    test('to test the property `value`', () async {
       // TODO
     });
 

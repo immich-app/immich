@@ -13,19 +13,15 @@ part of openapi.api;
 class SharedLinkCreateDto {
   /// Returns a new [SharedLinkCreateDto] instance.
   SharedLinkCreateDto({
-    required this.type,
-    this.assetIds = const [],
     this.albumId,
+    this.allowDownload = true,
+    this.allowUpload = false,
+    this.assetIds = const [],
     this.description,
     this.expiresAt,
-    this.allowUpload = false,
-    this.allowDownload = true,
     this.showExif = true,
+    required this.type,
   });
-
-  SharedLinkType type;
-
-  List<String> assetIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -34,6 +30,12 @@ class SharedLinkCreateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? albumId;
+
+  bool allowDownload;
+
+  bool allowUpload;
+
+  List<String> assetIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -45,47 +47,46 @@ class SharedLinkCreateDto {
 
   DateTime? expiresAt;
 
-  bool allowUpload;
-
-  bool allowDownload;
-
   bool showExif;
+
+  SharedLinkType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
-     other.type == type &&
-     other.assetIds == assetIds &&
      other.albumId == albumId &&
+     other.allowDownload == allowDownload &&
+     other.allowUpload == allowUpload &&
+     other.assetIds == assetIds &&
      other.description == description &&
      other.expiresAt == expiresAt &&
-     other.allowUpload == allowUpload &&
-     other.allowDownload == allowDownload &&
-     other.showExif == showExif;
+     other.showExif == showExif &&
+     other.type == type;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (assetIds.hashCode) +
     (albumId == null ? 0 : albumId!.hashCode) +
+    (allowDownload.hashCode) +
+    (allowUpload.hashCode) +
+    (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (allowUpload.hashCode) +
-    (allowDownload.hashCode) +
-    (showExif.hashCode);
+    (showExif.hashCode) +
+    (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[type=$type, assetIds=$assetIds, albumId=$albumId, description=$description, expiresAt=$expiresAt, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
+  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, showExif=$showExif, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
-      json[r'assetIds'] = this.assetIds;
     if (this.albumId != null) {
       json[r'albumId'] = this.albumId;
     } else {
     //  json[r'albumId'] = null;
     }
+      json[r'allowDownload'] = this.allowDownload;
+      json[r'allowUpload'] = this.allowUpload;
+      json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -96,9 +97,8 @@ class SharedLinkCreateDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
-      json[r'allowUpload'] = this.allowUpload;
-      json[r'allowDownload'] = this.allowDownload;
       json[r'showExif'] = this.showExif;
+      json[r'type'] = this.type;
     return json;
   }
 
@@ -110,16 +110,16 @@ class SharedLinkCreateDto {
       final json = value.cast<String, dynamic>();
 
       return SharedLinkCreateDto(
-        type: SharedLinkType.fromJson(json[r'type'])!,
+        albumId: mapValueOfType<String>(json, r'albumId'),
+        allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        albumId: mapValueOfType<String>(json, r'albumId'),
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', r''),
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
         showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
+        type: SharedLinkType.fromJson(json[r'type'])!,
       );
     }
     return null;

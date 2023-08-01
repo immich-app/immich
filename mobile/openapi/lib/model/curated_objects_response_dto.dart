@@ -13,12 +13,16 @@ part of openapi.api;
 class CuratedObjectsResponseDto {
   /// Returns a new [CuratedObjectsResponseDto] instance.
   CuratedObjectsResponseDto({
+    required this.deviceAssetId,
+    required this.deviceId,
     required this.id,
     required this.object,
     required this.resizePath,
-    required this.deviceAssetId,
-    required this.deviceId,
   });
+
+  String deviceAssetId;
+
+  String deviceId;
 
   String id;
 
@@ -26,37 +30,33 @@ class CuratedObjectsResponseDto {
 
   String resizePath;
 
-  String deviceAssetId;
-
-  String deviceId;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is CuratedObjectsResponseDto &&
+     other.deviceAssetId == deviceAssetId &&
+     other.deviceId == deviceId &&
      other.id == id &&
      other.object == object &&
-     other.resizePath == resizePath &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId;
+     other.resizePath == resizePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (deviceAssetId.hashCode) +
+    (deviceId.hashCode) +
     (id.hashCode) +
     (object.hashCode) +
-    (resizePath.hashCode) +
-    (deviceAssetId.hashCode) +
-    (deviceId.hashCode);
+    (resizePath.hashCode);
 
   @override
-  String toString() => 'CuratedObjectsResponseDto[id=$id, object=$object, resizePath=$resizePath, deviceAssetId=$deviceAssetId, deviceId=$deviceId]';
+  String toString() => 'CuratedObjectsResponseDto[deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, object=$object, resizePath=$resizePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'deviceAssetId'] = this.deviceAssetId;
+      json[r'deviceId'] = this.deviceId;
       json[r'id'] = this.id;
       json[r'object'] = this.object;
       json[r'resizePath'] = this.resizePath;
-      json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'deviceId'] = this.deviceId;
     return json;
   }
 
@@ -68,11 +68,11 @@ class CuratedObjectsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return CuratedObjectsResponseDto(
+        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
+        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         id: mapValueOfType<String>(json, r'id')!,
         object: mapValueOfType<String>(json, r'object')!,
         resizePath: mapValueOfType<String>(json, r'resizePath')!,
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        deviceId: mapValueOfType<String>(json, r'deviceId')!,
       );
     }
     return null;
@@ -120,11 +120,11 @@ class CuratedObjectsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'deviceAssetId',
+    'deviceId',
     'id',
     'object',
     'resizePath',
-    'deviceAssetId',
-    'deviceId',
   };
 }
 

@@ -14,37 +14,37 @@ class CreateAlbumDto {
   /// Returns a new [CreateAlbumDto] instance.
   CreateAlbumDto({
     required this.albumName,
-    this.sharedWithUserIds = const [],
     this.assetIds = const [],
+    this.sharedWithUserIds = const [],
   });
 
   String albumName;
 
-  List<String> sharedWithUserIds;
-
   List<String> assetIds;
+
+  List<String> sharedWithUserIds;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
      other.albumName == albumName &&
-     other.sharedWithUserIds == sharedWithUserIds &&
-     other.assetIds == assetIds;
+     other.assetIds == assetIds &&
+     other.sharedWithUserIds == sharedWithUserIds;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
-    (sharedWithUserIds.hashCode) +
-    (assetIds.hashCode);
+    (assetIds.hashCode) +
+    (sharedWithUserIds.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, sharedWithUserIds=$sharedWithUserIds, assetIds=$assetIds]';
+  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, sharedWithUserIds=$sharedWithUserIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
-      json[r'sharedWithUserIds'] = this.sharedWithUserIds;
       json[r'assetIds'] = this.assetIds;
+      json[r'sharedWithUserIds'] = this.sharedWithUserIds;
     return json;
   }
 
@@ -57,11 +57,11 @@ class CreateAlbumDto {
 
       return CreateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        sharedWithUserIds: json[r'sharedWithUserIds'] is Iterable
-            ? (json[r'sharedWithUserIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        sharedWithUserIds: json[r'sharedWithUserIds'] is Iterable
+            ? (json[r'sharedWithUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

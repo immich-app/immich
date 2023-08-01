@@ -16,13 +16,8 @@ void main() {
   // final instance = SharedLinkEditDto();
 
   group('test SharedLinkEditDto', () {
-    // String description
-    test('to test the property `description`', () async {
-      // TODO
-    });
-
-    // DateTime expiresAt
-    test('to test the property `expiresAt`', () async {
+    // bool allowDownload
+    test('to test the property `allowDownload`', () async {
       // TODO
     });
 
@@ -31,8 +26,13 @@ void main() {
       // TODO
     });
 
-    // bool allowDownload
-    test('to test the property `allowDownload`', () async {
+    // String description
+    test('to test the property `description`', () async {
+      // TODO
+    });
+
+    // DateTime expiresAt
+    test('to test the property `expiresAt`', () async {
       // TODO
     });
 

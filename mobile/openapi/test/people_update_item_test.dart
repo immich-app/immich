@@ -16,27 +16,27 @@ void main() {
   // final instance = PeopleUpdateItem();
 
   group('test PeopleUpdateItem', () {
-    // Person id.
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // Person name.
-    // String name
-    test('to test the property `name`', () async {
-      // TODO
-    });
-
     // Asset is used to get the feature face thumbnail.
     // String featureFaceAssetId
     test('to test the property `featureFaceAssetId`', () async {
       // TODO
     });
 
+    // Person id.
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
     // Person visibility
     // bool isHidden
     test('to test the property `isHidden`', () async {
+      // TODO
+    });
+
+    // Person name.
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

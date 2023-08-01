@@ -13,33 +13,33 @@ part of openapi.api;
 class AssetBulkUploadCheckItem {
   /// Returns a new [AssetBulkUploadCheckItem] instance.
   AssetBulkUploadCheckItem({
-    required this.id,
     required this.checksum,
+    required this.id,
   });
-
-  String id;
 
   /// base64 or hex encoded sha1 hash
   String checksum;
 
+  String id;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckItem &&
-     other.id == id &&
-     other.checksum == checksum;
+     other.checksum == checksum &&
+     other.id == id;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
-    (checksum.hashCode);
+    (checksum.hashCode) +
+    (id.hashCode);
 
   @override
-  String toString() => 'AssetBulkUploadCheckItem[id=$id, checksum=$checksum]';
+  String toString() => 'AssetBulkUploadCheckItem[checksum=$checksum, id=$id]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'checksum'] = this.checksum;
+      json[r'id'] = this.id;
     return json;
   }
 
@@ -51,8 +51,8 @@ class AssetBulkUploadCheckItem {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUploadCheckItem(
-        id: mapValueOfType<String>(json, r'id')!,
         checksum: mapValueOfType<String>(json, r'checksum')!,
+        id: mapValueOfType<String>(json, r'id')!,
       );
     }
     return null;
@@ -100,8 +100,8 @@ class AssetBulkUploadCheckItem {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'checksum',
+    'id',
   };
 }
 

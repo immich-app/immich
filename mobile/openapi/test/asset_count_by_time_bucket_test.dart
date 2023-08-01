@@ -16,13 +16,13 @@ void main() {
   // final instance = AssetCountByTimeBucket();
 
   group('test AssetCountByTimeBucket', () {
-    // String timeBucket
-    test('to test the property `timeBucket`', () async {
+    // int count
+    test('to test the property `count`', () async {
       // TODO
     });
 
-    // int count
-    test('to test the property `count`', () async {
+    // String timeBucket
+    test('to test the property `timeBucket`', () async {
       // TODO
     });
 

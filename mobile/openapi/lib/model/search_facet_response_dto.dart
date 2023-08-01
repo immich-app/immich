@@ -13,32 +13,32 @@ part of openapi.api;
 class SearchFacetResponseDto {
   /// Returns a new [SearchFacetResponseDto] instance.
   SearchFacetResponseDto({
-    required this.fieldName,
     this.counts = const [],
+    required this.fieldName,
   });
-
-  String fieldName;
 
   List<SearchFacetCountResponseDto> counts;
 
+  String fieldName;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchFacetResponseDto &&
-     other.fieldName == fieldName &&
-     other.counts == counts;
+     other.counts == counts &&
+     other.fieldName == fieldName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (fieldName.hashCode) +
-    (counts.hashCode);
+    (counts.hashCode) +
+    (fieldName.hashCode);
 
   @override
-  String toString() => 'SearchFacetResponseDto[fieldName=$fieldName, counts=$counts]';
+  String toString() => 'SearchFacetResponseDto[counts=$counts, fieldName=$fieldName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'fieldName'] = this.fieldName;
       json[r'counts'] = this.counts;
+      json[r'fieldName'] = this.fieldName;
     return json;
   }
 
@@ -50,8 +50,8 @@ class SearchFacetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SearchFacetResponseDto(
-        fieldName: mapValueOfType<String>(json, r'fieldName')!,
         counts: SearchFacetCountResponseDto.listFromJson(json[r'counts']),
+        fieldName: mapValueOfType<String>(json, r'fieldName')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class SearchFacetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'fieldName',
     'counts',
+    'fieldName',
   };
 }
 

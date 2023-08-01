@@ -16,8 +16,13 @@ void main() {
   // final instance = UsageByUserDto();
 
   group('test UsageByUserDto', () {
-    // String userId
-    test('to test the property `userId`', () async {
+    // int photos
+    test('to test the property `photos`', () async {
+      // TODO
+    });
+
+    // int usage
+    test('to test the property `usage`', () async {
       // TODO
     });
 
@@ -26,23 +31,18 @@ void main() {
       // TODO
     });
 
+    // String userId
+    test('to test the property `userId`', () async {
+      // TODO
+    });
+
     // String userLastName
     test('to test the property `userLastName`', () async {
       // TODO
     });
 
-    // int photos
-    test('to test the property `photos`', () async {
-      // TODO
-    });
-
     // int videos
     test('to test the property `videos`', () async {
-      // TODO
-    });
-
-    // int usage
-    test('to test the property `usage`', () async {
       // TODO
     });
 

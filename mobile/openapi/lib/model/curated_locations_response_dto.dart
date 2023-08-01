@@ -13,50 +13,50 @@ part of openapi.api;
 class CuratedLocationsResponseDto {
   /// Returns a new [CuratedLocationsResponseDto] instance.
   CuratedLocationsResponseDto({
-    required this.id,
     required this.city,
-    required this.resizePath,
     required this.deviceAssetId,
     required this.deviceId,
+    required this.id,
+    required this.resizePath,
   });
 
-  String id;
-
   String city;
-
-  String resizePath;
 
   String deviceAssetId;
 
   String deviceId;
 
+  String id;
+
+  String resizePath;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CuratedLocationsResponseDto &&
-     other.id == id &&
      other.city == city &&
-     other.resizePath == resizePath &&
      other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId;
+     other.deviceId == deviceId &&
+     other.id == id &&
+     other.resizePath == resizePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (city.hashCode) +
-    (resizePath.hashCode) +
     (deviceAssetId.hashCode) +
-    (deviceId.hashCode);
+    (deviceId.hashCode) +
+    (id.hashCode) +
+    (resizePath.hashCode);
 
   @override
-  String toString() => 'CuratedLocationsResponseDto[id=$id, city=$city, resizePath=$resizePath, deviceAssetId=$deviceAssetId, deviceId=$deviceId]';
+  String toString() => 'CuratedLocationsResponseDto[city=$city, deviceAssetId=$deviceAssetId, deviceId=$deviceId, id=$id, resizePath=$resizePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'city'] = this.city;
-      json[r'resizePath'] = this.resizePath;
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
+      json[r'id'] = this.id;
+      json[r'resizePath'] = this.resizePath;
     return json;
   }
 
@@ -68,11 +68,11 @@ class CuratedLocationsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return CuratedLocationsResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
         city: mapValueOfType<String>(json, r'city')!,
-        resizePath: mapValueOfType<String>(json, r'resizePath')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        resizePath: mapValueOfType<String>(json, r'resizePath')!,
       );
     }
     return null;
@@ -120,11 +120,11 @@ class CuratedLocationsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'city',
-    'resizePath',
     'deviceAssetId',
     'deviceId',
+    'id',
+    'resizePath',
   };
 }
 
