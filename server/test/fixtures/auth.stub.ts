@@ -1,5 +1,27 @@
 import { AuthUserDto } from '@app/domain';
 
+export const signupStub = {
+  firstName: 'Immich',
+  lastName: 'Admin',
+  email: 'admin@immich.app',
+  password: 'Password123',
+};
+
+export const signupResponseStub = {
+  id: expect.any(String),
+  email: 'admin@immich.app',
+  firstName: 'Immich',
+  lastName: 'Admin',
+  createdAt: expect.any(String),
+};
+
+export const loginStub = {
+  admin: {
+    email: 'admin@immich.app',
+    password: 'Password123',
+  },
+};
+
 export const authStub = {
   admin: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -76,6 +98,18 @@ export const authStub = {
 };
 
 export const loginResponseStub = {
+  admin: {
+    response: {
+      accessToken: expect.any(String),
+      firstName: 'Immich',
+      isAdmin: true,
+      lastName: 'Admin',
+      profileImagePath: '',
+      shouldChangePassword: true,
+      userEmail: 'admin@immich.app',
+      userId: expect.any(String),
+    },
+  },
   user1oauth: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',

@@ -1,6 +1,13 @@
 import { UserEntity } from '@app/infra/entities';
 import { authStub } from './auth.stub';
 
+export const userResponseStub = {
+  admin: {
+    firstName: 'admin_first_name',
+    lastName: 'admin_last_name',
+  },
+};
+
 export const userStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin,

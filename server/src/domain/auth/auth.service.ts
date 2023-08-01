@@ -90,7 +90,7 @@ export class AuthService {
 
     if (!user) {
       this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
-      throw new BadRequestException('Incorrect email or password');
+      throw new UnauthorizedException('Incorrect email or password');
     }
 
     return this.createLoginResponse(user, AuthType.PASSWORD, details);

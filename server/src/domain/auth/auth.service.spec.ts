@@ -101,13 +101,13 @@ describe('AuthService', () => {
 
     it('should check the user exists', async () => {
       userMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should check the user has a password', async () => {
       userMock.getByEmail.mockResolvedValue({} as UserEntity);
-      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 

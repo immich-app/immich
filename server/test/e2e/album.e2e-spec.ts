@@ -12,8 +12,7 @@ import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
-import { authCustom, clearDb, getAuthUser } from '../test/test-utils';
+import { authCustom, db, getAuthUser } from '../test-utils';
 
 async function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   const res = await request(app.getHttpServer()).post('/album').send(data);
@@ -31,19 +30,21 @@ async function _createAlbumSharedLink(app: INestApplication, data: Omit<SharedLi
 
 describe('Album', () => {
   let app: INestApplication;
-  let database: DataSource;
 
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
 
       app = moduleFixture.createNestApplication();
-      database = app.get(DataSource);
       await app.init();
     });
 
+    beforeEach(async () => {
+      await db.reset();
+    });
+
     afterAll(async () => {
-      await clearDb(database);
+      await db.disconnect();
       await app.close();
     });
 
@@ -66,11 +67,12 @@ describe('Album', () => {
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
       authService = app.get(AuthService);
-      database = app.get(DataSource);
       await app.init();
+      await db.reset();
     });
 
     afterAll(async () => {
+      await db.disconnect();
       await app.close();
     });
 
@@ -154,7 +156,7 @@ describe('Album', () => {
       });
 
       afterAll(async () => {
-        await clearDb(database);
+        await db.reset();
       });
 
       it('returns the album collection including owned and shared', async () => {
