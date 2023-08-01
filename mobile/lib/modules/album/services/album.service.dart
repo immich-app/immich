@@ -244,7 +244,6 @@ class AlbumService {
           }
         }
 
-        print("Add success asset to album $successAssets");
         album.assets.addAll(successAssets);
         await _db.writeTxn(() => album.assets.save());
 
