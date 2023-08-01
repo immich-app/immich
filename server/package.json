@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "bin": {
     "immich": "./bin/cli.sh",
-    "immich-admin": "./bin/admin-cli.sh"
+    "immich-admin": "./start.sh admin-cli"
   },
   "scripts": {
     "build": "nest build",
