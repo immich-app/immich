@@ -48,11 +48,7 @@ function sortKeys<T>(obj: T): T {
 }
 
 const patchOpenAPI = (document: OpenAPIObject) => {
-  for (const [key, value] of Object.entries(document.paths)) {
-    document.paths[key] = sortKeys(value);
-  }
   document.paths = sortKeys(document.paths);
-
   if (document.components?.schemas) {
     document.components.schemas = sortKeys(document.components.schemas);
   }
