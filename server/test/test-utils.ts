@@ -1,21 +1,20 @@
 import {
   AdminSignupResponseDto,
+  AlbumResponseDto,
   AuthDeviceResponseDto,
   AuthUserDto,
+  CreateAlbumDto,
   CreateUserDto,
   LoginCredentialDto,
   LoginResponseDto,
+  SharedLinkCreateDto,
+  SharedLinkResponseDto,
   UpdateUserDto,
   UserResponseDto,
 } from '@app/domain';
-import { AppGuard } from '@app/immich/app.guard';
 import { dataSource } from '@app/infra';
-import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { TestingModuleBuilder } from '@nestjs/testing';
 import request from 'supertest';
-import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './index';
-
-type CustomAuthCallback = () => AuthUserDto;
+import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';
 
 export const db = {
   reset: async () => {
@@ -87,6 +86,23 @@ export const api = {
     expect(response.body).toEqual({ authStatus: true });
     expect(response.status).toBe(200);
   },
+  albumApi: {
+    create: async (server: any, accessToken: string, dto: CreateAlbumDto) => {
+      const res = await request(server).post('/album').set('Authorization', `Bearer ${accessToken}`).send(dto);
+      expect(res.status).toEqual(201);
+      return res.body as AlbumResponseDto;
+    },
+  },
+  sharedLinkApi: {
+    create: async (server: any, accessToken: string, dto: SharedLinkCreateDto) => {
+      const { status, body } = await request(server)
+        .post('/shared-link')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(dto);
+      expect(status).toBe(201);
+      return body as SharedLinkResponseDto;
+    },
+  },
   userApi: {
     create: async (server: any, accessToken: string, dto: CreateUserDto) => {
       const { status, body } = await request(server)
@@ -137,18 +153,3 @@ export const api = {
     },
   },
 } as const;
-
-export function auth(builder: TestingModuleBuilder): TestingModuleBuilder {
-  return authCustom(builder, getAuthUser);
-}
-
-export function authCustom(builder: TestingModuleBuilder, callback: CustomAuthCallback): TestingModuleBuilder {
-  const canActivate: CanActivate = {
-    canActivate: (context: ExecutionContext) => {
-      const req = context.switchToHttp().getRequest();
-      req.user = callback();
-      return true;
-    },
-  };
-  return builder.overrideProvider(AppGuard).useValue(canActivate);
-}

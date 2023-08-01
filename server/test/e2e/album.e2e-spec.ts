@@ -1,226 +1,204 @@
-import {
-  AlbumResponseDto,
-  AuthService,
-  AuthUserDto,
-  CreateAlbumDto,
-  SharedLinkCreateDto,
-  SharedLinkResponseDto,
-  UserService,
-} from '@app/domain';
-import { AppModule } from '@app/immich/app.module';
+import { LoginResponseDto } from '@app/domain';
+import { AlbumController, AppModule } from '@app/immich';
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { authCustom, db, getAuthUser } from '../test-utils';
+import { errorStub } from '../fixtures';
+import { api, db } from '../test-utils';
 
-async function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
-  const res = await request(app.getHttpServer()).post('/album').send(data);
-  expect(res.status).toEqual(201);
-  return res.body as AlbumResponseDto;
-}
+const user1SharedUser = 'user1SharedUser';
+const user1SharedLink = 'user1SharedLink';
+const user1NotShared = 'user1NotShared';
+const user2SharedUser = 'user2SharedUser';
+const user2SharedLink = 'user2SharedLink';
+const user2NotShared = 'user2NotShared';
 
-async function _createAlbumSharedLink(app: INestApplication, data: Omit<SharedLinkCreateDto, 'type'>) {
-  const res = await request(app.getHttpServer())
-    .post('/shared-link')
-    .send({ ...data, type: SharedLinkType.ALBUM });
-  expect(res.status).toEqual(201);
-  return res.body as SharedLinkResponseDto;
-}
-
-describe('Album', () => {
+describe(`${AlbumController.name} (e2e)`, () => {
   let app: INestApplication;
+  let server: any;
+  let user1: LoginResponseDto;
+  let user2: LoginResponseDto;
 
-  describe('without auth', () => {
-    beforeAll(async () => {
-      const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
 
-      app = moduleFixture.createNestApplication();
-      await app.init();
+    app = await moduleFixture.createNestApplication().init();
+    server = app.getHttpServer();
+  });
+
+  beforeEach(async () => {
+    await db.reset();
+    await api.adminSignUp(server);
+    const admin = await api.adminLogin(server);
+
+    await api.userApi.create(server, admin.accessToken, {
+      email: 'user1@immich.app',
+      password: 'Password123',
+      firstName: 'User 1',
+      lastName: 'Test',
+    });
+    user1 = await api.login(server, { email: 'user1@immich.app', password: 'Password123' });
+
+    await api.userApi.create(server, admin.accessToken, {
+      email: 'user2@immich.app',
+      password: 'Password123',
+      firstName: 'User 2',
+      lastName: 'Test',
+    });
+    user2 = await api.login(server, { email: 'user2@immich.app', password: 'Password123' });
+
+    const user1Albums = await Promise.all([
+      api.albumApi.create(server, user1.accessToken, {
+        albumName: user1SharedUser,
+        sharedWithUserIds: [user2.userId],
+      }),
+      api.albumApi.create(server, user1.accessToken, { albumName: user1SharedLink }),
+      api.albumApi.create(server, user1.accessToken, { albumName: user1NotShared }),
+    ]);
+
+    // add shared link to user1SharedLink album
+    await api.sharedLinkApi.create(server, user1.accessToken, {
+      type: SharedLinkType.ALBUM,
+      albumId: user1Albums[1].id,
     });
 
-    beforeEach(async () => {
-      await db.reset();
-    });
+    const user2Albums = await Promise.all([
+      api.albumApi.create(server, user2.accessToken, {
+        albumName: user2SharedUser,
+        sharedWithUserIds: [user1.userId],
+      }),
+      api.albumApi.create(server, user2.accessToken, { albumName: user2SharedLink }),
+      api.albumApi.create(server, user2.accessToken, { albumName: user2NotShared }),
+    ]);
 
-    afterAll(async () => {
-      await db.disconnect();
-      await app.close();
-    });
-
-    it('prevents fetching albums if not auth', async () => {
-      const { status } = await request(app.getHttpServer()).get('/album');
-      expect(status).toEqual(401);
+    // add shared link to user2SharedLink album
+    await api.sharedLinkApi.create(server, user2.accessToken, {
+      type: SharedLinkType.ALBUM,
+      albumId: user2Albums[1].id,
     });
   });
 
-  describe('with auth', () => {
-    let userService: UserService;
-    let authService: AuthService;
-    let authUser: AuthUserDto;
+  afterAll(async () => {
+    await db.disconnect();
+    await app.close();
+  });
 
-    beforeAll(async () => {
-      const builder = Test.createTestingModule({ imports: [AppModule] });
-      authUser = getAuthUser();
-      const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
-
-      app = moduleFixture.createNestApplication();
-      userService = app.get(UserService);
-      authService = app.get(AuthService);
-      await app.init();
-      await db.reset();
+  describe('GET /album', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/album');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
 
-    afterAll(async () => {
-      await db.disconnect();
-      await app.close();
+    it('should reject an invalid shared param', async () => {
+      const { status, body } = await request(server)
+        .get('/album?shared=invalid')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorStub.badRequest);
     });
 
-    describe('with empty DB', () => {
-      it('rejects invalid shared param', async () => {
-        const { status } = await request(app.getHttpServer()).get('/album?shared=invalid');
-        expect(status).toEqual(400);
-      });
-
-      it('rejects invalid assetId param', async () => {
-        const { status } = await request(app.getHttpServer()).get('/album?assetId=invalid');
-        expect(status).toEqual(400);
-      });
-
-      // TODO - Until someone figure out how to passed in a logged in user to the request.
-      //   it('creates an album', async () => {
-      //     const data: CreateAlbumDto = {
-      //       albumName: 'first albbum',
-      //     };
-      //     const body = await _createAlbum(app, data);
-      //     expect(body).toEqual(
-      //       expect.objectContaining({
-      //         ownerId: authUser.id,
-      //         albumName: data.albumName,
-      //       }),
-      //     );
-      //   });
+    it('should reject an invalid assetId param', async () => {
+      const { status, body } = await request(server)
+        .get('/album?assetId=invalid')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorStub.badRequest);
     });
 
-    describe('with albums in DB', () => {
-      const userOneSharedUser = 'userOneSharedUser';
-      const userOneSharedLink = 'userOneSharedLink';
-      const userOneNotShared = 'userOneNotShared';
-      const userTwoSharedUser = 'userTwoSharedUser';
-      const userTwoSharedLink = 'userTwoSharedLink';
-      const userTwoNotShared = 'userTwoNotShared';
-      let userOne: AuthUserDto;
-      let userTwo: AuthUserDto;
+    it('should return the album collection including owned and shared', async () => {
+      const { status, body } = await request(server).get('/album').set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1SharedUser, shared: true }),
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1SharedLink, shared: true }),
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1NotShared, shared: false }),
+        ]),
+      );
+    });
 
-      beforeAll(async () => {
-        // setup users
-        const adminSignUpDto = await authService.adminSignUp({
-          email: 'one@test.com',
-          password: '1234',
-          firstName: 'one',
-          lastName: 'test',
-        });
-        userOne = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
+    it('should return the album collection filtered by shared', async () => {
+      const { status, body } = await request(server)
+        .get('/album?shared=true')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1SharedUser, shared: true }),
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1SharedLink, shared: true }),
+          expect.objectContaining({ ownerId: user2.userId, albumName: user2SharedUser, shared: true }),
+        ]),
+      );
+    });
 
-        userTwo = await userService.createUser({
-          email: 'two@test.com',
-          password: '1234',
-          firstName: 'two',
-          lastName: 'test',
-        });
+    it('should return the album collection filtered by NOT shared', async () => {
+      const { status, body } = await request(server)
+        .get('/album?shared=false')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(1);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownerId: user1.userId, albumName: user1NotShared, shared: false }),
+        ]),
+      );
+    });
 
-        // add user one albums
-        authUser = userOne;
-        const userOneAlbums = await Promise.all([
-          _createAlbum(app, { albumName: userOneSharedUser, sharedWithUserIds: [userTwo.id] }),
-          _createAlbum(app, { albumName: userOneSharedLink }),
-          _createAlbum(app, { albumName: userOneNotShared }),
-        ]);
+    // TODO: Add asset to album and test if it returns correctly.
+    it('should return the album collection filtered by assetId', async () => {
+      const { status, body } = await request(server)
+        .get('/album?assetId=ecb120db-45a2-4a65-9293-51476f0d8790')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(0);
+    });
 
-        // add shared link to userOneSharedLink album
-        await _createAlbumSharedLink(app, { albumId: userOneAlbums[1].id });
+    // TODO: Add asset to album and test if it returns correctly.
+    it('should return the album collection filtered by assetId and ignores shared=true', async () => {
+      const { status, body } = await request(server)
+        .get('/album?shared=true&assetId=ecb120db-45a2-4a65-9293-51476f0d8790')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(0);
+    });
 
-        // add user two albums
-        authUser = userTwo;
-        const userTwoAlbums = await Promise.all([
-          _createAlbum(app, { albumName: userTwoSharedUser, sharedWithUserIds: [userOne.id] }),
-          _createAlbum(app, { albumName: userTwoSharedLink }),
-          _createAlbum(app, { albumName: userTwoNotShared }),
-        ]);
+    // TODO: Add asset to album and test if it returns correctly.
+    it('should return the album collection filtered by assetId and ignores shared=false', async () => {
+      const { status, body } = await request(server)
+        .get('/album?shared=false&assetId=ecb120db-45a2-4a65-9293-51476f0d8790')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toHaveLength(0);
+    });
+  });
 
-        // add shared link to userTwoSharedLink album
-        await _createAlbumSharedLink(app, { albumId: userTwoAlbums[1].id });
+  describe('POST /album', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post('/album').send({ albumName: 'New album' });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
 
-        // set user one as authed for next requests
-        authUser = userOne;
-      });
-
-      afterAll(async () => {
-        await db.reset();
-      });
-
-      it('returns the album collection including owned and shared', async () => {
-        const { status, body } = await request(app.getHttpServer()).get('/album');
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(3);
-        expect(body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneSharedUser, shared: true }),
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneSharedLink, shared: true }),
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneNotShared, shared: false }),
-          ]),
-        );
-      });
-
-      it('returns the album collection filtered by shared', async () => {
-        const { status, body } = await request(app.getHttpServer()).get('/album?shared=true');
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(3);
-        expect(body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneSharedUser, shared: true }),
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneSharedLink, shared: true }),
-            expect.objectContaining({ ownerId: userTwo.id, albumName: userTwoSharedUser, shared: true }),
-          ]),
-        );
-      });
-
-      it('returns the album collection filtered by NOT shared', async () => {
-        const { status, body } = await request(app.getHttpServer()).get('/album?shared=false');
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(1);
-        expect(body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({ ownerId: userOne.id, albumName: userOneNotShared, shared: false }),
-          ]),
-        );
-      });
-
-      // TODO: Add asset to album and test if it returns correctly.
-      it('returns the album collection filtered by assetId', async () => {
-        const { status, body } = await request(app.getHttpServer()).get(
-          '/album?assetId=ecb120db-45a2-4a65-9293-51476f0d8790',
-        );
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(0);
-      });
-
-      // TODO: Add asset to album and test if it returns correctly.
-      it('returns the album collection filtered by assetId and ignores shared=true', async () => {
-        const { status, body } = await request(app.getHttpServer()).get(
-          '/album?shared=true&assetId=ecb120db-45a2-4a65-9293-51476f0d8790',
-        );
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(0);
-      });
-
-      // TODO: Add asset to album and test if it returns correctly.
-      it('returns the album collection filtered by assetId and ignores shared=false', async () => {
-        const { status, body } = await request(app.getHttpServer()).get(
-          '/album?shared=false&assetId=ecb120db-45a2-4a65-9293-51476f0d8790',
-        );
-        expect(status).toEqual(200);
-        expect(body).toHaveLength(0);
+    it('should create an album', async () => {
+      const body = await api.albumApi.create(server, user1.accessToken, { albumName: 'New album' });
+      expect(body).toEqual({
+        id: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ownerId: user1.userId,
+        albumName: 'New album',
+        albumThumbnailAssetId: null,
+        shared: false,
+        sharedUsers: [],
+        assets: [],
+        assetCount: 0,
+        owner: expect.objectContaining({ email: user1.userEmail }),
       });
     });
   });
