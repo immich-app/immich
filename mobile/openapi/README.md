@@ -166,13 +166,13 @@ Class | Method | HTTP request | Description
 *TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
+*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
-*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
+*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
 *UserApi* | [**getUserCount**](doc//UserApi.md#getusercount) | **GET** /user/count | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{userId}/restore | 
+*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 
 
