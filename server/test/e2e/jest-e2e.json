@@ -1,13 +1,16 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
   "modulePaths": ["<rootDir>"],
-  "rootDir": ".",
-  "globalSetup": "<rootDir>/e2e/setup.ts",
+  "rootDir": "../..",
+  "globalSetup": "<rootDir>/test/e2e/setup.ts",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "testTimeout": 15000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "collectCoverageFrom": ["<rootDir>/src/**/*.(t|j)s", "!<rootDir>/src/infra/**/*"],
+  "coverageDirectory": "./coverage",
   "moduleNameMapper": {
     "^@test(|/.*)$": "<rootDir>/test/$1",
     "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",

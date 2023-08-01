@@ -77,6 +77,7 @@ export class UserController {
     return this.service.restoreUser(authUser, userId);
   }
 
+  // TODO: replace with @Put(':id')
   @Put()
   updateUser(@AuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.updateUser(authUser, updateUserDto);
