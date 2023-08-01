@@ -1,4 +1,13 @@
-import { AdminSignupResponseDto, AuthUserDto, LoginResponseDto } from '@app/domain';
+import {
+  AdminSignupResponseDto,
+  AuthDeviceResponseDto,
+  AuthUserDto,
+  CreateUserDto,
+  LoginCredentialDto,
+  LoginResponseDto,
+  UpdateUserDto,
+  UserResponseDto,
+} from '@app/domain';
 import { AppGuard } from '@app/immich/app.guard';
 import { dataSource } from '@app/infra';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
@@ -51,12 +60,83 @@ export const api = {
   adminLogin: async (server: any) => {
     const { status, body } = await request(server).post('/auth/login').send(loginStub.admin);
 
-    expect(status).toBe(201);
     expect(body).toEqual(loginResponseStub.admin.response);
+    expect(body).toMatchObject({ accessToken: expect.any(String) });
+    expect(status).toBe(201);
 
     return body as LoginResponseDto;
   },
-};
+  login: async (server: any, dto: LoginCredentialDto) => {
+    const { status, body } = await request(server).post('/auth/login').send(dto);
+
+    expect(status).toEqual(201);
+    expect(body).toMatchObject({ accessToken: expect.any(String) });
+
+    return body as LoginResponseDto;
+  },
+  getAuthDevices: async (server: any, accessToken: string) => {
+    const { status, body } = await request(server).get('/auth/devices').set('Authorization', `Bearer ${accessToken}`);
+
+    expect(body).toEqual(expect.any(Array));
+    expect(status).toBe(200);
+
+    return body as AuthDeviceResponseDto[];
+  },
+  validateToken: async (server: any, accessToken: string) => {
+    const response = await request(server).post('/auth/validateToken').set('Authorization', `Bearer ${accessToken}`);
+    expect(response.body).toEqual({ authStatus: true });
+    expect(response.status).toBe(200);
+  },
+  userApi: {
+    create: async (server: any, accessToken: string, dto: CreateUserDto) => {
+      const { status, body } = await request(server)
+        .post('/user')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(dto);
+
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        id: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        email: dto.email,
+      });
+
+      return body as UserResponseDto;
+    },
+    get: async (server: any, accessToken: string, id: string) => {
+      const { status, body } = await request(server)
+        .get(`/user/info/${id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id });
+
+      return body as UserResponseDto;
+    },
+    update: async (server: any, accessToken: string, dto: UpdateUserDto) => {
+      const { status, body } = await request(server)
+        .put('/user')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(dto);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: dto.id });
+
+      return body as UserResponseDto;
+    },
+    delete: async (server: any, accessToken: string, id: string) => {
+      const { status, body } = await request(server)
+        .delete(`/user/${id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id, deletedAt: expect.any(String) });
+
+      return body as UserResponseDto;
+    },
+  },
+} as const;
 
 export function auth(builder: TestingModuleBuilder): TestingModuleBuilder {
   return authCustom(builder, getAuthUser);

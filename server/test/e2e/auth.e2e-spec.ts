@@ -2,7 +2,7 @@ import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub, loginResponseStub, signupResponseStub, signupStub } from '../fixtures';
+import { deviceStub, errorStub, loginResponseStub, signupResponseStub, signupStub, uuidStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 const firstName = 'Immich';
@@ -13,6 +13,7 @@ const email = 'admin@immich.app';
 describe(`${AuthController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
+  let accessToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,7 +22,13 @@ describe(`${AuthController.name} (e2e)`, () => {
 
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
+  });
+
+  beforeEach(async () => {
     await db.reset();
+    await api.adminSignUp(server);
+    const response = await api.adminLogin(server);
+    accessToken = response.accessToken;
   });
 
   afterAll(async () => {
@@ -84,12 +91,12 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should reject an incorrect password', async () => {
       const { status, body } = await request(server).post('/auth/login').send({ email, password: 'incorrect' });
       expect(body).toEqual(errorStub.incorrectLogin);
-      expect(status).toEqual(401);
+      expect(status).toBe(401);
     });
 
     it('should accept a correct password', async () => {
       const { status, body, headers } = await request(server).post('/auth/login').send({ email, password });
-      expect(status).toEqual(201);
+      expect(status).toBe(201);
       expect(body).toEqual(loginResponseStub.admin.response);
 
       const token = body.accessToken;
@@ -99,6 +106,121 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(cookies).toHaveLength(2);
       expect(cookies[0]).toEqual(`immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`);
       expect(cookies[1]).toEqual('immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;');
+    });
+  });
+
+  describe('GET /auth/devices', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/auth/devices');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should get a list of authorized devices', async () => {
+      const { status, body } = await request(server).get('/auth/devices').set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual([deviceStub.current]);
+    });
+  });
+
+  describe('DELETE /auth/devices/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).delete(`/auth/devices`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should logout all devices (except the current one)', async () => {
+      for (let i = 0; i < 5; i++) {
+        await api.adminLogin(server);
+      }
+
+      await expect(api.getAuthDevices(server, accessToken)).resolves.toHaveLength(6);
+
+      const { status } = await request(server).delete(`/auth/devices`).set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(204);
+
+      await api.validateToken(server, accessToken);
+    });
+  });
+
+  describe('DELETE /auth/devices/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).delete(`/auth/devices/${uuidStub.notFound}`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should logout a device', async () => {
+      const [device] = await api.getAuthDevices(server, accessToken);
+      const { status } = await request(server)
+        .delete(`/auth/devices/${device.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(204);
+
+      const response = await request(server).post('/auth/validateToken').set('Authorization', `Bearer ${accessToken}`);
+      expect(response.body).toEqual(errorStub.invalidToken);
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('POST /auth/validateToken', () => {
+    it('should reject an invalid token', async () => {
+      const { status, body } = await request(server).post(`/auth/validateToken`).set('Authorization', 'Bearer 123');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.invalidToken);
+    });
+
+    it('should accept a valid token', async () => {
+      const { status, body } = await request(server)
+        .post(`/auth/validateToken`)
+        .send({})
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ authStatus: true });
+    });
+  });
+
+  describe('POST /auth/change-password', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .post(`/auth/change-password`)
+        .send({ password: 'Password123', newPassword: 'Password1234' });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should require the current password', async () => {
+      const { status, body } = await request(server)
+        .post(`/auth/change-password`)
+        .send({ password: 'wrong-password', newPassword: 'Password1234' })
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.wrongPassword);
+    });
+
+    it('should change the password', async () => {
+      const { status } = await request(server)
+        .post(`/auth/change-password`)
+        .send({ password: 'Password123', newPassword: 'Password1234' })
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(200);
+
+      await api.login(server, { email: 'admin@immich.app', password: 'Password1234' });
+    });
+  });
+
+  describe('POST /auth/logout', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post(`/auth/logout`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should logout the user', async () => {
+      const { status, body } = await request(server).post(`/auth/logout`).set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ successful: true, redirectUri: '/auth/login?autoLaunch=0' });
     });
   });
 });

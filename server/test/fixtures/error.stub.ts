@@ -1,4 +1,19 @@
 export const errorStub = {
+  unauthorized: {
+    error: 'Unauthorized',
+    statusCode: 401,
+    message: 'Authentication required',
+  },
+  wrongPassword: {
+    error: 'Bad Request',
+    statusCode: 400,
+    message: 'Wrong password',
+  },
+  invalidToken: {
+    error: 'Unauthorized',
+    statusCode: 401,
+    message: 'Invalid user token',
+  },
   badRequest: {
     error: 'Bad Request',
     statusCode: 400,

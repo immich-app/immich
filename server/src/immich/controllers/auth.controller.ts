@@ -2,7 +2,6 @@ import {
   AdminSignupResponseDto,
   AuthDeviceResponseDto,
   AuthService,
-  AuthType,
   AuthUserDto,
   ChangePasswordDto,
   IMMICH_ACCESS_COOKIE,
@@ -15,7 +14,7 @@ import {
   UserResponseDto,
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Authenticated, AuthUser, GetLoginDetails, PublicRoute } from '../app.guard';
@@ -54,36 +53,39 @@ export class AuthController {
   }
 
   @Delete('devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
   logoutAuthDevices(@AuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.logoutDevices(authUser);
   }
 
   @Delete('devices/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   logoutAuthDevice(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.logoutDevice(authUser, id);
   }
 
   @Post('validateToken')
+  @HttpCode(HttpStatus.OK)
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
 
   @Post('change-password')
+  @HttpCode(HttpStatus.OK)
   changePassword(@AuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.service.changePassword(authUser, dto);
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @AuthUser() authUser: AuthUserDto,
   ): Promise<LogoutResponseDto> {
-    const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
-
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.service.logout(authUser, authType);
+    return this.service.logout(authUser, (req.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
   }
 }

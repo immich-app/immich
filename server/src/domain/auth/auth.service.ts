@@ -129,21 +129,16 @@ export class AuthService {
       throw new BadRequestException('The server already has an admin');
     }
 
-    try {
-      const admin = await this.userCore.createUser({
-        isAdmin: true,
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        password: dto.password,
-        storageLabel: 'admin',
-      });
+    const admin = await this.userCore.createUser({
+      isAdmin: true,
+      email: dto.email,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      password: dto.password,
+      storageLabel: 'admin',
+    });
 
-      return mapAdminSignupResponse(admin);
-    } catch (error) {
-      this.logger.error(`Unable to register admin user: ${error}`, (error as Error).stack);
-      throw new InternalServerErrorException('Failed to register new admin user');
-    }
+    return mapAdminSignupResponse(admin);
   }
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
