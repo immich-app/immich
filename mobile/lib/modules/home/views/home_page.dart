@@ -208,6 +208,9 @@ class HomePage extends HookConsumerWidget {
                 ),
                 toastType: ToastType.success,
               );
+
+              ref.watch(albumProvider.notifier).getAllAlbums();
+              ref.invalidate(sharedAlbumDetailProvider(album.id));
             }
           }
         } finally {
