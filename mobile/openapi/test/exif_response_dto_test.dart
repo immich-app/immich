@@ -16,33 +16,13 @@ void main() {
   // final instance = ExifResponseDto();
 
   group('test ExifResponseDto', () {
-    // int fileSizeInByte
-    test('to test the property `fileSizeInByte`', () async {
+    // String city
+    test('to test the property `city`', () async {
       // TODO
     });
 
-    // String make
-    test('to test the property `make`', () async {
-      // TODO
-    });
-
-    // String model
-    test('to test the property `model`', () async {
-      // TODO
-    });
-
-    // num exifImageWidth
-    test('to test the property `exifImageWidth`', () async {
-      // TODO
-    });
-
-    // num exifImageHeight
-    test('to test the property `exifImageHeight`', () async {
-      // TODO
-    });
-
-    // String orientation
-    test('to test the property `orientation`', () async {
+    // String country
+    test('to test the property `country`', () async {
       // TODO
     });
 
@@ -51,23 +31,33 @@ void main() {
       // TODO
     });
 
-    // DateTime modifyDate
-    test('to test the property `modifyDate`', () async {
+    // String description
+    test('to test the property `description`', () async {
       // TODO
     });
 
-    // String timeZone
-    test('to test the property `timeZone`', () async {
+    // num exifImageHeight
+    test('to test the property `exifImageHeight`', () async {
       // TODO
     });
 
-    // String lensModel
-    test('to test the property `lensModel`', () async {
+    // num exifImageWidth
+    test('to test the property `exifImageWidth`', () async {
+      // TODO
+    });
+
+    // String exposureTime
+    test('to test the property `exposureTime`', () async {
       // TODO
     });
 
     // num fNumber
     test('to test the property `fNumber`', () async {
+      // TODO
+    });
+
+    // int fileSizeInByte
+    test('to test the property `fileSizeInByte`', () async {
       // TODO
     });
 
@@ -81,13 +71,13 @@ void main() {
       // TODO
     });
 
-    // String exposureTime
-    test('to test the property `exposureTime`', () async {
+    // num latitude
+    test('to test the property `latitude`', () async {
       // TODO
     });
 
-    // num latitude
-    test('to test the property `latitude`', () async {
+    // String lensModel
+    test('to test the property `lensModel`', () async {
       // TODO
     });
 
@@ -96,8 +86,28 @@ void main() {
       // TODO
     });
 
-    // String city
-    test('to test the property `city`', () async {
+    // String make
+    test('to test the property `make`', () async {
+      // TODO
+    });
+
+    // String model
+    test('to test the property `model`', () async {
+      // TODO
+    });
+
+    // DateTime modifyDate
+    test('to test the property `modifyDate`', () async {
+      // TODO
+    });
+
+    // String orientation
+    test('to test the property `orientation`', () async {
+      // TODO
+    });
+
+    // String projectionType
+    test('to test the property `projectionType`', () async {
       // TODO
     });
 
@@ -106,18 +116,8 @@ void main() {
       // TODO
     });
 
-    // String country
-    test('to test the property `country`', () async {
-      // TODO
-    });
-
-    // String description
-    test('to test the property `description`', () async {
-      // TODO
-    });
-
-    // String projectionType
-    test('to test the property `projectionType`', () async {
+    // String timeZone
+    test('to test the property `timeZone`', () async {
       // TODO
     });
 

@@ -13,86 +13,86 @@ part of openapi.api;
 class SystemConfigOAuthDto {
   /// Returns a new [SystemConfigOAuthDto] instance.
   SystemConfigOAuthDto({
-    required this.enabled,
-    required this.issuerUrl,
+    required this.autoLaunch,
+    required this.autoRegister,
+    required this.buttonText,
     required this.clientId,
     required this.clientSecret,
-    required this.scope,
-    required this.storageLabelClaim,
-    required this.buttonText,
-    required this.autoRegister,
-    required this.autoLaunch,
+    required this.enabled,
+    required this.issuerUrl,
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
+    required this.scope,
+    required this.storageLabelClaim,
   });
 
-  bool enabled;
+  bool autoLaunch;
 
-  String issuerUrl;
+  bool autoRegister;
+
+  String buttonText;
 
   String clientId;
 
   String clientSecret;
 
-  String scope;
+  bool enabled;
 
-  String storageLabelClaim;
-
-  String buttonText;
-
-  bool autoRegister;
-
-  bool autoLaunch;
+  String issuerUrl;
 
   bool mobileOverrideEnabled;
 
   String mobileRedirectUri;
 
+  String scope;
+
+  String storageLabelClaim;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
-     other.enabled == enabled &&
-     other.issuerUrl == issuerUrl &&
+     other.autoLaunch == autoLaunch &&
+     other.autoRegister == autoRegister &&
+     other.buttonText == buttonText &&
      other.clientId == clientId &&
      other.clientSecret == clientSecret &&
-     other.scope == scope &&
-     other.storageLabelClaim == storageLabelClaim &&
-     other.buttonText == buttonText &&
-     other.autoRegister == autoRegister &&
-     other.autoLaunch == autoLaunch &&
+     other.enabled == enabled &&
+     other.issuerUrl == issuerUrl &&
      other.mobileOverrideEnabled == mobileOverrideEnabled &&
-     other.mobileRedirectUri == mobileRedirectUri;
+     other.mobileRedirectUri == mobileRedirectUri &&
+     other.scope == scope &&
+     other.storageLabelClaim == storageLabelClaim;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (issuerUrl.hashCode) +
+    (autoLaunch.hashCode) +
+    (autoRegister.hashCode) +
+    (buttonText.hashCode) +
     (clientId.hashCode) +
     (clientSecret.hashCode) +
-    (scope.hashCode) +
-    (storageLabelClaim.hashCode) +
-    (buttonText.hashCode) +
-    (autoRegister.hashCode) +
-    (autoLaunch.hashCode) +
+    (enabled.hashCode) +
+    (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
-    (mobileRedirectUri.hashCode);
+    (mobileRedirectUri.hashCode) +
+    (scope.hashCode) +
+    (storageLabelClaim.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[enabled=$enabled, issuerUrl=$issuerUrl, clientId=$clientId, clientSecret=$clientSecret, scope=$scope, storageLabelClaim=$storageLabelClaim, buttonText=$buttonText, autoRegister=$autoRegister, autoLaunch=$autoLaunch, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, storageLabelClaim=$storageLabelClaim]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'issuerUrl'] = this.issuerUrl;
+      json[r'autoLaunch'] = this.autoLaunch;
+      json[r'autoRegister'] = this.autoRegister;
+      json[r'buttonText'] = this.buttonText;
       json[r'clientId'] = this.clientId;
       json[r'clientSecret'] = this.clientSecret;
-      json[r'scope'] = this.scope;
-      json[r'storageLabelClaim'] = this.storageLabelClaim;
-      json[r'buttonText'] = this.buttonText;
-      json[r'autoRegister'] = this.autoRegister;
-      json[r'autoLaunch'] = this.autoLaunch;
+      json[r'enabled'] = this.enabled;
+      json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
       json[r'mobileRedirectUri'] = this.mobileRedirectUri;
+      json[r'scope'] = this.scope;
+      json[r'storageLabelClaim'] = this.storageLabelClaim;
     return json;
   }
 
@@ -104,17 +104,17 @@ class SystemConfigOAuthDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigOAuthDto(
-        enabled: mapValueOfType<bool>(json, r'enabled')!,
-        issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
+        autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
+        autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
+        buttonText: mapValueOfType<String>(json, r'buttonText')!,
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
-        scope: mapValueOfType<String>(json, r'scope')!,
-        storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
-        buttonText: mapValueOfType<String>(json, r'buttonText')!,
-        autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
-        autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
+        enabled: mapValueOfType<bool>(json, r'enabled')!,
+        issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
+        scope: mapValueOfType<String>(json, r'scope')!,
+        storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
       );
     }
     return null;
@@ -162,17 +162,17 @@ class SystemConfigOAuthDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'enabled',
-    'issuerUrl',
+    'autoLaunch',
+    'autoRegister',
+    'buttonText',
     'clientId',
     'clientSecret',
-    'scope',
-    'storageLabelClaim',
-    'buttonText',
-    'autoRegister',
-    'autoLaunch',
+    'enabled',
+    'issuerUrl',
     'mobileOverrideEnabled',
     'mobileRedirectUri',
+    'scope',
+    'storageLabelClaim',
   };
 }
 

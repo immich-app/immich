@@ -13,38 +13,38 @@ part of openapi.api;
 class ServerMediaTypesResponseDto {
   /// Returns a new [ServerMediaTypesResponseDto] instance.
   ServerMediaTypesResponseDto({
-    this.video = const [],
     this.image = const [],
     this.sidecar = const [],
+    this.video = const [],
   });
-
-  List<String> video;
 
   List<String> image;
 
   List<String> sidecar;
 
+  List<String> video;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerMediaTypesResponseDto &&
-     other.video == video &&
      other.image == image &&
-     other.sidecar == sidecar;
+     other.sidecar == sidecar &&
+     other.video == video;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (video.hashCode) +
     (image.hashCode) +
-    (sidecar.hashCode);
+    (sidecar.hashCode) +
+    (video.hashCode);
 
   @override
-  String toString() => 'ServerMediaTypesResponseDto[video=$video, image=$image, sidecar=$sidecar]';
+  String toString() => 'ServerMediaTypesResponseDto[image=$image, sidecar=$sidecar, video=$video]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'video'] = this.video;
       json[r'image'] = this.image;
       json[r'sidecar'] = this.sidecar;
+      json[r'video'] = this.video;
     return json;
   }
 
@@ -56,14 +56,14 @@ class ServerMediaTypesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerMediaTypesResponseDto(
-        video: json[r'video'] is Iterable
-            ? (json[r'video'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         image: json[r'image'] is Iterable
             ? (json[r'image'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         sidecar: json[r'sidecar'] is Iterable
             ? (json[r'sidecar'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        video: json[r'video'] is Iterable
+            ? (json[r'video'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
@@ -112,9 +112,9 @@ class ServerMediaTypesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'video',
     'image',
     'sidecar',
+    'video',
   };
 }
 

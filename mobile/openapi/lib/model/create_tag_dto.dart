@@ -13,32 +13,32 @@ part of openapi.api;
 class CreateTagDto {
   /// Returns a new [CreateTagDto] instance.
   CreateTagDto({
-    required this.type,
     required this.name,
+    required this.type,
   });
-
-  TagTypeEnum type;
 
   String name;
 
+  TagTypeEnum type;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateTagDto &&
-     other.type == type &&
-     other.name == name;
+     other.name == name &&
+     other.type == type;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (name.hashCode);
+    (name.hashCode) +
+    (type.hashCode);
 
   @override
-  String toString() => 'CreateTagDto[type=$type, name=$name]';
+  String toString() => 'CreateTagDto[name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
       json[r'name'] = this.name;
+      json[r'type'] = this.type;
     return json;
   }
 
@@ -50,8 +50,8 @@ class CreateTagDto {
       final json = value.cast<String, dynamic>();
 
       return CreateTagDto(
-        type: TagTypeEnum.fromJson(json[r'type'])!,
         name: mapValueOfType<String>(json, r'name')!,
+        type: TagTypeEnum.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class CreateTagDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
     'name',
+    'type',
   };
 }
 

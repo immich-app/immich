@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // String password
-    test('to test the property `password`', () async {
+    // String externalPath
+    test('to test the property `externalPath`', () async {
       // TODO
     });
 
@@ -36,13 +36,13 @@ void main() {
       // TODO
     });
 
-    // String storageLabel
-    test('to test the property `storageLabel`', () async {
+    // String password
+    test('to test the property `password`', () async {
       // TODO
     });
 
-    // String externalPath
-    test('to test the property `externalPath`', () async {
+    // String storageLabel
+    test('to test the property `storageLabel`', () async {
       // TODO
     });
 

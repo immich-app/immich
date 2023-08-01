@@ -13,50 +13,50 @@ part of openapi.api;
 class AdminSignupResponseDto {
   /// Returns a new [AdminSignupResponseDto] instance.
   AdminSignupResponseDto({
-    required this.id,
+    required this.createdAt,
     required this.email,
     required this.firstName,
+    required this.id,
     required this.lastName,
-    required this.createdAt,
   });
 
-  String id;
+  DateTime createdAt;
 
   String email;
 
   String firstName;
 
-  String lastName;
+  String id;
 
-  DateTime createdAt;
+  String lastName;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
-     other.id == id &&
+     other.createdAt == createdAt &&
      other.email == email &&
      other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.createdAt == createdAt;
+     other.id == id &&
+     other.lastName == lastName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
+    (createdAt.hashCode) +
     (email.hashCode) +
     (firstName.hashCode) +
-    (lastName.hashCode) +
-    (createdAt.hashCode);
+    (id.hashCode) +
+    (lastName.hashCode);
 
   @override
-  String toString() => 'AdminSignupResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt]';
+  String toString() => 'AdminSignupResponseDto[createdAt=$createdAt, email=$email, firstName=$firstName, id=$id, lastName=$lastName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'email'] = this.email;
       json[r'firstName'] = this.firstName;
+      json[r'id'] = this.id;
       json[r'lastName'] = this.lastName;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -68,11 +68,11 @@ class AdminSignupResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AdminSignupResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
+        id: mapValueOfType<String>(json, r'id')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
       );
     }
     return null;
@@ -120,11 +120,11 @@ class AdminSignupResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
+    'createdAt',
     'email',
     'firstName',
+    'id',
     'lastName',
-    'createdAt',
   };
 }
 

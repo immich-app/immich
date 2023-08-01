@@ -16,6 +16,11 @@ void main() {
   // final instance = AlbumCountResponseDto();
 
   group('test AlbumCountResponseDto', () {
+    // int notShared
+    test('to test the property `notShared`', () async {
+      // TODO
+    });
+
     // int owned
     test('to test the property `owned`', () async {
       // TODO
@@ -23,11 +28,6 @@ void main() {
 
     // int shared
     test('to test the property `shared`', () async {
-      // TODO
-    });
-
-    // int notShared
-    test('to test the property `notShared`', () async {
       // TODO
     });
 

@@ -16,6 +16,11 @@ void main() {
   // final instance = APIKeyResponseDto();
 
   group('test APIKeyResponseDto', () {
+    // DateTime createdAt
+    test('to test the property `createdAt`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -23,11 +28,6 @@ void main() {
 
     // String name
     test('to test the property `name`', () async {
-      // TODO
-    });
-
-    // DateTime createdAt
-    test('to test the property `createdAt`', () async {
       // TODO
     });
 

@@ -16,11 +16,6 @@ void main() {
   // final instance = ServerMediaTypesResponseDto();
 
   group('test ServerMediaTypesResponseDto', () {
-    // List<String> video (default value: const [])
-    test('to test the property `video`', () async {
-      // TODO
-    });
-
     // List<String> image (default value: const [])
     test('to test the property `image`', () async {
       // TODO
@@ -28,6 +23,11 @@ void main() {
 
     // List<String> sidecar (default value: const [])
     test('to test the property `sidecar`', () async {
+      // TODO
+    });
+
+    // List<String> video (default value: const [])
+    test('to test the property `video`', () async {
       // TODO
     });
 

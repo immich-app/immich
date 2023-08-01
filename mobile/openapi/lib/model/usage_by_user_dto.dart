@@ -13,56 +13,56 @@ part of openapi.api;
 class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
-    required this.userId,
-    required this.userFirstName,
-    required this.userLastName,
     required this.photos,
-    required this.videos,
     required this.usage,
+    required this.userFirstName,
+    required this.userId,
+    required this.userLastName,
+    required this.videos,
   });
-
-  String userId;
-
-  String userFirstName;
-
-  String userLastName;
 
   int photos;
 
-  int videos;
-
   int usage;
+
+  String userFirstName;
+
+  String userId;
+
+  String userLastName;
+
+  int videos;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
-     other.userId == userId &&
-     other.userFirstName == userFirstName &&
-     other.userLastName == userLastName &&
      other.photos == photos &&
-     other.videos == videos &&
-     other.usage == usage;
+     other.usage == usage &&
+     other.userFirstName == userFirstName &&
+     other.userId == userId &&
+     other.userLastName == userLastName &&
+     other.videos == videos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (userId.hashCode) +
-    (userFirstName.hashCode) +
-    (userLastName.hashCode) +
     (photos.hashCode) +
-    (videos.hashCode) +
-    (usage.hashCode);
+    (usage.hashCode) +
+    (userFirstName.hashCode) +
+    (userId.hashCode) +
+    (userLastName.hashCode) +
+    (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[userId=$userId, userFirstName=$userFirstName, userLastName=$userLastName, photos=$photos, videos=$videos, usage=$usage]';
+  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userFirstName=$userFirstName, userId=$userId, userLastName=$userLastName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'userId'] = this.userId;
-      json[r'userFirstName'] = this.userFirstName;
-      json[r'userLastName'] = this.userLastName;
       json[r'photos'] = this.photos;
-      json[r'videos'] = this.videos;
       json[r'usage'] = this.usage;
+      json[r'userFirstName'] = this.userFirstName;
+      json[r'userId'] = this.userId;
+      json[r'userLastName'] = this.userLastName;
+      json[r'videos'] = this.videos;
     return json;
   }
 
@@ -74,12 +74,12 @@ class UsageByUserDto {
       final json = value.cast<String, dynamic>();
 
       return UsageByUserDto(
-        userId: mapValueOfType<String>(json, r'userId')!,
-        userFirstName: mapValueOfType<String>(json, r'userFirstName')!,
-        userLastName: mapValueOfType<String>(json, r'userLastName')!,
         photos: mapValueOfType<int>(json, r'photos')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
+        userFirstName: mapValueOfType<String>(json, r'userFirstName')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
+        userLastName: mapValueOfType<String>(json, r'userLastName')!,
+        videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
     return null;
@@ -127,12 +127,12 @@ class UsageByUserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'userId',
-    'userFirstName',
-    'userLastName',
     'photos',
-    'videos',
     'usage',
+    'userFirstName',
+    'userId',
+    'userLastName',
+    'videos',
   };
 }
 

@@ -16,18 +16,8 @@ void main() {
   // final instance = ImportAssetDto();
 
   group('test ImportAssetDto', () {
-    // bool isReadOnly (default value: true)
-    test('to test the property `isReadOnly`', () async {
-      // TODO
-    });
-
     // String assetPath
     test('to test the property `assetPath`', () async {
-      // TODO
-    });
-
-    // String sidecarPath
-    test('to test the property `sidecarPath`', () async {
       // TODO
     });
 
@@ -41,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // String duration
+    test('to test the property `duration`', () async {
+      // TODO
+    });
+
     // DateTime fileCreatedAt
     test('to test the property `fileCreatedAt`', () async {
       // TODO
@@ -51,13 +46,18 @@ void main() {
       // TODO
     });
 
+    // bool isArchived
+    test('to test the property `isArchived`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
     });
 
-    // bool isArchived
-    test('to test the property `isArchived`', () async {
+    // bool isReadOnly (default value: true)
+    test('to test the property `isReadOnly`', () async {
       // TODO
     });
 
@@ -66,8 +66,8 @@ void main() {
       // TODO
     });
 
-    // String duration
-    test('to test the property `duration`', () async {
+    // String sidecarPath
+    test('to test the property `sidecarPath`', () async {
       // TODO
     });
 

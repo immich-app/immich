@@ -16,8 +16,13 @@ void main() {
   // final instance = UserResponseDto();
 
   group('test UserResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
+    // DateTime createdAt
+    test('to test the property `createdAt`', () async {
+      // TODO
+    });
+
+    // DateTime deletedAt
+    test('to test the property `deletedAt`', () async {
       // TODO
     });
 
@@ -26,8 +31,23 @@ void main() {
       // TODO
     });
 
+    // String externalPath
+    test('to test the property `externalPath`', () async {
+      // TODO
+    });
+
     // String firstName
     test('to test the property `firstName`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // bool isAdmin
+    test('to test the property `isAdmin`', () async {
       // TODO
     });
 
@@ -36,13 +56,8 @@ void main() {
       // TODO
     });
 
-    // String storageLabel
-    test('to test the property `storageLabel`', () async {
-      // TODO
-    });
-
-    // String externalPath
-    test('to test the property `externalPath`', () async {
+    // String oauthId
+    test('to test the property `oauthId`', () async {
       // TODO
     });
 
@@ -56,28 +71,13 @@ void main() {
       // TODO
     });
 
-    // bool isAdmin
-    test('to test the property `isAdmin`', () async {
-      // TODO
-    });
-
-    // DateTime createdAt
-    test('to test the property `createdAt`', () async {
-      // TODO
-    });
-
-    // DateTime deletedAt
-    test('to test the property `deletedAt`', () async {
+    // String storageLabel
+    test('to test the property `storageLabel`', () async {
       // TODO
     });
 
     // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
-      // TODO
-    });
-
-    // String oauthId
-    test('to test the property `oauthId`', () async {
       // TODO
     });
 
