@@ -2,9 +2,9 @@ import {
   AddUsersDto,
   AlbumCountResponseDto,
   AlbumService,
-  AssetIdsDto,
-  AssetIdsResponseDto,
   AuthUserDto,
+  BulkIdResponseDto,
+  BulkIdsDto,
   CreateAlbumDto,
   UpdateAlbumDto,
 } from '@app/domain';
@@ -59,17 +59,17 @@ export class AlbumController {
   addAssetsToAlbum(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: AssetIdsDto,
-  ): Promise<AssetIdsResponseDto[]> {
+    @Body() dto: BulkIdsDto,
+  ): Promise<BulkIdResponseDto[]> {
     return this.service.addAssets(authUser, id, dto);
   }
 
   @Delete(':id/assets')
   removeAssetFromAlbum(
     @AuthUser() authUser: AuthUserDto,
-    @Body() dto: AssetIdsDto,
+    @Body() dto: BulkIdsDto,
     @Param() { id }: UUIDParamDto,
-  ): Promise<AssetIdsResponseDto[]> {
+  ): Promise<BulkIdResponseDto[]> {
     return this.service.removeAssets(authUser, id, dto);
   }
 

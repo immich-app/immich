@@ -1,8 +1,8 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto, IAssetRepository, mapAsset } from '../asset';
+import { AccessCore, IAccessRepository, Permission } from '../access';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
-import { AccessCore, IAccessRepository, Permission } from '../index';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
@@ -138,27 +138,27 @@ export class AlbumService {
     await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
   }
 
-  async addAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<any> {
+  async addAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id);
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
-    const results: AssetIdsResponseDto[] = [];
-    for (const assetId of dto.assetIds) {
-      const hasAsset = album.assets.find((asset) => asset.id === assetId);
+    const results: BulkIdResponseDto[] = [];
+    for (const id of dto.ids) {
+      const hasAsset = album.assets.find((asset) => asset.id === id);
       if (hasAsset) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.DUPLICATE });
+        results.push({ id, success: false, error: BulkIdErrorReason.DUPLICATE });
         continue;
       }
 
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
+      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, id);
       if (!hasAccess) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
+        results.push({ id, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      results.push({ assetId, success: true });
-      album.assets.push({ id: assetId } as AssetEntity);
+      results.push({ id, success: true });
+      album.assets.push({ id } as AssetEntity);
     }
 
     const newAsset = results.find(({ success }) => success);
@@ -167,38 +167,38 @@ export class AlbumService {
         id,
         assets: album.assets,
         updatedAt: new Date(),
-        albumThumbnailAssetId: album.albumThumbnailAssetId ?? newAsset.assetId,
+        albumThumbnailAssetId: album.albumThumbnailAssetId ?? newAsset.id,
       });
     }
 
     return results;
   }
 
-  async removeAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<any> {
+  async removeAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id);
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
-    const results: AssetIdsResponseDto[] = [];
-    for (const assetId of dto.assetIds) {
-      const hasAsset = album.assets.find(({ id }) => id === assetId);
+    const results: BulkIdResponseDto[] = [];
+    for (const id of dto.ids) {
+      const hasAsset = album.assets.find((asset) => asset.id === id);
       if (!hasAsset) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
+        results.push({ id, success: false, error: BulkIdErrorReason.NOT_FOUND });
         continue;
       }
 
       const hasAccess = await this.access.hasAny(authUser, [
         { permission: Permission.ALBUM_REMOVE_ASSET, id },
-        { permission: Permission.ASSET_SHARE, id: assetId },
+        { permission: Permission.ASSET_SHARE, id },
       ]);
       if (!hasAccess) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
+        results.push({ id, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      results.push({ assetId, success: true });
-      album.assets = album.assets.filter(({ id }) => id !== assetId);
-      if (album.albumThumbnailAssetId === assetId) {
+      results.push({ id, success: true });
+      album.assets = album.assets.filter((asset) => asset.id !== id);
+      if (album.albumThumbnailAssetId === id) {
         album.albumThumbnailAssetId = null;
       }
     }

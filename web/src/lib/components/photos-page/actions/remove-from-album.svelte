@@ -19,9 +19,7 @@
     try {
       const { data: results } = await api.albumApi.removeAssetFromAlbum({
         id: album.id,
-        assetIdsDto: {
-          assetIds: Array.from(getAssets()).map((a) => a.id),
-        },
+        bulkIdsDto: { ids: Array.from(getAssets()).map((a) => a.id) },
       });
 
       const { data } = await api.albumApi.getAlbumInfo({ id: album.id });

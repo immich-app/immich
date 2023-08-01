@@ -287,7 +287,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           }
@@ -300,7 +300,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   }
                 }
               }
@@ -340,7 +340,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           }
@@ -353,7 +353,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   }
                 }
               }
@@ -5061,6 +5061,21 @@
         "required": [
           "id",
           "success"
+        ]
+      },
+      "BulkIdsDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "ChangePasswordDto": {

@@ -185,9 +185,7 @@
     try {
       const { data: results } = await api.albumApi.addAssetsToAlbum({
         id: album.id,
-        assetIdsDto: {
-          assetIds: assets.map((a) => a.id),
-        },
+        bulkIdsDto: { ids: assets.map((a) => a.id) },
         key: sharedLink?.key,
       });
 
