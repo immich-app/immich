@@ -34,7 +34,7 @@ class VideoViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (asset.storage == AssetState.local && asset.livePhotoVideoId == null) {
+    if (asset.isLocal && asset.livePhotoVideoId == null) {
       final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
       return videoFile.when(
         data: (data) => VideoPlayer(
