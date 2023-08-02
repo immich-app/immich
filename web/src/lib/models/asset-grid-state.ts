@@ -96,7 +96,7 @@ export class AssetGridState implements AssetStore {
   }
 
   getBucketIndexByAssetId(assetId: string) {
-    return this.assetToBucket[assetId]?.bucketIndex || null;
+    return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
