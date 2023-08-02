@@ -60,7 +60,7 @@
 
   $: {
     if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
-      const heightDelta = assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+      const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
       }
