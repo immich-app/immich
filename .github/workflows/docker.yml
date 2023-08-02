@@ -27,13 +27,13 @@ jobs:
           - context: "server"
             image: "immich-server"
             platforms: "linux/arm/v7,linux/amd64,linux/arm64"
+            runs-on: self-hosted
           - context: "web"
             image: "immich-web"
             platforms: "linux/arm/v7,linux/amd64,linux/arm64"
           - context: "machine-learning"
             image: "immich-machine-learning"
             platforms: "linux/amd64,linux/arm64"
-            runs-on: self-hosted
           - context: "nginx"
             image: "immich-proxy"
             platforms: "linux/arm/v7,linux/amd64,linux/arm64"
