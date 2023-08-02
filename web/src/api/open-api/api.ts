@@ -666,13 +666,13 @@ export interface AssetStatsResponseDto {
      * @type {number}
      * @memberof AssetStatsResponseDto
      */
-    'videos': number;
+    'total': number;
     /**
      * 
      * @type {number}
      * @memberof AssetStatsResponseDto
      */
-    'total': number;
+    'videos': number;
 }
 /**
  * 
