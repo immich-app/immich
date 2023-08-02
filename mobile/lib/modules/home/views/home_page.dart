@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
@@ -208,6 +209,9 @@ class HomePage extends HookConsumerWidget {
                 ),
                 toastType: ToastType.success,
               );
+
+              ref.watch(albumProvider.notifier).getAllAlbums();
+              ref.invalidate(albumDetailProvider(album.id));
             }
           }
         } finally {

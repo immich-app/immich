@@ -278,7 +278,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RemoveAssetsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -289,7 +289,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -336,7 +339,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddAssetsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -347,7 +350,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AddAssetsResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -4535,42 +4541,6 @@
         ],
         "type": "object"
       },
-      "AddAssetsDto": {
-        "properties": {
-          "assetIds": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "assetIds"
-        ],
-        "type": "object"
-      },
-      "AddAssetsResponseDto": {
-        "properties": {
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          },
-          "alreadyInAlbum": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "successfullyAdded": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "successfullyAdded",
-          "alreadyInAlbum"
-        ],
-        "type": "object"
-      },
       "AddUsersDto": {
         "properties": {
           "sharedUserIds": {
@@ -5090,6 +5060,21 @@
         "required": [
           "id",
           "success"
+        ],
+        "type": "object"
+      },
+      "BulkIdsDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
         ],
         "type": "object"
       },
@@ -6052,21 +6037,6 @@
         "required": [
           "isActive",
           "isPaused"
-        ],
-        "type": "object"
-      },
-      "RemoveAssetsDto": {
-        "properties": {
-          "assetIds": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "assetIds"
         ],
         "type": "object"
       },

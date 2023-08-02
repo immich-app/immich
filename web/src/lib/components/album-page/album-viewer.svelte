@@ -92,6 +92,7 @@
 
   let multiSelectAsset: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = multiSelectAsset.size > 0;
+  $: isMultiSelectionUserOwned = Array.from(multiSelectAsset).every((asset) => asset.ownerId === currentUser?.id);
 
   afterNavigate(({ from }) => {
     backUrl = from?.url.pathname ?? '/albums';
@@ -182,24 +183,24 @@
   const createAlbumHandler = async (event: CustomEvent) => {
     const { assets }: { assets: AssetResponseDto[] } = event.detail;
     try {
-      const { data } = await api.albumApi.addAssetsToAlbum({
+      const { data: results } = await api.albumApi.addAssetsToAlbum({
         id: album.id,
-        addAssetsDto: {
-          assetIds: assets.map((a) => a.id),
-        },
+        bulkIdsDto: { ids: assets.map((a) => a.id) },
         key: sharedLink?.key,
       });
 
-      if (data.album) {
-        album = data.album;
-      }
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+      });
+
+      const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
+      album = data;
+
       isShowAssetSelection = false;
     } catch (e) {
-      console.error('Error [createAlbumHandler] ', e);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error creating album, check console for more details',
-      });
+      handleError(e, 'Error creating album');
     }
   };
 
@@ -307,7 +308,7 @@
       {#if sharedLink?.allowDownload || !isPublicShared}
         <DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink?.key} />
       {/if}
-      {#if isOwned}
+      {#if isOwned || isMultiSelectionUserOwned}
         <RemoveFromAlbum bind:album />
       {/if}
     </AssetSelectControlBar>

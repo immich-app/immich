@@ -189,11 +189,8 @@
     isShowAlbumPicker = false;
     const album = event.detail.album;
 
-    addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
-      if (dto.successfullyAdded === 1 && dto.album) {
-        appearsInAlbums = [...appearsInAlbums, dto.album];
-      }
-    });
+    await addAssetsToAlbum(album.id, [asset.id]);
+    await getAllAlbums();
   };
 
   const disableKeyDownEvent = () => {

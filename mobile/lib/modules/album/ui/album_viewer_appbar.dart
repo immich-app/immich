@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -99,7 +100,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         Navigator.pop(context);
         selectionDisabled();
         ref.watch(albumProvider.notifier).getAllAlbums();
-        ref.invalidate(sharedAlbumDetailProvider(album.id));
+        ref.invalidate(albumDetailProvider(album.id));
       } else {
         Navigator.pop(context);
         ImmichToast.show(
