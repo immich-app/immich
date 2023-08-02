@@ -8,7 +8,7 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
-  constructor(protected config: SystemConfigFFmpegDto) { }
+  constructor(protected config: SystemConfigFFmpegDto) {}
 
   getOptions(stream: VideoStreamInfo) {
     const options = {
@@ -50,7 +50,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.shouldToneMap(stream)) {
       options.push(...this.getToneMapping());
     }
-    options.push('format=yuv420p')
+    options.push('format=yuv420p');
 
     return options;
   }
@@ -373,7 +373,14 @@ export class QSVConfig extends BaseHWConfig {
 
   getBaseOutputOptions() {
     // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-g 256', '-extbrc 1', '-refs 5', '-bf 7', ...super.getBaseOutputOptions()];
+    const options = [
+      `-vcodec ${this.config.targetVideoCodec}_qsv`,
+      '-g 256',
+      '-extbrc 1',
+      '-refs 5',
+      '-bf 7',
+      ...super.getBaseOutputOptions(),
+    ];
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -383,7 +390,7 @@ export class QSVConfig extends BaseHWConfig {
 
   getFilterOptions(stream: VideoStreamInfo) {
     const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
-    options.push('format=nv12', 'hwupload=extra_hw_frames=64')
+    options.push('format=nv12', 'hwupload=extra_hw_frames=64');
     if (this.shouldScale(stream)) {
       options.push(`scale_qsv=${this.getScaling(stream)}`);
     }
@@ -429,7 +436,7 @@ export class VAAPIConfig extends BaseHWConfig {
 
   getFilterOptions(stream: VideoStreamInfo) {
     const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
-    options.push('format=nv12', 'hwupload')
+    options.push('format=nv12', 'hwupload');
     if (this.shouldScale(stream)) {
       options.push(`scale_vaapi=${this.getScaling(stream)}`);
     }

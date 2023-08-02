@@ -31,7 +31,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
-        isHDR: false
+        isHDR: false,
       },
       {
         height: 1080,
@@ -40,7 +40,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 99,
         rotation: 0,
-        isHDR: false
+        isHDR: false,
       },
     ],
   }),
@@ -54,7 +54,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
-        isHDR: false
+        isHDR: false,
       },
     ],
   }),
@@ -68,7 +68,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
-        isHDR: false
+        isHDR: false,
       },
     ],
   }),
@@ -82,7 +82,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 90,
-        isHDR: false
+        isHDR: false,
       },
     ],
   }),

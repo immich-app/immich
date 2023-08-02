@@ -134,7 +134,12 @@ describe(MediaService.name, () => {
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
         inputOptions: [],
-        outputOptions: ['-ss 00:00:00.000', '-frames:v 1', '-v verbose', '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p'],
+        outputOptions: [
+          '-ss 00:00:00.000',
+          '-frames:v 1',
+          '-v verbose',
+          '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p',
+        ],
         twoPass: false,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
