@@ -82,6 +82,9 @@ String parameterToString(dynamic value) {
   if (value is TimeGroupEnum) {
     return TimeGroupEnumTypeTransformer().encode(value).toString();
   }
+  if (value is TranscodeHWAccel) {
+    return TranscodeHWAccelTypeTransformer().encode(value).toString();
+  }
   if (value is TranscodePolicy) {
     return TranscodePolicyTypeTransformer().encode(value).toString();
   }

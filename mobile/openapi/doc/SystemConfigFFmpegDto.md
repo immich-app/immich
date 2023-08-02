@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
 **crf** | **int** |  | 
 **maxBitrate** | **String** |  | 
 **preset** | **String** |  | 

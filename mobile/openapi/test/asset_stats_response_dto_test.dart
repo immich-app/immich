@@ -21,13 +21,13 @@ void main() {
       // TODO
     });
 
-    // int total
-    test('to test the property `total`', () async {
+    // int videos
+    test('to test the property `videos`', () async {
       // TODO
     });
 
-    // int videos
-    test('to test the property `videos`', () async {
+    // int total
+    test('to test the property `total`', () async {
       // TODO
     });
 

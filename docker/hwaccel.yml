@@ -1,0 +1,23 @@
+version: "3.8"
+
+# Hardware acceleration for transcoding - Optional
+# This is only needed if you want to use hardware acceleration for transcoding.
+# Depending on your hardware, you should uncomment the relevant lines below.
+
+services:
+  hwaccel:
+    # devices:
+    #   - /dev/dri:/dev/dri  # If using Intel QuickSync or VAAPI
+    # volumes:
+    #   - /usr/lib/wsl:/usr/lib/wsl # If using VAAPI in WSL2
+    # environment:
+    #   - NVIDIA_DRIVER_CAPABILITIES=all # If using NVIDIA GPU
+    #   - LD_LIBRARY_PATH=/usr/lib/wsl/lib # If using VAAPI in WSL2
+    #   - LIBVA_DRIVER_NAME=d3d12 # If using VAAPI in WSL2
+    # deploy: # Uncomment this section if using NVIDIA GPU
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]

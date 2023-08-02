@@ -113,6 +113,7 @@ doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
+doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
@@ -245,6 +246,7 @@ lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
+lib/model/transcode_hw_accel.dart
 lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
@@ -366,6 +368,7 @@ test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
 test/time_group_enum_test.dart
+test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart

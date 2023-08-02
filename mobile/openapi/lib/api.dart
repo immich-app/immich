@@ -140,6 +140,7 @@ part 'model/tag_response_dto.dart';
 part 'model/tag_type_enum.dart';
 part 'model/thumbnail_format.dart';
 part 'model/time_group_enum.dart';
+part 'model/transcode_hw_accel.dart';
 part 'model/transcode_policy.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_asset_dto.dart';

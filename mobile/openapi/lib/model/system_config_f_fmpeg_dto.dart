@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigFFmpegDto {
   /// Returns a new [SystemConfigFFmpegDto] instance.
   SystemConfigFFmpegDto({
+    required this.accel,
     required this.crf,
     required this.maxBitrate,
     required this.preset,
@@ -23,6 +24,8 @@ class SystemConfigFFmpegDto {
     required this.transcode,
     required this.twoPass,
   });
+
+  TranscodeHWAccel accel;
 
   int crf;
 
@@ -44,6 +47,7 @@ class SystemConfigFFmpegDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
+     other.accel == accel &&
      other.crf == crf &&
      other.maxBitrate == maxBitrate &&
      other.preset == preset &&
@@ -57,6 +61,7 @@ class SystemConfigFFmpegDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (accel.hashCode) +
     (crf.hashCode) +
     (maxBitrate.hashCode) +
     (preset.hashCode) +
@@ -68,10 +73,11 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'accel'] = this.accel;
       json[r'crf'] = this.crf;
       json[r'maxBitrate'] = this.maxBitrate;
       json[r'preset'] = this.preset;
@@ -92,6 +98,7 @@ class SystemConfigFFmpegDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigFFmpegDto(
+        accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
         preset: mapValueOfType<String>(json, r'preset')!,
@@ -148,6 +155,7 @@ class SystemConfigFFmpegDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'accel',
     'crf',
     'maxBitrate',
     'preset',

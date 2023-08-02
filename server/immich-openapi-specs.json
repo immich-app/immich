@@ -4973,14 +4973,15 @@
         "type": "object"
       },
       "AssetStatsResponseDto": {
+        "type": "object",
         "properties": {
           "images": {
             "type": "integer"
           },
-          "total": {
+          "videos": {
             "type": "integer"
           },
-          "videos": {
+          "total": {
             "type": "integer"
           }
         },
@@ -4988,8 +4989,7 @@
           "images",
           "videos",
           "total"
-        ],
-        "type": "object"
+        ]
       },
       "AssetTypeEnum": {
         "enum": [
@@ -6547,6 +6547,9 @@
       },
       "SystemConfigFFmpegDto": {
         "properties": {
+          "accel": {
+            "$ref": "#/components/schemas/TranscodeHWAccel"
+          },
           "crf": {
             "type": "integer"
           },
@@ -6581,6 +6584,7 @@
           "targetVideoCodec",
           "targetAudioCodec",
           "transcode",
+          "accel",
           "preset",
           "targetResolution",
           "maxBitrate",
@@ -6806,6 +6810,15 @@
         "enum": [
           "day",
           "month"
+        ],
+        "type": "string"
+      },
+      "TranscodeHWAccel": {
+        "enum": [
+          "nvenc",
+          "qsv",
+          "vaapi",
+          "disabled"
         ],
         "type": "string"
       },

@@ -375,6 +375,8 @@ class ApiClient {
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':
           return TimeGroupEnumTypeTransformer().decode(value);
+        case 'TranscodeHWAccel':
+          return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
