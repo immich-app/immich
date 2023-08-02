@@ -21,6 +21,7 @@
   <a href="README.md">English</a>
   <a href="README_zh_CN.md">中文</a>
   <a href="README_tr_TR.md">Türkçe</a>
+  <a href="README_ca_ES.md">Español</a>
 </p>
 
 ## Avís legal

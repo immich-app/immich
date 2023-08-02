@@ -4973,15 +4973,14 @@
         "type": "object"
       },
       "AssetStatsResponseDto": {
-        "type": "object",
         "properties": {
           "images": {
             "type": "integer"
           },
-          "videos": {
+          "total": {
             "type": "integer"
           },
-          "total": {
+          "videos": {
             "type": "integer"
           }
         },
@@ -4989,7 +4988,8 @@
           "images",
           "videos",
           "total"
-        ]
+        ],
+        "type": "object"
       },
       "AssetTypeEnum": {
         "enum": [

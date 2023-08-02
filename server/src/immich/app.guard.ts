@@ -61,14 +61,14 @@ export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): Auth
 });
 
 export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
-  const req = ctx.switchToHttp().getRequest();
+  const req = ctx.switchToHttp().getRequest<Request>();
   const userAgent = UAParser(req.headers['user-agent']);
 
   return {
-    clientIp: req.clientIp,
+    clientIp: req.ip,
     isSecure: req.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || req.headers.devicemodel || '',
-    deviceOS: userAgent.os.name || req.headers.devicetype || '',
+    deviceType: userAgent.browser.name || userAgent.device.type || (req.headers.devicemodel as string) || '',
+    deviceOS: userAgent.os.name || (req.headers.devicetype as string) || '',
   };
 });
 
