@@ -16,13 +16,18 @@ void main() {
   // final instance = SystemConfigOAuthDto();
 
   group('test SystemConfigOAuthDto', () {
-    // bool enabled
-    test('to test the property `enabled`', () async {
+    // bool autoLaunch
+    test('to test the property `autoLaunch`', () async {
       // TODO
     });
 
-    // String issuerUrl
-    test('to test the property `issuerUrl`', () async {
+    // bool autoRegister
+    test('to test the property `autoRegister`', () async {
+      // TODO
+    });
+
+    // String buttonText
+    test('to test the property `buttonText`', () async {
       // TODO
     });
 
@@ -36,28 +41,13 @@ void main() {
       // TODO
     });
 
-    // String scope
-    test('to test the property `scope`', () async {
+    // bool enabled
+    test('to test the property `enabled`', () async {
       // TODO
     });
 
-    // String storageLabelClaim
-    test('to test the property `storageLabelClaim`', () async {
-      // TODO
-    });
-
-    // String buttonText
-    test('to test the property `buttonText`', () async {
-      // TODO
-    });
-
-    // bool autoRegister
-    test('to test the property `autoRegister`', () async {
-      // TODO
-    });
-
-    // bool autoLaunch
-    test('to test the property `autoLaunch`', () async {
+    // String issuerUrl
+    test('to test the property `issuerUrl`', () async {
       // TODO
     });
 
@@ -68,6 +58,16 @@ void main() {
 
     // String mobileRedirectUri
     test('to test the property `mobileRedirectUri`', () async {
+      // TODO
+    });
+
+    // String scope
+    test('to test the property `scope`', () async {
+      // TODO
+    });
+
+    // String storageLabelClaim
+    test('to test the property `storageLabelClaim`', () async {
       // TODO
     });
 

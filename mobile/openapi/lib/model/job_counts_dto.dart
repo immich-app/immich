@@ -15,54 +15,54 @@ class JobCountsDto {
   JobCountsDto({
     required this.active,
     required this.completed,
-    required this.failed,
     required this.delayed,
-    required this.waiting,
+    required this.failed,
     required this.paused,
+    required this.waiting,
   });
 
   int active;
 
   int completed;
 
-  int failed;
-
   int delayed;
 
-  int waiting;
+  int failed;
 
   int paused;
+
+  int waiting;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCountsDto &&
      other.active == active &&
      other.completed == completed &&
-     other.failed == failed &&
      other.delayed == delayed &&
-     other.waiting == waiting &&
-     other.paused == paused;
+     other.failed == failed &&
+     other.paused == paused &&
+     other.waiting == waiting;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (active.hashCode) +
     (completed.hashCode) +
-    (failed.hashCode) +
     (delayed.hashCode) +
-    (waiting.hashCode) +
-    (paused.hashCode);
+    (failed.hashCode) +
+    (paused.hashCode) +
+    (waiting.hashCode);
 
   @override
-  String toString() => 'JobCountsDto[active=$active, completed=$completed, failed=$failed, delayed=$delayed, waiting=$waiting, paused=$paused]';
+  String toString() => 'JobCountsDto[active=$active, completed=$completed, delayed=$delayed, failed=$failed, paused=$paused, waiting=$waiting]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'active'] = this.active;
       json[r'completed'] = this.completed;
-      json[r'failed'] = this.failed;
       json[r'delayed'] = this.delayed;
-      json[r'waiting'] = this.waiting;
+      json[r'failed'] = this.failed;
       json[r'paused'] = this.paused;
+      json[r'waiting'] = this.waiting;
     return json;
   }
 
@@ -76,10 +76,10 @@ class JobCountsDto {
       return JobCountsDto(
         active: mapValueOfType<int>(json, r'active')!,
         completed: mapValueOfType<int>(json, r'completed')!,
-        failed: mapValueOfType<int>(json, r'failed')!,
         delayed: mapValueOfType<int>(json, r'delayed')!,
-        waiting: mapValueOfType<int>(json, r'waiting')!,
+        failed: mapValueOfType<int>(json, r'failed')!,
         paused: mapValueOfType<int>(json, r'paused')!,
+        waiting: mapValueOfType<int>(json, r'waiting')!,
       );
     }
     return null;
@@ -129,10 +129,10 @@ class JobCountsDto {
   static const requiredKeys = <String>{
     'active',
     'completed',
-    'failed',
     'delayed',
-    'waiting',
+    'failed',
     'paused',
+    'waiting',
   };
 }
 

@@ -16,8 +16,8 @@ void main() {
   // final instance = AdminSignupResponseDto();
 
   group('test AdminSignupResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
+    // DateTime createdAt
+    test('to test the property `createdAt`', () async {
       // TODO
     });
 
@@ -31,13 +31,13 @@ void main() {
       // TODO
     });
 
-    // String lastName
-    test('to test the property `lastName`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 
-    // DateTime createdAt
-    test('to test the property `createdAt`', () async {
+    // String lastName
+    test('to test the property `lastName`', () async {
       // TODO
     });
 

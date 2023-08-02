@@ -3,11 +3,35 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
-import { AlbumEntity } from '../entities';
+import { AlbumEntity, AssetEntity } from '../entities';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
-  constructor(@InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
+  ) {}
+
+  getById(id: string): Promise<AlbumEntity | null> {
+    return this.repository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        owner: true,
+        sharedUsers: true,
+        assets: {
+          exifInfo: true,
+        },
+        sharedLinks: true,
+      },
+      order: {
+        assets: {
+          fileCreatedAt: 'DESC',
+        },
+      },
+    });
+  }
 
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
     return this.repository.find({
@@ -160,5 +184,47 @@ export class AlbumRepository implements IAlbumRepository {
         assets: true,
       },
     });
+  }
+
+  /**
+   * Makes sure all thumbnails for albums are updated by:
+   * - Removing thumbnails from albums without assets
+   * - Removing references of thumbnails to assets outside the album
+   * - Setting a thumbnail when none is set and the album contains assets
+   *
+   * @returns Amount of updated album thumbnails or undefined when unknown
+   */
+  async updateThumbnails(): Promise<number | undefined> {
+    // Subquery for getting a new thumbnail.
+    const newThumbnail = this.assetRepository
+      .createQueryBuilder('assets')
+      .select('albums_assets2.assetsId')
+      .addFrom('albums_assets_assets', 'albums_assets2')
+      .where('albums_assets2.assetsId = assets.id')
+      .andWhere('albums_assets2.albumsId = "albums"."id"') // Reference to albums.id outside this query
+      .orderBy('assets.fileCreatedAt', 'DESC')
+      .limit(1);
+
+    // Using dataSource, because there is no direct access to albums_assets_assets.
+    const albumHasAssets = dataSource
+      .createQueryBuilder()
+      .select('1')
+      .from('albums_assets_assets', 'albums_assets')
+      .where('"albums"."id" = "albums_assets"."albumsId"');
+
+    const albumContainsThumbnail = albumHasAssets
+      .clone()
+      .andWhere('"albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"');
+
+    const updateAlbums = this.repository
+      .createQueryBuilder('albums')
+      .update(AlbumEntity)
+      .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
+      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${albumHasAssets.getQuery()})`)
+      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${albumContainsThumbnail.getQuery()})`);
+
+    const result = await updateAlbums.execute();
+
+    return result.affected;
   }
 }

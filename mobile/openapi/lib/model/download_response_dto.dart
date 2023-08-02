@@ -13,32 +13,32 @@ part of openapi.api;
 class DownloadResponseDto {
   /// Returns a new [DownloadResponseDto] instance.
   DownloadResponseDto({
-    required this.totalSize,
     this.archives = const [],
+    required this.totalSize,
   });
-
-  int totalSize;
 
   List<DownloadArchiveInfo> archives;
 
+  int totalSize;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadResponseDto &&
-     other.totalSize == totalSize &&
-     other.archives == archives;
+     other.archives == archives &&
+     other.totalSize == totalSize;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (totalSize.hashCode) +
-    (archives.hashCode);
+    (archives.hashCode) +
+    (totalSize.hashCode);
 
   @override
-  String toString() => 'DownloadResponseDto[totalSize=$totalSize, archives=$archives]';
+  String toString() => 'DownloadResponseDto[archives=$archives, totalSize=$totalSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'totalSize'] = this.totalSize;
       json[r'archives'] = this.archives;
+      json[r'totalSize'] = this.totalSize;
     return json;
   }
 
@@ -50,8 +50,8 @@ class DownloadResponseDto {
       final json = value.cast<String, dynamic>();
 
       return DownloadResponseDto(
-        totalSize: mapValueOfType<int>(json, r'totalSize')!,
         archives: DownloadArchiveInfo.listFromJson(json[r'archives']),
+        totalSize: mapValueOfType<int>(json, r'totalSize')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class DownloadResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'totalSize',
     'archives',
+    'totalSize',
   };
 }
 

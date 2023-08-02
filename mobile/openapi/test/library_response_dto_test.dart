@@ -16,33 +16,8 @@ void main() {
   // final instance = LibraryResponseDto();
 
   group('test LibraryResponseDto', () {
-    // LibraryType type
-    test('to test the property `type`', () async {
-      // TODO
-    });
-
     // int assetCount
     test('to test the property `assetCount`', () async {
-      // TODO
-    });
-
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // String ownerId
-    test('to test the property `ownerId`', () async {
-      // TODO
-    });
-
-    // String name
-    test('to test the property `name`', () async {
-      // TODO
-    });
-
-    // List<String> importPaths (default value: const [])
-    test('to test the property `importPaths`', () async {
       // TODO
     });
 
@@ -51,13 +26,38 @@ void main() {
       // TODO
     });
 
-    // DateTime updatedAt
-    test('to test the property `updatedAt`', () async {
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // List<String> importPaths (default value: const [])
+    test('to test the property `importPaths`', () async {
+      // TODO
+    });
+
+    // String name
+    test('to test the property `name`', () async {
+      // TODO
+    });
+
+    // String ownerId
+    test('to test the property `ownerId`', () async {
       // TODO
     });
 
     // DateTime refreshedAt
     test('to test the property `refreshedAt`', () async {
+      // TODO
+    });
+
+    // LibraryType type
+    test('to test the property `type`', () async {
+      // TODO
+    });
+
+    // DateTime updatedAt
+    test('to test the property `updatedAt`', () async {
       // TODO
     });
 

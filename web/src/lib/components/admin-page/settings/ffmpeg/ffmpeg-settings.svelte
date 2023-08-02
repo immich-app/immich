@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, AudioCodec, SystemConfigFFmpegDto, TranscodePolicy, VideoCodec } from '@api';
+  import { api, AudioCodec, SystemConfigFFmpegDto, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
@@ -187,6 +187,29 @@
               },
             ]}
             isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
+          />
+
+          <SettingSelect
+            label="HARDWARE ACCELERATION"
+            desc="Experimental. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
+            bind:value={ffmpegConfig.accel}
+            name="accel"
+            options={[
+              { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
+              {
+                value: TranscodeHWAccel.Qsv,
+                text: 'Quick Sync (requires 7th gen Intel CPU or later)',
+              },
+              {
+                value: TranscodeHWAccel.Vaapi,
+                text: 'VAAPI',
+              },
+              {
+                value: TranscodeHWAccel.Disabled,
+                text: 'Disabled',
+              },
+            ]}
+            isEdited={!(ffmpegConfig.accel == savedConfig.accel)}
           />
 
           <SettingSwitch

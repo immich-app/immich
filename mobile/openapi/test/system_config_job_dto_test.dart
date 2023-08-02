@@ -16,23 +16,8 @@ void main() {
   // final instance = SystemConfigJobDto();
 
   group('test SystemConfigJobDto', () {
-    // JobSettingsDto thumbnailGeneration
-    test('to test the property `thumbnailGeneration`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto metadataExtraction
-    test('to test the property `metadataExtraction`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto videoConversion
-    test('to test the property `videoConversion`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto objectTagging
-    test('to test the property `objectTagging`', () async {
+    // JobSettingsDto backgroundTask
+    test('to test the property `backgroundTask`', () async {
       // TODO
     });
 
@@ -41,18 +26,18 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
+    // JobSettingsDto library_
+    test('to test the property `library_`', () async {
       // TODO
     });
 
-    // JobSettingsDto backgroundTask
-    test('to test the property `backgroundTask`', () async {
+    // JobSettingsDto metadataExtraction
+    test('to test the property `metadataExtraction`', () async {
       // TODO
     });
 
-    // JobSettingsDto search
-    test('to test the property `search`', () async {
+    // JobSettingsDto objectTagging
+    test('to test the property `objectTagging`', () async {
       // TODO
     });
 
@@ -61,13 +46,28 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto search
+    test('to test the property `search`', () async {
+      // TODO
+    });
+
     // JobSettingsDto sidecar
     test('to test the property `sidecar`', () async {
       // TODO
     });
 
-    // JobSettingsDto library_
-    test('to test the property `library_`', () async {
+    // JobSettingsDto storageTemplateMigration
+    test('to test the property `storageTemplateMigration`', () async {
+      // TODO
+    });
+
+    // JobSettingsDto thumbnailGeneration
+    test('to test the property `thumbnailGeneration`', () async {
+      // TODO
+    });
+
+    // JobSettingsDto videoConversion
+    test('to test the property `videoConversion`', () async {
       // TODO
     });
 

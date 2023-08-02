@@ -13,78 +13,78 @@ part of openapi.api;
 class LibraryResponseDto {
   /// Returns a new [LibraryResponseDto] instance.
   LibraryResponseDto({
-    required this.type,
     required this.assetCount,
-    required this.id,
-    required this.ownerId,
-    required this.name,
-    this.importPaths = const [],
     required this.createdAt,
-    required this.updatedAt,
+    required this.id,
+    this.importPaths = const [],
+    required this.name,
+    required this.ownerId,
     this.refreshedAt,
+    required this.type,
+    required this.updatedAt,
   });
-
-  LibraryType type;
 
   int assetCount;
 
+  DateTime createdAt;
+
   String id;
-
-  String ownerId;
-
-  String name;
 
   List<String> importPaths;
 
-  DateTime createdAt;
+  String name;
 
-  DateTime updatedAt;
+  String ownerId;
 
   DateTime? refreshedAt;
 
+  LibraryType type;
+
+  DateTime updatedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
-     other.type == type &&
      other.assetCount == assetCount &&
-     other.id == id &&
-     other.ownerId == ownerId &&
-     other.name == name &&
-     other.importPaths == importPaths &&
      other.createdAt == createdAt &&
-     other.updatedAt == updatedAt &&
-     other.refreshedAt == refreshedAt;
+     other.id == id &&
+     other.importPaths == importPaths &&
+     other.name == name &&
+     other.ownerId == ownerId &&
+     other.refreshedAt == refreshedAt &&
+     other.type == type &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
     (assetCount.hashCode) +
-    (id.hashCode) +
-    (ownerId.hashCode) +
-    (name.hashCode) +
-    (importPaths.hashCode) +
     (createdAt.hashCode) +
-    (updatedAt.hashCode) +
-    (refreshedAt == null ? 0 : refreshedAt!.hashCode);
+    (id.hashCode) +
+    (importPaths.hashCode) +
+    (name.hashCode) +
+    (ownerId.hashCode) +
+    (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
+    (type.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[type=$type, assetCount=$assetCount, id=$id, ownerId=$ownerId, name=$name, importPaths=$importPaths, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
       json[r'assetCount'] = this.assetCount;
-      json[r'id'] = this.id;
-      json[r'ownerId'] = this.ownerId;
-      json[r'name'] = this.name;
-      json[r'importPaths'] = this.importPaths;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'id'] = this.id;
+      json[r'importPaths'] = this.importPaths;
+      json[r'name'] = this.name;
+      json[r'ownerId'] = this.ownerId;
     if (this.refreshedAt != null) {
       json[r'refreshedAt'] = this.refreshedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'refreshedAt'] = null;
     }
+      json[r'type'] = this.type;
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -96,17 +96,17 @@ class LibraryResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LibraryResponseDto(
-        type: LibraryType.fromJson(json[r'type'])!,
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        name: mapValueOfType<String>(json, r'name')!,
         importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        name: mapValueOfType<String>(json, r'name')!,
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
+        type: LibraryType.fromJson(json[r'type'])!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -154,13 +154,13 @@ class LibraryResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
     'assetCount',
-    'id',
-    'ownerId',
-    'name',
-    'importPaths',
     'createdAt',
+    'id',
+    'importPaths',
+    'name',
+    'ownerId',
+    'type',
     'updatedAt',
   };
 }

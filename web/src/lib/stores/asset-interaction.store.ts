@@ -1,49 +1,68 @@
-import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
-import { api, AssetResponseDto } from '@api';
 import { derived, writable } from 'svelte/store';
-import { assetGridState, assetStore } from './assets.store';
+import type { AssetResponseDto } from '../../api/open-api';
 
-// Asset Viewer
-export const viewingAssetStoreState = writable<AssetResponseDto>();
-export const isViewingAssetStoreState = writable<boolean>(false);
+export interface AssetInteractionStore {
+  addAssetToMultiselectGroup: (asset: AssetResponseDto) => void;
+  removeAssetFromMultiselectGroup: (asset: AssetResponseDto) => void;
+  addGroupToMultiselectGroup: (group: string) => void;
+  removeGroupFromMultiselectGroup: (group: string) => void;
+  setAssetSelectionCandidates: (assets: AssetResponseDto[]) => void;
+  clearAssetSelectionCandidates: () => void;
+  setAssetSelectionStart: (asset: AssetResponseDto | null) => void;
+  clearMultiselect: () => void;
+  isMultiSelectState: {
+    subscribe: (run: (value: boolean) => void, invalidate?: (value?: boolean) => void) => () => void;
+  };
+  assetsInAlbumState: {
+    subscribe: (
+      run: (value: AssetResponseDto[]) => void,
+      invalidate?: (value?: AssetResponseDto[]) => void,
+    ) => () => void;
+    set: (value: AssetResponseDto[]) => void;
+  };
+  selectedAssets: {
+    subscribe: (
+      run: (value: Set<AssetResponseDto>) => void,
+      invalidate?: (value?: Set<AssetResponseDto>) => void,
+    ) => () => void;
+  };
+  selectedGroup: {
+    subscribe: (run: (value: Set<string>) => void, invalidate?: (value?: Set<string>) => void) => () => void;
+  };
+  assetSelectionCandidates: {
+    subscribe: (
+      run: (value: Set<AssetResponseDto>) => void,
+      invalidate?: (value?: Set<AssetResponseDto>) => void,
+    ) => () => void;
+  };
+  assetSelectionStart: {
+    subscribe: (
+      run: (value: AssetResponseDto | null) => void,
+      invalidate?: (value?: AssetResponseDto | null) => void,
+    ) => () => void;
+  };
+}
 
-/**
- * Multi-selection mode
- */
-export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
-// Selected assets
-export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
-// Selected date groups
-export const selectedGroup = writable<Set<string>>(new Set());
-// If any asset selected
-export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
-
-/**
- * Range selection
- */
-// Candidates for the range selection. This set includes only loaded assets, so it improves highlight
-// performance. From the user's perspective, range is highlighted almost immediately
-export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
-// The beginning of the selection range
-export const assetSelectionStart = writable<AssetResponseDto | null>(null);
-
-function createAssetInteractionStore() {
-  let _assetGridState = new AssetGridState();
-  let _viewingAssetStoreState: AssetResponseDto;
+export function createAssetInteractionStore(): AssetInteractionStore {
   let _selectedAssets: Set<AssetResponseDto>;
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
   let _assetSelectionCandidates: Set<AssetResponseDto>;
   let _assetSelectionStart: AssetResponseDto | null;
 
-  // Subscriber
-  assetGridState.subscribe((state) => {
-    _assetGridState = state;
-  });
+  const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
+  // Selected assets
+  const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
+  // Selected date groups
+  const selectedGroup = writable<Set<string>>(new Set());
+  // If any asset selected
+  const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
 
-  viewingAssetStoreState.subscribe((asset) => {
-    _viewingAssetStoreState = asset;
-  });
+  // Candidates for the range selection. This set includes only loaded assets, so it improves highlight
+  // performance. From the user's perspective, range is highlighted almost immediately
+  const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
+  // The beginning of the selection range
+  const assetSelectionStart = writable<AssetResponseDto | null>(null);
 
   selectedAssets.subscribe((assets) => {
     _selectedAssets = assets;
@@ -64,89 +83,7 @@ function createAssetInteractionStore() {
   assetSelectionStart.subscribe((asset) => {
     _assetSelectionStart = asset;
   });
-  // Methods
 
-  /**
-   * Asset Viewer
-   */
-  const setViewingAsset = async (asset: AssetResponseDto) => {
-    setViewingAssetId(asset.id);
-  };
-
-  const setViewingAssetId = async (id: string) => {
-    const { data } = await api.assetApi.getAssetById({ id });
-    viewingAssetStoreState.set(data);
-    isViewingAssetStoreState.set(true);
-  };
-
-  const setIsViewingAsset = (isViewing: boolean) => {
-    isViewingAssetStoreState.set(isViewing);
-  };
-
-  const getNextAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
-    const currentBucket = _assetGridState.buckets[currentBucketIndex];
-    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
-    if (assetIndex === -1) {
-      return null;
-    }
-
-    if (assetIndex + 1 < currentBucket.assets.length) {
-      return currentBucket.assets[assetIndex + 1];
-    }
-
-    const nextBucketIndex = currentBucketIndex + 1;
-    if (nextBucketIndex >= _assetGridState.buckets.length) {
-      return null;
-    }
-
-    const nextBucket = _assetGridState.buckets[nextBucketIndex];
-    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Unknown);
-
-    return nextBucket.assets[0] ?? null;
-  };
-
-  const getPrevAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
-    const currentBucket = _assetGridState.buckets[currentBucketIndex];
-    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
-    if (assetIndex === -1) {
-      return null;
-    }
-
-    if (assetIndex > 0) {
-      return currentBucket.assets[assetIndex - 1];
-    }
-
-    const prevBucketIndex = currentBucketIndex - 1;
-    if (prevBucketIndex < 0) {
-      return null;
-    }
-
-    const prevBucket = _assetGridState.buckets[prevBucketIndex];
-    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Unknown);
-
-    return prevBucket.assets[prevBucket.assets.length - 1] ?? null;
-  };
-
-  const navigateAsset = async (direction: 'next' | 'previous') => {
-    const currentAssetId = _viewingAssetStoreState.id;
-    const currentBucketIndex = _assetGridState.loadedAssets[currentAssetId];
-    if (currentBucketIndex < 0 || currentBucketIndex >= _assetGridState.buckets.length) {
-      return;
-    }
-
-    const asset =
-      direction === 'next'
-        ? await getNextAsset(currentBucketIndex, currentAssetId)
-        : await getPrevAsset(currentBucketIndex, currentAssetId);
-
-    if (asset) {
-      setViewingAsset(asset);
-    }
-  };
-
-  /**
-   * Multiselect
-   */
   const addAssetToMultiselectGroup = (asset: AssetResponseDto) => {
     // Not select if in album already
     if (_assetsInAlbums.find((a) => a.id === asset.id)) {
@@ -205,10 +142,6 @@ function createAssetInteractionStore() {
   };
 
   return {
-    setViewingAsset,
-    setViewingAssetId,
-    setIsViewingAsset,
-    navigateAsset,
     addAssetToMultiselectGroup,
     removeAssetFromMultiselectGroup,
     addGroupToMultiselectGroup,
@@ -217,7 +150,24 @@ function createAssetInteractionStore() {
     clearAssetSelectionCandidates,
     setAssetSelectionStart,
     clearMultiselect,
+    isMultiSelectState: {
+      subscribe: isMultiSelectStoreState.subscribe,
+    },
+    assetsInAlbumState: {
+      subscribe: assetsInAlbumStoreState.subscribe,
+      set: assetsInAlbumStoreState.set,
+    },
+    selectedAssets: {
+      subscribe: selectedAssets.subscribe,
+    },
+    selectedGroup: {
+      subscribe: selectedGroup.subscribe,
+    },
+    assetSelectionCandidates: {
+      subscribe: assetSelectionCandidates.subscribe,
+    },
+    assetSelectionStart: {
+      subscribe: assetSelectionStart.subscribe,
+    },
   };
 }
-
-export const assetInteractionStore = createAssetInteractionStore();

@@ -1,4 +1,4 @@
-import { assetEntityStub, newAssetRepositoryMock, newJobRepositoryMock, newStorageRepositoryMock } from '@test';
+import { assetStub, newAssetRepositoryMock, newJobRepositoryMock, newStorageRepositoryMock } from '@test';
 import { constants } from 'fs/promises';
 import { IAssetRepository, WithoutProperty, WithProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
@@ -25,7 +25,7 @@ describe(MetadataService.name, () => {
 
   describe('handleQueueSidecar', () => {
     it('should queue assets with sidecar files', async () => {
-      assetMock.getWith.mockResolvedValue({ items: [assetEntityStub.sidecar], hasNextPage: false });
+      assetMock.getWith.mockResolvedValue({ items: [assetStub.sidecar], hasNextPage: false });
 
       await sut.handleQueueSidecar({ force: true });
 
@@ -33,12 +33,12 @@ describe(MetadataService.name, () => {
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SIDECAR_SYNC,
-        data: { id: assetEntityStub.sidecar.id },
+        data: { id: assetStub.sidecar.id },
       });
     });
 
     it('should queue assets without sidecar files', async () => {
-      assetMock.getWithout.mockResolvedValue({ items: [assetEntityStub.image], hasNextPage: false });
+      assetMock.getWithout.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
 
       await sut.handleQueueSidecar({ force: false });
 
@@ -46,7 +46,7 @@ describe(MetadataService.name, () => {
       expect(assetMock.getWith).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SIDECAR_DISCOVERY,
-        data: { id: assetEntityStub.image.id },
+        data: { id: assetStub.image.id },
       });
     });
   });
@@ -59,44 +59,44 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarDiscovery', () => {
     it('should skip hidden assets', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
-      await sut.handleSidecarDiscovery({ id: assetEntityStub.livePhotoMotionAsset.id });
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      await sut.handleSidecarDiscovery({ id: assetStub.livePhotoMotionAsset.id });
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();
     });
 
     it('should skip assets with a sidecar path', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.sidecar]);
-      await sut.handleSidecarDiscovery({ id: assetEntityStub.sidecar.id });
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      await sut.handleSidecarDiscovery({ id: assetStub.sidecar.id });
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();
     });
 
     it('should do nothing when a sidecar is not found ', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
       storageMock.checkFileExists.mockResolvedValue(false);
-      await sut.handleSidecarDiscovery({ id: assetEntityStub.image.id });
+      await sut.handleSidecarDiscovery({ id: assetStub.image.id });
       expect(assetMock.save).not.toHaveBeenCalled();
     });
 
     it('should update a image asset when a sidecar is found', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
-      assetMock.save.mockResolvedValue(assetEntityStub.image);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.save.mockResolvedValue(assetStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ id: assetEntityStub.image.id });
+      await sut.handleSidecarDiscovery({ id: assetStub.image.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.jpg.xmp', constants.R_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         sidecarPath: '/original/path.jpg.xmp',
       });
     });
 
     it('should update a video asset when a sidecar is found', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
-      assetMock.save.mockResolvedValue(assetEntityStub.video);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      assetMock.save.mockResolvedValue(assetStub.video);
       storageMock.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ id: assetEntityStub.video.id });
+      await sut.handleSidecarDiscovery({ id: assetStub.video.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.R_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetEntityStub.image.id,
+        id: assetStub.image.id,
         sidecarPath: '/original/path.ext.xmp',
       });
     });

@@ -71,7 +71,7 @@ class Album {
   }
 
   Stream<void> watchRenderList(GroupAssetsBy groupAssetsBy) async* {
-    final query = assets.filter().sortByFileCreatedAt();
+    final query = assets.filter().sortByFileCreatedAtDesc();
     _renderList = await RenderList.fromQuery(query, groupAssetsBy);
     yield _renderList;
     await for (final _ in query.watchLazy()) {

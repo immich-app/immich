@@ -13,14 +13,10 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
+    this.isVisible,
     required this.libraryType,
     required this.name,
-    this.isVisible,
   });
-
-  LibraryType libraryType;
-
-  String name;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -30,31 +26,35 @@ class CreateLibraryDto {
   ///
   bool? isVisible;
 
+  LibraryType libraryType;
+
+  String name;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
+     other.isVisible == isVisible &&
      other.libraryType == libraryType &&
-     other.name == name &&
-     other.isVisible == isVisible;
+     other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (isVisible == null ? 0 : isVisible!.hashCode) +
     (libraryType.hashCode) +
-    (name.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode);
+    (name.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[libraryType=$libraryType, name=$name, isVisible=$isVisible]';
+  String toString() => 'CreateLibraryDto[isVisible=$isVisible, libraryType=$libraryType, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'libraryType'] = this.libraryType;
-      json[r'name'] = this.name;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
     }
+      json[r'libraryType'] = this.libraryType;
+      json[r'name'] = this.name;
     return json;
   }
 
@@ -66,9 +66,9 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
+        isVisible: mapValueOfType<bool>(json, r'isVisible'),
         libraryType: LibraryType.fromJson(json[r'libraryType'])!,
         name: mapValueOfType<String>(json, r'name')!,
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
       );
     }
     return null;

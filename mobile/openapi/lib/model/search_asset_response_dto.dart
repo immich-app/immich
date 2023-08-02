@@ -13,44 +13,44 @@ part of openapi.api;
 class SearchAssetResponseDto {
   /// Returns a new [SearchAssetResponseDto] instance.
   SearchAssetResponseDto({
-    required this.total,
     required this.count,
-    this.items = const [],
     this.facets = const [],
+    this.items = const [],
+    required this.total,
   });
-
-  int total;
 
   int count;
 
+  List<SearchFacetResponseDto> facets;
+
   List<AssetResponseDto> items;
 
-  List<SearchFacetResponseDto> facets;
+  int total;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchAssetResponseDto &&
-     other.total == total &&
      other.count == count &&
+     other.facets == facets &&
      other.items == items &&
-     other.facets == facets;
+     other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (total.hashCode) +
     (count.hashCode) +
+    (facets.hashCode) +
     (items.hashCode) +
-    (facets.hashCode);
+    (total.hashCode);
 
   @override
-  String toString() => 'SearchAssetResponseDto[total=$total, count=$count, items=$items, facets=$facets]';
+  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'total'] = this.total;
       json[r'count'] = this.count;
-      json[r'items'] = this.items;
       json[r'facets'] = this.facets;
+      json[r'items'] = this.items;
+      json[r'total'] = this.total;
     return json;
   }
 
@@ -62,10 +62,10 @@ class SearchAssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SearchAssetResponseDto(
-        total: mapValueOfType<int>(json, r'total')!,
         count: mapValueOfType<int>(json, r'count')!,
-        items: AssetResponseDto.listFromJson(json[r'items']),
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
+        items: AssetResponseDto.listFromJson(json[r'items']),
+        total: mapValueOfType<int>(json, r'total')!,
       );
     }
     return null;
@@ -113,10 +113,10 @@ class SearchAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'total',
     'count',
-    'items',
     'facets',
+    'items',
+    'total',
   };
 }
 

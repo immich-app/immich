@@ -17,13 +17,14 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
-  import { assetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
+  import type { AssetStore } from '$lib/stores/assets.store';
 
+  export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
   export let showNavigation = true;
@@ -134,7 +135,7 @@
 
       for (const asset of deletedAssets) {
         if (asset.status == 'SUCCESS') {
-          assetStore.removeAsset(asset.id);
+          assetStore?.removeAsset(asset.id);
         }
       }
     } catch (e) {
@@ -158,14 +159,14 @@
       });
 
       asset.isFavorite = data.isFavorite;
-      assetStore.updateAsset(asset.id, data.isFavorite);
+      assetStore?.updateAsset(asset.id, data.isFavorite);
 
       notificationController.show({
         type: NotificationType.Info,
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -188,11 +189,8 @@
     isShowAlbumPicker = false;
     const album = event.detail.album;
 
-    addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
-      if (dto.successfullyAdded === 1 && dto.album) {
-        appearsInAlbums = [...appearsInAlbums, dto.album];
-      }
-    });
+    await addAssetsToAlbum(album.id, [asset.id]);
+    await getAllAlbums();
   };
 
   const disableKeyDownEvent = () => {

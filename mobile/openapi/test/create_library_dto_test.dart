@@ -16,6 +16,11 @@ void main() {
   // final instance = CreateLibraryDto();
 
   group('test CreateLibraryDto', () {
+    // bool isVisible
+    test('to test the property `isVisible`', () async {
+      // TODO
+    });
+
     // LibraryType libraryType
     test('to test the property `libraryType`', () async {
       // TODO
@@ -23,11 +28,6 @@ void main() {
 
     // String name
     test('to test the property `name`', () async {
-      // TODO
-    });
-
-    // bool isVisible
-    test('to test the property `isVisible`', () async {
       // TODO
     });
 

@@ -8,15 +8,15 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | [**LibraryType**](LibraryType.md) |  | 
 **assetCount** | **int** |  | 
-**id** | **String** |  | 
-**ownerId** | **String** |  | 
-**name** | **String** |  | 
-**importPaths** | **List<String>** |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
-**updatedAt** | [**DateTime**](DateTime.md) |  | 
+**id** | **String** |  | 
+**importPaths** | **List<String>** |  | [default to const []]
+**name** | **String** |  | 
+**ownerId** | **String** |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | [optional] 
+**type** | [**LibraryType**](LibraryType.md) |  | 
+**updatedAt** | [**DateTime**](DateTime.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

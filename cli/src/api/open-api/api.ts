@@ -44,16 +44,16 @@ export interface APIKeyCreateDto {
 export interface APIKeyCreateResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof APIKeyCreateResponseDto
-     */
-    'secret': string;
-    /**
-     * 
      * @type {APIKeyResponseDto}
      * @memberof APIKeyCreateResponseDto
      */
     'apiKey': APIKeyResponseDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof APIKeyCreateResponseDto
+     */
+    'secret': string;
 }
 /**
  * 
@@ -66,6 +66,12 @@ export interface APIKeyResponseDto {
      * @type {string}
      * @memberof APIKeyResponseDto
      */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof APIKeyResponseDto
+     */
     'id': string;
     /**
      * 
@@ -73,12 +79,6 @@ export interface APIKeyResponseDto {
      * @memberof APIKeyResponseDto
      */
     'name': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof APIKeyResponseDto
-     */
-    'createdAt': string;
     /**
      * 
      * @type {string}
@@ -98,44 +98,6 @@ export interface APIKeyUpdateDto {
      * @memberof APIKeyUpdateDto
      */
     'name': string;
-}
-/**
- * 
- * @export
- * @interface AddAssetsDto
- */
-export interface AddAssetsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof AddAssetsDto
-     */
-    'assetIds': Array<string>;
-}
-/**
- * 
- * @export
- * @interface AddAssetsResponseDto
- */
-export interface AddAssetsResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof AddAssetsResponseDto
-     */
-    'successfullyAdded': number;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof AddAssetsResponseDto
-     */
-    'alreadyInAlbum': Array<string>;
-    /**
-     * 
-     * @type {AlbumResponseDto}
-     * @memberof AddAssetsResponseDto
-     */
-    'album'?: AlbumResponseDto;
 }
 /**
  * 
@@ -161,7 +123,7 @@ export interface AdminSignupResponseDto {
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'id': string;
+    'createdAt': string;
     /**
      * 
      * @type {string}
@@ -179,13 +141,13 @@ export interface AdminSignupResponseDto {
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'lastName': string;
+    'id': string;
     /**
      * 
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'createdAt': string;
+    'lastName': string;
 }
 /**
  * 
@@ -198,6 +160,12 @@ export interface AlbumCountResponseDto {
      * @type {number}
      * @memberof AlbumCountResponseDto
      */
+    'notShared': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumCountResponseDto
+     */
     'owned': number;
     /**
      * 
@@ -205,12 +173,6 @@ export interface AlbumCountResponseDto {
      * @memberof AlbumCountResponseDto
      */
     'shared': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AlbumCountResponseDto
-     */
-    'notShared': number;
 }
 /**
  * 
@@ -218,24 +180,6 @@ export interface AlbumCountResponseDto {
  * @interface AlbumResponseDto
  */
 export interface AlbumResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof AlbumResponseDto
-     */
-    'assetCount': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumResponseDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumResponseDto
-     */
-    'ownerId': string;
     /**
      * 
      * @type {string}
@@ -247,19 +191,49 @@ export interface AlbumResponseDto {
      * @type {string}
      * @memberof AlbumResponseDto
      */
+    'albumThumbnailAssetId': string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumResponseDto
+     */
+    'assetCount': number;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof AlbumResponseDto
+     */
+    'assets': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumResponseDto
+     */
     'createdAt': string;
     /**
      * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
-    'updatedAt': string;
+    'id': string;
     /**
      * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
-    'albumThumbnailAssetId': string | null;
+    'lastModifiedAssetTimestamp'?: string;
+    /**
+     * 
+     * @type {UserResponseDto}
+     * @memberof AlbumResponseDto
+     */
+    'owner': UserResponseDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumResponseDto
+     */
+    'ownerId': string;
     /**
      * 
      * @type {boolean}
@@ -274,22 +248,10 @@ export interface AlbumResponseDto {
     'sharedUsers': Array<UserResponseDto>;
     /**
      * 
-     * @type {Array<AssetResponseDto>}
-     * @memberof AlbumResponseDto
-     */
-    'assets': Array<AssetResponseDto>;
-    /**
-     * 
-     * @type {UserResponseDto}
-     * @memberof AlbumResponseDto
-     */
-    'owner': UserResponseDto;
-    /**
-     * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
-    'lastModifiedAssetTimestamp'?: string;
+    'updatedAt': string;
 }
 /**
  * 
@@ -302,25 +264,7 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'thumbnailGeneration': JobStatusDto;
-    /**
-     * 
-     * @type {JobStatusDto}
-     * @memberof AllJobStatusResponseDto
-     */
-    'metadataExtraction': JobStatusDto;
-    /**
-     * 
-     * @type {JobStatusDto}
-     * @memberof AllJobStatusResponseDto
-     */
-    'videoConversion': JobStatusDto;
-    /**
-     * 
-     * @type {JobStatusDto}
-     * @memberof AllJobStatusResponseDto
-     */
-    'objectTagging': JobStatusDto;
+    'backgroundTask': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
@@ -332,19 +276,19 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'storageTemplateMigration': JobStatusDto;
+    'library': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'backgroundTask': JobStatusDto;
+    'metadataExtraction': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'search': JobStatusDto;
+    'objectTagging': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
@@ -356,13 +300,31 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
+    'search': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
     'sidecar': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'library': JobStatusDto;
+    'storageTemplateMigration': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'thumbnailGeneration': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'videoConversion': JobStatusDto;
 }
 /**
  * 
@@ -384,17 +346,17 @@ export interface AssetBulkUploadCheckDto {
  */
 export interface AssetBulkUploadCheckItem {
     /**
-     * 
-     * @type {string}
-     * @memberof AssetBulkUploadCheckItem
-     */
-    'id': string;
-    /**
      * base64 or hex encoded sha1 hash
      * @type {string}
      * @memberof AssetBulkUploadCheckItem
      */
     'checksum': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckItem
+     */
+    'id': string;
 }
 /**
  * 
@@ -420,25 +382,25 @@ export interface AssetBulkUploadCheckResult {
      * @type {string}
      * @memberof AssetBulkUploadCheckResult
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetBulkUploadCheckResult
-     */
     'action': AssetBulkUploadCheckResultActionEnum;
     /**
      * 
      * @type {string}
      * @memberof AssetBulkUploadCheckResult
      */
-    'reason'?: AssetBulkUploadCheckResultReasonEnum;
+    'assetId'?: string;
     /**
      * 
      * @type {string}
      * @memberof AssetBulkUploadCheckResult
      */
-    'assetId'?: string;
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'reason'?: AssetBulkUploadCheckResultReasonEnum;
 }
 
 export const AssetBulkUploadCheckResultActionEnum = {
@@ -462,16 +424,16 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 export interface AssetCountByTimeBucket {
     /**
      * 
-     * @type {string}
-     * @memberof AssetCountByTimeBucket
-     */
-    'timeBucket': string;
-    /**
-     * 
      * @type {number}
      * @memberof AssetCountByTimeBucket
      */
     'count': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetCountByTimeBucket
+     */
+    'timeBucket': string;
 }
 /**
  * 
@@ -481,16 +443,16 @@ export interface AssetCountByTimeBucket {
 export interface AssetCountByTimeBucketResponseDto {
     /**
      * 
-     * @type {number}
-     * @memberof AssetCountByTimeBucketResponseDto
-     */
-    'totalCount': number;
-    /**
-     * 
      * @type {Array<AssetCountByTimeBucket>}
      * @memberof AssetCountByTimeBucketResponseDto
      */
     'buckets': Array<AssetCountByTimeBucket>;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetCountByTimeBucketResponseDto
+     */
+    'totalCount': number;
 }
 /**
  * 
@@ -500,16 +462,16 @@ export interface AssetCountByTimeBucketResponseDto {
 export interface AssetFileUploadResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof AssetFileUploadResponseDto
-     */
-    'id': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof AssetFileUploadResponseDto
      */
     'duplicate': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFileUploadResponseDto
+     */
+    'id': string;
 }
 /**
  * 
@@ -538,16 +500,16 @@ export interface AssetIdsResponseDto {
     'assetId': string;
     /**
      * 
-     * @type {boolean}
-     * @memberof AssetIdsResponseDto
-     */
-    'success': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof AssetIdsResponseDto
      */
     'error'?: AssetIdsResponseDtoErrorEnum;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetIdsResponseDto
+     */
+    'success': boolean;
 }
 
 export const AssetIdsResponseDtoErrorEnum = {
@@ -565,17 +527,11 @@ export type AssetIdsResponseDtoErrorEnum = typeof AssetIdsResponseDtoErrorEnum[k
  */
 export interface AssetResponseDto {
     /**
-     * 
-     * @type {AssetTypeEnum}
-     * @memberof AssetResponseDto
-     */
-    'type': AssetTypeEnum;
-    /**
-     * 
+     * base64 encoded sha1 hash
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'id': string;
+    'checksum': string;
     /**
      * 
      * @type {string}
@@ -587,43 +543,19 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
     'deviceId': string;
     /**
      * 
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'libraryId': string;
+    'duration': string;
     /**
      * 
-     * @type {string}
+     * @type {ExifResponseDto}
      * @memberof AssetResponseDto
      */
-    'originalPath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'originalFileName': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetResponseDto
-     */
-    'resized': boolean;
-    /**
-     * base64 encoded thumbhash
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'thumbhash': string | null;
+    'exifInfo'?: ExifResponseDto;
     /**
      * 
      * @type {string}
@@ -641,13 +573,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'updatedAt': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetResponseDto
-     */
-    'isFavorite': boolean;
+    'id': string;
     /**
      * 
      * @type {boolean}
@@ -656,22 +582,16 @@ export interface AssetResponseDto {
     'isArchived': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof AssetResponseDto
+     */
+    'isFavorite': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'duration': string;
-    /**
-     * 
-     * @type {ExifResponseDto}
-     * @memberof AssetResponseDto
-     */
-    'exifInfo'?: ExifResponseDto;
-    /**
-     * 
-     * @type {SmartInfoResponseDto}
-     * @memberof AssetResponseDto
-     */
-    'smartInfo'?: SmartInfoResponseDto;
+    'libraryId': string;
     /**
      * 
      * @type {string}
@@ -680,10 +600,22 @@ export interface AssetResponseDto {
     'livePhotoVideoId'?: string | null;
     /**
      * 
-     * @type {Array<TagResponseDto>}
+     * @type {string}
      * @memberof AssetResponseDto
      */
-    'tags'?: Array<TagResponseDto>;
+    'originalFileName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'originalPath': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'ownerId': string;
     /**
      * 
      * @type {Array<PersonResponseDto>}
@@ -691,11 +623,41 @@ export interface AssetResponseDto {
      */
     'people'?: Array<PersonResponseDto>;
     /**
-     * base64 encoded sha1 hash
+     * 
+     * @type {boolean}
+     * @memberof AssetResponseDto
+     */
+    'resized': boolean;
+    /**
+     * 
+     * @type {SmartInfoResponseDto}
+     * @memberof AssetResponseDto
+     */
+    'smartInfo'?: SmartInfoResponseDto;
+    /**
+     * 
+     * @type {Array<TagResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'tags'?: Array<TagResponseDto>;
+    /**
+     * base64 encoded thumbhash
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'checksum': string;
+    'thumbhash': string | null;
+    /**
+     * 
+     * @type {AssetTypeEnum}
+     * @memberof AssetResponseDto
+     */
+    'type': AssetTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'updatedAt': string;
 }
 
 
@@ -716,13 +678,13 @@ export interface AssetStatsResponseDto {
      * @type {number}
      * @memberof AssetStatsResponseDto
      */
-    'videos': number;
+    'total': number;
     /**
      * 
      * @type {number}
      * @memberof AssetStatsResponseDto
      */
-    'total': number;
+    'videos': number;
 }
 /**
  * 
@@ -766,19 +728,7 @@ export interface AuthDeviceResponseDto {
      * @type {string}
      * @memberof AuthDeviceResponseDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AuthDeviceResponseDto
-     */
     'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AuthDeviceResponseDto
-     */
-    'updatedAt': string;
     /**
      * 
      * @type {boolean}
@@ -790,13 +740,25 @@ export interface AuthDeviceResponseDto {
      * @type {string}
      * @memberof AuthDeviceResponseDto
      */
+    'deviceOS': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
     'deviceType': string;
     /**
      * 
      * @type {string}
      * @memberof AuthDeviceResponseDto
      */
-    'deviceOS': string;
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'updatedAt': string;
 }
 /**
  * 
@@ -809,6 +771,12 @@ export interface BulkIdResponseDto {
      * @type {string}
      * @memberof BulkIdResponseDto
      */
+    'error'?: BulkIdResponseDtoErrorEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof BulkIdResponseDto
+     */
     'id': string;
     /**
      * 
@@ -816,12 +784,6 @@ export interface BulkIdResponseDto {
      * @memberof BulkIdResponseDto
      */
     'success': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof BulkIdResponseDto
-     */
-    'error'?: BulkIdResponseDtoErrorEnum;
 }
 
 export const BulkIdResponseDtoErrorEnum = {
@@ -836,6 +798,19 @@ export type BulkIdResponseDtoErrorEnum = typeof BulkIdResponseDtoErrorEnum[keyof
 /**
  * 
  * @export
+ * @interface BulkIdsDto
+ */
+export interface BulkIdsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof BulkIdsDto
+     */
+    'ids': Array<string>;
+}
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -844,13 +819,13 @@ export interface ChangePasswordDto {
      * @type {string}
      * @memberof ChangePasswordDto
      */
-    'password': string;
+    'newPassword': string;
     /**
      * 
      * @type {string}
      * @memberof ChangePasswordDto
      */
-    'newPassword': string;
+    'password': string;
 }
 /**
  * 
@@ -879,16 +854,16 @@ export interface CheckDuplicateAssetDto {
 export interface CheckDuplicateAssetResponseDto {
     /**
      * 
-     * @type {boolean}
-     * @memberof CheckDuplicateAssetResponseDto
-     */
-    'isExist': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof CheckDuplicateAssetResponseDto
      */
     'id'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CheckDuplicateAssetResponseDto
+     */
+    'isExist': boolean;
 }
 /**
  * 
@@ -939,13 +914,13 @@ export interface CreateAlbumDto {
      * @type {Array<string>}
      * @memberof CreateAlbumDto
      */
-    'sharedWithUserIds'?: Array<string>;
+    'assetIds'?: Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof CreateAlbumDto
      */
-    'assetIds'?: Array<string>;
+    'sharedWithUserIds'?: Array<string>;
 }
 /**
  * 
@@ -953,6 +928,12 @@ export interface CreateAlbumDto {
  * @interface CreateLibraryDto
  */
 export interface CreateLibraryDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateLibraryDto
+     */
+    'isVisible'?: boolean;
     /**
      * 
      * @type {LibraryType}
@@ -965,12 +946,6 @@ export interface CreateLibraryDto {
      * @memberof CreateLibraryDto
      */
     'name': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof CreateLibraryDto
-     */
-    'isVisible'?: boolean;
 }
 
 
@@ -985,13 +960,13 @@ export interface CreateProfileImageResponseDto {
      * @type {string}
      * @memberof CreateProfileImageResponseDto
      */
-    'userId': string;
+    'profileImagePath': string;
     /**
      * 
      * @type {string}
      * @memberof CreateProfileImageResponseDto
      */
-    'profileImagePath': string;
+    'userId': string;
 }
 /**
  * 
@@ -1001,16 +976,16 @@ export interface CreateProfileImageResponseDto {
 export interface CreateTagDto {
     /**
      * 
-     * @type {TagTypeEnum}
-     * @memberof CreateTagDto
-     */
-    'type': TagTypeEnum;
-    /**
-     * 
      * @type {string}
      * @memberof CreateTagDto
      */
     'name': string;
+    /**
+     * 
+     * @type {TagTypeEnum}
+     * @memberof CreateTagDto
+     */
+    'type': TagTypeEnum;
 }
 
 
@@ -1031,7 +1006,7 @@ export interface CreateUserDto {
      * @type {string}
      * @memberof CreateUserDto
      */
-    'password': string;
+    'externalPath'?: string | null;
     /**
      * 
      * @type {string}
@@ -1049,13 +1024,13 @@ export interface CreateUserDto {
      * @type {string}
      * @memberof CreateUserDto
      */
-    'storageLabel'?: string | null;
+    'password': string;
     /**
      * 
      * @type {string}
      * @memberof CreateUserDto
      */
-    'externalPath'?: string | null;
+    'storageLabel'?: string | null;
 }
 /**
  * 
@@ -1068,19 +1043,7 @@ export interface CuratedLocationsResponseDto {
      * @type {string}
      * @memberof CuratedLocationsResponseDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CuratedLocationsResponseDto
-     */
     'city': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CuratedLocationsResponseDto
-     */
-    'resizePath': string;
     /**
      * 
      * @type {string}
@@ -1093,6 +1056,18 @@ export interface CuratedLocationsResponseDto {
      * @memberof CuratedLocationsResponseDto
      */
     'deviceId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CuratedLocationsResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CuratedLocationsResponseDto
+     */
+    'resizePath': string;
 }
 /**
  * 
@@ -1100,6 +1075,18 @@ export interface CuratedLocationsResponseDto {
  * @interface CuratedObjectsResponseDto
  */
 export interface CuratedObjectsResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof CuratedObjectsResponseDto
+     */
+    'deviceAssetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CuratedObjectsResponseDto
+     */
+    'deviceId': string;
     /**
      * 
      * @type {string}
@@ -1118,18 +1105,6 @@ export interface CuratedObjectsResponseDto {
      * @memberof CuratedObjectsResponseDto
      */
     'resizePath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CuratedObjectsResponseDto
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CuratedObjectsResponseDto
-     */
-    'deviceId': string;
 }
 /**
  * 
@@ -1152,16 +1127,16 @@ export interface DeleteAssetDto {
 export interface DeleteAssetResponseDto {
     /**
      * 
-     * @type {DeleteAssetStatus}
-     * @memberof DeleteAssetResponseDto
-     */
-    'status': DeleteAssetStatus;
-    /**
-     * 
      * @type {string}
      * @memberof DeleteAssetResponseDto
      */
     'id': string;
+    /**
+     * 
+     * @type {DeleteAssetStatus}
+     * @memberof DeleteAssetResponseDto
+     */
+    'status': DeleteAssetStatus;
 }
 
 
@@ -1187,16 +1162,16 @@ export type DeleteAssetStatus = typeof DeleteAssetStatus[keyof typeof DeleteAsse
 export interface DownloadArchiveInfo {
     /**
      * 
-     * @type {number}
-     * @memberof DownloadArchiveInfo
-     */
-    'size': number;
-    /**
-     * 
      * @type {Array<string>}
      * @memberof DownloadArchiveInfo
      */
     'assetIds': Array<string>;
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadArchiveInfo
+     */
+    'size': number;
 }
 /**
  * 
@@ -1206,16 +1181,16 @@ export interface DownloadArchiveInfo {
 export interface DownloadResponseDto {
     /**
      * 
-     * @type {number}
-     * @memberof DownloadResponseDto
-     */
-    'totalSize': number;
-    /**
-     * 
      * @type {Array<DownloadArchiveInfo>}
      * @memberof DownloadResponseDto
      */
     'archives': Array<DownloadArchiveInfo>;
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadResponseDto
+     */
+    'totalSize': number;
 }
 /**
  * 
@@ -1225,40 +1200,16 @@ export interface DownloadResponseDto {
 export interface ExifResponseDto {
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ExifResponseDto
      */
-    'fileSizeInByte'?: number | null;
+    'city'?: string | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'make'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'model'?: string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifResponseDto
-     */
-    'exifImageWidth'?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifResponseDto
-     */
-    'exifImageHeight'?: number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'orientation'?: string | null;
+    'country'?: string | null;
     /**
      * 
      * @type {string}
@@ -1270,25 +1221,37 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'modifyDate'?: string | null;
+    'description'?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifResponseDto
+     */
+    'exifImageHeight'?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifResponseDto
+     */
+    'exifImageWidth'?: number | null;
     /**
      * 
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'timeZone'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'lensModel'?: string | null;
+    'exposureTime'?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ExifResponseDto
      */
     'fNumber'?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExifResponseDto
+     */
+    'fileSizeInByte'?: number | null;
     /**
      * 
      * @type {number}
@@ -1303,16 +1266,16 @@ export interface ExifResponseDto {
     'iso'?: number | null;
     /**
      * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'exposureTime'?: string | null;
-    /**
-     * 
      * @type {number}
      * @memberof ExifResponseDto
      */
     'latitude'?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'lensModel'?: string | null;
     /**
      * 
      * @type {number}
@@ -1324,7 +1287,31 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'city'?: string | null;
+    'make'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'model'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'modifyDate'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'orientation'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'projectionType'?: string | null;
     /**
      * 
      * @type {string}
@@ -1336,19 +1323,7 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
-    'country'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'description'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'projectionType'?: string | null;
+    'timeZone'?: string | null;
 }
 /**
  * 
@@ -1413,25 +1388,7 @@ export interface ImportAssetDto {
      * @type {string}
      * @memberof ImportAssetDto
      */
-    'libraryId': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ImportAssetDto
-     */
-    'isReadOnly'?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof ImportAssetDto
-     */
     'assetPath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ImportAssetDto
-     */
-    'sidecarPath'?: string;
     /**
      * 
      * @type {string}
@@ -1449,6 +1406,12 @@ export interface ImportAssetDto {
      * @type {string}
      * @memberof ImportAssetDto
      */
+    'duration'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ImportAssetDto
+     */
     'fileCreatedAt': string;
     /**
      * 
@@ -1461,13 +1424,25 @@ export interface ImportAssetDto {
      * @type {boolean}
      * @memberof ImportAssetDto
      */
+    'isArchived'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ImportAssetDto
+     */
     'isFavorite': boolean;
     /**
      * 
      * @type {boolean}
      * @memberof ImportAssetDto
      */
-    'isArchived'?: boolean;
+    'isOffline'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ImportAssetDto
+     */
+    'isReadOnly'?: boolean;
     /**
      * 
      * @type {boolean}
@@ -1479,13 +1454,13 @@ export interface ImportAssetDto {
      * @type {string}
      * @memberof ImportAssetDto
      */
-    'duration'?: string;
+    'libraryId': string;
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof ImportAssetDto
      */
-    'isOffline'?: boolean;
+    'sidecarPath'?: string;
 }
 /**
  * 
@@ -1547,25 +1522,25 @@ export interface JobCountsDto {
      * @type {number}
      * @memberof JobCountsDto
      */
-    'failed': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof JobCountsDto
-     */
     'delayed': number;
     /**
      * 
      * @type {number}
      * @memberof JobCountsDto
      */
-    'waiting': number;
+    'failed': number;
     /**
      * 
      * @type {number}
      * @memberof JobCountsDto
      */
     'paused': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCountsDto
+     */
+    'waiting': number;
 }
 /**
  * 
@@ -1630,40 +1605,10 @@ export interface JobStatusDto {
 export interface LibraryResponseDto {
     /**
      * 
-     * @type {LibraryType}
-     * @memberof LibraryResponseDto
-     */
-    'type': LibraryType;
-    /**
-     * 
      * @type {number}
      * @memberof LibraryResponseDto
      */
     'assetCount': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryResponseDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryResponseDto
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryResponseDto
-     */
-    'name': string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof LibraryResponseDto
-     */
-    'importPaths': Array<string>;
     /**
      * 
      * @type {string}
@@ -1675,13 +1620,43 @@ export interface LibraryResponseDto {
      * @type {string}
      * @memberof LibraryResponseDto
      */
-    'updatedAt': string;
+    'id': string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof LibraryResponseDto
+     */
+    'importPaths': Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'ownerId': string;
     /**
      * 
      * @type {string}
      * @memberof LibraryResponseDto
      */
     'refreshedAt'?: string | null;
+    /**
+     * 
+     * @type {LibraryType}
+     * @memberof LibraryResponseDto
+     */
+    'type': LibraryType;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'updatedAt': string;
 }
 
 
@@ -1735,19 +1710,13 @@ export interface LoginResponseDto {
      * @type {string}
      * @memberof LoginResponseDto
      */
-    'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
-    'userEmail': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
     'firstName': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof LoginResponseDto
+     */
+    'isAdmin': boolean;
     /**
      * 
      * @type {string}
@@ -1765,13 +1734,19 @@ export interface LoginResponseDto {
      * @type {boolean}
      * @memberof LoginResponseDto
      */
-    'isAdmin': boolean;
+    'shouldChangePassword': boolean;
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof LoginResponseDto
      */
-    'shouldChangePassword': boolean;
+    'userEmail': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LoginResponseDto
+     */
+    'userId': string;
 }
 /**
  * 
@@ -1781,16 +1756,16 @@ export interface LoginResponseDto {
 export interface LogoutResponseDto {
     /**
      * 
-     * @type {boolean}
-     * @memberof LogoutResponseDto
-     */
-    'successful': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof LogoutResponseDto
      */
     'redirectUri': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof LogoutResponseDto
+     */
+    'successful': boolean;
 }
 /**
  * 
@@ -1825,16 +1800,16 @@ export interface MapMarkerResponseDto {
 export interface MemoryLaneResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof MemoryLaneResponseDto
-     */
-    'title': string;
-    /**
-     * 
      * @type {Array<AssetResponseDto>}
      * @memberof MemoryLaneResponseDto
      */
     'assets': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof MemoryLaneResponseDto
+     */
+    'title': string;
 }
 /**
  * 
@@ -1886,6 +1861,18 @@ export interface OAuthConfigResponseDto {
      * @type {boolean}
      * @memberof OAuthConfigResponseDto
      */
+    'autoLaunch'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof OAuthConfigResponseDto
+     */
+    'buttonText'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OAuthConfigResponseDto
+     */
     'enabled': boolean;
     /**
      * 
@@ -1899,18 +1886,6 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'url'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OAuthConfigResponseDto
-     */
-    'buttonText'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof OAuthConfigResponseDto
-     */
-    'autoLaunch'?: boolean;
 }
 /**
  * 
@@ -1918,6 +1893,12 @@ export interface OAuthConfigResponseDto {
  * @interface PeopleResponseDto
  */
 export interface PeopleResponseDto {
+    /**
+     * 
+     * @type {Array<PersonResponseDto>}
+     * @memberof PeopleResponseDto
+     */
+    'people': Array<PersonResponseDto>;
     /**
      * 
      * @type {number}
@@ -1930,12 +1911,6 @@ export interface PeopleResponseDto {
      * @memberof PeopleResponseDto
      */
     'visible': number;
-    /**
-     * 
-     * @type {Array<PersonResponseDto>}
-     * @memberof PeopleResponseDto
-     */
-    'people': Array<PersonResponseDto>;
 }
 /**
  * 
@@ -1957,29 +1932,29 @@ export interface PeopleUpdateDto {
  */
 export interface PeopleUpdateItem {
     /**
-     * Person id.
-     * @type {string}
-     * @memberof PeopleUpdateItem
-     */
-    'id': string;
-    /**
-     * Person name.
-     * @type {string}
-     * @memberof PeopleUpdateItem
-     */
-    'name'?: string;
-    /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
      * @memberof PeopleUpdateItem
      */
     'featureFaceAssetId'?: string;
     /**
+     * Person id.
+     * @type {string}
+     * @memberof PeopleUpdateItem
+     */
+    'id': string;
+    /**
      * Person visibility
      * @type {boolean}
      * @memberof PeopleUpdateItem
      */
     'isHidden'?: boolean;
+    /**
+     * Person name.
+     * @type {string}
+     * @memberof PeopleUpdateItem
+     */
+    'name'?: string;
 }
 /**
  * 
@@ -1995,6 +1970,12 @@ export interface PersonResponseDto {
     'id': string;
     /**
      * 
+     * @type {boolean}
+     * @memberof PersonResponseDto
+     */
+    'isHidden': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof PersonResponseDto
      */
@@ -2005,12 +1986,6 @@ export interface PersonResponseDto {
      * @memberof PersonResponseDto
      */
     'thumbnailPath': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PersonResponseDto
-     */
-    'isHidden': boolean;
 }
 /**
  * 
@@ -2018,12 +1993,6 @@ export interface PersonResponseDto {
  * @interface PersonUpdateDto
  */
 export interface PersonUpdateDto {
-    /**
-     * Person name.
-     * @type {string}
-     * @memberof PersonUpdateDto
-     */
-    'name'?: string;
     /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
@@ -2036,6 +2005,12 @@ export interface PersonUpdateDto {
      * @memberof PersonUpdateDto
      */
     'isHidden'?: boolean;
+    /**
+     * Person name.
+     * @type {string}
+     * @memberof PersonUpdateDto
+     */
+    'name'?: string;
 }
 /**
  * 
@@ -2059,19 +2034,6 @@ export interface QueueStatusDto {
 /**
  * 
  * @export
- * @interface RemoveAssetsDto
- */
-export interface RemoveAssetsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof RemoveAssetsDto
-     */
-    'assetIds': Array<string>;
-}
-/**
- * 
- * @export
  * @interface ScanLibraryDto
  */
 export interface ScanLibraryDto {
@@ -2080,13 +2042,13 @@ export interface ScanLibraryDto {
      * @type {boolean}
      * @memberof ScanLibraryDto
      */
-    'forceRefresh'?: boolean;
+    'emptyTrash'?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof ScanLibraryDto
      */
-    'emptyTrash'?: boolean;
+    'forceRefresh'?: boolean;
 }
 /**
  * 
@@ -2099,13 +2061,13 @@ export interface SearchAlbumResponseDto {
      * @type {number}
      * @memberof SearchAlbumResponseDto
      */
-    'total': number;
+    'count': number;
     /**
      * 
-     * @type {number}
+     * @type {Array<SearchFacetResponseDto>}
      * @memberof SearchAlbumResponseDto
      */
-    'count': number;
+    'facets': Array<SearchFacetResponseDto>;
     /**
      * 
      * @type {Array<AlbumResponseDto>}
@@ -2114,10 +2076,10 @@ export interface SearchAlbumResponseDto {
     'items': Array<AlbumResponseDto>;
     /**
      * 
-     * @type {Array<SearchFacetResponseDto>}
+     * @type {number}
      * @memberof SearchAlbumResponseDto
      */
-    'facets': Array<SearchFacetResponseDto>;
+    'total': number;
 }
 /**
  * 
@@ -2143,13 +2105,13 @@ export interface SearchAssetResponseDto {
      * @type {number}
      * @memberof SearchAssetResponseDto
      */
-    'total': number;
+    'count': number;
     /**
      * 
-     * @type {number}
+     * @type {Array<SearchFacetResponseDto>}
      * @memberof SearchAssetResponseDto
      */
-    'count': number;
+    'facets': Array<SearchFacetResponseDto>;
     /**
      * 
      * @type {Array<AssetResponseDto>}
@@ -2158,10 +2120,10 @@ export interface SearchAssetResponseDto {
     'items': Array<AssetResponseDto>;
     /**
      * 
-     * @type {Array<SearchFacetResponseDto>}
+     * @type {number}
      * @memberof SearchAssetResponseDto
      */
-    'facets': Array<SearchFacetResponseDto>;
+    'total': number;
 }
 /**
  * 
@@ -2184,16 +2146,16 @@ export interface SearchConfigResponseDto {
 export interface SearchExploreItem {
     /**
      * 
-     * @type {string}
-     * @memberof SearchExploreItem
-     */
-    'value': string;
-    /**
-     * 
      * @type {AssetResponseDto}
      * @memberof SearchExploreItem
      */
     'data': AssetResponseDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchExploreItem
+     */
+    'value': string;
 }
 /**
  * 
@@ -2241,16 +2203,16 @@ export interface SearchFacetCountResponseDto {
 export interface SearchFacetResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof SearchFacetResponseDto
-     */
-    'fieldName': string;
-    /**
-     * 
      * @type {Array<SearchFacetCountResponseDto>}
      * @memberof SearchFacetResponseDto
      */
     'counts': Array<SearchFacetCountResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchFacetResponseDto
+     */
+    'fieldName': string;
 }
 /**
  * 
@@ -2279,22 +2241,28 @@ export interface SearchResponseDto {
 export interface ServerInfoResponseDto {
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ServerInfoResponseDto
      */
-    'diskSizeRaw': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ServerInfoResponseDto
-     */
-    'diskUseRaw': number;
+    'diskAvailable': string;
     /**
      * 
      * @type {number}
      * @memberof ServerInfoResponseDto
      */
     'diskAvailableRaw': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskSize': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerInfoResponseDto
+     */
+    'diskSizeRaw': number;
     /**
      * 
      * @type {number}
@@ -2306,19 +2274,13 @@ export interface ServerInfoResponseDto {
      * @type {string}
      * @memberof ServerInfoResponseDto
      */
-    'diskSize': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerInfoResponseDto
-     */
     'diskUse': string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ServerInfoResponseDto
      */
-    'diskAvailable': string;
+    'diskUseRaw': number;
 }
 /**
  * 
@@ -2331,12 +2293,6 @@ export interface ServerMediaTypesResponseDto {
      * @type {Array<string>}
      * @memberof ServerMediaTypesResponseDto
      */
-    'video': Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ServerMediaTypesResponseDto
-     */
     'image': Array<string>;
     /**
      * 
@@ -2344,6 +2300,12 @@ export interface ServerMediaTypesResponseDto {
      * @memberof ServerMediaTypesResponseDto
      */
     'sidecar': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ServerMediaTypesResponseDto
+     */
+    'video': Array<string>;
 }
 /**
  * 
@@ -2375,12 +2337,6 @@ export interface ServerStatsResponseDto {
      * @type {number}
      * @memberof ServerStatsResponseDto
      */
-    'videos': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ServerStatsResponseDto
-     */
     'usage': number;
     /**
      * 
@@ -2388,6 +2344,12 @@ export interface ServerStatsResponseDto {
      * @memberof ServerStatsResponseDto
      */
     'usageByUser': Array<UsageByUserDto>;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerStatsResponseDto
+     */
+    'videos': number;
 }
 /**
  * 
@@ -2435,10 +2397,22 @@ export interface SetImportPathsDto {
 export interface SharedLinkCreateDto {
     /**
      * 
-     * @type {SharedLinkType}
+     * @type {string}
      * @memberof SharedLinkCreateDto
      */
-    'type': SharedLinkType;
+    'albumId'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkCreateDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkCreateDto
+     */
+    'allowUpload'?: boolean;
     /**
      * 
      * @type {Array<string>}
@@ -2450,12 +2424,6 @@ export interface SharedLinkCreateDto {
      * @type {string}
      * @memberof SharedLinkCreateDto
      */
-    'albumId'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkCreateDto
-     */
     'description'?: string;
     /**
      * 
@@ -2468,19 +2436,13 @@ export interface SharedLinkCreateDto {
      * @type {boolean}
      * @memberof SharedLinkCreateDto
      */
-    'allowUpload'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkCreateDto
-     */
-    'allowDownload'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkCreateDto
-     */
     'showExif'?: boolean;
+    /**
+     * 
+     * @type {SharedLinkType}
+     * @memberof SharedLinkCreateDto
+     */
+    'type': SharedLinkType;
 }
 
 
@@ -2492,6 +2454,18 @@ export interface SharedLinkCreateDto {
 export interface SharedLinkEditDto {
     /**
      * 
+     * @type {boolean}
+     * @memberof SharedLinkEditDto
+     */
+    'allowDownload'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkEditDto
+     */
+    'allowUpload'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SharedLinkEditDto
      */
@@ -2502,18 +2476,6 @@ export interface SharedLinkEditDto {
      * @memberof SharedLinkEditDto
      */
     'expiresAt'?: string | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkEditDto
-     */
-    'allowUpload'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkEditDto
-     */
-    'allowDownload'?: boolean;
     /**
      * 
      * @type {boolean}
@@ -2529,64 +2491,10 @@ export interface SharedLinkEditDto {
 export interface SharedLinkResponseDto {
     /**
      * 
-     * @type {SharedLinkType}
-     * @memberof SharedLinkResponseDto
-     */
-    'type': SharedLinkType;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'description': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'key': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkResponseDto
-     */
-    'expiresAt': string | null;
-    /**
-     * 
-     * @type {Array<AssetResponseDto>}
-     * @memberof SharedLinkResponseDto
-     */
-    'assets': Array<AssetResponseDto>;
-    /**
-     * 
      * @type {AlbumResponseDto}
      * @memberof SharedLinkResponseDto
      */
     'album'?: AlbumResponseDto;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkResponseDto
-     */
-    'allowUpload': boolean;
     /**
      * 
      * @type {boolean}
@@ -2598,7 +2506,61 @@ export interface SharedLinkResponseDto {
      * @type {boolean}
      * @memberof SharedLinkResponseDto
      */
+    'allowUpload': boolean;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof SharedLinkResponseDto
+     */
+    'assets': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'description': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'expiresAt': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'key': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SharedLinkResponseDto
+     */
     'showExif': boolean;
+    /**
+     * 
+     * @type {SharedLinkType}
+     * @memberof SharedLinkResponseDto
+     */
+    'type': SharedLinkType;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'userId': string;
 }
 
 
@@ -2633,12 +2595,6 @@ export interface SignUpDto {
      * @type {string}
      * @memberof SignUpDto
      */
-    'password': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SignUpDto
-     */
     'firstName': string;
     /**
      * 
@@ -2646,6 +2602,12 @@ export interface SignUpDto {
      * @memberof SignUpDto
      */
     'lastName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SignUpDto
+     */
+    'password': string;
 }
 /**
  * 
@@ -2658,13 +2620,13 @@ export interface SmartInfoResponseDto {
      * @type {Array<string>}
      * @memberof SmartInfoResponseDto
      */
-    'tags'?: Array<string> | null;
+    'objects'?: Array<string> | null;
     /**
      * 
      * @type {Array<string>}
      * @memberof SmartInfoResponseDto
      */
-    'objects'?: Array<string> | null;
+    'tags'?: Array<string> | null;
 }
 /**
  * 
@@ -2678,6 +2640,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'ffmpeg': SystemConfigFFmpegDto;
+    /**
+     * 
+     * @type {SystemConfigJobDto}
+     * @memberof SystemConfigDto
+     */
+    'job': SystemConfigJobDto;
     /**
      * 
      * @type {SystemConfigOAuthDto}
@@ -2696,12 +2664,6 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
-    /**
-     * 
-     * @type {SystemConfigJobDto}
-     * @memberof SystemConfigDto
-     */
-    'job': SystemConfigJobDto;
 }
 /**
  * 
@@ -2711,34 +2673,22 @@ export interface SystemConfigDto {
 export interface SystemConfigFFmpegDto {
     /**
      * 
+     * @type {TranscodeHWAccel}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'accel': TranscodeHWAccel;
+    /**
+     * 
      * @type {number}
      * @memberof SystemConfigFFmpegDto
      */
     'crf': number;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
-    'threads': number;
-    /**
-     * 
-     * @type {VideoCodec}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'targetVideoCodec': VideoCodec;
-    /**
-     * 
-     * @type {AudioCodec}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'targetAudioCodec': AudioCodec;
-    /**
-     * 
-     * @type {TranscodePolicy}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'transcode': TranscodePolicy;
+    'maxBitrate': string;
     /**
      * 
      * @type {string}
@@ -2747,16 +2697,34 @@ export interface SystemConfigFFmpegDto {
     'preset': string;
     /**
      * 
+     * @type {AudioCodec}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'targetAudioCodec': AudioCodec;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
     'targetResolution': string;
     /**
      * 
-     * @type {string}
+     * @type {VideoCodec}
      * @memberof SystemConfigFFmpegDto
      */
-    'maxBitrate': string;
+    'targetVideoCodec': VideoCodec;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'threads': number;
+    /**
+     * 
+     * @type {TranscodePolicy}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'transcode': TranscodePolicy;
     /**
      * 
      * @type {boolean}
@@ -2777,25 +2745,7 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'thumbnailGeneration': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
-    'metadataExtraction': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
-    'videoConversion': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
-    'objectTagging': JobSettingsDto;
+    'backgroundTask': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
@@ -2807,19 +2757,19 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'storageTemplateMigration': JobSettingsDto;
+    'library': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'backgroundTask': JobSettingsDto;
+    'metadataExtraction': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'search': JobSettingsDto;
+    'objectTagging': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
@@ -2831,13 +2781,31 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
+    'search': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
     'sidecar': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'library': JobSettingsDto;
+    'storageTemplateMigration': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'thumbnailGeneration': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'videoConversion': JobSettingsDto;
 }
 /**
  * 
@@ -2850,13 +2818,19 @@ export interface SystemConfigOAuthDto {
      * @type {boolean}
      * @memberof SystemConfigOAuthDto
      */
-    'enabled': boolean;
+    'autoLaunch': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigOAuthDto
+     */
+    'autoRegister': boolean;
     /**
      * 
      * @type {string}
      * @memberof SystemConfigOAuthDto
      */
-    'issuerUrl': string;
+    'buttonText': string;
     /**
      * 
      * @type {string}
@@ -2871,34 +2845,16 @@ export interface SystemConfigOAuthDto {
     'clientSecret': string;
     /**
      * 
-     * @type {string}
-     * @memberof SystemConfigOAuthDto
-     */
-    'scope': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigOAuthDto
-     */
-    'storageLabelClaim': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigOAuthDto
-     */
-    'buttonText': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof SystemConfigOAuthDto
      */
-    'autoRegister': boolean;
+    'enabled': boolean;
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof SystemConfigOAuthDto
      */
-    'autoLaunch': boolean;
+    'issuerUrl': string;
     /**
      * 
      * @type {boolean}
@@ -2911,6 +2867,18 @@ export interface SystemConfigOAuthDto {
      * @memberof SystemConfigOAuthDto
      */
     'mobileRedirectUri': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigOAuthDto
+     */
+    'scope': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigOAuthDto
+     */
+    'storageLabelClaim': string;
 }
 /**
  * 
@@ -2949,18 +2917,6 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @type {Array<string>}
      * @memberof SystemConfigTemplateStorageOptionDto
      */
-    'yearOptions': Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SystemConfigTemplateStorageOptionDto
-     */
-    'monthOptions': Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SystemConfigTemplateStorageOptionDto
-     */
     'dayOptions': Array<string>;
     /**
      * 
@@ -2979,13 +2935,25 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @type {Array<string>}
      * @memberof SystemConfigTemplateStorageOptionDto
      */
-    'secondOptions': Array<string>;
+    'monthOptions': Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof SystemConfigTemplateStorageOptionDto
      */
     'presetOptions': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigTemplateStorageOptionDto
+     */
+    'secondOptions': Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigTemplateStorageOptionDto
+     */
+    'yearOptions': Array<string>;
 }
 /**
  * 
@@ -2993,12 +2961,6 @@ export interface SystemConfigTemplateStorageOptionDto {
  * @interface TagResponseDto
  */
 export interface TagResponseDto {
-    /**
-     * 
-     * @type {TagTypeEnum}
-     * @memberof TagResponseDto
-     */
-    'type': TagTypeEnum;
     /**
      * 
      * @type {string}
@@ -3011,6 +2973,12 @@ export interface TagResponseDto {
      * @memberof TagResponseDto
      */
     'name': string;
+    /**
+     * 
+     * @type {TagTypeEnum}
+     * @memberof TagResponseDto
+     */
+    'type': TagTypeEnum;
     /**
      * 
      * @type {string}
@@ -3069,6 +3037,22 @@ export type TimeGroupEnum = typeof TimeGroupEnum[keyof typeof TimeGroupEnum];
  * @enum {string}
  */
 
+export const TranscodeHWAccel = {
+    Nvenc: 'nvenc',
+    Qsv: 'qsv',
+    Vaapi: 'vaapi',
+    Disabled: 'disabled'
+} as const;
+
+export type TranscodeHWAccel = typeof TranscodeHWAccel[keyof typeof TranscodeHWAccel];
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
 export const TranscodePolicy = {
     All: 'all',
     Optimal: 'optimal',
@@ -3106,16 +3090,10 @@ export interface UpdateAlbumDto {
 export interface UpdateAssetDto {
     /**
      * 
-     * @type {Array<string>}
+     * @type {string}
      * @memberof UpdateAssetDto
      */
-    'tagIds'?: Array<string>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateAssetDto
-     */
-    'isFavorite'?: boolean;
+    'description'?: string;
     /**
      * 
      * @type {boolean}
@@ -3124,10 +3102,16 @@ export interface UpdateAssetDto {
     'isArchived'?: boolean;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof UpdateAssetDto
      */
-    'description'?: string;
+    'isFavorite'?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateAssetDto
+     */
+    'tagIds'?: Array<string>;
 }
 /**
  * 
@@ -3153,19 +3137,13 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'email'?: string;
     /**
      * 
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'password'?: string;
+    'externalPath'?: string;
     /**
      * 
      * @type {string}
@@ -3177,19 +3155,7 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'lastName'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'storageLabel'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'externalPath'?: string;
+    'id': string;
     /**
      * 
      * @type {boolean}
@@ -3198,10 +3164,28 @@ export interface UpdateUserDto {
     'isAdmin'?: boolean;
     /**
      * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'lastName'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'password'?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
     'shouldChangePassword'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'storageLabel'?: string;
 }
 /**
  * 
@@ -3209,24 +3193,6 @@ export interface UpdateUserDto {
  * @interface UsageByUserDto
  */
 export interface UsageByUserDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
-    'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
-    'userFirstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
-    'userLastName': string;
     /**
      * 
      * @type {number}
@@ -3238,13 +3204,31 @@ export interface UsageByUserDto {
      * @type {number}
      * @memberof UsageByUserDto
      */
-    'videos': number;
+    'usage': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'userFirstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'userId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'userLastName': string;
     /**
      * 
      * @type {number}
      * @memberof UsageByUserDto
      */
-    'usage': number;
+    'videos': number;
 }
 /**
  * 
@@ -3270,7 +3254,13 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'id': string;
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'deletedAt': string | null;
     /**
      * 
      * @type {string}
@@ -3282,7 +3272,25 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
+    'externalPath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
     'firstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserResponseDto
+     */
+    'isAdmin': boolean;
     /**
      * 
      * @type {string}
@@ -3294,13 +3302,7 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'storageLabel': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'externalPath': string | null;
+    'oauthId': string;
     /**
      * 
      * @type {string}
@@ -3315,34 +3317,16 @@ export interface UserResponseDto {
     'shouldChangePassword': boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof UserResponseDto
-     */
-    'isAdmin': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof UserResponseDto
      */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'deletedAt': string | null;
+    'storageLabel': string | null;
     /**
      * 
      * @type {string}
      * @memberof UserResponseDto
      */
     'updatedAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'oauthId': string;
 }
 /**
  * 
@@ -3845,16 +3829,16 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} id 
-         * @param {AddAssetsDto} addAssetsDto 
+         * @param {BulkIdsDto} bulkIdsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum: async (id: string, addAssetsDto: AddAssetsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        addAssetsToAlbum: async (id: string, bulkIdsDto: BulkIdsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('addAssetsToAlbum', 'id', id)
-            // verify required parameter 'addAssetsDto' is not null or undefined
-            assertParamExists('addAssetsToAlbum', 'addAssetsDto', addAssetsDto)
+            // verify required parameter 'bulkIdsDto' is not null or undefined
+            assertParamExists('addAssetsToAlbum', 'bulkIdsDto', bulkIdsDto)
             const localVarPath = `/album/{id}/assets`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3888,7 +3872,7 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(addAssetsDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(bulkIdsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4165,15 +4149,15 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} id 
-         * @param {RemoveAssetsDto} removeAssetsDto 
+         * @param {BulkIdsDto} bulkIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum: async (id: string, removeAssetsDto: RemoveAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        removeAssetFromAlbum: async (id: string, bulkIdsDto: BulkIdsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('removeAssetFromAlbum', 'id', id)
-            // verify required parameter 'removeAssetsDto' is not null or undefined
-            assertParamExists('removeAssetFromAlbum', 'removeAssetsDto', removeAssetsDto)
+            // verify required parameter 'bulkIdsDto' is not null or undefined
+            assertParamExists('removeAssetFromAlbum', 'bulkIdsDto', bulkIdsDto)
             const localVarPath = `/album/{id}/assets`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4203,7 +4187,7 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(removeAssetsDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(bulkIdsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4317,13 +4301,13 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {AddAssetsDto} addAssetsDto 
+         * @param {BulkIdsDto} bulkIdsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AddAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(id, addAssetsDto, key, options);
+        async addAssetsToAlbum(id: string, bulkIdsDto: BulkIdsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(id, bulkIdsDto, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4391,12 +4375,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {RemoveAssetsDto} removeAssetsDto 
+         * @param {BulkIdsDto} bulkIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(id, removeAssetsDto, options);
+        async removeAssetFromAlbum(id: string, bulkIdsDto: BulkIdsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(id, bulkIdsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4437,8 +4421,8 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum(requestParameters: AlbumApiAddAssetsToAlbumRequest, options?: AxiosRequestConfig): AxiosPromise<AddAssetsResponseDto> {
-            return localVarFp.addAssetsToAlbum(requestParameters.id, requestParameters.addAssetsDto, requestParameters.key, options).then((request) => request(axios, basePath));
+        addAssetsToAlbum(requestParameters: AlbumApiAddAssetsToAlbumRequest, options?: AxiosRequestConfig): AxiosPromise<Array<BulkIdResponseDto>> {
+            return localVarFp.addAssetsToAlbum(requestParameters.id, requestParameters.bulkIdsDto, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4499,8 +4483,8 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum(requestParameters: AlbumApiRemoveAssetFromAlbumRequest, options?: AxiosRequestConfig): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.removeAssetFromAlbum(requestParameters.id, requestParameters.removeAssetsDto, options).then((request) => request(axios, basePath));
+        removeAssetFromAlbum(requestParameters: AlbumApiRemoveAssetFromAlbumRequest, options?: AxiosRequestConfig): AxiosPromise<Array<BulkIdResponseDto>> {
+            return localVarFp.removeAssetFromAlbum(requestParameters.id, requestParameters.bulkIdsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4538,10 +4522,10 @@ export interface AlbumApiAddAssetsToAlbumRequest {
 
     /**
      * 
-     * @type {AddAssetsDto}
+     * @type {BulkIdsDto}
      * @memberof AlbumApiAddAssetsToAlbum
      */
-    readonly addAssetsDto: AddAssetsDto
+    readonly bulkIdsDto: BulkIdsDto
 
     /**
      * 
@@ -4657,10 +4641,10 @@ export interface AlbumApiRemoveAssetFromAlbumRequest {
 
     /**
      * 
-     * @type {RemoveAssetsDto}
+     * @type {BulkIdsDto}
      * @memberof AlbumApiRemoveAssetFromAlbum
      */
-    readonly removeAssetsDto: RemoveAssetsDto
+    readonly bulkIdsDto: BulkIdsDto
 }
 
 /**
@@ -4720,7 +4704,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public addAssetsToAlbum(requestParameters: AlbumApiAddAssetsToAlbumRequest, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).addAssetsToAlbum(requestParameters.id, requestParameters.addAssetsDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).addAssetsToAlbum(requestParameters.id, requestParameters.bulkIdsDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4796,7 +4780,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public removeAssetFromAlbum(requestParameters: AlbumApiRemoveAssetFromAlbumRequest, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).removeAssetFromAlbum(requestParameters.id, requestParameters.removeAssetsDto, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).removeAssetFromAlbum(requestParameters.id, requestParameters.bulkIdsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5934,18 +5918,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} fileModifiedAt 
          * @param {boolean} isFavorite 
          * @param {string} [key] 
+         * @param {string} [duration] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isOffline] 
+         * @param {boolean} [isReadOnly] 
+         * @param {boolean} [isVisible] 
          * @param {string} [libraryId] 
          * @param {File} [livePhotoData] 
          * @param {File} [sidecarData] 
-         * @param {boolean} [isReadOnly] 
-         * @param {boolean} [isArchived] 
-         * @param {boolean} [isVisible] 
-         * @param {string} [duration] 
-         * @param {boolean} [isOffline] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, libraryId?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadFile: async (assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, duration?: string, isArchived?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, libraryId?: string, livePhotoData?: File, sidecarData?: File, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
             // verify required parameter 'deviceAssetId' is not null or undefined
@@ -5985,24 +5969,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             }
 
 
-            if (libraryId !== undefined) { 
-                localVarFormParams.append('libraryId', libraryId as any);
-            }
-    
             if (assetData !== undefined) { 
                 localVarFormParams.append('assetData', assetData as any);
-            }
-    
-            if (livePhotoData !== undefined) { 
-                localVarFormParams.append('livePhotoData', livePhotoData as any);
-            }
-    
-            if (sidecarData !== undefined) { 
-                localVarFormParams.append('sidecarData', sidecarData as any);
-            }
-    
-            if (isReadOnly !== undefined) { 
-                localVarFormParams.append('isReadOnly', isReadOnly as any);
             }
     
             if (deviceAssetId !== undefined) { 
@@ -6013,6 +5981,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarFormParams.append('deviceId', deviceId as any);
             }
     
+            if (duration !== undefined) { 
+                localVarFormParams.append('duration', duration as any);
+            }
+    
             if (fileCreatedAt !== undefined) { 
                 localVarFormParams.append('fileCreatedAt', fileCreatedAt as any);
             }
@@ -6021,24 +5993,36 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarFormParams.append('fileModifiedAt', fileModifiedAt as any);
             }
     
+            if (isArchived !== undefined) { 
+                localVarFormParams.append('isArchived', isArchived as any);
+            }
+    
             if (isFavorite !== undefined) { 
                 localVarFormParams.append('isFavorite', isFavorite as any);
             }
     
-            if (isArchived !== undefined) { 
-                localVarFormParams.append('isArchived', isArchived as any);
+            if (isOffline !== undefined) { 
+                localVarFormParams.append('isOffline', isOffline as any);
+            }
+    
+            if (isReadOnly !== undefined) { 
+                localVarFormParams.append('isReadOnly', isReadOnly as any);
             }
     
             if (isVisible !== undefined) { 
                 localVarFormParams.append('isVisible', isVisible as any);
             }
     
-            if (duration !== undefined) { 
-                localVarFormParams.append('duration', duration as any);
+            if (libraryId !== undefined) { 
+                localVarFormParams.append('libraryId', libraryId as any);
             }
     
-            if (isOffline !== undefined) { 
-                localVarFormParams.append('isOffline', isOffline as any);
+            if (livePhotoData !== undefined) { 
+                localVarFormParams.append('livePhotoData', livePhotoData as any);
+            }
+    
+            if (sidecarData !== undefined) { 
+                localVarFormParams.append('sidecarData', sidecarData as any);
             }
     
     
@@ -6322,19 +6306,19 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} fileModifiedAt 
          * @param {boolean} isFavorite 
          * @param {string} [key] 
+         * @param {string} [duration] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isOffline] 
+         * @param {boolean} [isReadOnly] 
+         * @param {boolean} [isVisible] 
          * @param {string} [libraryId] 
          * @param {File} [livePhotoData] 
          * @param {File} [sidecarData] 
-         * @param {boolean} [isReadOnly] 
-         * @param {boolean} [isArchived] 
-         * @param {boolean} [isVisible] 
-         * @param {string} [duration] 
-         * @param {boolean} [isOffline] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, libraryId?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, libraryId, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options);
+        async uploadFile(assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, duration?: string, isArchived?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, libraryId?: string, livePhotoData?: File, sidecarData?: File, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6558,7 +6542,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, requestParameters.isOffline, options).then((request) => request(axios, basePath));
+            return localVarFp.uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.duration, requestParameters.isArchived, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -7057,6 +7041,41 @@ export interface AssetApiUploadFileRequest {
      * @type {string}
      * @memberof AssetApiUploadFile
      */
+    readonly duration?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiUploadFile
+     */
+    readonly isArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiUploadFile
+     */
+    readonly isOffline?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiUploadFile
+     */
+    readonly isReadOnly?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiUploadFile
+     */
+    readonly isVisible?: boolean
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFile
+     */
     readonly libraryId?: string
 
     /**
@@ -7072,41 +7091,6 @@ export interface AssetApiUploadFileRequest {
      * @memberof AssetApiUploadFile
      */
     readonly sidecarData?: File
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiUploadFile
-     */
-    readonly isReadOnly?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiUploadFile
-     */
-    readonly isArchived?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiUploadFile
-     */
-    readonly isVisible?: boolean
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiUploadFile
-     */
-    readonly duration?: string
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiUploadFile
-     */
-    readonly isOffline?: boolean
 }
 
 /**
@@ -7374,7 +7358,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, requestParameters.isOffline, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.duration, requestParameters.isArchived, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -10418,6 +10402,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {string} [exifInfoCountry] 
          * @param {string} [exifInfoMake] 
          * @param {string} [exifInfoModel] 
+         * @param {string} [exifInfoProjectionType] 
          * @param {Array<string>} [smartInfoObjects] 
          * @param {Array<string>} [smartInfoTags] 
          * @param {boolean} [recent] 
@@ -10425,7 +10410,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -10489,6 +10474,10 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (exifInfoModel !== undefined) {
                 localVarQueryParameter['exifInfo.model'] = exifInfoModel;
+            }
+
+            if (exifInfoProjectionType !== undefined) {
+                localVarQueryParameter['exifInfo.projectionType'] = exifInfoProjectionType;
             }
 
             if (smartInfoObjects) {
@@ -10559,6 +10548,7 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {string} [exifInfoCountry] 
          * @param {string} [exifInfoMake] 
          * @param {string} [exifInfoModel] 
+         * @param {string} [exifInfoProjectionType] 
          * @param {Array<string>} [smartInfoObjects] 
          * @param {Array<string>} [smartInfoTags] 
          * @param {boolean} [recent] 
@@ -10566,8 +10556,8 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, isFavorite, isArchived, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, recent, motion, options);
+        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, isFavorite, isArchived, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, exifInfoProjectionType, smartInfoObjects, smartInfoTags, recent, motion, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -10603,7 +10593,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -10693,6 +10683,13 @@ export interface SearchApiSearchRequest {
 
     /**
      * 
+     * @type {string}
+     * @memberof SearchApiSearch
+     */
+    readonly exifInfoProjectionType?: string
+
+    /**
+     * 
      * @type {Array<string>}
      * @memberof SearchApiSearch
      */
@@ -10755,7 +10752,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

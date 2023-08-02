@@ -13,32 +13,32 @@ part of openapi.api;
 class AssetFileUploadResponseDto {
   /// Returns a new [AssetFileUploadResponseDto] instance.
   AssetFileUploadResponseDto({
-    required this.id,
     required this.duplicate,
+    required this.id,
   });
-
-  String id;
 
   bool duplicate;
 
+  String id;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFileUploadResponseDto &&
-     other.id == id &&
-     other.duplicate == duplicate;
+     other.duplicate == duplicate &&
+     other.id == id;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
-    (duplicate.hashCode);
+    (duplicate.hashCode) +
+    (id.hashCode);
 
   @override
-  String toString() => 'AssetFileUploadResponseDto[id=$id, duplicate=$duplicate]';
+  String toString() => 'AssetFileUploadResponseDto[duplicate=$duplicate, id=$id]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'duplicate'] = this.duplicate;
+      json[r'id'] = this.id;
     return json;
   }
 
@@ -50,8 +50,8 @@ class AssetFileUploadResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetFileUploadResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
         duplicate: mapValueOfType<bool>(json, r'duplicate')!,
+        id: mapValueOfType<String>(json, r'id')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class AssetFileUploadResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'duplicate',
+    'id',
   };
 }
 

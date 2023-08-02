@@ -16,13 +16,13 @@ void main() {
   // final instance = DeleteAssetResponseDto();
 
   group('test DeleteAssetResponseDto', () {
-    // DeleteAssetStatus status
-    test('to test the property `status`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 
-    // String id
-    test('to test the property `id`', () async {
+    // DeleteAssetStatus status
+    test('to test the property `status`', () async {
       // TODO
     });
 

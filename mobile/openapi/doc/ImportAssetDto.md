@@ -8,19 +8,19 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**libraryId** | **String** |  | 
-**isReadOnly** | **bool** |  | [optional] [default to true]
 **assetPath** | **String** |  | 
-**sidecarPath** | **String** |  | [optional] 
 **deviceAssetId** | **String** |  | 
 **deviceId** | **String** |  | 
+**duration** | **String** |  | [optional] 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
-**isFavorite** | **bool** |  | 
 **isArchived** | **bool** |  | [optional] 
-**isVisible** | **bool** |  | [optional] 
-**duration** | **String** |  | [optional] 
+**isFavorite** | **bool** |  | 
 **isOffline** | **bool** |  | [optional] [default to false]
+**isReadOnly** | **bool** |  | [optional] [default to true]
+**isVisible** | **bool** |  | [optional] 
+**libraryId** | **String** |  | 
+**sidecarPath** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -13,32 +13,32 @@ part of openapi.api;
 class ScanLibraryDto {
   /// Returns a new [ScanLibraryDto] instance.
   ScanLibraryDto({
-    this.forceRefresh = false,
     this.emptyTrash = false,
+    this.forceRefresh = false,
   });
-
-  bool forceRefresh;
 
   bool emptyTrash;
 
+  bool forceRefresh;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
-     other.forceRefresh == forceRefresh &&
-     other.emptyTrash == emptyTrash;
+     other.emptyTrash == emptyTrash &&
+     other.forceRefresh == forceRefresh;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (forceRefresh.hashCode) +
-    (emptyTrash.hashCode);
+    (emptyTrash.hashCode) +
+    (forceRefresh.hashCode);
 
   @override
-  String toString() => 'ScanLibraryDto[forceRefresh=$forceRefresh, emptyTrash=$emptyTrash]';
+  String toString() => 'ScanLibraryDto[emptyTrash=$emptyTrash, forceRefresh=$forceRefresh]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'forceRefresh'] = this.forceRefresh;
       json[r'emptyTrash'] = this.emptyTrash;
+      json[r'forceRefresh'] = this.forceRefresh;
     return json;
   }
 
@@ -50,8 +50,8 @@ class ScanLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return ScanLibraryDto(
-        forceRefresh: mapValueOfType<bool>(json, r'forceRefresh') ?? false,
         emptyTrash: mapValueOfType<bool>(json, r'emptyTrash') ?? false,
+        forceRefresh: mapValueOfType<bool>(json, r'forceRefresh') ?? false,
       );
     }
     return null;

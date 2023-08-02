@@ -1,4 +1,4 @@
-import { bootstrap as cli } from './cli/immich';
+import { bootstrap as adminCli } from './admin-cli/main';
 import { bootstrap as immich } from './immich/main';
 import { bootstrap as microservices } from './microservices/main';
 
@@ -14,8 +14,8 @@ function bootstrap() {
       return immich();
     case 'microservices':
       return microservices();
-    case 'cli':
-      return cli();
+    case 'admin-cli':
+      return adminCli();
     default:
       console.log(`Invalid app name: ${immichApp}. Expected one of immich|microservices|cli`);
       process.exit(1);

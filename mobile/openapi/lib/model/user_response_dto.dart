@@ -13,110 +13,110 @@ part of openapi.api;
 class UserResponseDto {
   /// Returns a new [UserResponseDto] instance.
   UserResponseDto({
-    required this.id,
-    required this.email,
-    required this.firstName,
-    required this.lastName,
-    required this.storageLabel,
-    required this.externalPath,
-    required this.profileImagePath,
-    required this.shouldChangePassword,
-    required this.isAdmin,
     required this.createdAt,
     required this.deletedAt,
-    required this.updatedAt,
+    required this.email,
+    required this.externalPath,
+    required this.firstName,
+    required this.id,
+    required this.isAdmin,
+    required this.lastName,
     required this.oauthId,
+    required this.profileImagePath,
+    required this.shouldChangePassword,
+    required this.storageLabel,
+    required this.updatedAt,
   });
-
-  String id;
-
-  String email;
-
-  String firstName;
-
-  String lastName;
-
-  String? storageLabel;
-
-  String? externalPath;
-
-  String profileImagePath;
-
-  bool shouldChangePassword;
-
-  bool isAdmin;
 
   DateTime createdAt;
 
   DateTime? deletedAt;
 
-  DateTime updatedAt;
+  String email;
+
+  String? externalPath;
+
+  String firstName;
+
+  String id;
+
+  bool isAdmin;
+
+  String lastName;
 
   String oauthId;
 
+  String profileImagePath;
+
+  bool shouldChangePassword;
+
+  String? storageLabel;
+
+  DateTime updatedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.id == id &&
-     other.email == email &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.storageLabel == storageLabel &&
-     other.externalPath == externalPath &&
-     other.profileImagePath == profileImagePath &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.isAdmin == isAdmin &&
      other.createdAt == createdAt &&
      other.deletedAt == deletedAt &&
-     other.updatedAt == updatedAt &&
-     other.oauthId == oauthId;
+     other.email == email &&
+     other.externalPath == externalPath &&
+     other.firstName == firstName &&
+     other.id == id &&
+     other.isAdmin == isAdmin &&
+     other.lastName == lastName &&
+     other.oauthId == oauthId &&
+     other.profileImagePath == profileImagePath &&
+     other.shouldChangePassword == shouldChangePassword &&
+     other.storageLabel == storageLabel &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
-    (email.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
-    (profileImagePath.hashCode) +
-    (shouldChangePassword.hashCode) +
-    (isAdmin.hashCode) +
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (updatedAt.hashCode) +
-    (oauthId.hashCode);
+    (email.hashCode) +
+    (externalPath == null ? 0 : externalPath!.hashCode) +
+    (firstName.hashCode) +
+    (id.hashCode) +
+    (isAdmin.hashCode) +
+    (lastName.hashCode) +
+    (oauthId.hashCode) +
+    (profileImagePath.hashCode) +
+    (shouldChangePassword.hashCode) +
+    (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
-      json[r'email'] = this.email;
-      json[r'firstName'] = this.firstName;
-      json[r'lastName'] = this.lastName;
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
-    }
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
-      json[r'profileImagePath'] = this.profileImagePath;
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'isAdmin'] = this.isAdmin;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'email'] = this.email;
+    if (this.externalPath != null) {
+      json[r'externalPath'] = this.externalPath;
+    } else {
+    //  json[r'externalPath'] = null;
+    }
+      json[r'firstName'] = this.firstName;
+      json[r'id'] = this.id;
+      json[r'isAdmin'] = this.isAdmin;
+      json[r'lastName'] = this.lastName;
       json[r'oauthId'] = this.oauthId;
+      json[r'profileImagePath'] = this.profileImagePath;
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
+    if (this.storageLabel != null) {
+      json[r'storageLabel'] = this.storageLabel;
+    } else {
+    //  json[r'storageLabel'] = null;
+    }
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -128,19 +128,19 @@ class UserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
-        email: mapValueOfType<String>(json, r'email')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        email: mapValueOfType<String>(json, r'email')!,
+        externalPath: mapValueOfType<String>(json, r'externalPath'),
+        firstName: mapValueOfType<String>(json, r'firstName')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        lastName: mapValueOfType<String>(json, r'lastName')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -188,19 +188,19 @@ class UserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
-    'email',
-    'firstName',
-    'lastName',
-    'storageLabel',
-    'externalPath',
-    'profileImagePath',
-    'shouldChangePassword',
-    'isAdmin',
     'createdAt',
     'deletedAt',
-    'updatedAt',
+    'email',
+    'externalPath',
+    'firstName',
+    'id',
+    'isAdmin',
+    'lastName',
     'oauthId',
+    'profileImagePath',
+    'shouldChangePassword',
+    'storageLabel',
+    'updatedAt',
   };
 }
 

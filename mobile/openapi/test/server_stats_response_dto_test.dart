@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // int videos (default value: 0)
-    test('to test the property `videos`', () async {
-      // TODO
-    });
-
     // int usage (default value: 0)
     test('to test the property `usage`', () async {
       // TODO
@@ -33,6 +28,11 @@ void main() {
 
     // List<UsageByUserDto> usageByUser (default value: const [])
     test('to test the property `usageByUser`', () async {
+      // TODO
+    });
+
+    // int videos (default value: 0)
+    test('to test the property `videos`', () async {
       // TODO
     });
 

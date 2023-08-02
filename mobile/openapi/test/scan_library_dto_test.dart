@@ -16,13 +16,13 @@ void main() {
   // final instance = ScanLibraryDto();
 
   group('test ScanLibraryDto', () {
-    // bool forceRefresh (default value: false)
-    test('to test the property `forceRefresh`', () async {
+    // bool emptyTrash (default value: false)
+    test('to test the property `emptyTrash`', () async {
       // TODO
     });
 
-    // bool emptyTrash (default value: false)
-    test('to test the property `emptyTrash`', () async {
+    // bool forceRefresh (default value: false)
+    test('to test the property `forceRefresh`', () async {
       // TODO
     });
 

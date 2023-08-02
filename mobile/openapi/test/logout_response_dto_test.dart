@@ -16,13 +16,13 @@ void main() {
   // final instance = LogoutResponseDto();
 
   group('test LogoutResponseDto', () {
-    // bool successful
-    test('to test the property `successful`', () async {
+    // String redirectUri
+    test('to test the property `redirectUri`', () async {
       // TODO
     });
 
-    // String redirectUri
-    test('to test the property `redirectUri`', () async {
+    // bool successful
+    test('to test the property `successful`', () async {
       // TODO
     });
 

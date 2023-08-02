@@ -16,6 +16,16 @@ void main() {
   // final instance = CuratedObjectsResponseDto();
 
   group('test CuratedObjectsResponseDto', () {
+    // String deviceAssetId
+    test('to test the property `deviceAssetId`', () async {
+      // TODO
+    });
+
+    // String deviceId
+    test('to test the property `deviceId`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -28,16 +38,6 @@ void main() {
 
     // String resizePath
     test('to test the property `resizePath`', () async {
-      // TODO
-    });
-
-    // String deviceAssetId
-    test('to test the property `deviceAssetId`', () async {
-      // TODO
-    });
-
-    // String deviceId
-    test('to test the property `deviceId`', () async {
       // TODO
     });
 

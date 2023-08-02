@@ -13,18 +13,16 @@ part of openapi.api;
 class UpdateUserDto {
   /// Returns a new [UpdateUserDto] instance.
   UpdateUserDto({
-    required this.id,
     this.email,
-    this.password,
-    this.firstName,
-    this.lastName,
-    this.storageLabel,
     this.externalPath,
+    this.firstName,
+    required this.id,
     this.isAdmin,
+    this.lastName,
+    this.password,
     this.shouldChangePassword,
+    this.storageLabel,
   });
-
-  String id;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -40,7 +38,7 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? password;
+  String? externalPath;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -50,29 +48,7 @@ class UpdateUserDto {
   ///
   String? firstName;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? lastName;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? storageLabel;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? externalPath;
+  String id;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -88,78 +64,102 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? lastName;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? password;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? shouldChangePassword;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
-     other.id == id &&
      other.email == email &&
-     other.password == password &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.storageLabel == storageLabel &&
      other.externalPath == externalPath &&
+     other.firstName == firstName &&
+     other.id == id &&
      other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword;
+     other.lastName == lastName &&
+     other.password == password &&
+     other.shouldChangePassword == shouldChangePassword &&
+     other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (email == null ? 0 : email!.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (firstName == null ? 0 : firstName!.hashCode) +
-    (lastName == null ? 0 : lastName!.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
+    (firstName == null ? 0 : firstName!.hashCode) +
+    (id.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
+    (lastName == null ? 0 : lastName!.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
+    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
+    (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'UpdateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
     //  json[r'email'] = null;
-    }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
-    }
-    if (this.firstName != null) {
-      json[r'firstName'] = this.firstName;
-    } else {
-    //  json[r'firstName'] = null;
-    }
-    if (this.lastName != null) {
-      json[r'lastName'] = this.lastName;
-    } else {
-    //  json[r'lastName'] = null;
-    }
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
     }
     if (this.externalPath != null) {
       json[r'externalPath'] = this.externalPath;
     } else {
     //  json[r'externalPath'] = null;
     }
+    if (this.firstName != null) {
+      json[r'firstName'] = this.firstName;
+    } else {
+    //  json[r'firstName'] = null;
+    }
+      json[r'id'] = this.id;
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
     //  json[r'isAdmin'] = null;
     }
+    if (this.lastName != null) {
+      json[r'lastName'] = this.lastName;
+    } else {
+    //  json[r'lastName'] = null;
+    }
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+    //  json[r'password'] = null;
+    }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
     //  json[r'shouldChangePassword'] = null;
+    }
+    if (this.storageLabel != null) {
+      json[r'storageLabel'] = this.storageLabel;
+    } else {
+    //  json[r'storageLabel'] = null;
     }
     return json;
   }
@@ -172,15 +172,15 @@ class UpdateUserDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateUserDto(
-        id: mapValueOfType<String>(json, r'id')!,
         email: mapValueOfType<String>(json, r'email'),
-        password: mapValueOfType<String>(json, r'password'),
-        firstName: mapValueOfType<String>(json, r'firstName'),
-        lastName: mapValueOfType<String>(json, r'lastName'),
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         externalPath: mapValueOfType<String>(json, r'externalPath'),
+        firstName: mapValueOfType<String>(json, r'firstName'),
+        id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
+        lastName: mapValueOfType<String>(json, r'lastName'),
+        password: mapValueOfType<String>(json, r'password'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
+        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
     }
     return null;

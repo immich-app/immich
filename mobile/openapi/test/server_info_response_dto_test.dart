@@ -16,13 +16,8 @@ void main() {
   // final instance = ServerInfoResponseDto();
 
   group('test ServerInfoResponseDto', () {
-    // int diskSizeRaw
-    test('to test the property `diskSizeRaw`', () async {
-      // TODO
-    });
-
-    // int diskUseRaw
-    test('to test the property `diskUseRaw`', () async {
+    // String diskAvailable
+    test('to test the property `diskAvailable`', () async {
       // TODO
     });
 
@@ -31,13 +26,18 @@ void main() {
       // TODO
     });
 
-    // double diskUsagePercentage
-    test('to test the property `diskUsagePercentage`', () async {
+    // String diskSize
+    test('to test the property `diskSize`', () async {
       // TODO
     });
 
-    // String diskSize
-    test('to test the property `diskSize`', () async {
+    // int diskSizeRaw
+    test('to test the property `diskSizeRaw`', () async {
+      // TODO
+    });
+
+    // double diskUsagePercentage
+    test('to test the property `diskUsagePercentage`', () async {
       // TODO
     });
 
@@ -46,8 +46,8 @@ void main() {
       // TODO
     });
 
-    // String diskAvailable
-    test('to test the property `diskAvailable`', () async {
+    // int diskUseRaw
+    test('to test the property `diskUseRaw`', () async {
       // TODO
     });
 

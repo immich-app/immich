@@ -16,13 +16,13 @@ void main() {
   // final instance = CreateTagDto();
 
   group('test CreateTagDto', () {
-    // TagTypeEnum type
-    test('to test the property `type`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 
-    // String name
-    test('to test the property `name`', () async {
+    // TagTypeEnum type
+    test('to test the property `type`', () async {
       // TODO
     });
 

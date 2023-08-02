@@ -34,21 +34,25 @@ export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => 
   return new StreamableFile(stream, { type, length });
 };
 
-function sortKeys<T extends object>(obj: T): T {
-  if (!obj) {
+function sortKeys<T>(obj: T): T {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
     return obj;
   }
 
   const result: Partial<T> = {};
   const keys = Object.keys(obj).sort() as Array<keyof T>;
   for (const key of keys) {
-    result[key] = obj[key];
+    result[key] = sortKeys(obj[key]);
   }
   return result as T;
 }
 
 const patchOpenAPI = (document: OpenAPIObject) => {
+  for (const [key, value] of Object.entries(document.paths)) {
+    document.paths[key] = sortKeys(value);
+  }
   document.paths = sortKeys(document.paths);
+
   if (document.components?.schemas) {
     document.components.schemas = sortKeys(document.components.schemas);
   }

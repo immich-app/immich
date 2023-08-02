@@ -16,13 +16,13 @@ void main() {
   // final instance = SearchFacetResponseDto();
 
   group('test SearchFacetResponseDto', () {
-    // String fieldName
-    test('to test the property `fieldName`', () async {
+    // List<SearchFacetCountResponseDto> counts (default value: const [])
+    test('to test the property `counts`', () async {
       // TODO
     });
 
-    // List<SearchFacetCountResponseDto> counts (default value: const [])
-    test('to test the property `counts`', () async {
+    // String fieldName
+    test('to test the property `fieldName`', () async {
       // TODO
     });
 

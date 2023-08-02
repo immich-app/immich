@@ -13,38 +13,38 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
+    this.people = const [],
     required this.total,
     required this.visible,
-    this.people = const [],
   });
+
+  List<PersonResponseDto> people;
 
   num total;
 
   num visible;
 
-  List<PersonResponseDto> people;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
+     other.people == people &&
      other.total == total &&
-     other.visible == visible &&
-     other.people == people;
+     other.visible == visible;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (people.hashCode) +
     (total.hashCode) +
-    (visible.hashCode) +
-    (people.hashCode);
+    (visible.hashCode);
 
   @override
-  String toString() => 'PeopleResponseDto[total=$total, visible=$visible, people=$people]';
+  String toString() => 'PeopleResponseDto[people=$people, total=$total, visible=$visible]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'people'] = this.people;
       json[r'total'] = this.total;
       json[r'visible'] = this.visible;
-      json[r'people'] = this.people;
     return json;
   }
 
@@ -56,9 +56,9 @@ class PeopleResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PeopleResponseDto(
+        people: PersonResponseDto.listFromJson(json[r'people']),
         total: num.parse('${json[r'total']}'),
         visible: num.parse('${json[r'visible']}'),
-        people: PersonResponseDto.listFromJson(json[r'people']),
       );
     }
     return null;
@@ -106,9 +106,9 @@ class PeopleResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'people',
     'total',
     'visible',
-    'people',
   };
 }
 
