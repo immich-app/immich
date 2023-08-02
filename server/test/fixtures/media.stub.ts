@@ -72,6 +72,20 @@ export const probeStub = {
       },
     ],
   }),
+  videoStreamHDR: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 480,
+        width: 480,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: true,
+      },
+    ],
+  }),
   videoStreamVertical2160p: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [

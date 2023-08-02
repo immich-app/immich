@@ -111,6 +111,14 @@ describe(MediaService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalledWith();
     });
 
+    it('should skip video thumbnail generation if no video stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.noVideoStreams);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalledWith();
+    });
+
     it('should generate a thumbnail for an image', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
@@ -139,6 +147,28 @@ describe(MediaService.name, () => {
           '-frames:v 1',
           '-v verbose',
           '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p',
+        ],
+        twoPass: false,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
+      });
+    });
+
+    it('should tonemap thumbnail for hdr video', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
+        inputOptions: [],
+        outputOptions: [
+          '-ss 00:00:00.000',
+          '-frames:v 1',
+          '-v verbose',
+          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -1295,5 +1325,55 @@ describe(MediaService.name, () => {
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
+  });
+
+  it('should tonemap when policy is required and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.REQUIRED }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should tonemap when policy is optimal and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
   });
 });
