@@ -287,11 +287,15 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _itemBuilder(BuildContext c, int position) {
-    if (position == 0 && widget.topWidget != null) {
-      return widget.topWidget!;
+    int index = position;
+    if (widget.topWidget != null) {
+      if (index == 0) {
+        return widget.topWidget!;
+      }
+      index--;
     }
 
-    final item = widget.renderList.elements[position - 1];
+    final item = widget.renderList.elements[index];
     return _buildSection(c, item, _scrolling);
   }
 
