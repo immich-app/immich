@@ -9,6 +9,6 @@ export interface ILibraryRepository {
   setImportPaths(libraryId: string, importPaths: string[]): Promise<LibraryEntity>;
   getAllByUserId(userId: string): Promise<LibraryEntity[]>;
   create(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
-  remove(library: LibraryEntity): Promise<void>;
+  delete(id: string): Promise<void>;
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null>;
 }

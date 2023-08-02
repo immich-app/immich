@@ -70,6 +70,15 @@ export class LibraryService {
     return mapLibrary(libraryEntity);
   }
 
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
+    const exists = await this.libraryRepository.getById(id);
+    if (!exists) {
+      throw new BadRequestException('Library not found');
+    }
+
+    await this.libraryRepository.delete(id);
+  }
+
   async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
     if (dto.assetId) {
       // TODO

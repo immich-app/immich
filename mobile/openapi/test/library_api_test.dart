@@ -22,6 +22,11 @@ void main() {
       // TODO
     });
 
+    //Future deleteLibrary(String id) async
+    test('test deleteLibrary', () async {
+      // TODO
+    });
+
     //Future<List<LibraryResponseDto>> getAllLibraries({ String assetId }) async
     test('test getAllLibraries', () async {
       // TODO

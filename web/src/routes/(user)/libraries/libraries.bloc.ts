@@ -1,4 +1,4 @@
-import type { OnShowContextMenuDetail } from '$lib/components/libraries/library-card';
+import type { OnShowContextMenuDetail } from '$lib/components/user-settings-page/library-card';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { LibraryResponseDto, LibraryType, api } from '@api';
 import { derived, writable } from 'svelte/store';

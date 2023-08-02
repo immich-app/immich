@@ -9,6 +9,7 @@
   import DeviceList from './device-list.svelte';
   import PartnerSettings from './partner-settings.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import LibraryList from './library-list.svelte';
 
   export let user: UserResponseDto;
 
@@ -29,6 +30,10 @@
 
 <SettingAccordion title="Account" subtitle="Manage your account">
   <UserProfileSettings {user} />
+</SettingAccordion>
+
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">

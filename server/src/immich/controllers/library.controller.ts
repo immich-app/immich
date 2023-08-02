@@ -7,7 +7,7 @@ import {
   ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -51,6 +51,11 @@ export class LibraryController {
   @Post(':id/importPaths')
   setImportPaths(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: SetImportPathsDto) {
     return this.libraryService.setImportPaths(authUser, id, dto);
+  }
+
+  @Delete(':id')
+  deleteLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.libraryService.delete(authUser, id);
   }
 
   @Post('refresh/:id')

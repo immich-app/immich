@@ -1,6 +1,6 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LibrarySettings from '$lib/components/libraries/library-settings.svelte';
+  import LibrarySettings from '$lib/components/user-settings-page/library-settings.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;

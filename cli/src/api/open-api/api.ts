@@ -8264,6 +8264,48 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteLibrary: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteLibrary', 'id', id)
+            const localVarPath = `/library/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8545,6 +8587,16 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteLibrary(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteLibrary(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8625,6 +8677,15 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {LibraryApiDeleteLibraryRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteLibrary(requestParameters: LibraryApiDeleteLibraryRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteLibrary(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {LibraryApiGetAllLibrariesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8691,6 +8752,20 @@ export interface LibraryApiCreateLibraryRequest {
      * @memberof LibraryApiCreateLibrary
      */
     readonly createLibraryDto: CreateLibraryDto
+}
+
+/**
+ * Request parameters for deleteLibrary operation in LibraryApi.
+ * @export
+ * @interface LibraryApiDeleteLibraryRequest
+ */
+export interface LibraryApiDeleteLibraryRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryApiDeleteLibrary
+     */
+    readonly id: string
 }
 
 /**
@@ -8793,6 +8868,17 @@ export class LibraryApi extends BaseAPI {
      */
     public createLibrary(requestParameters: LibraryApiCreateLibraryRequest, options?: AxiosRequestConfig) {
         return LibraryApiFp(this.configuration).createLibrary(requestParameters.createLibraryDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {LibraryApiDeleteLibraryRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public deleteLibrary(requestParameters: LibraryApiDeleteLibraryRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).deleteLibrary(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
