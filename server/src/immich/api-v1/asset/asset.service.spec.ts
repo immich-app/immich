@@ -6,13 +6,13 @@ import {
   authStub,
   fileStub,
   IAccessRepositoryMock,
-  libraryStub,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
+import { libraryStub } from '@test/fixtures/library.stub';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
@@ -256,7 +256,7 @@ describe('AssetService', () => {
     it('should return failed status a delete fails', async () => {
       assetRepositoryMock.get.mockResolvedValue({
         id: 'asset1',
-        library: libraryEntityStub.uploadLibrary,
+        library: libraryStub.uploadLibrary,
       } as AssetEntity);
       assetRepositoryMock.remove.mockRejectedValue('delete failed');
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
@@ -301,7 +301,7 @@ describe('AssetService', () => {
         originalPath: 'original-path-1',
         resizePath: 'resize-path-1',
         webpPath: 'web-path-1',
-        library: libraryEntityStub.uploadLibrary,
+        library: libraryStub.uploadLibrary,
       };
 
       const asset2 = {
@@ -310,7 +310,7 @@ describe('AssetService', () => {
         resizePath: 'resize-path-2',
         webpPath: 'web-path-2',
         encodedVideoPath: 'encoded-video-path-2',
-        library: libraryEntityStub.uploadLibrary,
+        library: libraryStub.uploadLibrary,
       };
 
       // Can't be deleted since it's external
@@ -320,7 +320,7 @@ describe('AssetService', () => {
         resizePath: 'resize-path-3',
         webpPath: 'web-path-3',
         encodedVideoPath: 'encoded-video-path-2',
-        library: libraryEntityStub.importLibrary,
+        library: libraryStub.importLibrary,
       };
 
       when(assetRepositoryMock.get)
