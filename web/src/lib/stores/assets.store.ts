@@ -76,7 +76,6 @@ export class AssetStore {
     let height = 0;
     for (const bucket of this.buckets) {
       if (height < viewport.height) {
-        // TODO use viewport.width + wrapping in estimate
         height += bucket.bucketHeight;
         this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
         continue;
