@@ -259,6 +259,8 @@ export const assetStub = {
     isVisible: false,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
     fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    libraryId: 'library-id',
+    library: libraryStub.library1,
     exifInfo: {
       fileSizeInByte: 100_000,
     },
@@ -273,6 +275,8 @@ export const assetStub = {
     isVisible: true,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
     fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    libraryId: 'library-id',
+    library: libraryStub.library1,
     exifInfo: {
       fileSizeInByte: 25_000,
     },
