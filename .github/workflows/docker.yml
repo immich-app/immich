@@ -112,7 +112,7 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
 
   build_and_push_server_arm_64:
-    runs-on: self-hosted
+    runs-on: [self-hosted, ubuntu-latest]
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
