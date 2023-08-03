@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   build_and_push:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
@@ -27,6 +27,7 @@ jobs:
           - context: "server"
             image: "immich-server"
             platforms: "linux/amd64,linux/arm64"
+            os: [self-hosted]
           - context: "web"
             image: "immich-web"
             platforms: "linux/amd64,linux/arm64"
