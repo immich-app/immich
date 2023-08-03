@@ -96,7 +96,9 @@
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
             {:else if selected}
-              <CheckCircle size="24" class="text-immich-primary" />
+              <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+                <CheckCircle size="24" class="text-immich-primary" />
+              </div>
             {:else}
               <CheckCircle size="24" class="text-white/80 hover:text-white" />
             {/if}
@@ -107,10 +109,12 @@
       <div
         class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
         class:scale-[0.85]={selected}
+        class:rounded-xl={selected}
       >
         <!-- Gradient overlay on hover -->
         <div
           class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+          class:rounded-xl={selected}
         />
 
         <!-- Favorite asset star -->
@@ -141,6 +145,7 @@
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}
+            curve={selected}
           />
         {:else}
           <div class="flex h-full w-full items-center justify-center p-4">
@@ -153,6 +158,7 @@
             <VideoThumbnail
               url={api.getAssetFileUrl(asset.id, false, true, publicSharedKey)}
               enablePlayback={mouseOver}
+              curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
             />
           </div>
@@ -165,6 +171,7 @@
               pauseIcon={MotionPauseOutline}
               playIcon={MotionPlayOutline}
               showTime={false}
+              curve={selected}
               playbackOnIconHover
             />
           </div>
