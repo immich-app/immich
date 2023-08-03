@@ -112,24 +112,6 @@
       </svelte:fragment>
     </SideBarButton>
   </a>
-  <a data-sveltekit-preload-data="hover" href={AppRoute.LIBRARIES} draggable="false">
-    <SideBarButton
-      title="Libraries"
-      logo={ImageLibrary}
-      flippedLogo={true}
-      isSelected={$page.route.id === '/(user)/libraries'}
-    >
-      <svelte:fragment slot="moreInformation">
-        {#await getLibraryCount()}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.toLocaleString($locale)} Libraries</p>
-          </div>
-        {/await}
-      </svelte:fragment>
-    </SideBarButton>
-  </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} draggable="false">
     <SideBarButton title="Albums" logo={ImageAlbum} flippedLogo={true} isSelected={$page.route.id === '/(user)/albums'}>
       <svelte:fragment slot="moreInformation">

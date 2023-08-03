@@ -3,16 +3,17 @@
   import FolderSync from 'svelte-material-icons/FolderSync.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import type { LibraryResponseDto } from '../../../api/open-api';
 
   export let title = 'Create Library';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
 
-  export let library: Partial<APIKeyResponseDto>;
+  export let library: Partial<LibraryResponseDto>;
 
   const dispatch = createEventDispatcher();
   const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { importPath });
+  const handleSubmit = () => dispatch('submit', { ...library, libraryType: library.type });
 </script>
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
@@ -30,8 +31,11 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="path">Path</label>
-        <input class="immich-form-input" id="name" name="name" type="text" bind:value={importPath} />
+        <label class="immich-form-label" for="path">Type</label>
+        <select class="immich-form-select" id="type" name="type" bind:value={library.type}>
+          <option value="UPLOAD">Upload</option>
+          <option value="IMPORT">Import</option>
+        </select>
       </div>
 
       <div class="flex w-full px-4 gap-4 mt-8">
