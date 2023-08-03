@@ -4,7 +4,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { UserResponseDto } from '@api';
-  import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
+  import { AssetResponseDto, TimeGroupEnum, api } from '@api';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,13 +17,13 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import MemoryLane from './memory-lane.svelte';
 
-  import { AppRoute } from '$lib/constants';
-  import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
-  import type { AssetStore } from '$lib/stores/assets.store';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
@@ -39,14 +39,13 @@
   let viewportHeight = 0;
   let viewportWidth = 0;
   let assetGridElement: HTMLElement;
-  let bucketInfo: AssetCountByTimeBucketResponseDto;
   let showShortcuts = false;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
-    const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
+    const { data: timeBuckets } = await api.assetApi.getAssetCountByTimeBucket({
       getAssetCountByTimeBucketDto: {
         timeGroup: TimeGroupEnum.Month,
         userId: user?.id,
@@ -54,26 +53,7 @@
       },
     });
 
-    bucketInfo = assetCountByTimebucket;
-
-    assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket, user?.id);
-
-    // Get asset bucket if bucket height is smaller than viewport height
-    let bucketsToFetchInitially: string[] = [];
-    let initialBucketsHeight = 0;
-    $assetStore.buckets.every((bucket) => {
-      if (initialBucketsHeight < viewportHeight) {
-        initialBucketsHeight += bucket.bucketHeight;
-        bucketsToFetchInitially.push(bucket.bucketDate);
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    bucketsToFetchInitially.forEach((bucketDate) => {
-      assetStore.getAssetsByBucket(bucketDate, BucketPosition.Visible);
-    });
+    assetStore.init({ width: viewportHeight, height: viewportWidth }, timeBuckets.buckets, user?.id);
   });
 
   onDestroy(() => {
@@ -81,7 +61,7 @@
       document.removeEventListener('keydown', onKeyboardPress);
     }
 
-    assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
+    assetStore.init({ width: 0, height: 0 }, [], undefined);
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -113,7 +93,7 @@
     const target = el.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
-      assetStore.getAssetsByBucket(bucketDate, event.detail.position);
+      assetStore.loadBucket(bucketDate, event.detail.position);
     }
   }
 
@@ -122,14 +102,14 @@
   }
 
   const navigateToPreviousAsset = async () => {
-    const prevAsset = await assetStore.getAdjacentAsset($viewingAsset.id, 'previous');
+    const prevAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
     if (prevAsset) {
       assetViewingStore.setAssetId(prevAsset);
     }
   };
 
   const navigateToNextAsset = async () => {
-    const nextAsset = await assetStore.getAdjacentAsset($viewingAsset.id, 'next');
+    const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
       assetViewingStore.setAssetId(nextAsset);
     }
@@ -234,8 +214,12 @@
     assetInteractionStore.clearAssetSelectionCandidates();
 
     if ($assetSelectionStart && rangeSelection) {
-      let startBucketIndex = $assetStore.loadedAssets[$assetSelectionStart.id];
-      let endBucketIndex = $assetStore.loadedAssets[asset.id];
+      let startBucketIndex = $assetStore.getBucketIndexByAssetId($assetSelectionStart.id);
+      let endBucketIndex = $assetStore.getBucketIndexByAssetId(asset.id);
+
+      if (startBucketIndex === null || endBucketIndex === null) {
+        return;
+      }
 
       if (endBucketIndex < startBucketIndex) {
         [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
@@ -244,7 +228,7 @@
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
-        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
@@ -308,7 +292,7 @@
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
-{#if bucketInfo && viewportHeight && $assetStore.timelineHeight > viewportHeight}
+{#if viewportHeight && $assetStore.initialized && $assetStore.timelineHeight > viewportHeight}
   <Scrollbar
     {assetStore}
     scrollbarHeight={viewportHeight}
@@ -335,9 +319,7 @@
       {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
-          on:hidden={async () => {
-            await assetStore.cancelBucketRequest(bucket.cancelToken, bucket.bucketDate);
-          }}
+          on:hidden={() => assetStore.cancelBucket(bucket)}
           let:intersecting
           top={750}
           bottom={750}
