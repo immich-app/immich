@@ -4206,12 +4206,12 @@
         ]
       }
     },
-    "/user/info/{userId}": {
+    "/user/info/{id}": {
       "get": {
         "operationId": "getUserById",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4323,12 +4323,12 @@
         ]
       }
     },
-    "/user/profile-image/{userId}": {
+    "/user/profile-image/{id}": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4365,12 +4365,12 @@
         ]
       }
     },
-    "/user/{userId}": {
+    "/user/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4407,12 +4407,12 @@
         ]
       }
     },
-    "/user/{userId}/restore": {
+    "/user/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {

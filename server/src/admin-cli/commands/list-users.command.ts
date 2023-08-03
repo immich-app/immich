@@ -13,7 +13,7 @@ export class ListUsersCommand extends CommandRunner {
 
   async run(): Promise<void> {
     try {
-      const users = await this.userService.getAllUsers(CLI_USER, true);
+      const users = await this.userService.getAll(CLI_USER, true);
       console.dir(users);
     } catch (error) {
       console.error(error);

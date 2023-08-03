@@ -39,12 +39,12 @@ export class UserService {
     this.userCore = new UserCore(userRepository, cryptoRepository);
   }
 
-  async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
+  async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userCore.getList({ withDeleted: !isAll });
     return users.map(mapUser);
   }
 
-  async getUserById(userId: string, withDeleted = false): Promise<UserResponseDto> {
+  async get(userId: string, withDeleted = false): Promise<UserResponseDto> {
     const user = await this.userCore.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -53,7 +53,7 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserInfo(authUser: AuthUserDto): Promise<UserResponseDto> {
+  async getMe(authUser: AuthUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.get(authUser.id);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -61,7 +61,7 @@ export class UserService {
     return mapUser(user);
   }
 
-  async getUserCount(dto: UserCountDto): Promise<UserCountResponseDto> {
+  async getCount(dto: UserCountDto): Promise<UserCountResponseDto> {
     let users = await this.userCore.getList();
 
     if (dto.admin) {
@@ -71,12 +71,12 @@ export class UserService {
     return mapUserCountResponse(users.length);
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const createdUser = await this.userCore.createUser(createUserDto);
     return mapUser(createdUser);
   }
 
-  async updateUser(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.get(dto.id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -86,7 +86,7 @@ export class UserService {
     return mapUser(updatedUser);
   }
 
-  async deleteUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+  async delete(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
     const user = await this.userCore.get(userId);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -95,7 +95,7 @@ export class UserService {
     return mapUser(deletedUser);
   }
 
-  async restoreUser(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
+  async restore(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
     const user = await this.userCore.get(userId, true);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -112,7 +112,7 @@ export class UserService {
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
-  async getUserProfileImage(userId: string): Promise<ReadStream> {
+  async getProfileImage(userId: string): Promise<ReadStream> {
     const user = await this.userCore.get(userId);
     if (!user) {
       throw new NotFoundException('User not found');
