@@ -125,6 +125,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.2.0
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.9.1
         # Workaround to fix error:
