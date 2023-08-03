@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { toBoolean } from '../../domain.util';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { toBoolean, ValidateUUID } from '../../domain.util';
 import { TimeBucketSize } from '../asset.repository';
 
 export class TimeBucketDto {
@@ -10,15 +10,10 @@ export class TimeBucketDto {
   @ApiProperty({ enum: TimeBucketSize, enumName: 'TimeBucketSize' })
   size!: TimeBucketSize;
 
-  @IsOptional()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID({ optional: true })
   userId?: string;
 
-  @IsOptional()
-  @IsUUID()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID({ optional: true })
   albumId?: string;
 
   @IsOptional()
