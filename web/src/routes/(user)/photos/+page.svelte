@@ -11,10 +11,10 @@
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeGroupEnum, api } from '@api';
+  import { TimeBucketSize, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
@@ -23,7 +23,7 @@
   export let data: PageData;
   let assetCount = 1;
 
-  const assetStore = new AssetStore({ timeGroup: TimeGroupEnum.Month });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
