@@ -40,7 +40,6 @@ libgsf-1-114 libopenjp2-7 liblcms2-2 liborc-0.4-0 libopenexr-3-1-30 liblqr-1-0 l
 mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) jq wget \
 && ./install-ffmpeg.sh && apt-get remove -yqq jq wget && apt-get autoremove -yqq && apt-get clean && rm -rf /var/lib/apt/lists/* \
 && rm install-ffmpeg.sh && rm build-lock.json
-ENV PATH=/usr/lib/jellyfin-ffmpeg:$PATH
 
 COPY --from=prod /usr/local/bin/magick /usr/local/bin/magick
 COPY --from=prod /usr/local/include/ImageMagick-7 /usr/local/include/ImageMagick-7
