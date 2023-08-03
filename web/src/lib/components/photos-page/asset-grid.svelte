@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { BucketPosition } from '$lib/models/asset-grid-state';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { UserResponseDto } from '@api';
-  import { AssetResponseDto, TimeGroupEnum, api } from '@api';
+  import type { AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -21,11 +19,10 @@
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
+  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
 
-  export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
   export let showMemoryLane = false;
 
@@ -36,8 +33,7 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
 
-  let viewportHeight = 0;
-  let viewportWidth = 0;
+  const viewport: Viewport = { width: 0, height: 0 };
   let assetGridElement: HTMLElement;
   let showShortcuts = false;
 
@@ -45,23 +41,13 @@
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
-    const { data: timeBuckets } = await api.assetApi.getAssetCountByTimeBucket({
-      getAssetCountByTimeBucketDto: {
-        timeGroup: TimeGroupEnum.Month,
-        userId: user?.id,
-        withoutThumbs: true,
-      },
-    });
-
-    assetStore.init({ width: viewportHeight, height: viewportWidth }, timeBuckets.buckets, user?.id);
+    await assetStore.init(viewport);
   });
 
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
     }
-
-    assetStore.init({ width: 0, height: 0 }, [], undefined);
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -292,10 +278,10 @@
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
-{#if viewportHeight && $assetStore.initialized && $assetStore.timelineHeight > viewportHeight}
+{#if $assetStore.timelineHeight > viewport.height}
   <Scrollbar
     {assetStore}
-    scrollbarHeight={viewportHeight}
+    scrollbarHeight={viewport.height}
     scrollTop={lastScrollPosition}
     on:onscrollbarclick={(e) => handleScrollbarClick(e.detail)}
     on:onscrollbardrag={(e) => handleScrollbarDrag(e.detail)}
@@ -306,8 +292,8 @@
 <section
   id="asset-grid"
   class="scrollbar-hidden mb-4 ml-4 mr-[60px] overflow-y-auto"
-  bind:clientHeight={viewportHeight}
-  bind:clientWidth={viewportWidth}
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
   bind:this={assetGridElement}
   on:scroll={handleTimelineScroll}
 >
@@ -337,7 +323,7 @@
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}
-                {viewportWidth}
+                {viewport}
               />
             {/if}
           </div>

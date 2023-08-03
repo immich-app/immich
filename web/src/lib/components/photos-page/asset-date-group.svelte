@@ -13,12 +13,13 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
   export let isAlbumSelectionMode = false;
-  export let viewportWidth: number;
+  export let viewport: Viewport;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -45,7 +46,7 @@
     for (let group of assetsGroupByDate) {
       const justifiedLayoutResult = justifiedLayout(group.map(getAssetRatio), {
         boxSpacing: 2,
-        containerWidth: Math.floor(viewportWidth),
+        containerWidth: Math.floor(viewport.width),
         containerPadding: 0,
         targetRowHeightTolerance: 0.15,
         targetRowHeight: 235,
@@ -59,7 +60,7 @@
   })();
 
   $: {
-    if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
+    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
       const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
@@ -143,12 +144,7 @@
   };
 </script>
 
-<section
-  id="asset-group-by-date"
-  class="flex flex-wrap gap-x-12"
-  bind:clientHeight={actualBucketHeight}
-  bind:clientWidth={viewportWidth}
->
+<section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
     {@const dateGroupTitle = formatGroupTitle(DateTime.fromISO(assetsInDateGroup[0].fileCreatedAt).startOf('day'))}
     <!-- Asset Group By Date -->
