@@ -96,7 +96,7 @@
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
             {:else if selected}
-              <div class="bg-[#D9DCEF] dark:bg-[#232932] rounded-full">
+              <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
                 <CheckCircle size="24" class="text-immich-primary" />
               </div>
             {:else}
