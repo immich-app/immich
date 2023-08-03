@@ -47,14 +47,6 @@ export class JobService {
     return this.getJobStatus(queueName);
   }
 
-  public getQueue(queueName: QueueName) {
-    return this.jobRepository.getQueue(queueName);
-  }
-
-  public getWorker(queueName: QueueName) {
-    return this.jobRepository.getWorker(queueName);
-  }
-
   async getJobStatus(queueName: QueueName): Promise<JobStatusDto> {
     const [jobCounts, queueStatus] = await Promise.all([
       this.jobRepository.getJobCounts(queueName),

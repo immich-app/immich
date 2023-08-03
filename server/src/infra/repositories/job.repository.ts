@@ -78,15 +78,7 @@ export class JobRepository implements IJobRepository {
     }
   }
 
-  public getQueue(queue: QueueName): Queue {
+  private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
-  }
-
-  public getWorker(queueName: QueueName): Worker<any, any, string> {
-    const worker = this.workers[queueName];
-    if (!worker) {
-      throw new Error(`Worker not found for queue: ${queueName}`);
-    }
-    return worker;
   }
 }

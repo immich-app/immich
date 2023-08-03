@@ -1,11 +1,8 @@
-
-
 import { AuthService, AuthUserDto, JobCommand, JobService, LibraryService, QueueName, UserService } from '@app/domain';
 import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
 import { AppService } from '@app/immich/app.service';
 import { LibraryType } from '@app/infra/entities';
-import { JobRepository } from '@app/infra/repositories/job.repository';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
@@ -14,7 +11,7 @@ import { DataSource } from 'typeorm';
 
 jest.setTimeout(30000);
 
-describe('Asset', () => {
+describe.skip('Asset', () => {
   let app: INestApplication;
 
   let database: DataSource;

@@ -146,8 +146,6 @@ describe(AssetService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();

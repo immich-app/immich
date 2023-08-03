@@ -6,7 +6,7 @@ import {
   authStub,
   fileStub,
   IAccessRepositoryMock,
-  libraryEntityStub,
+  libraryStub,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,

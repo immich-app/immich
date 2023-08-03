@@ -1,12 +1,12 @@
 import {
-  assetEntityStub,
-  libraryEntityStub,
+  assetStub,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
-  userEntityStub,
+  userStub,
 } from '@test';
+import { libraryStub } from '@test/fixtures/library.stub';
 import mock from 'mock-fs';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
@@ -56,8 +56,8 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
@@ -82,8 +82,8 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
@@ -108,22 +108,22 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
-      assetMock.create.mockResolvedValue(assetEntityStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
         data: {
-          id: assetEntityStub.image.id,
+          id: assetStub.image.id,
           source: 'upload',
         },
       });
@@ -131,7 +131,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: {
-          id: assetEntityStub.image.id,
+          id: assetStub.image.id,
         },
       });
     });
@@ -150,22 +150,22 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/video.mp4',
         forceRefresh: false,
         emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
-      assetMock.create.mockResolvedValue(assetEntityStub.video);
+      assetMock.create.mockResolvedValue(assetStub.video);
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
         data: {
-          id: assetEntityStub.video.id,
+          id: assetStub.video.id,
           source: 'upload',
         },
       });
@@ -173,7 +173,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: {
-          id: assetEntityStub.video.id,
+          id: assetStub.video.id,
         },
       });
     });
@@ -190,19 +190,19 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: assetEntityStub.image.libraryId,
-        ownerId: assetEntityStub.image.ownerId,
+        libraryId: assetStub.image.libraryId,
+        ownerId: assetStub.image.ownerId,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetEntityStub.image);
-      assetMock.create.mockResolvedValue(assetEntityStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetEntityStub.image.id, isOffline: true });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
 
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
@@ -225,24 +225,24 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: assetEntityStub.offlineImage.libraryId,
-        ownerId: assetEntityStub.offlineImage.ownerId,
+        libraryId: assetStub.offlineImage.libraryId,
+        ownerId: assetStub.offlineImage.ownerId,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetEntityStub.offlineImage);
-      assetMock.create.mockResolvedValue(assetEntityStub.offlineImage);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
+      assetMock.create.mockResolvedValue(assetStub.offlineImage);
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetEntityStub.offlineImage.id, isOffline: false });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
         data: {
-          id: assetEntityStub.offlineImage.id,
+          id: assetStub.offlineImage.id,
           source: 'upload',
         },
       });
@@ -250,7 +250,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: {
-          id: assetEntityStub.offlineImage.id,
+          id: assetStub.offlineImage.id,
         },
       });
     });
@@ -260,7 +260,7 @@ describe(LibraryService.name, () => {
         '/import/photo.jpg': mock.file({
           content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
           ctime: new Date(1),
-          mtime: assetEntityStub.image.fileModifiedAt,
+          mtime: assetStub.image.fileModifiedAt,
         }),
       });
 
@@ -273,15 +273,15 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: assetEntityStub.image.libraryId,
-        ownerId: assetEntityStub.image.ownerId,
+        libraryId: assetStub.image.libraryId,
+        ownerId: assetStub.image.ownerId,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetEntityStub.image);
-      assetMock.create.mockResolvedValue(assetEntityStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
 
       expect(assetMock.update).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
@@ -291,7 +291,7 @@ describe(LibraryService.name, () => {
 
     it('should refresh an existing asset with modified mtime', async () => {
       const filemtime = new Date();
-      filemtime.setSeconds(assetEntityStub.image.fileModifiedAt.getSeconds() + 10);
+      filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
       mock({
         '/import/photo.jpg': mock.file({
           content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
@@ -309,15 +309,15 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetEntityStub.image);
-      assetMock.create.mockResolvedValue(assetEntityStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
@@ -339,15 +339,15 @@ describe(LibraryService.name, () => {
       libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryEntityStub.importLibrary.id,
-        ownerId: userEntityStub.admin.id,
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
-      assetMock.create.mockResolvedValue(assetEntityStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(async () => {
         await libraryService.handleRefreshAsset(mockLibraryJob);

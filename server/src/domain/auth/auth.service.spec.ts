@@ -90,7 +90,7 @@ describe('AuthService', () => {
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(cryptoMock, configMock, userMock, libraryMock, userTokenMock, shareMock, keyMock);
   });
 
   it('should be defined', () => {
