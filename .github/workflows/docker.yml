@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   build_and_push:
-    runs-on: [self-hosted]
+    runs-on: ${{ matrix.platforms == 'linux/arm64' && 'self-hosted' || 'ubuntu-latest' }}
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
