@@ -1,12 +1,10 @@
 import { GenericContainer, PostgreSqlContainer } from 'testcontainers';
 
-let pg;
-
 export default async () => {
   process.env.NODE_ENV = 'development';
   process.env.TYPESENSE_API_KEY = 'abc123';
 
-  pg = await new PostgreSqlContainer('postgres')
+  const pg = await new PostgreSqlContainer('postgres')
     .withExposedPorts(5432)
     .withDatabase('immich')
     .withUsername('postgres')
@@ -20,7 +18,4 @@ export default async () => {
 
   process.env.REDIS_PORT = String(redis.getMappedPort(6379));
   process.env.REDIS_HOSTNAME = redis.getHost();
-
-  process.env.TYPESENSE_ENABLED = String(false);
-  process.env.IMMICH_MACHINE_LEARNING_URL = String(false);
 };

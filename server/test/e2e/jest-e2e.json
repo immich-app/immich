@@ -16,6 +16,5 @@
     "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
     "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
     "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
-  },
-  "runner": "jest-light-runner"
+  }
 }
