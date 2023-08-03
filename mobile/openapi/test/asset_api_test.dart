@@ -67,16 +67,6 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getAssetByTimeBucket(GetAssetByTimeBucketDto getAssetByTimeBucketDto) async
-    test('test getAssetByTimeBucket', () async {
-      // TODO
-    });
-
-    //Future<AssetCountByTimeBucketResponseDto> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto) async
-    test('test getAssetCountByTimeBucket', () async {
-      // TODO
-    });
-
     //Future<List<String>> getAssetSearchTerms() async
     test('test getAssetSearchTerms', () async {
       // TODO
@@ -89,6 +79,11 @@ void main() {
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
+      // TODO
+    });
+
+    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, bool isArchived, bool isFavorite, String key }) async
+    test('test getByTimeBucket', () async {
       // TODO
     });
 
@@ -114,6 +109,11 @@ void main() {
 
     //Future<List<MemoryLaneResponseDto>> getMemoryLane(DateTime timestamp) async
     test('test getMemoryLane', () async {
+      // TODO
+    });
+
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, bool isArchived, bool isFavorite, String key }) async
+    test('test getTimeBuckets', () async {
       // TODO
     });
 

@@ -95,16 +95,16 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
-*AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
-*AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetStats**](doc//AssetApi.md#getassetstats) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
+*AssetApi* | [**getByTimeBucket**](doc//AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
+*AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
@@ -191,8 +191,6 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
- - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
- - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
@@ -220,8 +218,6 @@ Class | Method | HTTP request | Description
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
- - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
- - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
  - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
@@ -274,7 +270,8 @@ Class | Method | HTTP request | Description
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
- - [TimeGroupEnum](doc//TimeGroupEnum.md)
+ - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
+ - [TimeBucketSize](doc//TimeBucketSize.md)
  - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
