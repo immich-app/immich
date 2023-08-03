@@ -1,4 +1,3 @@
-import { AssetGridOptions } from '../lib/models/asset-grid-state';
 import {
   AlbumApi,
   APIKeyApi,
@@ -120,9 +119,6 @@ export class ImmichApi {
     };
 
     return names[jobName];
-  }
-  public getTimeBucketOptions(options: AssetGridOptions) {
-    return [options.userId, options.albumId, options.isArchived, options.isFavorite, options.sharedKey] as const;
   }
 }
 
