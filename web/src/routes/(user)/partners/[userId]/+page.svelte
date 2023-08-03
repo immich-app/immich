@@ -8,16 +8,17 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { TimeGroupEnum } from '@api';
   import { onDestroy } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
-  import { createAssetStore } from '$lib/stores/assets.store';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
 
   export let data: PageData;
 
-  const assetStore = createAssetStore();
+  const assetStore = new AssetStore({ timeGroup: TimeGroupEnum.Month, userId: data.partner.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -39,12 +40,12 @@
   {:else}
     <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
-        <p class="text-immich-fg dark:text-immich-dark-fg">
+        <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
           {data.partner.firstName}
           {data.partner.lastName}'s photos
         </p>
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <AssetGrid {assetStore} {assetInteractionStore} user={data.partner} />
+  <AssetGrid {assetStore} {assetInteractionStore} />
 </main>
