@@ -64,7 +64,7 @@
   };
 </script>
 
-<button class="w-full" use:clickOutside on:outclick={onFocusOut}>
+<div role="button" class="w-full" use:clickOutside on:outclick={onFocusOut}>
   <form
     draggable="false"
     autocomplete="off"
@@ -160,4 +160,4 @@
       </div>
     {/if}
   </form>
-</button>
+</div>
