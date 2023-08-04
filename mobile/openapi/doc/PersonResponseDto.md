@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  | 
+**isHidden** | **bool** |  | 
 **name** | **String** |  | 
 **thumbnailPath** | **String** |  | 
 

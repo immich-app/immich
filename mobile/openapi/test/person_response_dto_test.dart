@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool isHidden
+    test('to test the property `isHidden`', () async {
+      // TODO
+    });
+
     // String name
     test('to test the property `name`', () async {
       // TODO

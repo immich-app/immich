@@ -16,6 +16,7 @@ class User {
     required this.isAdmin,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
+    this.profileImagePath = '',
   });
 
   Id get isarId => fastHash(id);
@@ -28,6 +29,7 @@ class User {
         lastName = dto.lastName,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
+        profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
@@ -39,6 +41,7 @@ class User {
   bool isPartnerSharedBy;
   bool isPartnerSharedWith;
   bool isAdmin;
+  String profileImagePath;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -54,6 +57,7 @@ class User {
         lastName == other.lastName &&
         isPartnerSharedBy == other.isPartnerSharedBy &&
         isPartnerSharedWith == other.isPartnerSharedWith &&
+        profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin;
   }
 
@@ -67,5 +71,6 @@ class User {
       lastName.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
+      profileImagePath.hashCode ^
       isAdmin.hashCode;
 }

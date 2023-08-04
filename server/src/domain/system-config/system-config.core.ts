@@ -4,6 +4,7 @@ import {
   SystemConfigEntity,
   SystemConfigKey,
   SystemConfigValue,
+  TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
@@ -27,6 +28,7 @@ export const defaults = Object.freeze<SystemConfig>({
     maxBitrate: '0',
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
+    accel: TranscodeHWAccel.DISABLED,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },

@@ -13,39 +13,39 @@ part of openapi.api;
 class SmartInfoResponseDto {
   /// Returns a new [SmartInfoResponseDto] instance.
   SmartInfoResponseDto({
-    this.tags = const [],
     this.objects = const [],
+    this.tags = const [],
   });
-
-  List<String>? tags;
 
   List<String>? objects;
 
+  List<String>? tags;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SmartInfoResponseDto &&
-     other.tags == tags &&
-     other.objects == objects;
+     other.objects == objects &&
+     other.tags == tags;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (tags == null ? 0 : tags!.hashCode) +
-    (objects == null ? 0 : objects!.hashCode);
+    (objects == null ? 0 : objects!.hashCode) +
+    (tags == null ? 0 : tags!.hashCode);
 
   @override
-  String toString() => 'SmartInfoResponseDto[tags=$tags, objects=$objects]';
+  String toString() => 'SmartInfoResponseDto[objects=$objects, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.tags != null) {
-      json[r'tags'] = this.tags;
-    } else {
-    //  json[r'tags'] = null;
-    }
     if (this.objects != null) {
       json[r'objects'] = this.objects;
     } else {
     //  json[r'objects'] = null;
+    }
+    if (this.tags != null) {
+      json[r'tags'] = this.tags;
+    } else {
+    //  json[r'tags'] = null;
     }
     return json;
   }
@@ -58,11 +58,11 @@ class SmartInfoResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SmartInfoResponseDto(
-        tags: json[r'tags'] is Iterable
-            ? (json[r'tags'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         objects: json[r'objects'] is Iterable
             ? (json[r'objects'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        tags: json[r'tags'] is Iterable
+            ? (json[r'tags'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

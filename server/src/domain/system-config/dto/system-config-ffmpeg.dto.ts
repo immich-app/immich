@@ -1,4 +1,4 @@
-import { AudioCodec, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AudioCodec, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
@@ -40,4 +40,8 @@ export class SystemConfigFFmpegDto {
   @IsEnum(TranscodePolicy)
   @ApiProperty({ enumName: 'TranscodePolicy', enum: TranscodePolicy })
   transcode!: TranscodePolicy;
+
+  @IsEnum(TranscodeHWAccel)
+  @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
+  accel!: TranscodeHWAccel;
 }

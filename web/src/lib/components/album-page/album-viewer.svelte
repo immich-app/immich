@@ -13,7 +13,7 @@
     UserResponseDto,
     api,
   } from '@api';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -43,11 +43,14 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
   import { downloadArchive } from '../../utils/asset-utils';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let isShowAssetSelection = false;
 
@@ -89,6 +92,7 @@
 
   let multiSelectAsset: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = multiSelectAsset.size > 0;
+  $: isMultiSelectionUserOwned = Array.from(multiSelectAsset).every((asset) => asset.ownerId === currentUser?.id);
 
   afterNavigate(({ from }) => {
     backUrl = from?.url.pathname ?? '/albums';
@@ -119,7 +123,10 @@
     return startDateString === endDateString ? startDateString : `${startDateString} - ${endDateString}`;
   };
 
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
   onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
     currentAlbumName = album.albumName;
 
     try {
@@ -129,6 +136,26 @@
       console.log('Error [getMyUserInfo - album-viewer] ', e);
     }
   });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (!$showAssetViewer) {
+      switch (event.key) {
+        case 'Escape':
+          if (isMultiSelectionMode) {
+            multiSelectAsset = new Set();
+          } else {
+            goto(backUrl);
+          }
+          return;
+      }
+    }
+  };
 
   // Update Album Name
   $: {
@@ -156,24 +183,24 @@
   const createAlbumHandler = async (event: CustomEvent) => {
     const { assets }: { assets: AssetResponseDto[] } = event.detail;
     try {
-      const { data } = await api.albumApi.addAssetsToAlbum({
+      const { data: results } = await api.albumApi.addAssetsToAlbum({
         id: album.id,
-        addAssetsDto: {
-          assetIds: assets.map((a) => a.id),
-        },
+        bulkIdsDto: { ids: assets.map((a) => a.id) },
         key: sharedLink?.key,
       });
 
-      if (data.album) {
-        album = data.album;
-      }
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+      });
+
+      const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
+      album = data;
+
       isShowAssetSelection = false;
     } catch (e) {
-      console.error('Error [createAlbumHandler] ', e);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error creating album, check console for more details',
-      });
+      handleError(e, 'Error creating album');
     }
   };
 
@@ -281,7 +308,7 @@
       {#if sharedLink?.allowDownload || !isPublicShared}
         <DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink?.key} />
       {/if}
-      {#if isOwned}
+      {#if isOwned || isMultiSelectionUserOwned}
         <RemoveFromAlbum bind:album />
       {/if}
     </AssetSelectControlBar>
@@ -298,7 +325,7 @@
         {#if isPublicShared && !isOwned}
           <a
             data-sveltekit-preload-data="hover"
-            class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
+            class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
             href="https://immich.app"
           >
             <ImmichLogo height={30} width={30} />
@@ -377,7 +404,7 @@
     </ControlAppBar>
   {/if}
 
-  <section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
+  <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
     <input
       on:keydown={(e) => {
         if (e.key == 'Enter') {
@@ -387,9 +414,9 @@
       }}
       on:focus={() => (isEditingTitle = true)}
       on:blur={() => (isEditingTitle = false)}
-      class={`transition-all text-6xl text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent outline-none ${
+      class={`w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary ${
         isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-      } focus:outline-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary bg-immich-bg dark:bg-immich-dark-bg dark:focus:bg-immich-dark-gray`}
+      } bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray`}
       type="text"
       bind:value={album.albumName}
       disabled={!isOwned}
@@ -397,14 +424,14 @@
     />
 
     {#if album.assetCount > 0}
-      <span class="flex gap-2 my-4 text-sm text-gray-500 font-medium" data-testid="album-details">
+      <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
         <p class="">{getDateRange()}</p>
         <p>·</p>
         <p>{album.assetCount} items</p>
       </span>
     {/if}
     {#if album.shared}
-      <div class="flex my-6 gap-x-1">
+      <div class="my-6 flex gap-x-1">
         {#each album.sharedUsers as user (user.id)}
           <button on:click={() => (isShowShareInfoModal = true)}>
             <UserAvatar {user} size="md" autoColor />
@@ -415,7 +442,7 @@
           style:display={isOwned ? 'block' : 'none'}
           on:click={() => (isShowShareUserSelection = true)}
           title="Add more users"
-          class="h-12 w-12 border bg-white transition-colors hover:bg-gray-300 text-3xl flex place-items-center place-content-center rounded-full"
+          class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-white text-3xl transition-colors hover:bg-gray-300"
           >+</button
         >
       </div>
@@ -430,7 +457,7 @@
           <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
           <button
             on:click={() => (isShowAssetSelection = true)}
-            class="w-full py-8 border bg-immich-bg dark:bg-immich-dark-gray text-immich-fg dark:text-immich-dark-fg dark:hover:text-immich-dark-primary rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none"
+            class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
           >
             <span class="text-text-immich-primary dark:text-immich-dark-primary"><Plus size="24" /> </span>
             <span class="text-lg">Select photos</span>

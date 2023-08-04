@@ -14,11 +14,14 @@ class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
     required this.id,
+    required this.isHidden,
     required this.name,
     required this.thumbnailPath,
   });
 
   String id;
+
+  bool isHidden;
 
   String name;
 
@@ -27,6 +30,7 @@ class PersonResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
      other.id == id &&
+     other.isHidden == isHidden &&
      other.name == name &&
      other.thumbnailPath == thumbnailPath;
 
@@ -34,15 +38,17 @@ class PersonResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
+    (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[id=$id, name=$name, thumbnailPath=$thumbnailPath]';
+  String toString() => 'PersonResponseDto[id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
+      json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
     return json;
@@ -57,6 +63,7 @@ class PersonResponseDto {
 
       return PersonResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
+        isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
       );
@@ -107,6 +114,7 @@ class PersonResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'id',
+    'isHidden',
     'name',
     'thumbnailPath',
   };

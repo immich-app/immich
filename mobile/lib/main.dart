@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart'
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -155,6 +156,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
             .getGalleryPermissionStatus();
 
         ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
+
+        ref.invalidate(memoryFutureProvider);
 
         break;
 

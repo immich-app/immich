@@ -13,80 +13,80 @@ part of openapi.api;
 class SystemConfigJobDto {
   /// Returns a new [SystemConfigJobDto] instance.
   SystemConfigJobDto({
-    required this.thumbnailGeneration,
-    required this.metadataExtraction,
-    required this.videoConversion,
-    required this.objectTagging,
-    required this.clipEncoding,
-    required this.storageTemplateMigration,
     required this.backgroundTask,
-    required this.search,
+    required this.clipEncoding,
+    required this.metadataExtraction,
+    required this.objectTagging,
     required this.recognizeFaces,
+    required this.search,
     required this.sidecar,
+    required this.storageTemplateMigration,
+    required this.thumbnailGeneration,
+    required this.videoConversion,
   });
-
-  JobSettingsDto thumbnailGeneration;
-
-  JobSettingsDto metadataExtraction;
-
-  JobSettingsDto videoConversion;
-
-  JobSettingsDto objectTagging;
-
-  JobSettingsDto clipEncoding;
-
-  JobSettingsDto storageTemplateMigration;
 
   JobSettingsDto backgroundTask;
 
-  JobSettingsDto search;
+  JobSettingsDto clipEncoding;
+
+  JobSettingsDto metadataExtraction;
+
+  JobSettingsDto objectTagging;
 
   JobSettingsDto recognizeFaces;
 
+  JobSettingsDto search;
+
   JobSettingsDto sidecar;
+
+  JobSettingsDto storageTemplateMigration;
+
+  JobSettingsDto thumbnailGeneration;
+
+  JobSettingsDto videoConversion;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.metadataExtraction == metadataExtraction &&
-     other.videoConversion == videoConversion &&
-     other.objectTagging == objectTagging &&
-     other.clipEncoding == clipEncoding &&
-     other.storageTemplateMigration == storageTemplateMigration &&
      other.backgroundTask == backgroundTask &&
-     other.search == search &&
+     other.clipEncoding == clipEncoding &&
+     other.metadataExtraction == metadataExtraction &&
+     other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
-     other.sidecar == sidecar;
+     other.search == search &&
+     other.sidecar == sidecar &&
+     other.storageTemplateMigration == storageTemplateMigration &&
+     other.thumbnailGeneration == thumbnailGeneration &&
+     other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGeneration.hashCode) +
-    (metadataExtraction.hashCode) +
-    (videoConversion.hashCode) +
-    (objectTagging.hashCode) +
-    (clipEncoding.hashCode) +
-    (storageTemplateMigration.hashCode) +
     (backgroundTask.hashCode) +
-    (search.hashCode) +
+    (clipEncoding.hashCode) +
+    (metadataExtraction.hashCode) +
+    (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
-    (sidecar.hashCode);
+    (search.hashCode) +
+    (sidecar.hashCode) +
+    (storageTemplateMigration.hashCode) +
+    (thumbnailGeneration.hashCode) +
+    (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'videoConversion'] = this.videoConversion;
-      json[r'objectTagging'] = this.objectTagging;
-      json[r'clipEncoding'] = this.clipEncoding;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'backgroundTask'] = this.backgroundTask;
-      json[r'search'] = this.search;
+      json[r'clipEncoding'] = this.clipEncoding;
+      json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
+      json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
+      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
+      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+      json[r'videoConversion'] = this.videoConversion;
     return json;
   }
 
@@ -98,16 +98,16 @@ class SystemConfigJobDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigJobDto(
-        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
-        metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
-        videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
-        objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
-        clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
-        storageTemplateMigration: JobSettingsDto.fromJson(json[r'storageTemplateMigration'])!,
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
-        search: JobSettingsDto.fromJson(json[r'search'])!,
+        clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
+        metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
+        objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
+        search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
+        storageTemplateMigration: JobSettingsDto.fromJson(json[r'storageTemplateMigration'])!,
+        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
+        videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
       );
     }
     return null;
@@ -155,16 +155,16 @@ class SystemConfigJobDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnailGeneration',
-    'metadataExtraction',
-    'videoConversion',
-    'objectTagging',
-    'clipEncoding',
-    'storageTemplateMigration',
     'backgroundTask',
-    'search',
+    'clipEncoding',
+    'metadataExtraction',
+    'objectTagging',
     'recognizeFaces',
+    'search',
     'sidecar',
+    'storageTemplateMigration',
+    'thumbnailGeneration',
+    'videoConversion',
   };
 }
 

@@ -79,7 +79,7 @@
 </script>
 
 {#if authConfig.passwordLoginEnabled}
-  <form on:submit|preventDefault={login} class="flex flex-col gap-5 mt-5">
+  <form on:submit|preventDefault={login} class="mt-5 flex flex-col gap-5">
     {#if errorMessage}
       <p class="text-red-400" transition:fade>
         {errorMessage}
@@ -128,10 +128,10 @@
 
 {#if authConfig.enabled}
   {#if authConfig.passwordLoginEnabled}
-    <div class="inline-flex items-center justify-center w-full">
-      <hr class="w-3/4 h-px my-4 bg-gray-200 border-0 dark:bg-gray-600" />
+    <div class="inline-flex w-full items-center justify-center">
+      <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
       <span
-        class="absolute px-3 font-medium text-gray-900 -translate-x-1/2 left-1/2 dark:text-white bg-white dark:bg-immich-dark-gray"
+        class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
       >
         or
       </span>
@@ -162,5 +162,5 @@
 {/if}
 
 {#if !authConfig.enabled && !authConfig.passwordLoginEnabled}
-  <p class="text-center dark:text-immich-dark-fg p-4">Login has been disabled.</p>
+  <p class="p-4 text-center dark:text-immich-dark-fg">Login has been disabled.</p>
 {/if}

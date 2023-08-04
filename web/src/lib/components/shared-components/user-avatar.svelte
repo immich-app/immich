@@ -49,7 +49,7 @@
 </script>
 
 <figure
-  class="{sizeClass} {colorClass} {interactiveClass} shadow-md overflow-hidden"
+  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md"
   class:rounded-full={rounded}
   title={showTitle ? title : undefined}
 >
@@ -57,7 +57,7 @@
     <img
       src={api.getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
-      class="object-cover w-full h-full"
+      class="h-full w-full object-cover"
       class:hidden={showFallback}
       draggable="false"
       use:imageLoad
@@ -66,7 +66,7 @@
   {/if}
   {#if showFallback}
     <span
-      class="flex justify-center items-center w-full h-full select-none"
+      class="flex h-full w-full select-none items-center justify-center"
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:font-medium={!autoColor}

@@ -16,13 +16,13 @@ void main() {
   // final instance = ChangePasswordDto();
 
   group('test ChangePasswordDto', () {
-    // String password
-    test('to test the property `password`', () async {
+    // String newPassword
+    test('to test the property `newPassword`', () async {
       // TODO
     });
 
-    // String newPassword
-    test('to test the property `newPassword`', () async {
+    // String password
+    test('to test the property `password`', () async {
       // TODO
     });
 

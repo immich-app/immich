@@ -13,17 +13,13 @@ part of openapi.api;
 class AssetBulkUploadCheckResult {
   /// Returns a new [AssetBulkUploadCheckResult] instance.
   AssetBulkUploadCheckResult({
-    required this.id,
     required this.action,
-    this.reason,
     this.assetId,
+    required this.id,
+    this.reason,
   });
 
-  String id;
-
   AssetBulkUploadCheckResultActionEnum action;
-
-  AssetBulkUploadCheckResultReasonEnum? reason;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -33,37 +29,41 @@ class AssetBulkUploadCheckResult {
   ///
   String? assetId;
 
+  String id;
+
+  AssetBulkUploadCheckResultReasonEnum? reason;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
-     other.id == id &&
      other.action == action &&
-     other.reason == reason &&
-     other.assetId == assetId;
+     other.assetId == assetId &&
+     other.id == id &&
+     other.reason == reason;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (action.hashCode) +
-    (reason == null ? 0 : reason!.hashCode) +
-    (assetId == null ? 0 : assetId!.hashCode);
+    (assetId == null ? 0 : assetId!.hashCode) +
+    (id.hashCode) +
+    (reason == null ? 0 : reason!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUploadCheckResult[id=$id, action=$action, reason=$reason, assetId=$assetId]';
+  String toString() => 'AssetBulkUploadCheckResult[action=$action, assetId=$assetId, id=$id, reason=$reason]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'action'] = this.action;
-    if (this.reason != null) {
-      json[r'reason'] = this.reason;
-    } else {
-    //  json[r'reason'] = null;
-    }
     if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
     } else {
     //  json[r'assetId'] = null;
+    }
+      json[r'id'] = this.id;
+    if (this.reason != null) {
+      json[r'reason'] = this.reason;
+    } else {
+    //  json[r'reason'] = null;
     }
     return json;
   }
@@ -76,10 +76,10 @@ class AssetBulkUploadCheckResult {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUploadCheckResult(
-        id: mapValueOfType<String>(json, r'id')!,
         action: AssetBulkUploadCheckResultActionEnum.fromJson(json[r'action'])!,
-        reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
         assetId: mapValueOfType<String>(json, r'assetId'),
+        id: mapValueOfType<String>(json, r'id')!,
+        reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
       );
     }
     return null;
@@ -127,8 +127,8 @@ class AssetBulkUploadCheckResult {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'action',
+    'id',
   };
 }
 

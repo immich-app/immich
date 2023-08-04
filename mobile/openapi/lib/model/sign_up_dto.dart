@@ -14,43 +14,43 @@ class SignUpDto {
   /// Returns a new [SignUpDto] instance.
   SignUpDto({
     required this.email,
-    required this.password,
     required this.firstName,
     required this.lastName,
+    required this.password,
   });
 
   String email;
-
-  String password;
 
   String firstName;
 
   String lastName;
 
+  String password;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
      other.email == email &&
-     other.password == password &&
      other.firstName == firstName &&
-     other.lastName == lastName;
+     other.lastName == lastName &&
+     other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (password.hashCode) +
     (firstName.hashCode) +
-    (lastName.hashCode);
+    (lastName.hashCode) +
+    (password.hashCode);
 
   @override
-  String toString() => 'SignUpDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName]';
+  String toString() => 'SignUpDto[email=$email, firstName=$firstName, lastName=$lastName, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-      json[r'password'] = this.password;
       json[r'firstName'] = this.firstName;
       json[r'lastName'] = this.lastName;
+      json[r'password'] = this.password;
     return json;
   }
 
@@ -63,9 +63,9 @@ class SignUpDto {
 
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,
-        password: mapValueOfType<String>(json, r'password')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
+        password: mapValueOfType<String>(json, r'password')!,
       );
     }
     return null;
@@ -114,9 +114,9 @@ class SignUpDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'password',
     'firstName',
     'lastName',
+    'password',
   };
 }
 

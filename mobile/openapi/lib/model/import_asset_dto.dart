@@ -13,22 +13,24 @@ part of openapi.api;
 class ImportAssetDto {
   /// Returns a new [ImportAssetDto] instance.
   ImportAssetDto({
-    this.isReadOnly = true,
     required this.assetPath,
-    this.sidecarPath,
     required this.deviceAssetId,
     required this.deviceId,
+    this.duration,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
-    required this.isFavorite,
     this.isArchived,
+    required this.isFavorite,
+    this.isReadOnly = true,
     this.isVisible,
-    this.duration,
+    this.sidecarPath,
   });
 
-  bool isReadOnly;
-
   String assetPath;
+
+  String deviceAssetId;
+
+  String deviceId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -36,17 +38,11 @@ class ImportAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? sidecarPath;
-
-  String deviceAssetId;
-
-  String deviceId;
+  String? duration;
 
   DateTime fileCreatedAt;
 
   DateTime fileModifiedAt;
-
-  bool isFavorite;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -55,6 +51,10 @@ class ImportAssetDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isArchived;
+
+  bool isFavorite;
+
+  bool isReadOnly;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -70,68 +70,68 @@ class ImportAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? duration;
+  String? sidecarPath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ImportAssetDto &&
-     other.isReadOnly == isReadOnly &&
      other.assetPath == assetPath &&
-     other.sidecarPath == sidecarPath &&
      other.deviceAssetId == deviceAssetId &&
      other.deviceId == deviceId &&
+     other.duration == duration &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
-     other.isFavorite == isFavorite &&
      other.isArchived == isArchived &&
+     other.isFavorite == isFavorite &&
+     other.isReadOnly == isReadOnly &&
      other.isVisible == isVisible &&
-     other.duration == duration;
+     other.sidecarPath == sidecarPath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isReadOnly.hashCode) +
     (assetPath.hashCode) +
-    (sidecarPath == null ? 0 : sidecarPath!.hashCode) +
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
-    (isFavorite.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
+    (isFavorite.hashCode) +
+    (isReadOnly.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode);
+    (sidecarPath == null ? 0 : sidecarPath!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
+  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isFavorite=$isFavorite, isReadOnly=$isReadOnly, isVisible=$isVisible, sidecarPath=$sidecarPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isReadOnly'] = this.isReadOnly;
       json[r'assetPath'] = this.assetPath;
-    if (this.sidecarPath != null) {
-      json[r'sidecarPath'] = this.sidecarPath;
-    } else {
-    //  json[r'sidecarPath'] = null;
-    }
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
+    if (this.duration != null) {
+      json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
+    }
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
-      json[r'isFavorite'] = this.isFavorite;
     if (this.isArchived != null) {
       json[r'isArchived'] = this.isArchived;
     } else {
     //  json[r'isArchived'] = null;
     }
+      json[r'isFavorite'] = this.isFavorite;
+      json[r'isReadOnly'] = this.isReadOnly;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
     }
-    if (this.duration != null) {
-      json[r'duration'] = this.duration;
+    if (this.sidecarPath != null) {
+      json[r'sidecarPath'] = this.sidecarPath;
     } else {
-    //  json[r'duration'] = null;
+    //  json[r'sidecarPath'] = null;
     }
     return json;
   }
@@ -144,17 +144,17 @@ class ImportAssetDto {
       final json = value.cast<String, dynamic>();
 
       return ImportAssetDto(
-        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         assetPath: mapValueOfType<String>(json, r'assetPath')!,
-        sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
+        duration: mapValueOfType<String>(json, r'duration'),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        duration: mapValueOfType<String>(json, r'duration'),
+        sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
       );
     }
     return null;

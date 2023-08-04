@@ -11,6 +11,6 @@
   };
 </script>
 
-<div class="w-full text-center text-sm p-2 {colorClasses[color]}">
+<div class="w-full p-2 text-center text-sm {colorClasses[color]}">
   <slot />
 </div>

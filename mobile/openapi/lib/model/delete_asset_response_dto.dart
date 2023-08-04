@@ -13,32 +13,32 @@ part of openapi.api;
 class DeleteAssetResponseDto {
   /// Returns a new [DeleteAssetResponseDto] instance.
   DeleteAssetResponseDto({
-    required this.status,
     required this.id,
+    required this.status,
   });
-
-  DeleteAssetStatus status;
 
   String id;
 
+  DeleteAssetStatus status;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DeleteAssetResponseDto &&
-     other.status == status &&
-     other.id == id;
+     other.id == id &&
+     other.status == status;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (status.hashCode) +
-    (id.hashCode);
+    (id.hashCode) +
+    (status.hashCode);
 
   @override
-  String toString() => 'DeleteAssetResponseDto[status=$status, id=$id]';
+  String toString() => 'DeleteAssetResponseDto[id=$id, status=$status]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'status'] = this.status;
       json[r'id'] = this.id;
+      json[r'status'] = this.status;
     return json;
   }
 
@@ -50,8 +50,8 @@ class DeleteAssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return DeleteAssetResponseDto(
-        status: DeleteAssetStatus.fromJson(json[r'status'])!,
         id: mapValueOfType<String>(json, r'id')!,
+        status: DeleteAssetStatus.fromJson(json[r'status'])!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class DeleteAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'status',
     'id',
+    'status',
   };
 }
 

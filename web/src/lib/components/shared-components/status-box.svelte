@@ -51,16 +51,16 @@
 
 <div class="dark:text-immich-dark-fg">
   <div class="storage-status grid grid-cols-[64px_auto]">
-    <div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary pb-[2.15rem] group-hover:sm:pb-0 md:pb-0">
+    <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Cloud size={'24'} />
     </div>
-    <div class="hidden md:block group-hover:sm:block">
+    <div class="hidden group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
       {#if serverInfo}
-        <div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
+        <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <!-- style={`width: ${$downloadAssets[fileName]}%`} -->
           <div
-            class="bg-immich-primary dark:bg-immich-dark-primary h-[7px] rounded-full"
+            class="h-[7px] rounded-full bg-immich-primary dark:bg-immich-dark-primary"
             style="width: {getStorageUsagePercentage()}%"
           />
         </div>
@@ -76,16 +76,16 @@
     </div>
   </div>
   <div>
-    <hr class="ml-5 my-4 dark:border-immich-dark-gray" />
+    <hr class="my-4 ml-5 dark:border-immich-dark-gray" />
   </div>
   <div class="server-status grid grid-cols-[64px_auto]">
-    <div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary pb-11 md:pb-0 group-hover:sm:pb-0">
+    <div class="pb-11 pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Dns size={'24'} />
     </div>
-    <div class="text-xs hidden md:block group-hover:sm:block">
+    <div class="hidden text-xs group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
-      <div class="flex justify-items-center justify-between mt-2">
+      <div class="mt-2 flex justify-between justify-items-center">
         <p>Status</p>
 
         {#if isServerOk}
@@ -95,7 +95,7 @@
         {/if}
       </div>
 
-      <div class="flex justify-items-center justify-between mt-2">
+      <div class="mt-2 flex justify-between justify-items-center">
         <p>Version</p>
         <p class="font-medium text-immich-primary dark:text-immich-dark-primary">
           {serverVersion}

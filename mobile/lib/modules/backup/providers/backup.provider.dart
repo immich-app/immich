@@ -207,6 +207,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       type: RequestType.common,
     );
 
+    // Map of id -> album for quick album lookup later on.
+    Map<String, AssetPathEntity> albumMap = {};
+
     log.info('Found ${albums.length} local albums');
 
     for (AssetPathEntity album in albums) {
@@ -235,6 +238,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         }
 
         availableAlbums.add(availableAlbum);
+
+        albumMap[album.id] = album;
       }
     }
 
@@ -270,29 +275,36 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Generate AssetPathEntity from id to add to local state
-    try {
-      final Set<AvailableAlbum> selectedAlbums = {};
-      for (final BackupAlbum ba in selectedBackupAlbums) {
-        final albumAsset = await AssetPathEntity.fromId(ba.id);
+    final Set<AvailableAlbum> selectedAlbums = {};
+    for (final BackupAlbum ba in selectedBackupAlbums) {
+      final albumAsset = albumMap[ba.id];
+
+      if (albumAsset != null) {
         selectedAlbums.add(
           AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
+      } else {
+        log.severe('Selected album not found');
       }
+    }
 
-      final Set<AvailableAlbum> excludedAlbums = {};
-      for (final BackupAlbum ba in excludedBackupAlbums) {
-        final albumAsset = await AssetPathEntity.fromId(ba.id);
+    final Set<AvailableAlbum> excludedAlbums = {};
+    for (final BackupAlbum ba in excludedBackupAlbums) {
+      final albumAsset = albumMap[ba.id];
+
+      if (albumAsset != null) {
         excludedAlbums.add(
           AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
+      } else {
+        log.severe('Excluded album not found');
       }
-      state = state.copyWith(
-        selectedBackupAlbums: selectedAlbums,
-        excludedBackupAlbums: excludedAlbums,
-      );
-    } catch (e, stackTrace) {
-      log.severe("Failed to generate album from id", e, stackTrace);
     }
+
+    state = state.copyWith(
+      selectedBackupAlbums: selectedAlbums,
+      excludedBackupAlbums: excludedAlbums,
+    );
 
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }

@@ -10,6 +10,7 @@
   export let enablePlayback = false;
   export let playbackOnIconHover = false;
   export let showTime = true;
+  export let curve = false;
   export let playIcon = PlayCircleOutline;
   export let pauseIcon = PauseCircleOutline;
 
@@ -29,7 +30,7 @@
   }
 </script>
 
-<div class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20">
+<div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
   {#if showTime}
     <span class="pt-2">
       {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
@@ -38,7 +39,7 @@
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
-    class="pt-2 pr-2"
+    class="pr-2 pt-2"
     on:mouseenter={() => {
       if (playbackOnIconHover) {
         enablePlayback = true;
@@ -67,7 +68,8 @@
 {#if enablePlayback}
   <video
     bind:this={player}
-    class="w-full h-full object-cover"
+    class="h-full w-full object-cover"
+    class:rounded-xl={curve}
     muted
     autoplay
     src={url}

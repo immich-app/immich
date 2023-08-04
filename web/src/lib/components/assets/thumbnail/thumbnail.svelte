@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ProjectionType } from '$lib/constants';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
@@ -12,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -69,7 +71,7 @@
   <div
     style:width="{width}px"
     style:height="{height}px"
-    class="relative group overflow-hidden {disabled
+    class="group relative overflow-hidden {disabled
       ? 'bg-gray-300'
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
@@ -80,7 +82,7 @@
     on:keydown={thumbnailKeyDownHandler}
   >
     {#if intersecting}
-      <div class="absolute w-full h-full z-20">
+      <div class="absolute z-20 h-full w-full">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
@@ -94,7 +96,9 @@
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
             {:else if selected}
-              <CheckCircle size="24" class="text-immich-primary" />
+              <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+                <CheckCircle size="24" class="text-immich-primary" />
+              </div>
             {:else}
               <CheckCircle size="24" class="text-white/80 hover:text-white" />
             {/if}
@@ -103,12 +107,14 @@
       </div>
 
       <div
-        class="h-full w-full bg-gray-100 dark:bg-immich-dark-gray absolute select-none transition-transform"
+        class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
         class:scale-[0.85]={selected}
+        class:rounded-xl={selected}
       >
         <!-- Gradient overlay on hover -->
         <div
-          class="absolute w-full h-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+          class:rounded-xl={selected}
         />
 
         <!-- Favorite asset star -->
@@ -124,6 +130,14 @@
           </div>
         {/if}
 
+        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Rotate360Icon size="24" />
+            </span>
+          </div>
+        {/if}
+
         {#if asset.resized}
           <ImageThumbnail
             url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
@@ -131,30 +145,33 @@
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}
+            curve={selected}
           />
         {:else}
-          <div class="w-full h-full p-4 flex items-center justify-center">
+          <div class="flex h-full w-full items-center justify-center p-4">
             <ImageBrokenVariant size="48" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Video}
-          <div class="absolute w-full h-full top-0">
+          <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               url={api.getAssetFileUrl(asset.id, false, true, publicSharedKey)}
               enablePlayback={mouseOver}
+              curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
             />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
-          <div class="absolute w-full h-full top-0">
+          <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey)}
               pauseIcon={MotionPauseOutline}
               playIcon={MotionPlayOutline}
               showTime={false}
+              curve={selected}
               playbackOnIconHover
             />
           </div>
@@ -162,7 +179,7 @@
       </div>
       {#if selectionCandidate}
         <div
-          class="absolute w-full h-full top-0 bg-immich-primary opacity-40"
+          class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
           in:fade={{ duration: 100 }}
           out:fade={{ duration: 100 }}
         />

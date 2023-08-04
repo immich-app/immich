@@ -16,6 +16,11 @@ void main() {
   // final instance = BulkIdResponseDto();
 
   group('test BulkIdResponseDto', () {
+    // String error
+    test('to test the property `error`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -23,11 +28,6 @@ void main() {
 
     // bool success
     test('to test the property `success`', () async {
-      // TODO
-    });
-
-    // String error
-    test('to test the property `error`', () async {
       // TODO
     });
 

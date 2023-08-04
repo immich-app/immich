@@ -16,15 +16,21 @@ void main() {
   // final instance = PersonUpdateDto();
 
   group('test PersonUpdateDto', () {
-    // Person name.
-    // String name
-    test('to test the property `name`', () async {
-      // TODO
-    });
-
     // Asset is used to get the feature face thumbnail.
     // String featureFaceAssetId
     test('to test the property `featureFaceAssetId`', () async {
+      // TODO
+    });
+
+    // Person visibility
+    // bool isHidden
+    test('to test the property `isHidden`', () async {
+      // TODO
+    });
+
+    // Person name.
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

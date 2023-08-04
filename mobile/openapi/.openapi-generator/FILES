@@ -8,8 +8,6 @@ doc/APIKeyCreateDto.md
 doc/APIKeyCreateResponseDto.md
 doc/APIKeyResponseDto.md
 doc/APIKeyUpdateDto.md
-doc/AddAssetsDto.md
-doc/AddAssetsResponseDto.md
 doc/AddUsersDto.md
 doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
@@ -21,8 +19,6 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
-doc/AssetCountByTimeBucket.md
-doc/AssetCountByTimeBucketResponseDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
@@ -33,6 +29,7 @@ doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/BulkIdResponseDto.md
+doc/BulkIdsDto.md
 doc/ChangePasswordDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
@@ -50,8 +47,6 @@ doc/DeleteAssetStatus.md
 doc/DownloadArchiveInfo.md
 doc/DownloadResponseDto.md
 doc/ExifResponseDto.md
-doc/GetAssetByTimeBucketDto.md
-doc/GetAssetCountByTimeBucketDto.md
 doc/ImportAssetDto.md
 doc/JobApi.md
 doc/JobCommand.md
@@ -71,11 +66,13 @@ doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
+doc/PeopleResponseDto.md
+doc/PeopleUpdateDto.md
+doc/PeopleUpdateItem.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
-doc/RemoveAssetsDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
 doc/SearchAssetDto.md
@@ -111,7 +108,9 @@ doc/TagApi.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
-doc/TimeGroupEnum.md
+doc/TimeBucketResponseDto.md
+doc/TimeBucketSize.md
+doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
@@ -147,8 +146,6 @@ lib/auth/authentication.dart
 lib/auth/http_basic_auth.dart
 lib/auth/http_bearer_auth.dart
 lib/auth/oauth.dart
-lib/model/add_assets_dto.dart
-lib/model/add_assets_response_dto.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
@@ -162,8 +159,6 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
-lib/model/asset_count_by_time_bucket.dart
-lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
@@ -173,6 +168,7 @@ lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
 lib/model/bulk_id_response_dto.dart
+lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
@@ -190,8 +186,6 @@ lib/model/delete_asset_status.dart
 lib/model/download_archive_info.dart
 lib/model/download_response_dto.dart
 lib/model/exif_response_dto.dart
-lib/model/get_asset_by_time_bucket_dto.dart
-lib/model/get_asset_count_by_time_bucket_dto.dart
 lib/model/import_asset_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
@@ -208,10 +202,12 @@ lib/model/merge_person_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/people_response_dto.dart
+lib/model/people_update_dto.dart
+lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
-lib/model/remove_assets_dto.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
@@ -242,7 +238,9 @@ lib/model/system_config_template_storage_option_dto.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
-lib/model/time_group_enum.dart
+lib/model/time_bucket_response_dto.dart
+lib/model/time_bucket_size.dart
+lib/model/transcode_hw_accel.dart
 lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
@@ -254,8 +252,6 @@ lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
-test/add_assets_dto_test.dart
-test/add_assets_response_dto_test.dart
 test/add_users_dto_test.dart
 test/admin_signup_response_dto_test.dart
 test/album_api_test.dart
@@ -272,8 +268,6 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
-test/asset_count_by_time_bucket_response_dto_test.dart
-test/asset_count_by_time_bucket_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
@@ -284,6 +278,7 @@ test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart
+test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
@@ -301,8 +296,6 @@ test/delete_asset_status_test.dart
 test/download_archive_info_test.dart
 test/download_response_dto_test.dart
 test/exif_response_dto_test.dart
-test/get_asset_by_time_bucket_dto_test.dart
-test/get_asset_count_by_time_bucket_dto_test.dart
 test/import_asset_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
@@ -322,11 +315,13 @@ test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
+test/people_response_dto_test.dart
+test/people_update_dto_test.dart
+test/people_update_item_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
-test/remove_assets_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
 test/search_asset_dto_test.dart
@@ -362,7 +357,9 @@ test/tag_api_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
-test/time_group_enum_test.dart
+test/time_bucket_response_dto_test.dart
+test/time_bucket_size_test.dart
+test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart

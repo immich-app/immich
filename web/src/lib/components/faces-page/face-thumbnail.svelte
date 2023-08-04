@@ -18,14 +18,14 @@
 </script>
 
 <button
-  class="relative transition-all rounded-lg"
+  class="relative rounded-lg transition-all"
   on:click={handleOnClicked}
   disabled={!selectable}
   style:width={thumbnailSize ? thumbnailSize + 'px' : '100%'}
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}
 >
   <div
-    class="filter w-full h-full brightness-90 border-2"
+    class="h-full w-full border-2 brightness-90 filter"
     class:rounded-full={circle}
     class:rounded-lg={!circle}
     class:border-transparent={!border}
@@ -42,7 +42,7 @@
   </div>
 
   <div
-    class="absolute top-0 left-0 w-full h-full bg-immich-primary/30 opacity-0"
+    class="absolute left-0 top-0 h-full w-full bg-immich-primary/30 opacity-0"
     class:hover:opacity-100={selectable}
     class:rounded-full={circle}
     class:rounded-lg={!circle}
@@ -50,7 +50,7 @@
 
   {#if selected}
     <div
-      class="absolute top-0 left-0 w-full h-full bg-blue-500/80"
+      class="absolute left-0 top-0 h-full w-full bg-blue-500/80"
       class:rounded-full={circle}
       class:rounded-lg={!circle}
     />
@@ -58,7 +58,7 @@
 
   {#if person.name}
     <span
-      class="absolute bottom-2 left-0 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+      class="w-100 absolute bottom-2 left-0 w-full text-ellipsis px-1 text-center font-medium text-white backdrop-blur-[1px] hover:cursor-pointer"
     >
       {person.name}
     </span>

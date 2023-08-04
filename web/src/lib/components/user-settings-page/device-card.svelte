@@ -22,9 +22,9 @@
   };
 </script>
 
-<div class="flex flex-row w-full">
+<div class="flex w-full flex-row">
   <!-- TODO: Device Image -->
-  <div class="hidden sm:flex pr-2 justify-center items-center text-immich-primary dark:text-immich-dark-primary">
+  <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Android size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
@@ -41,8 +41,8 @@
       <Help size="40" />
     {/if}
   </div>
-  <div class="pl-4 sm:pl-0 flex flex-row grow justify-between gap-1">
-    <div class="flex flex-col gap-1 justify-center dark:text-white">
+  <div class="flex grow flex-row justify-between gap-1 pl-4 sm:pl-0">
+    <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if device.deviceType || device.deviceOS}
           <span>{device.deviceOS || 'Unknown'} • {device.deviceType || 'Unknown'}</span>
@@ -56,10 +56,10 @@
       </div>
     </div>
     {#if !device.current}
-      <div class="text-sm flex flex-col justify-center">
+      <div class="flex flex-col justify-center text-sm">
         <button
           on:click={() => dispatcher('delete')}
-          class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+          class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
           title="Log out"
         >
           <TrashCanOutline size="16" />

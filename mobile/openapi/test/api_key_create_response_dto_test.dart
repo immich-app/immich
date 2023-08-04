@@ -16,13 +16,13 @@ void main() {
   // final instance = APIKeyCreateResponseDto();
 
   group('test APIKeyCreateResponseDto', () {
-    // String secret
-    test('to test the property `secret`', () async {
+    // APIKeyResponseDto apiKey
+    test('to test the property `apiKey`', () async {
       // TODO
     });
 
-    // APIKeyResponseDto apiKey
-    test('to test the property `apiKey`', () async {
+    // String secret
+    test('to test the property `secret`', () async {
       // TODO
     });
 

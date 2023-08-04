@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -62,12 +64,39 @@ class ApiService {
   Future<String> _resolveEndpoint(String serverUrl) async {
     final url = sanitizeUrl(serverUrl);
 
+    if (!await _isEndpointAvailable(serverUrl)) {
+      throw ApiException(503, "Server is not reachable");
+    }
+
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
     if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
 
     // Otherwise, assume the URL provided is the api endpoint
     return url;
+  }
+
+  Future<bool> _isEndpointAvailable(String serverUrl) async {
+    final Client client = Client();
+
+    if (!serverUrl.endsWith('/api')) {
+      serverUrl += '/api';
+    }
+
+    // Throw Socket or Timeout exceptions,
+    // we do not care if the endpoints hits an HTTP error
+    try {
+      await client
+          .get(
+            Uri.parse(serverUrl),
+          )
+          .timeout(const Duration(seconds: 5));
+    } on TimeoutException catch (_) {
+      return false;
+    } on SocketException catch (_) {
+      return false;
+    }
+    return true;
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {

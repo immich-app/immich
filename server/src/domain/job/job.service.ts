@@ -172,6 +172,8 @@ export class JobService {
         if (asset) {
           if (asset.type === AssetType.VIDEO) {
             await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: item.data });
+          } else if (asset.livePhotoVideoId) {
+            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
           }
           this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }

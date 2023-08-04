@@ -23,14 +23,41 @@
   import { AppRoute } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { flip } from 'svelte/animate';
+  import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let data: PageData;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
   $: albums = data.results.albums.items;
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
+  onMount(async () => {
+    document.addEventListener('keydown', onKeyboardPress);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (!$showAssetViewer) {
+      switch (event.key) {
+        case 'Escape':
+          goto(previousRoute);
+          return;
+      }
+    }
+  };
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
@@ -85,18 +112,18 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
-      <div class="w-full max-w-2xl flex-1 pl-4">
+      <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
     </ControlAppBar>
   {/if}
 </section>
 
-<section class="relative pt-32 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-  <section class="overflow-y-auto relative immich-scrollbar">
+<section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
+  <section class="immich-scrollbar relative overflow-y-auto">
     {#if albums.length}
       <section>
-        <div class="text-4xl font-medium text-black/70 dark:text-white/80 ml-6">ALBUMS</div>
+        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
           {#each albums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
@@ -119,10 +146,10 @@
           />
         </div>
       {:else}
-        <div class="flex items-center place-content-center w-full min-h-[calc(66vh_-_11rem)] dark:text-white">
+        <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
             <ImageOffOutline size="3.5em" />
-            <p class="font-medium text-3xl mt-5">No results</p>
+            <p class="mt-5 text-3xl font-medium">No results</p>
             <p class="text-base font-normal">Try a synonym or more general keyword</p>
           </div>
         </div>

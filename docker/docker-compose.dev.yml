@@ -31,7 +31,6 @@ services:
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
-    command: python main.py
     ports:
       - 3003:3003
     volumes:
@@ -48,6 +47,9 @@ services:
   immich-microservices:
     container_name: immich_microservices
     image: immich-microservices:latest
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -116,7 +118,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
-      PG_DATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:

@@ -15,6 +15,8 @@ RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 
 FROM python:3.11.4-slim-bullseye@sha256:91d194f58f50594cda71dcd2e8fdefd90e7ecc57d07823813b67c8521e565dcd
 
+RUN apt-get update && apt-get install -y --no-install-recommends tini && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   TRANSFORMERS_CACHE=/cache \
@@ -25,4 +27,5 @@ ENV NODE_ENV=production \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY app .
-ENTRYPOINT ["python", "-m", "app.main"]
+ENTRYPOINT ["tini", "--"]
+CMD ["python", "-m", "app.main"]

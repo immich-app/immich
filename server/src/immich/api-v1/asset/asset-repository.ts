@@ -6,11 +6,8 @@ import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
@@ -36,8 +33,6 @@ export interface IAssetRepository {
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetCountByTimeBucket(userId: string, dto: GetAssetCountByTimeBucketDto): Promise<AssetCountByTimeBucket[]>;
-  getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
   getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
@@ -51,57 +46,6 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
   ) {}
-
-  async getAssetByTimeBucket(userId: string, dto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
-    // Get asset entity from a list of time buckets
-    let builder = this.assetRepository
-      .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
-      .where('asset.ownerId = :userId', { userId: userId })
-      .andWhere(`date_trunc('month', "fileCreatedAt") IN (:...buckets)`, {
-        buckets: [...dto.timeBucket],
-      })
-      .andWhere('asset.isVisible = true')
-      .andWhere('asset.isArchived = false')
-      .orderBy('asset.fileCreatedAt', 'DESC');
-
-    if (!dto.withoutThumbs) {
-      builder = builder.andWhere('asset.resizePath is not NULL');
-    }
-
-    return builder.getMany();
-  }
-
-  async getAssetCountByTimeBucket(
-    userId: string,
-    dto: GetAssetCountByTimeBucketDto,
-  ): Promise<AssetCountByTimeBucket[]> {
-    const builder = this.assetRepository
-      .createQueryBuilder('asset')
-      .select(`COUNT(asset.id)::int`, 'count')
-      .where('"ownerId" = :userId', { userId: userId })
-      .andWhere('asset.isVisible = true')
-      .andWhere('asset.isArchived = false');
-
-    // Using a parameter for this doesn't work https://github.com/typeorm/typeorm/issues/7308
-    if (dto.timeGroup === TimeGroupEnum.Month) {
-      builder
-        .addSelect(`date_trunc('month', "fileCreatedAt")`, 'timeBucket')
-        .groupBy(`date_trunc('month', "fileCreatedAt")`)
-        .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC');
-    } else if (dto.timeGroup === TimeGroupEnum.Day) {
-      builder
-        .addSelect(`date_trunc('day', "fileCreatedAt")`, 'timeBucket')
-        .groupBy(`date_trunc('day', "fileCreatedAt")`)
-        .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC');
-    }
-
-    if (!dto.withoutThumbs) {
-      builder.andWhere('asset.resizePath is not NULL');
-    }
-
-    return builder.getRawMany();
-  }
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository

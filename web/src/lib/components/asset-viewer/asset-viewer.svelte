@@ -12,15 +12,19 @@
   import DetailPanel from './detail-panel.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import PanoramaViewer from './panorama-viewer.svelte';
+  import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
 
-  import { assetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
+  import { handleError } from '$lib/utils/handle-error';
+  import type { AssetStore } from '$lib/stores/assets.store';
 
+  export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
   export let showNavigation = true;
@@ -35,7 +39,7 @@
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -65,22 +69,33 @@
     }
   };
 
-  const handleKeyboardPress = (key: string) => {
+  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
     switch (key) {
-      case 'Escape':
-        closeViewer();
-        return;
-      case 'Delete':
-        isShowDeleteConfirmation = true;
-        return;
-      case 'i':
-        $isShowDetail = !$isShowDetail;
+      case 'a':
+      case 'A':
+        if (shiftKey) toggleArchive();
         return;
       case 'ArrowLeft':
         navigateAssetBackward();
         return;
       case 'ArrowRight':
         navigateAssetForward();
+        return;
+      case 'd':
+      case 'D':
+        if (shiftKey) downloadFile(asset, publicSharedKey);
+        return;
+      case 'Delete':
+        isShowDeleteConfirmation = true;
+        return;
+      case 'Escape':
+        closeViewer();
+        return;
+      case 'f':
+        toggleFavorite();
+        return;
+      case 'i':
+        $isShowDetail = !$isShowDetail;
         return;
     }
   };
@@ -120,7 +135,7 @@
 
       for (const asset of deletedAssets) {
         if (asset.status == 'SUCCESS') {
-          assetStore.removeAsset(asset.id);
+          assetStore?.removeAsset(asset.id);
         }
       }
     } catch (e) {
@@ -135,15 +150,24 @@
   };
 
   const toggleFavorite = async () => {
-    const { data } = await api.assetApi.updateAsset({
-      id: asset.id,
-      updateAssetDto: {
-        isFavorite: !asset.isFavorite,
-      },
-    });
+    try {
+      const { data } = await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          isFavorite: !asset.isFavorite,
+        },
+      });
 
-    asset.isFavorite = data.isFavorite;
-    assetStore.updateAsset(asset.id, data.isFavorite);
+      asset.isFavorite = data.isFavorite;
+      assetStore?.updateAsset(asset.id, data.isFavorite);
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+      });
+    } catch (error) {
+      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+    }
   };
 
   const openAlbumPicker = (shared: boolean) => {
@@ -165,11 +189,8 @@
     isShowAlbumPicker = false;
     const album = event.detail.album;
 
-    addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
-      if (dto.successfullyAdded === 1 && dto.album) {
-        appearsInAlbums = [...appearsInAlbums, dto.album];
-      }
-    });
+    await addAssetsToAlbum(album.id, [asset.id]);
+    await getAllAlbums();
   };
 
   const disableKeyDownEvent = () => {
@@ -206,11 +227,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      console.error(error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: `Error ${asset.isArchived ? 'archiving' : 'unarchiving'} asset, check console for more details`,
-      });
+      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -228,9 +245,9 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-4"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
 >
-  <div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
+  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
     <AssetViewerNavBar
       {asset}
       isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -253,17 +270,17 @@
   </div>
 
   {#if showNavigation}
-    <div class="row-start-2 row-span-1 col-start-1 column-span-1 justify-self-start mb-[60px] z-[999]">
+    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
   {/if}
 
-  <div class="row-start-1 row-span-full col-start-1 col-span-4">
+  <div class="col-span-4 col-start-1 row-span-full row-start-1">
     {#key asset.id}
       {#if !asset.resized}
-        <div class="h-full w-full flex justify-center">
+        <div class="flex h-full w-full justify-center">
           <div
-            class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
+            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -276,6 +293,8 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
         {/if}
@@ -286,7 +305,7 @@
   </div>
 
   {#if showNavigation}
-    <div class="row-start-2 row-span-1 col-start-4 col-span-1 justify-self-end mb-[60px] z-[999]">
+    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
@@ -295,7 +314,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
+      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel

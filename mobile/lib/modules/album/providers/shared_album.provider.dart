@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:isar/isar.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<Album>> {
@@ -71,20 +69,4 @@ final sharedAlbumProvider =
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
   );
-});
-
-final sharedAlbumDetailProvider =
-    StreamProvider.family<Album, int>((ref, albumId) async* {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return;
-  final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
-
-  await for (final a in sharedAlbumService.watchAlbum(albumId)) {
-    if (a == null) {
-      throw Exception("Album with ID=$albumId does not exist anymore!");
-    }
-    await for (final _ in a.watchRenderList(GroupAssetsBy.none)) {
-      yield a;
-    }
-  }
 });

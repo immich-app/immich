@@ -1,28 +1,29 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { BucketPosition, type AssetStore } from '$lib/stores/assets.store';
+  import { handleError } from '$lib/utils/handle-error';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { assetGridState, assetStore } from '$lib/stores/assets.store';
-  import { handleError } from '../../../utils/handle-error';
-  import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
+  import { get } from 'svelte/store';
+
+  export let assetStore: AssetStore;
+  export let assetInteractionStore: AssetInteractionStore;
 
   let selecting = false;
 
   const handleSelectAll = async () => {
     try {
       selecting = true;
-      let _assetGridState = new AssetGridState();
-      assetGridState.subscribe((state) => {
-        _assetGridState = state;
-      });
 
-      for (let i = 0; i < _assetGridState.buckets.length; i++) {
-        await assetStore.getAssetsByBucket(_assetGridState.buckets[i].bucketDate, BucketPosition.Unknown);
-        for (const asset of _assetGridState.buckets[i].assets) {
+      const assetGridState = get(assetStore);
+      for (const bucket of assetGridState.buckets) {
+        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        for (const asset of bucket.assets) {
           assetInteractionStore.addAssetToMultiselectGroup(asset);
         }
       }
+
       selecting = false;
     } catch (e) {
       handleError(e, 'Error selecting all assets');

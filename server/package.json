@@ -1,13 +1,13 @@
 {
   "name": "immich",
-  "version": "1.67.2",
+  "version": "1.71.0",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
   "bin": {
     "immich": "./bin/cli.sh",
-    "immich-admin": "./bin/admin-cli.sh"
+    "immich-admin": "./start.sh admin-cli"
   },
   "scripts": {
     "build": "nest build",
@@ -17,7 +17,7 @@
     "nest": "nest",
     "start:dev": "nest start --watch --",
     "start:debug": "nest start --debug 0.0.0.0:9230 --watch --",
-    "lint": "eslint \"src/**/*.ts\" \"e2e/**/*.ts\" --max-warnings 0",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
@@ -26,7 +26,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config jest-e2e.json --runInBand",
+    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
     "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./src/infra/database.config.ts",
@@ -58,12 +58,12 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
-    "exiftool-vendored": "^19.0.0",
+    "exiftool-vendored": "^22.0.0",
     "exiftool-vendored.pl": "^12.54.0",
     "fluent-ffmpeg": "^2.1.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
-    "immich": "^0.39.0",
+    "immich": "^0.40.1",
     "ioredis": "^5.3.1",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "0.12.5",

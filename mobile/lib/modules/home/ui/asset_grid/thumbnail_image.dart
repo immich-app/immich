@@ -37,11 +37,21 @@ class ThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final assetContainerColor =
+        isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
-        return Icon(
-          Icons.check_circle,
-          color: Theme.of(context).primaryColor,
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: assetContainerColor,
+          ),
+          child: Icon(
+            Icons.check_circle_rounded,
+            color: Theme.of(context).primaryColor,
+          ),
         );
       } else {
         return const Icon(
@@ -49,6 +59,36 @@ class ThumbnailImage extends HookConsumerWidget {
           color: Colors.white,
         );
       }
+    }
+
+    Widget buildImage(Asset asset) {
+      var image = ImmichImage(
+        asset,
+        width: 300,
+        height: 300,
+        useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+      );
+      if (!multiselectEnabled || !isSelected) {
+        return image;
+      }
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 0,
+            color: assetContainerColor,
+          ),
+          color: assetContainerColor,
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(15.0),
+            bottomRight: Radius.circular(15.0),
+            bottomLeft: Radius.circular(15.0),
+            topLeft: Radius.zero,
+          ),
+          child: image,
+        ),
+      );
     }
 
     return GestureDetector(
@@ -84,17 +124,12 @@ class ThumbnailImage extends HookConsumerWidget {
                     ? Border.all(
                         color: onDeselect == null
                             ? Colors.grey
-                            : Theme.of(context).primaryColorLight,
-                        width: 10,
+                            : assetContainerColor,
+                        width: 8,
                       )
                     : const Border(),
               ),
-              child: ImmichImage(
-                asset,
-                width: 300,
-                height: 300,
-                useGrayBoxPlaceholder: useGrayBoxPlaceholder,
-              ),
+              child: buildImage(asset),
             ),
             if (multiselectEnabled)
               Padding(

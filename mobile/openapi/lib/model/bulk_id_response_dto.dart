@@ -13,42 +13,42 @@ part of openapi.api;
 class BulkIdResponseDto {
   /// Returns a new [BulkIdResponseDto] instance.
   BulkIdResponseDto({
+    this.error,
     required this.id,
     required this.success,
-    this.error,
   });
+
+  BulkIdResponseDtoErrorEnum? error;
 
   String id;
 
   bool success;
 
-  BulkIdResponseDtoErrorEnum? error;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is BulkIdResponseDto &&
+     other.error == error &&
      other.id == id &&
-     other.success == success &&
-     other.error == error;
+     other.success == success;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (error == null ? 0 : error!.hashCode) +
     (id.hashCode) +
-    (success.hashCode) +
-    (error == null ? 0 : error!.hashCode);
+    (success.hashCode);
 
   @override
-  String toString() => 'BulkIdResponseDto[id=$id, success=$success, error=$error]';
+  String toString() => 'BulkIdResponseDto[error=$error, id=$id, success=$success]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
-      json[r'success'] = this.success;
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
     //  json[r'error'] = null;
     }
+      json[r'id'] = this.id;
+      json[r'success'] = this.success;
     return json;
   }
 
@@ -60,9 +60,9 @@ class BulkIdResponseDto {
       final json = value.cast<String, dynamic>();
 
       return BulkIdResponseDto(
+        error: BulkIdResponseDtoErrorEnum.fromJson(json[r'error']),
         id: mapValueOfType<String>(json, r'id')!,
         success: mapValueOfType<bool>(json, r'success')!,
-        error: BulkIdResponseDtoErrorEnum.fromJson(json[r'error']),
       );
     }
     return null;

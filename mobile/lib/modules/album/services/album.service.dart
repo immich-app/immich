@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/add_asset_response.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/album.dart';
@@ -219,24 +220,43 @@ class AlbumService {
     yield* _db.albums.watchObject(albumId);
   }
 
-  Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(
+  Future<AddAssetsResponse?> addAdditionalAssetToAlbum(
     Iterable<Asset> assets,
     Album album,
   ) async {
     try {
-      var result = await _apiService.albumApi.addAssetsToAlbum(
+      var response = await _apiService.albumApi.addAssetsToAlbum(
         album.remoteId!,
-        AddAssetsDto(assetIds: assets.map((asset) => asset.remoteId!).toList()),
+        BulkIdsDto(ids: assets.map((asset) => asset.remoteId!).toList()),
       );
-      if (result != null && result.successfullyAdded > 0) {
-        album.assets.addAll(assets);
+
+      if (response != null) {
+        List<Asset> successAssets = [];
+        List<String> duplicatedAssets = [];
+
+        for (final result in response) {
+          if (result.success) {
+            successAssets
+                .add(assets.firstWhere((asset) => asset.remoteId == result.id));
+          } else if (!result.success &&
+              result.error == BulkIdResponseDtoErrorEnum.duplicate) {
+            duplicatedAssets.add(result.id);
+          }
+        }
+
+        album.assets.addAll(successAssets);
         await _db.writeTxn(() => album.assets.save());
+
+        return AddAssetsResponse(
+          alreadyInAlbum: duplicatedAssets,
+          successfullyAdded: successAssets.length,
+        );
       }
-      return result;
     } catch (e) {
       debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
       return null;
     }
+    return null;
   }
 
   Future<bool> addAdditionalUserToAlbum(
@@ -314,8 +334,8 @@ class AlbumService {
     try {
       await _apiService.albumApi.removeAssetFromAlbum(
         album.remoteId!,
-        RemoveAssetsDto(
-          assetIds: assets.map((e) => e.remoteId!).toList(growable: false),
+        BulkIdsDto(
+          ids: assets.map((asset) => asset.remoteId!).toList(),
         ),
       );
       album.assets.removeAll(assets);

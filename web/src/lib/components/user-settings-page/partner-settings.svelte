@@ -56,7 +56,7 @@
   {#if partners.length > 0}
     <div class="flex flex-row gap-4">
       {#each partners as partner (partner.id)}
-        <div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
+        <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
           <UserAvatar user={partner} size="md" autoColor />
           <div class="text-left">
             <p class="text-immich-fg dark:text-immich-dark-fg">

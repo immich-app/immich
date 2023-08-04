@@ -8,7 +8,9 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { assetInteractionStore, isMultiSelectStoreState, selectedAssets } from '$lib/stores/asset-interaction.store';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { TimeBucketSize } from '@api';
   import { onDestroy } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
@@ -16,16 +18,17 @@
 
   export let data: PageData;
 
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id });
+  const assetInteractionStore = createAssetInteractionStore();
+  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+
   onDestroy(() => {
     assetInteractionStore.clearMultiselect();
   });
 </script>
 
-<main class="grid h-screen pt-18 bg-immich-bg dark:bg-immich-dark-bg">
-  {#if $isMultiSelectStoreState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
-      <DownloadAction />
-    </AssetSelectControlBar>
+<main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+  {#if $isMultiSelectState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
       <CreateSharedLink />
       <AssetSelectContextMenu icon={Plus} title="Add">
@@ -37,12 +40,12 @@
   {:else}
     <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
-        <p class="text-immich-fg dark:text-immich-dark-fg">
+        <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
           {data.partner.firstName}
           {data.partner.lastName}'s photos
         </p>
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <AssetGrid user={data.partner} />
+  <AssetGrid {assetStore} {assetInteractionStore} />
 </main>

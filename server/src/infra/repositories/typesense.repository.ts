@@ -385,7 +385,8 @@ export class TypesenseRepository implements ISearchRepository {
       custom = { ...custom, geo: [lat, lng] };
     }
 
-    const people = asset.faces?.map((face) => face.person.name).filter((name) => name) || [];
+    const people =
+      asset.faces?.filter((face) => !face.person.isHidden && face.person.name).map((face) => face.person.name) || [];
     if (people.length) {
       custom = { ...custom, people };
     }

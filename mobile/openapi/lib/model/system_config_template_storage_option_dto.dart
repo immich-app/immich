@@ -13,18 +13,14 @@ part of openapi.api;
 class SystemConfigTemplateStorageOptionDto {
   /// Returns a new [SystemConfigTemplateStorageOptionDto] instance.
   SystemConfigTemplateStorageOptionDto({
-    this.yearOptions = const [],
-    this.monthOptions = const [],
     this.dayOptions = const [],
     this.hourOptions = const [],
     this.minuteOptions = const [],
-    this.secondOptions = const [],
+    this.monthOptions = const [],
     this.presetOptions = const [],
+    this.secondOptions = const [],
+    this.yearOptions = const [],
   });
-
-  List<String> yearOptions;
-
-  List<String> monthOptions;
 
   List<String> dayOptions;
 
@@ -32,43 +28,47 @@ class SystemConfigTemplateStorageOptionDto {
 
   List<String> minuteOptions;
 
-  List<String> secondOptions;
+  List<String> monthOptions;
 
   List<String> presetOptions;
 
+  List<String> secondOptions;
+
+  List<String> yearOptions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateStorageOptionDto &&
-     other.yearOptions == yearOptions &&
-     other.monthOptions == monthOptions &&
      other.dayOptions == dayOptions &&
      other.hourOptions == hourOptions &&
      other.minuteOptions == minuteOptions &&
+     other.monthOptions == monthOptions &&
+     other.presetOptions == presetOptions &&
      other.secondOptions == secondOptions &&
-     other.presetOptions == presetOptions;
+     other.yearOptions == yearOptions;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (yearOptions.hashCode) +
-    (monthOptions.hashCode) +
     (dayOptions.hashCode) +
     (hourOptions.hashCode) +
     (minuteOptions.hashCode) +
+    (monthOptions.hashCode) +
+    (presetOptions.hashCode) +
     (secondOptions.hashCode) +
-    (presetOptions.hashCode);
+    (yearOptions.hashCode);
 
   @override
-  String toString() => 'SystemConfigTemplateStorageOptionDto[yearOptions=$yearOptions, monthOptions=$monthOptions, dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, secondOptions=$secondOptions, presetOptions=$presetOptions]';
+  String toString() => 'SystemConfigTemplateStorageOptionDto[dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, yearOptions=$yearOptions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'yearOptions'] = this.yearOptions;
-      json[r'monthOptions'] = this.monthOptions;
       json[r'dayOptions'] = this.dayOptions;
       json[r'hourOptions'] = this.hourOptions;
       json[r'minuteOptions'] = this.minuteOptions;
-      json[r'secondOptions'] = this.secondOptions;
+      json[r'monthOptions'] = this.monthOptions;
       json[r'presetOptions'] = this.presetOptions;
+      json[r'secondOptions'] = this.secondOptions;
+      json[r'yearOptions'] = this.yearOptions;
     return json;
   }
 
@@ -80,12 +80,6 @@ class SystemConfigTemplateStorageOptionDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigTemplateStorageOptionDto(
-        yearOptions: json[r'yearOptions'] is Iterable
-            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        monthOptions: json[r'monthOptions'] is Iterable
-            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         dayOptions: json[r'dayOptions'] is Iterable
             ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -95,11 +89,17 @@ class SystemConfigTemplateStorageOptionDto {
         minuteOptions: json[r'minuteOptions'] is Iterable
             ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        secondOptions: json[r'secondOptions'] is Iterable
-            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
+        monthOptions: json[r'monthOptions'] is Iterable
+            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         presetOptions: json[r'presetOptions'] is Iterable
             ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        secondOptions: json[r'secondOptions'] is Iterable
+            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        yearOptions: json[r'yearOptions'] is Iterable
+            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
@@ -148,13 +148,13 @@ class SystemConfigTemplateStorageOptionDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'yearOptions',
-    'monthOptions',
     'dayOptions',
     'hourOptions',
     'minuteOptions',
-    'secondOptions',
+    'monthOptions',
     'presetOptions',
+    'secondOptions',
+    'yearOptions',
   };
 }
 

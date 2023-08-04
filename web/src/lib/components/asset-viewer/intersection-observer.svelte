@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { BucketPosition } from '$lib/models/asset-grid-state';
-  import { onMount } from 'svelte';
-  import { createEventDispatcher } from 'svelte';
+  import { BucketPosition } from '$lib/stores/assets.store';
+  import { createEventDispatcher, onMount } from 'svelte';
 
   export let once = false;
   export let top = 0;

@@ -7,12 +7,12 @@
   export let showResetToDefault = true;
 </script>
 
-<div class="flex justify-between gap-2 mt-8">
+<div class="mt-8 flex justify-between gap-2">
   <div class="left">
     {#if showResetToDefault}
       <button
         on:click={() => dispatch('reset-to-default')}
-        class="text-sm dark:text-immich-dark-primary hover:dark:text-immich-dark-primary/75 text-immich-primary hover:text-immich-primary/75 font-medium bg-none"
+        class="bg-none text-sm font-medium text-immich-primary hover:text-immich-primary/75 dark:text-immich-dark-primary hover:dark:text-immich-dark-primary/75"
       >
         Reset to default
       </button>

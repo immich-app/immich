@@ -43,15 +43,15 @@
 {#if showModal}
   <FullScreenModal on:clickOutside={() => (showModal = false)}>
     <div
-      class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray shadow-sm max-w-lg rounded-3xl py-10 px-8 dark:text-immich-dark-fg"
+      class="max-w-lg rounded-3xl border bg-immich-bg px-8 py-10 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
     >
-      <p class="text-2xl mb-4">🎉 NEW VERSION AVAILABLE 🎉</p>
+      <p class="mb-4 text-2xl">🎉 NEW VERSION AVAILABLE 🎉</p>
 
       <div>
         Hi friend, there is a new release of
-        <span class="font-immich-title text-immich-primary dark:text-immich-dark-primary font-bold">IMMICH</span>,
+        <span class="font-immich-title font-bold text-immich-primary dark:text-immich-dark-primary">IMMICH</span>,
         please take your time to visit the
-        <span class="underline font-medium"
+        <span class="font-medium underline"
           ><a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer"
             >release notes</a
           ></span
@@ -60,7 +60,7 @@
         especially if you use WatchTower or any mechanism that handles updating your application automatically.
       </div>
 
-      <div class="font-medium mt-4">Your friend, Alex</div>
+      <div class="mt-4 font-medium">Your friend, Alex</div>
 
       <div class="font-sm mt-8">
         <code>Server Version: {serverVersionName}</code>
@@ -68,7 +68,7 @@
         <code>Latest Version: {githubVersion}</code>
       </div>
 
-      <div class="text-right mt-8">
+      <div class="mt-8 text-right">
         <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
       </div>
     </div>

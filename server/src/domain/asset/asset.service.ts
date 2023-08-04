@@ -10,11 +10,20 @@ import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
-import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
+import {
+  AssetIdsDto,
+  DownloadArchiveInfo,
+  DownloadDto,
+  DownloadResponseDto,
+  MemoryLaneDto,
+  TimeBucketAssetDto,
+  TimeBucketDto,
+} from './dto';
 import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
 import { MapMarkerDto } from './dto/map-marker.dto';
-import { mapAsset, MapMarkerResponseDto } from './response-dto';
+import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
+import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -133,6 +142,21 @@ export class AssetService {
     }
 
     return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
+  }
+
+  async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
+    const { userId, ...options } = dto;
+    const targetId = userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
+    return this.assetRepository.getTimeBuckets(targetId, options);
+  }
+
+  async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    const { userId, timeBucket, ...options } = dto;
+    const targetId = userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
+    const assets = await this.assetRepository.getByTimeBucket(targetId, timeBucket, options);
+    return assets.map(mapAsset);
   }
 
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {

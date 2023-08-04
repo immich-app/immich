@@ -16,28 +16,18 @@ void main() {
   // final instance = SystemConfigFFmpegDto();
 
   group('test SystemConfigFFmpegDto', () {
+    // TranscodeHWAccel accel
+    test('to test the property `accel`', () async {
+      // TODO
+    });
+
     // int crf
     test('to test the property `crf`', () async {
       // TODO
     });
 
-    // int threads
-    test('to test the property `threads`', () async {
-      // TODO
-    });
-
-    // VideoCodec targetVideoCodec
-    test('to test the property `targetVideoCodec`', () async {
-      // TODO
-    });
-
-    // AudioCodec targetAudioCodec
-    test('to test the property `targetAudioCodec`', () async {
-      // TODO
-    });
-
-    // TranscodePolicy transcode
-    test('to test the property `transcode`', () async {
+    // String maxBitrate
+    test('to test the property `maxBitrate`', () async {
       // TODO
     });
 
@@ -46,13 +36,28 @@ void main() {
       // TODO
     });
 
+    // AudioCodec targetAudioCodec
+    test('to test the property `targetAudioCodec`', () async {
+      // TODO
+    });
+
     // String targetResolution
     test('to test the property `targetResolution`', () async {
       // TODO
     });
 
-    // String maxBitrate
-    test('to test the property `maxBitrate`', () async {
+    // VideoCodec targetVideoCodec
+    test('to test the property `targetVideoCodec`', () async {
+      // TODO
+    });
+
+    // int threads
+    test('to test the property `threads`', () async {
+      // TODO
+    });
+
+    // TranscodePolicy transcode
+    test('to test the property `transcode`', () async {
       // TODO
     });
 

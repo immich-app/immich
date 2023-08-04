@@ -83,4 +83,5 @@ jobs:
           files: |
             docker/docker-compose.yml
             docker/example.env
+            docker/hwaccel.yml
             *.apk

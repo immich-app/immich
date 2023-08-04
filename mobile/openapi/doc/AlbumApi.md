@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **addAssetsToAlbum**
-> AddAssetsResponseDto addAssetsToAlbum(id, addAssetsDto, key)
+> List<BulkIdResponseDto> addAssetsToAlbum(id, bulkIdsDto, key)
 
 
 
@@ -46,11 +46,11 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+final bulkIdsDto = BulkIdsDto(); // BulkIdsDto | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.addAssetsToAlbum(id, addAssetsDto, key);
+    final result = api_instance.addAssetsToAlbum(id, bulkIdsDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
@@ -62,12 +62,12 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
+ **bulkIdsDto** | [**BulkIdsDto**](BulkIdsDto.md)|  | 
  **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**AddAssetsResponseDto**](AddAssetsResponseDto.md)
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
 
 ### Authorization
 
@@ -412,7 +412,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeAssetFromAlbum**
-> AlbumResponseDto removeAssetFromAlbum(id, removeAssetsDto)
+> List<BulkIdResponseDto> removeAssetFromAlbum(id, bulkIdsDto)
 
 
 
@@ -436,10 +436,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
+final bulkIdsDto = BulkIdsDto(); // BulkIdsDto | 
 
 try {
-    final result = api_instance.removeAssetFromAlbum(id, removeAssetsDto);
+    final result = api_instance.removeAssetFromAlbum(id, bulkIdsDto);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->removeAssetFromAlbum: $e\n');
@@ -451,11 +451,11 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
+ **bulkIdsDto** | [**BulkIdsDto**](BulkIdsDto.md)|  | 
 
 ### Return type
 
-[**AlbumResponseDto**](AlbumResponseDto.md)
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
 
 ### Authorization
 

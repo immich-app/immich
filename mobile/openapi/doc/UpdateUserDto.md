@@ -8,15 +8,15 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | 
 **email** | **String** |  | [optional] 
-**password** | **String** |  | [optional] 
-**firstName** | **String** |  | [optional] 
-**lastName** | **String** |  | [optional] 
-**storageLabel** | **String** |  | [optional] 
 **externalPath** | **String** |  | [optional] 
+**firstName** | **String** |  | [optional] 
+**id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
+**lastName** | **String** |  | [optional] 
+**password** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
+**storageLabel** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

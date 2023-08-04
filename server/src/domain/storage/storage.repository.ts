@@ -29,4 +29,5 @@ export interface IStorageRepository {
   checkFileExists(filepath: string, mode?: number): Promise<boolean>;
   mkdirSync(filepath: string): void;
   checkDiskUsage(folder: string): Promise<DiskUsage>;
+  readdir(folder: string): Promise<string[]>;
 }

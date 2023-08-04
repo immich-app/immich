@@ -46,7 +46,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={changePassword} method="post" class="flex flex-col gap-5 mt-5">
+<form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="password">New Password</label>
     <input
@@ -74,11 +74,11 @@
   </div>
 
   {#if error}
-    <p class="text-red-400 text-sm">{error}</p>
+    <p class="text-sm text-red-400">{error}</p>
   {/if}
 
   {#if success}
-    <p class="text-immich-primary text-sm">{success}</p>
+    <p class="text-sm text-immich-primary">{success}</p>
   {/if}
   <div class="my-5 flex w-full">
     <Button type="submit" size="lg" fullwidth>Change password</Button>

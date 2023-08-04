@@ -21,16 +21,16 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AddAssetsDto] addAssetsDto (required):
+  /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> addAssetsToAlbumWithHttpInfo(String id, AddAssetsDto addAssetsDto, { String? key, }) async {
+  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = addAssetsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -58,11 +58,11 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AddAssetsDto] addAssetsDto (required):
+  /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<AddAssetsResponseDto?> addAssetsToAlbum(String id, AddAssetsDto addAssetsDto, { String? key, }) async {
-    final response = await addAssetsToAlbumWithHttpInfo(id, addAssetsDto,  key: key, );
+  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -70,8 +70,11 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AddAssetsResponseDto',) as AddAssetsResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList();
+
     }
     return null;
   }
@@ -380,14 +383,14 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  Future<Response> removeAssetFromAlbumWithHttpInfo(String id, RemoveAssetsDto removeAssetsDto,) async {
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> removeAssetFromAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = removeAssetsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -411,9 +414,9 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  Future<AlbumResponseDto?> removeAssetFromAlbum(String id, RemoveAssetsDto removeAssetsDto,) async {
-    final response = await removeAssetFromAlbumWithHttpInfo(id, removeAssetsDto,);
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<List<BulkIdResponseDto>?> removeAssetFromAlbum(String id, BulkIdsDto bulkIdsDto,) async {
+    final response = await removeAssetFromAlbumWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -421,8 +424,11 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList();
+
     }
     return null;
   }

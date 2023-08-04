@@ -60,7 +60,7 @@
   <div in:fade={{ duration: 500 }}>
     <div class="flex justify-end">
       {#if loading}
-        <div class="flex place-items-center place-content-center">
+        <div class="flex place-content-center place-items-center">
           <LoadingSpinner />
         </div>
       {:else if config.enabled}

@@ -1,13 +1,4 @@
 <script lang="ts">
-  import {
-    assetInteractionStore,
-    assetSelectionCandidates,
-    assetsInAlbumStoreState,
-    isMultiSelectStoreState,
-    selectedAssets,
-    selectedGroup,
-  } from '$lib/stores/asset-interaction.store';
-  import { assetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
@@ -19,12 +10,22 @@
   import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
   export let isAlbumSelectionMode = false;
-  export let viewportWidth: number;
+  export let viewport: Viewport;
+
+  export let assetStore: AssetStore;
+  export let assetInteractionStore: AssetInteractionStore;
+
+  const { selectedGroup, selectedAssets, assetsInAlbumState, assetSelectionCandidates, isMultiSelectState } =
+    assetInteractionStore;
 
   const dispatch = createEventDispatcher();
 
@@ -45,7 +46,7 @@
     for (let group of assetsGroupByDate) {
       const justifiedLayoutResult = justifiedLayout(group.map(getAssetRatio), {
         boxSpacing: 2,
-        containerWidth: Math.floor(viewportWidth),
+        containerWidth: Math.floor(viewport.width),
         containerPadding: 0,
         targetRowHeightTolerance: 0.15,
         targetRowHeight: 235,
@@ -59,8 +60,8 @@
   })();
 
   $: {
-    if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
-      const heightDelta = assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
+      const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
       }
@@ -94,10 +95,10 @@
       return;
     }
 
-    if ($isMultiSelectStoreState) {
+    if ($isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
     } else {
-      assetInteractionStore.setViewingAsset(asset);
+      assetViewingStore.setAssetId(asset.id);
     }
   };
 
@@ -137,25 +138,20 @@
     // Show multi select icon on hover on date group
     hoveredDateGroup = dateGroupTitle;
 
-    if ($isMultiSelectStoreState) {
+    if ($isMultiSelectState) {
       dispatch('selectAssetCandidates', { asset });
     }
   };
 </script>
 
-<section
-  id="asset-group-by-date"
-  class="flex flex-wrap gap-x-12"
-  bind:clientHeight={actualBucketHeight}
-  bind:clientWidth={viewportWidth}
->
+<section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
     {@const dateGroupTitle = formatGroupTitle(DateTime.fromISO(assetsInDateGroup[0].fileCreatedAt).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      class="flex flex-col mt-5"
+      class="mt-5 flex flex-col"
       on:mouseenter={() => {
         isMouseOverGroup = true;
         assetMouseEventHandler(dateGroupTitle, null);
@@ -167,7 +163,7 @@
     >
       <!-- Date group title -->
       <p
-        class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+        class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
         {#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
@@ -185,7 +181,7 @@
           </div>
         {/if}
 
-        <span class="first-letter:capitalize truncate" title={dateGroupTitle}>
+        <span class="truncate first-letter:capitalize" title={dateGroupTitle}>
           {dateGroupTitle}
         </span>
       </p>
@@ -207,9 +203,9 @@
               on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
               on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
               on:mouse-event={() => assetMouseEventHandler(dateGroupTitle, asset)}
-              selected={$selectedAssets.has(asset) || $assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
+              selected={$selectedAssets.has(asset) || $assetsInAlbumState.some(({ id }) => id === asset.id)}
               selectionCandidate={$assetSelectionCandidates.has(asset)}
-              disabled={$assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
+              disabled={$assetsInAlbumState.some(({ id }) => id === asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}
             />

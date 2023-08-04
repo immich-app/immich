@@ -16,13 +16,13 @@ void main() {
   // final instance = DownloadArchiveInfo();
 
   group('test DownloadArchiveInfo', () {
-    // int size
-    test('to test the property `size`', () async {
+    // List<String> assetIds (default value: const [])
+    test('to test the property `assetIds`', () async {
       // TODO
     });
 
-    // List<String> assetIds (default value: const [])
-    test('to test the property `assetIds`', () async {
+    // int size
+    test('to test the property `size`', () async {
       // TODO
     });
 
