@@ -386,7 +386,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(userId: string, options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId } = options;
+    const { isArchived, isFavorite, albumId, personId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -404,6 +404,13 @@ export class AssetRepository implements IAssetRepository {
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (personId !== undefined) {
+      builder = builder
+        .innerJoin('asset.faces', 'faces')
+        .innerJoin('faces.person', 'person')
+        .andWhere('person.id = :personId', { personId });
     }
 
     return builder;
