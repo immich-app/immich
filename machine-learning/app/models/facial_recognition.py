@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+import zipfile
 
 import cv2
 from insightface.app import FaceAnalysis
@@ -7,6 +8,7 @@ from insightface.app import FaceAnalysis
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
+from insightface.utils.storage import BASE_REPO_URL, download_file
 
 
 class FaceRecognizer(InferenceModel):
@@ -21,6 +23,17 @@ class FaceRecognizer(InferenceModel):
     ) -> None:
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
+
+    def download(self):
+        if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
+            return
+        download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", self.cache_dir.as_posix())
+        zip_file = self.cache_dir / f"{self.model_name}.zip"
+        with zipfile.ZipFile(zip_file, "r") as zip:
+            recognition_model = "1k3d68.onnx"
+            detection_model = next(model for model in zip.namelist() if model.startswith("det_"))
+            zip.extractall(self.cache_dir, members=[recognition_model, detection_model])
+        zip_file.unlink()
 
     def load(self, **model_kwargs: Any) -> None:
         self.model = FaceAnalysis(
