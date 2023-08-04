@@ -2,7 +2,7 @@ from typing import Any
 
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
-from huggingface_hub import snapshot_download
+from sentence_transformers.util import snapshot_download
 
 from ..schemas import ModelType
 from .base import InferenceModel
@@ -16,7 +16,8 @@ class CLIPSTEncoder(InferenceModel):
         snapshot_download(
             cache_dir=self.cache_dir,
             repo_id=repo_id,
-            allow_patterns=["*.bin", "*.json", "*.txt"],
+            library_name="sentence-transformers",
+            ignore_files=["flax_model.msgpack", "rust_model.ot", "tf_model.h5"],
         )
 
     def _load(self, **model_kwargs: Any) -> None:
