@@ -23,6 +23,8 @@ class ImageClassifier(InferenceModel):
         super().__init__(model_name, cache_dir, **model_kwargs)
 
     def _download(self, **model_kwargs: Any):
+        if any(self.cache_dir.iterdir()):
+            return
         snapshot_download(
             cache_dir=self.cache_dir, repo_id=self.model_name, allow_patterns=["*.bin", "*.json", "*.txt"]
         )

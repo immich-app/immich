@@ -12,6 +12,8 @@ class CLIPSTEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
     def _download(self, **model_kwargs: Any):
+        if any(self.cache_dir.iterdir()):
+            return
         repo_id = self.model_name if "/" in self.model_name else f"sentence-transformers/{self.model_name}"
         snapshot_download(
             cache_dir=self.cache_dir,
