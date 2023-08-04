@@ -12,6 +12,7 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -31,7 +32,7 @@
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 
   onMount(async () => {
-    const { data: stats } = await api.assetApi.getAssetStats();
+    const { data: stats } = await api.assetApi.getAssetStats({ isArchived: false });
     assetCount = stats.total;
   });
 </script>
@@ -57,7 +58,7 @@
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if assetCount}
-      <AssetGrid {assetStore} {assetInteractionStore}>
+      <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
         <MemoryLane />
       </AssetGrid>
     {:else}

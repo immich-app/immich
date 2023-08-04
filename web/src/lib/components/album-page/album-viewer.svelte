@@ -449,7 +449,7 @@
     {/if}
 
     {#if album.assetCount > 0}
-      <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} viewFrom="album-page" />
+      <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
     {:else}
       <!-- Album is empty - Show asset selectection buttons -->
       <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
