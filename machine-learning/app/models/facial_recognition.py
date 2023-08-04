@@ -60,14 +60,14 @@ class FaceRecognizer(InferenceModel):
             return []
         assert isinstance(kpss, np.ndarray)
 
-        cropped_imgs = [norm_crop(image, kps) for kps in kpss]
-        embeddings = self.rec_model.get_feat(cropped_imgs).tolist()
         scores = bboxes[:, 4].tolist()
         bboxes = bboxes[:, :4].round().tolist()
 
         results = []
         height, width, _ = image.shape
-        for (x1, y1, x2, y2), score, embedding in zip(bboxes, scores, embeddings):
+        for (x1, y1, x2, y2), score, kps in zip(bboxes, scores, kpss):
+            cropped_img = norm_crop(image, kps)
+            embedding = self.rec_model.get_feat(cropped_img)[0].tolist()
             results.append(
                 {
                     "imageWidth": width,
