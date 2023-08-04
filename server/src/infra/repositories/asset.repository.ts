@@ -391,7 +391,8 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.ownerId = :userId', { userId })
-      .andWhere('asset.isVisible = true');
+      .andWhere('asset.isVisible = true')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
