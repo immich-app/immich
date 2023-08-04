@@ -1,14 +1,17 @@
+from functools import partial
 from pathlib import Path
 from typing import Any
 import zipfile
 
 import cv2
-from insightface.app import FaceAnalysis
+from insightface.model_zoo import ArcFaceONNX, RetinaFace
+import numpy as np
 
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
 from insightface.utils.storage import BASE_REPO_URL, download_file
+from insightface.utils.face_align import norm_crop
 
 
 class FaceRecognizer(InferenceModel):
@@ -24,7 +27,7 @@ class FaceRecognizer(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def download(self, **model_kwargs: Any):
+    def download(self, **model_kwargs: Any) -> None:
         if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
             return
         download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", self.cache_dir.as_posix())
@@ -36,38 +39,42 @@ class FaceRecognizer(InferenceModel):
         zip_file.unlink()
 
     def load(self, **model_kwargs: Any) -> None:
-        self.model = FaceAnalysis(
-            name=self.model_name,
-            root=self.cache_dir.as_posix(),
-            allowed_modules=["detection", "recognition"],
-            **model_kwargs,
-        )
-        self.model.prepare(
-            ctx_id=0,
+        det_file = next(self.cache_dir.glob("det_*.onnx")).as_posix()
+        rec_file = next(self.cache_dir.glob("w600k_*.onnx")).as_posix()
+        self.det_model = RetinaFace(det_file)
+        self.rec_model = ArcFaceONNX(rec_file)
+
+        self.det_model.prepare(
+            ctx_id=-1,
             det_thresh=self.min_score,
-            det_size=(640, 640),
+            input_size=(640, 640),
         )
+        self.rec_model.prepare(ctx_id=-1)
 
     def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
         height, width, _ = image.shape
         results = []
-        faces = self.model.get(image)
+        bboxes, kpss = self.det_model.detect(image)
+        if not kpss:
+            return []
+        cropped_imgs = [norm_crop(image, kps) for kps in kpss]
+        embeddings = self.rec_model.get_feat(cropped_imgs).tolist()
+        scores = bboxes[:, 4].tolist()
+        bboxes = bboxes[:, :4].round().tolist()
 
-        for face in faces:
-            x1, y1, x2, y2 = face.bbox
-
+        for (x1, y1, x2, y2), score, embedding in zip(bboxes, scores, embeddings):
             results.append(
                 {
                     "imageWidth": width,
                     "imageHeight": height,
                     "boundingBox": {
-                        "x1": round(x1),
-                        "y1": round(y1),
-                        "x2": round(x2),
-                        "y2": round(y2),
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
                     },
-                    "score": face.det_score.item(),
-                    "embedding": face.normed_embedding.tolist(),
+                    "score": score,
+                    "embedding": embedding,
                 }
             )
         return results
