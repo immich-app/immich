@@ -18,6 +18,7 @@ class InferenceModel(ABC):
         self, model_name: str, cache_dir: Path | str | None = None, eager: bool = False, **model_kwargs: Any
     ) -> None:
         self.model_name = model_name
+        self._loaded = False
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
         loader = self.load if eager else self._download
         try:
@@ -37,10 +38,16 @@ class InferenceModel(ABC):
     def load(self, **model_kwargs: Any) -> None:
         self._download(**model_kwargs)
         self._load(**model_kwargs)
+        self._loaded = True
 
     @abstractmethod
-    def predict(self, inputs: Any) -> Any:
+    def _predict(self, inputs: Any) -> Any:
         ...
+
+    def predict(self, inputs: Any) -> Any:
+        if not self._loaded:
+            self.load()
+        return self._predict(inputs)
 
     @property
     def model_type(self) -> ModelType:
