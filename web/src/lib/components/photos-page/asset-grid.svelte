@@ -274,7 +274,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] overflow-y-auto pb-4"
+  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-4"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}

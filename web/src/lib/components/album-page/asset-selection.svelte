@@ -3,7 +3,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeGroupEnum, type AssetResponseDto } from '@api';
+  import { TimeBucketSize, type AssetResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -13,7 +13,7 @@
 
   const dispatch = createEventDispatcher();
 
-  const assetStore = new AssetStore({ timeGroup: TimeGroupEnum.Month });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month });
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, assetsInAlbumState } = assetInteractionStore;
 

@@ -10,7 +10,7 @@
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { TimeGroupEnum } from '@api';
+  import { TimeBucketSize } from '@api';
   import { onDestroy } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
@@ -18,7 +18,7 @@
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ timeGroup: TimeGroupEnum.Month, userId: data.partner.id });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 

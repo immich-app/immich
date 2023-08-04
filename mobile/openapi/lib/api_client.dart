@@ -207,10 +207,6 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
-        case 'AssetCountByTimeBucket':
-          return AssetCountByTimeBucket.fromJson(value);
-        case 'AssetCountByTimeBucketResponseDto':
-          return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -265,10 +261,6 @@ class ApiClient {
           return DownloadResponseDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'GetAssetByTimeBucketDto':
-          return GetAssetByTimeBucketDto.fromJson(value);
-        case 'GetAssetCountByTimeBucketDto':
-          return GetAssetCountByTimeBucketDto.fromJson(value);
         case 'ImportAssetDto':
           return ImportAssetDto.fromJson(value);
         case 'JobCommand':
@@ -373,8 +365,10 @@ class ApiClient {
           return TagTypeEnumTypeTransformer().decode(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
-        case 'TimeGroupEnum':
-          return TimeGroupEnumTypeTransformer().decode(value);
+        case 'TimeBucketResponseDto':
+          return TimeBucketResponseDto.fromJson(value);
+        case 'TimeBucketSize':
+          return TimeBucketSizeTypeTransformer().decode(value);
         case 'TranscodeHWAccel':
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':

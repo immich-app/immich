@@ -1,4 +1,4 @@
-import { api, AssetResponseDto, GetAssetCountByTimeBucketDto } from '@api';
+import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 
@@ -9,7 +9,7 @@ export enum BucketPosition {
   Unknown = 'unknown',
 }
 
-export type AssetStoreOptions = GetAssetCountByTimeBucketDto;
+export type AssetStoreOptions = AssetApiGetTimeBucketsRequest;
 
 export interface Viewport {
   width: number;
@@ -51,11 +51,9 @@ export class AssetStore {
   subscribe = this.store$.subscribe;
 
   async init(viewport: Viewport) {
-    const { data } = await api.assetApi.getAssetCountByTimeBucket({
-      getAssetCountByTimeBucketDto: { ...this.options, withoutThumbs: true },
-    });
+    const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
 
-    this.buckets = data.buckets.map((bucket) => {
+    this.buckets = buckets.map((bucket) => {
       const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewport.width);
       const height = rows * THUMBNAIL_HEIGHT;
@@ -101,14 +99,8 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getAssetByTimeBucket(
-        {
-          getAssetByTimeBucketDto: {
-            timeBucket: [bucketDate],
-            ...this.options,
-            withoutThumbs: true,
-          },
-        },
+      const { data: assets } = await api.assetApi.getByTimeBucket(
+        { ...this.options, timeBucket: bucketDate },
         { signal: bucket.cancelToken.signal },
       );
 

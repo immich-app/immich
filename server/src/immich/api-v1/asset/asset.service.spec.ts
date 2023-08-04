@@ -16,9 +16,7 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -83,18 +81,6 @@ const _getAssets = () => {
   return [_getAsset_1(), _getAsset_2()];
 };
 
-const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
-  const result1 = new AssetCountByTimeBucket();
-  result1.count = 2;
-  result1.timeBucket = '2022-06-01T00:00:00.000Z';
-
-  const result2 = new AssetCountByTimeBucket();
-  result1.count = 5;
-  result1.timeBucket = '2022-07-01T00:00:00.000Z';
-
-  return [result1, result2];
-};
-
 describe('AssetService', () => {
   let sut: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
@@ -113,12 +99,10 @@ describe('AssetService', () => {
       update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
-      getAssetCountByTimeBucket: jest.fn(),
       getById: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
-      getAssetByTimeBucket: jest.fn(),
       getAssetsByChecksums: jest.fn(),
       getExistingAssets: jest.fn(),
       getByOriginalPath: jest.fn(),
@@ -219,21 +203,6 @@ describe('AssetService', () => {
 
     expect(result.length).toEqual(2);
     expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
-  });
-
-  it('get assets count by time bucket', async () => {
-    const assetCountByTimeBucket = _getAssetCountByTimeBucket();
-
-    assetRepositoryMock.getAssetCountByTimeBucket.mockImplementation(() =>
-      Promise.resolve<AssetCountByTimeBucket[]>(assetCountByTimeBucket),
-    );
-
-    const result = await sut.getAssetCountByTimeBucket(authStub.user1, {
-      timeGroup: TimeGroupEnum.Month,
-    });
-
-    expect(result.totalCount).toEqual(assetCountByTimeBucket.reduce((a, b) => a + b.count, 0));
-    expect(result.buckets.length).toEqual(2);
   });
 
   describe('deleteAll', () => {
