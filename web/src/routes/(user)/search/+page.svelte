@@ -26,6 +26,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
 
   export let data: PageData;
 
@@ -53,7 +54,10 @@
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
-          goto(previousRoute);
+          if (!$preventRaceConditionSearchBar) {
+            goto(previousRoute);
+          }
+          $preventRaceConditionSearchBar = false;
           return;
       }
     }

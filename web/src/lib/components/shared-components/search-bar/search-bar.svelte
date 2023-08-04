@@ -3,7 +3,7 @@
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import { goto } from '$app/navigation';
-  import { isSearchEnabled, savedSearchTerms } from '$lib/stores/search.store';
+  import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
   import { fly } from 'svelte/transition';
   import { clickOutside } from '$lib/utils/click-outside';
   export let value = '';
@@ -23,8 +23,8 @@
       searchValue = value.slice(2);
     }
 
-    $savedSearchTerms = $savedSearchTerms.filter((item) => item !== searchValue);
-    saveSearchTerm(searchValue);
+    $savedSearchTerms = $savedSearchTerms.filter((item) => item !== value);
+    saveSearchTerm(value);
 
     const params = new URLSearchParams({
       q: searchValue,
@@ -59,6 +59,10 @@
   };
 
   const onFocusOut = () => {
+    if ($isSearchEnabled) {
+      $preventRaceConditionSearchBar = true;
+    }
+
     showBigSearchBar = false;
     $isSearchEnabled = false;
   };
