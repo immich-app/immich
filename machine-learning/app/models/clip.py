@@ -11,7 +11,7 @@ from .base import InferenceModel
 class CLIPSTEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
-    def _download(self, **model_kwargs: Any):
+    def _download(self, **model_kwargs: Any) -> None:
         if any(self.cache_dir.iterdir()):
             return
         repo_id = self.model_name if "/" in self.model_name else f"sentence-transformers/{self.model_name}"
@@ -29,5 +29,5 @@ class CLIPSTEncoder(InferenceModel):
             **model_kwargs,
         )
 
-    def predict(self, image_or_text: Image | str) -> list[float]:
+    def _predict(self, image_or_text: Image | str) -> list[float]:
         return self.model.encode(image_or_text).tolist()

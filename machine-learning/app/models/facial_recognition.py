@@ -1,16 +1,16 @@
+import zipfile
 from pathlib import Path
 from typing import Any
-import zipfile
 
 import cv2
-from insightface.model_zoo import ArcFaceONNX, RetinaFace
 import numpy as np
+from insightface.model_zoo import ArcFaceONNX, RetinaFace
+from insightface.utils.face_align import norm_crop
+from insightface.utils.storage import BASE_REPO_URL, download_file
 
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
-from insightface.utils.storage import BASE_REPO_URL, download_file
-from insightface.utils.face_align import norm_crop
 
 
 class FaceRecognizer(InferenceModel):
@@ -54,7 +54,7 @@ class FaceRecognizer(InferenceModel):
         )
         self.rec_model.prepare(ctx_id=-1)
 
-    def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
+    def _predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
         bboxes, kpss = self.det_model.detect(image)
         if bboxes.size == 0:
             return []
