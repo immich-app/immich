@@ -10,7 +10,6 @@
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import MemoryLane from './memory-lane.svelte';
 
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
@@ -21,8 +20,6 @@
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
 
   export let isAlbumSelectionMode = false;
-  export let showMemoryLane = false;
-
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
 
@@ -284,9 +281,7 @@
   on:scroll={handleTimelineScroll}
 >
   {#if element}
-    {#if showMemoryLane}
-      <MemoryLane />
-    {/if}
+    <slot />
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
       {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver
