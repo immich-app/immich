@@ -3,7 +3,7 @@ from typing import Any
 
 from PIL.Image import Image
 from transformers.pipelines import pipeline
-
+from huggingface_hub import snapshot_download
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
@@ -21,6 +21,9 @@ class ImageClassifier(InferenceModel):
     ) -> None:
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
+
+    def download(self):
+        snapshot_download(cache_dir=self.cache_dir, repo_id=self.model_name)
 
     def load(self, **model_kwargs: Any) -> None:
         self.model = pipeline(
