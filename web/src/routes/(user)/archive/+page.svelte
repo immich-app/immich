@@ -22,7 +22,7 @@
   export let data: PageData;
   let assetCount = 1;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isFavorite: true });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
