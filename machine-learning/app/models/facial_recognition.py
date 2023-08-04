@@ -1,4 +1,3 @@
-from functools import partial
 from pathlib import Path
 from typing import Any
 import zipfile
@@ -27,22 +26,26 @@ class FaceRecognizer(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def download(self, **model_kwargs: Any) -> None:
+    def _download(self, **model_kwargs: Any) -> None:
         if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
             return
         download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", self.cache_dir.as_posix())
         zip_file = self.cache_dir / f"{self.model_name}.zip"
         with zipfile.ZipFile(zip_file, "r") as zip:
-            recognition_model = "1k3d68.onnx"
-            detection_model = next(model for model in zip.namelist() if model.startswith("det_"))
-            zip.extractall(self.cache_dir, members=[recognition_model, detection_model])
+            members = zip.namelist()
+            det_file = next(model for model in members if model.startswith("det_"))
+            rec_file = next(model for model in members if model.startswith("w600k_"))
+            zip.extractall(self.cache_dir, members=[det_file, rec_file])
         zip_file.unlink()
 
-    def load(self, **model_kwargs: Any) -> None:
-        det_file = next(self.cache_dir.glob("det_*.onnx")).as_posix()
-        rec_file = next(self.cache_dir.glob("w600k_*.onnx")).as_posix()
-        self.det_model = RetinaFace(det_file)
-        self.rec_model = ArcFaceONNX(rec_file)
+    def _load(self, **model_kwargs: Any) -> None:
+        try:
+            det_file = next(self.cache_dir.glob("det_*.onnx"))
+            rec_file = next(self.cache_dir.glob("w600k_*.onnx"))
+        except StopIteration:
+            raise FileNotFoundError("Facial recognition models not found in cache directory")
+        self.det_model = RetinaFace(det_file.as_posix())
+        self.rec_model = ArcFaceONNX(rec_file.as_posix())
 
         self.det_model.prepare(
             ctx_id=-1,
@@ -52,16 +55,18 @@ class FaceRecognizer(InferenceModel):
         self.rec_model.prepare(ctx_id=-1)
 
     def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
-        height, width, _ = image.shape
-        results = []
         bboxes, kpss = self.det_model.detect(image)
-        if not kpss:
+        if bboxes.size == 0:
             return []
+        assert isinstance(kpss, np.ndarray)
+
         cropped_imgs = [norm_crop(image, kps) for kps in kpss]
         embeddings = self.rec_model.get_feat(cropped_imgs).tolist()
         scores = bboxes[:, 4].tolist()
         bboxes = bboxes[:, :4].round().tolist()
 
+        results = []
+        height, width, _ = image.shape
         for (x1, y1, x2, y2), score, embedding in zip(bboxes, scores, embeddings):
             results.append(
                 {

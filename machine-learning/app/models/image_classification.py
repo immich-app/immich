@@ -22,10 +22,10 @@ class ImageClassifier(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def download(self, **model_kwargs: Any):
+    def _download(self, **model_kwargs: Any):
         snapshot_download(cache_dir=self.cache_dir, repo_id=self.model_name)
 
-    def load(self, **model_kwargs: Any) -> None:
+    def _load(self, **model_kwargs: Any) -> None:
         self.model = pipeline(
             self.model_type.value,
             self.model_name,

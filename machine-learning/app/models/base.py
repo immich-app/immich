@@ -19,7 +19,7 @@ class InferenceModel(ABC):
     ) -> None:
         self.model_name = model_name
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
-        loader = self.load if eager else self.download
+        loader = self.load if eager else self._download
         try:
             loader(**model_kwargs)
         except (OSError, InvalidProtobuf):
@@ -27,12 +27,16 @@ class InferenceModel(ABC):
             loader(**model_kwargs)
 
     @abstractmethod
-    def download(self, **model_kwargs: Any) -> None:
+    def _download(self, **model_kwargs: Any) -> None:
         ...
 
     @abstractmethod
-    def load(self, **model_kwargs: Any) -> None:
+    def _load(self, **model_kwargs: Any) -> None:
         ...
+
+    def load(self, **model_kwargs: Any) -> None:
+        self._download(**model_kwargs)
+        self._load(**model_kwargs)
 
     @abstractmethod
     def predict(self, inputs: Any) -> Any:
@@ -61,7 +65,11 @@ class InferenceModel(ABC):
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             return
-        elif not rmtree.avoids_symlink_attacks:
+        if not rmtree.avoids_symlink_attacks:
             raise RuntimeError("Attempted to clear cache, but rmtree is not safe on this platform.")
 
-        rmtree(self.cache_dir)
+        if self.cache_dir.is_dir():
+            rmtree(self.cache_dir)
+        else:
+            self.cache_dir.unlink()
+        self.cache_dir.mkdir(parents=True, exist_ok=True)

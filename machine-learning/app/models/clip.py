@@ -11,11 +11,11 @@ from .base import InferenceModel
 class CLIPSTEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
-    def download(self, **model_kwargs: Any):
+    def _download(self, **model_kwargs: Any):
         repo_id = self.model_name if "/" not in self.model_name else f"sentence-transformers/{self.model_name}"
         snapshot_download(cache_dir=self.cache_dir, repo_id=repo_id)
 
-    def load(self, **model_kwargs: Any) -> None:
+    def _load(self, **model_kwargs: Any) -> None:
         self.model = SentenceTransformer(
             self.model_name,
             cache_folder=self.cache_dir.as_posix(),

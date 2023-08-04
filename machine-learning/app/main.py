@@ -9,7 +9,6 @@ from fastapi import Body, Depends, FastAPI
 from PIL import Image
 
 from .config import settings
-from .models.base import InferenceModel
 from .models.cache import ModelCache
 from .schemas import (
     EmbeddingResponse,
