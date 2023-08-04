@@ -38,10 +38,7 @@ async def load_models() -> None:
 
     # Get all models
     for model_name, model_type in models:
-        if settings.eager_startup:
-            await app.state.model_cache.get(model_name, model_type)
-        else:
-            InferenceModel.from_model_type(model_type, model_name)
+        await app.state.model_cache.get(model_name, model_type, eager=settings.eager_startup)
 
 
 @app.on_event("startup")

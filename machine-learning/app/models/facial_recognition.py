@@ -24,7 +24,7 @@ class FaceRecognizer(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def download(self):
+    def download(self, **model_kwargs: Any):
         if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
             return
         download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", self.cache_dir.as_posix())

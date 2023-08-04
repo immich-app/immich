@@ -14,15 +14,21 @@ from ..schemas import ModelType
 class InferenceModel(ABC):
     _model_type: ModelType
 
-    def __init__(self, model_name: str, cache_dir: Path | str | None = None, **model_kwargs: Any) -> None:
+    def __init__(
+        self, model_name: str, cache_dir: Path | str | None = None, eager: bool = False, **model_kwargs: Any
+    ) -> None:
         self.model_name = model_name
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
-
+        loader = self.load if eager else self.download
         try:
-            self.load(**model_kwargs)
+            loader(**model_kwargs)
         except (OSError, InvalidProtobuf):
             self.clear_cache()
-            self.load(**model_kwargs)
+            loader(**model_kwargs)
+
+    @abstractmethod
+    def download(self, **model_kwargs: Any) -> None:
+        ...
 
     @abstractmethod
     def load(self, **model_kwargs: Any) -> None:

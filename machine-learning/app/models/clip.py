@@ -11,7 +11,7 @@ from .base import InferenceModel
 class CLIPSTEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
-    def download(self):
+    def download(self, **model_kwargs: Any):
         repo_id = self.model_name if "/" not in self.model_name else f"sentence-transformers/{self.model_name}"
         snapshot_download(cache_dir=self.cache_dir, repo_id=repo_id)
 
