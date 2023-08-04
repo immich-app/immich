@@ -10,9 +10,10 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { TimeGroupEnum, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
@@ -64,7 +65,9 @@
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if assetCount}
-      <AssetGrid {assetStore} {assetInteractionStore} showMemoryLane />
+      <AssetGrid {assetStore} {assetInteractionStore}>
+        <MemoryLane />
+      </AssetGrid>
     {:else}
       <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={handleUpload} />
     {/if}
