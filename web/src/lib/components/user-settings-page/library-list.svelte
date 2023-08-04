@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { api, CreateLibraryDto, LibraryResponseDto } from '@api';
+  import { api, CreateLibraryDto, LibraryApi, LibraryResponseDto, LibraryType } from '@api';
   import { onMount } from 'svelte';
-  import CreateLibraryForm from '../forms/create-library-form.svelte';
+  import CreateUploadLibraryForm from '../forms/create-upload-library-form.svelte';
+  import CreateImportLibraryForm from '../forms/create-import-library-form.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
@@ -12,7 +13,9 @@
 
   let libraries: LibraryResponseDto[] = [];
 
-  let newLibrary: Partial<LibraryResponseDto> | null = null;
+  let newUploadLibrary: Partial<LibraryResponseDto> | null = null;
+  let newImportLibrary: Partial<LibraryResponseDto> | null = null;
+
   let editLibrary: Partial<LibraryResponseDto> | null = null;
   let deleteLibrary: LibraryResponseDto | null = null;
 
@@ -23,7 +26,6 @@
   async function refreshLibraries() {
     const { data } = await api.libraryApi.getAllLibraries();
     libraries = data;
-    console.log(libraries);
   }
 
   const handleCreate = async (event: CustomEvent<CreateLibraryDto>) => {
@@ -34,7 +36,8 @@
       handleError(error, 'Unable to create a new library');
     } finally {
       await refreshLibraries();
-      newLibrary = null;
+      newUploadLibrary = null;
+      newImportLibrary = null;
     }
   };
 
@@ -58,13 +61,23 @@
   };
 </script>
 
-{#if newLibrary}
-  <CreateLibraryForm
-    title="New Library"
+{#if newUploadLibrary}
+  <CreateUploadLibraryForm
+    title="New Upload Library"
     submitText="Create"
-    library={newLibrary}
+    library={newUploadLibrary}
     on:submit={handleCreate}
-    on:cancel={() => (newLibrary = null)}
+    on:cancel={() => (newUploadLibrary = null)}
+  />
+{/if}
+
+{#if newImportLibrary}
+  <CreateImportLibraryForm
+    title="New Import Library"
+    submitText="Create"
+    library={newImportLibrary}
+    on:submit={handleCreate}
+    on:cancel={() => (newImportLibrary = null)}
   />
 {/if}
 
@@ -122,7 +135,12 @@
       </table>
     {/if}
     <div class="mb-2 flex justify-end">
-      <Button size="sm" on:click={() => (newLibrary = { name: 'Library' })}>Create new library</Button>
+      <Button size="sm" on:click={() => (newUploadLibrary = { name: 'New Upload Library' })}
+        >Create upload library</Button
+      >
+      <Button size="sm" on:click={() => (newImportLibrary = { name: 'New Import Library' })}
+        >Create external library</Button
+      >
     </div>
   </div>
 </section>

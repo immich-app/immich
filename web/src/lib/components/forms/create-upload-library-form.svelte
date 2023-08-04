@@ -31,11 +31,8 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="path">Type</label>
-        <select class="immich-form-select" id="type" name="type" bind:value={library.type}>
-          <option value="UPLOAD">Upload</option>
-          <option value="IMPORT">Import</option>
-        </select>
+        <label class="immich-form-label" for="path">Name</label>
+        <input class="immich-form-input" id="name" name="name" type="text" bind:value={library.name} />
       </div>
 
       <div class="flex w-full px-4 gap-4 mt-8">

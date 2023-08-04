@@ -20,15 +20,10 @@
     importPaths = data;
   };
 
-  const handleRemoveImportPath = async () => {
-    if (!removeImportPath) {
-      return;
-    }
-
+  const removeImportPath = async (path) => {
     try {
-      importPaths = importPaths.filter((path) => path != removeImportPath);
-
-      removeImportPath = null;
+      library.importPaths = library.importPaths.filter((path) => path != removeImportPath);
+      importPaths=library.importPaths;
       await setImportPaths();
     } catch (error) {
       handleError(error, 'Unable to remove path');
@@ -74,7 +69,7 @@
             <p class="text-immich-fg dark:text-immich-dark-fg">{importPath}</p>
           </div>
           <CircleIconButton
-            on:click={() => (removeImportPath = importPath)}
+            on:click={() => {removeImportPath = importPath;  handleRemoveImportPath()}}}
             logo={Close}
             size={'16'}
             title="Remove path"
