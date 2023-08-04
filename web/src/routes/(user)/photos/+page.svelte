@@ -24,7 +24,7 @@
   export let data: PageData;
   let assetCount = 1;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -39,7 +39,7 @@
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton>
   <svelte:fragment slot="header">
     {#if $isMultiSelectState}
-      <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
+      <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
         <AssetSelectContextMenu icon={Plus} title="Add">
