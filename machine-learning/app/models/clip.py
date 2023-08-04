@@ -16,7 +16,7 @@ class CLIPSTEncoder(InferenceModel):
         snapshot_download(
             cache_dir=self.cache_dir,
             repo_id=repo_id,
-            allow_patterns=["*.bin", "*.json"],
+            allow_patterns=["*.bin", "*.json", "*.txt"],
         )
 
     def _load(self, **model_kwargs: Any) -> None:

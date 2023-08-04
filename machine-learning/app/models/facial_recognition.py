@@ -29,8 +29,8 @@ class FaceRecognizer(InferenceModel):
     def _download(self, **model_kwargs: Any) -> None:
         if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
             return
-        download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", self.cache_dir.as_posix())
         zip_file = self.cache_dir / f"{self.model_name}.zip"
+        download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", zip_file)
         with zipfile.ZipFile(zip_file, "r") as zip:
             members = zip.namelist()
             det_file = next(model for model in members if model.startswith("det_"))

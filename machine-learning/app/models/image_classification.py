@@ -23,7 +23,9 @@ class ImageClassifier(InferenceModel):
         super().__init__(model_name, cache_dir, **model_kwargs)
 
     def _download(self, **model_kwargs: Any):
-        snapshot_download(cache_dir=self.cache_dir, repo_id=self.model_name)
+        snapshot_download(
+            cache_dir=self.cache_dir, repo_id=self.model_name, allow_patterns=["*.bin", "*.json", "*.txt"]
+        )
 
     def _load(self, **model_kwargs: Any) -> None:
         self.model = pipeline(
