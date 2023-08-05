@@ -16,6 +16,11 @@ void main() {
   // final instance = CreateLibraryDto();
 
   group('test CreateLibraryDto', () {
+    // List<String> importPaths (default value: const [])
+    test('to test the property `importPaths`', () async {
+      // TODO
+    });
+
     // bool isVisible
     test('to test the property `isVisible`', () async {
       // TODO

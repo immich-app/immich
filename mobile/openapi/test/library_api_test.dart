@@ -57,5 +57,10 @@ void main() {
       // TODO
     });
 
+    //Future<LibraryResponseDto> updateLibrary(UpdateLibraryDto updateLibraryDto) async
+    test('test updateLibrary', () async {
+      // TODO
+    });
+
   });
 }

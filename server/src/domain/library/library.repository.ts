@@ -11,4 +11,5 @@ export interface ILibraryRepository {
   create(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   delete(id: string): Promise<void>;
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null>;
+  update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
 }

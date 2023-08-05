@@ -2323,6 +2323,46 @@
         "tags": [
           "Library"
         ]
+      },
+      "put": {
+        "operationId": "updateLibrary",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
       }
     },
     "/library/count": {
@@ -5587,6 +5627,12 @@
       },
       "CreateLibraryDto": {
         "properties": {
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "isVisible": {
             "type": "boolean"
           },
@@ -5599,7 +5645,8 @@
         },
         "required": [
           "libraryType",
-          "name"
+          "name",
+          "importPaths"
         ],
         "type": "object"
       },
@@ -7331,6 +7378,32 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "UpdateLibraryDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "importPaths"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

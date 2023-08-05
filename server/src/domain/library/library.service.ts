@@ -25,6 +25,7 @@ import {
   mapLibrary,
   ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
+  UpdateLibraryDto,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
 
@@ -64,9 +65,27 @@ export class LibraryService {
       name: dto.name,
       assets: [],
       type: dto.libraryType,
-      importPaths: [],
+      importPaths: dto.importPaths ?? [],
       isVisible: dto.isVisible ?? true,
     });
+    return mapLibrary(libraryEntity);
+  }
+
+  async update(authUser: AuthUserDto, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    const libraryEntity = await this.libraryRepository.getById(dto.id);
+
+    if (dto.name) {
+      libraryEntity.name = dto.name;
+    }
+    if (dto.importPaths) {
+      libraryEntity.importPaths = dto.importPaths;
+    }
+    if (dto.isVisible) {
+      libraryEntity.isVisible = dto.isVisible;
+    }
+
+    const updatedLibrary = await this.libraryRepository.update(libraryEntity);
+
     return mapLibrary(libraryEntity);
   }
 

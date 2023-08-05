@@ -13,10 +13,13 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
+    this.importPaths = const [],
     this.isVisible,
     required this.libraryType,
     required this.name,
   });
+
+  List<String> importPaths;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -32,6 +35,7 @@ class CreateLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
+     other.importPaths == importPaths &&
      other.isVisible == isVisible &&
      other.libraryType == libraryType &&
      other.name == name;
@@ -39,15 +43,17 @@ class CreateLibraryDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (libraryType.hashCode) +
     (name.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[isVisible=$isVisible, libraryType=$libraryType, name=$name]';
+  String toString() => 'CreateLibraryDto[importPaths=$importPaths, isVisible=$isVisible, libraryType=$libraryType, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'importPaths'] = this.importPaths;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
@@ -66,6 +72,9 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
+        importPaths: json[r'importPaths'] is Iterable
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         libraryType: LibraryType.fromJson(json[r'libraryType'])!,
         name: mapValueOfType<String>(json, r'name')!,
@@ -116,6 +125,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'importPaths',
     'libraryType',
     'name',
   };

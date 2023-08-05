@@ -6,8 +6,9 @@ import {
   LibraryService,
   ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
+  UpdateLibraryDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -26,6 +27,14 @@ export class LibraryController {
     @Body() createLibraryDto: CreateLibraryDto,
   ): Promise<LibraryResponseDto> {
     return this.libraryService.create(authUser, createLibraryDto);
+  }
+
+  @Put()
+  updateLibrary(
+    @AuthUser() authUser: AuthUserDto,
+    @Body() updateLibraryDto: UpdateLibraryDto,
+  ): Promise<LibraryResponseDto> {
+    return this.libraryService.update(authUser, updateLibraryDto);
   }
 
   @Get()

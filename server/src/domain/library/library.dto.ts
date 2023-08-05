@@ -16,6 +16,27 @@ export class CreateLibraryDto {
   @IsOptional()
   @IsBoolean()
   isVisible?: boolean;
+
+  @IsOptional()
+  @IsString({ each: true })
+  importPaths!: string[];
+}
+
+export class UpdateLibraryDto {
+  @ValidateUUID()
+  id!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
+
+  @IsOptional()
+  @IsString({ each: true })
+  importPaths!: string[];
 }
 
 export class CrawlOptionsDto {

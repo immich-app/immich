@@ -8,10 +8,13 @@
   import Close from 'svelte-material-icons/Close.svelte';
   import { handleError } from '../../utils/handle-error';
   import LibraryImportPathForm from './library-import-path-form.svelte';
+  import { onMount } from 'svelte';
 
   export let title = 'Create Import Library';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
+
+  export let library: Partial<LibraryResponseDto>;
 
   let disableForm = false;
 
@@ -19,7 +22,11 @@
   let importPathToAdd: string;
   let importPaths: string[] = [];
 
-  export let library: Partial<LibraryResponseDto>;
+  onMount(() => {
+    if (library.importPaths) {
+      importPaths = library.importPaths;
+    }
+  });
 
   const dispatch = createEventDispatcher();
   const handleCancel = () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, CreateLibraryDto, LibraryApi, LibraryResponseDto, LibraryType } from '@api';
+  import { api, CreateLibraryDto, UpdateLibraryDto, LibraryResponseDto } from '@api';
   import { onMount } from 'svelte';
   import CreateUploadLibraryForm from '../forms/create-upload-library-form.svelte';
   import CreateImportLibraryForm from '../forms/create-import-library-form.svelte';
@@ -16,7 +16,8 @@
   let newUploadLibrary: Partial<LibraryResponseDto> | null = null;
   let newImportLibrary: Partial<LibraryResponseDto> | null = null;
 
-  let editLibrary: Partial<LibraryResponseDto> | null = null;
+  let editImportLibrary: Partial<LibraryResponseDto> | null = null;
+  let editUploadLibrary: Partial<LibraryResponseDto> | null = null;
   let deleteLibrary: LibraryResponseDto | null = null;
 
   onMount(() => {
@@ -31,13 +32,26 @@
   const handleCreate = async (event: CustomEvent<CreateLibraryDto>) => {
     try {
       const dto = event.detail;
-      const { data } = await api.libraryApi.createLibrary({ createLibraryDto: dto });
+      await api.libraryApi.createLibrary({ createLibraryDto: dto });
     } catch (error) {
       handleError(error, 'Unable to create a new library');
     } finally {
       await refreshLibraries();
       newUploadLibrary = null;
       newImportLibrary = null;
+    }
+  };
+
+  const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
+    try {
+      const dto = event.detail;
+      await api.libraryApi.updateLibrary({ updateLibraryDto: dto });
+    } catch (error) {
+      handleError(error, 'Unable to update library');
+    } finally {
+      await refreshLibraries();
+      editUploadLibrary = null;
+      editImportLibrary = null;
     }
   };
 
@@ -81,6 +95,16 @@
   />
 {/if}
 
+{#if editImportLibrary}
+  <CreateImportLibraryForm
+    title="Edit Library"
+    submitText="Save"
+    library={editImportLibrary}
+    on:submit={handleEdit}
+    on:cancel={() => (editImportLibrary = null)}
+  />
+{/if}
+
 {#if deleteLibrary}
   <ConfirmDialogue
     prompt="Are you sure you want to delete this library?"
@@ -116,7 +140,7 @@
                 <td class="w-1/3 text-ellipsis px-4 text-sm">{library.assetCount} </td>
                 <td class="w-1/3 text-ellipsis px-4 text-sm">
                   <button
-                    on:click={() => (editLibrary = library)}
+                    on:click={() => (editImportLibrary = library)}
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
                     <PencilOutline size="16" />

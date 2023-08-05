@@ -67,4 +67,15 @@ export class LibraryRepository implements ILibraryRepository {
   async delete(id: string): Promise<void> {
     await this.libraryRepository.delete({ id });
   }
+
+  async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
+    return this.save(library);
+  }
+
+  private async save(library: Partial<LibraryEntity>) {
+    const { id } = await this.libraryRepository.save(library);
+    return this.libraryRepository.findOneOrFail({
+      where: { id },
+    });
+  }
 }

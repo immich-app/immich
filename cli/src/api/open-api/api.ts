@@ -930,6 +930,12 @@ export interface CreateAlbumDto {
 export interface CreateLibraryDto {
     /**
      * 
+     * @type {Array<string>}
+     * @memberof CreateLibraryDto
+     */
+    'importPaths': Array<string>;
+    /**
+     * 
      * @type {boolean}
      * @memberof CreateLibraryDto
      */
@@ -3112,6 +3118,37 @@ export interface UpdateAssetDto {
      * @memberof UpdateAssetDto
      */
     'tagIds'?: Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateLibraryDto
+ */
+export interface UpdateLibraryDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateLibraryDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateLibraryDto
+     */
+    'importPaths': Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateLibraryDto
+     */
+    'isVisible'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateLibraryDto
+     */
+    'name': string;
 }
 /**
  * 
@@ -8549,6 +8586,50 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {UpdateLibraryDto} updateLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateLibrary: async (updateLibraryDto: UpdateLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateLibraryDto' is not null or undefined
+            assertParamExists('updateLibrary', 'updateLibraryDto', updateLibraryDto)
+            const localVarPath = `/library`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateLibraryDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -8640,6 +8721,16 @@ export const LibraryApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.setImportPaths(id, setImportPathsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {UpdateLibraryDto} updateLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateLibrary(updateLibraryDto: UpdateLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateLibrary(updateLibraryDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -8720,6 +8811,15 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          */
         setImportPaths(requestParameters: LibraryApiSetImportPathsRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
             return localVarFp.setImportPaths(requestParameters.id, requestParameters.setImportPathsDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {LibraryApiUpdateLibraryRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
+            return localVarFp.updateLibrary(requestParameters.updateLibraryDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -8837,6 +8937,20 @@ export interface LibraryApiSetImportPathsRequest {
 }
 
 /**
+ * Request parameters for updateLibrary operation in LibraryApi.
+ * @export
+ * @interface LibraryApiUpdateLibraryRequest
+ */
+export interface LibraryApiUpdateLibraryRequest {
+    /**
+     * 
+     * @type {UpdateLibraryDto}
+     * @memberof LibraryApiUpdateLibrary
+     */
+    readonly updateLibraryDto: UpdateLibraryDto
+}
+
+/**
  * LibraryApi - object-oriented interface
  * @export
  * @class LibraryApi
@@ -8928,6 +9042,17 @@ export class LibraryApi extends BaseAPI {
      */
     public setImportPaths(requestParameters: LibraryApiSetImportPathsRequest, options?: AxiosRequestConfig) {
         return LibraryApiFp(this.configuration).setImportPaths(requestParameters.id, requestParameters.setImportPathsDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {LibraryApiUpdateLibraryRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).updateLibrary(requestParameters.updateLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

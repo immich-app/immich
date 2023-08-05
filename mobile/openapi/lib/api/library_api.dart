@@ -394,4 +394,51 @@ class LibraryApi {
     }
     return null;
   }
+
+  /// Performs an HTTP 'PUT /library' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [UpdateLibraryDto] updateLibraryDto (required):
+  Future<Response> updateLibraryWithHttpInfo(UpdateLibraryDto updateLibraryDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/library';
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateLibraryDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [UpdateLibraryDto] updateLibraryDto (required):
+  Future<LibraryResponseDto?> updateLibrary(UpdateLibraryDto updateLibraryDto,) async {
+    final response = await updateLibraryWithHttpInfo(updateLibraryDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto',) as LibraryResponseDto;
+    
+    }
+    return null;
+  }
 }

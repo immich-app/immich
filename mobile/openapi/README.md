@@ -129,6 +129,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**refreshLibrary**](doc//LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
 *LibraryApi* | [**setImportPaths**](doc//LibraryApi.md#setimportpaths) | **POST** /library/{id}/importPaths | 
+*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
@@ -292,6 +293,7 @@ Class | Method | HTTP request | Description
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
