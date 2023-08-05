@@ -18,8 +18,9 @@
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
-  export let isAlbumSelectionMode = false;
+  export let isSelectionMode = false;
   export let viewport: Viewport;
+  export let singleSelect = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -90,16 +91,12 @@
     assetsInDateGroup: AssetResponseDto[],
     dateGroupTitle: string,
   ) => {
-    if (isAlbumSelectionMode) {
+    if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
       return;
     }
 
-    if ($isMultiSelectState) {
-      assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
-    } else {
-      assetViewingStore.setAssetId(asset.id);
-    }
+    assetViewingStore.setAssetId(asset.id);
   };
 
   const selectAssetGroupHandler = (selectAssetGroupHandler: AssetResponseDto[], dateGroupTitle: string) => {
@@ -166,7 +163,7 @@
         class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
-        {#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
+        {#if !singleSelect && ((hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle))}
           <div
             transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
             class="inline-block px-2 hover:cursor-pointer"

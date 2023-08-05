@@ -3,59 +3,68 @@
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
+  import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
+  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
-  import type { PageData } from './$types';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import FaceThumbnailSelector from '$lib/components/faces-page/face-thumbnail-selector.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { AssetResponseDto, PersonResponseDto, TimeBucketSize, api } from '@api';
   import { onMount } from 'svelte';
-  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+  import Plus from 'svelte-material-icons/Plus.svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
+
+  enum ViewMode {
+    VIEW_ASSETS = 'view-assets',
+    SELECT_FACE = 'select-face',
+    MERGE_FACES = 'merge-faces',
+    SUGGEST_MERGE = 'suggest-merge',
+  }
+
+  const assetStore = new AssetStore({
+    size: TimeBucketSize.Month,
+    isArchived: false,
+    personId: data.person.id,
+  });
+  const assetInteractionStore = createAssetInteractionStore();
+  const { selectedAssets, isMultiSelectState } = assetInteractionStore;
+
+  let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
-  let showFaceThumbnailSelection = false;
-  let showMergeFacePanel = false;
   let previousRoute: string = AppRoute.EXPLORE;
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  let showMergeModal = false;
   let people = data.people.people;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
 
   let personName = '';
 
-  $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
-
-  $: showAssets = !showMergeFacePanel && !showFaceThumbnailSelection;
+  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 
   onMount(() => {
     const action = $page.url.searchParams.get('action');
     if (action == 'merge') {
-      showMergeFacePanel = true;
+      viewMode = ViewMode.MERGE_FACES;
     }
   });
   afterNavigate(({ from }) => {
@@ -65,35 +74,29 @@
     }
   });
 
-  const onAssetDelete = (assetId: string) => {
-    data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
-  };
-  const handleSelectAll = () => {
-    selectedAssets = new Set(data.assets);
-  };
-
-  const handleSelectFeaturePhoto = async (event: CustomEvent) => {
-    showFaceThumbnailSelection = false;
-
-    const { selectedAsset }: { selectedAsset: AssetResponseDto | undefined } = event.detail;
-
-    if (selectedAsset) {
-      await api.personApi.updatePerson({
-        id: data.person.id,
-        personUpdateDto: { featureFaceAssetId: selectedAsset.id },
-      });
-
-      // TODO: Replace by Websocket in the future
-      notificationController.show({
-        message: 'Feature photo updated, refresh page to see changes',
-        type: NotificationType.Info,
-      });
+  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+    if (viewMode !== ViewMode.SELECT_FACE) {
+      return;
     }
+
+    await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+
+    // TODO: Replace by Websocket in the future
+    notificationController.show({
+      message: 'Feature photo updated, refresh page to see changes',
+      type: NotificationType.Info,
+    });
+
+    assetInteractionStore.clearMultiselect();
+    // scroll to top
+
+    viewMode = ViewMode.VIEW_ASSETS;
   };
 
   const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
     const [personToMerge, personToBeMergedIn] = response;
-    showMergeModal = false;
+    viewMode = ViewMode.VIEW_ASSETS;
+    isEditingName = false;
     try {
       await api.personApi.mergePerson({
         id: personToBeMergedIn.id,
@@ -116,7 +119,7 @@
   };
 
   const changeName = async () => {
-    showMergeModal = false;
+    viewMode = ViewMode.VIEW_ASSETS;
     data.person.name = personName;
     try {
       isEditingName = false;
@@ -142,6 +145,14 @@
     }
   };
 
+  const handleCancelEditName = () => {
+    if (viewMode === ViewMode.SUGGEST_MERGE) {
+      return;
+    }
+
+    isEditingName = false;
+  };
+
   const handleNameChange = async (name: string) => {
     personName = name;
 
@@ -156,102 +167,111 @@
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      showMergeModal = true;
+      viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
     changeName();
   };
 </script>
 
-{#if showMergeModal}
-  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <MergeSuggestionModal
-      {personMerge1}
-      {personMerge2}
-      {people}
-      on:close={() => (showMergeModal = false)}
-      on:reject={() => changeName()}
-      on:confirm={(event) => handleMergeSameFace(event.detail)}
-    />
-  </FullScreenModal>
+{#if viewMode === ViewMode.SUGGEST_MERGE}
+  <MergeSuggestionModal
+    {personMerge1}
+    {personMerge2}
+    {people}
+    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    on:reject={() => changeName()}
+    on:confirm={(event) => handleMergeSameFace(event.detail)}
+  />
 {/if}
 
-{#if isMultiSelectionMode}
-  <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-    <CreateSharedLink />
-    <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
-    <AssetSelectContextMenu icon={Plus} title="Add">
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </AssetSelectContextMenu>
-    <DeleteAssets {onAssetDelete} />
-    <AssetSelectContextMenu icon={DotsVertical} title="Add">
-      <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-      <ArchiveAction menuItem unarchive={isAllArchive} onAssetArchive={(asset) => onAssetDelete(asset.id)} />
-    </AssetSelectContextMenu>
-  </AssetSelectControlBar>
-{:else}
-  <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
-    <svelte:fragment slot="trailing">
-      <AssetSelectContextMenu icon={DotsVertical} title="Menu">
-        <MenuOption text="Change feature photo" on:click={() => (showFaceThumbnailSelection = true)} />
-        <MenuOption text="Merge face" on:click={() => (showMergeFacePanel = true)} />
+{#if viewMode === ViewMode.MERGE_FACES}
+  <MergeFaceSelector person={data.person} on:go-back={() => (viewMode = ViewMode.VIEW_ASSETS)} />
+{/if}
+
+<header>
+  {#if $isMultiSelectState}
+    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+      <CreateSharedLink />
+      <SelectAllAssets {assetStore} {assetInteractionStore} />
+      <AssetSelectContextMenu icon={Plus} title="Add">
+        <AddToAlbum />
+        <AddToAlbum shared />
       </AssetSelectContextMenu>
-    </svelte:fragment>
-  </ControlAppBar>
-{/if}
-
-<!-- Face information block -->
-<section class="flex place-items-center px-4 pt-24 sm:px-6">
-  {#if isEditingName}
-    <EditNameInput
-      person={data.person}
-      on:change={(event) => handleNameChange(event.detail)}
-      on:cancel={() => (isEditingName = false)}
-    />
+      <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
+      <AssetSelectContextMenu icon={DotsVertical} title="Add">
+        <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
+        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+        <ArchiveAction
+          menuItem
+          unarchive={isAllArchive}
+          onAssetArchive={(asset) => $assetStore.removeAsset(asset.id)}
+        />
+      </AssetSelectContextMenu>
+    </AssetSelectControlBar>
   {:else}
-    <button on:click={() => (showFaceThumbnailSelection = true)}>
-      <ImageThumbnail
-        circle
-        shadow
-        url={api.getPeopleThumbnailUrl(data.person.id)}
-        altText={data.person.name}
-        widthStyle="3.375rem"
-        heightStyle="3.375rem"
-      />
-    </button>
+    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE}
+      <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
+        <svelte:fragment slot="trailing">
+          <AssetSelectContextMenu icon={DotsVertical} title="Menu">
+            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
+            <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
+          </AssetSelectContextMenu>
+        </svelte:fragment>
+      </ControlAppBar>
+    {/if}
 
-    <button
-      title="Edit name"
-      class="px-4 text-immich-primary dark:text-immich-dark-primary"
-      on:click={() => (isEditingName = true)}
-    >
-      {#if data.person.name}
-        <p class="py-2 font-medium">{data.person.name}</p>
-      {:else}
-        <p class="w-fit font-medium">Add a name</p>
-        <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
-      {/if}
-    </button>
+    {#if viewMode === ViewMode.SELECT_FACE}
+      <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+        <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
+      </ControlAppBar>
+    {/if}
   {/if}
-</section>
+</header>
 
-<!-- Gallery Block -->
-{#if showAssets}
-  <section class="relative mb-12 bg-immich-bg pt-8 dark:bg-immich-dark-bg sm:px-4">
-    <section class="immich-scrollbar relative overflow-y-scroll">
-      <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-        <GalleryViewer assets={data.assets} showArchiveIcon={true} bind:selectedAssets />
+<main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+  <AssetGrid
+    {assetStore}
+    {assetInteractionStore}
+    isSelectionMode={viewMode === ViewMode.SELECT_FACE}
+    singleSelect={viewMode === ViewMode.SELECT_FACE}
+    on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
+  >
+    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE}
+      <!-- Face information block -->
+      <section class="flex place-items-center p-4 sm:px-6">
+        {#if isEditingName}
+          <EditNameInput
+            person={data.person}
+            on:change={(event) => handleNameChange(event.detail)}
+            on:cancel={() => handleCancelEditName()}
+          />
+        {:else}
+          <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+            <ImageThumbnail
+              circle
+              shadow
+              url={api.getPeopleThumbnailUrl(data.person.id)}
+              altText={data.person.name}
+              widthStyle="3.375rem"
+              heightStyle="3.375rem"
+            />
+          </button>
+
+          <button
+            title="Edit name"
+            class="px-4 text-immich-primary dark:text-immich-dark-primary"
+            on:click={() => (isEditingName = true)}
+          >
+            {#if data.person.name}
+              <p class="py-2 font-medium">{data.person.name}</p>
+            {:else}
+              <p class="w-fit font-medium">Add a name</p>
+              <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+            {/if}
+          </button>
+        {/if}
       </section>
-    </section>
-  </section>
-{/if}
-
-{#if showFaceThumbnailSelection}
-  <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
-{/if}
-
-{#if showMergeFacePanel}
-  <MergeFaceSelector person={data.person} on:go-back={() => (showMergeFacePanel = false)} />
-{/if}
+    {/if}
+  </AssetGrid>
+</main>

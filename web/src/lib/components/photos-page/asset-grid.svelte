@@ -4,7 +4,7 @@
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
@@ -19,7 +19,8 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
 
-  export let isAlbumSelectionMode = false;
+  export let isSelectionMode = false;
+  export let singleSelect = false;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
@@ -33,6 +34,7 @@
   $: timelineY = element?.scrollTop || 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+  const dispatch = createEventDispatcher<{ select: AssetResponseDto }>();
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -173,9 +175,15 @@
   };
 
   const handleSelectAssets = async (e: CustomEvent) => {
-    const asset = e.detail.asset;
+    const asset = e.detail.asset as AssetResponseDto;
     if (!asset) {
       return;
+    }
+
+    dispatch('select', asset);
+
+    if (singleSelect) {
+      element.scrollTop = 0;
     }
 
     const rangeSelection = $assetSelectionCandidates.size > 0;
@@ -308,7 +316,8 @@
               <AssetDateGroup
                 {assetStore}
                 {assetInteractionStore}
-                {isAlbumSelectionMode}
+                {isSelectionMode}
+                {singleSelect}
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={handleSelectAssetCandidates}
                 on:selectAssets={handleSelectAssets}

@@ -16,6 +16,9 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true })
   albumId?: string;
 
+  @ValidateUUID({ optional: true })
+  personId?: string;
+
   @IsOptional()
   @IsBoolean()
   @Transform(toBoolean)
