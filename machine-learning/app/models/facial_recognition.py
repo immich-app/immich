@@ -27,8 +27,6 @@ class FaceRecognizer(InferenceModel):
         super().__init__(model_name, cache_dir, **model_kwargs)
 
     def _download(self, **model_kwargs: Any) -> None:
-        if self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx")):
-            return
         zip_file = self.cache_dir / f"{self.model_name}.zip"
         download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", zip_file)
         with zipfile.ZipFile(zip_file, "r") as zip:
@@ -83,3 +81,7 @@ class FaceRecognizer(InferenceModel):
                 }
             )
         return results
+
+    @property
+    def cached(self) -> bool:
+        return self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx"))
