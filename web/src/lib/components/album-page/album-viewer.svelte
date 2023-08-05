@@ -354,7 +354,7 @@
             href="https://immich.app"
           >
             <ImmichLogo height={30} width={30} />
-            <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+            <h1 class="font-immich-title text-immich-primary dark:text-immich-dark-primary text-lg">IMMICH</h1>
           </a>
         {/if}
       </svelte:fragment>
@@ -440,9 +440,9 @@
       }}
       on:focus={() => (isEditingTitle = true)}
       on:blur={() => (isEditingTitle = false)}
-      class={`w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary ${
+      class={`text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent text-6xl outline-none transition-all ${
         isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-      } bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray`}
+      } bg-immich-bg focus:border-immich-primary dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray focus:border-b-2 focus:outline-none`}
       type="text"
       bind:value={album.albumName}
       disabled={!isOwned}
@@ -486,16 +486,27 @@
       {album.description || 'Add description'}
     </button>
 
-    {#if album.assetCount > 0}
+    <!-- ALBUM DESCRIPTION -->
+
+    <button
+      class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
+      on:click={() => (isEditingDescription = true)}
+      class:hover:border-gray-400={isOwned}
+      disabled={!isOwned}
+    >
+      {album.description || 'Add description'}
+    </button>
+
+    {#if album.assetCount > 0 && !isShowAssetSelection}
       <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
     {:else}
       <!-- Album is empty - Show asset selectection buttons -->
       <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
         <div class="w-[300px]">
-          <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+          <p class="dark:text-immich-dark-fg text-xs">ADD PHOTOS</p>
           <button
             on:click={() => (isShowAssetSelection = true)}
-            class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+            class="bg-immich-bg text-immich-fg hover:text-immich-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary mt-5 flex w-full place-items-center gap-6 rounded-md border px-8 py-8 transition-all hover:bg-gray-100 dark:border-none"
           >
             <span class="text-text-immich-primary dark:text-immich-dark-primary"><Plus size="24" /> </span>
             <span class="text-lg">Select photos</span>
