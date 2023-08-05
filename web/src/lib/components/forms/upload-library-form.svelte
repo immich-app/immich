@@ -3,7 +3,7 @@
   import FolderSync from 'svelte-material-icons/FolderSync.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import type { LibraryResponseDto } from '../../../api/open-api';
+  import { LibraryType, type LibraryResponseDto } from '@api';
 
   export let title = 'Create Library';
   export let cancelText = 'Cancel';
@@ -13,7 +13,7 @@
 
   const dispatch = createEventDispatcher();
   const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { ...library, libraryType: library.type });
+  const handleSubmit = () => dispatch('submit', { ...library, libraryType: LibraryType.Import });
 </script>
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>

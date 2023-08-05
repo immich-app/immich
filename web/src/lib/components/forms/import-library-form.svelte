@@ -3,7 +3,7 @@
   import FolderSync from 'svelte-material-icons/FolderSync.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import { LibraryType, type LibraryResponseDto } from '../../../api/open-api';
+  import { LibraryType, type LibraryResponseDto } from '@api';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import { handleError } from '../../utils/handle-error';
