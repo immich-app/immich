@@ -138,12 +138,7 @@
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if data.results?.assets?.items.length > 0}
         <div class="pl-4">
-          <GalleryViewer
-            assets={searchResultAssets}
-            bind:selectedAssets
-            viewFrom="search-page"
-            showArchiveIcon={true}
-          />
+          <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
         </div>
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">

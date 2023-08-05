@@ -143,11 +143,9 @@
     <AssetViewer
       asset={$viewingAsset}
       showNavigation={viewingAssets.length > 1}
-      on:navigate-next={navigateNext}
-      on:navigate-previous={navigatePrevious}
-      on:close={() => {
-        assetViewingStore.showAssetViewer(false);
-      }}
+      on:next={navigateNext}
+      on:previous={navigatePrevious}
+      on:close={() => assetViewingStore.showAssetViewer(false)}
     />
   {/if}
 </Portal>

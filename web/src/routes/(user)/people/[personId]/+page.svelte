@@ -242,7 +242,7 @@
   <section class="relative mb-12 bg-immich-bg pt-8 dark:bg-immich-dark-bg sm:px-4">
     <section class="immich-scrollbar relative overflow-y-scroll">
       <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-        <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
+        <GalleryViewer assets={data.assets} showArchiveIcon={true} bind:selectedAssets />
       </section>
     </section>
   </section>

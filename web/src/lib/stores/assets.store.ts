@@ -146,13 +146,14 @@ export class AssetStore {
     return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
-  updateAsset(assetId: string, isFavorite: boolean) {
-    const asset = this.assets.find((asset) => asset.id === assetId);
+  updateAsset(_asset: AssetResponseDto) {
+    const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
     }
 
-    asset.isFavorite = isFavorite;
+    Object.assign(asset, _asset);
+
     this.emit(false);
   }
 

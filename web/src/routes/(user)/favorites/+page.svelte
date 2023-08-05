@@ -11,6 +11,7 @@
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { api, TimeBucketSize } from '@api';
@@ -54,7 +55,7 @@
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={!assetCount}>
   {#if assetCount}
-    <AssetGrid {assetStore} {assetInteractionStore} />
+    <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE} />
   {:else}
     <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" alt="Empty favorites" />
   {/if}

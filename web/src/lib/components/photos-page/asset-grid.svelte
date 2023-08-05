@@ -13,7 +13,7 @@
 
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
@@ -22,6 +22,7 @@
   export let isAlbumSelectionMode = false;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
+  export let removeAction: AssetAction | null = null;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedAssets, isMultiSelectState } = assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
@@ -81,17 +82,33 @@
     element.scrollBy(0, event.detail.heightDelta);
   }
 
-  const navigateToPreviousAsset = async () => {
-    const prevAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
-    if (prevAsset) {
-      assetViewingStore.setAssetId(prevAsset);
+  const handlePrevious = async () => {
+    const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+    if (previousAsset) {
+      assetViewingStore.setAssetId(previousAsset);
     }
+
+    return !!previousAsset;
   };
 
-  const navigateToNextAsset = async () => {
+  const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
       assetViewingStore.setAssetId(nextAsset);
+    }
+
+    return !!nextAsset;
+  };
+
+  const handleClose = () => assetViewingStore.showAssetViewer(false);
+
+  const handleAction = async (asset: AssetResponseDto, action: AssetAction) => {
+    if (removeAction === action) {
+      // find the next asset to show or close the viewer
+      (await handleNext()) || (await handlePrevious()) || handleClose();
+
+      // delete after find the next one
+      assetStore.removeAsset(asset.id);
     }
   };
 
@@ -107,12 +124,6 @@
       timelineY = element?.scrollTop || 0;
       animationTick = false;
     });
-  };
-
-  const handleArchiveSuccess = (e: CustomEvent) => {
-    const asset = e.detail as AssetResponseDto;
-    navigateToNextAsset();
-    assetStore.removeAsset(asset.id);
   };
 
   let lastAssetMouseEvent: AssetResponseDto | null = null;
@@ -319,12 +330,13 @@
     <AssetViewer
       {assetStore}
       asset={$viewingAsset}
-      on:navigate-previous={navigateToPreviousAsset}
-      on:navigate-next={navigateToNextAsset}
-      on:close={() => {
-        assetViewingStore.showAssetViewer(false);
-      }}
-      on:archived={handleArchiveSuccess}
+      on:previous={() => handlePrevious()}
+      on:next={() => handleNext()}
+      on:close={() => handleClose()}
+      on:archived={({ detail: asset }) => handleAction(asset, AssetAction.ARCHIVE)}
+      on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
+      on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
+      on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
     />
   {/if}
 </Portal>
