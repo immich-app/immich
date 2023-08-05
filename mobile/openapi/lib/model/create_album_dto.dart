@@ -15,6 +15,7 @@ class CreateAlbumDto {
   CreateAlbumDto({
     required this.albumName,
     this.assetIds = const [],
+    this.description,
     this.sharedWithUserIds = const [],
   });
 
@@ -22,12 +23,21 @@ class CreateAlbumDto {
 
   List<String> assetIds;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
   List<String> sharedWithUserIds;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
      other.albumName == albumName &&
      other.assetIds == assetIds &&
+     other.description == description &&
      other.sharedWithUserIds == sharedWithUserIds;
 
   @override
@@ -35,15 +45,21 @@ class CreateAlbumDto {
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
     (assetIds.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (sharedWithUserIds.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, sharedWithUserIds=$sharedWithUserIds]';
+  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, description=$description, sharedWithUserIds=$sharedWithUserIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
       json[r'assetIds'] = this.assetIds;
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
+    }
       json[r'sharedWithUserIds'] = this.sharedWithUserIds;
     return json;
   }
@@ -60,6 +76,7 @@ class CreateAlbumDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        description: mapValueOfType<String>(json, r'description'),
         sharedWithUserIds: json[r'sharedWithUserIds'] is Iterable
             ? (json[r'sharedWithUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
