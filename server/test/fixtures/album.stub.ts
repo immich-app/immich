@@ -7,6 +7,7 @@ export const albumStub = {
   empty: Object.freeze<AlbumEntity>({
     id: 'album-1',
     albumName: 'Empty album',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [],
@@ -20,6 +21,7 @@ export const albumStub = {
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
     albumName: 'Empty album shared with user',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [],
@@ -33,6 +35,7 @@ export const albumStub = {
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
     albumName: 'Empty album shared with users',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [],
@@ -46,6 +49,7 @@ export const albumStub = {
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
     albumName: 'Empty album shared with admin',
+    description: '',
     ownerId: authStub.user1.id,
     owner: userStub.user1,
     assets: [],
@@ -59,6 +63,7 @@ export const albumStub = {
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
     albumName: 'Album with one asset',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [assetStub.image],
@@ -72,6 +77,7 @@ export const albumStub = {
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
     albumName: 'Album with two assets',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [assetStub.image, assetStub.withLocation],
@@ -85,6 +91,7 @@ export const albumStub = {
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
     albumName: 'Empty album with invalid thumbnail',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [],
@@ -98,6 +105,7 @@ export const albumStub = {
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
     albumName: 'Empty album with invalid thumbnail',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [],
@@ -111,6 +119,7 @@ export const albumStub = {
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
     albumName: 'Album with one asset and invalid thumbnail',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [assetStub.image],
@@ -124,6 +133,7 @@ export const albumStub = {
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
     albumName: 'Album with one asset and invalid thumbnail',
+    description: '',
     ownerId: authStub.admin.id,
     owner: userStub.admin,
     assets: [assetStub.image],

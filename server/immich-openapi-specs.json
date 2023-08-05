@@ -4736,6 +4736,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -4768,6 +4771,7 @@
           "id",
           "ownerId",
           "albumName",
+          "description",
           "createdAt",
           "updatedAt",
           "albumThumbnailAssetId",
@@ -5245,6 +5249,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "description": {
+            "type": "string"
           },
           "sharedWithUserIds": {
             "items": {
@@ -6884,6 +6891,9 @@
           },
           "albumThumbnailAssetId": {
             "format": "uuid",
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         },
