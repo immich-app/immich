@@ -30,7 +30,16 @@
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    archived: AssetResponseDto;
+    unarchived: AssetResponseDto;
+    favorite: AssetResponseDto;
+    unfavorite: AssetResponseDto;
+    close: void;
+    next: void;
+    previous: void;
+  }>();
+
   let appearsInAlbums: AlbumResponseDto[] = [];
   let isShowAlbumPicker = false;
   let isShowDeleteConfirmation = false;
@@ -105,18 +114,16 @@
     closeViewer();
   };
 
-  const closeViewer = () => {
-    dispatch('close');
-  };
+  const closeViewer = () => dispatch('close');
 
   const navigateAssetForward = (e?: Event) => {
     e?.stopPropagation();
-    dispatch('navigate-next');
+    dispatch('next');
   };
 
   const navigateAssetBackward = (e?: Event) => {
     e?.stopPropagation();
-    dispatch('navigate-previous');
+    dispatch('previous');
   };
 
   const showDetailInfoHandler = () => {
@@ -159,7 +166,8 @@
       });
 
       asset.isFavorite = data.isFavorite;
-      assetStore?.updateAsset(asset.id, data.isFavorite);
+      assetStore?.updateAsset(data);
+      dispatch(data.isFavorite ? 'favorite' : 'unfavorite', data);
 
       notificationController.show({
         type: NotificationType.Info,
@@ -215,12 +223,8 @@
       });
 
       asset.isArchived = data.isArchived;
-
-      if (data.isArchived) {
-        dispatch('archived', data);
-      } else {
-        dispatch('unarchived', data);
-      }
+      assetStore?.updateAsset(data);
+      dispatch(data.isArchived ? 'archived' : 'unarchived', data);
 
       notificationController.show({
         type: NotificationType.Info,

@@ -268,7 +268,7 @@
         bottom={-200}
       >
         <div id="gallery-memory" bind:this={memoryGallery}>
-          <GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
+          <GalleryViewer assets={currentMemory.assets} />
         </div>
       </IntersectionObserver>
     </section>

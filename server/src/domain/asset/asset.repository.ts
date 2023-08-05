@@ -57,6 +57,7 @@ export interface TimeBucketOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
   albumId?: string;
+  personId?: string;
 }
 
 export interface TimeBucketItem {
