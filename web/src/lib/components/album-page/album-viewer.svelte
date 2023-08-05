@@ -448,7 +448,7 @@
       </div>
     {/if}
 
-    {#if album.assetCount > 0}
+    {#if album.assetCount > 0 && !isShowAssetSelection}
       <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
     {:else}
       <!-- Album is empty - Show asset selectection buttons -->
