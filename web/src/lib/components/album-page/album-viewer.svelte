@@ -44,6 +44,7 @@
   import { handleError } from '../../utils/handle-error';
   import { downloadArchive } from '../../utils/asset-utils';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import EditDescriptionModal from './edit-description-modal.svelte';
 
   export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -73,6 +74,7 @@
   let isShowAlbumOptions = false;
   let isShowThumbnailSelection = false;
   let isShowDeleteConfirmation = false;
+  let isEditingDescription = false;
 
   let backUrl = '/albums';
   let currentAlbumName = '';
@@ -298,6 +300,29 @@
   const handleSelectAll = () => {
     multiSelectAsset = new Set(album.assets);
   };
+
+  const descriptionUpdatedHandler = (e: CustomEvent) => {
+    const { description }: { description: string } = e.detail;
+
+    try {
+      api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          description,
+        },
+      });
+
+      album.description = description;
+    } catch (e) {
+      console.error('Error [descriptionUpdatedHandler] ', e);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: 'Error setting album description, check console for more details',
+      });
+    }
+
+    isEditingDescription = false;
+  };
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
@@ -329,7 +354,7 @@
             href="https://immich.app"
           >
             <ImmichLogo height={30} width={30} />
-            <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+            <h1 class="font-immich-title text-immich-primary dark:text-immich-dark-primary text-lg">IMMICH</h1>
           </a>
         {/if}
       </svelte:fragment>
@@ -405,6 +430,7 @@
   {/if}
 
   <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
+    <!-- ALBUM TITLE -->
     <input
       on:keydown={(e) => {
         if (e.key == 'Enter') {
@@ -414,15 +440,16 @@
       }}
       on:focus={() => (isEditingTitle = true)}
       on:blur={() => (isEditingTitle = false)}
-      class={`w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary ${
+      class={`text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent text-6xl outline-none transition-all ${
         isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-      } bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray`}
+      } bg-immich-bg focus:border-immich-primary dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray focus:border-b-2 focus:outline-none`}
       type="text"
       bind:value={album.albumName}
       disabled={!isOwned}
       bind:this={titleInput}
     />
 
+    <!-- ALBUM SUMMARY -->
     {#if album.assetCount > 0}
       <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
         <p class="">{getDateRange()}</p>
@@ -448,16 +475,27 @@
       </div>
     {/if}
 
+    <!-- ALBUM DESCRIPTION -->
+
+    <button
+      class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
+      on:click={() => (isEditingDescription = true)}
+      class:hover:border-gray-400={isOwned}
+      disabled={!isOwned}
+    >
+      {album.description || 'Add description'}
+    </button>
+
     {#if album.assetCount > 0}
       <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
     {:else}
       <!-- Album is empty - Show asset selectection buttons -->
       <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
         <div class="w-[300px]">
-          <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+          <p class="dark:text-immich-dark-fg text-xs">ADD PHOTOS</p>
           <button
             on:click={() => (isShowAssetSelection = true)}
-            class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+            class="bg-immich-bg text-immich-fg hover:text-immich-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary mt-5 flex w-full place-items-center gap-6 rounded-md border px-8 py-8 transition-all hover:bg-gray-100 dark:border-none"
           >
             <span class="text-text-immich-primary dark:text-immich-dark-primary"><Plus size="24" /> </span>
             <span class="text-lg">Select photos</span>
@@ -490,6 +528,7 @@
 {#if isShowShareLinkModal}
   <CreateSharedLinkModal on:close={() => (isShowShareLinkModal = false)} shareType={SharedLinkType.Album} {album} />
 {/if}
+
 {#if isShowShareInfoModal}
   <ShareInfoModal on:close={() => (isShowShareInfoModal = false)} {album} on:user-deleted={sharedUserDeletedHandler} />
 {/if}
@@ -514,4 +553,12 @@
       <p>If this album is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>
+{/if}
+
+{#if isEditingDescription}
+  <EditDescriptionModal
+    {album}
+    on:close={() => (isEditingDescription = false)}
+    on:description-updated={descriptionUpdatedHandler}
+  />
 {/if}
