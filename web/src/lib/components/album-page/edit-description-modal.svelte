@@ -1,6 +1,5 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import BaseModal from '../shared-components/base-modal.svelte';
   import type { AlbumResponseDto } from '@api';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -17,12 +16,12 @@
 
 <FullScreenModal on:clickOutside={() => dispatch('close')}>
   <div
-    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
   >
     <div
-      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+      class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
     >
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit description</h1>
+      <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">Edit description</h1>
     </div>
 
     <form on:submit|preventDefault={handleSave} autocomplete="off">
