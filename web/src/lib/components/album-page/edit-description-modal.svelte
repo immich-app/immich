@@ -4,13 +4,16 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    updated: string;
+  }>();
   export let album: AlbumResponseDto;
 
   let description = album.description;
 
   const handleSave = () => {
-    dispatch('description-updated', { description: description });
+    dispatch('updated', description);
   };
 </script>
 

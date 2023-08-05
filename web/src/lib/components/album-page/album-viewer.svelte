@@ -301,9 +301,7 @@
     multiSelectAsset = new Set(album.assets);
   };
 
-  const descriptionUpdatedHandler = (e: CustomEvent) => {
-    const { description }: { description: string } = e.detail;
-
+  const descriptionUpdatedHandler = (description: string) => {
     try {
       api.albumApi.updateAlbumInfo({
         id: album.id,
@@ -447,6 +445,7 @@
       bind:value={album.albumName}
       disabled={!isOwned}
       bind:this={titleInput}
+      title="Edit Title"
     />
 
     <!-- ALBUM SUMMARY -->
@@ -476,23 +475,12 @@
     {/if}
 
     <!-- ALBUM DESCRIPTION -->
-
     <button
       class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
       on:click={() => (isEditingDescription = true)}
       class:hover:border-gray-400={isOwned}
       disabled={!isOwned}
-    >
-      {album.description || 'Add description'}
-    </button>
-
-    <!-- ALBUM DESCRIPTION -->
-
-    <button
-      class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-      on:click={() => (isEditingDescription = true)}
-      class:hover:border-gray-400={isOwned}
-      disabled={!isOwned}
+      title="Edit description"
     >
       {album.description || 'Add description'}
     </button>
@@ -570,6 +558,6 @@
   <EditDescriptionModal
     {album}
     on:close={() => (isEditingDescription = false)}
-    on:description-updated={descriptionUpdatedHandler}
+    on:updated={({ detail: description }) => descriptionUpdatedHandler(description)}
   />
 {/if}
