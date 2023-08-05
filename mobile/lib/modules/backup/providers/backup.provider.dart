@@ -1,8 +1,6 @@
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
@@ -15,12 +13,10 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -69,9 +65,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileName: '...',
               fileType: '...',
             ),
-            totalManualUploads: 0,
-            manualUploadSuccess: 0,
-            manualUploadFailures: 0,
           ),
         );
 
@@ -395,7 +388,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
-      await _updateServerInfo();
+      await updateServerInfo();
       await _updateBackupAssetCount();
     }
   }
@@ -472,7 +465,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onSetCurrentBackupAsset,
         _onBackupError,
       );
-      await _notifyBackgroundServiceCanRun();
+      await notifyBackgroundServiceCanRun();
     } else {
       openAppSettings();
     }
@@ -488,33 +481,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
 
-  void _onManualBackupError(ErrorUploadAsset errorAssetInfo) {
-    state =
-        state.copyWith(manualUploadFailures: state.manualUploadFailures + 1);
-  }
-
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
     state = state.copyWith(currentUploadAsset: currentUploadAsset);
   }
 
   void cancelBackup() {
     if (state.backupProgress != BackUpProgressEnum.inProgress) {
-      _notifyBackgroundServiceCanRun();
+      notifyBackgroundServiceCanRun();
     }
     state.cancelToken.cancel();
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
     );
-  }
-
-  void _onManualAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicated,
-  ) {
-    state = state.copyWith(manualUploadSuccess: state.manualUploadSuccess + 1);
-    _updateServerInfo();
   }
 
   void _onAssetUploaded(
@@ -558,7 +537,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _updatePersistentAlbumsSelection();
     }
 
-    _updateServerInfo();
+    updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
@@ -567,7 +546,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  Future<void> _updateServerInfo() async {
+  Future<void> updateServerInfo() async {
     final serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
@@ -592,12 +571,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.autoBackup) {
       // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        log.info("[_resumeBackup] Backup is already in progress - abort");
+        log.info("[_resumeBackup] Auto Backup is already in progress - abort");
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.inBackground) {
         log.info("[_resumeBackup] Background backup is running - abort");
+        return;
+      }
+
+      if (state.backupProgress == BackUpProgressEnum.manualInProgress) {
+        log.info("[_resumeBackup] Manual upload is running - abort");
         return;
       }
 
@@ -667,7 +651,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return result;
   }
 
-  Future<void> _notifyBackgroundServiceCanRun() async {
+  Future<void> notifyBackgroundServiceCanRun() async {
     const allowedStates = [
       AppStateEnum.inactive,
       AppStateEnum.paused,
@@ -678,114 +662,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
-  Future<bool> uploadAssets(
-    BuildContext context,
-    Iterable<Asset> allManualUploads,
-  ) async {
-    // assumes the background service is currently running and
-    // waits until it has stopped to start the backup.
-    final bool hasLock = await _backgroundService.acquireLock();
-    if (!hasLock) {
-      log.severe("[uploadAssets] could not acquire lock, exiting");
-      ImmichToast.show(
-        context: context,
-        msg: "backup_manual_failed".tr(),
-        toastType: ToastType.error,
-        gravity: ToastGravity.BOTTOM,
-        durationInSecond: 4,
-      );
-      return false;
-    }
-
-    // check if backup is already in process - then return
-    if (state.backupProgress == BackUpProgressEnum.inProgress) {
-      log.info("[uploadAssets] Backup is already in progress - abort");
-      ImmichToast.show(
-        context: context,
-        msg: "backup_manual_in_progress".tr(),
-        toastType: ToastType.info,
-        gravity: ToastGravity.BOTTOM,
-        durationInSecond: 4,
-      );
-      return false;
-    }
-
-    if (state.backupProgress == BackUpProgressEnum.inBackground) {
-      log.info("[uploadAssets] Background backup is running - abort");
-      ImmichToast.show(
-        context: context,
-        msg: "backup_manual_in_progress".tr(),
-        toastType: ToastType.info,
-        gravity: ToastGravity.BOTTOM,
-        durationInSecond: 4,
-      );
-      return false;
-    }
-
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
-
-    final hasPermission = _galleryPermissionNotifier.hasPermission;
-    if (hasPermission) {
-      await PhotoManager.clearFileCache();
-
-      Set<AssetEntity> allUploadAssets = allManualUploads
-          .where((e) => e.isLocal && e.local != null)
-          .map((e) => e.local!)
-          .toSet();
-
-      if (allUploadAssets.isEmpty) {
-        log.info("[uploadAssets] No Assets to upload - Abort Process");
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
-        return false;
-      }
-
-      state = state.copyWith(
-        totalManualUploads: allManualUploads.length,
-        manualUploadSuccess: 0,
-        manualUploadFailures: 0,
-      );
-
-      // Perform Backup
-      state = state.copyWith(cancelToken: CancellationToken());
-      final bool ok = await _backupService.backupAsset(
-        allUploadAssets,
-        state.cancelToken,
-        _onManualAssetUploaded,
-        (bytes, totalBytes) {},
-        (asset) {},
-        _onManualBackupError,
-      );
-
-      bool hasErrors = false;
-      if ((state.manualUploadFailures != 0 && state.manualUploadSuccess == 0) ||
-          (!ok && !state.cancelToken.isCancelled)) {
-        ImmichToast.show(
-          context: context,
-          msg: "backup_manual_failed".tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.BOTTOM,
-          durationInSecond: 4,
-        );
-        hasErrors = true;
-      } else if (state.manualUploadSuccess != 0) {
-        ImmichToast.show(
-          context: context,
-          msg: "backup_manual_success".tr(),
-          toastType: ToastType.success,
-          gravity: ToastGravity.BOTTOM,
-          durationInSecond: 4,
-        );
-      }
-
-      state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
-      await _notifyBackgroundServiceCanRun();
-      return !hasErrors;
-    } else {
-      openAppSettings();
-      log.info("[uploadAssets] Do not have permission to the gallery");
-      state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
-      return false;
-    }
+  BackUpProgressEnum get backupProgress => state.backupProgress;
+  void updateBackupProgress(BackUpProgressEnum backupProgress) {
+    state = state.copyWith(backupProgress: backupProgress);
   }
 }
 

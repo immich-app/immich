@@ -6,7 +6,13 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
-enum BackUpProgressEnum { idle, inProgress, inBackground, done }
+enum BackUpProgressEnum {
+  idle,
+  inProgress,
+  manualInProgress,
+  inBackground,
+  done
+}
 
 class BackUpState {
   // enum
@@ -32,11 +38,6 @@ class BackUpState {
   /// All assets from the selected albums that have been backup
   final Set<String> selectedAlbumsBackupAssetsIds;
 
-  /// Manual Upload
-  final int totalManualUploads;
-  final int manualUploadFailures;
-  final int manualUploadSuccess;
-
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
 
@@ -57,9 +58,6 @@ class BackUpState {
     required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
     required this.currentUploadAsset,
-    required this.totalManualUploads,
-    required this.manualUploadFailures,
-    required this.manualUploadSuccess,
   });
 
   BackUpState copyWith({
@@ -79,9 +77,6 @@ class BackUpState {
     Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
-    int? totalManualUploads,
-    int? manualUploadFailures,
-    int? manualUploadSuccess,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -102,15 +97,12 @@ class BackUpState {
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
-      totalManualUploads: totalManualUploads ?? this.totalManualUploads,
-      manualUploadFailures: manualUploadFailures ?? this.manualUploadFailures,
-      manualUploadSuccess: manualUploadSuccess ?? this.manualUploadSuccess,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset, totalManualUploads: $totalManualUploads, manualUploadSuccess: $manualUploadSuccess, manualUploadFailures: $manualUploadFailures)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -137,10 +129,7 @@ class BackUpState {
           other.selectedAlbumsBackupAssetsIds,
           selectedAlbumsBackupAssetsIds,
         ) &&
-        other.currentUploadAsset == currentUploadAsset &&
-        other.totalManualUploads == totalManualUploads &&
-        other.manualUploadFailures == manualUploadFailures &&
-        other.manualUploadSuccess == manualUploadSuccess;
+        other.currentUploadAsset == currentUploadAsset;
   }
 
   @override
@@ -160,9 +149,6 @@ class BackUpState {
         excludedBackupAlbums.hashCode ^
         allUniqueAssets.hashCode ^
         selectedAlbumsBackupAssetsIds.hashCode ^
-        currentUploadAsset.hashCode ^
-        totalManualUploads.hashCode ^
-        manualUploadFailures.hashCode ^
-        manualUploadSuccess.hashCode;
+        currentUploadAsset.hashCode;
   }
 }

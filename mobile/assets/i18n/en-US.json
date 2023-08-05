@@ -93,6 +93,7 @@
   "backup_err_only_album": "Cannot remove the only album",
   "backup_info_card_assets": "assets",
   "backup_manual_failed": "Asset(s) upload failed",
+  "backup_manual_title": "Asset Upload",
   "backup_manual_success": "Asset(s) Uploaded Successfully",
   "backup_manual_in_progress": "Asset(s) upload already in progress. Try after sometime",
   "cache_settings_album_thumbnails": "Library page thumbnails ({} assets)",

@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -188,10 +188,11 @@ class HomePage extends HookConsumerWidget {
               gravity: ToastGravity.BOTTOM,
             );
           } else {
-            await ref
-                .read(backupProvider.notifier)
-                .uploadAssets(context, assets);
+            processing.value = false;
             selectionEnabledHook.value = false;
+            await ref
+                .read(manualUploadProvider.notifier)
+                .uploadAssets(context, assets);
           }
         } finally {
           processing.value = false;

@@ -49,6 +49,7 @@ dependencies:
   connectivity_plus: ^4.0.1
   crypto: ^3.0.3 # TODO remove once native crypto is used on iOS
   wakelock: ^0.6.2
+  flutter_local_notifications: ^15.1.0+1
 
   openapi:
     path: openapi

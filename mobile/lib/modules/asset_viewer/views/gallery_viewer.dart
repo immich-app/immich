@@ -16,7 +16,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -284,7 +284,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         builder: (BuildContext _) {
           return UploadDialog(
             onUpload: () {
-              ref.read(backupProvider.notifier).uploadAssets(context, [asset]);
+              ref
+                  .read(manualUploadProvider.notifier)
+                  .uploadAssets(context, [asset]);
             },
           );
         },

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer_header.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/server_info_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -35,6 +36,7 @@ class ProfileDrawer extends HookConsumerWidget {
         onTap: () async {
           await ref.watch(authenticationProvider.notifier).logout();
 
+          ref.read(manualUploadProvider.notifier).cancelBackup();
           ref.watch(backupProvider.notifier).cancelBackup();
           ref.watch(assetProvider.notifier).clearAllAsset();
           ref.watch(websocketProvider.notifier).disconnect();
