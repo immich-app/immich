@@ -23,8 +23,8 @@ class AssetFileUploadResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFileUploadResponseDto &&
-     other.duplicate == duplicate &&
-     other.id == id;
+    other.duplicate == duplicate &&
+    other.id == id;
 
   @override
   int get hashCode =>

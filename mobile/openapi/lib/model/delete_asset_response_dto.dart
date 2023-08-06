@@ -23,8 +23,8 @@ class DeleteAssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DeleteAssetResponseDto &&
-     other.id == id &&
-     other.status == status;
+    other.id == id &&
+    other.status == status;
 
   @override
   int get hashCode =>

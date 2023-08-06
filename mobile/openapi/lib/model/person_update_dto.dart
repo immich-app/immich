@@ -47,9 +47,9 @@ class PersonUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
-     other.featureFaceAssetId == featureFaceAssetId &&
-     other.isHidden == isHidden &&
-     other.name == name;
+    other.featureFaceAssetId == featureFaceAssetId &&
+    other.isHidden == isHidden &&
+    other.name == name;
 
   @override
   int get hashCode =>

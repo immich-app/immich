@@ -80,27 +80,27 @@ class ExifResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-     other.city == city &&
-     other.country == country &&
-     other.dateTimeOriginal == dateTimeOriginal &&
-     other.description == description &&
-     other.exifImageHeight == exifImageHeight &&
-     other.exifImageWidth == exifImageWidth &&
-     other.exposureTime == exposureTime &&
-     other.fNumber == fNumber &&
-     other.fileSizeInByte == fileSizeInByte &&
-     other.focalLength == focalLength &&
-     other.iso == iso &&
-     other.latitude == latitude &&
-     other.lensModel == lensModel &&
-     other.longitude == longitude &&
-     other.make == make &&
-     other.model == model &&
-     other.modifyDate == modifyDate &&
-     other.orientation == orientation &&
-     other.projectionType == projectionType &&
-     other.state == state &&
-     other.timeZone == timeZone;
+    other.city == city &&
+    other.country == country &&
+    other.dateTimeOriginal == dateTimeOriginal &&
+    other.description == description &&
+    other.exifImageHeight == exifImageHeight &&
+    other.exifImageWidth == exifImageWidth &&
+    other.exposureTime == exposureTime &&
+    other.fNumber == fNumber &&
+    other.fileSizeInByte == fileSizeInByte &&
+    other.focalLength == focalLength &&
+    other.iso == iso &&
+    other.latitude == latitude &&
+    other.lensModel == lensModel &&
+    other.longitude == longitude &&
+    other.make == make &&
+    other.model == model &&
+    other.modifyDate == modifyDate &&
+    other.orientation == orientation &&
+    other.projectionType == projectionType &&
+    other.state == state &&
+    other.timeZone == timeZone;
 
   @override
   int get hashCode =>

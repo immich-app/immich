@@ -20,7 +20,7 @@ class PeopleUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateDto &&
-     other.people == people;
+    _deepEquality.equals(other.people, people);
 
   @override
   int get hashCode =>

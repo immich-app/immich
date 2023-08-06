@@ -23,8 +23,8 @@ class SmartInfoResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SmartInfoResponseDto &&
-     other.objects == objects &&
-     other.tags == tags;
+    _deepEquality.equals(other.objects, objects) &&
+    _deepEquality.equals(other.tags, tags);
 
   @override
   int get hashCode =>

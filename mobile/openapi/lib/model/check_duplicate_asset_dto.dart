@@ -23,8 +23,8 @@ class CheckDuplicateAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CheckDuplicateAssetDto &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId;
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId;
 
   @override
   int get hashCode =>

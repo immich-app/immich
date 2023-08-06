@@ -20,7 +20,7 @@ class MergePersonDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MergePersonDto &&
-     other.ids == ids;
+    _deepEquality.equals(other.ids, ids);
 
   @override
   int get hashCode =>

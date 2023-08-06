@@ -23,8 +23,8 @@ class SearchResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchResponseDto &&
-     other.albums == albums &&
-     other.assets == assets;
+    other.albums == albums &&
+    other.assets == assets;
 
   @override
   int get hashCode =>

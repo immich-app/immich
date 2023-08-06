@@ -94,27 +94,27 @@ class AssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-     other.checksum == checksum &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId &&
-     other.duration == duration &&
-     other.exifInfo == exifInfo &&
-     other.fileCreatedAt == fileCreatedAt &&
-     other.fileModifiedAt == fileModifiedAt &&
-     other.id == id &&
-     other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.livePhotoVideoId == livePhotoVideoId &&
-     other.originalFileName == originalFileName &&
-     other.originalPath == originalPath &&
-     other.ownerId == ownerId &&
-     other.people == people &&
-     other.resized == resized &&
-     other.smartInfo == smartInfo &&
-     other.tags == tags &&
-     other.thumbhash == thumbhash &&
-     other.type == type &&
-     other.updatedAt == updatedAt;
+    other.checksum == checksum &&
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId &&
+    other.duration == duration &&
+    other.exifInfo == exifInfo &&
+    other.fileCreatedAt == fileCreatedAt &&
+    other.fileModifiedAt == fileModifiedAt &&
+    other.id == id &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    other.livePhotoVideoId == livePhotoVideoId &&
+    other.originalFileName == originalFileName &&
+    other.originalPath == originalPath &&
+    other.ownerId == ownerId &&
+    _deepEquality.equals(other.people, people) &&
+    other.resized == resized &&
+    other.smartInfo == smartInfo &&
+    _deepEquality.equals(other.tags, tags) &&
+    other.thumbhash == thumbhash &&
+    other.type == type &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>

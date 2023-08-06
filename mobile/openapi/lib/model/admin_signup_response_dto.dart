@@ -32,11 +32,11 @@ class AdminSignupResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
-     other.createdAt == createdAt &&
-     other.email == email &&
-     other.firstName == firstName &&
-     other.id == id &&
-     other.lastName == lastName;
+    other.createdAt == createdAt &&
+    other.email == email &&
+    other.firstName == firstName &&
+    other.id == id &&
+    other.lastName == lastName;
 
   @override
   int get hashCode =>

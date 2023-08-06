@@ -38,7 +38,7 @@ class {{{classname}}} {
   @override
   bool operator ==(Object other) => identical(this, other) || other is {{{classname}}} &&
   {{#vars}}
-     other.{{{name}}} == {{{name}}}{{^-last}} &&{{/-last}}{{#-last}};{{/-last}}
+    {{#isMap}}_deepEquality.equals(other.{{{name}}}, {{{name}}}){{/isMap}}{{^isMap}}{{#isArray}}_deepEquality.equals(other.{{{name}}}, {{{name}}}){{/isArray}}{{^isArray}}other.{{{name}}} == {{{name}}}{{/isArray}}{{/isMap}}{{^-last}} &&{{/-last}}{{#-last}};{{/-last}}
   {{/vars}}
 
   @override

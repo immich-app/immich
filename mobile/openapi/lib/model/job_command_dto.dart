@@ -23,8 +23,8 @@ class JobCommandDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
-     other.command == command &&
-     other.force == force;
+    other.command == command &&
+    other.force == force;
 
   @override
   int get hashCode =>

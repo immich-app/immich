@@ -53,14 +53,14 @@ class SharedLinkCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
-     other.albumId == albumId &&
-     other.allowDownload == allowDownload &&
-     other.allowUpload == allowUpload &&
-     other.assetIds == assetIds &&
-     other.description == description &&
-     other.expiresAt == expiresAt &&
-     other.showExif == showExif &&
-     other.type == type;
+    other.albumId == albumId &&
+    other.allowDownload == allowDownload &&
+    other.allowUpload == allowUpload &&
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.description == description &&
+    other.expiresAt == expiresAt &&
+    other.showExif == showExif &&
+    other.type == type;
 
   @override
   int get hashCode =>

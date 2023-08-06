@@ -29,10 +29,10 @@ class SignUpDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
-     other.email == email &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.password == password;
+    other.email == email &&
+    other.firstName == firstName &&
+    other.lastName == lastName &&
+    other.password == password;
 
   @override
   int get hashCode =>

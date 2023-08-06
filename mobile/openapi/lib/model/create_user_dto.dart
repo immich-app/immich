@@ -35,12 +35,12 @@ class CreateUserDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateUserDto &&
-     other.email == email &&
-     other.externalPath == externalPath &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.password == password &&
-     other.storageLabel == storageLabel;
+    other.email == email &&
+    other.externalPath == externalPath &&
+    other.firstName == firstName &&
+    other.lastName == lastName &&
+    other.password == password &&
+    other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>

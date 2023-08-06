@@ -26,9 +26,9 @@ class ServerMediaTypesResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerMediaTypesResponseDto &&
-     other.image == image &&
-     other.sidecar == sidecar &&
-     other.video == video;
+    _deepEquality.equals(other.image, image) &&
+    _deepEquality.equals(other.sidecar, sidecar) &&
+    _deepEquality.equals(other.video, video);
 
   @override
   int get hashCode =>

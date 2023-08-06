@@ -20,7 +20,7 @@ class AddUsersDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AddUsersDto &&
-     other.sharedUserIds == sharedUserIds;
+    _deepEquality.equals(other.sharedUserIds, sharedUserIds);
 
   @override
   int get hashCode =>

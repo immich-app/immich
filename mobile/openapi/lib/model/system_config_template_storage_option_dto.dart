@@ -38,13 +38,13 @@ class SystemConfigTemplateStorageOptionDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateStorageOptionDto &&
-     other.dayOptions == dayOptions &&
-     other.hourOptions == hourOptions &&
-     other.minuteOptions == minuteOptions &&
-     other.monthOptions == monthOptions &&
-     other.presetOptions == presetOptions &&
-     other.secondOptions == secondOptions &&
-     other.yearOptions == yearOptions;
+    _deepEquality.equals(other.dayOptions, dayOptions) &&
+    _deepEquality.equals(other.hourOptions, hourOptions) &&
+    _deepEquality.equals(other.minuteOptions, minuteOptions) &&
+    _deepEquality.equals(other.monthOptions, monthOptions) &&
+    _deepEquality.equals(other.presetOptions, presetOptions) &&
+    _deepEquality.equals(other.secondOptions, secondOptions) &&
+    _deepEquality.equals(other.yearOptions, yearOptions);
 
   @override
   int get hashCode =>

@@ -56,11 +56,11 @@ class SharedLinkEditDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
-     other.allowDownload == allowDownload &&
-     other.allowUpload == allowUpload &&
-     other.description == description &&
-     other.expiresAt == expiresAt &&
-     other.showExif == showExif;
+    other.allowDownload == allowDownload &&
+    other.allowUpload == allowUpload &&
+    other.description == description &&
+    other.expiresAt == expiresAt &&
+    other.showExif == showExif;
 
   @override
   int get hashCode =>

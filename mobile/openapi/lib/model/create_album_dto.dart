@@ -35,10 +35,10 @@ class CreateAlbumDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
-     other.albumName == albumName &&
-     other.assetIds == assetIds &&
-     other.description == description &&
-     other.sharedWithUserIds == sharedWithUserIds;
+    other.albumName == albumName &&
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.description == description &&
+    _deepEquality.equals(other.sharedWithUserIds, sharedWithUserIds);
 
   @override
   int get hashCode =>

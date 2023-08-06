@@ -47,10 +47,10 @@ class UpdateAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-     other.description == description &&
-     other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.tagIds == tagIds;
+    other.description == description &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    _deepEquality.equals(other.tagIds, tagIds);
 
   @override
   int get hashCode =>

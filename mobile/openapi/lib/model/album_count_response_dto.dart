@@ -26,9 +26,9 @@ class AlbumCountResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumCountResponseDto &&
-     other.notShared == notShared &&
-     other.owned == owned &&
-     other.shared == shared;
+    other.notShared == notShared &&
+    other.owned == owned &&
+    other.shared == shared;
 
   @override
   int get hashCode =>

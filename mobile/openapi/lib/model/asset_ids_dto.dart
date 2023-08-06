@@ -20,7 +20,7 @@ class AssetIdsDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetIdsDto &&
-     other.assetIds == assetIds;
+    _deepEquality.equals(other.assetIds, assetIds);
 
   @override
   int get hashCode =>

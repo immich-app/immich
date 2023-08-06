@@ -50,17 +50,17 @@ class SystemConfigOAuthDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
-     other.autoLaunch == autoLaunch &&
-     other.autoRegister == autoRegister &&
-     other.buttonText == buttonText &&
-     other.clientId == clientId &&
-     other.clientSecret == clientSecret &&
-     other.enabled == enabled &&
-     other.issuerUrl == issuerUrl &&
-     other.mobileOverrideEnabled == mobileOverrideEnabled &&
-     other.mobileRedirectUri == mobileRedirectUri &&
-     other.scope == scope &&
-     other.storageLabelClaim == storageLabelClaim;
+    other.autoLaunch == autoLaunch &&
+    other.autoRegister == autoRegister &&
+    other.buttonText == buttonText &&
+    other.clientId == clientId &&
+    other.clientSecret == clientSecret &&
+    other.enabled == enabled &&
+    other.issuerUrl == issuerUrl &&
+    other.mobileOverrideEnabled == mobileOverrideEnabled &&
+    other.mobileRedirectUri == mobileRedirectUri &&
+    other.scope == scope &&
+    other.storageLabelClaim == storageLabelClaim;
 
   @override
   int get hashCode =>

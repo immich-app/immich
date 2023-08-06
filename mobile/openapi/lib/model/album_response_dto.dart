@@ -62,19 +62,19 @@ class AlbumResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
-     other.albumName == albumName &&
-     other.albumThumbnailAssetId == albumThumbnailAssetId &&
-     other.assetCount == assetCount &&
-     other.assets == assets &&
-     other.createdAt == createdAt &&
-     other.description == description &&
-     other.id == id &&
-     other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
-     other.owner == owner &&
-     other.ownerId == ownerId &&
-     other.shared == shared &&
-     other.sharedUsers == sharedUsers &&
-     other.updatedAt == updatedAt;
+    other.albumName == albumName &&
+    other.albumThumbnailAssetId == albumThumbnailAssetId &&
+    other.assetCount == assetCount &&
+    _deepEquality.equals(other.assets, assets) &&
+    other.createdAt == createdAt &&
+    other.description == description &&
+    other.id == id &&
+    other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
+    other.owner == owner &&
+    other.ownerId == ownerId &&
+    other.shared == shared &&
+    _deepEquality.equals(other.sharedUsers, sharedUsers) &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>

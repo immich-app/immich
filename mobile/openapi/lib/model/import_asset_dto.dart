@@ -74,17 +74,17 @@ class ImportAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ImportAssetDto &&
-     other.assetPath == assetPath &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId &&
-     other.duration == duration &&
-     other.fileCreatedAt == fileCreatedAt &&
-     other.fileModifiedAt == fileModifiedAt &&
-     other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.isReadOnly == isReadOnly &&
-     other.isVisible == isVisible &&
-     other.sidecarPath == sidecarPath;
+    other.assetPath == assetPath &&
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId &&
+    other.duration == duration &&
+    other.fileCreatedAt == fileCreatedAt &&
+    other.fileModifiedAt == fileModifiedAt &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    other.isReadOnly == isReadOnly &&
+    other.isVisible == isVisible &&
+    other.sidecarPath == sidecarPath;
 
   @override
   int get hashCode =>

@@ -26,9 +26,9 @@ class PeopleResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
-     other.people == people &&
-     other.total == total &&
-     other.visible == visible;
+    _deepEquality.equals(other.people, people) &&
+    other.total == total &&
+    other.visible == visible;
 
   @override
   int get hashCode =>

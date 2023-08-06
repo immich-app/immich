@@ -92,15 +92,15 @@ class UpdateUserDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
-     other.email == email &&
-     other.externalPath == externalPath &&
-     other.firstName == firstName &&
-     other.id == id &&
-     other.isAdmin == isAdmin &&
-     other.lastName == lastName &&
-     other.password == password &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.storageLabel == storageLabel;
+    other.email == email &&
+    other.externalPath == externalPath &&
+    other.firstName == firstName &&
+    other.id == id &&
+    other.isAdmin == isAdmin &&
+    other.lastName == lastName &&
+    other.password == password &&
+    other.shouldChangePassword == shouldChangePassword &&
+    other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>

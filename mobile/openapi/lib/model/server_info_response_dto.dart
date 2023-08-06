@@ -38,13 +38,13 @@ class ServerInfoResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerInfoResponseDto &&
-     other.diskAvailable == diskAvailable &&
-     other.diskAvailableRaw == diskAvailableRaw &&
-     other.diskSize == diskSize &&
-     other.diskSizeRaw == diskSizeRaw &&
-     other.diskUsagePercentage == diskUsagePercentage &&
-     other.diskUse == diskUse &&
-     other.diskUseRaw == diskUseRaw;
+    other.diskAvailable == diskAvailable &&
+    other.diskAvailableRaw == diskAvailableRaw &&
+    other.diskSize == diskSize &&
+    other.diskSizeRaw == diskSizeRaw &&
+    other.diskUsagePercentage == diskUsagePercentage &&
+    other.diskUse == diskUse &&
+    other.diskUseRaw == diskUseRaw;
 
   @override
   int get hashCode =>

@@ -20,7 +20,7 @@ class SearchAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchAssetDto &&
-     other.searchTerm == searchTerm;
+    other.searchTerm == searchTerm;
 
   @override
   int get hashCode =>

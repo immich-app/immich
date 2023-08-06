@@ -56,19 +56,19 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.createdAt == createdAt &&
-     other.deletedAt == deletedAt &&
-     other.email == email &&
-     other.externalPath == externalPath &&
-     other.firstName == firstName &&
-     other.id == id &&
-     other.isAdmin == isAdmin &&
-     other.lastName == lastName &&
-     other.oauthId == oauthId &&
-     other.profileImagePath == profileImagePath &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.storageLabel == storageLabel &&
-     other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.deletedAt == deletedAt &&
+    other.email == email &&
+    other.externalPath == externalPath &&
+    other.firstName == firstName &&
+    other.id == id &&
+    other.isAdmin == isAdmin &&
+    other.lastName == lastName &&
+    other.oauthId == oauthId &&
+    other.profileImagePath == profileImagePath &&
+    other.shouldChangePassword == shouldChangePassword &&
+    other.storageLabel == storageLabel &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
