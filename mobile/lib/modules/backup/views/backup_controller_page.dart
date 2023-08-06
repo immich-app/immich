@@ -53,7 +53,8 @@ class BackupControllerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
+        if (backupState.backupProgress != BackUpProgressEnum.inProgress &&
+            backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
           ref.watch(backupProvider.notifier).getBackupInfo();
         }
 
