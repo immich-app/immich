@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { api } from '@api';
   import { createEventDispatcher } from 'svelte';
   import FolderSync from 'svelte-material-icons/FolderSync.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -13,6 +14,10 @@
   export let title = 'Create Import Library';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
+
+  export let refreshText = 'Refresh Library';
+  export let forceRefreshText = 'Force Refresh';
+  export let emptyTrashText = 'Empty Trash';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -71,6 +76,42 @@
       handleError(error, 'Unable to remove path');
     }
   };
+
+  const handleRefresh = async () => {
+    if (!library.id) {
+      return;
+    }
+
+    try {
+      await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: {} });
+    } catch (error) {
+      handleError(error, 'Unable to refresh library');
+    }
+  };
+
+  const handleForceRefresh = async () => {
+    if (!library.id) {
+      return;
+    }
+
+    try {
+      await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: { forceRefresh: true } });
+    } catch (error) {
+      handleError(error, 'Unable to force refresh library');
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    if (!library.id) {
+      return;
+    }
+
+    try {
+      await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: { emptyTrash: true } });
+    } catch (error) {
+      handleError(error, 'Unable to empty trash');
+    }
+  };
 </script>
 
 {#if addPath}
@@ -123,6 +164,8 @@
             </div>
           {/each}
         </div>
+      {:else}
+        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No paths added</p>
       {/if}
       <div class="flex justify-end">
         <Button
@@ -133,6 +176,13 @@
           }}>Add path</Button
         >
       </div>
+      {#if library.id}
+        <div class="flex w-full px-4 gap-4 mt-8">
+          <Button color="gray" fullwidth on:click={() => handleRefresh()}>{refreshText}</Button>
+          <Button color="gray" fullwidth on:click={() => handleForceRefresh()}>{forceRefreshText}</Button>
+          <Button color="gray" fullwidth on:click={() => handleEmptyTrash()}>{emptyTrashText}</Button>
+        </div>
+      {/if}
       <div class="flex w-full px-4 gap-4 mt-8">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
         <Button type="submit" fullwidth>{submitText}</Button>
