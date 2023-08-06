@@ -11,12 +11,12 @@ Name | Type | Description | Notes
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
 **crf** | **int** |  | 
 **maxBitrate** | **String** |  | 
-**tonemap** | [**ToneMapping**](ToneMapping.md) |  | 
 **preset** | **String** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 
 **targetResolution** | **String** |  | 
 **targetVideoCodec** | [**VideoCodec**](VideoCodec.md) |  | 
 **threads** | **int** |  | 
+**tonemap** | [**ToneMapping**](ToneMapping.md) |  | 
 **transcode** | [**TranscodePolicy**](TranscodePolicy.md) |  | 
 **twoPass** | **bool** |  | 
 

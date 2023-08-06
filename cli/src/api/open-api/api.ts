@@ -2452,12 +2452,6 @@ export interface SystemConfigFFmpegDto {
     'maxBitrate': string;
     /**
      * 
-     * @type {ToneMapping}
-     * @memberof SystemConfigFFmpegDto
-     */
-    'tonemap': ToneMapping;
-    /**
-     * 
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
@@ -2486,6 +2480,12 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'threads': number;
+    /**
+     * 
+     * @type {ToneMapping}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'tonemap': ToneMapping;
     /**
      * 
      * @type {TranscodePolicy}

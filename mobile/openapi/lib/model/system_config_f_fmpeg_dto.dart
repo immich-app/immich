@@ -16,12 +16,12 @@ class SystemConfigFFmpegDto {
     required this.accel,
     required this.crf,
     required this.maxBitrate,
-    required this.tonemap,
     required this.preset,
     required this.targetAudioCodec,
     required this.targetResolution,
     required this.targetVideoCodec,
     required this.threads,
+    required this.tonemap,
     required this.transcode,
     required this.twoPass,
   });
@@ -31,8 +31,6 @@ class SystemConfigFFmpegDto {
   int crf;
 
   String maxBitrate;
-
-  ToneMapping tonemap;
 
   String preset;
 
@@ -44,6 +42,8 @@ class SystemConfigFFmpegDto {
 
   int threads;
 
+  ToneMapping tonemap;
+
   TranscodePolicy transcode;
 
   bool twoPass;
@@ -53,12 +53,12 @@ class SystemConfigFFmpegDto {
      other.accel == accel &&
      other.crf == crf &&
      other.maxBitrate == maxBitrate &&
-     other.tonemap == tonemap &&
      other.preset == preset &&
      other.targetAudioCodec == targetAudioCodec &&
      other.targetResolution == targetResolution &&
      other.targetVideoCodec == targetVideoCodec &&
      other.threads == threads &&
+     other.tonemap == tonemap &&
      other.transcode == transcode &&
      other.twoPass == twoPass;
 
@@ -68,29 +68,29 @@ class SystemConfigFFmpegDto {
     (accel.hashCode) +
     (crf.hashCode) +
     (maxBitrate.hashCode) +
-    (tonemap.hashCode) +
     (preset.hashCode) +
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
     (targetVideoCodec.hashCode) +
     (threads.hashCode) +
+    (tonemap.hashCode) +
     (transcode.hashCode) +
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, tonemap=$tonemap, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accel'] = this.accel;
       json[r'crf'] = this.crf;
       json[r'maxBitrate'] = this.maxBitrate;
-      json[r'tonemap'] = this.tonemap;
       json[r'preset'] = this.preset;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
       json[r'targetVideoCodec'] = this.targetVideoCodec;
       json[r'threads'] = this.threads;
+      json[r'tonemap'] = this.tonemap;
       json[r'transcode'] = this.transcode;
       json[r'twoPass'] = this.twoPass;
     return json;
@@ -107,12 +107,12 @@ class SystemConfigFFmpegDto {
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
-        tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
         preset: mapValueOfType<String>(json, r'preset')!,
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
         targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
         targetVideoCodec: VideoCodec.fromJson(json[r'targetVideoCodec'])!,
         threads: mapValueOfType<int>(json, r'threads')!,
+        tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
         transcode: TranscodePolicy.fromJson(json[r'transcode'])!,
         twoPass: mapValueOfType<bool>(json, r'twoPass')!,
       );
@@ -165,12 +165,12 @@ class SystemConfigFFmpegDto {
     'accel',
     'crf',
     'maxBitrate',
-    'tonemap',
     'preset',
     'targetAudioCodec',
     'targetResolution',
     'targetVideoCodec',
     'threads',
+    'tonemap',
     'transcode',
     'twoPass',
   };

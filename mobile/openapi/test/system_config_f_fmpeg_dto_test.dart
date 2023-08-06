@@ -31,11 +31,6 @@ void main() {
       // TODO
     });
 
-    // ToneMapping tonemap
-    test('to test the property `tonemap`', () async {
-      // TODO
-    });
-
     // String preset
     test('to test the property `preset`', () async {
       // TODO
@@ -58,6 +53,11 @@ void main() {
 
     // int threads
     test('to test the property `threads`', () async {
+      // TODO
+    });
+
+    // ToneMapping tonemap
+    test('to test the property `tonemap`', () async {
       // TODO
     });
 

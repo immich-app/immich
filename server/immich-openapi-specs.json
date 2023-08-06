@@ -6612,9 +6612,6 @@
           "maxBitrate": {
             "type": "string"
           },
-          "tonemap": {
-            "$ref": "#/components/schemas/ToneMapping"
-          },
           "preset": {
             "type": "string"
           },
@@ -6629,6 +6626,9 @@
           },
           "threads": {
             "type": "integer"
+          },
+          "tonemap": {
+            "$ref": "#/components/schemas/ToneMapping"
           },
           "transcode": {
             "$ref": "#/components/schemas/TranscodePolicy"
@@ -6889,13 +6889,13 @@
         "type": "string"
       },
       "ToneMapping": {
-        "type": "string",
         "enum": [
           "hable",
           "mobius",
           "reinhard",
           "disabled"
-        ]
+        ],
+        "type": "string"
       },
       "TranscodeHWAccel": {
         "enum": [
