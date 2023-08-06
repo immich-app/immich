@@ -67,6 +67,7 @@ class LocalNotificationService {
       presentBadge: presentBadge ?? false,
       presentBanner: presentBanner ?? false,
       presentList: presentList ?? false,
+      
     );
 
     final notificationDetails = NotificationDetails(
