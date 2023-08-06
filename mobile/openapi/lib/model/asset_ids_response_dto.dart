@@ -26,9 +26,9 @@ class AssetIdsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetIdsResponseDto &&
-    other.assetId == assetId &&
-    other.error == error &&
-    other.success == success;
+     other.assetId == assetId &&
+     other.error == error &&
+     other.success == success;
 
   @override
   int get hashCode =>

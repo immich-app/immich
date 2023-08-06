@@ -20,15 +20,15 @@ class PeopleResponseDto {
 
   List<PersonResponseDto> people;
 
-  num total;
+  int total;
 
-  num visible;
+  int visible;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
-    _deepEquality.equals(other.people, people) &&
-    other.total == total &&
-    other.visible == visible;
+     other.people == people &&
+     other.total == total &&
+     other.visible == visible;
 
   @override
   int get hashCode =>
@@ -57,8 +57,8 @@ class PeopleResponseDto {
 
       return PeopleResponseDto(
         people: PersonResponseDto.listFromJson(json[r'people']),
-        total: num.parse('${json[r'total']}'),
-        visible: num.parse('${json[r'visible']}'),
+        total: mapValueOfType<int>(json, r'total')!,
+        visible: mapValueOfType<int>(json, r'visible')!,
       );
     }
     return null;

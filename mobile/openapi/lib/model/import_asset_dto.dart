@@ -74,17 +74,17 @@ class ImportAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ImportAssetDto &&
-    other.assetPath == assetPath &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
-    other.duration == duration &&
-    other.fileCreatedAt == fileCreatedAt &&
-    other.fileModifiedAt == fileModifiedAt &&
-    other.isArchived == isArchived &&
-    other.isFavorite == isFavorite &&
-    other.isReadOnly == isReadOnly &&
-    other.isVisible == isVisible &&
-    other.sidecarPath == sidecarPath;
+     other.assetPath == assetPath &&
+     other.deviceAssetId == deviceAssetId &&
+     other.deviceId == deviceId &&
+     other.duration == duration &&
+     other.fileCreatedAt == fileCreatedAt &&
+     other.fileModifiedAt == fileModifiedAt &&
+     other.isArchived == isArchived &&
+     other.isFavorite == isFavorite &&
+     other.isReadOnly == isReadOnly &&
+     other.isVisible == isVisible &&
+     other.sidecarPath == sidecarPath;
 
   @override
   int get hashCode =>
@@ -148,8 +148,8 @@ class ImportAssetDto {
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duration: mapValueOfType<String>(json, r'duration'),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,

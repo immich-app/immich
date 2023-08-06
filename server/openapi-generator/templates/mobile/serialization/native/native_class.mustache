@@ -38,7 +38,7 @@ class {{{classname}}} {
   @override
   bool operator ==(Object other) => identical(this, other) || other is {{{classname}}} &&
   {{#vars}}
-    {{#isMap}}_deepEquality.equals(other.{{{name}}}, {{{name}}}){{/isMap}}{{^isMap}}{{#isArray}}_deepEquality.equals(other.{{{name}}}, {{{name}}}){{/isArray}}{{^isArray}}other.{{{name}}} == {{{name}}}{{/isArray}}{{/isMap}}{{^-last}} &&{{/-last}}{{#-last}};{{/-last}}
+     other.{{{name}}} == {{{name}}}{{^-last}} &&{{/-last}}{{#-last}};{{/-last}}
   {{/vars}}
 
   @override
@@ -66,7 +66,7 @@ class {{{classname}}} {
     {{/isNullable}}
     {{#isDateTime}}
       {{#pattern}}
-      json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
+      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
         : this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
       {{/pattern}}
@@ -76,7 +76,7 @@ class {{{classname}}} {
     {{/isDateTime}}
     {{#isDate}}
       {{#pattern}}
-      json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
+      json[r'{{{baseName}}}'] = _dateEpochMarker == '{{{pattern}}}'
         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
         : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
       {{/pattern}}
@@ -86,7 +86,7 @@ class {{{classname}}} {
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
-      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}!{{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
+      json[r'{{{baseName}}}'] = this.{{{name}}};
       {{/isDate}}
     {{/isDateTime}}
     {{#isNullable}}
@@ -117,10 +117,10 @@ class {{{classname}}} {
       return {{{classname}}}(
   {{#vars}}
     {{#isDateTime}}
-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', '{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
     {{/isDateTime}}
     {{#isDate}}
-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', '{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
@@ -189,8 +189,8 @@ class {{{classname}}} {
         {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
             {{/isEnum}}
             {{^isEnum}}
-        {{{name}}}: json[r'{{{baseName}}}'] is Iterable
-            ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
+        {{{name}}}: json[r'{{{baseName}}}'] is {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}
+            ? (json[r'{{{baseName}}}'] as {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}).cast<{{{items.datatype}}}>()
             : {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}},
             {{/isEnum}}
           {{/isArray}}
@@ -200,9 +200,9 @@ class {{{classname}}} {
             {{/isMap}}
             {{^isMap}}
               {{#isNumber}}
-        {{{name}}}: {{#isNullable}}json[r'{{{baseName}}}'] == null
+        {{{name}}}: json[r'{{{baseName}}}'] == null
             ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
-            : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
+            : {{{datatypeWithEnum}}}.parse(json[r'{{{baseName}}}'].toString()),
               {{/isNumber}}
               {{^isNumber}}
                 {{^isEnum}}

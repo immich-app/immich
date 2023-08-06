@@ -26,9 +26,9 @@ class BulkIdResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is BulkIdResponseDto &&
-    other.error == error &&
-    other.id == id &&
-    other.success == success;
+     other.error == error &&
+     other.id == id &&
+     other.success == success;
 
   @override
   int get hashCode =>

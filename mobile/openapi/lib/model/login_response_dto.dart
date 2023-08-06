@@ -41,14 +41,14 @@ class LoginResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
-    other.accessToken == accessToken &&
-    other.firstName == firstName &&
-    other.isAdmin == isAdmin &&
-    other.lastName == lastName &&
-    other.profileImagePath == profileImagePath &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.userEmail == userEmail &&
-    other.userId == userId;
+     other.accessToken == accessToken &&
+     other.firstName == firstName &&
+     other.isAdmin == isAdmin &&
+     other.lastName == lastName &&
+     other.profileImagePath == profileImagePath &&
+     other.shouldChangePassword == shouldChangePassword &&
+     other.userEmail == userEmail &&
+     other.userId == userId;
 
   @override
   int get hashCode =>

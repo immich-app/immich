@@ -29,10 +29,10 @@ class PersonResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
-    other.id == id &&
-    other.isHidden == isHidden &&
-    other.name == name &&
-    other.thumbnailPath == thumbnailPath;
+     other.id == id &&
+     other.isHidden == isHidden &&
+     other.name == name &&
+     other.thumbnailPath == thumbnailPath;
 
   @override
   int get hashCode =>

@@ -23,8 +23,8 @@ class LogoutResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LogoutResponseDto &&
-    other.redirectUri == redirectUri &&
-    other.successful == successful;
+     other.redirectUri == redirectUri &&
+     other.successful == successful;
 
   @override
   int get hashCode =>

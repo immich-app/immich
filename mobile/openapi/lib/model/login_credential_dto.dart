@@ -23,8 +23,8 @@ class LoginCredentialDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginCredentialDto &&
-    other.email == email &&
-    other.password == password;
+     other.email == email &&
+     other.password == password;
 
   @override
   int get hashCode =>

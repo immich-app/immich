@@ -32,11 +32,11 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
-    other.ffmpeg == ffmpeg &&
-    other.job == job &&
-    other.oauth == oauth &&
-    other.passwordLogin == passwordLogin &&
-    other.storageTemplate == storageTemplate;
+     other.ffmpeg == ffmpeg &&
+     other.job == job &&
+     other.oauth == oauth &&
+     other.passwordLogin == passwordLogin &&
+     other.storageTemplate == storageTemplate;
 
   @override
   int get hashCode =>

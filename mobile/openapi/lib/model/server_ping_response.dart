@@ -20,7 +20,7 @@ class ServerPingResponse {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerPingResponse &&
-    other.res == res;
+     other.res == res;
 
   @override
   int get hashCode =>

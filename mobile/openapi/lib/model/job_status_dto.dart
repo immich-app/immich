@@ -23,8 +23,8 @@ class JobStatusDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobStatusDto &&
-    other.jobCounts == jobCounts &&
-    other.queueStatus == queueStatus;
+     other.jobCounts == jobCounts &&
+     other.queueStatus == queueStatus;
 
   @override
   int get hashCode =>

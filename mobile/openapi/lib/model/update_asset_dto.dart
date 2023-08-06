@@ -47,10 +47,10 @@ class UpdateAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-    other.description == description &&
-    other.isArchived == isArchived &&
-    other.isFavorite == isFavorite &&
-    _deepEquality.equals(other.tagIds, tagIds);
+     other.description == description &&
+     other.isArchived == isArchived &&
+     other.isFavorite == isFavorite &&
+     other.tagIds == tagIds;
 
   @override
   int get hashCode =>
@@ -95,8 +95,8 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        tagIds: json[r'tagIds'] is Iterable
-            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
+        tagIds: json[r'tagIds'] is List
+            ? (json[r'tagIds'] as List).cast<String>()
             : const [],
       );
     }

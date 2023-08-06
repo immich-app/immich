@@ -56,19 +56,19 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-    other.createdAt == createdAt &&
-    other.deletedAt == deletedAt &&
-    other.email == email &&
-    other.externalPath == externalPath &&
-    other.firstName == firstName &&
-    other.id == id &&
-    other.isAdmin == isAdmin &&
-    other.lastName == lastName &&
-    other.oauthId == oauthId &&
-    other.profileImagePath == profileImagePath &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.storageLabel == storageLabel &&
-    other.updatedAt == updatedAt;
+     other.createdAt == createdAt &&
+     other.deletedAt == deletedAt &&
+     other.email == email &&
+     other.externalPath == externalPath &&
+     other.firstName == firstName &&
+     other.id == id &&
+     other.isAdmin == isAdmin &&
+     other.lastName == lastName &&
+     other.oauthId == oauthId &&
+     other.profileImagePath == profileImagePath &&
+     other.shouldChangePassword == shouldChangePassword &&
+     other.storageLabel == storageLabel &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -128,8 +128,8 @@ class UserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
         firstName: mapValueOfType<String>(json, r'firstName')!,
@@ -140,7 +140,7 @@ class UserResponseDto {
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;

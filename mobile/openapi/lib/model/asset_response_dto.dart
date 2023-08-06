@@ -94,27 +94,27 @@ class AssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-    other.checksum == checksum &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
-    other.duration == duration &&
-    other.exifInfo == exifInfo &&
-    other.fileCreatedAt == fileCreatedAt &&
-    other.fileModifiedAt == fileModifiedAt &&
-    other.id == id &&
-    other.isArchived == isArchived &&
-    other.isFavorite == isFavorite &&
-    other.livePhotoVideoId == livePhotoVideoId &&
-    other.originalFileName == originalFileName &&
-    other.originalPath == originalPath &&
-    other.ownerId == ownerId &&
-    _deepEquality.equals(other.people, people) &&
-    other.resized == resized &&
-    other.smartInfo == smartInfo &&
-    _deepEquality.equals(other.tags, tags) &&
-    other.thumbhash == thumbhash &&
-    other.type == type &&
-    other.updatedAt == updatedAt;
+     other.checksum == checksum &&
+     other.deviceAssetId == deviceAssetId &&
+     other.deviceId == deviceId &&
+     other.duration == duration &&
+     other.exifInfo == exifInfo &&
+     other.fileCreatedAt == fileCreatedAt &&
+     other.fileModifiedAt == fileModifiedAt &&
+     other.id == id &&
+     other.isArchived == isArchived &&
+     other.isFavorite == isFavorite &&
+     other.livePhotoVideoId == livePhotoVideoId &&
+     other.originalFileName == originalFileName &&
+     other.originalPath == originalPath &&
+     other.ownerId == ownerId &&
+     other.people == people &&
+     other.resized == resized &&
+     other.smartInfo == smartInfo &&
+     other.tags == tags &&
+     other.thumbhash == thumbhash &&
+     other.type == type &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -199,8 +199,8 @@ class AssetResponseDto {
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
@@ -214,7 +214,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;
