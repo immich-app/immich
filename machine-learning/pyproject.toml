@@ -33,6 +33,7 @@ httpx = "^0.24.1"
 pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.272"
+pytest-mock = "^3.11.1"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
@@ -60,10 +61,14 @@ warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
 module = [
+    "huggingface_hub",
     "transformers.pipelines",
     "cv2",
-    "insightface.app",
+    "insightface.model_zoo",
+    "insightface.utils.face_align",
+    "insightface.utils.storage",
     "sentence_transformers",
+    "sentence_transformers.util",
     "aiocache.backends.memory",
     "aiocache.lock",
     "aiocache.plugins"

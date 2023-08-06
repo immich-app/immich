@@ -1,11 +1,13 @@
 from io import BytesIO
-from pathlib import Path
+from typing import TypeAlias
 from unittest import mock
 
 import cv2
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from pytest_mock import MockerFixture
 
 from .config import settings
 from .models.cache import ModelCache
@@ -14,22 +16,43 @@ from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
 
+ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
+
 
 class TestImageClassifier:
-    def test_init(self, mock_classifier_pipeline: mock.Mock) -> None:
-        cache_dir = Path("test_cache")
-        classifier = ImageClassifier("test_model_name", 0.5, cache_dir=cache_dir)
+    classifier_preds = [
+        {"label": "that's an image alright", "score": 0.8},
+        {"label": "well it ends with .jpg", "score": 0.1},
+        {"label": "idk, im just seeing bytes", "score": 0.05},
+        {"label": "not sure", "score": 0.04},
+        {"label": "probably a virus", "score": 0.01},
+    ]
 
-        assert classifier.min_score == 0.5
-        mock_classifier_pipeline.assert_called_once_with(
-            "image-classification",
-            "test_model_name",
-            model_kwargs={"cache_dir": cache_dir},
-        )
+    def test_eager_init(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(ImageClassifier, "download")
+        mock_load = mocker.patch.object(ImageClassifier, "load")
+        classifier = ImageClassifier("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
 
-    def test_min_score(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
+        assert classifier.model_name == "test_model_name"
+        mock_load.assert_called_once_with(test_arg="test_arg")
+
+    def test_lazy_init(self, mocker: MockerFixture) -> None:
+        mock_download = mocker.patch.object(ImageClassifier, "download")
+        mock_load = mocker.patch.object(ImageClassifier, "load")
+        face_model = ImageClassifier("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
+
+        assert face_model.model_name == "test_model_name"
+        mock_download.assert_called_once_with(test_arg="test_arg")
+        mock_load.assert_not_called()
+
+    def test_min_score(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
+        mocker.patch.object(ImageClassifier, "load")
         classifier = ImageClassifier("test_model_name", min_score=0.0)
-        classifier.min_score = 0.0
+        assert classifier.min_score == 0.0
+
+        classifier.model = mock.Mock()
+        classifier.model.return_value = self.classifier_preds
+
         all_labels = classifier.predict(pil_image)
         classifier.min_score = 0.5
         filtered_labels = classifier.predict(pil_image)
@@ -46,45 +69,94 @@ class TestImageClassifier:
 
 
 class TestCLIP:
-    def test_init(self, mock_st: mock.Mock) -> None:
-        CLIPSTEncoder("test_model_name", cache_dir="test_cache")
+    embedding = np.random.rand(512).astype(np.float32)
 
-        mock_st.assert_called_once_with("test_model_name", cache_folder="test_cache")
+    def test_eager_init(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(CLIPSTEncoder, "download")
+        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
+        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
 
-    def test_basic_image(self, pil_image: Image.Image, mock_st: mock.Mock) -> None:
+        assert clip_model.model_name == "test_model_name"
+        mock_load.assert_called_once_with(test_arg="test_arg")
+
+    def test_lazy_init(self, mocker: MockerFixture) -> None:
+        mock_download = mocker.patch.object(CLIPSTEncoder, "download")
+        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
+        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
+
+        assert clip_model.model_name == "test_model_name"
+        mock_download.assert_called_once_with(test_arg="test_arg")
+        mock_load.assert_not_called()
+
+    def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
+        mocker.patch.object(CLIPSTEncoder, "load")
         clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
+        clip_encoder.model = mock.Mock()
+        clip_encoder.model.encode.return_value = self.embedding
         embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        mock_st.assert_called_once()
+        clip_encoder.model.encode.assert_called_once()
 
-    def test_basic_text(self, mock_st: mock.Mock) -> None:
+    def test_basic_text(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(CLIPSTEncoder, "load")
         clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
+        clip_encoder.model = mock.Mock()
+        clip_encoder.model.encode.return_value = self.embedding
         embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        mock_st.assert_called_once()
+        clip_encoder.model.encode.assert_called_once()
 
 
 class TestFaceRecognition:
-    def test_init(self, mock_faceanalysis: mock.Mock) -> None:
-        FaceRecognizer("test_model_name", cache_dir="test_cache")
+    def test_eager_init(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceRecognizer, "download")
+        mock_load = mocker.patch.object(FaceRecognizer, "load")
+        face_model = FaceRecognizer("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
 
-        mock_faceanalysis.assert_called_once_with(
-            name="test_model_name",
-            root="test_cache",
-            allowed_modules=["detection", "recognition"],
-        )
+        assert face_model.model_name == "test_model_name"
+        mock_load.assert_called_once_with(test_arg="test_arg")
 
-    def test_basic(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
+    def test_lazy_init(self, mocker: MockerFixture) -> None:
+        mock_download = mocker.patch.object(FaceRecognizer, "download")
+        mock_load = mocker.patch.object(FaceRecognizer, "load")
+        face_model = FaceRecognizer("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
+
+        assert face_model.model_name == "test_model_name"
+        mock_download.assert_called_once_with(test_arg="test_arg")
+        mock_load.assert_not_called()
+
+    def test_set_min_score(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceRecognizer, "load")
+        face_recognizer = FaceRecognizer("test_model_name", cache_dir="test_cache", min_score=0.5)
+
+        assert face_recognizer.min_score == 0.5
+
+    def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
+
+        det_model = mock.Mock()
+        num_faces = 2
+        bbox = np.random.rand(num_faces, 4).astype(np.float32)
+        score = np.array([[0.67]] * num_faces).astype(np.float32)
+        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
+        det_model.detect.return_value = (np.concatenate([bbox, score], axis=-1), kpss)
+        face_recognizer.det_model = det_model
+
+        rec_model = mock.Mock()
+        embedding = np.random.rand(num_faces, 512).astype(np.float32)
+        rec_model.get_feat.return_value = embedding
+        face_recognizer.rec_model = rec_model
+
         faces = face_recognizer.predict(cv_image)
 
-        assert len(faces) == 2
+        assert len(faces) == num_faces
         for face in faces:
             assert face["imageHeight"] == 800
             assert face["imageWidth"] == 600
@@ -92,7 +164,8 @@ class TestFaceRecognition:
             assert len(face["embedding"]) == 512
             assert all([isinstance(num, float) for num in face["embedding"]])
 
-        mock_faceanalysis.assert_called_once()
+        det_model.detect.assert_called_once()
+        assert rec_model.get_feat.call_count == num_faces
 
 
 @pytest.mark.asyncio

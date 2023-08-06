@@ -9,7 +9,6 @@ from fastapi import Body, Depends, FastAPI
 from PIL import Image
 
 from .config import settings
-from .models.base import InferenceModel
 from .models.cache import ModelCache
 from .schemas import (
     EmbeddingResponse,
@@ -38,10 +37,7 @@ async def load_models() -> None:
 
     # Get all models
     for model_name, model_type in models:
-        if settings.eager_startup:
-            await app.state.model_cache.get(model_name, model_type)
-        else:
-            InferenceModel.from_model_type(model_type, model_name)
+        await app.state.model_cache.get(model_name, model_type, eager=settings.eager_startup)
 
 
 @app.on_event("startup")
