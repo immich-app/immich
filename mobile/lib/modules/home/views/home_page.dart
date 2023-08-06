@@ -11,6 +11,7 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -36,6 +37,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
+    final selectionAssetState = useState(AssetState.remote);
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
@@ -80,6 +82,9 @@ class HomePage extends HookConsumerWidget {
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
+        selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
+            ? AssetState.remote
+            : AssetState.local;
       }
 
       void onShareAssets() {
@@ -172,6 +177,28 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      void onUpload() async {
+        processing.value = true;
+        try {
+          final Set<Asset> assets = selection.value;
+          if (assets.length > 30) {
+            ImmichToast.show(
+              context: context,
+              msg: 'home_page_upload_err_limit'.tr(),
+              gravity: ToastGravity.BOTTOM,
+            );
+          } else {
+            processing.value = false;
+            selectionEnabledHook.value = false;
+            await ref
+                .read(manualUploadProvider.notifier)
+                .uploadAssets(context, assets);
+          }
+        } finally {
+          processing.value = false;
+        }
+      }
+
       void onAddToAlbum(Album album) async {
         processing.value = true;
         try {
@@ -253,7 +280,7 @@ class HomePage extends HookConsumerWidget {
         } else {
           refreshCount.value++;
           // set counter back to 0 if user does not request refresh again
-          Timer(const Duration(seconds: 2), () {
+          Timer(const Duration(seconds: 4), () {
             refreshCount.value = 0;
           });
         }
@@ -330,7 +357,9 @@ class HomePage extends HookConsumerWidget {
                 albums: albums,
                 sharedAlbums: sharedAlbums,
                 onCreateNewAlbum: onCreateNewAlbum,
+                onUpload: onUpload,
                 enabled: !processing.value,
+                selectionAssetState: selectionAssetState.value,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator())
           ],

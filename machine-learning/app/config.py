@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     min_face_score: float = 0.7
     test_full: bool = False
 
-    class Config(BaseSettings.Config):
+    class Config:
         env_prefix = "MACHINE_LEARNING_"
         case_sensitive = False
 

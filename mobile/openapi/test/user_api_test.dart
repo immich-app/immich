@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<UserResponseDto> deleteUser(String userId) async
+    //Future<UserResponseDto> deleteUser(String id) async
     test('test deleteUser', () async {
       // TODO
     });
@@ -42,12 +42,12 @@ void main() {
       // TODO
     });
 
-    //Future<Object> getProfileImage(String userId) async
+    //Future<Object> getProfileImage(String id) async
     test('test getProfileImage', () async {
       // TODO
     });
 
-    //Future<UserResponseDto> getUserById(String userId) async
+    //Future<UserResponseDto> getUserById(String id) async
     test('test getUserById', () async {
       // TODO
     });
@@ -57,7 +57,7 @@ void main() {
       // TODO
     });
 
-    //Future<UserResponseDto> restoreUser(String userId) async
+    //Future<UserResponseDto> restoreUser(String id) async
     test('test restoreUser', () async {
       // TODO
     });

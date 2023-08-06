@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { get } from 'svelte/store';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { BucketPosition, type AssetStore } from '$lib/stores/assets.store';
+  import { handleError } from '$lib/utils/handle-error';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import { handleError } from '../../../utils/handle-error';
-  import { BucketPosition } from '$lib/models/asset-grid-state';
-  import type { AssetStore } from '$lib/stores/assets.store';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { get } from 'svelte/store';
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -19,7 +18,7 @@
 
       const assetGridState = get(assetStore);
       for (const bucket of assetGridState.buckets) {
-        await assetStore.getAssetsByBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
           assetInteractionStore.addAssetToMultiselectGroup(asset);
         }

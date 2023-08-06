@@ -44,8 +44,8 @@ class DeleteAssetDto {
       final json = value.cast<String, dynamic>();
 
       return DeleteAssetDto(
-        ids: json[r'ids'] is Iterable
-            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
+        ids: json[r'ids'] is List
+            ? (json[r'ids'] as List).cast<String>()
             : const [],
       );
     }

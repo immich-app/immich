@@ -47,6 +47,24 @@ export enum WithProperty {
   SIDECAR = 'sidecar',
 }
 
+export enum TimeBucketSize {
+  DAY = 'DAY',
+  MONTH = 'MONTH',
+}
+
+export interface TimeBucketOptions {
+  size: TimeBucketSize;
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  albumId?: string;
+  personId?: string;
+}
+
+export interface TimeBucketItem {
+  timeBucket: string;
+  count: number;
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
@@ -69,6 +87,8 @@ export interface IAssetRepository {
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
+  getTimeBuckets(userId: string, options: TimeBucketOptions): Promise<TimeBucketItem[]>;
+  getByTimeBucket(userId: string, timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   remove(asset: AssetEntity): Promise<AssetEntity>;
   update(asset: Partial<AssetEntity>): Promise<AssetEntity>;
 }

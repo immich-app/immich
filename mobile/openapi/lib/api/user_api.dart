@@ -120,14 +120,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /user/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /user/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<Response> deleteUserWithHttpInfo(String userId,) async {
+  /// * [String] id (required):
+  Future<Response> deleteUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/{userId}'
-      .replaceAll('{userId}', userId);
+    final path = r'/user/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -152,9 +152,9 @@ class UserApi {
 
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<UserResponseDto?> deleteUser(String userId,) async {
-    final response = await deleteUserWithHttpInfo(userId,);
+  /// * [String] id (required):
+  Future<UserResponseDto?> deleteUser(String id,) async {
+    final response = await deleteUserWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -261,14 +261,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/profile-image/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /user/profile-image/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<Response> getProfileImageWithHttpInfo(String userId,) async {
+  /// * [String] id (required):
+  Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/profile-image/{userId}'
-      .replaceAll('{userId}', userId);
+    final path = r'/user/profile-image/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -293,9 +293,9 @@ class UserApi {
 
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<Object?> getProfileImage(String userId,) async {
-    final response = await getProfileImageWithHttpInfo(userId,);
+  /// * [String] id (required):
+  Future<Object?> getProfileImage(String id,) async {
+    final response = await getProfileImageWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -309,14 +309,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/info/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /user/info/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<Response> getUserByIdWithHttpInfo(String userId,) async {
+  /// * [String] id (required):
+  Future<Response> getUserByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/info/{userId}'
-      .replaceAll('{userId}', userId);
+    final path = r'/user/info/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -341,9 +341,9 @@ class UserApi {
 
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<UserResponseDto?> getUserById(String userId,) async {
-    final response = await getUserByIdWithHttpInfo(userId,);
+  /// * [String] id (required):
+  Future<UserResponseDto?> getUserById(String id,) async {
+    final response = await getUserByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -408,14 +408,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /user/{userId}/restore' operation and returns the [Response].
+  /// Performs an HTTP 'POST /user/{id}/restore' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<Response> restoreUserWithHttpInfo(String userId,) async {
+  /// * [String] id (required):
+  Future<Response> restoreUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/{userId}/restore'
-      .replaceAll('{userId}', userId);
+    final path = r'/user/{id}/restore'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -440,9 +440,9 @@ class UserApi {
 
   /// Parameters:
   ///
-  /// * [String] userId (required):
-  Future<UserResponseDto?> restoreUser(String userId,) async {
-    final response = await restoreUserWithHttpInfo(userId,);
+  /// * [String] id (required):
+  Future<UserResponseDto?> restoreUser(String id,) async {
+    final response = await restoreUserWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

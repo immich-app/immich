@@ -30,14 +30,11 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
-import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
@@ -163,15 +160,6 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, dto);
   }
 
-  @Post('/count-by-time-bucket')
-  @HttpCode(HttpStatus.OK)
-  getAssetCountByTimeBucket(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: GetAssetCountByTimeBucketDto,
-  ): Promise<AssetCountByTimeBucketResponseDto> {
-    return this.assetService.getAssetCountByTimeBucket(authUser, dto);
-  }
-
   /**
    * Get all AssetEntity belong to the user
    */
@@ -187,15 +175,6 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
   ): Promise<AssetResponseDto[]> {
     return this.assetService.getAllAssets(authUser, dto);
-  }
-
-  @Post('/time-bucket')
-  @HttpCode(HttpStatus.OK)
-  getAssetByTimeBucket(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: GetAssetByTimeBucketDto,
-  ): Promise<AssetResponseDto[]> {
-    return this.assetService.getAssetByTimeBucket(authUser, dto);
   }
 
   /**

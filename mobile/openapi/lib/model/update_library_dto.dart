@@ -73,8 +73,8 @@ class UpdateLibraryDto {
 
       return UpdateLibraryDto(
         id: mapValueOfType<String>(json, r'id')!,
-        importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+        importPaths: json[r'importPaths'] is List
+            ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         name: mapValueOfType<String>(json, r'name')!,

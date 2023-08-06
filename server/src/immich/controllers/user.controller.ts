@@ -2,14 +2,13 @@ import {
   AuthUserDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
-  CreateUserDto,
-  UpdateUserDto,
-  UserCountDto,
+  CreateUserDto as CreateDto,
+  UpdateUserDto as UpdateDto,
+  UserCountDto as CountDto,
   UserCountResponseDto,
   UserResponseDto,
   UserService,
 } from '@app/domain';
-import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
 import {
   Body,
   Controller,
@@ -30,6 +29,7 @@ import { Response as Res } from 'express';
 import { AdminRoute, Authenticated, AuthUser, PublicRoute } from '../app.guard';
 import { FileUploadInterceptor, Route } from '../app.interceptor';
 import { UseValidation } from '../app.utils';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')
 @Controller(Route.USER)
@@ -40,53 +40,53 @@ export class UserController {
 
   @Get()
   getAllUsers(@AuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
-    return this.service.getAllUsers(authUser, isAll);
+    return this.service.getAll(authUser, isAll);
   }
 
-  @Get('/info/:userId')
-  getUserById(@Param() { userId }: UserIdDto): Promise<UserResponseDto> {
-    return this.service.getUserById(userId);
+  @Get('info/:id')
+  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.get(id);
   }
 
   @Get('me')
   getMyUserInfo(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.service.getUserInfo(authUser);
+    return this.service.getMe(authUser);
   }
 
   @AdminRoute()
   @Post()
-  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.service.createUser(createUserDto);
+  createUser(@Body() createUserDto: CreateDto): Promise<UserResponseDto> {
+    return this.service.create(createUserDto);
   }
 
   @PublicRoute()
-  @Get('/count')
-  getUserCount(@Query() dto: UserCountDto): Promise<UserCountResponseDto> {
-    return this.service.getUserCount(dto);
+  @Get('count')
+  getUserCount(@Query() dto: CountDto): Promise<UserCountResponseDto> {
+    return this.service.getCount(dto);
   }
 
   @AdminRoute()
-  @Delete('/:userId')
-  deleteUser(@AuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
-    return this.service.deleteUser(authUser, userId);
+  @Delete(':id')
+  deleteUser(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.delete(authUser, id);
   }
 
   @AdminRoute()
-  @Post('/:userId/restore')
-  restoreUser(@AuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
-    return this.service.restoreUser(authUser, userId);
+  @Post(':id/restore')
+  restoreUser(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.restore(authUser, id);
   }
 
   // TODO: replace with @Put(':id')
   @Put()
-  updateUser(@AuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    return this.service.updateUser(authUser, updateUserDto);
+  updateUser(@AuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
+    return this.service.update(authUser, updateUserDto);
   }
 
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
-  @Post('/profile-image')
+  @Post('profile-image')
   createProfileImage(
     @AuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
@@ -94,10 +94,10 @@ export class UserController {
     return this.service.createProfileImage(authUser, fileInfo);
   }
 
-  @Get('/profile-image/:userId')
+  @Get('profile-image/:id')
   @Header('Cache-Control', 'private, no-cache, no-transform')
-  async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
-    const readableStream = await this.service.getUserProfileImage(userId);
+  async getProfileImage(@Param() { id }: UUIDParamDto, @Response({ passthrough: true }) res: Res): Promise<any> {
+    const readableStream = await this.service.getProfileImage(id);
     res.header('Content-Type', 'image/jpeg');
     return new StreamableFile(readableStream);
   }

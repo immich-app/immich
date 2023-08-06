@@ -14,22 +14,43 @@ from ..schemas import ModelType
 class InferenceModel(ABC):
     _model_type: ModelType
 
-    def __init__(self, model_name: str, cache_dir: Path | str | None = None, **model_kwargs: Any) -> None:
+    def __init__(
+        self, model_name: str, cache_dir: Path | str | None = None, eager: bool = True, **model_kwargs: Any
+    ) -> None:
         self.model_name = model_name
+        self._loaded = False
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
-
+        loader = self.load if eager else self.download
         try:
-            self.load(**model_kwargs)
+            loader(**model_kwargs)
         except (OSError, InvalidProtobuf):
             self.clear_cache()
-            self.load(**model_kwargs)
+            loader(**model_kwargs)
+
+    def download(self, **model_kwargs: Any) -> None:
+        if not self.cached:
+            self._download(**model_kwargs)
+
+    def load(self, **model_kwargs: Any) -> None:
+        self.download(**model_kwargs)
+        self._load(**model_kwargs)
+        self._loaded = True
+
+    def predict(self, inputs: Any) -> Any:
+        if not self._loaded:
+            self.load()
+        return self._predict(inputs)
 
     @abstractmethod
-    def load(self, **model_kwargs: Any) -> None:
+    def _predict(self, inputs: Any) -> Any:
         ...
 
     @abstractmethod
-    def predict(self, inputs: Any) -> Any:
+    def _download(self, **model_kwargs: Any) -> None:
+        ...
+
+    @abstractmethod
+    def _load(self, **model_kwargs: Any) -> None:
         ...
 
     @property
@@ -44,6 +65,10 @@ class InferenceModel(ABC):
     def cache_dir(self, cache_dir: Path) -> None:
         self._cache_dir = cache_dir
 
+    @property
+    def cached(self) -> bool:
+        return self.cache_dir.exists() and any(self.cache_dir.iterdir())
+
     @classmethod
     def from_model_type(cls, model_type: ModelType, model_name: str, **model_kwargs: Any) -> InferenceModel:
         subclasses = {subclass._model_type: subclass for subclass in cls.__subclasses__()}
@@ -55,7 +80,11 @@ class InferenceModel(ABC):
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             return
-        elif not rmtree.avoids_symlink_attacks:
+        if not rmtree.avoids_symlink_attacks:
             raise RuntimeError("Attempted to clear cache, but rmtree is not safe on this platform.")
 
-        rmtree(self.cache_dir)
+        if self.cache_dir.is_dir():
+            rmtree(self.cache_dir)
+        else:
+            self.cache_dir.unlink()
+        self.cache_dir.mkdir(parents=True, exist_ok=True)

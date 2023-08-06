@@ -80,26 +80,26 @@ class SystemConfigTemplateStorageOptionDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigTemplateStorageOptionDto(
-        dayOptions: json[r'dayOptions'] is Iterable
-            ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
+        dayOptions: json[r'dayOptions'] is List
+            ? (json[r'dayOptions'] as List).cast<String>()
             : const [],
-        hourOptions: json[r'hourOptions'] is Iterable
-            ? (json[r'hourOptions'] as Iterable).cast<String>().toList(growable: false)
+        hourOptions: json[r'hourOptions'] is List
+            ? (json[r'hourOptions'] as List).cast<String>()
             : const [],
-        minuteOptions: json[r'minuteOptions'] is Iterable
-            ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
+        minuteOptions: json[r'minuteOptions'] is List
+            ? (json[r'minuteOptions'] as List).cast<String>()
             : const [],
-        monthOptions: json[r'monthOptions'] is Iterable
-            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
+        monthOptions: json[r'monthOptions'] is List
+            ? (json[r'monthOptions'] as List).cast<String>()
             : const [],
-        presetOptions: json[r'presetOptions'] is Iterable
-            ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
+        presetOptions: json[r'presetOptions'] is List
+            ? (json[r'presetOptions'] as List).cast<String>()
             : const [],
-        secondOptions: json[r'secondOptions'] is Iterable
-            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
+        secondOptions: json[r'secondOptions'] is List
+            ? (json[r'secondOptions'] as List).cast<String>()
             : const [],
-        yearOptions: json[r'yearOptions'] is Iterable
-            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
+        yearOptions: json[r'yearOptions'] is List
+            ? (json[r'yearOptions'] as List).cast<String>()
             : const [],
       );
     }

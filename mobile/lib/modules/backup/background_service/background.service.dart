@@ -18,6 +18,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
@@ -34,7 +35,6 @@ class BackgroundService {
       MethodChannel('immich/foregroundChannel');
   static const MethodChannel _backgroundChannel =
       MethodChannel('immich/backgroundChannel');
-  static final NumberFormat numberFormat = NumberFormat("###0.##");
   static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
   CancellationToken? _cancellationToken;
@@ -48,10 +48,10 @@ class BackgroundService {
   int _assetsToUploadCount = 0;
   String _lastPrintedDetailContent = "";
   String? _lastPrintedDetailTitle;
-  late final _Throttle _throttledNotifiy =
-      _Throttle(_updateProgress, notifyInterval);
-  late final _Throttle _throttledDetailNotify =
-      _Throttle(_updateDetailProgress, notifyInterval);
+  late final ThrottleProgressUpdate _throttledNotifiy =
+      ThrottleProgressUpdate(_updateProgress, notifyInterval);
+  late final ThrottleProgressUpdate _throttledDetailNotify =
+      ThrottleProgressUpdate(_updateDetailProgress, notifyInterval);
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -439,7 +439,12 @@ class BackgroundService {
     _uploadedAssetsCount = 0;
     _updateNotification(
       title: "backup_background_service_in_progress_notification".tr(),
-      content: notifyTotalProgress ? _formatAssetBackupProgress() : null,
+      content: notifyTotalProgress
+          ? formatAssetBackupProgress(
+              _uploadedAssetsCount,
+              _assetsToUploadCount,
+            )
+          : null,
       progress: 0,
       max: notifyTotalProgress ? _assetsToUploadCount : 0,
       indeterminate: !notifyTotalProgress,
@@ -464,11 +469,6 @@ class BackgroundService {
     return ok;
   }
 
-  String _formatAssetBackupProgress() {
-    final int percent = (_uploadedAssetsCount * 100) ~/ _assetsToUploadCount;
-    return "$percent% ($_uploadedAssetsCount/$_assetsToUploadCount)";
-  }
-
   void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
     _uploadedAssetsCount++;
     _throttledNotifiy();
@@ -480,7 +480,7 @@ class BackgroundService {
 
   void _updateDetailProgress(String? title, int progress, int total) {
     final String msg =
-        total > 0 ? _humanReadableBytesProgress(progress, total) : "";
+        total > 0 ? humanReadableBytesProgress(progress, total) : "";
     // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
     if (msg != _lastPrintedDetailContent || _lastPrintedDetailTitle != title) {
       _lastPrintedDetailContent = msg;
@@ -500,7 +500,10 @@ class BackgroundService {
       progress: _uploadedAssetsCount,
       max: _assetsToUploadCount,
       title: title,
-      content: _formatAssetBackupProgress(),
+      content: formatAssetBackupProgress(
+        _uploadedAssetsCount,
+        _assetsToUploadCount,
+      ),
     );
   }
 
@@ -546,26 +549,6 @@ class BackgroundService {
     return true;
   }
 
-  /// prints percentage and absolute progress in useful (kilo/mega/giga)bytes
-  static String _humanReadableBytesProgress(int bytes, int bytesTotal) {
-    String unit = "KB"; // Kilobyte
-    if (bytesTotal >= 0x40000000) {
-      unit = "GB"; // Gigabyte
-      bytes >>= 20;
-      bytesTotal >>= 20;
-    } else if (bytesTotal >= 0x100000) {
-      unit = "MB"; // Megabyte
-      bytes >>= 10;
-      bytesTotal >>= 10;
-    } else if (bytesTotal < 0x400) {
-      return "$bytes / $bytesTotal B";
-    }
-    final int percent = (bytes * 100) ~/ bytesTotal;
-    final String done = numberFormat.format(bytes / 1024.0);
-    final String total = numberFormat.format(bytesTotal / 1024.0);
-    return "$percent% ($done/$total$unit)";
-  }
-
   Future<DateTime?> getIOSBackupLastRun(IosBackgroundTask task) async {
     if (!Platform.isIOS) {
       return null;
@@ -597,43 +580,6 @@ class BackgroundService {
 }
 
 enum IosBackgroundTask { fetch, processing }
-
-class _Throttle {
-  _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
-  final void Function(String?, int, int) _fun;
-  final int _interval;
-  int _invokedAt = 0;
-  Timer? _timer;
-
-  String? title;
-  int progress = 0;
-  int total = 0;
-
-  void call({
-    final String? title,
-    final int progress = 0,
-    final int total = 0,
-  }) {
-    final time = Timeline.now;
-    this.title = title ?? this.title;
-    this.progress = progress;
-    this.total = total;
-    if (time > _invokedAt + _interval) {
-      _timer?.cancel();
-      _onTimeElapsed();
-    } else {
-      _timer ??= Timer(Duration(microseconds: _interval), _onTimeElapsed);
-    }
-  }
-
-  void _onTimeElapsed() {
-    _invokedAt = Timeline.now;
-    _fun(title, progress, total);
-    _timer = null;
-    // clear title to not send/overwrite it next time if unchanged
-    title = null;
-  }
-}
 
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')

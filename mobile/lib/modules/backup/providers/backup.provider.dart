@@ -388,7 +388,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
-      await _updateServerInfo();
+      await updateServerInfo();
       await _updateBackupAssetCount();
     }
   }
@@ -465,7 +465,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onSetCurrentBackupAsset,
         _onBackupError,
       );
-      await _notifyBackgroundServiceCanRun();
+      await notifyBackgroundServiceCanRun();
     } else {
       openAppSettings();
     }
@@ -487,7 +487,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void cancelBackup() {
     if (state.backupProgress != BackUpProgressEnum.inProgress) {
-      _notifyBackgroundServiceCanRun();
+      notifyBackgroundServiceCanRun();
     }
     state.cancelToken.cancel();
     state = state.copyWith(
@@ -537,7 +537,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _updatePersistentAlbumsSelection();
     }
 
-    _updateServerInfo();
+    updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
@@ -546,7 +546,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  Future<void> _updateServerInfo() async {
+  Future<void> updateServerInfo() async {
     final serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
@@ -569,14 +569,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Check if this device is enable backup by the user
     if (state.autoBackup) {
-      // check if backup is alreayd in process - then return
+      // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        log.info("[_resumeBackup] Backup is already in progress - abort");
+        log.info("[_resumeBackup] Auto Backup is already in progress - abort");
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.inBackground) {
         log.info("[_resumeBackup] Background backup is running - abort");
+        return;
+      }
+
+      if (state.backupProgress == BackUpProgressEnum.manualInProgress) {
+        log.info("[_resumeBackup] Manual upload is running - abort");
         return;
       }
 
@@ -594,7 +599,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         .findAll();
     final List<BackupAlbum> excludedBackupAlbums = await _db.backupAlbums
         .filter()
-        .selectionEqualTo(BackupSelection.select)
+        .selectionEqualTo(BackupSelection.exclude)
         .findAll();
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
@@ -646,7 +651,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return result;
   }
 
-  Future<void> _notifyBackgroundServiceCanRun() async {
+  Future<void> notifyBackgroundServiceCanRun() async {
     const allowedStates = [
       AppStateEnum.inactive,
       AppStateEnum.paused,
@@ -655,6 +660,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       _backgroundService.releaseLock();
     }
+  }
+
+  BackUpProgressEnum get backupProgress => state.backupProgress;
+  void updateBackupProgress(BackUpProgressEnum backupProgress) {
+    state = state.copyWith(backupProgress: backupProgress);
   }
 }
 

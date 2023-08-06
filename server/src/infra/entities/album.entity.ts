@@ -27,6 +27,9 @@ export class AlbumEntity {
   @Column({ default: 'Untitled Album' })
   albumName!: string;
 
+  @Column({ type: 'text', default: '' })
+  description!: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 

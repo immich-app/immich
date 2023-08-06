@@ -44,8 +44,8 @@ class SetImportPathsDto {
       final json = value.cast<String, dynamic>();
 
       return SetImportPathsDto(
-        importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+        importPaths: json[r'importPaths'] is List
+            ? (json[r'importPaths'] as List).cast<String>()
             : const [],
       );
     }

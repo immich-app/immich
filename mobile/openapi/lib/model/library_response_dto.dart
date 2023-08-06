@@ -97,16 +97,16 @@ class LibraryResponseDto {
 
       return LibraryResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
-        importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+        importPaths: json[r'importPaths'] is List
+            ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        refreshedAt: mapDateTime(json, r'refreshedAt', r''),
+        refreshedAt: mapDateTime(json, r'refreshedAt', ''),
         type: LibraryType.fromJson(json[r'type'])!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;

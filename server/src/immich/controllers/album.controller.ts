@@ -5,8 +5,8 @@ import {
   AuthUserDto,
   BulkIdResponseDto,
   BulkIdsDto,
-  CreateAlbumDto,
-  UpdateAlbumDto,
+  CreateAlbumDto as CreateDto,
+  UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
 import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
@@ -34,7 +34,7 @@ export class AlbumController {
   }
 
   @Post()
-  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumDto) {
+  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto) {
     return this.service.create(authUser, dto);
   }
 
@@ -45,7 +45,7 @@ export class AlbumController {
   }
 
   @Patch(':id')
-  updateAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateAlbumDto) {
+  updateAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto) {
     return this.service.update(authUser, id, dto);
   }
 

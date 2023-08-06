@@ -30,7 +30,7 @@
   class="object-cover transition duration-300 {border
     ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
     : ''}"
-  class:rounded-lg={curve}
+  class:rounded-xl={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}
   class:opacity-0={!thumbhash && !complete}
@@ -52,7 +52,7 @@
     src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
     alt={altText}
     class="absolute top-0 object-cover"
-    class:rounded-lg={curve}
+    class:rounded-xl={curve}
     class:shadow-lg={shadow}
     class:rounded-full={circle}
     draggable="false"

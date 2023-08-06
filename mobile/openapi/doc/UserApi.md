@@ -11,13 +11,13 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createProfileImage**](UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 [**createUser**](UserApi.md#createuser) | **POST** /user | 
-[**deleteUser**](UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
+[**deleteUser**](UserApi.md#deleteuser) | **DELETE** /user/{id} | 
 [**getAllUsers**](UserApi.md#getallusers) | **GET** /user | 
 [**getMyUserInfo**](UserApi.md#getmyuserinfo) | **GET** /user/me | 
-[**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{userId} | 
-[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{userId} | 
+[**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
+[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
 [**getUserCount**](UserApi.md#getusercount) | **GET** /user/count | 
-[**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{userId}/restore | 
+[**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 [**updateUser**](UserApi.md#updateuser) | **PUT** /user | 
 
 
@@ -132,7 +132,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **deleteUser**
-> UserResponseDto deleteUser(userId)
+> UserResponseDto deleteUser(id)
 
 
 
@@ -155,10 +155,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = UserApi();
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.deleteUser(userId);
+    final result = api_instance.deleteUser(id);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->deleteUser: $e\n');
@@ -169,7 +169,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **userId** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -293,7 +293,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getProfileImage**
-> Object getProfileImage(userId)
+> Object getProfileImage(id)
 
 
 
@@ -316,10 +316,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = UserApi();
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getProfileImage(userId);
+    final result = api_instance.getProfileImage(id);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->getProfileImage: $e\n');
@@ -330,7 +330,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **userId** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -348,7 +348,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getUserById**
-> UserResponseDto getUserById(userId)
+> UserResponseDto getUserById(id)
 
 
 
@@ -371,10 +371,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = UserApi();
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getUserById(userId);
+    final result = api_instance.getUserById(id);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->getUserById: $e\n');
@@ -385,7 +385,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **userId** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -444,7 +444,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **restoreUser**
-> UserResponseDto restoreUser(userId)
+> UserResponseDto restoreUser(id)
 
 
 
@@ -467,10 +467,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = UserApi();
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.restoreUser(userId);
+    final result = api_instance.restoreUser(id);
     print(result);
 } catch (e) {
     print('Exception when calling UserApi->restoreUser: $e\n');
@@ -481,7 +481,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **userId** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 

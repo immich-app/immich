@@ -13,12 +13,14 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
-  export let isAlbumSelectionMode = false;
-  export let viewportWidth: number;
+  export let isSelectionMode = false;
+  export let viewport: Viewport;
+  export let singleSelect = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -45,7 +47,7 @@
     for (let group of assetsGroupByDate) {
       const justifiedLayoutResult = justifiedLayout(group.map(getAssetRatio), {
         boxSpacing: 2,
-        containerWidth: Math.floor(viewportWidth),
+        containerWidth: Math.floor(viewport.width),
         containerPadding: 0,
         targetRowHeightTolerance: 0.15,
         targetRowHeight: 235,
@@ -59,8 +61,8 @@
   })();
 
   $: {
-    if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
-      const heightDelta = assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+    if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
+      const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
         scrollTimeline(heightDelta);
       }
@@ -89,16 +91,12 @@
     assetsInDateGroup: AssetResponseDto[],
     dateGroupTitle: string,
   ) => {
-    if (isAlbumSelectionMode) {
+    if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
       return;
     }
 
-    if ($isMultiSelectState) {
-      assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle);
-    } else {
-      assetViewingStore.setAssetId(asset.id);
-    }
+    assetViewingStore.setAssetId(asset.id);
   };
 
   const selectAssetGroupHandler = (selectAssetGroupHandler: AssetResponseDto[], dateGroupTitle: string) => {
@@ -143,12 +141,7 @@
   };
 </script>
 
-<section
-  id="asset-group-by-date"
-  class="flex flex-wrap gap-x-12"
-  bind:clientHeight={actualBucketHeight}
-  bind:clientWidth={viewportWidth}
->
+<section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
     {@const dateGroupTitle = formatGroupTitle(DateTime.fromISO(assetsInDateGroup[0].fileCreatedAt).startOf('day'))}
     <!-- Asset Group By Date -->
@@ -170,7 +163,7 @@
         class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
-        {#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
+        {#if !singleSelect && ((hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle))}
           <div
             transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
             class="inline-block px-2 hover:cursor-pointer"

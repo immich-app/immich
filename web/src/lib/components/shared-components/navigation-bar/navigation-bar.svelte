@@ -132,10 +132,3 @@
     </div>
   </div>
 </section>
-
-<style>
-  :root {
-    /* Used by layouts to ensure proper spacing between navbar and content */
-    --navbar-height: calc(theme(spacing.18) + 4px);
-  }
-</style>

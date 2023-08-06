@@ -1,268 +1,239 @@
-import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
-import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto } from '@api';
+import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
+import { handleError } from '../utils/handle-error';
 
-export interface AssetStore {
-  setInitialState: (
-    viewportHeight: number,
-    viewportWidth: number,
-    data: AssetCountByTimeBucketResponseDto,
-    userId: string | undefined,
-  ) => void;
-  getAssetsByBucket: (bucket: string, position: BucketPosition) => Promise<void>;
-  updateBucketHeight: (bucket: string, actualBucketHeight: number) => number;
-  cancelBucketRequest: (token: AbortController, bucketDate: string) => Promise<void>;
-  getAdjacentAsset: (assetId: string, direction: 'next' | 'previous') => Promise<string | null>;
-  removeAsset: (assetId: string) => void;
-  updateAsset: (assetId: string, isFavorite: boolean) => void;
-  subscribe: (run: (value: AssetGridState) => void, invalidate?: (value?: AssetGridState) => void) => () => void;
+export enum BucketPosition {
+  Above = 'above',
+  Below = 'below',
+  Visible = 'visible',
+  Unknown = 'unknown',
 }
 
-export function createAssetStore(): AssetStore {
-  let _loadingBuckets: { [key: string]: boolean } = {};
-  let _assetGridState = new AssetGridState();
+export type AssetStoreOptions = AssetApiGetTimeBucketsRequest;
 
-  const { subscribe, set, update } = writable(new AssetGridState());
+export interface Viewport {
+  width: number;
+  height: number;
+}
 
-  subscribe((state) => {
-    _assetGridState = state;
-  });
+interface AssetLookup {
+  bucket: AssetBucket;
+  bucketIndex: number;
+  assetIndex: number;
+}
 
-  const _estimateViewportHeight = (assetCount: number, viewportWidth: number): number => {
-    // Ideally we would use the average aspect ratio for the photoset, however assume
-    // a normal landscape aspect ratio of 3:2, then discount for the likelihood we
-    // will be scaling down and coalescing.
-    const thumbnailHeight = 235;
-    const unwrappedWidth = (3 / 2) * assetCount * thumbnailHeight * (7 / 10);
-    const rows = Math.ceil(unwrappedWidth / viewportWidth);
-    const height = rows * thumbnailHeight;
-    return height;
-  };
+export class AssetBucket {
+  /**
+   * The DOM height of the bucket in pixel
+   * This value is first estimated by the number of asset and later is corrected as the user scroll
+   */
+  bucketHeight!: number;
+  bucketDate!: string;
+  assets!: AssetResponseDto[];
+  cancelToken!: AbortController | null;
+  position!: BucketPosition;
+}
 
-  const refreshLoadedAssets = (state: AssetGridState): void => {
-    state.loadedAssets = {};
-    state.buckets.forEach((bucket, bucketIndex) =>
-      bucket.assets.map((asset) => {
-        state.loadedAssets[asset.id] = bucketIndex;
-      }),
-    );
-  };
+const THUMBNAIL_HEIGHT = 235;
 
-  const setInitialState = (
-    viewportHeight: number,
-    viewportWidth: number,
-    data: AssetCountByTimeBucketResponseDto,
-    userId: string | undefined,
-  ) => {
-    set({
-      viewportHeight,
-      viewportWidth,
-      timelineHeight: 0,
-      buckets: data.buckets.map((bucket) => ({
+export class AssetStore {
+  private store$ = writable(this);
+  private assetToBucket: Record<string, AssetLookup> = {};
+
+  timelineHeight = 0;
+  buckets: AssetBucket[] = [];
+  assets: AssetResponseDto[] = [];
+
+  constructor(private options: AssetStoreOptions) {
+    this.store$.set(this);
+  }
+
+  subscribe = this.store$.subscribe;
+
+  async init(viewport: Viewport) {
+    const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
+
+    this.buckets = buckets.map((bucket) => {
+      const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
+      const rows = Math.ceil(unwrappedWidth / viewport.width);
+      const height = rows * THUMBNAIL_HEIGHT;
+
+      return {
         bucketDate: bucket.timeBucket,
-        bucketHeight: _estimateViewportHeight(bucket.count, viewportWidth),
+        bucketHeight: height,
         assets: [],
-        cancelToken: new AbortController(),
+        cancelToken: null,
         position: BucketPosition.Unknown,
-      })),
-      assets: [],
-      loadedAssets: {},
-      userId,
+      };
     });
 
-    update((state) => {
-      state.timelineHeight = state.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
-      return state;
-    });
-  };
+    this.timelineHeight = this.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
 
-  const getAssetsByBucket = async (bucket: string, position: BucketPosition) => {
+    this.emit(false);
+
+    let height = 0;
+    for (const bucket of this.buckets) {
+      if (height < viewport.height) {
+        height += bucket.bucketHeight;
+        this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
+        continue;
+      }
+
+      break;
+    }
+  }
+
+  async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
     try {
-      const currentBucketData = _assetGridState.buckets.find((b) => b.bucketDate === bucket);
-      if (currentBucketData?.assets && currentBucketData.assets.length > 0) {
-        update((state) => {
-          const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
-          state.buckets[bucketIndex].position = position;
-          return state;
-        });
+      const bucket = this.getBucketByDate(bucketDate);
+      if (!bucket) {
         return;
       }
 
-      _loadingBuckets = { ..._loadingBuckets, [bucket]: true };
-      const { data: assets } = await api.assetApi.getAssetByTimeBucket(
-        {
-          getAssetByTimeBucketDto: {
-            timeBucket: [bucket],
-            userId: _assetGridState.userId,
-            withoutThumbs: true,
-          },
-        },
-        { signal: currentBucketData?.cancelToken.signal },
+      bucket.position = position;
+
+      if (bucket.assets.length !== 0) {
+        this.emit(false);
+        return;
+      }
+
+      bucket.cancelToken = new AbortController();
+
+      const { data: assets } = await api.assetApi.getByTimeBucket(
+        { ...this.options, timeBucket: bucketDate },
+        { signal: bucket.cancelToken.signal },
       );
-      _loadingBuckets = { ..._loadingBuckets, [bucket]: false };
 
-      update((state) => {
-        const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
-        state.buckets[bucketIndex].assets = assets;
-        state.buckets[bucketIndex].position = position;
-        state.assets = state.buckets.flatMap((b) => b.assets);
-        refreshLoadedAssets(state);
-        return state;
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      if (e.name === 'CanceledError') {
-        return;
-      }
-      console.error('Failed to get asset for bucket ', bucket);
-      console.error(e);
+      bucket.assets = assets;
+      this.emit(true);
+    } catch (error) {
+      handleError(error, 'Failed to load assets');
     }
-  };
+  }
 
-  const removeAsset = (assetId: string) => {
-    update((state) => {
-      const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
-      const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
-      state.buckets[bucketIndex].assets.splice(assetIndex, 1);
+  cancelBucket(bucket: AssetBucket) {
+    bucket.cancelToken?.abort();
+  }
 
-      if (state.buckets[bucketIndex].assets.length === 0) {
-        _removeBucket(state.buckets[bucketIndex].bucketDate);
-      }
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
-    });
-  };
-
-  const _removeBucket = (bucketDate: string) => {
-    update((state) => {
-      const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
-      state.buckets.splice(bucketIndex, 1);
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
-    });
-  };
-
-  const updateBucketHeight = (bucket: string, actualBucketHeight: number): number => {
-    let scrollTimeline = false;
-    let heightDelta = 0;
-
-    update((state) => {
-      const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
-      // Update timeline height based on the new bucket height
-      const estimateBucketHeight = state.buckets[bucketIndex].bucketHeight;
-
-      heightDelta = actualBucketHeight - estimateBucketHeight;
-      state.timelineHeight += heightDelta;
-
-      scrollTimeline = state.buckets[bucketIndex].position == BucketPosition.Above;
-
-      state.buckets[bucketIndex].bucketHeight = actualBucketHeight;
-      state.buckets[bucketIndex].position = BucketPosition.Unknown;
-
-      return state;
-    });
-
-    if (scrollTimeline) {
-      return heightDelta;
+  updateBucket(bucketDate: string, height: number) {
+    const bucket = this.getBucketByDate(bucketDate);
+    if (!bucket) {
+      return 0;
     }
 
-    return 0;
-  };
+    const delta = height - bucket.bucketHeight;
+    const scrollTimeline = bucket.position == BucketPosition.Above;
 
-  const cancelBucketRequest = async (token: AbortController, bucketDate: string) => {
-    if (!_loadingBuckets[bucketDate]) {
+    bucket.bucketHeight = height;
+    bucket.position = BucketPosition.Unknown;
+
+    this.timelineHeight += delta;
+
+    this.emit(false);
+
+    return scrollTimeline ? delta : 0;
+  }
+
+  getBucketByDate(bucketDate: string): AssetBucket | null {
+    return this.buckets.find((bucket) => bucket.bucketDate === bucketDate) || null;
+  }
+
+  getBucketInfoForAssetId(assetId: string) {
+    return this.assetToBucket[assetId] || null;
+  }
+
+  getBucketIndexByAssetId(assetId: string) {
+    return this.assetToBucket[assetId]?.bucketIndex ?? null;
+  }
+
+  updateAsset(_asset: AssetResponseDto) {
+    const asset = this.assets.find((asset) => asset.id === _asset.id);
+    if (!asset) {
       return;
     }
 
-    token.abort();
+    Object.assign(asset, _asset);
 
-    update((state) => {
-      const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
-      state.buckets[bucketIndex].cancelToken = new AbortController();
-      return state;
-    });
-  };
+    this.emit(false);
+  }
 
-  const updateAsset = (assetId: string, isFavorite: boolean) => {
-    update((state) => {
-      const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
-      const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
-      state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
+  removeAsset(assetId: string) {
+    for (let i = 0; i < this.buckets.length; i++) {
+      const bucket = this.buckets[i];
+      for (let j = 0; j < bucket.assets.length; j++) {
+        const asset = bucket.assets[j];
+        if (asset.id !== assetId) {
+          continue;
+        }
 
-      state.assets = state.buckets.flatMap((b) => b.assets);
-      refreshLoadedAssets(state);
-      return state;
-    });
-  };
+        bucket.assets.splice(j, 1);
+        if (bucket.assets.length === 0) {
+          this.buckets.splice(i, 1);
+        }
 
-  const _getNextAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
-    const currentBucket = _assetGridState.buckets[currentBucketIndex];
-    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
-    if (assetIndex === -1) {
+        this.emit(true);
+        return;
+      }
+    }
+  }
+
+  async getPreviousAssetId(assetId: string): Promise<string | null> {
+    const info = this.getBucketInfoForAssetId(assetId);
+    if (!info) {
       return null;
     }
 
-    if (assetIndex + 1 < currentBucket.assets.length) {
-      return currentBucket.assets[assetIndex + 1];
+    const { bucket, assetIndex, bucketIndex } = info;
+
+    if (assetIndex !== 0) {
+      return bucket.assets[assetIndex - 1].id;
     }
 
-    const nextBucketIndex = currentBucketIndex + 1;
-    if (nextBucketIndex >= _assetGridState.buckets.length) {
+    if (bucketIndex === 0) {
       return null;
     }
 
-    const nextBucket = _assetGridState.buckets[nextBucketIndex];
-    await getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Unknown);
+    const previousBucket = this.buckets[bucketIndex - 1];
+    await this.loadBucket(previousBucket.bucketDate, BucketPosition.Unknown);
+    return previousBucket.assets.at(-1)?.id || null;
+  }
 
-    return nextBucket.assets[0] ?? null;
-  };
-
-  const _getPrevAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
-    const currentBucket = _assetGridState.buckets[currentBucketIndex];
-    const assetIndex = currentBucket.assets.findIndex(({ id }) => id == assetId);
-    if (assetIndex === -1) {
+  async getNextAssetId(assetId: string): Promise<string | null> {
+    const info = this.getBucketInfoForAssetId(assetId);
+    if (!info) {
       return null;
     }
 
-    if (assetIndex > 0) {
-      return currentBucket.assets[assetIndex - 1];
+    const { bucket, assetIndex, bucketIndex } = info;
+
+    if (assetIndex !== bucket.assets.length - 1) {
+      return bucket.assets[assetIndex + 1].id;
     }
 
-    const prevBucketIndex = currentBucketIndex - 1;
-    if (prevBucketIndex < 0) {
+    if (bucketIndex === this.buckets.length - 1) {
       return null;
     }
 
-    const prevBucket = _assetGridState.buckets[prevBucketIndex];
-    await getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Unknown);
+    const nextBucket = this.buckets[bucketIndex + 1];
+    await this.loadBucket(nextBucket.bucketDate, BucketPosition.Unknown);
+    return nextBucket.assets[0]?.id || null;
+  }
 
-    return prevBucket.assets[prevBucket.assets.length - 1] ?? null;
-  };
+  private emit(recalculate: boolean) {
+    if (recalculate) {
+      this.assets = this.buckets.flatMap(({ assets }) => assets);
 
-  const getAdjacentAsset = async (assetId: string, direction: 'next' | 'previous'): Promise<string | null> => {
-    const currentBucketIndex = _assetGridState.loadedAssets[assetId];
-    if (currentBucketIndex < 0 || currentBucketIndex >= _assetGridState.buckets.length) {
-      return null;
+      const assetToBucket: Record<string, AssetLookup> = {};
+      for (let i = 0; i < this.buckets.length; i++) {
+        const bucket = this.buckets[i];
+        for (let j = 0; j < bucket.assets.length; j++) {
+          const asset = bucket.assets[j];
+          assetToBucket[asset.id] = { bucket, bucketIndex: i, assetIndex: j };
+        }
+      }
+      this.assetToBucket = assetToBucket;
     }
 
-    const asset =
-      direction === 'next'
-        ? await _getNextAsset(currentBucketIndex, assetId)
-        : await _getPrevAsset(currentBucketIndex, assetId);
-
-    return asset?.id ?? null;
-  };
-
-  return {
-    setInitialState,
-    getAssetsByBucket,
-    removeAsset,
-    updateBucketHeight,
-    cancelBucketRequest,
-    getAdjacentAsset,
-    updateAsset,
-    subscribe,
-  };
+    this.store$.update(() => this);
+  }
 }

@@ -15,3 +15,6 @@ apt-get -yqq -f install ./jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETAR
 rm jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
 rm ffmpeg.sha256
 ldconfig /usr/lib/jellyfin-ffmpeg/lib
+
+ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/bin
+ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/bin

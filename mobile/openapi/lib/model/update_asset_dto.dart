@@ -95,8 +95,8 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        tagIds: json[r'tagIds'] is Iterable
-            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
+        tagIds: json[r'tagIds'] is List
+            ? (json[r'tagIds'] as List).cast<String>()
             : const [],
       );
     }

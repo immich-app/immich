@@ -381,6 +381,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.addListener(_positionListener);
     }
+    if (widget.preselectedAssets != null) {
+      _selectedAssets.addAll(widget.preselectedAssets!);
+    }
   }
 
   @override
