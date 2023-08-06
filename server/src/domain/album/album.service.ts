@@ -94,6 +94,7 @@ export class AlbumService {
     const album = await this.albumRepository.create({
       ownerId: authUser.id,
       albumName: dto.albumName,
+      description: dto.description,
       sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
       assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
@@ -118,6 +119,7 @@ export class AlbumService {
     const updatedAlbum = await this.albumRepository.update({
       id: album.id,
       albumName: dto.albumName,
+      description: dto.description,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
     });
 

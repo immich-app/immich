@@ -234,7 +234,7 @@ export class TypesenseRepository implements ISearchRepository {
       .documents()
       .search({
         q: query,
-        query_by: 'albumName',
+        query_by: ['albumName', 'description'].join(','),
         filter_by: this.getAlbumFilters(filters),
       });
 

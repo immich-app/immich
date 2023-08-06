@@ -1,11 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ValidateUUID } from '../../domain.util';
 
 export class UpdateAlbumDto {
   @IsOptional()
-  @ApiProperty()
+  @IsString()
   albumName?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @ValidateUUID({ optional: true })
   albumThumbnailAssetId?: string;

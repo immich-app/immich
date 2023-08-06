@@ -4,7 +4,7 @@ import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub } from '../fixtures';
+import { errorStub, uuidStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 const user1SharedUser = 'user1SharedUser';
@@ -193,12 +193,41 @@ describe(`${AlbumController.name} (e2e)`, () => {
         updatedAt: expect.any(String),
         ownerId: user1.userId,
         albumName: 'New album',
+        description: '',
         albumThumbnailAssetId: null,
         shared: false,
         sharedUsers: [],
         assets: [],
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
+      });
+    });
+  });
+
+  describe('PATCH /album/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .patch(`/album/${uuidStub.notFound}`)
+        .send({ albumName: 'New album name' });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should update an album', async () => {
+      const album = await api.albumApi.create(server, user1.accessToken, { albumName: 'New album' });
+      const { status, body } = await request(server)
+        .patch(`/album/${album.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({
+          albumName: 'New album name',
+          description: 'An album description',
+        });
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        ...album,
+        updatedAt: expect.any(String),
+        albumName: 'New album name',
+        description: 'An album description',
       });
     });
   });

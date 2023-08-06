@@ -44,6 +44,7 @@
   import { handleError } from '../../utils/handle-error';
   import { downloadArchive } from '../../utils/asset-utils';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import EditDescriptionModal from './edit-description-modal.svelte';
 
   export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -73,6 +74,7 @@
   let isShowAlbumOptions = false;
   let isShowThumbnailSelection = false;
   let isShowDeleteConfirmation = false;
+  let isEditingDescription = false;
 
   let backUrl = '/albums';
   let currentAlbumName = '';
@@ -298,6 +300,27 @@
   const handleSelectAll = () => {
     multiSelectAsset = new Set(album.assets);
   };
+
+  const descriptionUpdatedHandler = (description: string) => {
+    try {
+      api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          description,
+        },
+      });
+
+      album.description = description;
+    } catch (e) {
+      console.error('Error [descriptionUpdatedHandler] ', e);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: 'Error setting album description, check console for more details',
+      });
+    }
+
+    isEditingDescription = false;
+  };
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
@@ -405,6 +428,7 @@
   {/if}
 
   <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
+    <!-- ALBUM TITLE -->
     <input
       on:keydown={(e) => {
         if (e.key == 'Enter') {
@@ -421,8 +445,10 @@
       bind:value={album.albumName}
       disabled={!isOwned}
       bind:this={titleInput}
+      title="Edit Title"
     />
 
+    <!-- ALBUM SUMMARY -->
     {#if album.assetCount > 0}
       <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
         <p class="">{getDateRange()}</p>
@@ -447,6 +473,17 @@
         >
       </div>
     {/if}
+
+    <!-- ALBUM DESCRIPTION -->
+    <button
+      class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
+      on:click={() => (isEditingDescription = true)}
+      class:hover:border-gray-400={isOwned}
+      disabled={!isOwned}
+      title="Edit description"
+    >
+      {album.description || 'Add description'}
+    </button>
 
     {#if album.assetCount > 0 && !isShowAssetSelection}
       <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
@@ -490,6 +527,7 @@
 {#if isShowShareLinkModal}
   <CreateSharedLinkModal on:close={() => (isShowShareLinkModal = false)} shareType={SharedLinkType.Album} {album} />
 {/if}
+
 {#if isShowShareInfoModal}
   <ShareInfoModal on:close={() => (isShowShareInfoModal = false)} {album} on:user-deleted={sharedUserDeletedHandler} />
 {/if}
@@ -514,4 +552,12 @@
       <p>If this album is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>
+{/if}
+
+{#if isEditingDescription}
+  <EditDescriptionModal
+    {album}
+    on:close={() => (isEditingDescription = false)}
+    on:updated={({ detail: description }) => descriptionUpdatedHandler(description)}
+  />
 {/if}

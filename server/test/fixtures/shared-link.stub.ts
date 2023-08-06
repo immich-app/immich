@@ -68,6 +68,7 @@ const assetResponse: AssetResponseDto = {
 
 const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
+  description: '',
   albumThumbnailAssetId: null,
   createdAt: today,
   updatedAt: today,
@@ -146,6 +147,7 @@ export const sharedLinkStub = {
       ownerId: authStub.admin.id,
       owner: userStub.admin,
       albumName: 'Test Album',
+      description: '',
       createdAt: today,
       updatedAt: today,
       albumThumbnailAsset: null,

@@ -156,6 +156,7 @@ describe(AlbumService.name, () => {
 
       await expect(sut.create(authStub.admin, { albumName: 'Empty album' })).resolves.toEqual({
         albumName: 'Empty album',
+        description: '',
         albumThumbnailAssetId: null,
         assetCount: 0,
         assets: [],

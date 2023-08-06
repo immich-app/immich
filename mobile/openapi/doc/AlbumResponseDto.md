@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
+**description** | **String** |  | 
 **id** | **String** |  | 
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
