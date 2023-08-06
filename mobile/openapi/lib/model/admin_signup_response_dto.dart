@@ -32,11 +32,11 @@ class AdminSignupResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
-    other.createdAt == createdAt &&
-    other.email == email &&
-    other.firstName == firstName &&
-    other.id == id &&
-    other.lastName == lastName;
+     other.createdAt == createdAt &&
+     other.email == email &&
+     other.firstName == firstName &&
+     other.id == id &&
+     other.lastName == lastName;
 
   @override
   int get hashCode =>
@@ -68,7 +68,7 @@ class AdminSignupResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AdminSignupResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         id: mapValueOfType<String>(json, r'id')!,

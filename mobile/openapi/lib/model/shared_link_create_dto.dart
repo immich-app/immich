@@ -53,14 +53,14 @@ class SharedLinkCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
-    other.albumId == albumId &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.showExif == showExif &&
-    other.type == type;
+     other.albumId == albumId &&
+     other.allowDownload == allowDownload &&
+     other.allowUpload == allowUpload &&
+     other.assetIds == assetIds &&
+     other.description == description &&
+     other.expiresAt == expiresAt &&
+     other.showExif == showExif &&
+     other.type == type;
 
   @override
   int get hashCode =>
@@ -113,11 +113,11 @@ class SharedLinkCreateDto {
         albumId: mapValueOfType<String>(json, r'albumId'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+        assetIds: json[r'assetIds'] is List
+            ? (json[r'assetIds'] as List).cast<String>()
             : const [],
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,
       );

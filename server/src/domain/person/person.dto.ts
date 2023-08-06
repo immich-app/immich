@@ -1,4 +1,5 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
@@ -82,8 +83,12 @@ export class PersonResponseDto {
 }
 
 export class PeopleResponseDto {
+  @ApiProperty({ type: 'integer' })
   total!: number;
+
+  @ApiProperty({ type: 'integer' })
   visible!: number;
+
   people!: PersonResponseDto[];
 }
 

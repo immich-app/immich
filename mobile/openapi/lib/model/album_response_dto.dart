@@ -62,19 +62,19 @@ class AlbumResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    other.assetCount == assetCount &&
-    _deepEquality.equals(other.assets, assets) &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.id == id &&
-    other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
-    other.owner == owner &&
-    other.ownerId == ownerId &&
-    other.shared == shared &&
-    _deepEquality.equals(other.sharedUsers, sharedUsers) &&
-    other.updatedAt == updatedAt;
+     other.albumName == albumName &&
+     other.albumThumbnailAssetId == albumThumbnailAssetId &&
+     other.assetCount == assetCount &&
+     other.assets == assets &&
+     other.createdAt == createdAt &&
+     other.description == description &&
+     other.id == id &&
+     other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
+     other.owner == owner &&
+     other.ownerId == ownerId &&
+     other.shared == shared &&
+     other.sharedUsers == sharedUsers &&
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -134,15 +134,15 @@ class AlbumResponseDto {
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         description: mapValueOfType<String>(json, r'description')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
+        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;

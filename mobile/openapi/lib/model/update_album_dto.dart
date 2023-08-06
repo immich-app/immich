@@ -44,9 +44,9 @@ class UpdateAlbumDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    other.description == description;
+     other.albumName == albumName &&
+     other.albumThumbnailAssetId == albumThumbnailAssetId &&
+     other.description == description;
 
   @override
   int get hashCode =>

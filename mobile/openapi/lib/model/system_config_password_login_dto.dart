@@ -20,7 +20,7 @@ class SystemConfigPasswordLoginDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigPasswordLoginDto &&
-    other.enabled == enabled;
+     other.enabled == enabled;
 
   @override
   int get hashCode =>

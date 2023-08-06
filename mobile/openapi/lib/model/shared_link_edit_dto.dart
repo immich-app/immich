@@ -56,11 +56,11 @@ class SharedLinkEditDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.showExif == showExif;
+     other.allowDownload == allowDownload &&
+     other.allowUpload == allowUpload &&
+     other.description == description &&
+     other.expiresAt == expiresAt &&
+     other.showExif == showExif;
 
   @override
   int get hashCode =>
@@ -115,7 +115,7 @@ class SharedLinkEditDto {
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         showExif: mapValueOfType<bool>(json, r'showExif'),
       );
     }

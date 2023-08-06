@@ -29,8 +29,8 @@ class CheckDuplicateAssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CheckDuplicateAssetResponseDto &&
-    other.id == id &&
-    other.isExist == isExist;
+     other.id == id &&
+     other.isExist == isExist;
 
   @override
   int get hashCode =>

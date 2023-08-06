@@ -23,8 +23,8 @@ class QueueStatusDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueStatusDto &&
-    other.isActive == isActive &&
-    other.isPaused == isPaused;
+     other.isActive == isActive &&
+     other.isPaused == isPaused;
 
   @override
   int get hashCode =>

@@ -35,10 +35,10 @@ class AssetBulkUploadCheckResult {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
-    other.action == action &&
-    other.assetId == assetId &&
-    other.id == id &&
-    other.reason == reason;
+     other.action == action &&
+     other.assetId == assetId &&
+     other.id == id &&
+     other.reason == reason;
 
   @override
   int get hashCode =>

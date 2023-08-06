@@ -26,7 +26,7 @@ class UpdateTagDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateTagDto &&
-    other.name == name;
+     other.name == name;
 
   @override
   int get hashCode =>

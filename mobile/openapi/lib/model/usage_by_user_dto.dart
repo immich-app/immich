@@ -35,12 +35,12 @@ class UsageByUserDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
-    other.photos == photos &&
-    other.usage == usage &&
-    other.userFirstName == userFirstName &&
-    other.userId == userId &&
-    other.userLastName == userLastName &&
-    other.videos == videos;
+     other.photos == photos &&
+     other.usage == usage &&
+     other.userFirstName == userFirstName &&
+     other.userId == userId &&
+     other.userLastName == userLastName &&
+     other.videos == videos;
 
   @override
   int get hashCode =>

@@ -23,8 +23,8 @@ class DownloadResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadResponseDto &&
-    _deepEquality.equals(other.archives, archives) &&
-    other.totalSize == totalSize;
+     other.archives == archives &&
+     other.totalSize == totalSize;
 
   @override
   int get hashCode =>

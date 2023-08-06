@@ -29,10 +29,10 @@ class TagResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
-    other.id == id &&
-    other.name == name &&
-    other.type == type &&
-    other.userId == userId;
+     other.id == id &&
+     other.name == name &&
+     other.type == type &&
+     other.userId == userId;
 
   @override
   int get hashCode =>

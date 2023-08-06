@@ -20,7 +20,7 @@ class SystemConfigStorageTemplateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigStorageTemplateDto &&
-    other.template == template;
+     other.template == template;
 
   @override
   int get hashCode =>

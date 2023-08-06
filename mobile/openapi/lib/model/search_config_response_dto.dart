@@ -20,7 +20,7 @@ class SearchConfigResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchConfigResponseDto &&
-    other.enabled == enabled;
+     other.enabled == enabled;
 
   @override
   int get hashCode =>

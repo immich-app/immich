@@ -23,8 +23,8 @@ class CreateTagDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateTagDto &&
-    other.name == name &&
-    other.type == type;
+     other.name == name &&
+     other.type == type;
 
   @override
   int get hashCode =>

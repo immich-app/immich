@@ -5990,10 +5990,10 @@
             "type": "array"
           },
           "total": {
-            "type": "number"
+            "type": "integer"
           },
           "visible": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [

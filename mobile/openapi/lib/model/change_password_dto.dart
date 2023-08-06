@@ -23,8 +23,8 @@ class ChangePasswordDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-    other.newPassword == newPassword &&
-    other.password == password;
+     other.newPassword == newPassword &&
+     other.password == password;
 
   @override
   int get hashCode =>
