@@ -8,7 +8,7 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
-  constructor(protected config: SystemConfigFFmpegDto) {}
+  constructor(protected config: SystemConfigFFmpegDto) { }
 
   getOptions(stream: VideoStreamInfo) {
     const options = {
@@ -325,7 +325,7 @@ export class NVENCConfig extends BaseHWConfig {
 
   getFilterOptions(stream: VideoStreamInfo) {
     const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
-    options.push('hwupload_cuda');
+    options.push('format=nv12', 'hwupload_cuda');
     if (this.shouldScale(stream)) {
       options.push(`scale_cuda=${this.getScaling(stream)}`);
     }
