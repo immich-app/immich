@@ -6,7 +6,13 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
-enum BackUpProgressEnum { idle, inProgress, inBackground, done }
+enum BackUpProgressEnum {
+  idle,
+  inProgress,
+  manualInProgress,
+  inBackground,
+  done
+}
 
 class BackUpState {
   // enum

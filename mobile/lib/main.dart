@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
@@ -35,6 +36,7 @@ import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
@@ -166,7 +168,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
         ImmichLogger().flush();
         ref.watch(websocketProvider.notifier).disconnect();
-        ref.watch(backupProvider.notifier).cancelBackup();
+        ref.watch(manualUploadProvider.notifier).cancelBackup();
+        ref.read(backupProvider.notifier).cancelBackup();
 
         break;
 
@@ -203,6 +206,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+    await ref.read(localNotificationService).setup();
   }
 
   @override

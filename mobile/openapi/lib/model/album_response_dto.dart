@@ -18,6 +18,7 @@ class AlbumResponseDto {
     required this.assetCount,
     this.assets = const [],
     required this.createdAt,
+    required this.description,
     required this.id,
     this.lastModifiedAssetTimestamp,
     required this.owner,
@@ -36,6 +37,8 @@ class AlbumResponseDto {
   List<AssetResponseDto> assets;
 
   DateTime createdAt;
+
+  String description;
 
   String id;
 
@@ -64,6 +67,7 @@ class AlbumResponseDto {
      other.assetCount == assetCount &&
      other.assets == assets &&
      other.createdAt == createdAt &&
+     other.description == description &&
      other.id == id &&
      other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
      other.owner == owner &&
@@ -80,6 +84,7 @@ class AlbumResponseDto {
     (assetCount.hashCode) +
     (assets.hashCode) +
     (createdAt.hashCode) +
+    (description.hashCode) +
     (id.hashCode) +
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
     (owner.hashCode) +
@@ -89,7 +94,7 @@ class AlbumResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -102,6 +107,7 @@ class AlbumResponseDto {
       json[r'assetCount'] = this.assetCount;
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'description'] = this.description;
       json[r'id'] = this.id;
     if (this.lastModifiedAssetTimestamp != null) {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
@@ -128,14 +134,15 @@ class AlbumResponseDto {
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        description: mapValueOfType<String>(json, r'description')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
+        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;
@@ -188,6 +195,7 @@ class AlbumResponseDto {
     'assetCount',
     'assets',
     'createdAt',
+    'description',
     'id',
     'owner',
     'ownerId',

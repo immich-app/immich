@@ -56,9 +56,15 @@ class SystemConfigImmichVersion {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigImmichVersion(
-        major: num.parse('${json[r'major']}'),
-        minor: num.parse('${json[r'minor']}'),
-        patch_: num.parse('${json[r'patch']}'),
+        major: json[r'major'] == null
+            ? null
+            : num.parse(json[r'major'].toString()),
+        minor: json[r'minor'] == null
+            ? null
+            : num.parse(json[r'minor'].toString()),
+        patch_: json[r'patch'] == null
+            ? null
+            : num.parse(json[r'patch'].toString()),
       );
     }
     return null;

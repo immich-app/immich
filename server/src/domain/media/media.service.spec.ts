@@ -1,4 +1,11 @@
-import { AssetType, SystemConfigKey, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import {
+  AssetType,
+  SystemConfigKey,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -111,6 +118,14 @@ describe(MediaService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalledWith();
     });
 
+    it('should skip video thumbnail generation if no video stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.noVideoStreams);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalledWith();
+    });
+
     it('should generate a thumbnail for an image', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
@@ -127,15 +142,43 @@ describe(MediaService.name, () => {
     });
 
     it('should generate a thumbnail for a video', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.extractVideoThumbnail).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/asset-id.jpeg',
-        1440,
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
+        inputOptions: [],
+        outputOptions: [
+          '-ss 00:00:00.000',
+          '-frames:v 1',
+          '-v verbose',
+          '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p',
+        ],
+        twoPass: false,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
+      });
+    });
+
+    it('should tonemap thumbnail for hdr video', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
+        inputOptions: [],
+        outputOptions: [
+          '-ss 00:00:00.000',
+          '-frames:v 1',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
+        ],
+        twoPass: false,
+      });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
@@ -273,6 +316,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -311,6 +355,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -334,7 +379,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -361,6 +406,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -385,7 +431,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=720:-2',
+            '-vf scale=720:-2,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -410,7 +456,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -435,7 +481,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -484,7 +530,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
             '-maxrate 4500k',
@@ -514,7 +560,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-b:v 3104k',
             '-minrate 1552k',
@@ -541,7 +587,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -570,7 +616,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
             '-row-mt 1',
             '-b:v 3104k',
@@ -601,7 +647,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 2',
             '-row-mt 1',
             '-crf 23',
@@ -631,7 +677,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-row-mt 1',
             '-crf 23',
             '-b:v 0',
@@ -660,7 +706,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
             '-row-mt 1',
             '-threads 2',
@@ -688,7 +734,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-threads 2',
             '-x264-params "pools=none"',
@@ -716,7 +762,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -744,7 +790,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-threads 2',
             '-x265-params "pools=none"',
@@ -775,7 +821,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -844,7 +890,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-b:v 6897k',
             '-maxrate 10000k',
@@ -884,7 +930,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
             '-maxrate 10000k',
@@ -920,7 +966,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
           ],
@@ -957,7 +1003,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-cq:v 23',
           ],
           twoPass: false,
@@ -990,7 +1036,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
           ],
@@ -1086,10 +1132,10 @@ describe(MediaService.name, () => {
             '-extbrc 1',
             '-refs 5',
             '-bf 7',
-            '-low_power 1',
             '-acodec aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-low_power 1',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
@@ -1269,7 +1315,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -1286,5 +1332,80 @@ describe(MediaService.name, () => {
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
+  });
+
+  it('should tonemap when policy is required and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.REQUIRED }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should tonemap when policy is optimal and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should set npl to 250 for reinhard and mobius tone-mapping algorithms', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TONEMAP, value: ToneMapping.MOBIUS }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
   });
 });

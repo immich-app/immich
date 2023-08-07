@@ -115,7 +115,7 @@ class SharedLinkEditDto {
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         showExif: mapValueOfType<bool>(json, r'showExif'),
       );
     }

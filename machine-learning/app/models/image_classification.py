@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 
+from huggingface_hub import snapshot_download
 from PIL.Image import Image
 from transformers.pipelines import pipeline
 
@@ -22,14 +23,19 @@ class ImageClassifier(InferenceModel):
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def load(self, **model_kwargs: Any) -> None:
+    def _download(self, **model_kwargs: Any) -> None:
+        snapshot_download(
+            cache_dir=self.cache_dir, repo_id=self.model_name, allow_patterns=["*.bin", "*.json", "*.txt"]
+        )
+
+    def _load(self, **model_kwargs: Any) -> None:
         self.model = pipeline(
             self.model_type.value,
             self.model_name,
             model_kwargs={"cache_dir": self.cache_dir, **model_kwargs},
         )
 
-    def predict(self, image: Image) -> list[str]:
+    def _predict(self, image: Image) -> list[str]:
         predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
         tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
 

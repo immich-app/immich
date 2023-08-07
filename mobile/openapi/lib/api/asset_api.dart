@@ -677,12 +677,14 @@ class AssetApi {
   ///
   /// * [String] albumId:
   ///
+  /// * [String] personId:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [String] key:
-  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, bool? isArchived, bool? isFavorite, String? key, }) async {
+  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-bucket';
 
@@ -699,6 +701,9 @@ class AssetApi {
     }
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
+    if (personId != null) {
+      queryParams.addAll(_queryParams('', 'personId', personId));
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
@@ -735,13 +740,15 @@ class AssetApi {
   ///
   /// * [String] albumId:
   ///
+  /// * [String] personId:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [String] key:
-  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, bool? isArchived, bool? isFavorite, String? key, }) async {
-    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
+  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
+    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1056,12 +1063,14 @@ class AssetApi {
   ///
   /// * [String] albumId:
   ///
+  /// * [String] personId:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [String] key:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, bool? isArchived, bool? isFavorite, String? key, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-buckets';
 
@@ -1078,6 +1087,9 @@ class AssetApi {
     }
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
+    if (personId != null) {
+      queryParams.addAll(_queryParams('', 'personId', personId));
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
@@ -1111,13 +1123,15 @@ class AssetApi {
   ///
   /// * [String] albumId:
   ///
+  /// * [String] personId:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [String] key:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, bool? isArchived, bool? isFavorite, String? key, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
+  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
+    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

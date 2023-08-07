@@ -44,8 +44,8 @@ class AssetIdsDto {
       final json = value.cast<String, dynamic>();
 
       return AssetIdsDto(
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+        assetIds: json[r'assetIds'] is List
+            ? (json[r'assetIds'] as List).cast<String>()
             : const [],
       );
     }

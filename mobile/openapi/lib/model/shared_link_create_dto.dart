@@ -113,11 +113,11 @@ class SharedLinkCreateDto {
         albumId: mapValueOfType<String>(json, r'albumId'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+        assetIds: json[r'assetIds'] is List
+            ? (json[r'assetIds'] as List).cast<String>()
             : const [],
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,
       );

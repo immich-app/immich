@@ -9,7 +9,7 @@ import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, VP9Config } from './media.util';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -70,10 +70,19 @@ export class MediaService {
           size: JPEG_THUMBNAIL_SIZE,
           format: 'jpeg',
         });
+        this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
-        this.logger.log('Generating video thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+        const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainVideoStream(videoStreams);
+        if (!mainVideoStream) {
+          this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+          return false;
+        }
+        const { ffmpeg } = await this.configCore.getConfig();
+        const config = { ...ffmpeg, targetResolution: JPEG_THUMBNAIL_SIZE.toString(), twoPass: false };
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream);
+        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
     }
@@ -226,10 +235,10 @@ export class MediaService {
         return true;
 
       case TranscodePolicy.REQUIRED:
-        return !allTargetsMatching;
+        return !allTargetsMatching || videoStream.isHDR;
 
       case TranscodePolicy.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetRes;
+        return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
 
       default:
         return false;

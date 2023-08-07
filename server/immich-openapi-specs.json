@@ -1685,6 +1685,15 @@
             }
           },
           {
+            "name": "personId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1780,6 +1789,15 @@
           },
           {
             "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
             "required": false,
             "in": "query",
             "schema": {
@@ -4628,7 +4646,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.71.0",
+    "version": "1.72.2",
     "contact": {}
   },
   "tags": [],
@@ -4800,6 +4818,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -4832,6 +4853,7 @@
           "id",
           "ownerId",
           "albumName",
+          "description",
           "createdAt",
           "updatedAt",
           "albumThumbnailAssetId",
@@ -5323,6 +5345,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "description": {
+            "type": "string"
           },
           "sharedWithUserIds": {
             "items": {
@@ -6043,10 +6068,10 @@
             "type": "array"
           },
           "total": {
-            "type": "number"
+            "type": "integer"
           },
           "visible": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -6680,6 +6705,9 @@
           "threads": {
             "type": "integer"
           },
+          "tonemap": {
+            "$ref": "#/components/schemas/ToneMapping"
+          },
           "transcode": {
             "$ref": "#/components/schemas/TranscodePolicy"
           },
@@ -6694,6 +6722,7 @@
           "targetAudioCodec",
           "transcode",
           "accel",
+          "tonemap",
           "preset",
           "targetResolution",
           "maxBitrate",
@@ -6956,6 +6985,15 @@
         ],
         "type": "string"
       },
+      "ToneMapping": {
+        "enum": [
+          "hable",
+          "mobius",
+          "reinhard",
+          "disabled"
+        ],
+        "type": "string"
+      },
       "TranscodeHWAccel": {
         "enum": [
           "nvenc",
@@ -6981,6 +7019,9 @@
           },
           "albumThumbnailAssetId": {
             "format": "uuid",
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         },

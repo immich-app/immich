@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // ToneMapping tonemap
+    test('to test the property `tonemap`', () async {
+      // TODO
+    });
+
     // TranscodePolicy transcode
     test('to test the property `transcode`', () async {
       // TODO
