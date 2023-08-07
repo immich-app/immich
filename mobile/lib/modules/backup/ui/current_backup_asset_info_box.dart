@@ -4,8 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -13,8 +15,14 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
   const CurrentUploadingAssetInfoBox({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var asset = ref.watch(backupProvider).currentUploadAsset;
-    var uploadProgress = ref.watch(backupProvider).progressInPercentage;
+    var isManualUpload = ref.watch(backupProvider).backupProgress ==
+        BackUpProgressEnum.manualInProgress;
+    var asset = !isManualUpload
+        ? ref.watch(backupProvider).currentUploadAsset
+        : ref.watch(manualUploadProvider).currentUploadAsset;
+    var uploadProgress = !isManualUpload
+        ? ref.watch(backupProvider).progressInPercentage
+        : ref.watch(manualUploadProvider).progressInPercentage;
     final isShowThumbnail = useState(false);
 
     String getAssetCreationDate() {

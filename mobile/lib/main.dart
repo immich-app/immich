@@ -168,9 +168,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
         ImmichLogger().flush();
         ref.watch(websocketProvider.notifier).disconnect();
-        ref.watch(manualUploadProvider.notifier).cancelBackup();
         ref.read(backupProvider.notifier).cancelBackup();
-
         break;
 
       case AppLifecycleState.paused:
@@ -181,6 +179,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
         ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
+        ref.watch(manualUploadProvider.notifier).cancelBackup();
         break;
     }
   }
