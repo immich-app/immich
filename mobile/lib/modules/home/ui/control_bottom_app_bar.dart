@@ -10,6 +10,8 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 
+import 'asset_grid/immich_asset_grid_view.dart';
+
 class ControlBottomAppBar extends ConsumerWidget {
   final void Function() onShare;
   final void Function() onFavorite;
@@ -21,8 +23,10 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
+  final List<Asset>? allAssets;
   final bool enabled;
   final AssetState selectionAssetState;
+  final ImmichAssetGridSelectionListener? listener;
 
   const ControlBottomAppBar({
     Key? key,
@@ -35,14 +39,24 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
+    this.allAssets,
     this.selectionAssetState = AssetState.remote,
     this.enabled = true,
+    this.listener,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
     var hasRemote = selectionAssetState == AssetState.remote;
+
+    void selectAll() {
+      if (listener != null && allAssets != null) {
+        listener!.call(true, allAssets!.toSet());
+      }
+    }
 
     Widget renderActionButtons() {
       return Row(
@@ -64,14 +78,15 @@ class ControlBottomAppBar extends ConsumerWidget {
             iconData: Icons.delete_outline_rounded,
             label: "control_bottom_app_bar_delete".tr(),
             onPressed: enabled
-                ? () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return DeleteDialog(
-                          onDelete: onDelete,
-                        );
-                      },
-                    )
+                ? () =>
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return DeleteDialog(
+                      onDelete: onDelete,
+                    );
+                  },
+                )
                 : null,
           ),
           if (!hasRemote)
@@ -79,14 +94,15 @@ class ControlBottomAppBar extends ConsumerWidget {
               iconData: Icons.backup_outlined,
               label: "Upload",
               onPressed: enabled
-                  ? () => showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return UploadDialog(
-                            onUpload: onUpload,
-                          );
-                        },
-                      )
+                  ? () =>
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return UploadDialog(
+                        onUpload: onUpload,
+                      );
+                    },
+                  )
                   : null,
             ),
           if (hasRemote)
@@ -95,6 +111,11 @@ class ControlBottomAppBar extends ConsumerWidget {
               label: "control_bottom_app_bar_archive".tr(),
               onPressed: enabled ? onArchive : null,
             ),
+          ControlBoxButton(
+            iconData: Icons.select_all,
+            label: "control_bottom_app_bar_archive".tr(),
+            onPressed: enabled ? selectAll : null,
+          ),
         ],
       );
     }
@@ -104,10 +125,8 @@ class ControlBottomAppBar extends ConsumerWidget {
       minChildSize: 0.18,
       maxChildSize: hasRemote ? 0.57 : 0.18,
       snap: true,
-      builder: (
-        BuildContext context,
-        ScrollController scrollController,
-      ) {
+      builder: (BuildContext context,
+          ScrollController scrollController,) {
         return Card(
           color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
           surfaceTintColor: Colors.transparent,
@@ -192,7 +211,9 @@ class AddToAlbumTitleRow extends StatelessWidget {
             label: Text(
               "common_create_new_album",
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: Theme
+                    .of(context)
+                    .primaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

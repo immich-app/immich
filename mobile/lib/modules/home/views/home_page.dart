@@ -50,7 +50,7 @@ class HomePage extends HookConsumerWidget {
     final processing = useState(false);
 
     useEffect(
-      () {
+          () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         ref.read(albumProvider.notifier).getAllAlbums();
@@ -76,10 +76,8 @@ class HomePage extends HookConsumerWidget {
     }
 
     Widget buildBody() {
-      void selectionListener(
-        bool multiselect,
-        Set<Asset> selectedAssets,
-      ) {
+      void selectionListener(bool multiselect,
+          Set<Asset> selectedAssets,) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
         selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
@@ -257,7 +255,7 @@ class HomePage extends HookConsumerWidget {
             return;
           }
           final result =
-              await albumService.createAlbumWithGeneratedName(assets);
+          await albumService.createAlbumWithGeneratedName(assets);
 
           if (result != null) {
             ref.watch(albumProvider.notifier).getAllAlbums();
@@ -303,7 +301,9 @@ class HomePage extends HookConsumerWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: Theme.of(context).primaryColor,
+                    color: Theme
+                        .of(context)
+                        .primaryColor,
                   ),
                 ).tr(),
               ),
@@ -335,31 +335,41 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           children: [
             ref.watch(assetsProvider(currentUser?.isarId)).when(
-                  data: (data) => data.isEmpty
-                      ? buildLoadingIndicator()
-                      : ImmichAssetGrid(
-                          renderList: data,
-                          listener: selectionListener,
-                          selectionActive: selectionEnabledHook.value,
-                          onRefresh: refreshAssets,
-                          topWidget: const MemoryLane(),
-                        ),
-                  error: (error, _) => Center(child: Text(error.toString())),
-                  loading: buildLoadingIndicator,
-                ),
+              data: (data) =>
+              data.isEmpty
+                  ? buildLoadingIndicator()
+                  : ImmichAssetGrid(
+                renderList: data,
+                listener: selectionListener,
+                preselectedAssets: selection.value,
+                selectionActive: selectionEnabledHook.value,
+                onRefresh: refreshAssets,
+                topWidget: const MemoryLane(),
+              ),
+              error: (error, _) => Center(child: Text(error.toString())),
+              loading: buildLoadingIndicator,
+            ),
             if (selectionEnabledHook.value)
-              ControlBottomAppBar(
-                onShare: onShareAssets,
-                onFavorite: onFavoriteAssets,
-                onArchive: onArchiveAsset,
-                onDelete: onDelete,
-                onAddToAlbum: onAddToAlbum,
-                albums: albums,
-                sharedAlbums: sharedAlbums,
-                onCreateNewAlbum: onCreateNewAlbum,
-                onUpload: onUpload,
-                enabled: !processing.value,
-                selectionAssetState: selectionAssetState.value,
+              ref.watch(assetsProvider(currentUser?.isarId)).when(
+                data: (data) =>
+                data.isEmpty
+                    ? buildLoadingIndicator() : ControlBottomAppBar(
+                  listener: selectionListener,
+                  allAssets: data.loadAssets(0, data.totalAssets),
+                  onShare: onShareAssets,
+                  onFavorite: onFavoriteAssets,
+                  onArchive: onArchiveAsset,
+                  onDelete: onDelete,
+                  onAddToAlbum: onAddToAlbum,
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onCreateNewAlbum: onCreateNewAlbum,
+                  onUpload: onUpload,
+                  enabled: !processing.value,
+                  selectionAssetState: selectionAssetState.value,
+                ),
+                error: (error, _) => Center(child: Text(error.toString())),
+                loading: buildLoadingIndicator,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator())
           ],

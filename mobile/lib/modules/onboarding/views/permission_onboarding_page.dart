@@ -159,6 +159,9 @@ class PermissionOnboardingPage extends HookConsumerWidget {
       case PermissionStatus.permanentlyDenied:
         child = buildPermissionDenied();
         break;
+      default:
+        child = buildRequestPermission();
+        break;
     }
 
     return Scaffold(
@@ -183,7 +186,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                 ),
                 TextButton(
                   child: const Text('permission_onboarding_log_out').tr(),
-                  onPressed: () { 
+                  onPressed: () {
                     ref.read(authenticationProvider.notifier).logout();
                     AutoRouter.of(context).replace(
                       const LoginRoute(),

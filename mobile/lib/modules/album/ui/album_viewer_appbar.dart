@@ -13,18 +13,22 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
+import '../../home/ui/asset_grid/immich_asset_grid_view.dart';
+import '../services/album.service.dart';
+
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {
-  const AlbumViewerAppbar({
-    Key? key,
-    required this.album,
-    required this.userId,
-    required this.selected,
-    required this.selectionDisabled,
-    required this.titleFocusNode,
-    this.onAddPhotos,
-    this.onAddUsers,
-  }) : super(key: key);
+  const AlbumViewerAppbar(
+      {Key? key,
+      required this.album,
+      required this.userId,
+      required this.selected,
+      required this.selectionDisabled,
+      required this.titleFocusNode,
+      this.onAddPhotos,
+      this.onAddUsers,
+      this.listener})
+      : super(key: key);
 
   final Album album;
   final String userId;
@@ -33,6 +37,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
   final FocusNode titleFocusNode;
   final Function(Album album)? onAddPhotos;
   final Function(Album album)? onAddUsers;
+  final ImmichAssetGridSelectionListener? listener;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -151,6 +156,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
     }
 
+    void selectAll() {
+      listener?.call(true, album.assets.toSet());
+    }
+
     void buildBottomSheet() {
       showModalBottomSheet(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -236,6 +245,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
       title: selected.isNotEmpty ? Text('${selected.length}') : null,
       centerTitle: false,
       actions: [
+        IconButton(
+          icon: const Icon(Icons.select_all),
+          onPressed: selectAll,
+        ),
         if (album.isRemote)
           IconButton(
             splashRadius: 25,

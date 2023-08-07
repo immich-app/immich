@@ -234,6 +234,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           selectionDisabled: disableSelection,
           onAddPhotos: onAddPhotosPressed,
           onAddUsers: onAddUsersPressed,
+          listener: selectionListener,
         ),
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
@@ -248,6 +249,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             child: ImmichAssetGrid(
               renderList: data.renderList,
               listener: selectionListener,
+              preselectedAssets: selection.value,
               selectionActive: multiSelectEnabled.value,
               showMultiSelectIndicator: false,
               topWidget: Column(
