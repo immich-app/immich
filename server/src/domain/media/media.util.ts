@@ -161,8 +161,12 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getToneMapping() {
     const colors = this.getColors();
+    // npl stands for nominal peak luminance
+    // lower npl values result in brighter output (compensating for dimmer screens)
+    // since hable already outputs a darker image, we use a lower npl value for it
+    const npl = this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
     return [
-      'zscale=t=linear',
+      `zscale=t=linear:npl=${npl}`,
       `tonemap=${this.config.tonemap}:desat=0`,
       `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
     ];

@@ -1,4 +1,11 @@
-import { AssetType, SystemConfigKey, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import {
+  AssetType,
+  SystemConfigKey,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -168,7 +175,7 @@ describe(MediaService.name, () => {
           '-ss 00:00:00.000',
           '-frames:v 1',
           '-v verbose',
-          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -1343,7 +1350,7 @@ describe(MediaService.name, () => {
           '-movflags faststart',
           '-fps_mode passthrough',
           '-v verbose',
-          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
           '-crf 23',
         ],
@@ -1368,7 +1375,32 @@ describe(MediaService.name, () => {
           '-movflags faststart',
           '-fps_mode passthrough',
           '-v verbose',
-          '-vf zscale=t=linear,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should set npl to 250 for reinhard and mobius tone-mapping algorithms', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TONEMAP, value: ToneMapping.MOBIUS }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
           '-crf 23',
         ],
