@@ -37,6 +37,9 @@ export enum JobName {
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
 
+  // server version
+  LATEST_IMMICH_VERSION = 'latest-immich-version',
+
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
@@ -84,6 +87,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
+  [JobName.LATEST_IMMICH_VERSION]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,

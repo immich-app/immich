@@ -4286,6 +4286,70 @@
         ]
       }
     },
+    "/user/acknowledge-latest-version": {
+      "post": {
+        "operationId": "aknowledgeLatestVersion",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/available-version": {
+      "get": {
+        "operationId": "getLatestImmichVersionAvailable",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableVersionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/count": {
       "get": {
         "operationId": "getUserCount",
@@ -5114,6 +5178,20 @@
           "current",
           "deviceType",
           "deviceOS"
+        ],
+        "type": "object"
+      },
+      "AvailableVersionResponseDto": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "availableVersion": {
+            "$ref": "#/components/schemas/SystemConfigImmichVersion"
+          }
+        },
+        "required": [
+          "available"
         ],
         "type": "object"
       },
@@ -6620,6 +6698,25 @@
           "targetResolution",
           "maxBitrate",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigImmichVersion": {
+        "properties": {
+          "major": {
+            "type": "number"
+          },
+          "minor": {
+            "type": "number"
+          },
+          "patch": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
         ],
         "type": "object"
       },

@@ -9,4 +9,5 @@ export class AuthUserDto {
   isShowExif?: boolean;
   accessTokenId?: string;
   externalPath?: string | null;
+  acknowledgeLatestVersion?: boolean;
 }

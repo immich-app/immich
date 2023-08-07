@@ -164,10 +164,12 @@ Class | Method | HTTP request | Description
 *TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
 *TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
 *TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
+*UserApi* | [**aknowledgeLatestVersion**](doc//UserApi.md#aknowledgelatestversion) | **POST** /user/acknowledge-latest-version | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
+*UserApi* | [**getLatestImmichVersionAvailable**](doc//UserApi.md#getlatestimmichversionavailable) | **GET** /user/available-version | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
 *UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
@@ -199,6 +201,7 @@ Class | Method | HTTP request | Description
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
+ - [AvailableVersionResponseDto](doc//AvailableVersionResponseDto.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
@@ -262,6 +265,7 @@ Class | Method | HTTP request | Description
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
+ - [SystemConfigImmichVersion](doc//SystemConfigImmichVersion.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)

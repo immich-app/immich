@@ -9,6 +9,7 @@ import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IEntityJob, IJobRepository, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
+import { SystemConfigService } from '../system-config';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
@@ -18,6 +19,7 @@ import {
   UserCountResponseDto,
   UserResponseDto,
 } from './response-dto';
+import { AvailableVersionResponseDto } from './response-dto/user-available-version.dto';
 import { UserCore } from './user.core';
 import { IUserRepository } from './user.repository';
 
@@ -28,6 +30,7 @@ export class UserService {
   private storageCore = new StorageCore();
 
   constructor(
+    private systemConfigService: SystemConfigService,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
 
@@ -53,6 +56,16 @@ export class UserService {
     return mapUser(user);
   }
 
+  async aknowledgeLatestVersion(authUser: AuthUserDto): Promise<boolean> {
+    const user = await this.userCore.get(authUser.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.acknowledgeLatestVersion = true;
+    await this.userCore.updateUser(authUser, user.id, user);
+    return true;
+  }
+
   async getMe(authUser: AuthUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.get(authUser.id);
     if (!user) {
@@ -74,6 +87,17 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const createdUser = await this.userCore.createUser(createUserDto);
     return mapUser(createdUser);
+  }
+
+  async latestImmichVersionAvailable(authUser: AuthUserDto): Promise<AvailableVersionResponseDto> {
+    const user = await this.userCore.get(authUser.id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (this.systemConfigService.availableVersion && !user.acknowledgeLatestVersion)
+      return { availableVersion: this.systemConfigService.availableVersion, available: true };
+    else return { available: false };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

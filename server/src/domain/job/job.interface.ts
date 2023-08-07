@@ -4,6 +4,10 @@ export interface IBaseJob {
   force?: boolean;
 }
 
+export type GithubRelease = {
+  tag_name: string;
+};
+
 export interface IAssetFaceJob extends IBaseJob {
   assetId: string;
   personId: string;

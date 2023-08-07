@@ -28,6 +28,7 @@ doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
+doc/AvailableVersionResponseDto.md
 doc/BulkIdResponseDto.md
 doc/BulkIdsDto.md
 doc/ChangePasswordDto.md
@@ -99,6 +100,7 @@ doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
+doc/SystemConfigImmichVersion.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
@@ -167,6 +169,7 @@ lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/auth_device_response_dto.dart
+lib/model/available_version_response_dto.dart
 lib/model/bulk_id_response_dto.dart
 lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
@@ -230,6 +233,7 @@ lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
+lib/model/system_config_immich_version.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
@@ -277,6 +281,7 @@ test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
+test/available_version_response_dto_test.dart
 test/bulk_id_response_dto_test.dart
 test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
@@ -348,6 +353,7 @@ test/smart_info_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
+test/system_config_immich_version_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart

@@ -1,5 +1,6 @@
 import { JobName, QueueName } from './job.constants';
 import {
+  GithubRelease,
   IAssetFaceJob,
   IBaseJob,
   IBulkEntityJob,
@@ -69,6 +70,9 @@ export type JobItem =
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
+
+  // Immich Version
+  | { name: JobName.LATEST_IMMICH_VERSION; data?: GithubRelease }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

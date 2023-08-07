@@ -51,6 +51,8 @@ export enum SystemConfigKey {
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
   STORAGE_TEMPLATE = 'storageTemplate.template',
+
+  AVAILABLE_IMMICH_VERSION = 'availableImmichVersion.version',
 }
 
 export enum TranscodePolicy {
@@ -111,5 +113,10 @@ export interface SystemConfig {
   };
   storageTemplate: {
     template: string;
+  };
+  availableImmichVersion?: {
+    major: number;
+    minor: number;
+    patch: number;
   };
 }

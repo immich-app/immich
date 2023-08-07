@@ -9,6 +9,7 @@ import {
   newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
+import { SystemConfigService } from '..';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
@@ -54,6 +55,7 @@ const adminUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: 'admin',
   externalPath: null,
+  acknowledgeLatestVersion: false,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -73,6 +75,7 @@ const immichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  acknowledgeLatestVersion: false,
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -92,6 +95,7 @@ const updatedImmichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  acknowledgeLatestVersion: false,
 });
 
 const adminUserResponse = Object.freeze({
@@ -119,6 +123,7 @@ describe(UserService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let systemMock: jest.Mocked<SystemConfigService>;
 
   beforeEach(async () => {
     cryptoRepositoryMock = newCryptoRepositoryMock();
@@ -128,7 +133,7 @@ describe(UserService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(userMock, cryptoRepositoryMock, albumMock, assetMock, jobMock, storageMock);
+    sut = new UserService(systemMock, userMock, cryptoRepositoryMock, albumMock, assetMock, jobMock, storageMock);
 
     when(userMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);

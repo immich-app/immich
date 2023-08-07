@@ -17,6 +17,11 @@ void main() {
   // final instance = UserApi();
 
   group('tests for UserApi', () {
+    //Future<bool> aknowledgeLatestVersion() async
+    test('test aknowledgeLatestVersion', () async {
+      // TODO
+    });
+
     //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
     test('test createProfileImage', () async {
       // TODO
@@ -34,6 +39,11 @@ void main() {
 
     //Future<List<UserResponseDto>> getAllUsers(bool isAll) async
     test('test getAllUsers', () async {
+      // TODO
+    });
+
+    //Future<AvailableVersionResponseDto> getLatestImmichVersionAvailable() async
+    test('test getLatestImmichVersionAvailable', () async {
       // TODO
     });
 

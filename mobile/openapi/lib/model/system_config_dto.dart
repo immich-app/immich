@@ -13,12 +13,21 @@ part of openapi.api;
 class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
+    this.availableImmichVersion,
     required this.ffmpeg,
     required this.job,
     required this.oauth,
     required this.passwordLogin,
     required this.storageTemplate,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  SystemConfigImmichVersion? availableImmichVersion;
 
   SystemConfigFFmpegDto ffmpeg;
 
@@ -32,6 +41,7 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
+     other.availableImmichVersion == availableImmichVersion &&
      other.ffmpeg == ffmpeg &&
      other.job == job &&
      other.oauth == oauth &&
@@ -41,6 +51,7 @@ class SystemConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (availableImmichVersion == null ? 0 : availableImmichVersion!.hashCode) +
     (ffmpeg.hashCode) +
     (job.hashCode) +
     (oauth.hashCode) +
@@ -48,10 +59,15 @@ class SystemConfigDto {
     (storageTemplate.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate]';
+  String toString() => 'SystemConfigDto[availableImmichVersion=$availableImmichVersion, ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.availableImmichVersion != null) {
+      json[r'availableImmichVersion'] = this.availableImmichVersion;
+    } else {
+    //  json[r'availableImmichVersion'] = null;
+    }
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'job'] = this.job;
       json[r'oauth'] = this.oauth;
@@ -68,6 +84,7 @@ class SystemConfigDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigDto(
+        availableImmichVersion: SystemConfigImmichVersion.fromJson(json[r'availableImmichVersion']),
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,

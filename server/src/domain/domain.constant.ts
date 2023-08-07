@@ -10,12 +10,23 @@ export interface IServerVersion {
   minor: number;
   patch: number;
 }
+export class ServerVersion implements IServerVersion {
+  major: number;
+  minor: number;
+  patch: number;
 
-export const serverVersion: IServerVersion = {
-  major: Number(major),
-  minor: Number(minor),
-  patch: Number(patch),
-};
+  constructor(major: number | string, minor: number | string, patch: number | string) {
+    this.major = Number(major);
+    this.minor = Number(minor);
+    this.patch = Number(patch);
+  }
+
+  toString() {
+    return `${this.major}.${this.minor}.${this.patch}`;
+  }
+}
+
+export const serverVersion: ServerVersion = new ServerVersion(major, minor, patch);
 
 export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
 

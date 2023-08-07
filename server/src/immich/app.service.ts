@@ -1,6 +1,6 @@
-import { JobService, MACHINE_LEARNING_ENABLED, SearchService, StorageService } from '@app/domain';
+import { JobService, MACHINE_LEARNING_ENABLED, SearchService, StorageService, SystemConfigService } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class AppService {
@@ -10,11 +10,17 @@ export class AppService {
     private jobService: JobService,
     private searchService: SearchService,
     private storageService: StorageService,
+    private systemConfigService: SystemConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async onNightlyJob() {
     await this.jobService.handleNightlyJobs();
+  }
+
+  @Interval(15 * 1000)
+  async onEveryDay() {
+    await this.systemConfigService.handleImmichLatestVersionAvailable();
   }
 
   async init() {

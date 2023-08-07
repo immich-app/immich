@@ -9,6 +9,7 @@ import {
   UserResponseDto,
   UserService,
 } from '@app/domain';
+import { AvailableVersionResponseDto } from '@app/domain/user/response-dto/user-available-version.dto';
 import {
   Body,
   Controller,
@@ -57,6 +58,18 @@ export class UserController {
   @Post()
   createUser(@Body() createUserDto: CreateDto): Promise<UserResponseDto> {
     return this.service.create(createUserDto);
+  }
+
+  @AdminRoute()
+  @Get('/available-version')
+  getLatestImmichVersionAvailable(@AuthUser() authUser: AuthUserDto): Promise<AvailableVersionResponseDto> {
+    return this.service.latestImmichVersionAvailable(authUser);
+  }
+
+  @AdminRoute()
+  @Post('/acknowledge-latest-version')
+  aknowledgeLatestVersion(@AuthUser() authUser: AuthUserDto): Promise<boolean> {
+    return this.service.aknowledgeLatestVersion(authUser);
   }
 
   @PublicRoute()

@@ -16,6 +16,11 @@ void main() {
   // final instance = SystemConfigDto();
 
   group('test SystemConfigDto', () {
+    // SystemConfigImmichVersion availableImmichVersion
+    test('to test the property `availableImmichVersion`', () async {
+      // TODO
+    });
+
     // SystemConfigFFmpegDto ffmpeg
     test('to test the property `ffmpeg`', () async {
       // TODO
