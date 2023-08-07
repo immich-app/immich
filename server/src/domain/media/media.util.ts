@@ -1,4 +1,4 @@
-import { TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   BitrateDistribution,
@@ -13,14 +13,7 @@ class BaseConfig implements VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
-      outputOptions: this.getBaseOutputOptions().concat([
-        `-acodec ${this.config.targetAudioCodec}`,
-        // Makes a second pass moving the moov atom to the
-        // beginning of the file for improved playback speed.
-        '-movflags faststart',
-        '-fps_mode passthrough',
-        '-v verbose',
-      ]),
+      outputOptions: this.getBaseOutputOptions().concat('-v verbose'),
       twoPass: this.eligibleForTwoPass(),
     } as TranscodeOptions;
     const filters = this.getFilterOptions(stream);
@@ -39,7 +32,13 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}`];
+    return [
+      `-acodec ${this.config.targetAudioCodec}`,
+      // Makes a second pass moving the moov atom to the
+      // beginning of the file for improved playback speed.
+      '-movflags faststart',
+      '-fps_mode passthrough',
+    ];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
@@ -47,6 +46,11 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.shouldScale(stream)) {
       options.push(`scale=${this.getScaling(stream)}`);
     }
+
+    if (this.shouldToneMap(stream)) {
+      options.push(...this.getToneMapping());
+    }
+    options.push('format=yuv420p');
 
     return options;
   }
@@ -111,6 +115,10 @@ class BaseConfig implements VideoCodecSWConfig {
     return Math.min(stream.height, stream.width) > this.getTargetResolution(stream);
   }
 
+  shouldToneMap(stream: VideoStreamInfo) {
+    return stream.isHDR && this.config.tonemap !== ToneMapping.DISABLED;
+  }
+
   getScaling(stream: VideoStreamInfo) {
     const targetResolution = this.getTargetResolution(stream);
     const mult = this.config.accel === TranscodeHWAccel.QSV ? 1 : 2; // QSV doesn't support scaling numbers below -1
@@ -142,6 +150,27 @@ class BaseConfig implements VideoCodecSWConfig {
     const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
     return presets.indexOf(this.config.preset);
   }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    };
+  }
+
+  getToneMapping() {
+    const colors = this.getColors();
+    // npl stands for nominal peak luminance
+    // lower npl values result in brighter output (compensating for dimmer screens)
+    // since hable already outputs a darker image, we use a lower npl value for it
+    const npl = this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
+    return [
+      `zscale=t=linear:npl=${npl}`,
+      `tonemap=${this.config.tonemap}:desat=0`,
+      `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
+    ];
+  }
 }
 
 export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
@@ -172,7 +201,42 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 }
 
+export class ThumbnailConfig extends BaseConfig {
+  getBaseOutputOptions() {
+    return ['-ss 00:00:00.000', '-frames:v 1'];
+  }
+
+  getPresetOptions() {
+    return [];
+  }
+
+  getBitrateOptions() {
+    return [];
+  }
+
+  getScaling(stream: VideoStreamInfo) {
+    let options = super.getScaling(stream);
+    if (!this.shouldToneMap(stream)) {
+      options += ':out_color_matrix=bt601:out_range=pc';
+    }
+    return options;
+  }
+
+  getColors() {
+    return {
+      // jpeg and webp only support bt.601, so we need to convert to that directly when tone-mapping to avoid color shifts
+      primaries: 'bt470bg',
+      transfer: '601',
+      matrix: 'bt470bg',
+    };
+  }
+}
+
 export class H264Config extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
+  }
+
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
@@ -186,6 +250,10 @@ export class H264Config extends BaseConfig {
 }
 
 export class HEVCConfig extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
+  }
+
   getThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
@@ -199,6 +267,10 @@ export class HEVCConfig extends BaseConfig {
 }
 
 export class VP9Config extends BaseConfig {
+  getBaseOutputOptions() {
+    return [`-vcodec ${this.config.targetVideoCodec}`, ...super.getBaseOutputOptions()];
+  }
+
   getPresetOptions() {
     const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {
@@ -247,11 +319,13 @@ export class NVENCConfig extends BaseHWConfig {
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
       '-b_qfactor 1.1',
+      ...super.getBaseOutputOptions(),
     ];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    const options = ['hwupload_cuda'];
+    const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
+    options.push('format=nv12', 'hwupload_cuda');
     if (this.shouldScale(stream)) {
       options.push(`scale_cuda=${this.getScaling(stream)}`);
     }
@@ -303,7 +377,14 @@ export class QSVConfig extends BaseHWConfig {
 
   getBaseOutputOptions() {
     // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [`-vcodec ${this.config.targetVideoCodec}_qsv`, '-g 256', '-extbrc 1', '-refs 5', '-bf 7'];
+    const options = [
+      `-vcodec ${this.config.targetVideoCodec}_qsv`,
+      '-g 256',
+      '-extbrc 1',
+      '-refs 5',
+      '-bf 7',
+      ...super.getBaseOutputOptions(),
+    ];
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -312,7 +393,8 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    const options = ['format=nv12', 'hwupload=extra_hw_frames=64'];
+    const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
+    options.push('format=nv12', 'hwupload=extra_hw_frames=64');
     if (this.shouldScale(stream)) {
       options.push(`scale_qsv=${this.getScaling(stream)}`);
     }
@@ -353,11 +435,12 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions() {
-    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`];
+    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`, ...super.getBaseOutputOptions()];
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    const options = ['format=nv12', 'hwupload'];
+    const options = this.shouldToneMap(stream) ? this.getToneMapping() : [];
+    options.push('format=nv12', 'hwupload');
     if (this.shouldScale(stream)) {
       options.push(`scale_vaapi=${this.getScaling(stream)}`);
     }

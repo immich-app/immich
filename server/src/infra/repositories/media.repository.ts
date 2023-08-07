@@ -23,41 +23,11 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    switch (options.format) {
-      case 'webp':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .webp()
-          .rotate()
-          .toFile(output);
-        return;
-
-      case 'jpeg':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .jpeg()
-          .rotate()
-          .toFile(output);
-        return;
-    }
-  }
-
-  extractVideoThumbnail(input: string, output: string, size: number) {
-    return new Promise<void>((resolve, reject) => {
-      ffmpeg(input)
-        .outputOptions([
-          '-ss 00:00:00.000',
-          '-frames:v 1',
-          `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
-        ])
-        .output(output)
-        .on('error', (err, stdout, stderr) => {
-          this.logger.error(stderr);
-          reject(err);
-        })
-        .on('end', resolve)
-        .run();
-    });
+    await sharp(input, { failOnError: false })
+      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+      .rotate()
+      .toFormat(options.format)
+      .toFile(output);
   }
 
   async probe(input: string): Promise<VideoInfo> {
@@ -78,6 +48,7 @@ export class MediaRepository implements IMediaRepository {
           codecType: stream.codec_type,
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+          isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')

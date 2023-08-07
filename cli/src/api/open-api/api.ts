@@ -2482,6 +2482,12 @@ export interface SystemConfigFFmpegDto {
     'threads': number;
     /**
      * 
+     * @type {ToneMapping}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'tonemap': ToneMapping;
+    /**
+     * 
      * @type {TranscodePolicy}
      * @memberof SystemConfigFFmpegDto
      */
@@ -2803,6 +2809,22 @@ export const TimeBucketSize = {
 } as const;
 
 export type TimeBucketSize = typeof TimeBucketSize[keyof typeof TimeBucketSize];
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const ToneMapping = {
+    Hable: 'hable',
+    Mobius: 'mobius',
+    Reinhard: 'reinhard',
+    Disabled: 'disabled'
+} as const;
+
+export type ToneMapping = typeof ToneMapping[keyof typeof ToneMapping];
 
 
 /**

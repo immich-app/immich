@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **targetResolution** | **String** |  | 
 **targetVideoCodec** | [**VideoCodec**](VideoCodec.md) |  | 
 **threads** | **int** |  | 
+**tonemap** | [**ToneMapping**](ToneMapping.md) |  | 
 **transcode** | [**TranscodePolicy**](TranscodePolicy.md) |  | 
 **twoPass** | **bool** |  | 
 

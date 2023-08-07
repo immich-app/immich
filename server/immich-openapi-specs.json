@@ -6627,6 +6627,9 @@
           "threads": {
             "type": "integer"
           },
+          "tonemap": {
+            "$ref": "#/components/schemas/ToneMapping"
+          },
           "transcode": {
             "$ref": "#/components/schemas/TranscodePolicy"
           },
@@ -6641,6 +6644,7 @@
           "targetAudioCodec",
           "transcode",
           "accel",
+          "tonemap",
           "preset",
           "targetResolution",
           "maxBitrate",
@@ -6881,6 +6885,15 @@
         "enum": [
           "DAY",
           "MONTH"
+        ],
+        "type": "string"
+      },
+      "ToneMapping": {
+        "enum": [
+          "hable",
+          "mobius",
+          "reinhard",
+          "disabled"
         ],
         "type": "string"
       },

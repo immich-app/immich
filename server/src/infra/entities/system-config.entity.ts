@@ -24,6 +24,7 @@ export enum SystemConfigKey {
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
+  FFMPEG_TONEMAP = 'ffmpeg.tonemap',
 
   JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
@@ -79,6 +80,13 @@ export enum TranscodeHWAccel {
   DISABLED = 'disabled',
 }
 
+export enum ToneMapping {
+  HABLE = 'hable',
+  MOBIUS = 'mobius',
+  REINHARD = 'reinhard',
+  DISABLED = 'disabled',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -91,6 +99,7 @@ export interface SystemConfig {
     twoPass: boolean;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
+    tonemap: ToneMapping;
   };
   job: Record<QueueName, { concurrency: number }>;
   oauth: {
