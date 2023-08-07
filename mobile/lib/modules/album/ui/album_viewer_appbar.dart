@@ -14,7 +14,6 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 import '../../home/ui/asset_grid/immich_asset_grid_view.dart';
-import '../services/album.service.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {
@@ -27,7 +26,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       required this.titleFocusNode,
       this.onAddPhotos,
       this.onAddUsers,
-      this.listener})
+      this.listener,})
       : super(key: key);
 
   final Album album;
