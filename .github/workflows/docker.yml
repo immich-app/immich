@@ -24,9 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - context: "server"
-            image: "immich-server"
-            platforms: "linux/amd64"
           - context: "web"
             image: "immich-web"
             platforms: "linux/amd64,linux/arm64"
@@ -120,7 +117,7 @@ jobs:
         include:
           - context: "server"
             image: "immich-server"
-            platforms: "linux/arm64"
+            platforms: "linux/arm64,linux/amd64"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
