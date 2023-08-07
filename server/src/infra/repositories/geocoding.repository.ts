@@ -45,7 +45,7 @@ export class GeocodingRepository implements IGeocodingRepository {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
     const [address] = await lookup([point], 1);
-    this.logger.verbose(`Raw: ${JSON.stringify(address, null, 2)}`);
+    this.logger.debug(`Raw: ${JSON.stringify(address, null, 2)}`);
 
     const { countryCode, name: city, admin1Code, admin2Code } = address[0] as GeoData;
     const country = getName(countryCode, 'en');

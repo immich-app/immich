@@ -138,6 +138,8 @@ export class LibraryService {
   async handleRefreshAsset(job: ILibraryJob) {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
+    this.logger.verbose(`Refreshing library asset: ${job.assetPath}`);
+
     let stats: fs.Stats;
     try {
       stats = await fs.promises.stat(job.assetPath);
@@ -145,6 +147,8 @@ export class LibraryService {
       // Can't access file, probably offline
       if (existingAssetEntity) {
         // Mark asset as offline
+        this.logger.debug(`Marking asset as offline: ${job.assetPath}`);
+
         await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
         return true;
       } else {
@@ -170,6 +174,8 @@ export class LibraryService {
 
     if (existingAssetEntity?.isOffline) {
       // File was previously offline but is now online
+      this.logger.debug(`Marking offline asset as online: ${job.assetPath}`);
+
       await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
     }
 
@@ -233,6 +239,8 @@ export class LibraryService {
       isOffline: false,
     });
 
+    this.logger.debug(`Queuing metadata extraction for: ${job.assetPath}`);
+
     await this.jobRepository.queue({
       name: JobName.METADATA_EXTRACTION,
       data: { id: addedAsset.id, source: 'upload' },
@@ -269,6 +277,8 @@ export class LibraryService {
 
     const library = await this.libraryRepository.getById(libraryId);
 
+    this.logger.verbose(`Refreshing library: ${libraryId}`);
+
     if (library.type != LibraryType.IMPORT) {
       Logger.error('Only imported libraries can be refreshed');
       throw new InternalServerErrorException('Only imported libraries can be refreshed');
@@ -279,6 +289,8 @@ export class LibraryService {
         pathsToCrawl: library.importPaths,
       })
     ).map(path.normalize);
+
+    this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
 
     for (const assetPath of crawledAssetPaths) {
       const libraryJobData: ILibraryJob = {

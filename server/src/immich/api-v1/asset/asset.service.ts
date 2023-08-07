@@ -289,6 +289,7 @@ export class AssetService {
 
       const asset = await this._assetRepository.get(id);
       if (!asset || asset.library.type === LibraryType.IMPORT) {
+        // We don't allow deletions of imported library assets
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
