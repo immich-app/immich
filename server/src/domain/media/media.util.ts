@@ -251,7 +251,7 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getFilterOptions(stream: VideoStreamInfo) {
-    const options = ['hwupload_cuda'];
+    const options = ['format=nv12', 'hwupload_cuda'];
     if (this.shouldScale(stream)) {
       options.push(`scale_cuda=${this.getScaling(stream)}`);
     }
