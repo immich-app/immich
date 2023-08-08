@@ -341,6 +341,8 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SetExcludePatternsDto':
+          return SetExcludePatternsDto.fromJson(value);
         case 'SetImportPathsDto':
           return SetImportPathsDto.fromJson(value);
         case 'SharedLinkCreateDto':

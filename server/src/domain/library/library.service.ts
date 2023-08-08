@@ -24,7 +24,6 @@ import {
   LibraryResponseDto,
   mapLibrary,
   ScanLibraryDto as RefreshLibraryDto,
-  SetImportPathsDto,
   UpdateLibraryDto,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
@@ -66,6 +65,7 @@ export class LibraryService {
       assets: [],
       type: dto.libraryType,
       importPaths: dto.importPaths ?? [],
+      excludePatterns: dto.excludePatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
     return mapLibrary(libraryEntity);
@@ -80,13 +80,16 @@ export class LibraryService {
     if (dto.importPaths) {
       libraryEntity.importPaths = dto.importPaths;
     }
+    if (dto.excludePatterns) {
+      libraryEntity.excludePatterns = dto.excludePatterns;
+    }
     if (dto.isVisible) {
       libraryEntity.isVisible = dto.isVisible;
     }
 
     const updatedLibrary = await this.libraryRepository.update(libraryEntity);
 
-    return mapLibrary(libraryEntity);
+    return mapLibrary(updatedLibrary);
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
@@ -113,26 +116,6 @@ export class LibraryService {
 
     const libraryEntity = await this.libraryRepository.getById(libraryId);
     return mapLibrary(libraryEntity);
-  }
-
-  async getImportPaths(authUser: AuthUserDto, libraryId: string): Promise<string[]> {
-    // TODO:
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
-
-    const libraryEntity = await this.libraryRepository.getById(libraryId);
-    return libraryEntity.importPaths;
-  }
-
-  async setImportPaths(authUser: AuthUserDto, libraryId: string, dto: SetImportPathsDto): Promise<LibraryResponseDto> {
-    // TODO:
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
-
-    const libraryEntity = await this.getLibraryById(authUser, libraryId);
-    if (libraryEntity.type != LibraryType.IMPORT) {
-      throw new BadRequestException('Can only set import paths on an Import type library');
-    }
-    const updatedEntity = await this.libraryRepository.setImportPaths(libraryId, dto.importPaths);
-    return mapLibrary(updatedEntity);
   }
 
   async handleRefreshAsset(job: ILibraryJob) {
@@ -287,6 +270,7 @@ export class LibraryService {
     const crawledAssetPaths = (
       await this.crawler.findAllMedia({
         pathsToCrawl: library.importPaths,
+        excludePatterns: library.excludePatterns,
       })
     ).map(path.normalize);
 

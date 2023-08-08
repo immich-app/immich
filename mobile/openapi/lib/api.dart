@@ -124,6 +124,7 @@ part 'model/server_media_types_response_dto.dart';
 part 'model/server_ping_response.dart';
 part 'model/server_stats_response_dto.dart';
 part 'model/server_version_reponse_dto.dart';
+part 'model/set_exclude_patterns_dto.dart';
 part 'model/set_import_paths_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';

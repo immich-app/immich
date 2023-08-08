@@ -124,10 +124,12 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
 *LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
+*LibraryApi* | [**getExcludePattern**](doc//LibraryApi.md#getexcludepattern) | **GET** /library/{id}/excludePatterns | 
 *LibraryApi* | [**getImportPaths**](doc//LibraryApi.md#getimportpaths) | **GET** /library/{id}/importPaths | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**refreshLibrary**](doc//LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
+*LibraryApi* | [**setExcludePatterns**](doc//LibraryApi.md#setexcludepatterns) | **POST** /library/{id}/excludePatterns | 
 *LibraryApi* | [**setImportPaths**](doc//LibraryApi.md#setimportpaths) | **POST** /library/{id}/importPaths | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
@@ -267,6 +269,7 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
+ - [SetExcludePatternsDto](doc//SetExcludePatternsDto.md)
  - [SetImportPathsDto](doc//SetImportPathsDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)

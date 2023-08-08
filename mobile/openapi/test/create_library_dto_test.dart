@@ -16,6 +16,11 @@ void main() {
   // final instance = CreateLibraryDto();
 
   group('test CreateLibraryDto', () {
+    // List<String> excludePatterns (default value: const [])
+    test('to test the property `excludePatterns`', () async {
+      // TODO
+    });
+
     // List<String> importPaths (default value: const [])
     test('to test the property `importPaths`', () async {
       // TODO

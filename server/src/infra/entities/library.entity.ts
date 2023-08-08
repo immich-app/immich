@@ -37,6 +37,9 @@ export class LibraryEntity {
   @Column('text', { array: true })
   importPaths!: string[];
 
+  @Column('text', { array: true })
+  excludePatterns!: string[];
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 

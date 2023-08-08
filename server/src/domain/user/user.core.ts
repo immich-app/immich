@@ -100,6 +100,7 @@ export class UserCore {
         assets: [],
         type: LibraryType.UPLOAD,
         importPaths: [],
+        excludePatterns: [],
         isVisible: true,
       });
 

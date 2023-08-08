@@ -16,6 +16,11 @@ void main() {
   // final instance = UpdateLibraryDto();
 
   group('test UpdateLibraryDto', () {
+    // List<String> excludePatterns (default value: const [])
+    test('to test the property `excludePatterns`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // List<String> excludePatterns (default value: const [])
+    test('to test the property `excludePatterns`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

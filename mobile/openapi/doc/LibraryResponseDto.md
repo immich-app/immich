@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assetCount** | **int** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
+**excludePatterns** | **List<String>** |  | [default to const []]
 **id** | **String** |  | 
 **importPaths** | **List<String>** |  | [default to const []]
 **name** | **String** |  | 

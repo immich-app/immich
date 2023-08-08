@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**excludePatterns** | **List<String>** |  | [default to const []]
 **importPaths** | **List<String>** |  | [default to const []]
 **isVisible** | **bool** |  | [optional] 
 **libraryType** | [**LibraryType**](LibraryType.md) |  | 

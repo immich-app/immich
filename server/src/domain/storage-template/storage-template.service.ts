@@ -92,7 +92,7 @@ export class StorageTemplateService {
   // TODO: use asset core (once in domain)
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
     if (asset.isReadOnly) {
-      this.logger.verbose(`Not moving read-only asset: ${asset.originalPath}`);
+      this.logger.debug(`Not moving read-only asset: ${asset.originalPath}`);
       return;
     }
 

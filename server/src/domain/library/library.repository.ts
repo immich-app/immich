@@ -7,6 +7,7 @@ export interface ILibraryRepository {
   getCountForUser(ownerId: string): Promise<number>;
   getById(id: string): Promise<LibraryEntity>;
   setImportPaths(libraryId: string, importPaths: string[]): Promise<LibraryEntity>;
+  setExcludePatterns(libraryId: string, excludePatterns: string[]): Promise<LibraryEntity>;
   getAllByUserId(userId: string): Promise<LibraryEntity[]>;
   create(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   delete(id: string): Promise<void>;

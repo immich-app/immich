@@ -2646,101 +2646,6 @@
         ]
       }
     },
-    "/library/{id}/importPaths": {
-      "get": {
-        "operationId": "getImportPaths",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Library"
-        ]
-      },
-      "post": {
-        "operationId": "setImportPaths",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetImportPathsDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LibraryResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Library"
-        ]
-      }
-    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -5730,6 +5635,12 @@
       },
       "CreateLibraryDto": {
         "properties": {
+          "excludePatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "importPaths": {
             "items": {
               "type": "string"
@@ -5749,7 +5660,8 @@
         "required": [
           "libraryType",
           "name",
-          "importPaths"
+          "importPaths",
+          "excludePatterns"
         ],
         "type": "object"
       },
@@ -6235,6 +6147,12 @@
             "format": "date-time",
             "type": "string"
           },
+          "excludePatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "id": {
             "type": "string"
           },
@@ -6270,6 +6188,7 @@
           "ownerId",
           "name",
           "importPaths",
+          "excludePatterns",
           "createdAt",
           "updatedAt"
         ],
@@ -6888,20 +6807,6 @@
         ],
         "type": "object"
       },
-      "SetImportPathsDto": {
-        "properties": {
-          "importPaths": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "importPaths"
-        ],
-        "type": "object"
-      },
       "SharedLinkCreateDto": {
         "properties": {
           "albumId": {
@@ -7456,6 +7361,12 @@
       },
       "UpdateLibraryDto": {
         "properties": {
+          "excludePatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -7476,7 +7387,8 @@
         "required": [
           "id",
           "name",
-          "importPaths"
+          "importPaths",
+          "excludePatterns"
         ],
         "type": "object"
       },

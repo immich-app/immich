@@ -68,6 +68,18 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  async setExcludePatterns(libraryId: string, excludePatterns: string[]): Promise<LibraryEntity> {
+    await this.libraryRepository.update(libraryId, {
+      excludePatterns: excludePatterns,
+    });
+
+    return this.libraryRepository.findOneOrFail({
+      where: {
+        id: libraryId,
+      },
+    });
+  }
+
   create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity> {
     return this.libraryRepository.save(library);
   }

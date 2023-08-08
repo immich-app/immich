@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<String>> getExcludePattern(String id) async
+    test('test getExcludePattern', () async {
+      // TODO
+    });
+
     //Future<List<String>> getImportPaths(String id) async
     test('test getImportPaths', () async {
       // TODO
@@ -49,6 +54,11 @@ void main() {
 
     //Future refreshLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test refreshLibrary', () async {
+      // TODO
+    });
+
+    //Future<LibraryResponseDto> setExcludePatterns(String id, SetExcludePatternsDto setExcludePatternsDto) async
+    test('test setExcludePatterns', () async {
       // TODO
     });
 

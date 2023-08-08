@@ -31,7 +31,12 @@
 
   const handleCreate = async (event: CustomEvent<CreateLibraryDto>) => {
     try {
-      const dto = event.detail;
+      const dto: CreateLibraryDto = event.detail;
+      if (newUploadLibrary) {
+        dto.libraryType = LibraryType.Upload;
+      } else if (newImportLibrary) {
+        dto.libraryType = LibraryType.Import;
+      }
       await api.libraryApi.createLibrary({ createLibraryDto: dto });
     } catch (error) {
       handleError(error, 'Unable to create a new library');

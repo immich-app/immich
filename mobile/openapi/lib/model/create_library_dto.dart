@@ -13,11 +13,14 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
+    this.excludePatterns = const [],
     this.importPaths = const [],
     this.isVisible,
     required this.libraryType,
     required this.name,
   });
+
+  List<String> excludePatterns;
 
   List<String> importPaths;
 
@@ -35,6 +38,7 @@ class CreateLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
+     other.excludePatterns == excludePatterns &&
      other.importPaths == importPaths &&
      other.isVisible == isVisible &&
      other.libraryType == libraryType &&
@@ -43,16 +47,18 @@ class CreateLibraryDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (excludePatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (libraryType.hashCode) +
     (name.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[importPaths=$importPaths, isVisible=$isVisible, libraryType=$libraryType, name=$name]';
+  String toString() => 'CreateLibraryDto[excludePatterns=$excludePatterns, importPaths=$importPaths, isVisible=$isVisible, libraryType=$libraryType, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'excludePatterns'] = this.excludePatterns;
       json[r'importPaths'] = this.importPaths;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
@@ -72,6 +78,9 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
+        excludePatterns: json[r'excludePatterns'] is List
+            ? (json[r'excludePatterns'] as List).cast<String>()
+            : const [],
         importPaths: json[r'importPaths'] is List
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
@@ -125,6 +134,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'excludePatterns',
     'importPaths',
     'libraryType',
     'name',

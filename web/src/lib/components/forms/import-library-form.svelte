@@ -11,6 +11,7 @@
   import { handleError } from '../../utils/handle-error';
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
+  import LibraryExcludePatternForm from './library-exclude-pattern-form.svelte';
 
   export let title = 'Create Import Library';
   export let cancelText = 'Cancel';
@@ -33,9 +34,26 @@
 
   let importPaths: string[] = [];
 
+  let addPattern = false;
+  let editPattern = false;
+
+  let excludePatternToAdd: string;
+  let excludePatternToEdit: string;
+  let editedExcludePattern: string;
+
+  let excludePatterns: string[] = [];
+
   onMount(() => {
     if (library.importPaths) {
       importPaths = library.importPaths;
+    } else {
+      library.importPaths = [];
+    }
+
+    if (library.excludePatterns) {
+      excludePatterns = library.excludePatterns;
+    } else {
+      library.excludePatterns = [];
     }
   });
 
@@ -45,6 +63,7 @@
       dispatch('cancel');
     }
   };
+
   const handleSubmit = () => {
     if (!disableForm) {
       dispatch('submit', { ...library, libraryType: LibraryType.Import });
@@ -66,10 +85,6 @@
   };
 
   const editImportPath = async (pathToEdit: string) => {
-    if (!library.importPaths) {
-      library.importPaths = [];
-    }
-
     importPathToEdit = pathToEdit;
     editedImportPath = pathToEdit;
 
@@ -83,10 +98,11 @@
       return;
     }
 
+    if (!library.importPaths) {
+      library.importPaths = [];
+    }
+
     try {
-      if (!library.importPaths) {
-        library.importPaths = [];
-      }
       library.importPaths.push(importPathToAdd);
       importPaths = library.importPaths;
       addPath = false;
@@ -101,10 +117,11 @@
       return;
     }
 
+    if (!library.importPaths) {
+      library.importPaths = [];
+    }
+
     try {
-      if (!library.importPaths) {
-        library.importPaths = [];
-      }
       const index = library.importPaths.indexOf(importPathToEdit);
       library.importPaths[index] = editedImportPath;
       importPaths = library.importPaths;
@@ -168,11 +185,92 @@
       handleError(error, 'Unable to empty trash');
     }
   };
+
+  const removeExcludePattern = async (patternToRemove: string) => {
+    if (!library.excludePatterns) {
+      library.excludePatterns = [];
+    }
+
+    try {
+      library.excludePatterns = library.excludePatterns.filter((pattern) => pattern != patternToRemove);
+      excludePatterns = library.excludePatterns;
+    } catch (error) {
+      handleError(error, 'Unable to remove pattern');
+    }
+    disableForm = false;
+  };
+
+  const editExcludePattern = async (patternToEdit: string) => {
+    excludePatternToEdit = patternToEdit;
+    editedExcludePattern = patternToEdit;
+
+    editPattern = true;
+    disableForm = true;
+  };
+
+  const handleAddExcludePattern = async () => {
+    disableForm = false;
+    if (!addPattern) {
+      return;
+    }
+
+    if (!library.excludePatterns) {
+      library.excludePatterns = [];
+    }
+
+    try {
+      library.excludePatterns.push(excludePatternToAdd);
+      excludePatterns = library.excludePatterns;
+      console.log(excludePatterns);
+      addPattern = false;
+    } catch (error) {
+      handleError(error, 'Unable to remove exclude pattern');
+    }
+  };
+
+  const handleDeleteExcludePattern = async () => {
+    disableForm = false;
+    if (!editPattern) {
+      return;
+    }
+
+    try {
+      if (!library.excludePatterns) {
+        library.excludePatterns = [];
+      }
+      library.excludePatterns = library.excludePatterns.filter((pattern) => pattern != excludePatternToEdit);
+
+      excludePatterns = library.excludePatterns;
+      editPattern = false;
+    } catch (error) {
+      handleError(error, 'Unable to edit exclude pattern');
+    }
+  };
+
+  const handleEditExcludePattern = async () => {
+    disableForm = false;
+    if (!editPattern) {
+      return;
+    }
+
+    if (!library.excludePatterns) {
+      library.excludePatterns = [];
+    }
+
+    try {
+      const index = library.excludePatterns.indexOf(excludePatternToEdit);
+      library.excludePatterns[index] = editedExcludePattern;
+      excludePatterns = library.excludePatterns;
+      editPattern = false;
+    } catch (error) {
+      handleError(error, 'Unable to edit exclude pattern');
+    }
+  };
 </script>
 
 {#if addPath}
   <LibraryImportPathForm
-    title="Add Library Import Path"
+    title="Add Import Path"
     submitText="Add"
     bind:importPath={importPathToAdd}
     on:submit={handleAddImportPath}
@@ -185,7 +283,7 @@
 
 {#if editPath}
   <LibraryImportPathForm
-    title="Edit Library Import Path"
+    title="Edit Import Path"
     submitText="Save"
     canDelete={true}
     bind:importPath={editedImportPath}
@@ -193,6 +291,34 @@
     on:delete={handleDeleteImportPath}
     on:cancel={() => {
       editPath = false;
+      disableForm = false;
+    }}
+  />
+{/if}
+
+{#if addPattern}
+  <LibraryExcludePatternForm
+    title="Add Exclude Pattern"
+    submitText="Add"
+    bind:excludePattern={excludePatternToAdd}
+    on:submit={handleAddExcludePattern}
+    on:cancel={() => {
+      addPattern = false;
+      disableForm = false;
+    }}
+  />
+{/if}
+
+{#if editPattern}
+  <LibraryExcludePatternForm
+    title="Edit Exclude Pattern"
+    submitText="Save"
+    canDelete={true}
+    bind:excludePattern={editedExcludePattern}
+    on:submit={handleEditExcludePattern}
+    on:delete={handleDeleteExcludePattern}
+    on:cancel={() => {
+      editPattern = false;
       disableForm = false;
     }}
   />
@@ -253,6 +379,44 @@
             addPath = true;
             disableForm = true;
           }}>Add path</Button
+        >
+      </div>
+      {#if excludePatterns.length > 0}
+        <div class="flex flex-row gap-4">
+          {#each excludePatterns as excludePattern}
+            <div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
+              <div class="text-left">
+                <p class="text-immich-fg dark:text-immich-dark-fg">{excludePattern}</p>
+              </div>
+              <CircleIconButton
+                on:click={() => {
+                  editExcludePattern(excludePattern);
+                }}
+                logo={Pencil}
+                size={'16'}
+                title="Edit pattern"
+              />
+              <CircleIconButton
+                on:click={() => {
+                  removeExcludePattern(excludePattern);
+                }}
+                logo={Close}
+                size={'16'}
+                title="Remove pattern"
+              />
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No exclude patterns</p>
+      {/if}
+      <div class="flex justify-end">
+        <Button
+          size="sm"
+          on:click={() => {
+            addPattern = true;
+            disableForm = true;
+          }}>Add exclude pattern</Button
         >
       </div>
       {#if library.id}
