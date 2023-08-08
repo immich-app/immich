@@ -16,6 +16,7 @@ import {
   APIKeyController,
   AppController,
   AssetController,
+  AuditController,
   AuthController,
   JobController,
   OAuthController,
@@ -28,7 +29,6 @@ import {
   TagController,
   UserController,
 } from './controllers';
-import { AuditController } from './controllers/audit.controller';
 
 @Module({
   imports: [
