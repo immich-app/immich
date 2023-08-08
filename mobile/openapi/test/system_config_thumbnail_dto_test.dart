@@ -16,6 +16,11 @@ void main() {
   // final instance = SystemConfigThumbnailDto();
 
   group('test SystemConfigThumbnailDto', () {
+    // int jpegSize
+    test('to test the property `jpegSize`', () async {
+      // TODO
+    });
+
     // int webpSize
     test('to test the property `webpSize`', () async {
       // TODO

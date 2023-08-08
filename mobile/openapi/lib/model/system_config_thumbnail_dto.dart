@@ -13,25 +13,31 @@ part of openapi.api;
 class SystemConfigThumbnailDto {
   /// Returns a new [SystemConfigThumbnailDto] instance.
   SystemConfigThumbnailDto({
+    required this.jpegSize,
     required this.webpSize,
   });
+
+  int jpegSize;
 
   int webpSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThumbnailDto &&
+     other.jpegSize == jpegSize &&
      other.webpSize == webpSize;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (jpegSize.hashCode) +
     (webpSize.hashCode);
 
   @override
-  String toString() => 'SystemConfigThumbnailDto[webpSize=$webpSize]';
+  String toString() => 'SystemConfigThumbnailDto[jpegSize=$jpegSize, webpSize=$webpSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'jpegSize'] = this.jpegSize;
       json[r'webpSize'] = this.webpSize;
     return json;
   }
@@ -44,6 +50,7 @@ class SystemConfigThumbnailDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigThumbnailDto(
+        jpegSize: mapValueOfType<int>(json, r'jpegSize')!,
         webpSize: mapValueOfType<int>(json, r'webpSize')!,
       );
     }
@@ -92,6 +99,7 @@ class SystemConfigThumbnailDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'jpegSize',
     'webpSize',
   };
 }

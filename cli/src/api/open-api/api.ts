@@ -2733,6 +2733,12 @@ export interface SystemConfigThumbnailDto {
      * @type {number}
      * @memberof SystemConfigThumbnailDto
      */
+    'jpegSize': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
     'webpSize': number;
 }
 /**

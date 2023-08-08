@@ -6834,12 +6834,16 @@
       },
       "SystemConfigThumbnailDto": {
         "properties": {
+          "jpegSize": {
+            "type": "integer"
+          },
           "webpSize": {
             "type": "integer"
           }
         },
         "required": [
-          "webpSize"
+          "webpSize",
+          "jpegSize"
         ],
         "type": "object"
       },
