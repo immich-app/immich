@@ -261,10 +261,10 @@ export class LibraryService {
     }
 
     if (job.emptyTrash && existingAssetEntity) {
-      // Remove asset from database
+      this.logger.verbose(`Removing offline asset: ${job.assetPath}`);
       await this.assetRepository.remove(existingAssetEntity);
     } else if (existingAssetEntity) {
-      // Mark asset as offline
+      this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
       await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
     }
 
@@ -309,6 +309,8 @@ export class LibraryService {
       .map((asset) => asset.originalPath)
       .map(path.normalize)
       .filter((assetPath) => !crawledAssetPaths.includes(assetPath));
+
+    this.logger.debug(`Found ${offlineAssets.length} offline assets in library ${libraryId}`);
 
     for (const offlineAssetPath of offlineAssets) {
       const libraryJobData: ILibraryJob = {
