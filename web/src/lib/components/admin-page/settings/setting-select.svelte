@@ -9,10 +9,13 @@
   export let desc = '';
   export let name = '';
   export let isEdited = false;
-  const dispatch = createEventDispatcher();
+  export let number = false;
+
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
-    dispatch('change', value);
+    if (number) {
+      value = parseInt(value);
+    }
   };
 </script>
 
