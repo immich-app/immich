@@ -28,6 +28,7 @@ import {
   TagController,
   UserController,
 } from './controllers';
+import { AuditController } from './controllers/audit.controller';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import {
     AppController,
     AlbumController,
     APIKeyController,
+    AuditController,
     AuthController,
     JobController,
     OAuthController,

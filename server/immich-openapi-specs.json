@@ -2071,6 +2071,38 @@
         ]
       }
     },
+    "/audit": {
+      "get": {
+        "operationId": "getAuditRecords",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
