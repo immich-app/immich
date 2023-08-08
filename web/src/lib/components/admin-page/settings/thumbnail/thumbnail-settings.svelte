@@ -52,9 +52,7 @@
       const result = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...configs,
-          thumbnail: {
-            webpSize: thumbnailConfig.webpSize,
-          },
+          thumbnail: thumbnailConfig,
         },
       });
 
@@ -93,6 +91,19 @@
             ]}
             name="resolution"
             isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
+          />
+
+          <SettingSelect
+            label="JPEG RESOLUTION"
+            desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+            number
+            bind:value={thumbnailConfig.jpegSize}
+            options={[
+              { value: 2160, text: '4K' },
+              { value: 1440, text: '1440p' },
+            ]}
+            name="resolution"
+            isEdited={!(thumbnailConfig.jpegSize === savedConfig.jpegSize)}
           />
         </div>
 

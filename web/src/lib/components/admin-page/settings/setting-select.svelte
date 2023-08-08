@@ -1,7 +1,6 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
 
   export let value: string | number;
   export let options: { value: string | number; text: string }[];
