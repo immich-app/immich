@@ -12,6 +12,8 @@
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
   import LibraryExcludePatternForm from './library-exclude-pattern-form.svelte';
+  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 
   export let title = 'Create Import Library';
   export let cancelText = 'Cancel';
@@ -344,31 +346,46 @@
       </div>
 
       {#if importPaths.length > 0}
-        <div class="flex flex-row gap-4">
-          {#each importPaths as importPath}
-            <div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
-              <div class="text-left">
-                <p class="text-immich-fg dark:text-immich-dark-fg">{importPath}</p>
-              </div>
-              <CircleIconButton
-                on:click={() => {
-                  editImportPath(importPath);
-                }}
-                logo={Pencil}
-                size={'16'}
-                title="Edit path"
-              />
-              <CircleIconButton
-                on:click={() => {
-                  removeImportPath(importPath);
-                }}
-                logo={Close}
-                size={'16'}
-                title="Remove path"
-              />
-            </div>
-          {/each}
-        </div>
+        <table class="w-full text-left">
+          <thead
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+          >
+            <tr class="flex w-full place-items-center">
+              <th class="w-2/3 text-center text-sm font-medium">Path</th>
+              <th class="w-1/3 text-center text-sm font-medium">Action</th>
+            </tr>
+          </thead>
+          <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+            {#each importPaths as importPath, i}
+              <tr
+                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                  i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                }`}
+              >
+                <td class="w-2/3 text-ellipsis px-4 text-sm">{importPath}</td>
+                <td class="w-1/3 text-ellipsis px-4 text-sm">
+                  <button
+                    on:click={() => {
+                      editImportPath(importPath);
+                    }}
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  >
+                    <PencilOutline size="16" />
+                  </button>
+
+                  <button
+                    on:click={() => {
+                      removeImportPath(importPath);
+                    }}
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  >
+                    <TrashCanOutline size="16" />
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       {:else}
         <p class="text-immich-fg dark:text-immich-dark-fg text-center">No paths added</p>
       {/if}
@@ -381,35 +398,52 @@
           }}>Add path</Button
         >
       </div>
+
       {#if excludePatterns.length > 0}
-        <div class="flex flex-row gap-4">
-          {#each excludePatterns as excludePattern}
-            <div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
-              <div class="text-left">
-                <p class="text-immich-fg dark:text-immich-dark-fg">{excludePattern}</p>
-              </div>
-              <CircleIconButton
-                on:click={() => {
-                  editExcludePattern(excludePattern);
-                }}
-                logo={Pencil}
-                size={'16'}
-                title="Edit pattern"
-              />
-              <CircleIconButton
-                on:click={() => {
-                  removeExcludePattern(excludePattern);
-                }}
-                logo={Close}
-                size={'16'}
-                title="Remove pattern"
-              />
-            </div>
-          {/each}
-        </div>
+        <table class="w-full text-left">
+          <thead
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+          >
+            <tr class="flex w-full place-items-center">
+              <th class="w-2/3 text-center text-sm font-medium">Path</th>
+              <th class="w-1/3 text-center text-sm font-medium">Action</th>
+            </tr>
+          </thead>
+          <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+            {#each excludePatterns as excludePattern, i}
+              <tr
+                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                  i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                }`}
+              >
+                <td class="w-2/3 text-ellipsis px-4 text-sm">{excludePattern}</td>
+                <td class="w-1/3 text-ellipsis px-4 text-sm">
+                  <button
+                    on:click={() => {
+                      editExcludePattern(excludePattern);
+                    }}
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  >
+                    <PencilOutline size="16" />
+                  </button>
+
+                  <button
+                    on:click={() => {
+                      removeExcludePattern(excludePattern);
+                    }}
+                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  >
+                    <TrashCanOutline size="16" />
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       {:else}
-        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No exclude patterns</p>
+        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No exclude pattern</p>
       {/if}
+
       <div class="flex justify-end">
         <Button
           size="sm"
