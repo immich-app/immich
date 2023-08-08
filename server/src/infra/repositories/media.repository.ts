@@ -12,7 +12,7 @@ export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
 
   crop(input: string, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOnError: false })
+    return sharp(input, { failOn: 'none' })
       .extract({
         left: options.left,
         top: options.top,
@@ -23,7 +23,7 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOnError: false })
+    await sharp(input, { failOn: 'none' })
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
       .toFormat(options.format)

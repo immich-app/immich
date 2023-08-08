@@ -65,6 +65,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
+  thumbnail: {
+    webpSize: 250,
+    jpegSize: 1440,
+  },
 });
 
 describe(SystemConfigService.name, () => {

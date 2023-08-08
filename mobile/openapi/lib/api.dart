@@ -132,6 +132,7 @@ part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
 part 'model/system_config_storage_template_dto.dart';
 part 'model/system_config_template_storage_option_dto.dart';
+part 'model/system_config_thumbnail_dto.dart';
 part 'model/tag_response_dto.dart';
 part 'model/tag_type_enum.dart';
 part 'model/thumbnail_format.dart';

@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigThumbnailDto thumbnail
+    test('to test the property `thumbnail`', () async {
+      // TODO
+    });
+
 
   });
 
