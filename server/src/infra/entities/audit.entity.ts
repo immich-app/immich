@@ -13,7 +13,7 @@ export enum EntityType {
 @Entity('audit')
 export class AuditEntity {
   @PrimaryGeneratedColumn('increment')
-  id!: string;
+  id!: number;
 
   @Column()
   entityType!: EntityType;
@@ -25,7 +25,7 @@ export class AuditEntity {
   action!: DatabaseAction;
 
   @Column()
-  onwerId!: string;
+  ownerId!: string;
 
   @Column()
   userId!: string;
