@@ -1,6 +1,5 @@
-import { AllJobStatusResponseDto, JobCommandDto, JobIdParamDto, JobService, JobStatusDto } from '@app/domain';
 import { AuditService } from '@app/domain/audit';
-import { Body, Controller, Get } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
