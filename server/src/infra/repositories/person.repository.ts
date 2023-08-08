@@ -1,5 +1,6 @@
 import {
   AssetFaceId,
+  EmbeddingSearch,
   IPersonRepository,
   PersonNameSearchOptions,
   PersonSearchOptions,
@@ -10,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -215,8 +217,17 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
-  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
-    return this.assetFaceRepository.save(entity);
+  async createFace(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
+    if (!entity.personId) {
+      throw new Error('Person ID is required to create a face');
+    }
+    const { embedding, ...face } = entity;
+    await this.assetFaceRepository.save(face);
+    await this.assetFaceRepository.manager.query(
+      `UPDATE "asset_faces" SET "embedding" = ${asVector(embedding)} WHERE "assetId" = $1 AND "personId" = $2`,
+      [entity.assetId, entity.personId],
+    );
+    return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
@@ -232,5 +243,20 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
+  }
+
+  searchByEmbedding({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+    let query = this.assetFaceRepository
+      .createQueryBuilder('faces')
+      .leftJoinAndSelect('faces.asset', 'asset')
+      .where('asset.ownerId = :ownerId', { ownerId })
+      .orderBy(`faces.embedding <=> ${asVector(embedding)}`)
+      .limit(numResults);
+
+    if (maxDistance) {
+      query = query.andWhere(`(faces.embedding <=> ${asVector(embedding)}) <= :maxDistance`, { maxDistance });
+    }
+
+    return query.getMany();
   }
 }

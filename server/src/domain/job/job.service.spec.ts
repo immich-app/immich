@@ -271,7 +271,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, JobName.SEARCH_INDEX_ASSET],
+        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
@@ -315,15 +315,15 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.RECOGNIZE_FACES, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
     ];
 

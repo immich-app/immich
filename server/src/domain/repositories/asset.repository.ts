@@ -1,6 +1,7 @@
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
+import { SearchExploreItem } from '../repositories';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -105,8 +106,7 @@ export enum TimeBucketSize {
   MONTH = 'MONTH',
 }
 
-export interface TimeBucketOptions {
-  size: TimeBucketSize;
+export interface AssetBuilderOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -114,6 +114,12 @@ export interface TimeBucketOptions {
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;
+  exifInfo?: boolean;
+  assetType?: AssetType;
+}
+
+export interface TimeBucketOptions extends AssetBuilderOptions {
+  size: TimeBucketSize;
 }
 
 export interface TimeBucketItem {
@@ -140,6 +146,21 @@ export type AssetCreate = Pick<
 export interface MonthDay {
   day: number;
   month: number;
+}
+
+export interface AssetExploreFieldOptions {
+  maxFields: number;
+  minAssetsPerField: number;
+}
+
+export interface AssetExploreOptions extends AssetExploreFieldOptions {
+  relation: keyof AssetEntity;
+  relatedField: string;
+  unnest?: boolean;
+}
+
+export interface MetadataSearchOptions {
+  numResults: number;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -175,5 +196,7 @@ export interface IAssetRepository {
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
-  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
+  getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  searchMetadata(query: string, userId: string, options: MetadataSearchOptions): Promise<AssetEntity[]>;
 }

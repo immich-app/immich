@@ -47,7 +47,6 @@ export default async () => {
   }
 
   process.env.NODE_ENV = 'development';
-  process.env.TYPESENSE_ENABLED = 'false';
   process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
   process.env.IMMICH_TEST_ENV = 'true';
   process.env.TZ = 'Z';

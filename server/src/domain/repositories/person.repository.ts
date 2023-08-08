@@ -25,6 +25,13 @@ export interface PersonStatistics {
   assets: number;
 }
 
+export interface EmbeddingSearch {
+  ownerId: string;
+  embedding: number[];
+  numResults: number;
+  maxDistance?: number;
+}
+
 export interface IPersonRepository {
   getAll(): Promise<PersonEntity[]>;
   getAllWithoutThumbnail(): Promise<PersonEntity[]>;
@@ -41,9 +48,8 @@ export interface IPersonRepository {
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   delete(entity: PersonEntity): Promise<PersonEntity | null>;
   deleteAll(): Promise<number>;
-
   getStatistics(personId: string): Promise<PersonStatistics>;
-
+  searchByEmbedding(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
   getAllFaces(): Promise<AssetFaceEntity[]>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;

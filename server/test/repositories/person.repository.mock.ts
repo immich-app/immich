@@ -17,6 +17,7 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     delete: jest.fn(),
 
     getStatistics: jest.fn(),
+    searchByEmbedding: jest.fn(),
     getAllFaces: jest.fn(),
     getFacesByIds: jest.fn(),
     getRandomFace: jest.fn(),

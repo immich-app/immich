@@ -1,4 +1,4 @@
-import { DynamicModule, Global, Module, ModuleMetadata, OnApplicationShutdown, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
 import { ActivityService } from './activity';
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
@@ -54,9 +54,7 @@ const providers: Provider[] = [
 
 @Global()
 @Module({})
-export class DomainModule implements OnApplicationShutdown {
-  constructor(private searchService: SearchService) {}
-
+export class DomainModule {
   static register(options: Pick<ModuleMetadata, 'imports'>): DynamicModule {
     return {
       module: DomainModule,
@@ -64,9 +62,5 @@ export class DomainModule implements OnApplicationShutdown {
       providers: [...providers],
       exports: [...providers],
     };
-  }
-
-  onApplicationShutdown() {
-    this.searchService.teardown();
   }
 }

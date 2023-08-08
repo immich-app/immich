@@ -1,5 +1,19 @@
 import { Paginated, PaginationOptions } from '@app/domain';
-import { FindOneOptions, ObjectLiteral, Repository } from 'typeorm';
+import { Between, FindOneOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
+
+/**
+ * Allows optional values unlike the regular Between and uses MoreThanOrEqual
+ * or LessThanOrEqual when only one parameter is specified.
+ */
+export function OptionalBetween<T>(from?: T, to?: T) {
+  if (from && to) {
+    return Between(from, to);
+  } else if (from) {
+    return MoreThanOrEqual(from);
+  } else if (to) {
+    return LessThanOrEqual(to);
+  }
+}
 
 export async function paginate<Entity extends ObjectLiteral>(
   repository: Repository<Entity>,
@@ -18,3 +32,5 @@ export async function paginate<Entity extends ObjectLiteral>(
 
   return { items, hasNextPage };
 }
+
+export const asVector = (embedding: number[]) => `[${embedding.join(',')}]`;
