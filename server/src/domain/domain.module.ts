@@ -2,6 +2,7 @@ import { DynamicModule, Global, Module, ModuleMetadata, OnApplicationShutdown, P
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
+import { AuditService } from './audit';
 import { AuthService } from './auth';
 import { FacialRecognitionService } from './facial-recognition';
 import { JobService } from './job';
@@ -46,6 +47,7 @@ const providers: Provider[] = [
       return configService.getConfig();
     },
   },
+  AuditService,
 ];
 
 @Global()
