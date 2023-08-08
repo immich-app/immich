@@ -2,19 +2,23 @@
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
-  export let value: string;
-  export let options: { value: string; text: string }[];
+  export let value: string | number;
+  export let options: { value: string | number; text: string }[];
   export let label = '';
   export let desc = '';
   export let name = '';
   export let isEdited = false;
+  export let number = false;
 
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
+    if (number) {
+      value = parseInt(value);
+    }
   };
 </script>
 
-<div class="w-full">
+<div class="mb-4 w-full">
   <div class={`flex h-[26px] place-items-center gap-1`}>
     <label class={`immich-form-label text-sm`} for="{name}-select">{label}</label>
 
@@ -29,7 +33,7 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-xs" id="{name}-desc">
+    <p class="immich-form-label pb-2 text-sm" id="{name}-desc">
       {desc}
     </p>
   {/if}

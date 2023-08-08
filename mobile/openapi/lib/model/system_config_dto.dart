@@ -18,6 +18,7 @@ class SystemConfigDto {
     required this.oauth,
     required this.passwordLogin,
     required this.storageTemplate,
+    required this.thumbnail,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -30,13 +31,16 @@ class SystemConfigDto {
 
   SystemConfigStorageTemplateDto storageTemplate;
 
+  SystemConfigThumbnailDto thumbnail;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
      other.job == job &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
-     other.storageTemplate == storageTemplate;
+     other.storageTemplate == storageTemplate &&
+     other.thumbnail == thumbnail;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class SystemConfigDto {
     (job.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
-    (storageTemplate.hashCode);
+    (storageTemplate.hashCode) +
+    (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,6 +62,7 @@ class SystemConfigDto {
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'thumbnail'] = this.thumbnail;
     return json;
   }
 
@@ -73,6 +79,7 @@ class SystemConfigDto {
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
       );
     }
     return null;
@@ -125,6 +132,7 @@ class SystemConfigDto {
     'oauth',
     'passwordLogin',
     'storageTemplate',
+    'thumbnail',
   };
 }
 

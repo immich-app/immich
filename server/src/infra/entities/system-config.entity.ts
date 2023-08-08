@@ -52,6 +52,9 @@ export enum SystemConfigKey {
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
   STORAGE_TEMPLATE = 'storageTemplate.template',
+
+  THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
+  THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
 }
 
 export enum TranscodePolicy {
@@ -120,5 +123,9 @@ export interface SystemConfig {
   };
   storageTemplate: {
     template: string;
+  };
+  thumbnail: {
+    webpSize: number;
+    jpegSize: number;
   };
 }

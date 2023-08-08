@@ -27,7 +27,7 @@
   };
 </script>
 
-<div class="w-full">
+<div class="mb-4 w-full">
   <div class={`flex h-[26px] place-items-center gap-1`}>
     <label class={`immich-form-label text-sm`} for={label}>{label}</label>
     {#if required}
@@ -45,7 +45,7 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-xs" id="{label}-desc">
+    <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
       {desc}
     </p>
   {/if}

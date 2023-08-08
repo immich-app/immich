@@ -2425,6 +2425,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigThumbnailDto}
+     * @memberof SystemConfigDto
+     */
+    'thumbnail': SystemConfigThumbnailDto;
 }
 /**
  * 
@@ -2715,6 +2721,25 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @memberof SystemConfigTemplateStorageOptionDto
      */
     'yearOptions': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigThumbnailDto
+ */
+export interface SystemConfigThumbnailDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'jpegSize': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'webpSize': number;
 }
 /**
  * 
