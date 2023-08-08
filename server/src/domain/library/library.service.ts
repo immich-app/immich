@@ -119,9 +119,9 @@ export class LibraryService {
   }
 
   async handleRefreshAsset(job: ILibraryJob) {
-    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
-
     this.logger.verbose(`Refreshing library asset: ${job.assetPath}`);
+
+    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
     let stats: fs.Stats;
     try {
@@ -149,16 +149,24 @@ export class LibraryService {
 
     if (!existingAssetEntity) {
       // This asset is new to us, read it from disk
+      this.logger.debug(`Importing new asset: ${job.assetPath}`);
       doImport = true;
-    } else if (stats.mtime !== existingAssetEntity.fileModifiedAt) {
-      // File modification time has changed since last time we checked, re-read fro disk
+    } else if (stats.mtime.toISOString !== existingAssetEntity.fileModifiedAt.toISOString) {
+      // File modification time has changed since last time we checked, re-read from disk
+      this.logger.debug(
+        `File modification time has changed, re-importing asset: ${job.assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
+      );
+
       doImport = true;
+    } else if (stats && !job.forceRefresh && !existingAssetEntity.isOffline) {
+      // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
+      this.logger.debug(`Asset already exists in database and on disk, will not import: ${job.assetPath}`);
+      return true;
     }
 
     if (existingAssetEntity?.isOffline) {
       // File was previously offline but is now online
-      this.logger.debug(`Marking offline asset as online: ${job.assetPath}`);
-
+      this.logger.debug(`Marking previously-offline asset as online: ${job.assetPath}`);
       await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
     }
 
