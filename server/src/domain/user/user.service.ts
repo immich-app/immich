@@ -56,16 +56,6 @@ export class UserService {
     return mapUser(user);
   }
 
-  async aknowledgeLatestVersion(authUser: AuthUserDto): Promise<boolean> {
-    const user = await this.userCore.get(authUser.id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    user.acknowledgeLatestVersion = true;
-    await this.userCore.updateUser(authUser, user.id, user);
-    return true;
-  }
-
   async getMe(authUser: AuthUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.get(authUser.id);
     if (!user) {
@@ -95,7 +85,7 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
 
-    if (this.systemConfigService.availableVersion && !user.acknowledgeLatestVersion)
+    if (this.systemConfigService.availableVersion)
       return { availableVersion: this.systemConfigService.availableVersion, available: true };
     else return { available: false };
   }

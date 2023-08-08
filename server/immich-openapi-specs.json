@@ -4304,38 +4304,6 @@
         ]
       }
     },
-    "/user/acknowledge-latest-version": {
-      "post": {
-        "operationId": "aknowledgeLatestVersion",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
     "/user/available-version": {
       "get": {
         "operationId": "getLatestImmichVersionAvailable",

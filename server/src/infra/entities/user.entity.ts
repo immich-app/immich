@@ -59,7 +59,4 @@ export class UserEntity {
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
-
-  @Column({ default: false })
-  acknowledgeLatestVersion!: boolean;
 }

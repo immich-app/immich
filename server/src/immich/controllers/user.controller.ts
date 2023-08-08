@@ -66,12 +66,6 @@ export class UserController {
     return this.service.latestImmichVersionAvailable(authUser);
   }
 
-  @AdminRoute()
-  @Post('/acknowledge-latest-version')
-  aknowledgeLatestVersion(@AuthUser() authUser: AuthUserDto): Promise<boolean> {
-    return this.service.aknowledgeLatestVersion(authUser);
-  }
-
   @PublicRoute()
   @Get('count')
   getUserCount(@Query() dto: CountDto): Promise<UserCountResponseDto> {

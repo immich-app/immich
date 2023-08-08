@@ -3,7 +3,6 @@
   import FullScreenModal from './full-screen-modal.svelte';
   import { api, type ServerVersionReponseDto } from '@api';
   import Button from '../elements/buttons/button.svelte';
-  import { handleError } from '$lib/utils/handle-error';
 
   export let serverVersion: ServerVersionReponseDto;
 
@@ -18,11 +17,9 @@
   }
 
   const onAcknowledge = async () => {
-    try {
-      await api.userApi.aknowledgeLatestVersion();
-    } catch (err) {
-      handleError(err, 'Unable to aknowledge');
-    }
+    // Store server version to prevent the notification
+    // from showing again.
+    localStorage.setItem('appVersion', githubVersion);
 
     showModal = false;
   };

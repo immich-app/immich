@@ -119,7 +119,6 @@ export class SystemConfigService {
           if (temp.toString() !== this.availableVersion.toString()) {
             for (const user of users) {
               if (user.isAdmin) {
-                user.acknowledgeLatestVersion = false;
                 await this.userCore.updateUser(user, user.id, user);
               }
             }
