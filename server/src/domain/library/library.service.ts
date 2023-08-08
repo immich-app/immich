@@ -284,17 +284,7 @@ export class LibraryService {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
 
-    for (const assetPath of crawledAssetPaths) {
-      const libraryJobData: ILibraryJob = {
-        assetPath: path.normalize(assetPath),
-        ownerId: authUser.id,
-        libraryId: libraryId,
-        forceRefresh: dto.forceRefresh ?? false,
-        emptyTrash: dto.emptyTrash ?? false,
-      };
 
-      await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_FILE, data: libraryJobData });
-    }
     const assetsInLibrary = await this.assetRepository.getByLibraryId([libraryId]);
 
     const offlineAssets = assetsInLibrary
@@ -314,6 +304,18 @@ export class LibraryService {
       };
 
       await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: libraryJobData });
+    }
+
+    for (const assetPath of crawledAssetPaths) {
+      const libraryJobData: ILibraryJob = {
+        assetPath: path.normalize(assetPath),
+        ownerId: authUser.id,
+        libraryId: libraryId,
+        forceRefresh: dto.forceRefresh ?? false,
+        emptyTrash: dto.emptyTrash ?? false,
+      };
+
+      await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_FILE, data: libraryJobData });
     }
   }
 }
