@@ -9,7 +9,7 @@ export class AssetAudit implements EntitySubscriberInterface<AssetEntity> {
     return AssetEntity;
   }
 
-  afterLoad(entity: AssetEntity, event?: LoadEvent<AssetEntity> | undefined): void | Promise<any> {
+  afterLoad(entity: AssetEntity): void | Promise<any> {
     this.assetEntity = entity;
   }
 
