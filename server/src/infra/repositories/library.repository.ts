@@ -11,6 +11,10 @@ export class LibraryRepository implements ILibraryRepository {
   get(id: string): Promise<LibraryEntity | null> {
     return this.libraryRepository.findOne({
       where: { id },
+      relations: {
+        assets: true,
+        owner: true,
+      },
     });
   }
 
@@ -44,6 +48,10 @@ export class LibraryRepository implements ILibraryRepository {
       where: {
         ownerId,
         isVisible: true,
+      },
+      relations: {
+        assets: true,
+        owner: true,
       },
     });
   }
