@@ -127,6 +127,7 @@ export class SystemConfigCore {
       updates.push(item);
     }
 
+    console.log('Update config', updates);
     if (updates.length > 0) {
       await this.repository.saveAll(updates);
     }

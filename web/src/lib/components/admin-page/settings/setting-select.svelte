@@ -1,16 +1,18 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
 
-  export let value: string;
-  export let options: { value: string; text: string }[];
+  export let value: string | number;
+  export let options: { value: string | number; text: string }[];
   export let label = '';
   export let desc = '';
   export let name = '';
   export let isEdited = false;
-
+  const dispatch = createEventDispatcher();
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
+    dispatch('change', value);
   };
 </script>
 
