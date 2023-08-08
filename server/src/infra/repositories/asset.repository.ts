@@ -366,10 +366,10 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
-  getTimeBuckets(userId: string, options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+  getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncateValue = truncateMap[options.size];
 
-    return this.getBuilder(userId, options)
+    return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
       .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
@@ -377,25 +377,28 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
-  getByTimeBucket(userId: string, timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
-    return this.getBuilder(userId, options)
+    return this.getBuilder(options)
       .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
       .orderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
 
-  private getBuilder(userId: string, options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId } = options;
+  private getBuilder(options: TimeBucketOptions) {
+    const { isArchived, isFavorite, albumId, personId, userId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
-      .where('asset.ownerId = :userId', { userId })
-      .andWhere('asset.isVisible = true')
+      .where('asset.isVisible = true')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    }
+
+    if (userId) {
+      builder = builder.where('asset.ownerId = :userId', { userId });
     }
 
     if (isArchived != undefined) {

@@ -58,6 +58,7 @@ export interface TimeBucketOptions {
   isFavorite?: boolean;
   albumId?: string;
   personId?: string;
+  userId?: string;
 }
 
 export interface TimeBucketItem {
@@ -82,6 +83,6 @@ export interface IAssetRepository {
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
-  getTimeBuckets(userId: string, options: TimeBucketOptions): Promise<TimeBucketItem[]>;
-  getByTimeBucket(userId: string, timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
+  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
 }

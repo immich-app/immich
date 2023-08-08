@@ -180,6 +180,9 @@ describe(AlbumService.name, () => {
         ownerId: 'admin_id',
         shared: false,
         sharedUsers: [],
+        startDate: undefined,
+        endDate: undefined,
+        hasSharedLink: false,
         updatedAt: expect.anything(),
       });
 
@@ -426,7 +429,7 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.admin, albumStub.oneAsset.id);
+      await sut.get(authStub.admin, albumStub.oneAsset.id, {});
 
       expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id);
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
@@ -436,7 +439,7 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedLinkAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.adminSharedLink, 'album-123');
+      await sut.get(authStub.adminSharedLink, 'album-123', {});
 
       expect(albumMock.getById).toHaveBeenCalledWith('album-123');
       expect(accessMock.album.hasSharedLinkAccess).toHaveBeenCalledWith(
@@ -449,7 +452,7 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.user1, 'album-123');
+      await sut.get(authStub.user1, 'album-123', {});
 
       expect(albumMock.getById).toHaveBeenCalledWith('album-123');
       expect(accessMock.album.hasSharedAlbumAccess).toHaveBeenCalledWith(authStub.user1.id, 'album-123');
@@ -459,7 +462,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(false);
 
-      await expect(sut.get(authStub.admin, 'album-123')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.get(authStub.admin, 'album-123', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-123');
       expect(accessMock.album.hasSharedAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-123');
