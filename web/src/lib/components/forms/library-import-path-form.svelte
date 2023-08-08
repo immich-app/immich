@@ -9,6 +9,7 @@
   export let title = 'Import path';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
+  export let canDelete = false;
 
   const dispatch = createEventDispatcher();
   const handleCancel = () => dispatch('cancel');
@@ -41,6 +42,10 @@
 
         <div class="flex w-full px-4 gap-4 mt-8">
           <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+          {#if canDelete}
+            <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+          {/if}
+
           <Button type="submit" fullwidth>{submitText}</Button>
         </div>
       </form>
