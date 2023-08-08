@@ -35,11 +35,15 @@
       </div>
 
       <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+        <p class="p-5 text-sm">
+          Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named
+          "Raw", use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use
+          "/path/to/ignore".
+        </p>
         <div class="m-4 flex flex-col gap-2">
           <label class="immich-form-label" for="pattern">Pattern</label>
           <input class="immich-form-input" id="name" name="name" type="text" bind:value={excludePattern} />
         </div>
-
         <div class="flex w-full px-4 gap-4 mt-8">
           <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
           {#if canDelete}
