@@ -53,7 +53,7 @@
         systemConfigDto: {
           ...configs,
           thumbnail: {
-            webpSize: parseInt(String(thumbnailConfig.webpSize)),
+            webpSize: thumbnailConfig.webpSize,
           },
         },
       });
@@ -83,6 +83,7 @@
           <SettingSelect
             label="WEBP RESOLUTION"
             desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+            number
             bind:value={thumbnailConfig.webpSize}
             options={[
               { value: 1080, text: '1080p' },
@@ -92,9 +93,6 @@
             ]}
             name="resolution"
             isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
-            on:change={() => {
-              thumbnailConfig.webpSize = parseInt(String(thumbnailConfig.webpSize));
-            }}
           />
         </div>
 
