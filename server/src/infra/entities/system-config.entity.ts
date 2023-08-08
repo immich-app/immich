@@ -53,7 +53,8 @@ export enum SystemConfigKey {
 
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
-  AVAILABLE_IMMICH_VERSION = 'availableImmichVersion.version',
+  THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
+  THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
 }
 
 export enum TranscodePolicy {
@@ -123,9 +124,8 @@ export interface SystemConfig {
   storageTemplate: {
     template: string;
   };
-  availableImmichVersion?: {
-    major: number;
-    minor: number;
-    patch: number;
+  thumbnail: {
+    webpSize: number;
+    jpegSize: number;
   };
 }

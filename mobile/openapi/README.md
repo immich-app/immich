@@ -164,7 +164,6 @@ Class | Method | HTTP request | Description
 *TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
 *TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
 *TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
-*UserApi* | [**aknowledgeLatestVersion**](doc//UserApi.md#aknowledgelatestversion) | **POST** /user/acknowledge-latest-version | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
@@ -271,6 +270,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
+ - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)

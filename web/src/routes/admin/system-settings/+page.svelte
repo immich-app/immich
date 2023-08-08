@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
+  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
@@ -22,6 +23,10 @@
   {#await getConfig()}
     <LoadingSpinner />
   {:then configs}
+    <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
+      <ThumbnailSettings thumbnailConfig={configs.thumbnail} />
+    </SettingAccordion>
+
     <SettingAccordion
       title="FFmpeg Settings"
       subtitle="Manage the resolution and encoding information of the video files"

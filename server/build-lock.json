@@ -6,6 +6,11 @@
       "sha256": "8e3ce1aaad19da9f2ca444072bcc631d193a219e3ee11c13ad6d3c895044142c"
     },
     {
+      "name": "libraw",
+      "version": "0.21.1",
+      "sha256": "b63d7ffa43463f74afcc02f9083048c231349b41cc9255dec0840cf8a67b52e0"
+    },
+    {
       "name": "libvips",
       "version": "8.14.2",
       "sha256": "27dad021f0835a5ab14e541d02abd41e4c3bd012d2196438df5a9e754984f7ce"

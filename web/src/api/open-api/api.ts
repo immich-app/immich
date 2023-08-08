@@ -733,7 +733,7 @@ export interface AvailableVersionResponseDto {
      * @type {SystemConfigImmichVersion}
      * @memberof AvailableVersionResponseDto
      */
-    'availableVersion'?: SystemConfigImmichVersion;
+    'availableVersion': SystemConfigImmichVersion;
 }
 /**
  * 
@@ -2444,6 +2444,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigThumbnailDto}
+     * @memberof SystemConfigDto
+     */
+    'thumbnail': SystemConfigThumbnailDto;
 }
 /**
  * 
@@ -2759,6 +2765,25 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @memberof SystemConfigTemplateStorageOptionDto
      */
     'yearOptions': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigThumbnailDto
+ */
+export interface SystemConfigThumbnailDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'jpegSize': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'webpSize': number;
 }
 /**
  * 
@@ -12204,44 +12229,6 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        aknowledgeLatestVersion: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/user/acknowledge-latest-version`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12712,15 +12699,6 @@ export const UserApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async aknowledgeLatestVersion(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.aknowledgeLatestVersion(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12837,14 +12815,6 @@ export const UserApiFp = function(configuration?: Configuration) {
 export const UserApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = UserApiFp(configuration)
     return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        aknowledgeLatestVersion(options?: AxiosRequestConfig): AxiosPromise<boolean> {
-            return localVarFp.aknowledgeLatestVersion(options).then((request) => request(axios, basePath));
-        },
         /**
          * 
          * @param {UserApiCreateProfileImageRequest} requestParameters Request parameters.
@@ -13078,16 +13048,6 @@ export interface UserApiUpdateUserRequest {
  * @extends {BaseAPI}
  */
 export class UserApi extends BaseAPI {
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UserApi
-     */
-    public aknowledgeLatestVersion(options?: AxiosRequestConfig) {
-        return UserApiFp(this.configuration).aknowledgeLatestVersion(options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {UserApiCreateProfileImageRequest} requestParameters Request parameters.

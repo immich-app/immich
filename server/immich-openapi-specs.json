@@ -5181,7 +5181,8 @@
           }
         },
         "required": [
-          "available"
+          "available",
+          "availableVersion"
         ],
         "type": "object"
       },
@@ -6636,6 +6637,9 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
           }
         },
         "required": [
@@ -6643,7 +6647,8 @@
           "oauth",
           "passwordLogin",
           "storageTemplate",
-          "job"
+          "job",
+          "thumbnail"
         ],
         "type": "object"
       },
@@ -6890,6 +6895,21 @@
           "minuteOptions",
           "secondOptions",
           "presetOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThumbnailDto": {
+        "properties": {
+          "jpegSize": {
+            "type": "integer"
+          },
+          "webpSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "webpSize",
+          "jpegSize"
         ],
         "type": "object"
       },

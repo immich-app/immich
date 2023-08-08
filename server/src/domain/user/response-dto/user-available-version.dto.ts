@@ -13,6 +13,5 @@ export class AvailableVersionResponseDto {
   @IsBoolean()
   available!: boolean;
 
-  @IsOptional()
-  availableVersion?: SystemConfigImmichVersion;
+  availableVersion!: SystemConfigImmichVersion;
 }

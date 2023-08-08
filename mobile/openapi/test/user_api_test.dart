@@ -17,11 +17,6 @@ void main() {
   // final instance = UserApi();
 
   group('tests for UserApi', () {
-    //Future<bool> aknowledgeLatestVersion() async
-    test('test aknowledgeLatestVersion', () async {
-      // TODO
-    });
-
     //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
     test('test createProfileImage', () async {
       // TODO
