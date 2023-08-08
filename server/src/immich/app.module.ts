@@ -38,11 +38,11 @@ import {
     TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
   controllers: [
+    AssetController,
     AssetControllerV1,
     AppController,
     AlbumController,
     APIKeyController,
-    AssetController,
     AuthController,
     JobController,
     LibraryController,
