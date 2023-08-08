@@ -7,4 +7,9 @@ export class SystemConfigThumbnailDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   webpSize!: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  jpegSize!: number;
 }

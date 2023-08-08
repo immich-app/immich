@@ -67,6 +67,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   thumbnail: {
     webpSize: 250,
+    jpegSize: 1440,
   },
 });
 

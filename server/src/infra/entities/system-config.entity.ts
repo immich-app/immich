@@ -54,6 +54,7 @@ export enum SystemConfigKey {
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
+  THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
 }
 
 export enum TranscodePolicy {
@@ -125,5 +126,6 @@ export interface SystemConfig {
   };
   thumbnail: {
     webpSize: number;
+    jpegSize: number;
   };
 }
