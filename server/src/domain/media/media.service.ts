@@ -100,7 +100,8 @@ export class MediaService {
 
     const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
 
-    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
+    const { thumbnail } = await this.configCore.getConfig();
+    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: thumbnail.webpSize, format: 'webp' });
     await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;

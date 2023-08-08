@@ -64,6 +64,10 @@ export const defaults = Object.freeze<SystemConfig>({
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
+
+  thumbnail: {
+    webpSize: 250,
+  },
 });
 
 const singleton = new Subject<SystemConfig>();

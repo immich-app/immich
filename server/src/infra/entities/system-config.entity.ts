@@ -121,4 +121,7 @@ export interface SystemConfig {
   storageTemplate: {
     template: string;
   };
+  thumbnail: {
+    webpSize: number;
+  };
 }
