@@ -13,21 +13,36 @@ export class AssetAudit implements EntitySubscriberInterface<AssetEntity> {
     this.assetEntity = entity;
   }
 
-  afterInsert(event: InsertEvent<AssetEntity>): void | Promise<any> {
-    console.log('AFTER ENTITY INSERTED: ', event.entity);
+  async afterInsert(event: InsertEvent<AssetEntity>): Promise<any> {
+    const auditRepository = event.manager.getRepository(AuditEntity);
+    const auditEntity = this.getAssetAudit(DatabaseAction.CREATE);
+
+    await auditRepository.save(auditEntity);
   }
 
-  afterRemove(event: RemoveEvent<AssetEntity>): void | Promise<any> {
-    console.log('AFTER ENTITY WITH ID ' + event.entityId + ' REMOVED: ', event.entity);
+  async afterRemove(event: RemoveEvent<AssetEntity>): Promise<any> {
+    const auditRepository = event.manager.getRepository(AuditEntity);
+    const auditEntity = this.getAssetAudit(DatabaseAction.DELETE);
+
+    await auditRepository.save(auditEntity);
   }
 
   async afterUpdate(event: UpdateEvent<AssetEntity>): Promise<any> {
-    const audit = event.manager.getRepository(AuditEntity);
+    const auditRepository = event.manager.getRepository(AuditEntity);
+    const auditEntity = this.getAssetAudit(DatabaseAction.UPDATE);
+
+    await auditRepository.save(auditEntity);
+  }
+
+  private getAssetAudit(action: DatabaseAction): AuditEntity {
     const auditEntity = new AuditEntity();
 
-    auditEntity.action = DatabaseAction.UPDATE;
+    auditEntity.action = action;
     auditEntity.entityType = EntityType.ASSET;
+    auditEntity.entityId = this.assetEntity.id;
+    auditEntity.ownerId = this.assetEntity.ownerId;
+    auditEntity.userId = this.assetEntity.ownerId;
 
-    console.log('AFTER ENTITY UPDATED: ', this.assetEntity.isFavorite);
+    return auditEntity;
   }
 }
