@@ -154,40 +154,6 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 - Consider changing `DB_PASSWORD` to something randomly generated
 - Consider changing `TYPESENSE_API_KEY` to something randomly generated
 
-<details>
-<summary>Hosting the machine-learning service on a different system</summary>
-
-To alleviate [performance issues on low-memory systems](/docs/FAQ.md#why-is-immich-slow-on-low-memory-systems-like-the-raspberry-pi) like the Raspberry Pi, you may also host Immich's machine-learning container on a more powerful system (e.g. your laptop or desktop computer):
-
-- Set `IMMICH_MACHINE_LEARNING_URL` to point to the designated ML system, e.g. `http://workstation:3003`
-- Copy your `.env` file and the following `docker-compose.yml` to the ML system:
-
-```yaml
-version: "3.8"
-
-services:
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    volumes:
-      - model-cache:/cache
-    env_file:
-      - .env
-    restart: always
-    ports:
-      - 3003:3003
-
-volumes:
-  model-cache:
-```
-
-- Start the ML container by running `docker-compose up -d` or `docker compose up -d` (depending on your `docker-compose` version).
-
-</details>
-
-
-
 ### Step 3 - Start the containers
 
 From the directory you created in Step 1, (which should now contain your customized `docker-compose.yml` and `.env` files) run `docker-compose up -d`.
