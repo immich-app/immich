@@ -62,8 +62,8 @@ export class UserController {
 
   @AdminRoute()
   @Get('/available-version')
-  getLatestImmichVersionAvailable(@AuthUser() authUser: AuthUserDto): Promise<AvailableVersionResponseDto> {
-    return this.service.latestImmichVersionAvailable(authUser);
+  getLatestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
+    return this.service.latestImmichVersionAvailable();
   }
 
   @PublicRoute()

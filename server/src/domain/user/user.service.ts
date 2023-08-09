@@ -79,12 +79,7 @@ export class UserService {
     return mapUser(createdUser);
   }
 
-  async latestImmichVersionAvailable(authUser: AuthUserDto): Promise<AvailableVersionResponseDto> {
-    const user = await this.userCore.get(authUser.id);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
+  async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
     return { availableVersion: this.systemConfigService.availableVersion };
   }
 

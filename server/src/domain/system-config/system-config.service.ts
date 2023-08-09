@@ -1,11 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ISystemConfigRepository } from '.';
-import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ServerVersion, serverVersion } from '../domain.constant';
 import { GithubRelease, IJobRepository, JobName } from '../job';
-import { UserCore } from '../user/user.core';
-import { IUserRepository } from '../user/user.repository';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -23,7 +20,6 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 export class SystemConfigService {
   private core: SystemConfigCore;
   public availableVersion: ServerVersion | null;
-  private userCore: UserCore;
   private proxyHost: string | null;
   private proxyProtocol: string | null;
   private proxyPort: number | null;
@@ -32,14 +28,10 @@ export class SystemConfigService {
   private logger = new Logger();
 
   constructor(
-    @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-
     @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.availableVersion = null;
-    this.userCore = new UserCore(userRepository, cryptoRepository);
     this.core = new SystemConfigCore(repository);
     this.proxyHost = process.env.PROXY_HOST || null;
     this.proxyProtocol = process.env.PROXY_PROTOCOL || null;
@@ -110,24 +102,10 @@ export class SystemConfigService {
       const temp = new ServerVersion(major, minor, patch);
 
       if (temp.toString().localeCompare(serverVersion.toString(), undefined, { numeric: true }) === 1) {
-        this.logger.debug(`New version detected : ${temp.toString()}`);
-
-        const users = await this.userCore.getList();
-        console.log(temp);
-        console.log(this.availableVersion);
-        if (this.availableVersion) {
-          if (temp.toString() !== this.availableVersion.toString()) {
-            for (const user of users) {
-              if (user.isAdmin) {
-                await this.userCore.updateUser(user, user.id, user);
-              }
-            }
-          }
-        }
-
+        this.logger.debug(`New version Immich version available : ${temp.toString()}`);
         this.availableVersion = temp;
       } else {
-        this.logger.debug('No new version detected');
+        this.logger.debug('No new Immich version available detected');
       }
 
       return true;
