@@ -51,15 +51,12 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
               fileName: '...',
               fileType: '...',
             ),
-            manualUploadsTotal: 0,
-            manualUploadSuccess: 0,
-            manualUploadFailures: 0,
+            totalAssetsToUpload: 0,
+            successfulUploads: 0,
+            currentAssetIndex: 0,
             showDetailedNotification: false,
           ),
         );
-
-  int get _uploadedAssetsCount =>
-      state.manualUploadSuccess + state.manualUploadFailures;
 
   String _lastPrintedDetailContent = '';
   String? _lastPrintedDetailTitle;
@@ -76,11 +73,11 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       _localNotificationService.showOrUpdateManualUploadStatus(
         "backup_background_service_in_progress_notification".tr(),
         formatAssetBackupProgress(
-          _uploadedAssetsCount,
-          state.manualUploadsTotal,
+          state.currentAssetIndex,
+          state.totalAssetsToUpload,
         ),
-        maxProgress: state.manualUploadsTotal,
-        progress: _uploadedAssetsCount,
+        maxProgress: state.totalAssetsToUpload,
+        progress: state.currentAssetIndex,
         showActions: true,
       );
     }
@@ -103,7 +100,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           maxProgress: 1000,
           isDetailed: true,
           // Detailed noitifcation is displayed for Single asset uploads. Show actions for such case
-          showActions: state.manualUploadsTotal == 1,
+          showActions: state.totalAssetsToUpload == 1,
         );
       }
     }
@@ -114,13 +111,11 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     String deviceId,
     bool isDuplicated,
   ) {
-    state = state.copyWith(manualUploadSuccess: state.manualUploadSuccess + 1);
+    state = state.copyWith(successfulUploads: state.successfulUploads + 1);
     _backupProvider.updateServerInfo();
   }
 
   void _onAssetUploadError(ErrorUploadAsset errorAssetInfo) {
-    state =
-        state.copyWith(manualUploadFailures: state.manualUploadFailures + 1);
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
 
@@ -136,8 +131,11 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    state = state.copyWith(currentUploadAsset: currentUploadAsset);
-    if (state.manualUploadsTotal > 1) {
+    state = state.copyWith(
+      currentUploadAsset: currentUploadAsset,
+      currentAssetIndex: state.currentAssetIndex + 1,
+    );
+    if (state.totalAssetsToUpload > 1) {
       _throttledNotifiy();
     }
     if (state.showDetailedNotification) {
@@ -169,9 +167,9 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
         state = state.copyWith(
           progressInPercentage: 0,
-          manualUploadsTotal: allUploadAssets.length,
-          manualUploadSuccess: 0,
-          manualUploadFailures: 0,
+          totalAssetsToUpload: allUploadAssets.length,
+          successfulUploads: 0,
+          currentAssetIndex: 0,
           currentUploadAsset: CurrentUploadAsset(
             id: '...',
             fileCreatedAt: DateTime.parse('2020-10-04'),
@@ -183,7 +181,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         // Reset Error List
         ref.watch(errorBackupListProvider.notifier).empty();
 
-        if (state.manualUploadsTotal > 1) {
+        if (state.totalAssetsToUpload > 1) {
           _throttledNotifiy();
         }
 
@@ -192,7 +190,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             ref.read(appSettingsServiceProvider).getSetting<bool>(
                       AppSettingsEnum.backgroundBackupSingleProgress,
                     ) ||
-                state.manualUploadsTotal == 1;
+                state.totalAssetsToUpload == 1;
         state =
             state.copyWith(showDetailedNotification: showDetailedNotification);
 
@@ -211,7 +209,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         );
 
         _log.info(
-          '[_startUpload] Manual Upload Completed - success: ${state.manualUploadSuccess}, failed: ${state.manualUploadFailures}',
+          '[_startUpload] Manual Upload Completed - success: ${state.successfulUploads}, failed: ${state.currentAssetIndex}',
         );
         bool hasErrors = false;
         // User cancelled upload
@@ -222,8 +220,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             presentBanner: true,
           );
           hasErrors = true;
-        } else if ((state.manualUploadFailures != 0 &&
-                state.manualUploadSuccess == 0) ||
+        } else if (state.successfulUploads == 0 ||
             (!ok && !state.cancelToken.isCancelled)) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
             "backup_manual_title".tr(),
@@ -231,7 +228,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             presentBanner: true,
           );
           hasErrors = true;
-        } else if (state.manualUploadSuccess != 0) {
+        } else {
           await _localNotificationService.showOrUpdateManualUploadStatus(
             "backup_manual_title".tr(),
             "backup_manual_success".tr(),
