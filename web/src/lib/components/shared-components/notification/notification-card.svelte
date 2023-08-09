@@ -29,7 +29,7 @@
     }
 
     if (notificationInfo.type === NotificationType.Warning) {
-      return '#FDE7A3';
+      return '#FFF6DC';
     }
   };
 
@@ -43,7 +43,7 @@
     }
 
     if (notificationInfo.type === NotificationType.Warning) {
-      return '1px solid #D8DDFF';
+      return '1px solid #FFE6A5';
     }
   };
 
