@@ -21,6 +21,7 @@ class UserResponseDto {
     required this.id,
     required this.isAdmin,
     required this.lastName,
+    required this.memoriesEnabled,
     required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
@@ -44,6 +45,8 @@ class UserResponseDto {
 
   String lastName;
 
+  bool memoriesEnabled;
+
   String oauthId;
 
   String profileImagePath;
@@ -64,6 +67,7 @@ class UserResponseDto {
      other.id == id &&
      other.isAdmin == isAdmin &&
      other.lastName == lastName &&
+     other.memoriesEnabled == memoriesEnabled &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
@@ -81,6 +85,7 @@ class UserResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (lastName.hashCode) +
+    (memoriesEnabled.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -88,7 +93,7 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,6 +113,7 @@ class UserResponseDto {
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
       json[r'lastName'] = this.lastName;
+      json[r'memoriesEnabled'] = this.memoriesEnabled;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -136,6 +142,7 @@ class UserResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
+        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -196,6 +203,7 @@ class UserResponseDto {
     'id',
     'isAdmin',
     'lastName',
+    'memoriesEnabled',
     'oauthId',
     'profileImagePath',
     'shouldChangePassword',
