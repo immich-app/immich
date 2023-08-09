@@ -1,7 +1,5 @@
 export class AvailableVersionResponseDto {
-  available!: boolean;
-
-  availableVersion?: SystemConfigImmichVersion;
+  availableVersion!: SystemConfigImmichVersion | null;
 }
 class SystemConfigImmichVersion {
   major!: number;

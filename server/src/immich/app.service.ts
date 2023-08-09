@@ -1,9 +1,9 @@
 import { JobService, MACHINE_LEARNING_ENABLED, SearchService, StorageService, SystemConfigService } from '@app/domain';
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
   private logger = new Logger(AppService.name);
 
   constructor(
@@ -11,15 +11,21 @@ export class AppService {
     private searchService: SearchService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
+
+  onModuleInit() {
+    const time = (Number(process.env.DISABLE_CHECK_LATEST_VERSION) || 6) * 60 * 60 * 1000;
+    const interval = setInterval(() => this.intervalImmichLatestVersionAvailable(), time);
+    this.schedulerRegistry.addInterval('custom-interval', interval);
+  }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async onNightlyJob() {
     await this.jobService.handleNightlyJobs();
   }
 
-  @Interval(15 * 1000)
-  async onEveryDay() {
+  async intervalImmichLatestVersionAvailable() {
     await this.systemConfigService.handleImmichLatestVersionAvailable();
   }
 

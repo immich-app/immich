@@ -724,16 +724,10 @@ export interface AuthDeviceResponseDto {
 export interface AvailableVersionResponseDto {
     /**
      * 
-     * @type {boolean}
-     * @memberof AvailableVersionResponseDto
-     */
-    'available': boolean;
-    /**
-     * 
      * @type {SystemConfigImmichVersion}
      * @memberof AvailableVersionResponseDto
      */
-    'availableVersion'?: SystemConfigImmichVersion;
+    'availableVersion': SystemConfigImmichVersion | null;
 }
 /**
  * 

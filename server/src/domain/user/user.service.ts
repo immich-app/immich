@@ -86,8 +86,8 @@ export class UserService {
     }
 
     if (this.systemConfigService.availableVersion)
-      return { availableVersion: this.systemConfigService.availableVersion, available: true };
-    else return { available: false };
+      return { availableVersion: this.systemConfigService.availableVersion };
+    else return { availableVersion: null };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

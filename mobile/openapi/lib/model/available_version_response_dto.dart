@@ -13,37 +13,25 @@ part of openapi.api;
 class AvailableVersionResponseDto {
   /// Returns a new [AvailableVersionResponseDto] instance.
   AvailableVersionResponseDto({
-    required this.available,
-    this.availableVersion,
+    required this.availableVersion,
   });
 
-  bool available;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   SystemConfigImmichVersion? availableVersion;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AvailableVersionResponseDto &&
-     other.available == available &&
      other.availableVersion == availableVersion;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (available.hashCode) +
     (availableVersion == null ? 0 : availableVersion!.hashCode);
 
   @override
-  String toString() => 'AvailableVersionResponseDto[available=$available, availableVersion=$availableVersion]';
+  String toString() => 'AvailableVersionResponseDto[availableVersion=$availableVersion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'available'] = this.available;
     if (this.availableVersion != null) {
       json[r'availableVersion'] = this.availableVersion;
     } else {
@@ -60,7 +48,6 @@ class AvailableVersionResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AvailableVersionResponseDto(
-        available: mapValueOfType<bool>(json, r'available')!,
         availableVersion: SystemConfigImmichVersion.fromJson(json[r'availableVersion']),
       );
     }
@@ -109,7 +96,7 @@ class AvailableVersionResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'available',
+    'availableVersion',
   };
 }
 

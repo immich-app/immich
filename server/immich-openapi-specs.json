@@ -5173,15 +5173,17 @@
       },
       "AvailableVersionResponseDto": {
         "properties": {
-          "available": {
-            "type": "boolean"
-          },
           "availableVersion": {
-            "$ref": "#/components/schemas/SystemConfigImmichVersion"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigImmichVersion"
+              }
+            ],
+            "nullable": true
           }
         },
         "required": [
-          "available"
+          "availableVersion"
         ],
         "type": "object"
       },

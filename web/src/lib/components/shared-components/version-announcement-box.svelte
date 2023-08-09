@@ -16,11 +16,10 @@
     return `v${major}.${minor}.${patch}`;
   }
 
-  const onAcknowledge = async () => {
+  const onAcknowledge = () => {
     // Store server version to prevent the notification
     // from showing again.
     localStorage.setItem('appVersion', githubVersion);
-
     showModal = false;
   };
 
@@ -40,7 +39,7 @@
         return;
       }
 
-      if (data.available && !disable_check && !import.meta.env.DEV) {
+      if (data.availableVersion && !disable_check && !import.meta.env.DEV) {
         showModal = true;
       }
     } catch (err) {
