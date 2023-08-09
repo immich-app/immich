@@ -73,7 +73,7 @@ export const defaults = Object.freeze<SystemConfig>({
 
   proxy: {
     enabled: false,
-    protocol: ProxyProtocol.HTTPS,
+    protocol: ProxyProtocol.HTTP,
     hostname: '',
     port: '',
   },
