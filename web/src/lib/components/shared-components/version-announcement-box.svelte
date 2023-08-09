@@ -6,8 +6,6 @@
 
   export let serverVersion: ServerVersionReponseDto;
 
-  const disable_check: boolean = import.meta.env.CHECK_NEW_VERSION_INTERVAL === '0';
-
   let showModal = false;
   let githubVersion: string;
   $: serverVersionName = semverToName(serverVersion);
@@ -39,7 +37,7 @@
         return;
       }
 
-      if (data.availableVersion && !disable_check && !import.meta.env.DEV) {
+      if (data.availableVersion && !import.meta.env.DEV) {
         showModal = true;
       }
     } catch (err) {

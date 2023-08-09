@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ISystemConfigRepository } from '.';
 import { ServerVersion, serverVersion } from '../domain.constant';
-import { GithubRelease, IJobRepository, JobName } from '../job';
+import { IJobRepository, JobName } from '../job';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -15,6 +15,10 @@ import {
   supportedYearTokens,
 } from './system-config.constants';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
+
+export type GithubRelease = {
+  tag_name: string;
+};
 
 @Injectable()
 export class SystemConfigService {
@@ -110,7 +114,7 @@ export class SystemConfigService {
 
       return true;
     } catch (error) {
-      console.error('Error occurred:', error);
+      this.logger.error('Error occurred:', error);
       return false;
     }
   }

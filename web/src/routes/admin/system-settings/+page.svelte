@@ -10,6 +10,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { api } from '@api';
   import type { PageData } from './$types';
+  import ProxySettings from '$lib/components/admin-page/settings/proxy/proxy-settings.svelte';
 
   export let data: PageData;
 
@@ -56,6 +57,10 @@
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
       <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Proxy Settings" subtitle="Manage your proxy settings">
+      <ProxySettings proxyConfig={configs.proxy} />
     </SettingAccordion>
   {/await}
 </section>

@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigProxyDto proxy
+    test('to test the property `proxy`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO

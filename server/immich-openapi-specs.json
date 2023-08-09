@@ -6129,6 +6129,13 @@
         },
         "type": "object"
       },
+      "ProxyProtocol": {
+        "enum": [
+          "http",
+          "https"
+        ],
+        "type": "string"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -6636,6 +6643,9 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
+          "proxy": {
+            "$ref": "#/components/schemas/SystemConfigProxyDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -6649,7 +6659,8 @@
           "passwordLogin",
           "storageTemplate",
           "job",
-          "thumbnail"
+          "thumbnail",
+          "proxy"
         ],
         "type": "object"
       },
@@ -6829,6 +6840,29 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigProxyDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "port": {
+            "type": "string"
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/ProxyProtocol"
+          }
+        },
+        "required": [
+          "protocol",
+          "enabled",
+          "hostname",
+          "port"
         ],
         "type": "object"
       },

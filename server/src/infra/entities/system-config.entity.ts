@@ -90,6 +90,11 @@ export enum ToneMapping {
   DISABLED = 'disabled',
 }
 
+export enum ProxyProtocol {
+  HTTP = 'http',
+  HTTPS = 'https',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -127,5 +132,11 @@ export interface SystemConfig {
   thumbnail: {
     webpSize: number;
     jpegSize: number;
+  };
+  proxy: {
+    enabled: boolean;
+    protocol: ProxyProtocol;
+    hostname: string;
+    port: string;
   };
 }

@@ -1,5 +1,6 @@
 import {
   AudioCodec,
+  ProxyProtocol,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -68,6 +69,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
+  },
+  proxy: {
+    enabled: false,
+    protocol: ProxyProtocol.HTTP,
+    hostname: '',
+    port: '',
   },
 });
 

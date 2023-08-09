@@ -305,6 +305,8 @@ class ApiClient {
           return PersonResponseDto.fromJson(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
+        case 'ProxyProtocol':
+          return ProxyProtocolTypeTransformer().decode(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'SearchAlbumResponseDto':
@@ -359,6 +361,8 @@ class ApiClient {
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
           return SystemConfigPasswordLoginDto.fromJson(value);
+        case 'SystemConfigProxyDto':
+          return SystemConfigProxyDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
