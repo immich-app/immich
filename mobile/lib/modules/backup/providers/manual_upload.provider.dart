@@ -15,6 +15,7 @@ import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.pr
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
@@ -209,7 +210,8 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         );
 
         _log.info(
-          '[_startUpload] Manual Upload Completed - success: ${state.successfulUploads}, failed: ${state.currentAssetIndex}',
+          '[_startUpload] Manual Upload Completed - success: ${state.successfulUploads},'
+          ' failed: ${state.totalAssetsToUpload - state.successfulUploads}',
         );
         bool hasErrors = false;
         // User cancelled upload
@@ -237,6 +239,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         }
 
         _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
+        _handleAppInActivity();
         await _backupProvider.notifyBackgroundServiceCanRun();
         return !hasErrors;
       } else {
@@ -246,20 +249,33 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     } catch (e) {
       debugPrint("ERROR _startUpload: ${e.toString()}");
     }
+    _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
+    _handleAppInActivity();
     await _localNotificationService.closeNotification(
       LocalNotificationService.manualUploadDetailedNotificationID,
     );
-    _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     await _backupProvider.notifyBackgroundServiceCanRun();
     return false;
   }
 
+  void _handleAppInActivity() {
+    final appState = ref.read(appStateProvider.notifier).getAppState();
+    // The app is currently in background. Perform the necessary cleanups which
+    // are on-hold for upload completion
+    if (appState != AppStateEnum.active || appState != AppStateEnum.resumed) {
+      ref.read(appStateProvider.notifier).handleAppInactivity();
+    }
+  }
+
   void cancelBackup() {
-    if (_backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
+    if (_backupProvider.backupProgress != BackUpProgressEnum.inProgress &&
+        _backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
       _backupProvider.notifyBackgroundServiceCanRun();
     }
     state.cancelToken.cancel();
-    _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
+    if (_backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
+      _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
+    }
     state = state.copyWith(progressInPercentage: 0);
   }
 
