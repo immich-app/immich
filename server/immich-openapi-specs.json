@@ -5396,6 +5396,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -7004,6 +7007,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -7092,6 +7098,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
           "oauthId": {
             "type": "string"
           },
@@ -7123,7 +7132,8 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "memoriesEnabled"
         ],
         "type": "object"
       },

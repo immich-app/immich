@@ -59,7 +59,9 @@
   <svelte:fragment slot="content">
     {#if assetCount}
       <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
-        <MemoryLane />
+        {#if data.user.memoriesEnabled}
+          <MemoryLane />
+        {/if}
       </AssetGrid>
     {:else}
       <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={() => openFileUploadDialog()} />

@@ -143,6 +143,24 @@ describe(`${UserController.name}`, () => {
       });
       expect(status).toBe(201);
     });
+
+    it('should create a user without memories enabled', async () => {
+      const { status, body } = await request(server)
+        .post(`/user`)
+        .send({
+          email: 'no-memories@immich.app',
+          password: 'Password123',
+          firstName: 'No Memories',
+          lastName: 'User',
+          memoriesEnabled: false,
+        })
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(body).toMatchObject({
+        email: 'no-memories@immich.app',
+        memoriesEnabled: false,
+      });
+      expect(status).toBe(201);
+    });
   });
 
   describe('PUT /user', () => {
@@ -203,6 +221,21 @@ describe(`${UserController.name}`, () => {
         updatedAt: expect.anything(),
         firstName: 'First Name',
         lastName: 'Last Name',
+      });
+      expect(before.updatedAt).not.toEqual(after.updatedAt);
+    });
+
+    it('should update memories enabled', async () => {
+      const before = await api.userApi.get(server, accessToken, loginResponse.userId);
+      const after = await api.userApi.update(server, accessToken, {
+        id: before.id,
+        memoriesEnabled: false,
+      });
+
+      expect(after).toMatchObject({
+        ...before,
+        updatedAt: expect.anything(),
+        memoriesEnabled: false,
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });
