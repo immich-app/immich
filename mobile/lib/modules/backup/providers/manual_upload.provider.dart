@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.d
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/manual_upload_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -120,6 +121,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   void _onAssetUploadError(ErrorUploadAsset errorAssetInfo) {
     state =
         state.copyWith(manualUploadFailures: state.manualUploadFailures + 1);
+    ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
 
   void _onProgress(int sent, int total) {
@@ -178,6 +180,8 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           ),
           cancelToken: CancellationToken(),
         );
+        // Reset Error List
+        ref.watch(errorBackupListProvider.notifier).empty();
 
         if (state.manualUploadsTotal > 1) {
           _throttledNotifiy();
