@@ -5181,8 +5181,7 @@
           }
         },
         "required": [
-          "available",
-          "availableVersion"
+          "available"
         ],
         "type": "object"
       },

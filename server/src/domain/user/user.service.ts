@@ -2,7 +2,6 @@ import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { serverVersion } from '..';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
@@ -88,7 +87,7 @@ export class UserService {
 
     if (this.systemConfigService.availableVersion)
       return { availableVersion: this.systemConfigService.availableVersion, available: true };
-    else return { availableVersion: serverVersion, available: false };
+    else return { available: false };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

@@ -733,7 +733,7 @@ export interface AvailableVersionResponseDto {
      * @type {SystemConfigImmichVersion}
      * @memberof AvailableVersionResponseDto
      */
-    'availableVersion': SystemConfigImmichVersion;
+    'availableVersion'?: SystemConfigImmichVersion;
 }
 /**
  * 
