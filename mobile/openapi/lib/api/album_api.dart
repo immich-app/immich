@@ -264,8 +264,10 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] withoutAssets:
+  ///
   /// * [String] key:
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, }) async {
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { bool? withoutAssets, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}'
       .replaceAll('{id}', id);
@@ -277,6 +279,9 @@ class AlbumApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (withoutAssets != null) {
+      queryParams.addAll(_queryParams('', 'withoutAssets', withoutAssets));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -299,9 +304,11 @@ class AlbumApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] withoutAssets:
+  ///
   /// * [String] key:
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, );
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { bool? withoutAssets, String? key, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  withoutAssets: withoutAssets, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

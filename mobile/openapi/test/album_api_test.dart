@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumResponseDto> getAlbumInfo(String id, { String key }) async
+    //Future<AlbumResponseDto> getAlbumInfo(String id, { bool withoutAssets, String key }) async
     test('test getAlbumInfo', () async {
       // TODO
     });
