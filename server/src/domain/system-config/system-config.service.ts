@@ -44,7 +44,7 @@ export class SystemConfigService {
     this.proxyHost = process.env.PROXY_HOST || null;
     this.proxyProtocol = process.env.PROXY_PROTOCOL || null;
     this.proxyPort = Number(process.env.PROXY_PORT) || null;
-    this.disableCheckLatestVersion = Boolean(process.env.DISABLE_CHECK_LATEST_VERSION) || false;
+    this.disableCheckLatestVersion = process.env.CHECK_NEW_VERSION_INTERVAL === '0';
   }
 
   get config$() {
@@ -82,6 +82,9 @@ export class SystemConfigService {
   }
 
   async handleImmichLatestVersionAvailable() {
+    if (this.disableCheckLatestVersion) {
+      return true;
+    }
     const proxy =
       this.proxyHost && this.proxyPort && this.proxyProtocol
         ? {
@@ -91,9 +94,6 @@ export class SystemConfigService {
           }
         : false;
 
-    if (this.disableCheckLatestVersion) {
-      return true;
-    }
     try {
       const { data } = await axios.get<GithubRelease>(
         'https://api.github.com/repos/immich-app/immich/releases/latest',

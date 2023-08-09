@@ -15,9 +15,12 @@ export class AppService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const time = (Number(process.env.DISABLE_CHECK_LATEST_VERSION) || 6) * 60 * 60 * 1000;
-    const interval = setInterval(() => this.intervalImmichLatestVersionAvailable(), time);
-    this.schedulerRegistry.addInterval('custom-interval', interval);
+    const time = (Number(process.env.CHECK_NEW_VERSION_INTERVAL) || 6) * 60 * 60 * 1000;
+
+    if (time > 0) {
+      const interval = setInterval(() => this.intervalImmichLatestVersionAvailable(), time);
+      this.schedulerRegistry.addInterval('custom-interval', interval);
+    }
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

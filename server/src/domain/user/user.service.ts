@@ -85,9 +85,7 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
 
-    if (this.systemConfigService.availableVersion)
-      return { availableVersion: this.systemConfigService.availableVersion };
-    else return { availableVersion: null };
+    return { availableVersion: this.systemConfigService.availableVersion };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

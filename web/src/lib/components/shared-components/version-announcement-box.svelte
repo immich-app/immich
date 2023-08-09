@@ -6,7 +6,7 @@
 
   export let serverVersion: ServerVersionReponseDto;
 
-  const disable_check: boolean = import.meta.env.DISABLE_CHECK_LATEST_VERSION === 'true';
+  const disable_check: boolean = import.meta.env.CHECK_NEW_VERSION_INTERVAL === '0';
 
   let showModal = false;
   let githubVersion: string;
