@@ -55,7 +55,6 @@ const adminUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: 'admin',
   externalPath: null,
-  acknowledgeLatestVersion: false,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -75,7 +74,6 @@ const immichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
-  acknowledgeLatestVersion: false,
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -95,7 +93,6 @@ const updatedImmichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
-  acknowledgeLatestVersion: false,
 });
 
 const adminUserResponse = Object.freeze({

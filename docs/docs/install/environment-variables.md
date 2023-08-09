@@ -15,17 +15,17 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                     | Description                                                                                    |   Default    | Services                                     |
-| :--------------------------- | :--------------------------------------------------------------------------------------------- | :----------: | :------------------------------------------- |
-| `TZ`                         | Timezone                                                                                       |              | microservices                                |
-| `NODE_ENV`                   | Environment (production, development)                                                          | `production` | server, microservices, machine learning, web |
-| `LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                                   |    `log`     | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`      | Media Location                                                                                 |  `./upload`  | server, microservices                        |
-| `PUBLIC_LOGIN_PAGE_MESSAGE`  | Public Login Page Message                                                                      |              | server                                       |
-| `CHECK_NEW_VERSION_INTERVAL` | The interval the server fetches the latest available immich version. Set it to 0 to disable it |   `false`    | server                                       |
-| `PROXY_PROTOCOL`             | Proxy protocol (http, https)                                                                   |              | server                                       |
-| `PROXY_HOST`                 | Proxy host (ip address, hostname)                                                              |              | server                                       |
-| `PROXY_PORT`                 | Proxy Port                                                                                     |              | server                                       |
+| Variable                     | Description                                                                                                                      |   Default    | Services                                     |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------- | :----------: | :------------------------------------------- |
+| `TZ`                         | Timezone                                                                                                                         |              | microservices                                |
+| `NODE_ENV`                   | Environment (production, development)                                                                                            | `production` | server, microservices, machine learning, web |
+| `LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                                                                     |    `log`     | server, microservices                        |
+| `IMMICH_MEDIA_LOCATION`      | Media Location                                                                                                                   |  `./upload`  | server, microservices                        |
+| `PUBLIC_LOGIN_PAGE_MESSAGE`  | Public Login Page Message                                                                                                        |              | server                                       |
+| `CHECK_NEW_VERSION_INTERVAL` | Time interval in hours for retrieving the most recent available Immich version from GitHub. Can be disabled by setting it to `0` |     `6`      | server                                       |
+| `PROXY_PROTOCOL`             | Proxy protocol (http, https)                                                                                                     |              | server                                       |
+| `PROXY_HOST`                 | Proxy host (ip address, hostname)                                                                                                |              | server                                       |
+| `PROXY_PORT`                 | Proxy Port                                                                                                                       |              | server                                       |
 
 :::tip
 
