@@ -40,7 +40,7 @@
       if (duplicateCount > 0) {
         notificationController.show({
           message: `Skipped ${duplicateCount} duplicate picture${duplicateCount > 1 ? 's' : ''}`,
-          type: NotificationType.Warning
+          type: NotificationType.Warning,
         });
         uploadAssetsStore.duplicateCounter.set(0);
       }
