@@ -808,6 +808,39 @@
         "tags": [
           "Asset"
         ]
+      },
+      "put": {
+        "operationId": "updateAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetBulkUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
       }
     },
     "/asset/assetById/{id}": {
@@ -4838,6 +4871,27 @@
           "search",
           "recognizeFaces",
           "sidecar"
+        ],
+        "type": "object"
+      },
+      "AssetBulkUpdateDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ids"
         ],
         "type": "object"
       },

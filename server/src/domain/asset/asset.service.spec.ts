@@ -514,4 +514,22 @@ describe(AssetService.name, () => {
       expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, {});
     });
   });
+
+  describe('updateAll', () => {
+    it('should require asset write access for all ids', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(
+        sut.updateAll(authStub.admin, {
+          ids: ['asset-1'],
+          isArchived: false,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should update all assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
+      expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+    });
+  });
 });

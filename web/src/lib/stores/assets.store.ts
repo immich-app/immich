@@ -180,12 +180,19 @@ export class AssetStore {
     this.emit(false);
   }
 
-  removeAsset(assetId: string) {
+  removeAssets(ids: string[]) {
+    // TODO: this could probably be more efficient
+    for (const id of ids) {
+      this.removeAsset(id);
+    }
+  }
+
+  removeAsset(id: string) {
     for (let i = 0; i < this.buckets.length; i++) {
       const bucket = this.buckets[i];
       for (let j = 0; j < bucket.assets.length; j++) {
         const asset = bucket.assets[j];
-        if (asset.id !== assetId) {
+        if (asset.id !== id) {
           continue;
         }
 
