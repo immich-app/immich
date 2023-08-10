@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **externalPath** | **String** |  | [optional] 
 **firstName** | **String** |  | 
 **lastName** | **String** |  | 
+**memoriesEnabled** | **bool** |  | [optional] 
 **password** | **String** |  | 
 **storageLabel** | **String** |  | [optional] 
 

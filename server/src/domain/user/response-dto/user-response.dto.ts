@@ -14,6 +14,7 @@ export class UserResponseDto {
   deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
+  memoriesEnabled!: boolean;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -31,5 +32,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
+    memoriesEnabled: entity.memoriesEnabled,
   };
 }
