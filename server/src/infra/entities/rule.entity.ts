@@ -22,7 +22,6 @@ export class RuleEntity {
   @Column()
   albumId!: string;
 
-  @Index('IDX_smartAlbumPolicy_albumId')
   @ManyToOne(() => AlbumEntity, (album) => album.rules, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   album!: AlbumEntity;
 }
