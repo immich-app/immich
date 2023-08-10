@@ -16,7 +16,7 @@
       const { data } = await api.userApi.updateUser({
         updateUserDto: {
           id: user.id,
-          memoriesEnabled: true,
+          memoriesEnabled: user.memoriesEnabled,
         },
       });
 
