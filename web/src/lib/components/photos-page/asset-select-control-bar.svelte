@@ -2,8 +2,8 @@
   import { createContext } from '$lib/utils/context';
 
   export type OnAssetDelete = (assetId: string) => void;
-  export type OnAssetArchive = (asset: AssetResponseDto, archived: boolean) => void;
-  export type OnAssetFavorite = (asset: AssetResponseDto, favorite: boolean) => void;
+  export type OnArchive = (ids: string[], isArchived: boolean) => void;
+  export type OnFavorite = (ids: string[], favorite: boolean) => void;
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.

@@ -202,11 +202,7 @@
       <AssetSelectContextMenu icon={DotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <ArchiveAction
-          menuItem
-          unarchive={isAllArchive}
-          onAssetArchive={(asset) => $assetStore.removeAsset(asset.id)}
-        />
+        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}

@@ -51,7 +51,7 @@
         <AssetSelectContextMenu icon={DotsVertical} title="Menu">
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
           <DownloadAction menuItem />
-          <ArchiveAction menuItem onAssetArchive={(asset) => assetStore.removeAsset(asset.id)} />
+          <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
     {/if}
