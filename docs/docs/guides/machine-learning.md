@@ -7,10 +7,9 @@ To alleviate [performance issues on low-memory systems](/docs/FAQ.md#why-is-immi
 - Start the container by running `docker-compose up -d` or `docker compose up -d` (depending on your Docker version).
 
 ```yaml
-version: "3.8"
+version: '3.8'
 
 services:
-
   immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
