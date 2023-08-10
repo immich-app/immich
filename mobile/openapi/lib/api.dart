@@ -52,6 +52,7 @@ part 'model/admin_signup_response_dto.dart';
 part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/all_job_status_response_dto.dart';
+part 'model/asset_bulk_update_dto.dart';
 part 'model/asset_bulk_upload_check_dto.dart';
 part 'model/asset_bulk_upload_check_item.dart';
 part 'model/asset_bulk_upload_check_response_dto.dart';
