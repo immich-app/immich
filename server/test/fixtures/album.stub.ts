@@ -17,7 +17,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -32,7 +32,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1],
-    policies: [],
+    rules: [],
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -47,7 +47,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
-    policies: [],
+    rules: [],
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -62,7 +62,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.admin],
-    policies: [],
+    rules: [],
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -77,7 +77,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -92,7 +92,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -107,7 +107,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -122,7 +122,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -137,7 +137,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -152,6 +152,6 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
-    policies: [],
+    rules: [],
   }),
 };

@@ -2,13 +2,13 @@ import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeor
 import { AlbumEntity } from './album.entity';
 import { UserEntity } from './user.entity';
 
-@Entity('smart-album-policies')
-export class SmartAlbumPolicyEntity {
+@Entity('rules')
+export class RuleEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column()
-  type!: PolicyType;
+  key!: RuleKey;
 
   @Column()
   value!: string;
@@ -23,11 +23,11 @@ export class SmartAlbumPolicyEntity {
   albumId!: string;
 
   @Index('IDX_smartAlbumPolicy_albumId')
-  @ManyToOne(() => AlbumEntity, (album) => album.policies, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ManyToOne(() => AlbumEntity, (album) => album.rules, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   album!: AlbumEntity;
 }
 
-export enum PolicyType {
-  PERSON = 'PERSON', // Value is a personId
-  LOCATION = 'LOCATION', // Value is the location in text
+export enum RuleKey {
+  PERSON = 'personId',
+  EXIF_CITY = 'exifInfo.city',
 }
