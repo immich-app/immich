@@ -359,13 +359,13 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onScaleStart: onScaleStart,
             onScaleUpdate: onScaleUpdate,
             onScaleEnd: onScaleEnd,
-            onDragStart:  widget.onDragStart != null 
+            onDragStart:  widget.onDragStart != null
                ? (details) => widget.onDragStart!(context, details, value)
                : null,
-            onDragEnd:  widget.onDragEnd != null 
+            onDragEnd:  widget.onDragEnd != null
                ? (details) => widget.onDragEnd!(context, details, value)
                : null,
-            onDragUpdate: widget.onDragUpdate != null 
+            onDragUpdate: widget.onDragUpdate != null
                ? (details) => widget.onDragUpdate!(context, details, value)
                : null,
             hitDetector: this,
@@ -405,7 +405,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             gaplessPlayback: widget.gaplessPlayback ?? false,
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
           );
   }
 }
