@@ -17,6 +17,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -31,6 +32,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1],
+    policies: [],
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -45,6 +47,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
+    policies: [],
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -59,6 +62,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.admin],
+    policies: [],
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -73,6 +77,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -87,6 +92,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -101,6 +107,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -115,6 +122,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -129,6 +137,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -143,5 +152,6 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    policies: [],
   }),
 };
