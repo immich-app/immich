@@ -6,6 +6,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
+import { serverVersion } from '../domain.constant';
 import { IEntityJob, IJobRepository, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
@@ -80,7 +81,11 @@ export class UserService {
   }
 
   async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
-    return { availableVersion: this.systemConfigService.availableVersion };
+    return {
+      isAvailable: this.systemConfigService.availableVersion !== null,
+      currentVersion: serverVersion,
+      releaseVersion: this.systemConfigService.availableVersion,
+    };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

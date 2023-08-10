@@ -4,11 +4,9 @@
   import { api, type ServerVersionReponseDto } from '@api';
   import Button from '../elements/buttons/button.svelte';
 
-  export let serverVersion: ServerVersionReponseDto;
-
   let showModal = false;
-  let githubVersion: string;
-  $: serverVersionName = semverToName(serverVersion);
+  let releaseVersion: string;
+  let currentVersion: string;
 
   function semverToName({ major, minor, patch }: ServerVersionReponseDto) {
     return `v${major}.${minor}.${patch}`;
@@ -17,27 +15,32 @@
   const onAcknowledge = () => {
     // Store server version to prevent the notification
     // from showing again.
-    localStorage.setItem('appVersion', githubVersion);
+    localStorage.setItem('appVersion', releaseVersion);
     showModal = false;
   };
 
   onMount(async () => {
     try {
       const { data } = await api.userApi.getLatestImmichVersionAvailable();
-      if (data.availableVersion) {
-        githubVersion = semverToName({
-          major: data.availableVersion.major,
-          minor: data.availableVersion.minor,
-          patch: data.availableVersion.patch,
+      if (data.isAvailable && data.releaseVersion) {
+        releaseVersion = semverToName({
+          major: data.releaseVersion.major,
+          minor: data.releaseVersion.minor,
+          patch: data.releaseVersion.patch,
+        });
+        currentVersion = semverToName({
+          major: data.currentVersion.major,
+          minor: data.currentVersion.minor,
+          patch: data.currentVersion.patch,
         });
       }
 
-      if (localStorage.getItem('appVersion') === githubVersion) {
+      if (localStorage.getItem('appVersion') === releaseVersion) {
         // Updated version has already been acknowledged.
         return;
       }
 
-      if (data.availableVersion && !import.meta.env.DEV) {
+      if (data.isAvailable && !import.meta.env.DEV) {
         showModal = true;
       }
     } catch (err) {
@@ -70,9 +73,9 @@
       <div class="mt-4 font-medium">Your friend, Alex</div>
 
       <div class="font-sm mt-8">
-        <code>Server Version: {serverVersionName}</code>
+        <code>Server Version: {currentVersion}</code>
         <br />
-        <code>Latest Version: {githubVersion}</code>
+        <code>Latest Version: {releaseVersion}</code>
       </div>
 
       <div class="mt-8 text-right">

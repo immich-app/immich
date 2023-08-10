@@ -5173,7 +5173,13 @@
       },
       "AvailableVersionResponseDto": {
         "properties": {
-          "availableVersion": {
+          "currentVersion": {
+            "$ref": "#/components/schemas/SystemConfigImmichVersion"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "releaseVersion": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/SystemConfigImmichVersion"
@@ -5183,7 +5189,9 @@
           }
         },
         "required": [
-          "availableVersion"
+          "isAvailable",
+          "currentVersion",
+          "releaseVersion"
         ],
         "type": "object"
       },

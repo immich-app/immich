@@ -90,7 +90,7 @@
 <NotificationList />
 
 {#if data.user?.isAdmin}
-  <VersionAnnouncementBox serverVersion={data.serverVersion} />
+  <VersionAnnouncementBox />
 {/if}
 
 {#if $page.route.id?.includes('(user)')}

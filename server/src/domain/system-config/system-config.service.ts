@@ -78,11 +78,12 @@ export class SystemConfigService {
   }
 
   async handleImmichLatestVersionAvailable() {
+    const config = await this.core.getConfig();
     if (this.disableCheckLatestVersion) {
       return true;
     }
     const proxy =
-      this.proxyHost && this.proxyPort && this.proxyProtocol
+      config.proxy.enabled && this.proxyHost && this.proxyPort && this.proxyProtocol
         ? {
             protocol: this.proxyProtocol,
             port: this.proxyPort,

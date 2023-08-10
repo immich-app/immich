@@ -16,8 +16,18 @@ void main() {
   // final instance = AvailableVersionResponseDto();
 
   group('test AvailableVersionResponseDto', () {
-    // SystemConfigImmichVersion availableVersion
-    test('to test the property `availableVersion`', () async {
+    // SystemConfigImmichVersion currentVersion
+    test('to test the property `currentVersion`', () async {
+      // TODO
+    });
+
+    // bool isAvailable
+    test('to test the property `isAvailable`', () async {
+      // TODO
+    });
+
+    // SystemConfigImmichVersion releaseVersion
+    test('to test the property `releaseVersion`', () async {
       // TODO
     });
 

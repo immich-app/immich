@@ -8,7 +8,9 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**availableVersion** | [**SystemConfigImmichVersion**](SystemConfigImmichVersion.md) |  | 
+**currentVersion** | [**SystemConfigImmichVersion**](SystemConfigImmichVersion.md) |  | 
+**isAvailable** | **bool** |  | 
+**releaseVersion** | [**SystemConfigImmichVersion**](SystemConfigImmichVersion.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

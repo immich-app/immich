@@ -727,7 +727,19 @@ export interface AvailableVersionResponseDto {
      * @type {SystemConfigImmichVersion}
      * @memberof AvailableVersionResponseDto
      */
-    'availableVersion': SystemConfigImmichVersion | null;
+    'currentVersion': SystemConfigImmichVersion;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AvailableVersionResponseDto
+     */
+    'isAvailable': boolean;
+    /**
+     * 
+     * @type {SystemConfigImmichVersion}
+     * @memberof AvailableVersionResponseDto
+     */
+    'releaseVersion': SystemConfigImmichVersion | null;
 }
 /**
  * 
