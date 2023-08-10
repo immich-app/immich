@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { SharedLinkEntity } from './shared-link.entity';
+import { SmartAlbumPolicyEntity } from './smart-album-policy.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('albums')
@@ -52,4 +53,7 @@ export class AlbumEntity {
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
   sharedLinks!: SharedLinkEntity[];
+
+  @OneToMany(() => SmartAlbumPolicyEntity, (policy) => policy.album)
+  policies!: SmartAlbumPolicyEntity[];
 }
