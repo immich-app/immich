@@ -16,17 +16,17 @@ void main() {
   // final instance = SystemConfigImmichVersion();
 
   group('test SystemConfigImmichVersion', () {
-    // num major
+    // int major
     test('to test the property `major`', () async {
       // TODO
     });
 
-    // num minor
+    // int minor
     test('to test the property `minor`', () async {
       // TODO
     });
 
-    // num patch_
+    // int patch_
     test('to test the property `patch_`', () async {
       // TODO
     });

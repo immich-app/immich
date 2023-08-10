@@ -6718,13 +6718,13 @@
       "SystemConfigImmichVersion": {
         "properties": {
           "major": {
-            "type": "number"
+            "type": "integer"
           },
           "minor": {
-            "type": "number"
+            "type": "integer"
           },
           "patch": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
