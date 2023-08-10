@@ -4,10 +4,11 @@ import {
   GetLibrariesDto,
   LibraryResponseDto,
   LibraryService,
+  LibraryStatsResponseDto,
   ScanLibraryDto as RefreshLibraryDto,
   UpdateLibraryDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -49,6 +50,14 @@ export class LibraryController {
   @Get(':id')
   getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
     return this.libraryService.get(authUser, id);
+  }
+
+  @Get('statistics/:id')
+  getLibraryStatistics(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<LibraryStatsResponseDto> {
+    return this.libraryService.getStatistics(authUser, id);
   }
 
   @Delete(':id')

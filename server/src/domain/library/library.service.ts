@@ -22,6 +22,7 @@ import {
   CreateLibraryDto,
   GetLibrariesDto,
   LibraryResponseDto,
+  LibraryStatsResponseDto,
   mapLibrary,
   ScanLibraryDto as RefreshLibraryDto,
   UpdateLibraryDto,
@@ -56,6 +57,12 @@ export class LibraryService {
     }
 
     return mapLibrary(library);
+  }
+
+  async getStatistics(authUser: AuthUserDto, libraryId: string): Promise<LibraryStatsResponseDto> {
+    // TODO authorization
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    return await this.libraryRepository.getStatistics(libraryId);
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {

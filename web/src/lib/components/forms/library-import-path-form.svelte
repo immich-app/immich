@@ -4,6 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { clickOutside } from '../../utils/click-outside';
   import { fade } from 'svelte/transition';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let importPath: string;
   export let title = 'Import path';
@@ -16,39 +17,33 @@
   const handleSubmit = () => dispatch('submit', { importPath });
 </script>
 
-<section
-  in:fade={{ duration: 100 }}
-  out:fade={{ duration: 100 }}
-  class="fixed left-0 top-0 z-[991] flex h-screen w-screen place-content-center place-items-center bg-black/40"
->
-  <div class="z-[9999]" use:clickOutside on:outclick={() => dispatch('clickOutside')}>
+<FullScreenModal on:clickOutside={() => handleCancel()}>
+  <div
+    class="bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
+  >
     <div
-      class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+      class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
     >
-      <div
-        class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-      >
-        <FolderSync size="4em" />
-        <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
-          {title}
-        </h1>
+      <FolderSync size="4em" />
+      <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">
+        {title}
+      </h1>
+    </div>
+
+    <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="path">Path</label>
+        <input class="immich-form-input" id="name" name="name" type="text" bind:value={importPath} />
       </div>
 
-      <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="path">Path</label>
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={importPath} />
-        </div>
+      <div class="mt-8 flex w-full gap-4 px-4">
+        <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+        {#if canDelete}
+          <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+        {/if}
 
-        <div class="flex w-full px-4 gap-4 mt-8">
-          <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
-          {#if canDelete}
-            <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
-          {/if}
-
-          <Button type="submit" fullwidth>{submitText}</Button>
-        </div>
-      </form>
-    </div>
+        <Button type="submit" fullwidth>{submitText}</Button>
+      </div>
+    </form>
   </div>
-</section>
+</FullScreenModal>

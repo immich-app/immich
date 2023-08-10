@@ -58,6 +58,7 @@ doc/JobSettingsDto.md
 doc/JobStatusDto.md
 doc/LibraryApi.md
 doc/LibraryResponseDto.md
+doc/LibraryStatsResponseDto.md
 doc/LibraryType.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
@@ -94,8 +95,6 @@ doc/ServerMediaTypesResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerVersionReponseDto.md
-doc/SetExcludePatternsDto.md
-doc/SetImportPathsDto.md
 doc/SharedLinkApi.md
 doc/SharedLinkCreateDto.md
 doc/SharedLinkEditDto.md
@@ -204,6 +203,7 @@ lib/model/job_name.dart
 lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
+lib/model/library_stats_response_dto.dart
 lib/model/library_type.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
@@ -235,8 +235,6 @@ lib/model/server_media_types_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_version_reponse_dto.dart
-lib/model/set_exclude_patterns_dto.dart
-lib/model/set_import_paths_dto.dart
 lib/model/shared_link_create_dto.dart
 lib/model/shared_link_edit_dto.dart
 lib/model/shared_link_response_dto.dart
@@ -323,6 +321,7 @@ test/job_settings_dto_test.dart
 test/job_status_dto_test.dart
 test/library_api_test.dart
 test/library_response_dto_test.dart
+test/library_stats_response_dto_test.dart
 test/library_type_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
@@ -359,8 +358,6 @@ test/server_media_types_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_version_reponse_dto_test.dart
-test/set_exclude_patterns_dto_test.dart
-test/set_import_paths_dto_test.dart
 test/shared_link_api_test.dart
 test/shared_link_create_dto_test.dart
 test/shared_link_edit_dto_test.dart

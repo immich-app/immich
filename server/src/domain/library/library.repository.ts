@@ -1,4 +1,5 @@
 import { LibraryEntity } from '@app/infra/entities';
+import { LibraryStatsResponseDto } from '.';
 
 export const ILibraryRepository = 'ILibraryRepository';
 
@@ -13,4 +14,5 @@ export interface ILibraryRepository {
   delete(id: string): Promise<void>;
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
+  getStatistics(id: string): Promise<LibraryStatsResponseDto>;
 }

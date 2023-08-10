@@ -98,6 +98,20 @@ export class LibraryResponseDto {
   refreshedAt?: Date | null;
 }
 
+export class LibraryStatsResponseDto {
+  @ApiProperty({ type: 'integer' })
+  photos = 0;
+
+  @ApiProperty({ type: 'integer' })
+  videos = 0;
+
+  @ApiProperty({ type: 'integer' })
+  total = 0;
+
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usage = 0;
+}
+
 export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
   let assetCount = 0;
   if (entity.assets) {

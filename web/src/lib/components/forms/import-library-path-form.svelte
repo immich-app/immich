@@ -16,6 +16,7 @@
   import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 
   export let title = 'Create Import Library';
+
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
 
@@ -326,144 +327,131 @@
   />
 {/if}
 
-<FullScreenModal on:clickOutside={() => handleCancel()}>
-  <div
-    class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
-  >
-    <div
-      class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-    >
-      <FolderSync size="4em" />
-      <h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
-        {title}
-      </h1>
-    </div>
-
-    <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-      <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="path">Name</label>
-        <input class="immich-form-input" id="name" name="name" type="text" bind:value={library.name} />
-      </div>
-
-      {#if importPaths.length > 0}
-        <table class="w-full text-left">
-          <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
-          >
-            <tr class="flex w-full place-items-center">
-              <th class="w-2/3 text-center text-sm font-medium">Path</th>
-              <th class="w-1/3 text-center text-sm font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-            {#each importPaths as importPath, i}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
-              >
-                <td class="w-2/3 text-ellipsis px-4 text-sm">{importPath}</td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm">
-                  <button
-                    on:click={() => {
-                      editImportPath(importPath);
-                    }}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <PencilOutline size="16" />
-                  </button>
-
-                  <button
-                    on:click={() => {
-                      removeImportPath(importPath);
-                    }}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <TrashCanOutline size="16" />
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      {:else}
-        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No paths added</p>
-      {/if}
-      <div class="flex justify-end">
-        <Button
-          size="sm"
-          on:click={() => {
-            addPath = true;
-            disableForm = true;
-          }}>Add path</Button
-        >
-      </div>
-
-      {#if excludePatterns.length > 0}
-        <table class="w-full text-left">
-          <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
-          >
-            <tr class="flex w-full place-items-center">
-              <th class="w-2/3 text-center text-sm font-medium">Path</th>
-              <th class="w-1/3 text-center text-sm font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-            {#each excludePatterns as excludePattern, i}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
-              >
-                <td class="w-2/3 text-ellipsis px-4 text-sm">{excludePattern}</td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm">
-                  <button
-                    on:click={() => {
-                      editExcludePattern(excludePattern);
-                    }}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <PencilOutline size="16" />
-                  </button>
-
-                  <button
-                    on:click={() => {
-                      removeExcludePattern(excludePattern);
-                    }}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <TrashCanOutline size="16" />
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      {:else}
-        <p class="text-immich-fg dark:text-immich-dark-fg text-center">No exclude pattern</p>
-      {/if}
-
-      <div class="flex justify-end">
-        <Button
-          size="sm"
-          on:click={() => {
-            addPattern = true;
-            disableForm = true;
-          }}>Add exclude pattern</Button
-        >
-      </div>
-      {#if library.id}
-        <div class="flex w-full px-4 gap-4 mt-8">
-          <Button color="gray" fullwidth on:click={() => handleRefresh()}>{refreshText}</Button>
-          <Button color="gray" fullwidth on:click={() => handleForceRefresh()}>{forceRefreshText}</Button>
-          <Button color="gray" fullwidth on:click={() => handleEmptyTrash()}>{emptyTrashText}</Button>
-        </div>
-      {/if}
-      <div class="flex w-full px-4 gap-4 mt-8">
-        <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
-        <Button type="submit" fullwidth>{submitText}</Button>
-      </div>
-    </form>
+<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+  <div class="flex w-full px-4 gap-4 mt-8">
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+    <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+    <Button type="submit" fullwidth>{submitText}</Button>
   </div>
-</FullScreenModal>
+  {#if library.id}
+    <div class="flex w-full px-4 gap-4 mt-8">
+      <Button color="gray" fullwidth on:click={() => handleRefresh()}>{refreshText}</Button>
+      <Button color="gray" fullwidth on:click={() => handleForceRefresh()}>{forceRefreshText}</Button>
+      <Button color="gray" fullwidth on:click={() => handleEmptyTrash()}>{emptyTrashText}</Button>
+    </div>
+  {/if}
+
+  <div class="m-4 flex flex-col gap-2">
+    <label class="immich-form-label" for="path">Name</label>
+    <input class="immich-form-input" id="name" name="name" type="text" bind:value={library.name} />
+  </div>
+
+  {#if importPaths.length > 0}
+    <table class="w-full text-left">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+      >
+        <tr class="flex w-full place-items-center">
+          <th class="w-2/3 text-center text-sm font-medium">Path</th>
+          <th class="w-1/3 text-center text-sm font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        {#each importPaths as importPath, i}
+          <tr
+            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+              i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+            }`}
+          >
+            <td class="w-2/3 text-ellipsis px-4 text-sm">{importPath}</td>
+            <td class="w-1/3 text-ellipsis px-4 text-sm">
+              <button
+                on:click={() => {
+                  editImportPath(importPath);
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <PencilOutline size="16" />
+              </button>
+
+              <button
+                on:click={() => {
+                  removeImportPath(importPath);
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <TrashCanOutline size="16" />
+              </button>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {:else}
+    <p class="text-immich-fg dark:text-immich-dark-fg text-center">No paths added</p>
+  {/if}
+  <div class="flex justify-end">
+    <Button
+      size="sm"
+      on:click={() => {
+        addPath = true;
+        disableForm = true;
+      }}>Add path</Button
+    >
+  </div>
+
+  {#if excludePatterns.length > 0}
+    <table class="w-full text-left">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+      >
+        <tr class="flex w-full place-items-center">
+          <th class="w-2/3 text-center text-sm font-medium">Pattern</th>
+          <th class="w-1/3 text-center text-sm font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        {#each excludePatterns as excludePattern, i}
+          <tr
+            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+              i % 2 == 0 ? 'bg-immich-gray dark:bg-immich-dark-gray/75' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+            }`}
+          >
+            <td class="w-2/3 text-ellipsis px-4 text-sm">{excludePattern}</td>
+            <td class="w-1/3 text-ellipsis px-4 text-sm">
+              <button
+                on:click={() => {
+                  editExcludePattern(excludePattern);
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <PencilOutline size="16" />
+              </button>
+
+              <button
+                on:click={() => {
+                  removeExcludePattern(excludePattern);
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <TrashCanOutline size="16" />
+              </button>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {:else}
+    <p class="text-immich-fg dark:text-immich-dark-fg text-center">No exclude pattern</p>
+  {/if}
+
+  <div class="flex justify-end">
+    <Button
+      size="sm"
+      on:click={() => {
+        addPattern = true;
+        disableForm = true;
+      }}>Add exclude pattern</Button
+    >
+  </div>
+</form>

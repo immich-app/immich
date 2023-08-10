@@ -1,4 +1,4 @@
-import { ILibraryRepository } from '@app/domain';
+import { ILibraryRepository, LibraryStatsResponseDto } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
@@ -12,7 +12,6 @@ export class LibraryRepository implements ILibraryRepository {
     return this.libraryRepository.findOne({
       where: { id },
       relations: {
-        assets: true,
         owner: true,
       },
     });
@@ -50,7 +49,6 @@ export class LibraryRepository implements ILibraryRepository {
         isVisible: true,
       },
       relations: {
-        assets: true,
         owner: true,
       },
     });
@@ -90,6 +88,26 @@ export class LibraryRepository implements ILibraryRepository {
 
   async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
     return this.save(library);
+  }
+
+  async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
+    const stats = await this.libraryRepository
+      .createQueryBuilder('libraries')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
+      .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
+      .leftJoin('libraries.assets', 'assets')
+      .leftJoin('assets.exifInfo', 'exif')
+      .groupBy('libraries.id')
+      .where('libraries.id = :id', { id })
+      .getRawOne();
+
+    return {
+      photos: Number(stats.photos),
+      videos: Number(stats.videos),
+      usage: Number(stats.usage),
+      total: Number(stats.photos) + Number(stats.videos),
+    };
   }
 
   private async save(library: Partial<LibraryEntity>) {

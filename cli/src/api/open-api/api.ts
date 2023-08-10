@@ -1603,6 +1603,37 @@ export interface LibraryResponseDto {
 /**
  * 
  * @export
+ * @interface LibraryStatsResponseDto
+ */
+export interface LibraryStatsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof LibraryStatsResponseDto
+     */
+    'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LibraryStatsResponseDto
+     */
+    'total': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LibraryStatsResponseDto
+     */
+    'usage': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LibraryStatsResponseDto
+     */
+    'videos': number;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -2315,32 +2346,6 @@ export interface ServerVersionReponseDto {
      * @memberof ServerVersionReponseDto
      */
     'patch': number;
-}
-/**
- * 
- * @export
- * @interface SetExcludePatternsDto
- */
-export interface SetExcludePatternsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SetExcludePatternsDto
-     */
-    'excludePatterns': Array<string>;
-}
-/**
- * 
- * @export
- * @interface SetImportPathsDto
- */
-export interface SetImportPathsDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SetImportPathsDto
-     */
-    'importPaths': Array<string>;
 }
 /**
  * 
@@ -8521,90 +8526,6 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getExcludePattern: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getExcludePattern', 'id', id)
-            const localVarPath = `/library/{id}/excludePatterns`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getImportPaths: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getImportPaths', 'id', id)
-            const localVarPath = `/library/{id}/importPaths`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -8686,6 +8607,48 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getLibraryStatistics: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getLibraryStatistics', 'id', id)
+            const localVarPath = `/library/statistics/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {ScanLibraryDto} scanLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8725,102 +8688,6 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(scanLibraryDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {SetExcludePatternsDto} setExcludePatternsDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setExcludePatterns: async (id: string, setExcludePatternsDto: SetExcludePatternsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('setExcludePatterns', 'id', id)
-            // verify required parameter 'setExcludePatternsDto' is not null or undefined
-            assertParamExists('setExcludePatterns', 'setExcludePatternsDto', setExcludePatternsDto)
-            const localVarPath = `/library/{id}/excludePatterns`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(setExcludePatternsDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {SetImportPathsDto} setImportPathsDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setImportPaths: async (id: string, setImportPathsDto: SetImportPathsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('setImportPaths', 'id', id)
-            // verify required parameter 'setImportPathsDto' is not null or undefined
-            assertParamExists('setImportPaths', 'setImportPathsDto', setImportPathsDto)
-            const localVarPath = `/library/{id}/importPaths`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(setImportPathsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -8913,26 +8780,6 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getExcludePattern(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getExcludePattern(id, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getImportPaths(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getImportPaths(id, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -8953,34 +8800,22 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getLibraryStatistics(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryStatsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getLibraryStatistics(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {ScanLibraryDto} scanLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async refreshLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.refreshLibrary(id, scanLibraryDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {SetExcludePatternsDto} setExcludePatternsDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async setExcludePatterns(id: string, setExcludePatternsDto: SetExcludePatternsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.setExcludePatterns(id, setExcludePatternsDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {SetImportPathsDto} setImportPathsDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async setImportPaths(id: string, setImportPathsDto: SetImportPathsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.setImportPaths(id, setImportPathsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -9032,24 +8867,6 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @param {LibraryApiGetExcludePatternRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getExcludePattern(requestParameters: LibraryApiGetExcludePatternRequest, options?: AxiosRequestConfig): AxiosPromise<Array<string>> {
-            return localVarFp.getExcludePattern(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {LibraryApiGetImportPathsRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getImportPaths(requestParameters: LibraryApiGetImportPathsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<string>> {
-            return localVarFp.getImportPaths(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -9067,30 +8884,21 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {LibraryApiGetLibraryStatisticsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getLibraryStatistics(requestParameters: LibraryApiGetLibraryStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryStatsResponseDto> {
+            return localVarFp.getLibraryStatistics(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {LibraryApiRefreshLibraryRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         refreshLibrary(requestParameters: LibraryApiRefreshLibraryRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.refreshLibrary(requestParameters.id, requestParameters.scanLibraryDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {LibraryApiSetExcludePatternsRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setExcludePatterns(requestParameters: LibraryApiSetExcludePatternsRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
-            return localVarFp.setExcludePatterns(requestParameters.id, requestParameters.setExcludePatternsDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {LibraryApiSetImportPathsRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setImportPaths(requestParameters: LibraryApiSetImportPathsRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
-            return localVarFp.setImportPaths(requestParameters.id, requestParameters.setImportPathsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9147,34 +8955,6 @@ export interface LibraryApiGetAllLibrariesRequest {
 }
 
 /**
- * Request parameters for getExcludePattern operation in LibraryApi.
- * @export
- * @interface LibraryApiGetExcludePatternRequest
- */
-export interface LibraryApiGetExcludePatternRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryApiGetExcludePattern
-     */
-    readonly id: string
-}
-
-/**
- * Request parameters for getImportPaths operation in LibraryApi.
- * @export
- * @interface LibraryApiGetImportPathsRequest
- */
-export interface LibraryApiGetImportPathsRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryApiGetImportPaths
-     */
-    readonly id: string
-}
-
-/**
  * Request parameters for getLibraryInfo operation in LibraryApi.
  * @export
  * @interface LibraryApiGetLibraryInfoRequest
@@ -9184,6 +8964,20 @@ export interface LibraryApiGetLibraryInfoRequest {
      * 
      * @type {string}
      * @memberof LibraryApiGetLibraryInfo
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for getLibraryStatistics operation in LibraryApi.
+ * @export
+ * @interface LibraryApiGetLibraryStatisticsRequest
+ */
+export interface LibraryApiGetLibraryStatisticsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryApiGetLibraryStatistics
      */
     readonly id: string
 }
@@ -9207,48 +9001,6 @@ export interface LibraryApiRefreshLibraryRequest {
      * @memberof LibraryApiRefreshLibrary
      */
     readonly scanLibraryDto: ScanLibraryDto
-}
-
-/**
- * Request parameters for setExcludePatterns operation in LibraryApi.
- * @export
- * @interface LibraryApiSetExcludePatternsRequest
- */
-export interface LibraryApiSetExcludePatternsRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryApiSetExcludePatterns
-     */
-    readonly id: string
-
-    /**
-     * 
-     * @type {SetExcludePatternsDto}
-     * @memberof LibraryApiSetExcludePatterns
-     */
-    readonly setExcludePatternsDto: SetExcludePatternsDto
-}
-
-/**
- * Request parameters for setImportPaths operation in LibraryApi.
- * @export
- * @interface LibraryApiSetImportPathsRequest
- */
-export interface LibraryApiSetImportPathsRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryApiSetImportPaths
-     */
-    readonly id: string
-
-    /**
-     * 
-     * @type {SetImportPathsDto}
-     * @memberof LibraryApiSetImportPaths
-     */
-    readonly setImportPathsDto: SetImportPathsDto
 }
 
 /**
@@ -9307,28 +9059,6 @@ export class LibraryApi extends BaseAPI {
 
     /**
      * 
-     * @param {LibraryApiGetExcludePatternRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LibraryApi
-     */
-    public getExcludePattern(requestParameters: LibraryApiGetExcludePatternRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).getExcludePattern(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {LibraryApiGetImportPathsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LibraryApi
-     */
-    public getImportPaths(requestParameters: LibraryApiGetImportPathsRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).getImportPaths(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LibraryApi
@@ -9350,6 +9080,17 @@ export class LibraryApi extends BaseAPI {
 
     /**
      * 
+     * @param {LibraryApiGetLibraryStatisticsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public getLibraryStatistics(requestParameters: LibraryApiGetLibraryStatisticsRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getLibraryStatistics(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @param {LibraryApiRefreshLibraryRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -9357,28 +9098,6 @@ export class LibraryApi extends BaseAPI {
      */
     public refreshLibrary(requestParameters: LibraryApiRefreshLibraryRequest, options?: AxiosRequestConfig) {
         return LibraryApiFp(this.configuration).refreshLibrary(requestParameters.id, requestParameters.scanLibraryDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {LibraryApiSetExcludePatternsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LibraryApi
-     */
-    public setExcludePatterns(requestParameters: LibraryApiSetExcludePatternsRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).setExcludePatterns(requestParameters.id, requestParameters.setExcludePatternsDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {LibraryApiSetImportPathsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LibraryApi
-     */
-    public setImportPaths(requestParameters: LibraryApiSetImportPathsRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).setImportPaths(requestParameters.id, requestParameters.setImportPathsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

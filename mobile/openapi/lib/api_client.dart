@@ -279,6 +279,8 @@ class ApiClient {
           return JobStatusDto.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
+        case 'LibraryStatsResponseDto':
+          return LibraryStatsResponseDto.fromJson(value);
         case 'LibraryType':
           return LibraryTypeTypeTransformer().decode(value);
         case 'LoginCredentialDto':
@@ -341,10 +343,6 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
-        case 'SetExcludePatternsDto':
-          return SetExcludePatternsDto.fromJson(value);
-        case 'SetImportPathsDto':
-          return SetImportPathsDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
