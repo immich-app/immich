@@ -6,7 +6,6 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
-  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
@@ -292,7 +291,9 @@
         <RemoveFromAlbum bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
       {/if}
       <AssetSelectContextMenu icon={DotsVertical} title="Menu">
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+        {#if isAllUserOwned}
+          <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+        {/if}
         <DownloadAction menuItem filename="{album.albumName}.zip" />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
