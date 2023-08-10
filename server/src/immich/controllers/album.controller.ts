@@ -86,4 +86,14 @@ export class AlbumController {
   ) {
     return this.service.removeUser(authUser, id, userId);
   }
+
+  @Post(':id/rule')
+  addRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    throw new Error('Not implemented');
+  }
+
+  @Delete(':id/rule/:ruleId')
+  removeRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    throw new Error('Not implemented');
+  }
 }

@@ -29,4 +29,5 @@ export class RuleEntity {
 export enum RuleKey {
   PERSON = 'personId',
   EXIF_CITY = 'exifInfo.city',
+  DATE_AFTER = 'asset.fileCreatedAt',
 }
