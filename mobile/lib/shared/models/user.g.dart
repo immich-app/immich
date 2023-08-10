@@ -52,8 +52,18 @@ const UserSchema = CollectionSchema(
       name: r'lastName',
       type: IsarType.string,
     ),
-    r'updatedAt': PropertySchema(
+    r'memoryEnabled': PropertySchema(
       id: 7,
+      name: r'memoryEnabled',
+      type: IsarType.bool,
+    ),
+    r'profileImagePath': PropertySchema(
+      id: 8,
+      name: r'profileImagePath',
+      type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 9,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -111,6 +121,7 @@ int _userEstimateSize(
   bytesCount += 3 + object.firstName.length * 3;
   bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.lastName.length * 3;
+  bytesCount += 3 + object.profileImagePath.length * 3;
   return bytesCount;
 }
 
@@ -127,7 +138,9 @@ void _userSerialize(
   writer.writeBool(offsets[4], object.isPartnerSharedBy);
   writer.writeBool(offsets[5], object.isPartnerSharedWith);
   writer.writeString(offsets[6], object.lastName);
-  writer.writeDateTime(offsets[7], object.updatedAt);
+  writer.writeBool(offsets[7], object.memoryEnabled);
+  writer.writeString(offsets[8], object.profileImagePath);
+  writer.writeDateTime(offsets[9], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -144,7 +157,9 @@ User _userDeserialize(
     isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
     isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
     lastName: reader.readString(offsets[6]),
-    updatedAt: reader.readDateTime(offsets[7]),
+    memoryEnabled: reader.readBoolOrNull(offsets[7]) ?? true,
+    profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
+    updatedAt: reader.readDateTime(offsets[9]),
   );
   return object;
 }
@@ -171,6 +186,10 @@ P _userDeserializeProp<P>(
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 8:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 9:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -960,6 +979,146 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'memoryEnabled',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'profileImagePath',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'profileImagePath',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImagePath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'profileImagePath',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> updatedAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1214,6 +1373,30 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByMemoryEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'memoryEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByMemoryEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'memoryEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByProfileImagePath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByProfileImagePathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1324,6 +1507,30 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> thenByMemoryEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'memoryEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByMemoryEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'memoryEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByProfileImagePath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByProfileImagePathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1384,6 +1591,20 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
+  QueryBuilder<User, User, QDistinct> distinctByMemoryEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'memoryEnabled');
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByProfileImagePath(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'profileImagePath',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
@@ -1437,6 +1658,18 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> lastNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastName');
+    });
+  }
+
+  QueryBuilder<User, bool, QQueryOperations> memoryEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'memoryEnabled');
+    });
+  }
+
+  QueryBuilder<User, String, QQueryOperations> profileImagePathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'profileImagePath');
     });
   }
 
