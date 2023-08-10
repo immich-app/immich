@@ -294,7 +294,6 @@
       <AssetSelectContextMenu icon={DotsVertical} title="Menu">
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <DownloadAction menuItem filename="{album.albumName}.zip" />
-        <ArchiveAction menuItem onAssetArchive={(asset) => assetStore.removeAsset(asset.id)} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
