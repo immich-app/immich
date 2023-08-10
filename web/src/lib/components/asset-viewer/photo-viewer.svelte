@@ -113,7 +113,7 @@
         transition:fade={{ duration: 150 }}
         src={assetData}
         alt={asset.id}
-        class="relative object-contain"
+        class="relative z-10 object-contain"
         draggable="false"
       />
     </div>

@@ -279,7 +279,7 @@
     </div>
   {/if}
 
-  <div class="relative col-span-4 col-start-1 row-span-full row-start-1 cursor-pointer" on:click={closeViewer}></div>
+  <div class="z-10 col-span-4 col-start-1 row-span-full row-start-1 cursor-pointer" on:click={closeViewer}></div>
 
   <div class="col-span-4 col-start-1 row-span-full row-start-1 flex place-content-center place-items-center">
     {#key asset.id}
@@ -288,7 +288,7 @@
           <div
             class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
-            <ImageBrokenVariant class="relative" size="25%" />
+            <ImageBrokenVariant class="relative z-10" size="25%" />
           </div>
         </div>
       {:else if asset.type === AssetTypeEnum.Image}
