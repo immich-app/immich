@@ -10,6 +10,7 @@
   let showDetail = true;
   let uploadLength = 0;
   let duplicateCount = 0;
+  let errorCount = 0;
   let isUploading = false;
 
   // Reactive action to update asset uploadLength whenever there is a new one added to the list
@@ -26,6 +27,10 @@
   uploadAssetsStore.duplicateCounter.subscribe((value) => {
     duplicateCount = value;
   });
+
+  uploadAssetsStore.errorCounter.subscribe((value) => {
+    errorCount = value;
+  });
 </script>
 
 {#if isUploading}
@@ -33,10 +38,17 @@
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250, delay: 1000 }}
     on:outroend={() => {
+      const errorInfo =
+        errorCount > 0 ? `Upload completed with ${errorCount} error${errorCount > 1 ? 's' : ''}` : 'Upload success';
+      const type = errorCount > 0 ? NotificationType.Warning : NotificationType.Info;
+
       notificationController.show({
-        message: 'Upload success, refresh the page to see new upload assets',
-        type: NotificationType.Info,
+        message: `${errorInfo}, refresh the page to see new upload assets`,
+        type,
       });
+
+      uploadAssetsStore.errorCounter.set(0);
+
       if (duplicateCount > 0) {
         notificationController.show({
           message: `Skipped ${duplicateCount} duplicate picture${duplicateCount > 1 ? 's' : ''}`,
