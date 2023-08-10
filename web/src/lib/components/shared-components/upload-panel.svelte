@@ -9,6 +9,7 @@
 
   let showDetail = true;
   let uploadLength = 0;
+  let duplicateCount = 0;
   let isUploading = false;
 
   // Reactive action to update asset uploadLength whenever there is a new one added to the list
@@ -21,6 +22,10 @@
   uploadAssetsStore.isUploading.subscribe((value) => {
     isUploading = value;
   });
+
+  uploadAssetsStore.duplicateCounter.subscribe((value) => {
+    duplicateCount = value;
+  });
 </script>
 
 {#if isUploading}
@@ -32,6 +37,13 @@
         message: 'Upload success, refresh the page to see new upload assets',
         type: NotificationType.Info,
       });
+      if (duplicateCount > 0) {
+        notificationController.show({
+          message: `Skipped ${duplicateCount} duplicate picture${duplicateCount > 1 ? 's' : ''}`,
+          type: NotificationType.Warning,
+        });
+        uploadAssetsStore.duplicateCounter.set(0);
+      }
     }}
     class="absolute bottom-6 right-6 z-[10000]"
   >
