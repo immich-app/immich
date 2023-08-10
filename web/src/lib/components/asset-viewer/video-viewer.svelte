@@ -24,6 +24,7 @@
 
 <div transition:fade={{ duration: 150 }} class="select-none">
   <video
+    class="relative"
     controls
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}

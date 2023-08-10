@@ -27,12 +27,12 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="select-none">
+<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}
     {#if assetData}
-      <View360 autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
+      <View360 class="relative" autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
     {:else}
       <p>{errorMessage}</p>
     {/if}
