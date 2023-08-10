@@ -103,17 +103,17 @@
 <div
   bind:this={element}
   transition:fade={{ duration: 150 }}
-  class="flex h-full select-none place-content-center place-items-center"
+  class="select-none"
 >
   {#await loadAssetData()}
     <LoadingSpinner />
   {:then assetData}
-    <div bind:this={imgElement} class="h-full w-full">
+    <div bind:this={imgElement}>
       <img
         transition:fade={{ duration: 150 }}
         src={assetData}
         alt={asset.id}
-        class="h-full w-full object-contain"
+        class="object-contain"
         draggable="false"
       />
     </div>

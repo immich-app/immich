@@ -279,33 +279,36 @@
     </div>
   {/if}
 
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    {#key asset.id}
-      {#if !asset.resized}
-        <div class="flex h-full w-full justify-center">
-          <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-          >
-            <ImageBrokenVariant size="25%" />
+  <div class="col-span-4 col-start-1 row-span-full row-start-1 flex place-items-center">
+    <div class="absolute inset-0 cursor-pointer" on:click={closeViewer}></div>
+    <div class="relative">
+      {#key asset.id}
+        {#if !asset.resized}
+          <div class="flex h-full w-full justify-center">
+            <div
+              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            >
+              <ImageBrokenVariant size="25%" />
+            </div>
           </div>
-        </div>
-      {:else if asset.type === AssetTypeEnum.Image}
-        {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-          <VideoViewer
-            {publicSharedKey}
-            assetId={asset.livePhotoVideoId}
-            on:close={closeViewer}
-            on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-          />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <PanoramaViewer {publicSharedKey} {asset} />
+        {:else if asset.type === AssetTypeEnum.Image}
+          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+            <VideoViewer
+              {publicSharedKey}
+              assetId={asset.livePhotoVideoId}
+              on:close={closeViewer}
+              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+            />
+          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+            <PanoramaViewer {publicSharedKey} {asset} />
+          {:else}
+            <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
+          {/if}
         {:else}
-          <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
+          <VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
         {/if}
-      {:else}
-        <VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
-      {/if}
-    {/key}
+      {/key}
+    </div>
   </div>
 
   {#if showNavigation}
