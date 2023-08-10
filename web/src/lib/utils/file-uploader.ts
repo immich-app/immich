@@ -173,6 +173,8 @@ async function fileUploader(
 }
 
 function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
+  uploadAssetsStore.errorCounter.update((count) => count + 1);
+
   try {
     const res = JSON.parse(respBody);
 
