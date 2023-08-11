@@ -22,7 +22,7 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
     },
 
     library: {
-      hasPartnerAccess: jest.fn(),
+      hasOwnerAccess: jest.fn(),
     },
   };
 };

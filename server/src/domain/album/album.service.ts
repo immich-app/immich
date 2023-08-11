@@ -13,7 +13,8 @@ import {
   mapAlbumWithoutAssets,
 } from './album-response.dto';
 import { IAlbumRepository } from './album.repository';
-import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { AddUsersDto, AlbumInfoDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { CreateAlbumDto } from './dto/create-album.dto';
 
 @Injectable()
 export class AlbumService {
