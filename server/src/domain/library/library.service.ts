@@ -72,7 +72,7 @@ export class LibraryService {
       assets: [],
       type: dto.libraryType,
       importPaths: dto.importPaths ?? [],
-      excludePatterns: dto.excludePatterns ?? [],
+      exclusionPatterns: dto.excludePatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
     return mapLibrary(libraryEntity);
@@ -88,7 +88,7 @@ export class LibraryService {
       libraryEntity.importPaths = dto.importPaths;
     }
     if (dto.excludePatterns) {
-      libraryEntity.excludePatterns = dto.excludePatterns;
+      libraryEntity.exclusionPatterns = dto.excludePatterns;
     }
     if (dto.isVisible) {
       libraryEntity.isVisible = dto.isVisible;
@@ -287,7 +287,7 @@ export class LibraryService {
     const crawledAssetPaths = (
       await this.crawler.findAllMedia({
         pathsToCrawl: library.importPaths,
-        excludePatterns: library.excludePatterns,
+        excludePatterns: library.exclusionPatterns,
       })
     ).map(path.normalize);
 

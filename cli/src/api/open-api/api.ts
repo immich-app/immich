@@ -2013,13 +2013,13 @@ export interface ScanLibraryDto {
      * @type {boolean}
      * @memberof ScanLibraryDto
      */
-    'emptyTrash'?: boolean;
+    'analyze'?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof ScanLibraryDto
      */
-    'forceRefresh'?: boolean;
+    'emptyTrash'?: boolean;
 }
 /**
  * 

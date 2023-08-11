@@ -71,7 +71,7 @@ export class LibraryRepository implements ILibraryRepository {
 
   async setExcludePatterns(libraryId: string, excludePatterns: string[]): Promise<LibraryEntity> {
     await this.libraryRepository.update(libraryId, {
-      excludePatterns: excludePatterns,
+      exclusionPatterns: excludePatterns,
     });
 
     return this.libraryRepository.findOneOrFail({

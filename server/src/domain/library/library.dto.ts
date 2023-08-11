@@ -127,6 +127,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     refreshedAt: entity.refreshedAt,
     assetCount: assetCount,
     importPaths: entity.importPaths,
-    excludePatterns: entity.excludePatterns,
+    excludePatterns: entity.exclusionPatterns,
   };
 }
