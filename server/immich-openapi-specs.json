@@ -4858,6 +4858,12 @@
           "ownerId": {
             "type": "string"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResponseDto"
+            },
+            "type": "array"
+          },
           "shared": {
             "type": "boolean"
           },
@@ -4884,7 +4890,8 @@
           "shared",
           "sharedUsers",
           "assets",
-          "owner"
+          "owner",
+          "rules"
         ],
         "type": "object"
       },
@@ -6209,6 +6216,25 @@
           "asset.fileCreatedAt"
         ],
         "type": "string"
+      },
+      "RuleResponseDto": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/RuleKey"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "ownerId"
+        ],
+        "type": "object"
       },
       "SearchAlbumResponseDto": {
         "properties": {

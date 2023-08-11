@@ -2,6 +2,7 @@ import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { mapUser, UserResponseDto } from '../user';
+import { RuleResponseDto } from './dto/rule.dto';
 
 export class AlbumResponseDto {
   id!: string;
@@ -18,6 +19,7 @@ export class AlbumResponseDto {
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
   lastModifiedAssetTimestamp?: Date;
+  rules!: RuleResponseDto[];
 }
 
 const _map = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
@@ -41,6 +43,7 @@ const _map = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: withAssets ? entity.assets?.map((asset) => mapAsset(asset)) || [] : [],
     assetCount: entity.assets?.length || 0,
+    rules: entity.rules?.map((rule) => ({ key: rule.key, value: rule.value, ownerId: rule.ownerId })) || [],
   };
 };
 

@@ -10,3 +10,10 @@ export class CreateRuleDto {
   @IsNotEmpty()
   value!: string;
 }
+
+export class RuleResponseDto {
+  @ApiProperty({ enumName: 'RuleKey', enum: RuleKey })
+  key!: RuleKey;
+  value!: string;
+  ownerId!: string;
+}
