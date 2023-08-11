@@ -285,10 +285,10 @@ export class AlbumService {
     return album;
   }
 
-  async addRule(authUser: AuthUserDto, id: string, dto: CreateRuleDto) {
-    await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
+  async addRule(authUser: AuthUserDto, albumId: string, dto: CreateRuleDto) {
+    await this.access.requirePermission(authUser, Permission.ALBUM_READ, albumId);
 
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(albumId);
     const user = await this.userRepository.get(authUser.id);
 
     if (!user) {
@@ -305,8 +305,18 @@ export class AlbumService {
 
     await this.ruleRepository.create(rule);
 
-    return await this.findOrFail(id);
+    return await this.findOrFail(albumId);
   }
 
-  async removeRule(authUser: AuthUserDto, ruleId: string) {}
+  async removeRule(authUser: AuthUserDto, albumId: string, ruleId: string) {
+    await this.access.requirePermission(authUser, Permission.ALBUM_READ, albumId);
+
+    const album = await this.findOrFail(albumId);
+    const rule = album.rules.find((rule) => rule.id === ruleId);
+    if (!rule) {
+      throw new BadRequestException('Rule not found');
+    }
+
+    await this.ruleRepository.delete(rule);
+  }
 }

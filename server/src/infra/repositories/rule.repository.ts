@@ -4,13 +4,13 @@ import { Repository } from 'typeorm';
 import { RuleEntity } from '../entities';
 
 export class RuleRepository implements IRuleRepository {
-  constructor(@InjectRepository(RuleEntity) private assetRepository: Repository<RuleEntity>) {}
+  constructor(@InjectRepository(RuleEntity) private repository: Repository<RuleEntity>) {}
 
   create(rule: RuleEntity): Promise<RuleEntity> {
-    return this.assetRepository.save(rule);
+    return this.repository.save(rule);
   }
 
-  delete(rule: RuleEntity): Promise<void> {
-    throw new Error('Method not implemented.');
+  delete(rule: RuleEntity): Promise<RuleEntity> {
+    return this.repository.remove(rule);
   }
 }

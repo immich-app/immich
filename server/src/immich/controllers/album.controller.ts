@@ -99,6 +99,6 @@ export class AlbumController {
     @Param() { id }: UUIDParamDto,
     @Param('ruleId', new ParseMeUUIDPipe({ version: '4' })) ruleId: string,
   ) {
-    throw new Error('Not implemented');
+    return this.service.removeRule(authUser, id, ruleId);
   }
 }
