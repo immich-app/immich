@@ -6,6 +6,8 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
+  ISmartAlbumIndexJob,
+  ISmartAlbumInsertJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -79,7 +81,11 @@ export type JobItem =
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob };
+  | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob }
+
+  // Smart album
+  | { name: JobName.SMART_ALBUM_INDEX; data: ISmartAlbumIndexJob }
+  | { name: JobName.SMART_ALBUM_INSERT; data: ISmartAlbumInsertJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 

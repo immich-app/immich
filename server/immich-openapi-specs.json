@@ -5024,6 +5024,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "smartAlbum": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -5044,7 +5047,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "object"
       },
@@ -6344,7 +6348,8 @@
           "backgroundTask",
           "storageTemplateMigration",
           "search",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "string"
       },
@@ -7478,6 +7483,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "smartAlbum": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -7498,7 +7506,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "object"
       },

@@ -43,6 +43,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+    [QueueName.SMART_ALBUM]: { concurrency: 1 },
   },
   oauth: {
     enabled: false,

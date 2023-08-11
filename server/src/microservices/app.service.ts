@@ -73,6 +73,12 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
+      [JobName.SMART_ALBUM_INDEX]: (data) => {
+        throw new Error('Not implemented SMART_ALBUM_INDEX');
+      },
+      [JobName.SMART_ALBUM_INSERT]: (data) => {
+        throw new Error('Not implemented SMART_ALBUM_INSERT');
+      },
     });
 
     process.on('uncaughtException', (error: Error | any) => {
