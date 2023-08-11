@@ -3,7 +3,6 @@
   import Button from '../elements/buttons/button.svelte';
   import { LibraryType, type LibraryResponseDto } from '@api';
   import { handleError } from '../../utils/handle-error';
-  import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
   import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';

@@ -8,6 +8,7 @@ import {
 } from '@test';
 import { libraryStub } from '@test/fixtures/library.stub';
 import mock from 'mock-fs';
+import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
@@ -15,6 +16,7 @@ import { ILibraryRepository, LibraryService } from './index';
 
 describe(LibraryService.name, () => {
   let libraryService: LibraryService;
+  let accessMock: jest.Mocked<IAccessRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -30,7 +32,7 @@ describe(LibraryService.name, () => {
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
 
-    libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+    libraryService = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
   });
 
   describe('handleRefreshAsset', () => {
@@ -202,7 +204,7 @@ describe(LibraryService.name, () => {
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
 
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
@@ -237,7 +239,7 @@ describe(LibraryService.name, () => {
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -283,7 +285,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      expect(assetMock.update).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
 
       await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);

@@ -14,6 +14,7 @@ export const libraryStub = {
     updatedAt: new Date('2021-01-01'),
     refreshedAt: null,
     isVisible: true,
+    exclusionPatterns: [],
   }),
   uploadLibrary: Object.freeze<LibraryEntity>({
     id: 'library-id',
@@ -27,6 +28,7 @@ export const libraryStub = {
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
     isVisible: true,
+    exclusionPatterns: [],
   }),
   importLibrary: Object.freeze<LibraryEntity>({
     id: 'library-id',
@@ -40,5 +42,6 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    exclusionPatterns: [],
   }),
 };

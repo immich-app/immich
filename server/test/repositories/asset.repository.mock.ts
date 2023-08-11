@@ -22,6 +22,5 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getByTimeBucket: jest.fn(),
     getTimeBuckets: jest.fn(),
     remove: jest.fn(),
-    update: jest.fn(),
   };
 };

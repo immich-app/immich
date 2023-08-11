@@ -1,4 +1,4 @@
-import { AuthService, AuthUserDto, JobCommand, JobService, LibraryService, QueueName, UserService } from '@app/domain';
+import { AuthService, AuthUserDto, JobService, LibraryService, QueueName } from '@app/domain';
 import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
 import { AppService } from '@app/immich/app.service';
@@ -7,19 +7,14 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 import { MicroservicesModule } from 'src/microservices/microservices.module';
-import { DataSource } from 'typeorm';
-
-jest.setTimeout(30000);
 
 describe.skip('Asset', () => {
   let app: INestApplication;
 
-  let database: DataSource;
   let authService: AuthService;
   let appService: AppService;
   let assetService: AssetService;
 
-  let userService: UserService;
   let microAppService: MicroAppService;
 
   let libraryService: LibraryService;
@@ -36,15 +31,12 @@ describe.skip('Asset', () => {
 
     app = moduleFixture.createNestApplication();
 
-    database = app.get(DataSource);
     authService = app.get(AuthService);
     libraryService = app.get(LibraryService);
     jobService = app.get(JobService);
     appService = app.get(AppService);
     assetService = app.get(AssetService);
-    userService = app.get(UserService);
     microAppService = app.get(MicroAppService);
-    database = app.get(DataSource);
     await app.init();
     await appService.init();
     await microAppService.init();
@@ -61,11 +53,15 @@ describe.skip('Asset', () => {
       });
       adminUser = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
 
-      const library = await libraryService.create(adminUser, { libraryType: LibraryType.EXTERNAL, name: 'Library' });
+      const library = await libraryService.create(adminUser, {
+        libraryType: LibraryType.EXTERNAL,
+        name: 'Library',
+        importPaths: ['e2e/assets/nature'],
+        excludePatterns: [],
+      });
 
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
 
-      await libraryService.setImportPaths(adminUser, library.id, { importPaths: ['e2e/assets/nature'] });
       await libraryService.refresh(adminUser, library.id, {});
 
       let isFinished = false;

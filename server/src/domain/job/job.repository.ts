@@ -1,4 +1,3 @@
-import { Queue, Worker } from 'bullmq';
 import { JobName, QueueName } from './job.constants';
 
 import {

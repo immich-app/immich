@@ -4,7 +4,6 @@
   import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
   import AccountMultiple from 'svelte-material-icons/AccountMultiple.svelte';
   import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
-  import ImageLibrary from 'svelte-material-icons/Bookshelf.svelte';
   import ImageMultipleOutline from 'svelte-material-icons/ImageMultipleOutline.svelte';
   import ImageMultiple from 'svelte-material-icons/ImageMultiple.svelte';
   import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
@@ -28,15 +27,6 @@
     try {
       const { data: albumCount } = await api.albumApi.getAlbumCount();
       return albumCount;
-    } catch {
-      return { owned: 0, shared: 0, notShared: 0 };
-    }
-  };
-
-  const getLibraryCount = async () => {
-    try {
-      const { data: libraryCount } = await api.libraryApi.getLibraryCount();
-      return libraryCount;
     } catch {
       return { owned: 0, shared: 0, notShared: 0 };
     }
@@ -90,7 +80,7 @@
     </SideBarButton>
   </a>
 
-  <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
+  <div class="dark:text-immich-dark-fg text-xs transition-all duration-200">
     <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
     <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
   </div>
