@@ -1,6 +1,9 @@
 import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
 import { AssetType, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
-import { assetStub, authStub, libraryStub, userStub } from '@test';
+import { assetStub } from './asset.stub';
+import { authStub } from './auth.stub';
+import { libraryStub } from './library.stub';
+import { userStub } from './user.stub';
 
 const today = new Date();
 const tomorrow = new Date();

@@ -157,7 +157,8 @@
       }
     },
     "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.ts"
+      "<rootDir>/test/setup.ts",
+      "jest-extended/all"
     ],
     "testEnvironment": "node",
     "moduleNameMapper": {

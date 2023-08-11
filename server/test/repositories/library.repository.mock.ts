@@ -5,7 +5,6 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     get: jest.fn(),
     getCountForUser: jest.fn(),
     getById: jest.fn(),
-    setImportPaths: jest.fn(),
     getAllByUserId: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
@@ -13,6 +12,5 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     getStatistics: jest.fn(),
     getDefaultUploadLibrary: jest.fn(),
     getAssetPaths: jest.fn(),
-    setExcludePatterns: jest.fn(),
   };
 };

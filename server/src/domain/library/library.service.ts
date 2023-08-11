@@ -8,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import fs from 'fs';
+import { glob } from 'glob';
 import mime from 'mime';
 import { basename, parse } from 'path';
 
@@ -18,8 +19,8 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
-import { LibraryCrawler } from './library-crawler';
 import {
+  CrawlOptionsDto,
   CreateLibraryDto,
   GetLibrariesDto,
   LibraryResponseDto,
@@ -34,16 +35,14 @@ import { ILibraryRepository } from './library.repository';
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
   private access: AccessCore;
-  private readonly crawler: LibraryCrawler;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
-    this.crawler = new LibraryCrawler();
     this.access = new AccessCore(accessRepository);
   }
 
@@ -293,7 +292,7 @@ export class LibraryService {
     }
 
     const crawledAssetPaths = (
-      await this.crawler.findAllMedia({
+      await this.crawl({
         pathsToCrawl: library.importPaths,
         excludePatterns: library.exclusionPatterns,
       })
@@ -346,5 +345,23 @@ export class LibraryService {
         await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_FILE, data: libraryJobData });
       }
     }
+  }
+
+  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const pathsToCrawl = crawlOptions.pathsToCrawl;
+
+    let paths: string;
+    if (!pathsToCrawl) {
+      // No paths to crawl, return empty list
+      return [];
+    } else if (pathsToCrawl.length === 1) {
+      paths = pathsToCrawl[0];
+    } else {
+      paths = '{' + pathsToCrawl.join(',') + '}';
+    }
+
+    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
+
+    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns });
   }
 }
