@@ -20,7 +20,7 @@
       for (const bucket of assetGridState.buckets) {
         await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
         for (const asset of bucket.assets) {
-          assetInteractionStore.addAssetToMultiselectGroup(asset);
+          assetInteractionStore.selectAsset(asset);
         }
       }
 
