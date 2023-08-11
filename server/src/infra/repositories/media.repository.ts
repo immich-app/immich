@@ -1,10 +1,10 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
-import { Logger, Type } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import { promisify } from 'util';
-import {safe_sharp} from '../../sharp_wrapper/safesharp'
+import { safe_sharp } from '../../sharp_wrapper/safesharp';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -23,11 +23,8 @@ export class MediaRepository implements IMediaRepository {
       .toBuffer();
   }
 
-  
-
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await (await safe_sharp(input, 
-                { failOn: 'none' }))
+    await (await safe_sharp(input, { failOn: 'none' }))
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
       .toFormat(options.format)

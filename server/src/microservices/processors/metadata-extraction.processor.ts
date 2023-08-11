@@ -24,7 +24,6 @@ import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
 import path from 'node:path';
-import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
 import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
@@ -32,8 +31,7 @@ import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
 import { parseISO } from '../utils/exif/iso';
 import { toNumberOrNull } from '../utils/numbers';
 
-import {safe_sharp} from '../../sharp_wrapper/safesharp'
-
+import { safe_sharp } from '../../sharp_wrapper/safesharp';
 
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
