@@ -31,7 +31,7 @@ jobs:
           submodules: recursive
 
       - name: Run e2e tests
-        run: npm run test:e2e -- --verbose
+        run: npm run test:e2e
         if: ${{ !cancelled() }}
 
   doc-tests:
