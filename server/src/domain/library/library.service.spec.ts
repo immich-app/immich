@@ -15,7 +15,8 @@ import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { ILibraryRepository, LibraryService } from './index';
 
 describe(LibraryService.name, () => {
-  let libraryService: LibraryService;
+  let sut: LibraryService;
+
   let accessMock: jest.Mocked<IAccessRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
@@ -23,7 +24,7 @@ describe(LibraryService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   it('should work', () => {
-    expect(libraryService).toBeDefined();
+    expect(sut).toBeDefined();
   });
 
   beforeEach(async () => {
@@ -32,7 +33,7 @@ describe(LibraryService.name, () => {
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
 
-    libraryService = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
+    sut = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
   });
 
   describe('handleRefreshAsset', () => {
@@ -55,7 +56,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -66,7 +67,7 @@ describe(LibraryService.name, () => {
       };
 
       await expect(async () => {
-        await libraryService.handleRefreshAsset(mockLibraryJob);
+        await sut.handleRefreshAsset(mockLibraryJob);
       }).rejects.toThrowError('Cannot determine mime type of asset: /import/photo.jpg');
     });
 
@@ -81,7 +82,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -92,7 +93,7 @@ describe(LibraryService.name, () => {
       };
 
       await expect(async () => {
-        await libraryService.handleRefreshAsset(mockLibraryJob);
+        await sut.handleRefreshAsset(mockLibraryJob);
       }).rejects.toThrowError('Unsupported file type image/potato');
     });
 
@@ -107,7 +108,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -120,7 +121,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -149,7 +150,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -162,7 +163,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -189,7 +190,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
@@ -202,7 +203,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
 
@@ -224,7 +225,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.offlineImage.libraryId,
@@ -237,7 +238,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
       assetMock.create.mockResolvedValue(assetStub.offlineImage);
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
 
@@ -272,7 +273,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
@@ -288,7 +289,7 @@ describe(LibraryService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
     });
 
     it('should refresh an existing asset with modified mtime', async () => {
@@ -308,7 +309,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -321,7 +322,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(libraryService.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.create).toHaveBeenCalled();
       const createdAsset = assetMock.create.mock.calls[0][0];
@@ -338,7 +339,7 @@ describe(LibraryService.name, () => {
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { LibraryService } = require('./library.service');
-      libraryService = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -352,7 +353,7 @@ describe(LibraryService.name, () => {
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(async () => {
-        await libraryService.handleRefreshAsset(mockLibraryJob);
+        await sut.handleRefreshAsset(mockLibraryJob);
       }).rejects.toThrowError("ENOENT, no such file or directory '/import/photo.jpg'");
     });
   });
