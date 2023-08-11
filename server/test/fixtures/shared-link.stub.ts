@@ -79,6 +79,7 @@ const albumResponse: AlbumResponseDto = {
   owner: mapUser(userStub.admin),
   sharedUsers: [],
   shared: false,
+  hasSharedLink: false,
   assets: [],
   assetCount: 1,
 };
@@ -283,7 +284,7 @@ export const sharedLinkResponseStub = {
     allowUpload: false,
     allowDownload: false,
     showExif: false,
-    album: albumResponse,
+    album: { ...albumResponse, startDate: assetResponse.fileCreatedAt, endDate: assetResponse.fileCreatedAt },
     assets: [{ ...assetResponse, exifInfo: undefined }],
   }),
 };

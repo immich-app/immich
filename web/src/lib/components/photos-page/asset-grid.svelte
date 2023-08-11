@@ -1,6 +1,12 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
+  import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
@@ -9,15 +15,8 @@
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
-  import AssetDateGroup from './asset-date-group.svelte';
-
-  import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
-  import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
+  import AssetDateGroup from './asset-date-group.svelte';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -25,7 +24,8 @@
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
 
-  const { assetSelectionCandidates, assetSelectionStart, selectedAssets, isMultiSelectState } = assetInteractionStore;
+  const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
+    assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
   let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
   let element: HTMLElement;
@@ -44,6 +44,10 @@
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
+    }
+
+    if ($showAssetViewer) {
+      $showAssetViewer = false;
     }
   });
 
@@ -68,6 +72,12 @@
           goto(AppRoute.EXPLORE);
           return;
       }
+    }
+  };
+
+  const handleSelectAsset = (asset: AssetResponseDto) => {
+    if (!assetStore.albumAssets.has(asset.id)) {
+      assetInteractionStore.selectAsset(asset);
     }
   };
 
@@ -166,16 +176,28 @@
     selectAssetCandidates(lastAssetMouseEvent);
   }
 
-  const handleSelectAssetCandidates = (e: CustomEvent) => {
-    const asset = e.detail.asset;
+  const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
     if (asset) {
       selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const handleSelectAssets = async (e: CustomEvent) => {
-    const asset = e.detail.asset as AssetResponseDto;
+  const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
+    if ($selectedGroup.has(group)) {
+      assetInteractionStore.removeGroupFromMultiselectGroup(group);
+      for (const asset of assets) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+      }
+    } else {
+      assetInteractionStore.addGroupToMultiselectGroup(group);
+      for (const asset of assets) {
+        handleSelectAsset(asset);
+      }
+    }
+  };
+
+  const handleSelectAssets = async (asset: AssetResponseDto) => {
     if (!asset) {
       return;
     }
@@ -184,6 +206,7 @@
 
     if (singleSelect) {
       element.scrollTop = 0;
+      return;
     }
 
     const rangeSelection = $assetSelectionCandidates.size > 0;
@@ -197,9 +220,9 @@
       assetInteractionStore.removeAssetFromMultiselectGroup(asset);
     } else {
       for (const candidate of $assetSelectionCandidates || []) {
-        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+        handleSelectAsset(candidate);
       }
-      assetInteractionStore.addAssetToMultiselectGroup(asset);
+      handleSelectAsset(asset);
     }
 
     assetInteractionStore.clearAssetSelectionCandidates();
@@ -224,7 +247,7 @@
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
           } else {
-            assetInteractionStore.addAssetToMultiselectGroup(asset);
+            handleSelectAsset(asset);
           }
         }
       }
@@ -293,7 +316,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-4"
+  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-[60px]"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
@@ -318,9 +341,10 @@
                 {assetInteractionStore}
                 {isSelectionMode}
                 {singleSelect}
+                on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
                 on:shift={handleScrollTimeline}
-                on:selectAssetCandidates={handleSelectAssetCandidates}
-                on:selectAssets={handleSelectAssets}
+                on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
+                on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

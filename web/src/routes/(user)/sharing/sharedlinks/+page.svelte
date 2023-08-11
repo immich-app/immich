@@ -85,12 +85,7 @@
 </section>
 
 {#if editSharedLink}
-  <CreateSharedLinkModal
-    editingLink={editSharedLink}
-    shareType={editSharedLink.type}
-    album={editSharedLink.album}
-    on:close={handleEditDone}
-  />
+  <CreateSharedLinkModal editingLink={editSharedLink} on:close={handleEditDone} />
 {/if}
 
 {#if deleteLinkId}

@@ -1,7 +1,7 @@
 import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { mapAlbum } from '../album';
+import { mapAlbumWithAssets } from '../album';
 import { IAlbumRepository } from '../album/album.repository';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
@@ -148,7 +148,7 @@ export class SearchService {
     const lookup = await this.getLookupMap(assets.items.map((asset) => asset.id));
 
     return {
-      albums: { ...albums, items: albums.items.map(mapAlbum) },
+      albums: { ...albums, items: albums.items.map(mapAlbumWithAssets) },
       assets: {
         ...assets,
         items: assets.items

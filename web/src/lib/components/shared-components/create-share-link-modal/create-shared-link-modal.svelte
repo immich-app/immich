@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AlbumResponseDto, api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Link from 'svelte-material-icons/Link.svelte';
   import BaseModal from '../base-modal.svelte';
@@ -13,9 +13,8 @@
   import DropdownButton from '../dropdown-button.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
 
-  export let shareType: SharedLinkType;
-  export let sharedAssets: AssetResponseDto[] = [];
-  export let album: AlbumResponseDto | undefined = undefined;
+  export let albumId: string | undefined = undefined;
+  export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
   let sharedLink: string | null = null;
@@ -33,6 +32,8 @@
     options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
   };
 
+  $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
+
   onMount(async () => {
     if (editingLink) {
       if (editingLink.description) {
@@ -41,6 +42,9 @@
       allowUpload = editingLink.allowUpload;
       allowDownload = editingLink.allowDownload;
       showExif = editingLink.showExif;
+
+      albumId = editingLink.album?.id;
+      assetIds = editingLink.assets.map(({ id }) => id);
     }
 
     const module = await import('copy-image-clipboard');
@@ -56,8 +60,8 @@
       const { data } = await api.sharedLinkApi.createSharedLink({
         sharedLinkCreateDto: {
           type: shareType,
-          albumId: album ? album.id : undefined,
-          assetIds: sharedAssets.map((a) => a.id),
+          albumId,
+          assetIds,
           expiresAt: expirationDate,
           allowUpload,
           description,
@@ -151,7 +155,7 @@
   </svelte:fragment>
 
   <section class="mx-6 mb-6">
-    {#if shareType == SharedLinkType.Album}
+    {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
         <div>Let anyone with the link see photos and people in this album.</div>
       {:else}
@@ -163,7 +167,7 @@
       {/if}
     {/if}
 
-    {#if shareType == SharedLinkType.Individual}
+    {#if shareType === SharedLinkType.Individual}
       {#if !editingLink}
         <div>Let anyone with the link see the selected photo(s)</div>
       {:else}

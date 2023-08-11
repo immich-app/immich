@@ -10,13 +10,10 @@ export const addAssetsToAlbum = async (
 ): Promise<BulkIdResponseDto[]> =>
   api.albumApi.addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetIds }, key }).then(({ data: results }) => {
     const count = results.filter(({ success }) => success).length;
-    if (count > 0) {
-      // This might be 0 if the user tries to add an asset that is already in the album
-      notificationController.show({
-        type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
-      });
-    }
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+    });
 
     return results;
   });

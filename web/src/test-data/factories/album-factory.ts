@@ -16,4 +16,5 @@ export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   owner: userFactory.build(),
   shared: false,
   sharedUsers: [],
+  hasSharedLink: false,
 });

@@ -144,18 +144,24 @@ export class AssetService {
     return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
   }
 
+  private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
+    if (dto.albumId) {
+      await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
+    } else if (dto.userId) {
+      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+    } else {
+      dto.userId = authUser.id;
+    }
+  }
+
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
-    const { userId, ...options } = dto;
-    const targetId = userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
-    return this.assetRepository.getTimeBuckets(targetId, options);
+    await this.timeBucketChecks(authUser, dto);
+    return this.assetRepository.getTimeBuckets(dto);
   }
 
   async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    const { userId, timeBucket, ...options } = dto;
-    const targetId = userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
-    const assets = await this.assetRepository.getByTimeBucket(targetId, timeBucket, options);
+    await this.timeBucketChecks(authUser, dto);
+    const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
     return assets.map(mapAsset);
   }
 

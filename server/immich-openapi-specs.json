@@ -174,6 +174,14 @@
             }
           },
           {
+            "name": "withoutAssets",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -5076,6 +5084,13 @@
           "description": {
             "type": "string"
           },
+          "endDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "hasSharedLink": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
@@ -5098,6 +5113,10 @@
             },
             "type": "array"
           },
+          "startDate": {
+            "format": "date-time",
+            "type": "string"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -5114,6 +5133,7 @@
           "albumThumbnailAssetId",
           "shared",
           "sharedUsers",
+          "hasSharedLink",
           "assets",
           "owner"
         ],

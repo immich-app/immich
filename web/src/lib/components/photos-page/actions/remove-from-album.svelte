@@ -10,6 +10,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
   export let album: AlbumResponseDto;
+  export let onRemove: ((assetIds: string[]) => void) | undefined = undefined;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -17,13 +18,16 @@
 
   const removeFromAlbum = async () => {
     try {
+      const ids = Array.from(getAssets()).map((a) => a.id);
       const { data: results } = await api.albumApi.removeAssetFromAlbum({
         id: album.id,
-        bulkIdsDto: { ids: Array.from(getAssets()).map((a) => a.id) },
+        bulkIdsDto: { ids },
       });
 
       const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
       album = data;
+
+      onRemove?.(ids);
 
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
