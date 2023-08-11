@@ -66,6 +66,7 @@ const image: Record<string, string[]> = {
   '.srf': ['image/srf', 'image/x-sony-srf'],
   '.srw': ['image/srw', 'image/x-samsung-srw'],
   '.tiff': ['image/tiff'],
+  '.tif': ['image/tiff'],
   '.webp': ['image/webp'],
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
 };
@@ -117,5 +118,8 @@ export const mimeTypes = {
       return AssetType.VIDEO;
     }
     return AssetType.OTHER;
+  },
+  getSupportedFileExtensions: () => {
+    return Object.keys(image).concat(Object.keys(video));
   },
 };

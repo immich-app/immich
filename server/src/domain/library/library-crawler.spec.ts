@@ -88,6 +88,18 @@ describe('CrawlService', () => {
     expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
   });
 
+  it('should support globbing paths', async () => {
+    mockfs({
+      '/photos1/image1.jpg': '',
+      '/photos2/image2.jpg': '',
+      '/images/image3.jpg': '',
+    });
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos*'];
+    const paths: string[] = await crawler.findAllMedia(options);
+    expect(paths).toIncludeSameMembers(['/photos1/image1.jpg', '/photos2/image2.jpg']);
+  });
+
   it('should crawl a single path without trailing slash', async () => {
     mockfs({
       '/photos/image.jpg': '',
