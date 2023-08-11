@@ -2,8 +2,6 @@
   import { createEventDispatcher } from 'svelte';
   import FolderSync from 'svelte-material-icons/FolderSync.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { clickOutside } from '../../utils/click-outside';
-  import { fade } from 'svelte/transition';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let importPath: string;
@@ -19,7 +17,7 @@
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
   <div
-    class="bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
+    class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
   >
     <div
       class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"

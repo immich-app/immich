@@ -1,8 +1,6 @@
 <script lang="ts">
   import { api, UpdateLibraryDto, LibraryResponseDto, LibraryType, LibraryStatsResponseDto } from '@api';
   import { onMount } from 'svelte';
-  import UploadLibraryForm from '../forms/upload-library-form.svelte';
-  import ImportLibraryForm from '../forms/import-library-path-form.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
@@ -16,6 +14,7 @@
   import { Dropdown, DropdownDivider, DropdownItem } from 'flowbite-svelte';
   import { Icon } from 'flowbite-svelte-icons';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
+  import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
   import LibraryRenameForm from '../forms/library-rename-form.svelte';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
 
@@ -28,25 +27,29 @@
   let diskUsage: number[] = [];
   let diskUsageUnit: string[] = [];
 
-  let isOpen: boolean[] = [];
-
-  const toggle = (index: number) => (isOpen[index] = !isOpen[index]);
-
-  let editUploadLibrary: Partial<LibraryResponseDto> | null = null;
   let deleteLibrary: LibraryResponseDto | null = null;
 
   let editImportPaths: number | null;
-
+  let editScanSettings: number | null;
   let renameLibrary: number | null;
 
   let dropdownOpen: boolean[] = [];
-  const closeDropdown = (index: number) => (dropdownOpen[index] = false);
 
   let createLibraryDropdownOpen = false;
 
   onMount(() => {
-    refreshLibraries();
+    readLibraryList();
   });
+
+  const closeAll = () => {
+    editImportPaths = null;
+    editScanSettings = null;
+    renameLibrary = null;
+
+    for (let i = 0; i < dropdownOpen.length; i++) {
+      dropdownOpen[i] = false;
+    }
+  };
 
   const refreshStats = async (listIndex: number) => {
     const { data } = await api.libraryApi.getLibraryStatistics({ id: libraries[listIndex].id });
@@ -57,12 +60,15 @@
     [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
   };
 
-  async function refreshLibraries() {
+  async function readLibraryList() {
     const { data } = await api.libraryApi.getAllLibraries();
     libraries = data;
 
+    dropdownOpen.length = libraries.length;
+
     for (let i = 0; i < libraries.length; i++) {
       await refreshStats(i);
+      dropdownOpen[i] = false;
     }
   }
 
@@ -89,26 +95,22 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to create a new library');
+      handleError(error, 'Unable to create library');
     } finally {
-      await refreshLibraries();
+      await readLibraryList();
     }
   };
 
-  const handleEdit = async (event: CustomEvent<UpdateLibraryDto>, index?: number) => {
+  const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
+    console.log('Edit!');
     try {
       const dto = event.detail;
       await api.libraryApi.updateLibrary({ updateLibraryDto: dto });
-      if (index !== undefined) {
-        isOpen[index] = false;
-      }
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {
-      editUploadLibrary = null;
-      editImportPaths = null;
-      renameLibrary = null;
-      await refreshLibraries();
+      closeAll();
+      await readLibraryList();
     }
   };
 
@@ -127,24 +129,51 @@
       handleError(error, 'Unable to remove library');
     } finally {
       deleteLibrary = null;
-      await refreshLibraries();
+      await readLibraryList();
+    }
+  };
+
+  const handleRefresh = async (libraryId: string) => {
+    try {
+      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: {} });
+      notificationController.show({
+        message: `Refreshing library`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to refresh library');
+    }
+  };
+
+  const handleForceRefresh = async (libraryId: string) => {
+    try {
+      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { forceRefresh: true } });
+      notificationController.show({
+        message: `Refreshing library`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to force refresh library');
+    }
+  };
+
+  const handleEmptyTrash = async (libraryId: string) => {
+    try {
+      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { emptyTrash: true } });
+      notificationController.show({
+        message: `Emptying library trash`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to empty trash');
     }
   };
 </script>
 
-{#if editUploadLibrary}
-  <UploadLibraryForm
-    title="Edit Library"
-    submitText="Save"
-    library={editUploadLibrary}
-    on:submit={handleEdit}
-    on:cancel={() => (editUploadLibrary = null)}
-  />
-{/if}
-
 {#if deleteLibrary}
   <ConfirmDialogue
-    prompt="Are you sure you want to delete this library?"
+    title="Warning!"
+    prompt="Are you sure you want to delete this library? This will DELETE any and all contained assets and cannot be undone."
     on:confirm={handleDelete}
     on:cancel={() => (deleteLibrary = null)}
   />
@@ -196,15 +225,20 @@
                   <Dropdown bind:open={dropdownOpen[index]}>
                     <DropdownItem
                       on:click={() => {
-                        closeDropdown(index);
+                        closeAll();
                         renameLibrary = index;
                       }}>Rename</DropdownItem
                     >
                     {#if library.type === LibraryType.Import}
-                      <DropdownItem>Refresh Library Files</DropdownItem>
+                      <DropdownItem
+                        on:click={function () {
+                          closeAll();
+                          handleRefresh(library.id);
+                        }}>Refresh Library Files</DropdownItem
+                      >
                       <DropdownItem
                         on:click={() => {
-                          closeDropdown(index);
+                          closeAll();
                           editImportPaths = index;
                         }}>Edit Import Paths</DropdownItem
                       >
@@ -212,59 +246,52 @@
                         Manage<Icon name="chevron-right-solid" class="text-primary-700 ml-2 h-3 w-3 dark:text-white" />
                       </DropdownItem>
                       <Dropdown placement="right-start">
-                        <DropdownItem>Scan Settings</DropdownItem>
+                        <DropdownItem
+                          on:click={() => {
+                            closeAll();
+                            editScanSettings = index;
+                          }}>Scan Settings</DropdownItem
+                        >
                         <DropdownDivider />
-                        <DropdownItem>Force Refresh</DropdownItem>
-                        <DropdownItem>Empty Trash</DropdownItem>
+                        <DropdownItem
+                          on:click={function () {
+                            closeAll();
+                            handleForceRefresh(library.id);
+                          }}>Force Refresh</DropdownItem
+                        >
+                        <DropdownItem
+                          on:click={function () {
+                            closeAll();
+                            handleEmptyTrash(library.id);
+                          }}>Empty Trash</DropdownItem
+                        >
                       </Dropdown>
                     {/if}
                     <DropdownItem
                       on:click={function () {
+                        closeAll();
                         deleteLibrary = library;
                       }}>Delete Library</DropdownItem
                     >
                   </Dropdown>
-                  <button
-                    on:click={function () {
-                      toggle(index);
-                    }}
-                    aria-expanded={isOpen[index]}
-                    class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
-                  >
-                    <svg
-                      style="tran"
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
                 </td>
               </tr>
               {#if renameLibrary == index}
                 <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
-                  <LibraryRenameForm {library} on:submit={(event) => handleEdit(event, index)} />
+                  <LibraryRenameForm {library} on:submit={handleEdit} on:cancel={() => (renameLibrary = null)} />
                 </div>
               {/if}
               {#if editImportPaths == index}
                 <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
-                  <LibraryImportPathsForm {library} on:submit={(event) => handleEdit(event, index)} />
+                  <LibraryImportPathsForm {library} on:submit={handleEdit} on:cancel={() => (editImportPaths = null)} />
                 </div>
               {/if}
-
-              {#if isOpen[index]}
+              {#if editScanSettings == index}
                 <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
-                  <ImportLibraryForm
-                    title="Edit Library"
-                    submitText="Save"
+                  <LibraryScanSettingsForm
                     {library}
-                    on:submit={(event) => handleEdit(event, index)}
+                    on:submit={handleEdit}
+                    on:cancel={() => (editScanSettings = null)}
                   />
                 </div>
               {/if}
@@ -282,13 +309,3 @@
     </div>
   </div>
 </section>
-
-<style>
-  svg {
-    transition: transform 0.2s ease-in;
-  }
-
-  [aria-expanded='true'] svg {
-    transform: rotate(0.5turn);
-  }
-</style>

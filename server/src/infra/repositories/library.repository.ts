@@ -51,6 +51,9 @@ export class LibraryRepository implements ILibraryRepository {
       relations: {
         owner: true,
       },
+      order: {
+        createdAt: 'ASC',
+      },
     });
   }
 

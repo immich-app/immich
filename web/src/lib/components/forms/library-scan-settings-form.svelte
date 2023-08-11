@@ -1,28 +1,32 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
+  import { LibraryType, type LibraryResponseDto } from '@api';
   import { handleError } from '../../utils/handle-error';
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
   import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-  import type { LibraryResponseDto } from '@api';
+
+  let cancelText = 'Cancel';
+  let submitText = 'Save';
 
   export let library: Partial<LibraryResponseDto>;
 
-  let addImportPath = false;
-  let editImportPath: number | null = null;
-  let deleteImportPath: number | null = null;
+  let addExcludePattern = false;
+  let editExcludePattern: number | null = null;
+  let deleteExcludePattern: number | null = null;
 
-  let importPathToAdd: string;
-  let editedImportPath: string;
+  let excludePatternToAdd: string;
+  let excludePatternToEdit: string;
+  let editedExcludePattern: string;
 
-  let importPaths: string[] = [];
+  let excludePatterns: string[] = [];
 
   onMount(() => {
-    if (library.importPaths) {
-      importPaths = library.importPaths;
+    if (library.excludePatterns) {
+      excludePatterns = library.excludePatterns;
     } else {
-      library.importPaths = [];
+      library.excludePatterns = [];
     }
   });
 
@@ -32,104 +36,100 @@
   };
 
   const handleSubmit = () => {
-    dispatch('submit', { ...library });
+    dispatch('submit', { ...library, libraryType: LibraryType.Import });
   };
 
-  const handleAddImportPath = async () => {
-    if (!addImportPath) {
+  const handleAddExcludePattern = async () => {
+    if (!addExcludePattern) {
       return;
     }
 
-    if (!library.importPaths) {
-      library.importPaths = [];
+    if (!library.excludePatterns) {
+      library.excludePatterns = [];
     }
 
     try {
-      library.importPaths.push(importPathToAdd);
-      importPaths = library.importPaths;
+      library.excludePatterns.push(excludePatternToAdd);
+      excludePatterns = library.excludePatterns;
+      addExcludePattern = false;
     } catch (error) {
-      handleError(error, 'Unable to remove import path');
-    } finally {
-      addImportPath = false;
+      handleError(error, 'Unable to add exclude pattern');
     }
   };
 
-  const handleEditImportPath = async () => {
-    if (!editImportPath) {
+  const handleEditExcludePattern = async () => {
+    if (!editExcludePattern) {
       return;
     }
 
-    if (!library.importPaths) {
-      library.importPaths = [];
+    if (!library.excludePatterns) {
+      library.excludePatterns = [];
     }
 
     try {
-      library.importPaths[editImportPath] = editedImportPath;
-      importPaths = library.importPaths;
+      library.excludePatterns[editExcludePattern] = editedExcludePattern;
+      excludePatterns = library.excludePatterns;
     } catch (error) {
-      editImportPath = null;
-      handleError(error, 'Unable to edit import path');
-    } finally {
-      editImportPath = null;
+      editExcludePattern = null;
+      handleError(error, 'Unable to edit exclude pattern');
     }
   };
 
-  const handleDeleteImportPath = async () => {
-    if (!deleteImportPath) {
+  const handleDeleteExcludePattern = async () => {
+    if (!deleteExcludePattern) {
       return;
     }
 
     try {
-      if (!library.importPaths) {
-        library.importPaths = [];
+      if (!library.excludePatterns) {
+        library.excludePatterns = [];
       }
 
-      const pathToDelete = library.importPaths[deleteImportPath];
-      library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
-      importPaths = library.importPaths;
+      const pathToDelete = library.excludePatterns[deleteExcludePattern];
+      library.excludePatterns = library.excludePatterns.filter((path) => path != pathToDelete);
+      excludePatterns = library.excludePatterns;
     } catch (error) {
-      handleError(error, 'Unable to delete import path');
-    } finally {
-      deleteImportPath = null;
+      deleteExcludePattern = null;
+      handleError(error, 'Unable to delete exclude pattern');
     }
   };
 </script>
 
-{#if addImportPath}
+{#if addExcludePattern}
   <LibraryImportPathForm
     title="Add Import Path"
     submitText="Add"
-    bind:importPath={importPathToAdd}
-    on:submit={handleAddImportPath}
+    bind:importPath={excludePatternToAdd}
+    on:submit={handleAddExcludePattern}
     on:cancel={() => {
-      addImportPath = false;
+      addExcludePattern = false;
     }}
   />
 {/if}
 
-{#if editImportPath}
+{#if editExcludePattern}
   <LibraryImportPathForm
     title="Edit Import Path"
     submitText="Save"
     canDelete={true}
-    importPath={editedImportPath}
-    on:submit={handleEditImportPath}
-    on:delete={handleDeleteImportPath}
+    bind:importPath={editedExcludePattern}
+    on:submit={handleEditExcludePattern}
+    on:delete={handleDeleteExcludePattern}
     on:cancel={() => {
-      editImportPath = null;
+      editExcludePattern = null;
     }}
   />
 {/if}
 
 <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
   <div class="mt-8 flex w-full gap-4 px-4">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-    <Button type="submit" fullwidth>Save</Button>
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+    <Button type="submit" fullwidth>{submitText}</Button>
   </div>
 
   <table class="w-full text-left">
     <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
-      {#each importPaths as importPath, listIndex}
+      {#each excludePatterns as excludePattern, listIndex}
         <tr
           class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
             listIndex % 2 == 0
@@ -137,11 +137,11 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-4/5 text-ellipsis px-4 text-sm">{importPath}</td>
+          <td class="w-4/5 text-ellipsis px-4 text-sm">{excludePattern}</td>
           <td class="w-1/5 text-ellipsis px-4 text-sm">
             <button
               on:click={() => {
-                editImportPath = listIndex;
+                editExcludePattern = listIndex;
               }}
               class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
             >
@@ -152,7 +152,7 @@
       {/each}
       <tr
         class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
-          importPaths.length % 2 == 0
+          excludePatterns.length % 2 == 0
             ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
             : 'bg-immich-bg dark:bg-immich-dark-gray/50'
         }`}
@@ -162,8 +162,8 @@
           ><Button
             size="sm"
             on:click={() => {
-              addImportPath = true;
-            }}>Add path</Button
+              addExcludePattern = true;
+            }}>Add Exclusion Pattern</Button
           ></td
         ></tr
       >
