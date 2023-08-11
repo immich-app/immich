@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, RuleEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository, mapAsset } from '../asset';
@@ -7,7 +7,8 @@ import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
 import { IAlbumRepository } from './album.repository';
-import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { AddUsersDto, CreateAlbumDto, CreateRuleDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { IRuleRepository } from './rule.repository';
 
 @Injectable()
 export class AlbumService {
@@ -18,6 +19,7 @@ export class AlbumService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IRuleRepository) private ruleRepository: IRuleRepository,
   ) {
     this.access = new AccessCore(accessRepository);
   }
@@ -98,6 +100,7 @@ export class AlbumService {
       sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
       assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
+      rules: [],
     });
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [album.id] } });
@@ -281,4 +284,29 @@ export class AlbumService {
     }
     return album;
   }
+
+  async addRule(authUser: AuthUserDto, id: string, dto: CreateRuleDto) {
+    await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
+
+    const album = await this.findOrFail(id);
+    const user = await this.userRepository.get(authUser.id);
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const rule = new RuleEntity();
+    rule.key = dto.key;
+    rule.value = dto.value;
+    rule.album = album;
+    rule.albumId = album.id;
+    rule.user = user;
+    rule.ownerId = user.id;
+
+    await this.ruleRepository.create(rule);
+
+    return await this.findOrFail(id);
+  }
+
+  async removeRule(authUser: AuthUserDto, ruleId: string) {}
 }

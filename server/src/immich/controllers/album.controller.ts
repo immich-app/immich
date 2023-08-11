@@ -6,6 +6,7 @@ import {
   BulkIdResponseDto,
   BulkIdsDto,
   CreateAlbumDto as CreateDto,
+  CreateRuleDto,
   UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
 import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
@@ -88,12 +89,16 @@ export class AlbumController {
   }
 
   @Post(':id/rule')
-  addRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    throw new Error('Not implemented');
+  addRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: CreateRuleDto) {
+    return this.service.addRule(authUser, id, dto);
   }
 
   @Delete(':id/rule/:ruleId')
-  removeRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+  removeRule(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('ruleId', new ParseMeUUIDPipe({ version: '4' })) ruleId: string,
+  ) {
     throw new Error('Not implemented');
   }
 }

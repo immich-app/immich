@@ -390,6 +390,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRuleDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "201": {
             "description": ""
@@ -421,6 +431,14 @@
             "in": "path",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
               "type": "string"
             }
           }
@@ -5436,6 +5454,21 @@
         ],
         "type": "object"
       },
+      "CreateRuleDto": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/RuleKey"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
       "CreateTagDto": {
         "properties": {
           "name": {
@@ -6168,6 +6201,14 @@
           "isPaused"
         ],
         "type": "object"
+      },
+      "RuleKey": {
+        "enum": [
+          "personId",
+          "exifInfo.city",
+          "asset.fileCreatedAt"
+        ],
+        "type": "string"
       },
       "SearchAlbumResponseDto": {
         "properties": {
