@@ -148,7 +148,7 @@ export class LibraryService {
         // Mark asset as offline
         this.logger.debug(`Marking asset as offline: ${job.assetPath}`);
 
-        await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
+        await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
         return true;
       } else {
         // File can't be accessed and does not already exist in db
@@ -185,7 +185,7 @@ export class LibraryService {
     if (existingAssetEntity?.isOffline) {
       // File was previously offline but is now online
       this.logger.debug(`Marking previously-offline asset as online: ${job.assetPath}`);
-      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
+      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: false });
     }
 
     if (!doImport) {
@@ -274,7 +274,7 @@ export class LibraryService {
       await this.assetRepository.remove(existingAssetEntity);
     } else if (existingAssetEntity) {
       this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
-      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
+      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
     }
 
     return true;

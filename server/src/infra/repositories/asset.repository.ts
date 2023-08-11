@@ -131,10 +131,6 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.remove(asset);
   }
 
-  update(asset: Partial<AssetEntity>): Promise<AssetEntity> {
-    return this.repository.save(asset);
-  }
-
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
