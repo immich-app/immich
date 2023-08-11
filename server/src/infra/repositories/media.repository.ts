@@ -1,10 +1,12 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, mimeTypes, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
+import im from 'imagemagick';
 import sharp from 'sharp';
 import { promisify } from 'util';
 
+const unsupportedSharpTypes = new Set(['image/nef']);
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 
@@ -23,11 +25,25 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
-      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
-      .toFormat(options.format)
-      .toFile(output);
+    if (typeof input === 'string' && unsupportedSharpTypes.has(mimeTypes.lookup(input))) {
+      this.logger.log(`Sharp doesn't support ${mimeTypes.lookup(input)} type, using imagemagick instead`);
+      return new Promise((resolve, reject) => {
+        im.convert([input, '-resize', `${options.size}x${options.size}\>`, output], (err, stdout) => {
+          this.logger.debug(stdout);
+          if (err) {
+            this.logger.error(err);
+            reject(err);
+          }
+          resolve();
+        });
+      });
+    } else {
+      await sharp(input, { failOn: 'none' })
+        .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+        .rotate()
+        .toFormat(options.format)
+        .toFile(output);
+    }
   }
 
   async probe(input: string): Promise<VideoInfo> {
