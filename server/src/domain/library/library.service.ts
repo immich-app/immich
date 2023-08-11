@@ -149,8 +149,10 @@ export class LibraryService {
 
     let doImport = false;
 
-    if (job.forceRefresh) {
-      // Force refresh was requested, re-read from disk
+    if (job.analyze) {
+      throw new BadRequestException('Asset re-reads are not implemented yet');
+
+      // Analyze was requested, re-read from disk
       doImport = true;
     }
 
@@ -165,7 +167,7 @@ export class LibraryService {
       );
 
       doImport = true;
-    } else if (stats && !job.forceRefresh && !existingAssetEntity.isOffline) {
+    } else if (stats && !job.analyze && !existingAssetEntity.isOffline) {
       // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
       this.logger.debug(`Asset already exists in database and on disk, will not import: ${job.assetPath}`);
       return true;
@@ -305,20 +307,31 @@ export class LibraryService {
         assetPath: offlineAssetPath,
         ownerId: authUser.id,
         libraryId: libraryId,
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: dto.emptyTrash ?? false,
       };
 
       await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: libraryJobData });
     }
 
-    if (!dto.emptyTrash) {
-      for (const assetPath of crawledAssetPaths) {
+    if (!dto.emptyTrash && crawledAssetPaths.length > 0) {
+      let filteredPaths: string[] = [];
+      if (dto.analyze) {
+        filteredPaths = crawledAssetPaths;
+      } else {
+        const existingPaths = await this.libraryRepository.getAssetPaths(libraryId);
+        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${libraryId}`);
+
+        filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.includes(assetPath));
+        this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
+      }
+
+      for (const assetPath of filteredPaths) {
         const libraryJobData: ILibraryJob = {
           assetPath: path.normalize(assetPath),
           ownerId: authUser.id,
           libraryId: libraryId,
-          forceRefresh: dto.forceRefresh ?? false,
+          analyze: dto.analyze ?? false,
           emptyTrash: dto.emptyTrash ?? false,
         };
 

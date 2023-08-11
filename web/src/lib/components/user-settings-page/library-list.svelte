@@ -102,7 +102,6 @@
   };
 
   const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
-    console.log('Edit!');
     try {
       const dto = event.detail;
       await api.libraryApi.updateLibrary({ updateLibraryDto: dto });
@@ -145,15 +144,15 @@
     }
   };
 
-  const handleForceRefresh = async (libraryId: string) => {
+  const handleAnalyze = async (libraryId: string) => {
     try {
-      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { forceRefresh: true } });
+      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { analyze: true } });
       notificationController.show({
         message: `Refreshing library`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to force refresh library');
+      handleError(error, 'Unable to analyze library assets');
     }
   };
 
@@ -256,8 +255,8 @@
                         <DropdownItem
                           on:click={function () {
                             closeAll();
-                            handleForceRefresh(library.id);
-                          }}>Force Refresh</DropdownItem
+                            handleAnalyze(library.id);
+                          }}>Analyze</DropdownItem
                         >
                         <DropdownItem
                           on:click={function () {

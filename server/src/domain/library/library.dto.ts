@@ -68,10 +68,10 @@ export class LibrarySearchDto {
 }
 
 export class ScanLibraryDto {
-  // Forces all files to be re-read no matter the timestamp
+  // Re-analyzes all data in the library
   @IsBoolean()
   @IsOptional()
-  forceRefresh?: boolean = false;
+  analyze?: boolean = false;
 
   @IsBoolean()
   @IsOptional()

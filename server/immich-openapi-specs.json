@@ -6567,11 +6567,11 @@
       },
       "ScanLibraryDto": {
         "properties": {
-          "emptyTrash": {
+          "analyze": {
             "default": false,
             "type": "boolean"
           },
-          "forceRefresh": {
+          "emptyTrash": {
             "default": false,
             "type": "boolean"
           }

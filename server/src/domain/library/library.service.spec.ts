@@ -59,7 +59,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -85,7 +85,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -111,7 +111,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -153,7 +153,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/video.mp4',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -193,7 +193,7 @@ describe(LibraryService.name, () => {
         libraryId: assetStub.image.libraryId,
         ownerId: assetStub.image.ownerId,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -228,7 +228,7 @@ describe(LibraryService.name, () => {
         libraryId: assetStub.offlineImage.libraryId,
         ownerId: assetStub.offlineImage.ownerId,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -276,7 +276,7 @@ describe(LibraryService.name, () => {
         libraryId: assetStub.image.libraryId,
         ownerId: assetStub.image.ownerId,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -312,7 +312,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 
@@ -342,7 +342,7 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/import/photo.jpg',
-        forceRefresh: false,
+        analyze: false,
         emptyTrash: false,
       };
 

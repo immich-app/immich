@@ -26,7 +26,7 @@ export interface ILibraryJob extends IBaseJob {
   libraryId: string;
   ownerId: string;
   assetPath: string;
-  forceRefresh: boolean;
+  analyze: boolean;
   emptyTrash: boolean;
 }
 

@@ -15,4 +15,5 @@ export interface ILibraryRepository {
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   getStatistics(id: string): Promise<LibraryStatsResponseDto>;
+  getAssetPaths(libraryId: string): Promise<string[]>;
 }
