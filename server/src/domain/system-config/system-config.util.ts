@@ -6,9 +6,9 @@ export function compareVersions(remoteVersionString: string, serverVersion: Serv
 }
 
 export function stringToVersion(version: string): ServerVersion {
-  const matchResult = version.match(/v(\d+)\.(\d+)\.(\d+)/);
+  const matchResult = version.match(/(?:v)?(\d+)\.(\d+)\.(\d+)/i);
   if (matchResult) {
-    const [, major, minor, patch] = matchResult;
+    const [, major, minor, patch] = matchResult.map(Number);
     return new ServerVersion(major, minor, patch);
   } else {
     throw new Error(`Invalid version format: ${version}`);

@@ -5,5 +5,6 @@ export const newSystemConfigRepositoryMock = (): jest.Mocked<ISystemConfigReposi
     load: jest.fn().mockResolvedValue([]),
     saveAll: jest.fn().mockResolvedValue([]),
     deleteKeys: jest.fn(),
+    getLatestAvailableVersion: jest.fn(),
   };
 };

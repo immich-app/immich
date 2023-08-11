@@ -49,7 +49,7 @@ describe('compare server versions', () => {
 });
 
 describe('convert string version to ServerVersion', () => {
-  test('should convert valid version string to ServerVersion', () => {
+  test('should convert valid version string to ServerVersion (with lowercase "v")', () => {
     const versionString = 'v1.72.2';
 
     const result = stringToVersion(versionString);
@@ -57,8 +57,24 @@ describe('convert string version to ServerVersion', () => {
     expect(result).toEqual(new ServerVersion(1, 72, 2));
   });
 
-  test('should throw error for invalid version string when converting invalid version string to ServerVersion', () => {
+  test('should convert valid version string to ServerVersion (with uppercase "v")', () => {
+    const versionString = 'V1.72.2';
+
+    const result = stringToVersion(versionString);
+
+    expect(result).toEqual(new ServerVersion(1, 72, 2));
+  });
+
+  test('should convert valid version string to ServerVersion (without "v")', () => {
     const versionString = '1.72.2';
+
+    const result = stringToVersion(versionString);
+
+    expect(result).toEqual(new ServerVersion(1, 72, 2));
+  });
+
+  test('should throw error when converting invalid version string to ServerVersion', () => {
+    const versionString = '1.72';
     expect(() => {
       stringToVersion(versionString);
     }).toThrowError();
