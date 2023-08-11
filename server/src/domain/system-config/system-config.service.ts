@@ -21,7 +21,6 @@ export class SystemConfigService {
   private core: SystemConfigCore;
   public availableVersion: ServerVersion | null;
   private disableCheckLatestVersion: boolean;
-
   private logger = new Logger();
 
   constructor(
@@ -47,11 +46,6 @@ export class SystemConfigService {
     return mapConfig(config);
   }
 
-  getLatestVersion(): SystemConfigDto {
-    const config = this.core.getDefaults();
-    return mapConfig(config);
-  }
-
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const config = await this.core.updateConfig(dto);
     await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
@@ -72,9 +66,11 @@ export class SystemConfigService {
       return true;
     }
     try {
+      this.logger.debug('Checking if a new version is available ...');
       const data = await this.repository.getLatestAvailableVersion();
 
       if (compareVersions(data.tag_name, serverVersion)) {
+        this.logger.debug('New Version detected : ' + stringToVersion(data.tag_name).toString());
         this.availableVersion = stringToVersion(data.tag_name);
         return true;
       }

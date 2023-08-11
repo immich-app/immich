@@ -2,6 +2,7 @@ import { SystemConfigThumbnailDto } from '@app/domain/system-config';
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
+import { SystemConfigCheckAvailableVersionDto } from './system-config-check-available-version.dto';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
@@ -38,6 +39,11 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   thumbnail!: SystemConfigThumbnailDto;
+
+  @Type(() => SystemConfigCheckAvailableVersionDto)
+  @ValidateNested()
+  @IsObject()
+  checkAvailableVersion!: SystemConfigCheckAvailableVersionDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

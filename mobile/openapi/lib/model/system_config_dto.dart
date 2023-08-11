@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
+    required this.checkAvailableVersion,
     required this.ffmpeg,
     required this.job,
     required this.oauth,
@@ -20,6 +21,8 @@ class SystemConfigDto {
     required this.storageTemplate,
     required this.thumbnail,
   });
+
+  SystemConfigCheckAvailableVersionDto checkAvailableVersion;
 
   SystemConfigFFmpegDto ffmpeg;
 
@@ -35,6 +38,7 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
+     other.checkAvailableVersion == checkAvailableVersion &&
      other.ffmpeg == ffmpeg &&
      other.job == job &&
      other.oauth == oauth &&
@@ -45,6 +49,7 @@ class SystemConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (checkAvailableVersion.hashCode) +
     (ffmpeg.hashCode) +
     (job.hashCode) +
     (oauth.hashCode) +
@@ -53,10 +58,11 @@ class SystemConfigDto {
     (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[checkAvailableVersion=$checkAvailableVersion, ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'checkAvailableVersion'] = this.checkAvailableVersion;
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'job'] = this.job;
       json[r'oauth'] = this.oauth;
@@ -74,6 +80,7 @@ class SystemConfigDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigDto(
+        checkAvailableVersion: SystemConfigCheckAvailableVersionDto.fromJson(json[r'checkAvailableVersion'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
@@ -127,6 +134,7 @@ class SystemConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'checkAvailableVersion',
     'ffmpeg',
     'job',
     'oauth',

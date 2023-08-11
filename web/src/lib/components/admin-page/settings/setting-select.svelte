@@ -9,7 +9,6 @@
   export let name = '';
   export let isEdited = false;
   export let number = false;
-  export let disabled = false;
 
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
@@ -46,7 +45,6 @@
     id="{name}-select"
     bind:value
     on:change={handleChange}
-    {disabled}
   >
     {#each options as option}
       <option value={option.value}>{option.text}</option>

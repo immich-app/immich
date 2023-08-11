@@ -2417,9 +2417,28 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface SystemConfigCheckAvailableVersionDto
+ */
+export interface SystemConfigCheckAvailableVersionDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigCheckAvailableVersionDto
+     */
+    'enabled': boolean;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigDto
  */
 export interface SystemConfigDto {
+    /**
+     * 
+     * @type {SystemConfigCheckAvailableVersionDto}
+     * @memberof SystemConfigDto
+     */
+    'checkAvailableVersion': SystemConfigCheckAvailableVersionDto;
     /**
      * 
      * @type {SystemConfigFFmpegDto}

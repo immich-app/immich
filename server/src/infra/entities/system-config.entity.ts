@@ -55,6 +55,8 @@ export enum SystemConfigKey {
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
+
+  CHECK_AVAILABLE_VERSION_ENABLED = 'checkAvailableVersion.enabled',
 }
 
 export enum TranscodePolicy {
@@ -127,5 +129,8 @@ export interface SystemConfig {
   thumbnail: {
     webpSize: number;
     jpegSize: number;
+  };
+  checkAvailableVersion: {
+    enabled: boolean;
   };
 }

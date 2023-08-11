@@ -6630,8 +6630,22 @@
         },
         "type": "object"
       },
+      "SystemConfigCheckAvailableVersionDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigDto": {
         "properties": {
+          "checkAvailableVersion": {
+            "$ref": "#/components/schemas/SystemConfigCheckAvailableVersionDto"
+          },
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
@@ -6657,7 +6671,8 @@
           "passwordLogin",
           "storageTemplate",
           "job",
-          "thumbnail"
+          "thumbnail",
+          "checkAvailableVersion"
         ],
         "type": "object"
       },

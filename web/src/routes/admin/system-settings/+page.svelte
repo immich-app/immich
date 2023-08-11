@@ -10,6 +10,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { api } from '@api';
   import type { PageData } from './$types';
+  import CheckAvailableVersionSettings from '$lib/components/admin-page/settings/check-available-version/check-available-version-settings.svelte';
 
   export let data: PageData;
 
@@ -56,6 +57,10 @@
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
       <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Check Available Version" subtitle="Manage how it's checked">
+      <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.checkAvailableVersion} />
     </SettingAccordion>
   {/await}
 </section>

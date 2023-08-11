@@ -69,6 +69,10 @@ export const defaults = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
   },
+
+  checkAvailableVersion: {
+    enabled: true,
+  },
 });
 
 const singleton = new Subject<SystemConfig>();
@@ -135,7 +139,6 @@ export class SystemConfigCore {
     if (deletes.length > 0) {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
-
     const newConfig = await this.getConfig();
 
     this.config$.next(newConfig);
