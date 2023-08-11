@@ -378,7 +378,7 @@
     },
     "/album/{id}/rule": {
       "post": {
-        "operationId": "addRule",
+        "operationId": "createRule",
         "parameters": [
           {
             "name": "id",

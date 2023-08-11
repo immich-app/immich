@@ -89,7 +89,7 @@ export class AlbumController {
   }
 
   @Post(':id/rule')
-  addRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: CreateRuleDto) {
+  createRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: CreateRuleDto) {
     return this.service.addRule(authUser, id, dto);
   }
 
