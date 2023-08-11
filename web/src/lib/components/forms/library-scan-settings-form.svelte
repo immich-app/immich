@@ -6,6 +6,7 @@
   import LibraryImportPathForm from './library-import-path-form.svelte';
   import { onMount } from 'svelte';
   import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -92,10 +93,9 @@
 </script>
 
 {#if addExclusionPattern}
-  <LibraryImportPathForm
-    title="Add Exclusion Pattern"
+  <LibraryExclusionPatternForm
     submitText="Add"
-    bind:importPath={exclusionPatternToAdd}
+    bind:exclusionPattern={exclusionPatternToAdd}
     on:submit={handleAddExclusionPattern}
     on:cancel={() => {
       addExclusionPattern = false;
@@ -104,11 +104,10 @@
 {/if}
 
 {#if editExclusionPattern}
-  <LibraryImportPathForm
-    title="Edit Exclusion Pattern"
+  <LibraryExclusionPatternForm
     submitText="Save"
     canDelete={true}
-    bind:importPath={editedExclusionPattern}
+    bind:exclusionPattern={editedExclusionPattern}
     on:submit={handleEditExclusionPattern}
     on:delete={handleDeleteExclusionPattern}
     on:cancel={() => {
@@ -122,7 +121,6 @@
     <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
     <Button type="submit" fullwidth>Save</Button>
   </div>
-
   <table class="w-full text-left">
     <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
       {#each exclusionPatterns as excludePattern, listIndex}
@@ -133,8 +131,8 @@
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-4/5 text-ellipsis px-4 text-sm">{excludePattern}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm">
+          <td class="w-3/4 text-ellipsis px-4 text-sm">{excludePattern}</td>
+          <td class="w-1/4 text-ellipsis px-4 text-sm">
             <button
               on:click={() => {
                 editExclusionPattern = listIndex;
@@ -153,8 +151,12 @@
             : 'bg-immich-bg dark:bg-immich-dark-gray/50'
         }`}
       >
-        <td class="w-4/5 text-ellipsis px-4 text-sm" />
-        <td class="w-1/5 text-ellipsis px-4 text-sm"
+        <td class="w-3/4 text-ellipsis px-4 text-sm">
+          {#if exclusionPatterns.length === 0}
+            No pattern added
+          {/if}
+        </td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm"
           ><Button
             size="sm"
             on:click={() => {

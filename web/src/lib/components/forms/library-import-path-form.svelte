@@ -29,6 +29,10 @@
     </div>
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+      <p class="p-5 text-sm">
+        Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.
+      </p>
+
       <div class="m-4 flex flex-col gap-2">
         <label class="immich-form-label" for="path">Path</label>
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={importPath} />
