@@ -233,7 +233,7 @@
                         on:click={function () {
                           closeAll();
                           handleRefresh(library.id);
-                        }}>Refresh Library Files</DropdownItem
+                        }}>Scan Library Files</DropdownItem
                       >
                       <DropdownItem
                         on:click={() => {
