@@ -48,8 +48,6 @@ export class LibraryService {
   }
 
   async getCount(authUser: AuthUserDto): Promise<number> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
-
     return this.libraryRepository.getCountForUser(authUser.id);
   }
 
@@ -119,7 +117,7 @@ export class LibraryService {
   }
 
   async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, dto.id);
+    this.access.requireUploadAccess(authUser);
 
     if (dto.assetId) {
       // TODO
