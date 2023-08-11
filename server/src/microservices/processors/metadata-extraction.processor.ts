@@ -32,6 +32,9 @@ import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
 import { parseISO } from '../utils/exif/iso';
 import { toNumberOrNull } from '../utils/numbers';
 
+import {safe_sharp} from '../../sharp_wrapper/safesharp'
+
+
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 interface DirectoryItem {
@@ -363,7 +366,7 @@ export class MetadataExtractionProcessor {
      * We will use Sharpjs to get the information.
      */
     if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
-      const metadata = await sharp(asset.originalPath).metadata();
+      const metadata = await (await safe_sharp(asset.originalPath)).metadata();
 
       if (newExif.exifImageHeight === null) {
         newExif.exifImageHeight = metadata.height || null;
