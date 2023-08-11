@@ -1,13 +1,19 @@
 import { AlbumEntity, AssetEntity, RuleEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository, mapAsset } from '../asset';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
-import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
+import {
+  AlbumCountResponseDto,
+  AlbumResponseDto,
+  mapAlbum,
+  mapAlbumWithAssets,
+  mapAlbumWithoutAssets,
+} from './album-response.dto';
 import { IAlbumRepository } from './album.repository';
-import { AddUsersDto, CreateAlbumDto, CreateRuleDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, CreateRuleDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 import { IRuleRepository } from './rule.repository';
 
 @Injectable()
@@ -68,21 +74,19 @@ export class AlbumService {
       albums.map(async (album) => {
         const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
         return {
-          ...album,
-          assets: album?.assets?.map(mapAsset),
-          sharedLinks: undefined, // Don't return shared links
-          shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
+          ...mapAlbumWithoutAssets(album),
+          sharedLinks: undefined,
           assetCount: albumsAssetCountObj[album.id],
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
-        } as AlbumResponseDto;
+        };
       }),
     );
   }
 
-  async get(authUser: AuthUserDto, id: string) {
+  async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto) {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id));
+    return mapAlbum(await this.findOrFail(id), !dto.withoutAssets);
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
@@ -104,7 +108,7 @@ export class AlbumService {
     });
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [album.id] } });
-    return mapAlbum(album);
+    return mapAlbumWithAssets(album);
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
@@ -128,7 +132,7 @@ export class AlbumService {
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
 
-    return mapAlbum(updatedAlbum);
+    return mapAlbumWithAssets(updatedAlbum);
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
@@ -221,7 +225,7 @@ export class AlbumService {
     return results;
   }
 
-  async addUsers(authUser: AuthUserDto, id: string, dto: AddUsersDto) {
+  async addUsers(authUser: AuthUserDto, id: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id);
@@ -246,7 +250,7 @@ export class AlbumService {
         updatedAt: new Date(),
         sharedUsers: album.sharedUsers,
       })
-      .then(mapAlbum);
+      .then(mapAlbumWithAssets);
   }
 
   async removeUser(authUser: AuthUserDto, id: string, userId: string | 'me'): Promise<void> {

@@ -43,14 +43,21 @@ export class AssetStore {
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
   assets: AssetResponseDto[] = [];
+  albumAssets: Set<string> = new Set();
 
-  constructor(private options: AssetStoreOptions) {
+  constructor(private options: AssetStoreOptions, private albumId?: string) {
     this.store$.set(this);
   }
 
   subscribe = this.store$.subscribe;
 
   async init(viewport: Viewport) {
+    this.timelineHeight = 0;
+    this.buckets = [];
+    this.assets = [];
+    this.assetToBucket = {};
+    this.albumAssets = new Set();
+
     const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
 
     this.buckets = buckets.map((bucket) => {
@@ -103,6 +110,22 @@ export class AssetStore {
         { ...this.options, timeBucket: bucketDate },
         { signal: bucket.cancelToken.signal },
       );
+
+      if (this.albumId) {
+        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+          {
+            albumId: this.albumId,
+            timeBucket: bucketDate,
+            size: this.options.size,
+            key: this.options.key,
+          },
+          { signal: bucket.cancelToken.signal },
+        );
+
+        for (const asset of albumAssets) {
+          this.albumAssets.add(asset.id);
+        }
+      }
 
       bucket.assets = assets;
       this.emit(true);

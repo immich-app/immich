@@ -1,7 +1,7 @@
 import { SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import _ from 'lodash';
-import { AlbumResponseDto, mapAlbumExcludeAssetInfo } from '../album';
+import { AlbumResponseDto, mapAlbumWithoutAssets } from '../album';
 import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '../asset';
 
 export class SharedLinkResponseDto {
@@ -36,7 +36,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: assets.map(mapAsset),
-    album: sharedLink.album ? mapAlbumExcludeAssetInfo(sharedLink.album) : undefined,
+    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showExif: sharedLink.showExif,
@@ -58,7 +58,7 @@ export function mapSharedLinkWithNoExif(sharedLink: SharedLinkEntity): SharedLin
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: assets.map(mapAssetWithoutExif),
-    album: sharedLink.album ? mapAlbumExcludeAssetInfo(sharedLink.album) : undefined,
+    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showExif: sharedLink.showExif,
