@@ -27,7 +27,7 @@ describe(LibraryService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     libraryMock = newLibraryRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
