@@ -17,7 +17,6 @@ class SystemConfigDto {
     required this.job,
     required this.oauth,
     required this.passwordLogin,
-    required this.proxy,
     required this.storageTemplate,
     required this.thumbnail,
   });
@@ -30,8 +29,6 @@ class SystemConfigDto {
 
   SystemConfigPasswordLoginDto passwordLogin;
 
-  SystemConfigProxyDto proxy;
-
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThumbnailDto thumbnail;
@@ -42,7 +39,6 @@ class SystemConfigDto {
      other.job == job &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
-     other.proxy == proxy &&
      other.storageTemplate == storageTemplate &&
      other.thumbnail == thumbnail;
 
@@ -53,12 +49,11 @@ class SystemConfigDto {
     (job.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
-    (proxy.hashCode) +
     (storageTemplate.hashCode) +
     (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, proxy=$proxy, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -66,7 +61,6 @@ class SystemConfigDto {
       json[r'job'] = this.job;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
-      json[r'proxy'] = this.proxy;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
     return json;
@@ -84,7 +78,6 @@ class SystemConfigDto {
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
-        proxy: SystemConfigProxyDto.fromJson(json[r'proxy'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
       );
@@ -138,7 +131,6 @@ class SystemConfigDto {
     'job',
     'oauth',
     'passwordLogin',
-    'proxy',
     'storageTemplate',
     'thumbnail',
   };

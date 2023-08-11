@@ -1833,20 +1833,6 @@ export interface PersonUpdateDto {
 /**
  * 
  * @export
- * @enum {string}
- */
-
-export const ProxyProtocol = {
-    Http: 'http',
-    Https: 'https'
-} as const;
-
-export type ProxyProtocol = typeof ProxyProtocol[keyof typeof ProxyProtocol];
-
-
-/**
- * 
- * @export
  * @interface QueueStatusDto
  */
 export interface QueueStatusDto {
@@ -2460,12 +2446,6 @@ export interface SystemConfigDto {
     'passwordLogin': SystemConfigPasswordLoginDto;
     /**
      * 
-     * @type {SystemConfigProxyDto}
-     * @memberof SystemConfigDto
-     */
-    'proxy': SystemConfigProxyDto;
-    /**
-     * 
      * @type {SystemConfigStorageTemplateDto}
      * @memberof SystemConfigDto
      */
@@ -2730,39 +2710,6 @@ export interface SystemConfigPasswordLoginDto {
      */
     'enabled': boolean;
 }
-/**
- * 
- * @export
- * @interface SystemConfigProxyDto
- */
-export interface SystemConfigProxyDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigProxyDto
-     */
-    'enabled': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigProxyDto
-     */
-    'hostname': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigProxyDto
-     */
-    'port': string;
-    /**
-     * 
-     * @type {ProxyProtocol}
-     * @memberof SystemConfigProxyDto
-     */
-    'protocol': ProxyProtocol;
-}
-
-
 /**
  * 
  * @export

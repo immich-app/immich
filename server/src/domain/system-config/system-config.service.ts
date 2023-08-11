@@ -24,9 +24,6 @@ export type GithubRelease = {
 export class SystemConfigService {
   private core: SystemConfigCore;
   public availableVersion: ServerVersion | null;
-  private proxyHost: string | null;
-  private proxyProtocol: string | null;
-  private proxyPort: number | null;
   private disableCheckLatestVersion: boolean;
 
   private logger = new Logger();
@@ -37,9 +34,6 @@ export class SystemConfigService {
   ) {
     this.availableVersion = null;
     this.core = new SystemConfigCore(repository);
-    this.proxyHost = process.env.PROXY_HOST || null;
-    this.proxyProtocol = process.env.PROXY_PROTOCOL || null;
-    this.proxyPort = Number(process.env.PROXY_PORT) || null;
     this.disableCheckLatestVersion = process.env.CHECK_NEW_VERSION_INTERVAL === '0';
   }
 
@@ -78,19 +72,9 @@ export class SystemConfigService {
   }
 
   async handleImmichLatestVersionAvailable() {
-    const config = await this.core.getConfig();
     if (this.disableCheckLatestVersion) {
       return true;
     }
-    const proxy =
-      config.proxy.enabled && this.proxyHost && this.proxyPort && this.proxyProtocol
-        ? {
-            protocol: this.proxyProtocol,
-            port: this.proxyPort,
-            host: this.proxyHost,
-          }
-        : false;
-
     try {
       const { data } = await axios.get<GithubRelease>(
         'https://api.github.com/repos/immich-app/immich/releases/latest',
@@ -98,7 +82,6 @@ export class SystemConfigService {
           headers: {
             Accept: 'application/vnd.github.v3+json',
           },
-          proxy,
         },
       );
 

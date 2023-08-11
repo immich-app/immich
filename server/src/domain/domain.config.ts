@@ -30,9 +30,6 @@ export const immichAppConfig: ConfigModuleOptions = {
     MICROSERVICES_PORT: Joi.number().optional(),
     SERVER_PORT: Joi.number().optional(),
     CHECK_NEW_VERSION_INTERVAL: Joi.number().optional(),
-    PROXY_PROTOCOL: Joi.string().optional(),
-    PROXY_HOST: Joi.string().optional(),
-    PROXY_PORT: Joi.number().optional(),
   }),
 };
 

@@ -1,6 +1,5 @@
 import {
   AudioCodec,
-  ProxyProtocol,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -69,13 +68,6 @@ export const defaults = Object.freeze<SystemConfig>({
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
-  },
-
-  proxy: {
-    enabled: false,
-    protocol: ProxyProtocol.HTTP,
-    hostname: '',
-    port: '',
   },
 });
 

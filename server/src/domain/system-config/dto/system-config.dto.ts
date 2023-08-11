@@ -6,7 +6,6 @@ import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
-import { SystemConfigProxyDto } from './system-config-proxy.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
 
 export class SystemConfigDto {
@@ -39,11 +38,6 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   thumbnail!: SystemConfigThumbnailDto;
-
-  @Type(() => SystemConfigProxyDto)
-  @ValidateNested()
-  @IsObject()
-  proxy!: SystemConfigProxyDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
