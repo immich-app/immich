@@ -21,6 +21,7 @@ export enum Permission {
 
   LIBRARY_CREATE = 'library.create',
   LIBRARY_UPDATE = 'library.update',
+  LIBRARY_DELETE = 'library.delete',
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }

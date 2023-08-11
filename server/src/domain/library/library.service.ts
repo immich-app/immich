@@ -12,6 +12,7 @@ import mime from 'mime';
 import { basename, parse } from 'path';
 
 import path from 'node:path';
+import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
@@ -32,24 +33,28 @@ import { ILibraryRepository } from './library.repository';
 @Injectable()
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
+  private access: AccessCore;
   private readonly crawler: LibraryCrawler;
 
   constructor(
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.crawler = new LibraryCrawler();
+    this.access = new AccessCore(accessRepository);
   }
 
   async getCount(authUser: AuthUserDto): Promise<number> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+
     return this.libraryRepository.getCountForUser(authUser.id);
   }
 
   async get(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
-    // TODO authorization
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
 
     const library = await this.libraryRepository.get(libraryId);
     if (!library) {
@@ -60,12 +65,13 @@ export class LibraryService {
   }
 
   async getStatistics(authUser: AuthUserDto, libraryId: string): Promise<LibraryStatsResponseDto> {
-    // TODO authorization
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
     return await this.libraryRepository.getStatistics(libraryId);
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    this.access.requireUploadAccess(authUser);
+
     const libraryEntity = await this.libraryRepository.create({
       owner: { id: authUser.id } as UserEntity,
       name: dto.name,
@@ -79,6 +85,8 @@ export class LibraryService {
   }
 
   async update(authUser: AuthUserDto, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.id);
+
     const libraryEntity = await this.libraryRepository.getById(dto.id);
 
     if (dto.name) {
@@ -100,6 +108,8 @@ export class LibraryService {
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
+
     const exists = await this.libraryRepository.getById(id);
     if (!exists) {
       throw new BadRequestException('Library not found');
@@ -109,6 +119,8 @@ export class LibraryService {
   }
 
   async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, dto.id);
+
     if (dto.assetId) {
       // TODO
       throw new BadRequestException('Not implemented yet');
@@ -118,8 +130,7 @@ export class LibraryService {
   }
 
   async getLibraryById(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
-    // TODO
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
 
     const libraryEntity = await this.libraryRepository.getById(libraryId);
     return mapLibrary(libraryEntity);
@@ -153,7 +164,7 @@ export class LibraryService {
       throw new BadRequestException('Asset re-reads are not implemented yet');
 
       // Analyze was requested, re-read from disk
-      doImport = true;
+      // doImport = true;
     }
 
     if (!existingAssetEntity) {
@@ -272,8 +283,7 @@ export class LibraryService {
   }
 
   async refresh(authUser: AuthUserDto, libraryId: string, dto: RefreshLibraryDto) {
-    // TODO:
-    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
 
     const library = await this.libraryRepository.getById(libraryId);
 
