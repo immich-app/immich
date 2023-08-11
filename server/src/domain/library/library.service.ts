@@ -74,7 +74,7 @@ export class LibraryService {
       owner: { id: authUser.id } as UserEntity,
       name: dto.name,
       assets: [],
-      type: dto.libraryType,
+      type: dto.type,
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.excludePatterns ?? [],
       isVisible: dto.isVisible ?? true,

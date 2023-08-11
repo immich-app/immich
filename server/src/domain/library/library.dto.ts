@@ -7,7 +7,7 @@ export class CreateLibraryDto {
   @IsEnum(LibraryType)
   @IsNotEmpty()
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
-  libraryType!: LibraryType;
+  type!: LibraryType;
 
   @IsString()
   @IsNotEmpty()
@@ -54,10 +54,6 @@ export class CrawlOptionsDto {
 }
 
 export class GetLibrariesDto {
-  /**
-   * Only returns albums that contain the asset
-   * undefined: get all albums
-   */
   @ValidateUUID({ optional: true })
   assetId?: string;
 }
@@ -68,7 +64,6 @@ export class LibrarySearchDto {
 }
 
 export class ScanLibraryDto {
-  // Re-analyzes all data in the library
   @IsBoolean()
   @IsOptional()
   analyze?: boolean = false;

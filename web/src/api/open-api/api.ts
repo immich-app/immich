@@ -922,16 +922,16 @@ export interface CreateLibraryDto {
     'isVisible'?: boolean;
     /**
      * 
-     * @type {LibraryType}
-     * @memberof CreateLibraryDto
-     */
-    'libraryType': LibraryType;
-    /**
-     * 
      * @type {string}
      * @memberof CreateLibraryDto
      */
     'name': string;
+    /**
+     * 
+     * @type {LibraryType}
+     * @memberof CreateLibraryDto
+     */
+    'type': LibraryType;
 }
 
 
@@ -8548,7 +8548,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -8835,7 +8835,7 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -9012,7 +9012,7 @@ export interface LibraryApiDeleteLibraryRequest {
  */
 export interface LibraryApiGetAllLibrariesRequest {
     /**
-     * Only returns albums that contain the asset undefined: get all albums
+     * 
      * @type {string}
      * @memberof LibraryApiGetAllLibraries
      */

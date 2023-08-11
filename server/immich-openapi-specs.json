@@ -2376,7 +2376,6 @@
             "name": "assetId",
             "required": false,
             "in": "query",
-            "description": "Only returns albums that contain the asset\nundefined: get all albums",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5692,15 +5691,15 @@
           "isVisible": {
             "type": "boolean"
           },
-          "libraryType": {
-            "$ref": "#/components/schemas/LibraryType"
-          },
           "name": {
             "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
-          "libraryType",
+          "type",
           "name",
           "importPaths",
           "excludePatterns"

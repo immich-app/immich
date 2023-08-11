@@ -54,7 +54,7 @@ describe.skip('Asset', () => {
       adminUser = { ...adminSignUpDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
 
       const library = await libraryService.create(adminUser, {
-        libraryType: LibraryType.EXTERNAL,
+        type: LibraryType.EXTERNAL,
         name: 'Library',
         importPaths: ['e2e/assets/nature'],
         excludePatterns: [],
