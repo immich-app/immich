@@ -176,6 +176,7 @@ describe(AlbumService.name, () => {
           deletedAt: null,
           updatedAt: new Date('2021-01-01'),
           externalPath: null,
+          memoriesEnabled: true,
         },
         ownerId: 'admin_id',
         shared: false,

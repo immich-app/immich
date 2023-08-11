@@ -3,7 +3,15 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, AudioCodec, SystemConfigFFmpegDto, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@api';
+  import {
+    api,
+    AudioCodec,
+    SystemConfigFFmpegDto,
+    ToneMapping,
+    TranscodeHWAccel,
+    TranscodePolicy,
+    VideoCodec,
+  } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
@@ -210,6 +218,32 @@
               },
             ]}
             isEdited={!(ffmpegConfig.accel == savedConfig.accel)}
+          />
+
+          <SettingSelect
+            label="TONE-MAPPING"
+            desc="Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness."
+            bind:value={ffmpegConfig.tonemap}
+            name="tonemap"
+            options={[
+              {
+                value: ToneMapping.Hable,
+                text: 'Hable',
+              },
+              {
+                value: ToneMapping.Mobius,
+                text: 'Mobius',
+              },
+              {
+                value: ToneMapping.Reinhard,
+                text: 'Reinhard',
+              },
+              {
+                value: ToneMapping.Disabled,
+                text: 'Disabled',
+              },
+            ]}
+            isEdited={!(ffmpegConfig.tonemap == savedConfig.tonemap)}
           />
 
           <SettingSwitch

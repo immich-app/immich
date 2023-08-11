@@ -1,3 +1,4 @@
+import { SystemConfigThumbnailDto } from '@app/domain/system-config';
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
@@ -32,6 +33,11 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   job!: SystemConfigJobDto;
+
+  @Type(() => SystemConfigThumbnailDto)
+  @ValidateNested()
+  @IsObject()
+  thumbnail!: SystemConfigThumbnailDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

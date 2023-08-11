@@ -111,7 +111,7 @@
             [-90, -180],
             [90, 180],
           ],
-          minZoom: 2.5,
+          minZoom: 2,
         }}
       >
         <TileLayer

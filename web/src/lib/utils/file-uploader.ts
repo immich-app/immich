@@ -151,6 +151,10 @@ async function fileUploader(
     if (response.status == 200 || response.status == 201) {
       const res: AssetFileUploadResponseDto = response.data;
 
+      if (res.duplicate) {
+        uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+      }
+
       if (albumId && res.id) {
         await addAssetsToAlbum(albumId, [res.id], sharedKey);
       }
@@ -169,6 +173,8 @@ async function fileUploader(
 }
 
 function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
+  uploadAssetsStore.errorCounter.update((count) => count + 1);
+
   try {
     const res = JSON.parse(respBody);
 

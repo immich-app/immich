@@ -4902,7 +4902,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.72.1",
+    "version": "1.72.2",
     "contact": {}
   },
   "tags": [],
@@ -5763,6 +5763,9 @@
           },
           "lastName": {
             "type": "string"
+          },
+          "memoriesEnabled": {
+            "type": "boolean"
           },
           "password": {
             "type": "string"
@@ -7072,6 +7075,9 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/SystemConfigThumbnailDto"
           }
         },
         "required": [
@@ -7079,7 +7085,8 @@
           "oauth",
           "passwordLogin",
           "storageTemplate",
-          "job"
+          "job",
+          "thumbnail"
         ],
         "type": "object"
       },
@@ -7109,6 +7116,9 @@
           "threads": {
             "type": "integer"
           },
+          "tonemap": {
+            "$ref": "#/components/schemas/ToneMapping"
+          },
           "transcode": {
             "$ref": "#/components/schemas/TranscodePolicy"
           },
@@ -7123,6 +7133,7 @@
           "targetAudioCodec",
           "transcode",
           "accel",
+          "tonemap",
           "preset",
           "targetResolution",
           "maxBitrate",
@@ -7310,6 +7321,21 @@
         ],
         "type": "object"
       },
+      "SystemConfigThumbnailDto": {
+        "properties": {
+          "jpegSize": {
+            "type": "integer"
+          },
+          "webpSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "webpSize",
+          "jpegSize"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -7367,6 +7393,15 @@
         "enum": [
           "DAY",
           "MONTH"
+        ],
+        "type": "string"
+      },
+      "ToneMapping": {
+        "enum": [
+          "hable",
+          "mobius",
+          "reinhard",
+          "disabled"
         ],
         "type": "string"
       },
@@ -7491,6 +7526,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -7579,6 +7617,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
           "oauthId": {
             "type": "string"
           },
@@ -7610,7 +7651,8 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "memoriesEnabled"
         ],
         "type": "object"
       },

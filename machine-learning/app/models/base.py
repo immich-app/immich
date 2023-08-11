@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree
 from typing import Any
+from zipfile import BadZipFile
 
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf  # type: ignore
 
@@ -23,7 +24,7 @@ class InferenceModel(ABC):
         loader = self.load if eager else self.download
         try:
             loader(**model_kwargs)
-        except (OSError, InvalidProtobuf):
+        except (OSError, InvalidProtobuf, BadZipFile):
             self.clear_cache()
             loader(**model_kwargs)
 

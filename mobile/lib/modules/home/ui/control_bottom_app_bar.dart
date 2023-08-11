@@ -56,6 +56,12 @@ class ControlBottomAppBar extends ConsumerWidget {
           ),
           if (hasRemote)
             ControlBoxButton(
+              iconData: Icons.archive,
+              label: "control_bottom_app_bar_archive".tr(),
+              onPressed: enabled ? onArchive : null,
+            ),
+          if (hasRemote)
+            ControlBoxButton(
               iconData: Icons.favorite_border_rounded,
               label: "control_bottom_app_bar_favorite".tr(),
               onPressed: enabled ? onFavorite : null,
@@ -88,12 +94,6 @@ class ControlBottomAppBar extends ConsumerWidget {
                         },
                       )
                   : null,
-            ),
-          if (hasRemote)
-            ControlBoxButton(
-              iconData: Icons.archive,
-              label: "control_bottom_app_bar_archive".tr(),
-              onPressed: enabled ? onArchive : null,
             ),
         ],
       );

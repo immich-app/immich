@@ -3,10 +3,11 @@ import { writable } from 'svelte/store';
 export enum NotificationType {
   Info = 'Info',
   Error = 'Error',
+  Warning = 'Warning',
 }
 
 export class ImmichNotification {
-  id = new Date().getTime();
+  id = new Date().getTime() + Math.random();
   type!: NotificationType;
   message!: string;
   action!: NotificationAction;

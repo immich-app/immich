@@ -4,6 +4,7 @@ import {
   SystemConfigEntity,
   SystemConfigKey,
   SystemConfigValue,
+  ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
@@ -28,6 +29,7 @@ export const defaults = Object.freeze<SystemConfig>({
     maxBitrate: '0',
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
+    tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
   },
   job: {
@@ -62,6 +64,11 @@ export const defaults = Object.freeze<SystemConfig>({
 
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  },
+
+  thumbnail: {
+    webpSize: 250,
+    jpegSize: 1440,
   },
 });
 

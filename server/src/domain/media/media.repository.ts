@@ -14,6 +14,7 @@ export interface VideoStreamInfo {
   codecName?: string;
   codecType?: string;
   frameCount: number;
+  isHDR: boolean;
 }
 
 export interface AudioStreamInfo {
@@ -68,7 +69,6 @@ export interface IMediaRepository {
   generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video
-  extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
 }

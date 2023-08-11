@@ -7,7 +7,7 @@ const probeStubDefaultFormat: VideoFormat = {
 };
 
 const probeStubDefaultVideoStream: VideoStreamInfo[] = [
-  { height: 1080, width: 1920, codecName: 'hevc', codecType: 'video', frameCount: 100, rotation: 0 },
+  { height: 1080, width: 1920, codecName: 'hevc', codecType: 'video', frameCount: 100, rotation: 0, isHDR: false },
 ];
 
 const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ codecName: 'aac', codecType: 'audio' }];
@@ -31,6 +31,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
       },
       {
         height: 1080,
@@ -39,6 +40,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 99,
         rotation: 0,
+        isHDR: false,
       },
     ],
   }),
@@ -52,6 +54,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
       },
     ],
   }),
@@ -65,6 +68,21 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
+  videoStreamHDR: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 480,
+        width: 480,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: true,
       },
     ],
   }),
@@ -78,6 +96,7 @@ export const probeStub = {
         codecType: 'video',
         frameCount: 100,
         rotation: 90,
+        isHDR: false,
       },
     ],
   }),

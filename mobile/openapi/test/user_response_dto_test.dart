@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // bool memoriesEnabled
+    test('to test the property `memoriesEnabled`', () async {
+      // TODO
+    });
+
     // String oauthId
     test('to test the property `oauthId`', () async {
       // TODO

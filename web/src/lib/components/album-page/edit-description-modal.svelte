@@ -31,7 +31,14 @@
       <div class="m-4 flex flex-col gap-2">
         <label class="immich-form-label" for="email">Description</label>
         <!-- svelte-ignore a11y-autofocus -->
-        <input class="immich-form-input" id="name" name="name" type="text" bind:value={description} autofocus />
+        <textarea
+          class="immich-form-input focus:outline-none"
+          id="name"
+          name="name"
+          rows="5"
+          bind:value={description}
+          autofocus
+        />
       </div>
 
       <div class="mt-8 flex w-full gap-4 px-4">

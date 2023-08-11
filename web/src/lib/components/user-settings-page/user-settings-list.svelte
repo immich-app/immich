@@ -4,10 +4,11 @@
   import { onMount } from 'svelte';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
-  import OAuthSettings from './oauth-settings.svelte';
-  import UserAPIKeyList from './user-api-key-list.svelte';
   import DeviceList from './device-list.svelte';
+  import MemoriesSettings from './memories-settings.svelte';
+  import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import LibraryList from './library-list.svelte';
 
@@ -42,6 +43,10 @@
 
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
   <DeviceList />
+</SettingAccordion>
+
+<SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
+  <MemoriesSettings {user} />
 </SettingAccordion>
 
 {#if oauthEnabled}

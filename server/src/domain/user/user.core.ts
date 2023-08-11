@@ -65,6 +65,7 @@ export class UserCore {
         dto.externalPath = null;
       }
 
+      console.log(dto.memoriesEnabled);
       return this.userRepository.update(id, dto);
     } catch (e) {
       Logger.error(e, 'Failed to update user info');

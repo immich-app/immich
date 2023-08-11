@@ -3,6 +3,7 @@ import {
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
+  ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
@@ -44,6 +45,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
+    tonemap: ToneMapping.HABLE,
   },
   oauth: {
     autoLaunch: true,
@@ -63,6 +65,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  },
+  thumbnail: {
+    webpSize: 250,
+    jpegSize: 1440,
   },
 });
 
