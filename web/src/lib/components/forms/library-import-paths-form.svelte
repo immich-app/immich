@@ -128,10 +128,10 @@
   </div>
 
   <table class="w-full text-left">
-    <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
+    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each importPaths as importPath, listIndex}
         <tr
-          class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
+          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
             listIndex % 2 == 0
               ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
@@ -143,7 +143,7 @@
               on:click={() => {
                 editImportPath = listIndex;
               }}
-              class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
+              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
             >
               <PencilOutline size="16" />
             </button>
@@ -151,7 +151,7 @@
         </tr>
       {/each}
       <tr
-        class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
+        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
           importPaths.length % 2 == 0
             ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
             : 'bg-immich-bg dark:bg-immich-dark-gray/50'
