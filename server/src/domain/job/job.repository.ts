@@ -84,8 +84,7 @@ export type JobItem =
   | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob }
 
   // Smart album
-  | { name: JobName.SMART_ALBUM_INDEX; data: ISmartAlbumIndexJob }
-  | { name: JobName.SMART_ALBUM_INSERT; data: ISmartAlbumInsertJob };
+  | { name: JobName.SMART_ALBUM_INDEX; data: ISmartAlbumIndexJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 

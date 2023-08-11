@@ -76,9 +76,6 @@ export class AppService {
       [JobName.SMART_ALBUM_INDEX]: (data) => {
         throw new Error('Not implemented SMART_ALBUM_INDEX');
       },
-      [JobName.SMART_ALBUM_INSERT]: (data) => {
-        throw new Error('Not implemented SMART_ALBUM_INSERT');
-      },
     });
 
     process.on('uncaughtException', (error: Error | any) => {

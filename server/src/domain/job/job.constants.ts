@@ -78,7 +78,6 @@ export enum JobName {
 
   // smart albums
   SMART_ALBUM_INDEX = 'smart-album-index',
-  SMART_ALBUM_INSERT = 'smart-album-insert',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -144,5 +143,4 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // smart albums
   [JobName.SMART_ALBUM_INDEX]: QueueName.SMART_ALBUM,
-  [JobName.SMART_ALBUM_INSERT]: QueueName.SMART_ALBUM,
 };
