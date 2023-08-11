@@ -169,6 +169,10 @@ export class AccessCore {
       case Permission.LIBRARY_DOWNLOAD:
         return authUser.id === id;
 
+      case Permission.LIBRARY_DELETE:
+        // TODO
+        return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
+
       default:
         return false;
     }
