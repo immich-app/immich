@@ -4,13 +4,12 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigCheckAvailableVersionDto, SystemConfigPasswordLoginDto } from '@api';
+  import { api, SystemConfigCheckAvailableVersionDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let checkAvailableVersionConfig: SystemConfigCheckAvailableVersionDto; // this is the config that is being edited
 

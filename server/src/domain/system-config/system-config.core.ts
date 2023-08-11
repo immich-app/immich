@@ -10,6 +10,7 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
@@ -84,7 +85,11 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  public schedulerRegistry: SchedulerRegistry;
+
+  constructor(private repository: ISystemConfigRepository) {
+    this.schedulerRegistry = new SchedulerRegistry();
+  }
 
   public getDefaults(): SystemConfig {
     return defaults;
