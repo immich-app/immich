@@ -120,7 +120,7 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,
-    assetCount: assetCount,
+    assetCount,
     importPaths: entity.importPaths,
     excludePatterns: entity.exclusionPatterns,
   };
