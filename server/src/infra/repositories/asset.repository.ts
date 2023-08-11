@@ -398,7 +398,7 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (userId) {
-      builder = builder.where('asset.ownerId = :userId', { userId });
+      builder = builder.andWhere('asset.ownerId = :userId', { userId });
     }
 
     if (isArchived != undefined) {
