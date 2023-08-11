@@ -15,6 +15,6 @@ export interface IAccessRepository {
   };
 
   library: {
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    hasOwnerAccess(userId: string, libraryId: string): Promise<boolean>;
   };
 }
