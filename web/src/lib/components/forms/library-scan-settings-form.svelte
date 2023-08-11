@@ -33,7 +33,7 @@
   };
 
   const handleSubmit = () => {
-    dispatch('submit', { ...library, libraryType: LibraryType.Import });
+    dispatch('submit', { ...library, libraryType: LibraryType.External });
   };
 
   const handleAddExclusionPattern = async () => {

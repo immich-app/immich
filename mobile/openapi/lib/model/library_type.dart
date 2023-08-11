@@ -24,12 +24,12 @@ class LibraryType {
   String toJson() => value;
 
   static const UPLOAD = LibraryType._(r'UPLOAD');
-  static const IMPORT = LibraryType._(r'IMPORT');
+  static const EXTERNAL = LibraryType._(r'EXTERNAL');
 
   /// List of all possible values in this [enum][LibraryType].
   static const values = <LibraryType>[
     UPLOAD,
-    IMPORT,
+    EXTERNAL,
   ];
 
   static LibraryType? fromJson(dynamic value) => LibraryTypeTypeTransformer().decode(value);
@@ -69,7 +69,7 @@ class LibraryTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'UPLOAD': return LibraryType.UPLOAD;
-        case r'IMPORT': return LibraryType.IMPORT;
+        case r'EXTERNAL': return LibraryType.EXTERNAL;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

@@ -66,6 +66,8 @@
 
     dropdownOpen.length = libraries.length;
 
+    console.log(libraries);
+
     for (let i = 0; i < libraries.length; i++) {
       await refreshStats(i);
       dropdownOpen[i] = false;
@@ -77,8 +79,8 @@
     try {
       let newLibraryName;
       switch (libraryType) {
-        case LibraryType.Import:
-          newLibraryName = 'New Import Library';
+        case LibraryType.External:
+          newLibraryName = 'New External Library';
           break;
         case LibraryType.Upload:
           newLibraryName = 'New Upload Library';
@@ -204,7 +206,7 @@
                 }`}
               >
                 <td class="w-1/6 px-4 text-left text-sm">
-                  {#if library.type === LibraryType.Import}
+                  {#if library.type === LibraryType.External}
                     <Database size="40" />
                   {:else if library.type === LibraryType.Upload}
                     <Upload size="40" />
@@ -228,7 +230,7 @@
                         renameLibrary = index;
                       }}>Rename</DropdownItem
                     >
-                    {#if library.type === LibraryType.Import}
+                    {#if library.type === LibraryType.External}
                       <DropdownItem
                         on:click={function () {
                           closeAll();
@@ -303,7 +305,7 @@
       <Button>Create Library</Button>
       <Dropdown bind:open={createLibraryDropdownOpen}>
         <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
-        <DropdownItem on:click={() => handleCreate(LibraryType.Import)}>Create External Library</DropdownItem>
+        <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
       </Dropdown>
     </div>
   </div>

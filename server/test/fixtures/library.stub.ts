@@ -34,7 +34,7 @@ export const libraryStub = {
     assets: [],
     owner: userStub.user1,
     ownerId: 'user-id',
-    type: LibraryType.IMPORT,
+    type: LibraryType.EXTERNAL,
     importPaths: [],
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),

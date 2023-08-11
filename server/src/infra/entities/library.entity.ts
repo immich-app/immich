@@ -55,5 +55,5 @@ export class LibraryEntity {
 
 export enum LibraryType {
   UPLOAD = 'UPLOAD',
-  IMPORT = 'IMPORT',
+  EXTERNAL = 'EXTERNAL',
 }

@@ -6267,7 +6267,7 @@
       "LibraryType": {
         "enum": [
           "UPLOAD",
-          "IMPORT"
+          "EXTERNAL"
         ],
         "type": "string"
       },

@@ -1639,7 +1639,7 @@ export interface LibraryStatsResponseDto {
 
 export const LibraryType = {
     Upload: 'UPLOAD',
-    Import: 'IMPORT'
+    External: 'EXTERNAL'
 } as const;
 
 export type LibraryType = typeof LibraryType[keyof typeof LibraryType];

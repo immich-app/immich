@@ -279,7 +279,7 @@ export class LibraryService {
 
     this.logger.verbose(`Refreshing library: ${libraryId}`);
 
-    if (library.type != LibraryType.IMPORT) {
+    if (library.type != LibraryType.EXTERNAL) {
       Logger.error('Only imported libraries can be refreshed');
       throw new InternalServerErrorException('Only imported libraries can be refreshed');
     }
