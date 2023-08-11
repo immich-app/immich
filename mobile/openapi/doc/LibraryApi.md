@@ -152,7 +152,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = LibraryApi();
-final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Only returns albums that contain the asset undefined: get all albums
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
     final result = api_instance.getAllLibraries(assetId);
@@ -166,7 +166,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetId** | **String**| Only returns albums that contain the asset undefined: get all albums | [optional] 
+ **assetId** | **String**|  | [optional] 
 
 ### Return type
 

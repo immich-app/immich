@@ -107,7 +107,6 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset undefined: get all albums
   Future<Response> getAllLibrariesWithHttpInfo({ String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/library';
@@ -140,7 +139,6 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset undefined: get all albums
   Future<List<LibraryResponseDto>?> getAllLibraries({ String? assetId, }) async {
     final response = await getAllLibrariesWithHttpInfo( assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {

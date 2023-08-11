@@ -31,13 +31,13 @@ void main() {
       // TODO
     });
 
-    // LibraryType libraryType
-    test('to test the property `libraryType`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 
-    // String name
-    test('to test the property `name`', () async {
+    // LibraryType type
+    test('to test the property `type`', () async {
       // TODO
     });
 

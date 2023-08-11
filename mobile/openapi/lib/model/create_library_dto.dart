@@ -16,8 +16,8 @@ class CreateLibraryDto {
     this.excludePatterns = const [],
     this.importPaths = const [],
     this.isVisible,
-    required this.libraryType,
     required this.name,
+    required this.type,
   });
 
   List<String> excludePatterns;
@@ -32,17 +32,17 @@ class CreateLibraryDto {
   ///
   bool? isVisible;
 
-  LibraryType libraryType;
-
   String name;
+
+  LibraryType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
      other.excludePatterns == excludePatterns &&
      other.importPaths == importPaths &&
      other.isVisible == isVisible &&
-     other.libraryType == libraryType &&
-     other.name == name;
+     other.name == name &&
+     other.type == type;
 
   @override
   int get hashCode =>
@@ -50,11 +50,11 @@ class CreateLibraryDto {
     (excludePatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (libraryType.hashCode) +
-    (name.hashCode);
+    (name.hashCode) +
+    (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[excludePatterns=$excludePatterns, importPaths=$importPaths, isVisible=$isVisible, libraryType=$libraryType, name=$name]';
+  String toString() => 'CreateLibraryDto[excludePatterns=$excludePatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -65,8 +65,8 @@ class CreateLibraryDto {
     } else {
     //  json[r'isVisible'] = null;
     }
-      json[r'libraryType'] = this.libraryType;
       json[r'name'] = this.name;
+      json[r'type'] = this.type;
     return json;
   }
 
@@ -85,8 +85,8 @@ class CreateLibraryDto {
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        libraryType: LibraryType.fromJson(json[r'libraryType'])!,
         name: mapValueOfType<String>(json, r'name')!,
+        type: LibraryType.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -136,8 +136,8 @@ class CreateLibraryDto {
   static const requiredKeys = <String>{
     'excludePatterns',
     'importPaths',
-    'libraryType',
     'name',
+    'type',
   };
 }
 
