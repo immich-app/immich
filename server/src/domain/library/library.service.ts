@@ -192,19 +192,20 @@ export class LibraryService {
       return true;
     }
 
-    // TODO: Determine file type from extension only
-    const mimeType = mime.lookup(job.assetPath);
-    if (!mimeType) {
-      throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
-    }
-
-    if (!mimeTypes.isAsset(job.assetPath)) {
-      throw new BadRequestException(`Unsupported file type ${mimeType}`);
-    }
-
     const checksum = await this.cryptoRepository.hashFile(job.assetPath);
     const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
-    const assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
+
+    let assetType: AssetType;
+
+    if (mimeTypes.isImage(job.assetPath)) {
+      assetType = AssetType.IMAGE;
+    } else if (mimeTypes.isVideo(job.assetPath)) {
+      assetType = AssetType.VIDEO;
+    } else if (!mimeTypes.isAsset(job.assetPath)) {
+      throw new BadRequestException(`Unsupported file type ${job.assetPath}`);
+    } else {
+      throw new BadRequestException(`Unknown error when checking file type of ${job.assetPath}`);
+    }
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     let sidecarPath: string | null = null;

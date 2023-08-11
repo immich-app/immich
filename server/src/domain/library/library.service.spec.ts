@@ -27,9 +27,12 @@ describe(LibraryService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
-  it('should work', () => {
-    expect(sut).toBeDefined();
-  });
+  const createLibraryService = () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { LibraryService } = require('./library.service');
+
+    sut = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
+  };
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -38,7 +41,11 @@ describe(LibraryService.name, () => {
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
 
-    sut = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
+    createLibraryService();
+  });
+
+  it('should work', () => {
+    expect(sut).toBeDefined();
   });
 
   describe('handleRefreshAsset', () => {
@@ -50,32 +57,6 @@ describe(LibraryService.name, () => {
       jest.resetModules();
     });
 
-    it('should reject an unknown mime type', async () => {
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue(null),
-      }));
-
-      mockfs({
-        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
-
-      const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
-        analyze: false,
-        emptyTrash: false,
-      };
-
-      await expect(async () => {
-        await sut.handleRefreshAsset(mockLibraryJob);
-      }).rejects.toThrowError('Cannot determine mime type of asset: /import/photo.jpg');
-    });
-
     it('should reject an invalid mime type', async () => {
       jest.mock('mime', () => ({
         lookup: jest.fn().mockReturnValue('image/potato'),
@@ -85,9 +66,7 @@ describe(LibraryService.name, () => {
         '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -102,6 +81,30 @@ describe(LibraryService.name, () => {
       }).rejects.toThrowError('Unsupported file type image/potato');
     });
 
+    it('should reject an unknown mime type', async () => {
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue(null),
+      }));
+
+      mockfs({
+        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      createLibraryService();
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      await expect(async () => {
+        await sut.handleRefreshAsset(mockLibraryJob);
+      }).rejects.toThrowError('Cannot determine mime type of asset: /import/photo.jpg');
+    });
+
     it('should add a new image', async () => {
       mockfs({
         '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
@@ -111,9 +114,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -153,9 +154,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('video/mp4'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -193,9 +192,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
@@ -228,9 +225,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.offlineImage.libraryId,
@@ -276,9 +271,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
@@ -311,9 +304,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
@@ -341,9 +332,7 @@ describe(LibraryService.name, () => {
         lookup: jest.fn().mockReturnValue('image/jpeg'),
       }));
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LibraryService } = require('./library.service');
-      sut = new LibraryService(libraryMock, assetMock, jobMock, cryptoMock);
+      createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
