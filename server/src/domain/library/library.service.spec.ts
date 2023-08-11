@@ -1,12 +1,12 @@
 import {
   assetStub,
+  libraryStub,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   userStub,
 } from '@test';
-import { libraryStub } from '@test/fixtures/library.stub';
 import mock from 'mock-fs';
 import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';

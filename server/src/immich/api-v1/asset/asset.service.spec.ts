@@ -6,13 +6,13 @@ import {
   authStub,
   fileStub,
   IAccessRepositoryMock,
+  libraryStub,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
-import { libraryStub } from '@test/fixtures/library.stub';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
