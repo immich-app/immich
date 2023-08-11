@@ -1,5 +1,4 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
 import { ISystemConfigRepository } from '.';
 import { ServerVersion, serverVersion } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
@@ -15,10 +14,7 @@ import {
   supportedYearTokens,
 } from './system-config.constants';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
-
-export type GithubRelease = {
-  tag_name: string;
-};
+import { compareVersions, stringToVersion } from './system-config.util';
 
 @Injectable()
 export class SystemConfigService {
@@ -29,7 +25,7 @@ export class SystemConfigService {
   private logger = new Logger();
 
   constructor(
-    @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.availableVersion = null;
@@ -76,27 +72,12 @@ export class SystemConfigService {
       return true;
     }
     try {
-      const { data } = await axios.get<GithubRelease>(
-        'https://api.github.com/repos/immich-app/immich/releases/latest',
-        {
-          headers: {
-            Accept: 'application/vnd.github.v3+json',
-          },
-        },
-      );
+      const data = await this.repository.getLatestAvailableVersion();
 
-      const [, major, minor, patch] = data.tag_name.match(/v(\d+)\.(\d+)\.(\d+)/) || [];
-
-      const temp = new ServerVersion(major, minor, patch);
-
-      if (temp.toString().localeCompare(serverVersion.toString(), undefined, { numeric: true }) === 1) {
-        this.logger.debug(`New version Immich version available : ${temp.toString()}`);
-        this.availableVersion = temp;
-      } else {
-        this.logger.debug('No new Immich version available detected');
+      if (compareVersions(data.tag_name, serverVersion)) {
+        this.availableVersion = stringToVersion(data.tag_name);
+        return true;
       }
-
-      return true;
     } catch (error) {
       this.logger.error('Error occurred:', error);
       return false;

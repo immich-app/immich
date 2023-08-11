@@ -15,13 +15,14 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                    | Description                                  |   Default    | Services                                     |
-| :-------------------------- | :------------------------------------------- | :----------: | :------------------------------------------- |
-| `TZ`                        | Timezone                                     |              | microservices                                |
-| `NODE_ENV`                  | Environment (production, development)        | `production` | server, microservices, machine learning, web |
-| `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
-| `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
+| Variable                     | Description                                                            |   Default    | Services                                     |
+| :--------------------------- | :--------------------------------------------------------------------- | :----------: | :------------------------------------------- |
+| `TZ`                         | Timezone                                                               |              | microservices                                |
+| `NODE_ENV`                   | Environment (production, development)                                  | `production` | server, microservices, machine learning, web |
+| `LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                           |    `log`     | server, microservices                        |
+| `IMMICH_MEDIA_LOCATION`      | Media Location                                                         |  `./upload`  | server, microservices                        |
+| `PUBLIC_LOGIN_PAGE_MESSAGE`  | Public Login Page Message                                              |              | web                                          |
+| `CHECK_NEW_VERSION_INTERVAL` | Time interval in hours to check the latest version of immich available |     `6`      | server                                       |
 
 :::tip
 
