@@ -28,14 +28,17 @@ export class MediaRepository implements IMediaRepository {
     if (typeof input === 'string' && unsupportedSharpTypes.has(mimeTypes.lookup(input))) {
       this.logger.log(`Sharp doesn't support ${mimeTypes.lookup(input)} type, using imagemagick instead`);
       return new Promise((resolve, reject) => {
-        im.convert([input, '-resize', `${options.size}x${options.size}\>`, output], (err, stdout) => {
-          this.logger.debug(stdout);
-          if (err) {
-            this.logger.error(err);
-            reject(err);
-          }
-          resolve();
-        });
+        im.convert(
+          [input, '-quality', 80, '-thumbnail', `${options.size}x${options.size}\>`, output],
+          (err, stdout) => {
+            this.logger.debug(stdout);
+            if (err) {
+              this.logger.error(err);
+              reject(err);
+            }
+            resolve();
+          },
+        );
       });
     } else {
       await sharp(input, { failOn: 'none' })
