@@ -29,7 +29,6 @@ export const immichAppConfig: ConfigModuleOptions = {
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
     SERVER_PORT: Joi.number().optional(),
-    CHECK_NEW_VERSION_INTERVAL: Joi.number().optional(),
   }),
 };
 
