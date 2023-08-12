@@ -83,7 +83,6 @@
     "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
-    "@jest/globals": "^29.6.2",
     "@nestjs/cli": "^9.1.8",
     "@nestjs/schematics": "^9.0.4",
     "@nestjs/testing": "^9.2.1",

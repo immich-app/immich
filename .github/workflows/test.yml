@@ -24,12 +24,6 @@ jobs:
       - name: Run npm install
         run: npm ci
 
-      - uses: actions/checkout@v3
-        with:
-          repository: etnoy/immich-test-assets
-          path: ./server/e2e/assets
-          submodules: recursive
-
       - name: Run e2e tests
         run: npm run test:e2e
         if: ${{ !cancelled() }}
