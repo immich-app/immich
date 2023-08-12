@@ -5176,6 +5176,10 @@
           "currentVersion": {
             "$ref": "#/components/schemas/SystemConfigImmichVersion"
           },
+          "dateCheckAvailbleVersion": {
+            "nullable": true,
+            "type": "integer"
+          },
           "isAvailable": {
             "type": "boolean"
           },
@@ -5189,6 +5193,7 @@
           }
         },
         "required": [
+          "dateCheckAvailbleVersion",
           "isAvailable",
           "currentVersion",
           "releaseVersion"

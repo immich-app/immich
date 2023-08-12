@@ -10,9 +10,11 @@
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import { onMount } from 'svelte';
 
   export let checkAvailableVersionConfig: SystemConfigCheckAvailableVersionDto; // this is the config that is being edited
 
+  let lastCheck: string | null = 'Never';
   let savedConfig: SystemConfigCheckAvailableVersionDto;
   let defaultConfig: SystemConfigCheckAvailableVersionDto;
 
@@ -25,6 +27,13 @@
       api.systemConfigApi.getDefaults().then((res) => res.data.checkAvailableVersion),
     ]);
   }
+  onMount(async () => {
+    const { data } = await api.userApi.getLatestImmichVersionAvailable();
+    if (data.dateCheck) lastCheck = new Date(data.dateCheck).toLocaleString();
+    else {
+      lastCheck = 'Never';
+    }
+  });
 
   async function saveSetting() {
     try {
@@ -82,7 +91,7 @@
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <div class="ml-4">
             <SettingSwitch title="ENABLED" bind:checked={checkAvailableVersionConfig.enabled} />
-
+            Last Check : {lastCheck}
             <SettingButtonsRow
               on:reset={reset}
               on:save={saveSetting}

@@ -83,6 +83,7 @@ export class UserService {
   async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
     return {
       isAvailable: this.systemConfigService.availableVersion !== null,
+      dateCheckAvailbleVersion: this.systemConfigService.dateCheckAvailbleVersion,
       currentVersion: serverVersion,
       releaseVersion: this.systemConfigService.availableVersion,
     };

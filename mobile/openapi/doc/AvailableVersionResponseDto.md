@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **currentVersion** | [**SystemConfigImmichVersion**](SystemConfigImmichVersion.md) |  | 
+**dateCheckAvailbleVersion** | **int** |  | 
 **isAvailable** | **bool** |  | 
 **releaseVersion** | [**SystemConfigImmichVersion**](SystemConfigImmichVersion.md) |  | 
 

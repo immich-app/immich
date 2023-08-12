@@ -8,11 +8,11 @@ import {
 } from '@app/domain';
 import { SystemConfigCore } from '@app/domain/system-config/system-config.core';
 import { SystemConfig } from '@app/infra/entities';
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
-export class AppService implements OnModuleInit {
+export class AppService {
   private logger = new Logger(AppService.name);
   private configCore: SystemConfigCore;
 
@@ -25,14 +25,6 @@ export class AppService implements OnModuleInit {
   ) {
     this.configCore = new SystemConfigCore(configRepository);
     this.configCore.config$.subscribe((config) => this.onConfig(config));
-  }
-  async onModuleInit() {
-    const config = await this.configCore.getConfig();
-    if (config.checkAvailableVersion.enabled) {
-      const time = 60 * 60 * 1000;
-      const interval = setInterval(() => this.systemConfigService.handleImmichLatestVersionAvailable(), time);
-      this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
-    }
   }
 
   onConfig(config: SystemConfig) {
@@ -62,5 +54,12 @@ export class AppService implements OnModuleInit {
 
     this.logger.log(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
     this.logger.log(`Search is ${this.searchService.isEnabled() ? 'enabled' : 'disabled'}`);
+
+    const config = await this.configCore.getConfig();
+    if (config.checkAvailableVersion.enabled) {
+      const time = 5 * 1000;
+      const interval = setInterval(() => this.systemConfigService.handleImmichLatestVersionAvailable(), time);
+      this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
+    }
   }
 }

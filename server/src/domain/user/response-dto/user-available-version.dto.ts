@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AvailableVersionResponseDto {
   isAvailable!: boolean;
+  @ApiProperty({ type: 'integer' })
+  dateCheckAvailbleVersion!: number | null;
   currentVersion!: SystemConfigImmichVersion;
   releaseVersion!: SystemConfigImmichVersion | null;
 }

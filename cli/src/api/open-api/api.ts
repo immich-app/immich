@@ -730,6 +730,12 @@ export interface AvailableVersionResponseDto {
     'currentVersion': SystemConfigImmichVersion;
     /**
      * 
+     * @type {number}
+     * @memberof AvailableVersionResponseDto
+     */
+    'dateCheckAvailbleVersion': number | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof AvailableVersionResponseDto
      */

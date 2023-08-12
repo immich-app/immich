@@ -59,7 +59,7 @@
       <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
     </SettingAccordion>
 
-    <SettingAccordion title="Check Available Version" subtitle="Track new Immich versions">
+    <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
       <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.checkAvailableVersion} />
     </SettingAccordion>
   {/await}
