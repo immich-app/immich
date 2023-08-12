@@ -6,7 +6,6 @@ import im from 'imagemagick';
 import sharp from 'sharp';
 import { promisify } from 'util';
 
-const unsupportedSharpTypes = new Set(['image/nef', 'image/cr2']);
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 
@@ -25,7 +24,7 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    if (typeof input === 'string' && unsupportedSharpTypes.has(mimeTypes.lookup(input))) {
+    if (typeof input === 'string' && mimeTypes.isNotSupportedBySharp(input)) {
       this.logger.log(`Sharp doesn't support ${mimeTypes.lookup(input)} type, using imagemagick instead`);
       return new Promise((resolve, reject) => {
         im.convert(

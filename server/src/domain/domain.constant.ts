@@ -30,6 +30,8 @@ export function assertMachineLearningEnabled() {
   }
 }
 
+const unsupportedSharpTypes = new Set(['image/nef', 'image/cr2']);
+
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
@@ -118,4 +120,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
+  isNotSupportedBySharp: (filename: string) => unsupportedSharpTypes.has(lookup(filename)),
 };
