@@ -1,13 +1,13 @@
 import { QueueName } from '@app/domain/job/job.constants';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { JSON_TRANSFORMER } from '../infra.util';
 
 @Entity('system_config')
 export class SystemConfigEntity<T = SystemConfigValue> {
   @PrimaryColumn()
   key!: SystemConfigKey;
 
-  @Column({ type: 'varchar', nullable: true, transformer: { to: JSON.stringify, from: JSON.parse } })
-  value!: T;
+  @Column({ type: 'varchar', nullable: true, transformer: JSON_TRANSFORMER }) value!: T;
 }
 
 export type SystemConfigValue = string | number | boolean;

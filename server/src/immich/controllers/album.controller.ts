@@ -8,7 +8,6 @@ import {
   BulkIdResponseDto,
   BulkIdsDto,
   CreateAlbumDto as CreateDto,
-  CreateRuleDto,
   GetAlbumsDto,
   UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
@@ -92,19 +91,5 @@ export class AlbumController {
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.service.removeUser(authUser, id, userId);
-  }
-
-  @Post(':id/rule')
-  createRule(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: CreateRuleDto) {
-    return this.service.addRule(authUser, id, dto);
-  }
-
-  @Delete(':id/rule/:ruleId')
-  removeRule(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('ruleId', new ParseMeUUIDPipe({ version: '4' })) ruleId: string,
-  ) {
-    return this.service.removeRule(authUser, id, ruleId);
   }
 }

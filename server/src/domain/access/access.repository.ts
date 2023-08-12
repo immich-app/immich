@@ -14,6 +14,10 @@ export interface IAccessRepository {
     hasSharedLinkAccess(sharedLinkId: string, albumId: string): Promise<boolean>;
   };
 
+  rule: {
+    hasOwnerAccess(userId: string, ruleId: string): Promise<boolean>;
+  };
+
   library: {
     hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
   };

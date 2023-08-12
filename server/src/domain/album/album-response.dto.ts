@@ -2,7 +2,7 @@ import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { mapUser, UserResponseDto } from '../user';
-import { RuleResponseDto } from './dto/rule.dto';
+import { mapRule, RuleResponseDto } from './dto';
 
 export class AlbumResponseDto {
   id!: string;
@@ -26,13 +26,7 @@ export class AlbumResponseDto {
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
-  const sharedUsers: UserResponseDto[] = [];
-
-  entity.sharedUsers?.forEach((user) => {
-    const userDto = mapUser(user);
-    sharedUsers.push(userDto);
-  });
-
+  const sharedUsers: UserResponseDto[] = (entity.sharedUsers || []).map(mapUser);
   const assets = entity.assets || [];
 
   const hasSharedLink = entity.sharedLinks?.length > 0;
@@ -54,7 +48,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
     endDate: assets.at(-1)?.fileCreatedAt || undefined,
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
     assetCount: entity.assets?.length || 0,
-    rules: entity.rules?.map((rule) => ({ key: rule.key, value: rule.value, ownerId: rule.ownerId })) || [],
+    rules: (entity.rules || []).map(mapRule),
   };
 };
 

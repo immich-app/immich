@@ -19,6 +19,11 @@ export enum Permission {
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
+  RULE_READ = 'rule.read',
+  RULE_CREATE = 'rule.create',
+  RULE_UPDATE = 'rule.update',
+  RULE_DELETE = 'rule.delete',
+
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
@@ -155,6 +160,18 @@ export class AccessCore {
 
       case Permission.ALBUM_REMOVE_ASSET:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
+
+      case Permission.RULE_CREATE:
+        // id is albumId here
+        return (
+          (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
+        );
+
+      case Permission.RULE_READ:
+      case Permission.RULE_UPDATE:
+      case Permission.RULE_DELETE:
+        return this.repository.rule.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_READ:
         return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));

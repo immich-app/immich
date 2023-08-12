@@ -3,6 +3,8 @@ import { RuleEntity } from '@app/infra/entities';
 export const IRuleRepository = 'IRuleRepository';
 
 export interface IRuleRepository {
-  create(rule: RuleEntity): Promise<RuleEntity>;
+  get(id: string): Promise<RuleEntity | null>;
+  create(rule: Partial<RuleEntity>): Promise<RuleEntity>;
+  update(rule: Partial<RuleEntity>): Promise<RuleEntity>;
   delete(rule: RuleEntity): Promise<RuleEntity>;
 }

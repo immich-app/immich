@@ -15,6 +15,7 @@ export * from './media';
 export * from './metadata';
 export * from './partner';
 export * from './person';
+export * from './rule';
 export * from './search';
 export * from './server-info';
 export * from './shared-link';

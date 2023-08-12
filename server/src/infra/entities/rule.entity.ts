@@ -1,23 +1,24 @@
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { JSON_TRANSFORMER } from '../infra.util';
 import { AlbumEntity } from './album.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('rules')
-export class RuleEntity {
+export class RuleEntity<T = RuleValue> {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column()
   key!: RuleKey;
 
-  @Column()
-  value!: string;
+  @Column({ type: 'varchar', transformer: JSON_TRANSFORMER })
+  value!: T;
 
   @Column()
   ownerId!: string;
 
   @ManyToOne(() => UserEntity)
-  user!: UserEntity;
+  owner!: UserEntity;
 
   @Column()
   albumId!: string;
@@ -27,7 +28,38 @@ export class RuleEntity {
 }
 
 export enum RuleKey {
-  PERSON = 'personId',
-  EXIF_CITY = 'exifInfo.city',
-  DATE_AFTER = 'asset.fileCreatedAt',
+  PERSON = 'person',
+  TAKEN_AFTER = 'taken-after',
+  CITY = 'city',
+  STATE = 'state',
+  COUNTRY = 'country',
+  MAKE = 'make',
+  MODEL = 'model',
+  LOCATION = 'location',
 }
+
+export type RuleValue = string | Date | RuleGeoValue;
+
+export enum RuleValueType {
+  UUID = 'uuid',
+  STRING = 'string',
+  DATE = 'date',
+  GEO = 'geo',
+}
+
+export interface RuleGeoValue {
+  lat: number;
+  long: number;
+  radius: number;
+}
+
+export const RULE_TO_TYPE: Record<RuleKey, RuleValueType> = {
+  [RuleKey.PERSON]: RuleValueType.UUID,
+  [RuleKey.TAKEN_AFTER]: RuleValueType.DATE,
+  [RuleKey.CITY]: RuleValueType.STRING,
+  [RuleKey.STATE]: RuleValueType.STRING,
+  [RuleKey.COUNTRY]: RuleValueType.STRING,
+  [RuleKey.MAKE]: RuleValueType.STRING,
+  [RuleKey.MODEL]: RuleValueType.STRING,
+  [RuleKey.LOCATION]: RuleValueType.GEO,
+};

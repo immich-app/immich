@@ -3,4 +3,4 @@ export * from './album-create.dto';
 export * from './album-update.dto';
 export * from './album.dto';
 export * from './get-albums.dto';
-export * from './rule.dto';
+export * from '../../rule/rule.dto';
