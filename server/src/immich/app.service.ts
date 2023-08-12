@@ -57,7 +57,7 @@ export class AppService {
 
     const config = await this.configCore.getConfig();
     if (config.checkAvailableVersion.enabled) {
-      const time = 5 * 1000;
+      const time = 60 * 60 * 1000;
       const interval = setInterval(() => this.systemConfigService.handleImmichLatestVersionAvailable(), time);
       this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
     }
