@@ -3,7 +3,7 @@ import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
-  ThumbnailOptions,
+  ResizeOptions,
   TranscodeOptions,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
@@ -268,7 +268,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  constructor(protected config: SystemConfigFFmpegDto, protected thumbnailOptions: ThumbnailOptions) { super(config) }
+  constructor(protected config: SystemConfigFFmpegDto, protected thumbnailOptions: ResizeOptions) { super(config) }
   getBaseInputOptions(): string[] {
     return ['-sws_flags accurate_rnd+bitexact+full_chroma_int']
   }

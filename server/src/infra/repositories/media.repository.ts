@@ -1,4 +1,4 @@
-import { CropOptions, IMediaRepository, ResizeOptions, ThumbnailOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
@@ -23,33 +23,18 @@ export class MediaRepository implements IMediaRepository {
       .toBuffer();
   }
 
-  async resize(input: string | Buffer, options: ResizeOptions): Promise<Buffer> {
-    return sharp(input, { failOn: 'none' })
-      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
-      .toBuffer();
-  }
-
-  async saveThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
     let colorspace;
     if (options.wideGamut) {
-      try {
-        const { space } = await sharp(input, { failOn: 'none' }).metadata()
-        if ((space as string) === 'rgb16' || space == null) {
-          colorspace = 'p3';
-        } else {
-          colorspace = 'srgb';
-        }
-      } catch (err) {
-        // if we can't read the metadata, assume it's a raw image and use p3
-        colorspace = "p3";
-      }
+      const { space } = await sharp(input, { failOn: 'none' }).metadata()
+      colorspace = space && (space as string) === 'srgb' ? 'srgb' : 'p3'; // if the image is already in srgb, keep it that way
     } else {
-      // no need to check metadata if we're not using wide gamut
       colorspace = 'srgb';
     }
     const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-    await sharp(input, { failOn: 'none' })
+    sharp(input, { failOn: 'none' })
+      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+      .rotate()
       .toColorspace(colorspace)
       .toFormat(options.format, { quality: options.quality, chromaSubsampling })
       .toFile(output);

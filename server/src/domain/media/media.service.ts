@@ -60,11 +60,9 @@ export class MediaService {
 
     const jpegThumbnailPath = this.getPath(asset, 'jpeg');
     const { ffmpeg, thumbnail } = await this.configCore.getConfig();
-
     switch (asset.type) {
       case AssetType.IMAGE:
-        const imageBuffer = await this.mediaRepository.resize(asset.originalPath, { size: thumbnail.jpegSize });
-        await this.mediaRepository.saveThumbnail(imageBuffer, jpegThumbnailPath, { format: 'jpeg', ...thumbnail });
+        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, { format: 'jpeg', size: thumbnail.jpegSize, ...thumbnail });
         this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
@@ -76,7 +74,7 @@ export class MediaService {
         }
         const mainAudioStream = this.getMainStream(audioStreams);
         const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString() };
-        const options = new ThumbnailConfig(config, { format: 'jpeg', ...thumbnail }).getOptions(mainVideoStream, mainAudioStream);
+        const options = new ThumbnailConfig(config, { format: 'jpeg', size: thumbnail.jpegSize, ...thumbnail }).getOptions(mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
@@ -97,8 +95,7 @@ export class MediaService {
 
     const webpPath = this.getPath(asset, 'webp');
     const { thumbnail } = await this.configCore.getConfig();
-    const imageBuffer = await this.mediaRepository.resize(asset.originalPath, { size: thumbnail.webpSize });
-    await this.mediaRepository.saveThumbnail(imageBuffer, webpPath, { format: 'webp', ...thumbnail });
+    await this.mediaRepository.resize(asset.resizePath, webpPath, { format: 'webp', size: thumbnail.webpSize, ...thumbnail });
     await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;
