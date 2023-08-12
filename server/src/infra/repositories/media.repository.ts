@@ -29,7 +29,7 @@ export class MediaRepository implements IMediaRepository {
       this.logger.log(`Sharp doesn't support ${mimeTypes.lookup(input)} type, using imagemagick instead`);
       return new Promise((resolve, reject) => {
         im.convert(
-          [input, '-quality', 80, '-thumbnail', `${options.size}x${options.size}\>`, output],
+          [input, '-quality', 80, '-thumbnail', `${options.size}x${options.size}^\>`, output],
           (err, stdout) => {
             this.logger.debug(stdout);
             if (err) {
