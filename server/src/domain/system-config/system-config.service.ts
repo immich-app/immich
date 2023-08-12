@@ -21,7 +21,6 @@ export class SystemConfigService {
   private core: SystemConfigCore;
   public availableVersion: ServerVersion | null;
   public dateCheckAvailbleVersion: number | null;
-  private disableCheckLatestVersion: boolean;
   private logger = new Logger();
 
   constructor(
@@ -31,7 +30,6 @@ export class SystemConfigService {
     this.dateCheckAvailbleVersion = null;
     this.availableVersion = null;
     this.core = new SystemConfigCore(repository);
-    this.disableCheckLatestVersion = process.env.CHECK_NEW_VERSION_INTERVAL === '0';
   }
 
   get config$() {
@@ -64,17 +62,16 @@ export class SystemConfigService {
   }
 
   async handleImmichLatestVersionAvailable() {
-    if (this.disableCheckLatestVersion) {
-      return true;
-    }
     try {
       this.logger.debug('Checking if a new version is available ...');
       const data = await this.repository.getLatestAvailableVersion();
       this.dateCheckAvailbleVersion = Date.now();
       if (compareVersions(data.tag_name, serverVersion)) {
-        this.logger.debug('New Version detected : ' + stringToVersion(data.tag_name).toString());
+        this.logger.log('New Immich version detected : ' + stringToVersion(data.tag_name).toString());
         this.availableVersion = stringToVersion(data.tag_name);
         return true;
+      } else {
+        this.logger.debug('No new version detected');
       }
     } catch (error) {
       this.logger.error('Error occurred:', error);

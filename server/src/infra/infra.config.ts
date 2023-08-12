@@ -70,6 +70,8 @@ function parseTypeSenseConfig(): ConfigurationOptions {
   };
 }
 
+export const checkIntervalTime: number = 60 * 60 * 1000;
+
 export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
 
 function parseLocalGeocodingConfig(): InitOptions {
