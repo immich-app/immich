@@ -281,7 +281,10 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBitrateOptions() {
-    return [`-q:v ${this.thumbnailOptions.quality}`];
+    // -q:v is a range from 1-31 rather than 1-100
+    let quality = 32 - Math.round(this.thumbnailOptions.quality / 100 * 31);
+    quality = Math.min(31, Math.max(1, quality));
+    return ['-qmin 1', `-q:v ${quality}`];
   }
 
   getScaling(videoStream: VideoStreamInfo) {
