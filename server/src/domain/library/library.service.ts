@@ -80,6 +80,7 @@ export class LibraryService {
       exclusionPatterns: dto.excludePatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
+
     return mapLibrary(libraryEntity);
   }
 
