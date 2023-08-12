@@ -4,46 +4,51 @@ import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.d
 class ManualUploadState {
   final CancellationToken cancelToken;
 
-  final double progressInPercentage;
-
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
+  final int currentAssetIndex;
 
-  /// Manual Upload
-  final int manualUploadsTotal;
-  final int manualUploadFailures;
-  final int manualUploadSuccess;
+  final bool showDetailedNotification;
+
+  /// Manual Upload Stats
+  final int totalAssetsToUpload;
+  final int successfulUploads;
+  final double progressInPercentage;
 
   const ManualUploadState({
     required this.progressInPercentage,
     required this.cancelToken,
     required this.currentUploadAsset,
-    required this.manualUploadsTotal,
-    required this.manualUploadFailures,
-    required this.manualUploadSuccess,
+    required this.totalAssetsToUpload,
+    required this.currentAssetIndex,
+    required this.successfulUploads,
+    required this.showDetailedNotification,
   });
 
   ManualUploadState copyWith({
     double? progressInPercentage,
     CancellationToken? cancelToken,
     CurrentUploadAsset? currentUploadAsset,
-    int? manualUploadsTotal,
-    int? manualUploadFailures,
-    int? manualUploadSuccess,
+    int? totalAssetsToUpload,
+    int? successfulUploads,
+    int? currentAssetIndex,
+    bool? showDetailedNotification,
   }) {
     return ManualUploadState(
       progressInPercentage: progressInPercentage ?? this.progressInPercentage,
       cancelToken: cancelToken ?? this.cancelToken,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
-      manualUploadsTotal: manualUploadsTotal ?? this.manualUploadsTotal,
-      manualUploadFailures: manualUploadFailures ?? this.manualUploadFailures,
-      manualUploadSuccess: manualUploadSuccess ?? this.manualUploadSuccess,
+      totalAssetsToUpload: totalAssetsToUpload ?? this.totalAssetsToUpload,
+      currentAssetIndex: currentAssetIndex ?? this.currentAssetIndex,
+      successfulUploads: successfulUploads ?? this.successfulUploads,
+      showDetailedNotification:
+          showDetailedNotification ?? this.showDetailedNotification,
     );
   }
 
   @override
   String toString() {
-    return 'ManualUploadState(progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, manualUploadsTotal: $manualUploadsTotal, manualUploadSuccess: $manualUploadSuccess, manualUploadFailures: $manualUploadFailures)';
+    return 'ManualUploadState(progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
   }
 
   @override
@@ -54,9 +59,10 @@ class ManualUploadState {
         other.progressInPercentage == progressInPercentage &&
         other.cancelToken == cancelToken &&
         other.currentUploadAsset == currentUploadAsset &&
-        other.manualUploadsTotal == manualUploadsTotal &&
-        other.manualUploadFailures == manualUploadFailures &&
-        other.manualUploadSuccess == manualUploadSuccess;
+        other.totalAssetsToUpload == totalAssetsToUpload &&
+        other.currentAssetIndex == currentAssetIndex &&
+        other.successfulUploads == successfulUploads &&
+        other.showDetailedNotification == showDetailedNotification;
   }
 
   @override
@@ -64,8 +70,9 @@ class ManualUploadState {
     return progressInPercentage.hashCode ^
         cancelToken.hashCode ^
         currentUploadAsset.hashCode ^
-        manualUploadsTotal.hashCode ^
-        manualUploadFailures.hashCode ^
-        manualUploadSuccess.hashCode;
+        totalAssetsToUpload.hashCode ^
+        currentAssetIndex.hashCode ^
+        successfulUploads.hashCode ^
+        showDetailedNotification.hashCode;
   }
 }

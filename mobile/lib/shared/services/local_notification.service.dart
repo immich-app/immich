@@ -1,13 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-final localNotificationService = Provider((ref) => LocalNotificationService());
+final localNotificationService = Provider(
+  (ref) => LocalNotificationService(
+    ref.watch(notificationPermissionProvider),
+    ref,
+  ),
+);
 
 class LocalNotificationService {
-  static final LocalNotificationService _instance =
-      LocalNotificationService._internal();
   final FlutterLocalNotificationsPlugin _localNotificationPlugin =
       FlutterLocalNotificationsPlugin();
+  final PermissionStatus _permissionStatus;
+  final Ref ref;
+
+  LocalNotificationService(this._permissionStatus, this.ref);
 
   static const manualUploadNotificationID = 4;
   static const manualUploadDetailedNotificationID = 5;
@@ -15,9 +26,7 @@ class LocalNotificationService {
   static const manualUploadChannelID = 'immich/manualUpload';
   static const manualUploadChannelNameDetailed = 'Manual Asset Upload Detailed';
   static const manualUploadDetailedChannelID = 'immich/manualUploadDetailed';
-
-  factory LocalNotificationService() => _instance;
-  LocalNotificationService._internal();
+  static const cancelUploadActionID = 'cancel_upload';
 
   Future<void> setup() async {
     const androidSetting = AndroidInitializationSettings('notification_icon');
@@ -26,56 +35,28 @@ class LocalNotificationService {
     const initSettings =
         InitializationSettings(android: androidSetting, iOS: iosSetting);
 
-    await _localNotificationPlugin.initialize(initSettings);
+    await _localNotificationPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse:
+          _onDidReceiveForegroundNotificationResponse,
+    );
   }
 
   Future<void> _showOrUpdateNotification(
     int id,
-    String channelId,
-    String channelName,
     String title,
-    String body, {
-    bool? ongoing,
-    bool? playSound,
-    bool? showProgress,
-    Priority? priority,
-    Importance? importance,
-    bool? onlyAlertOnce,
-    int? maxProgress,
-    int? progress,
-    bool? indeterminate,
-    bool? presentBadge,
-    bool? presentBanner,
-    bool? presentList,
-  }) async {
-    var androidNotificationDetails = AndroidNotificationDetails(
-      channelId,
-      channelName,
-      ticker: title,
-      playSound: playSound ?? false,
-      showProgress: showProgress ?? false,
-      maxProgress: maxProgress ?? 0,
-      progress: progress ?? 0,
-      onlyAlertOnce: onlyAlertOnce ?? false,
-      indeterminate: indeterminate ?? false,
-      priority: priority ?? Priority.defaultPriority,
-      importance: importance ?? Importance.defaultImportance,
-      ongoing: ongoing ?? false,
-    );
-
-    var iosNotificationDetails = DarwinNotificationDetails(
-      presentBadge: presentBadge ?? false,
-      presentBanner: presentBanner ?? false,
-      presentList: presentList ?? false,
-      
-    );
-
+    String body,
+    AndroidNotificationDetails androidNotificationDetails,
+    DarwinNotificationDetails iosNotificationDetails,
+  ) async {
     final notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
       iOS: iosNotificationDetails,
     );
 
-    await _localNotificationPlugin.show(id, title, body, notificationDetails);
+    if (_permissionStatus == PermissionStatus.granted) {
+      await _localNotificationPlugin.show(id, title, body, notificationDetails);
+    }
   }
 
   Future<void> closeNotification(int id) {
@@ -87,46 +68,76 @@ class LocalNotificationService {
     String body, {
     bool? isDetailed,
     bool? presentBanner,
+    bool? showActions,
     int? maxProgress,
     int? progress,
   }) {
     var notificationlId = manualUploadNotificationID;
-    var channelId = manualUploadChannelID;
-    var channelName = manualUploadChannelName;
+    var androidChannelID = manualUploadChannelID;
+    var androidChannelName = manualUploadChannelName;
     // Separate Notification for Info/Alerts and Progress
     if (isDetailed != null && isDetailed) {
       notificationlId = manualUploadDetailedNotificationID;
-      channelId = manualUploadDetailedChannelID;
-      channelName = manualUploadChannelNameDetailed;
+      androidChannelID = manualUploadDetailedChannelID;
+      androidChannelName = manualUploadChannelNameDetailed;
     }
-    final isProgressNotification = maxProgress != null && progress != null;
-    return isProgressNotification
-        ? _showOrUpdateNotification(
-            notificationlId,
-            channelId,
-            channelName,
-            title,
-            body,
+    // Progress notification
+    final androidNotificationDetails = (maxProgress != null && progress != null)
+        ? AndroidNotificationDetails(
+            androidChannelID,
+            androidChannelName,
+            ticker: title,
             showProgress: true,
             onlyAlertOnce: true,
             maxProgress: maxProgress,
             progress: progress,
             indeterminate: false,
-            presentList: true,
+            playSound: false,
             priority: Priority.low,
             importance: Importance.low,
-            presentBadge: true,
             ongoing: true,
+            actions: (showActions ?? false)
+                ? <AndroidNotificationAction>[
+                    const AndroidNotificationAction(
+                      cancelUploadActionID,
+                      'Cancel',
+                      showsUserInterface: true,
+                    )
+                  ]
+                : null,
           )
-        : _showOrUpdateNotification(
-            notificationlId,
-            channelId,
-            channelName,
-            title,
-            body,
-            presentList: true,
-            presentBadge: true,
-            presentBanner: presentBanner,
+        // Non-progress notification
+        : AndroidNotificationDetails(
+            androidChannelID,
+            androidChannelName,
+            playSound: false,
           );
+
+    final iosNotificationDetails = DarwinNotificationDetails(
+      presentBadge: true,
+      presentList: true,
+      presentBanner: presentBanner,
+    );
+
+    return _showOrUpdateNotification(
+      notificationlId,
+      title,
+      body,
+      androidNotificationDetails,
+      iosNotificationDetails,
+    );
+  }
+
+  void _onDidReceiveForegroundNotificationResponse(
+    NotificationResponse notificationResponse,
+  ) {
+    // Handle notification actions
+    switch (notificationResponse.actionId) {
+      case cancelUploadActionID:
+        {
+          debugPrint("User cancelled manual upload operation");
+          ref.read(manualUploadProvider.notifier).cancelBackup();
+        }
+    }
   }
 }
