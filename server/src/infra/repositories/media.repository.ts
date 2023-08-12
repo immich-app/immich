@@ -6,7 +6,7 @@ import im from 'imagemagick';
 import sharp from 'sharp';
 import { promisify } from 'util';
 
-const unsupportedSharpTypes = new Set(['image/nef']);
+const unsupportedSharpTypes = new Set(['image/nef', 'image/cr2']);
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 
