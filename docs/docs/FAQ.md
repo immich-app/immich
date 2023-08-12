@@ -104,6 +104,10 @@ If you are using `My Photo Stream`, the Photos app temporarily creates duplicate
 
 This requires some database queries. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an Adminer container to the immich docker-compose.yml file, so that you can use a web-interface.
 
+:::warning
+This is an advanced operation. If you can't to do it with the steps described here, this is not for you.
+:::
+
 1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
 2. Find the id of both the 'source' and the 'destination' user (it's the id column in the users table)
 3. Three tables need to be updated:
