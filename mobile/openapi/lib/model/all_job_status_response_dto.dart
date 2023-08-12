@@ -20,6 +20,7 @@ class AllJobStatusResponseDto {
     required this.recognizeFaces,
     required this.search,
     required this.sidecar,
+    required this.smartAlbum,
     required this.storageTemplateMigration,
     required this.thumbnailGeneration,
     required this.videoConversion,
@@ -39,6 +40,8 @@ class AllJobStatusResponseDto {
 
   JobStatusDto sidecar;
 
+  JobStatusDto smartAlbum;
+
   JobStatusDto storageTemplateMigration;
 
   JobStatusDto thumbnailGeneration;
@@ -54,6 +57,7 @@ class AllJobStatusResponseDto {
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
      other.sidecar == sidecar &&
+     other.smartAlbum == smartAlbum &&
      other.storageTemplateMigration == storageTemplateMigration &&
      other.thumbnailGeneration == thumbnailGeneration &&
      other.videoConversion == videoConversion;
@@ -68,12 +72,13 @@ class AllJobStatusResponseDto {
     (recognizeFaces.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
+    (smartAlbum.hashCode) +
     (storageTemplateMigration.hashCode) +
     (thumbnailGeneration.hashCode) +
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartAlbum=$smartAlbum, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -84,6 +89,7 @@ class AllJobStatusResponseDto {
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
+      json[r'smartAlbum'] = this.smartAlbum;
       json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
@@ -105,6 +111,7 @@ class AllJobStatusResponseDto {
         recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
+        smartAlbum: JobStatusDto.fromJson(json[r'smartAlbum'])!,
         storageTemplateMigration: JobStatusDto.fromJson(json[r'storageTemplateMigration'])!,
         thumbnailGeneration: JobStatusDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobStatusDto.fromJson(json[r'videoConversion'])!,
@@ -162,6 +169,7 @@ class AllJobStatusResponseDto {
     'recognizeFaces',
     'search',
     'sidecar',
+    'smartAlbum',
     'storageTemplateMigration',
     'thumbnailGeneration',
     'videoConversion',

@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **recognizeFaces** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **search** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **sidecar** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**smartAlbum** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **storageTemplateMigration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **thumbnailGeneration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **videoConversion** | [**JobSettingsDto**](JobSettingsDto.md) |  | 

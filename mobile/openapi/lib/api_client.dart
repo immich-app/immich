@@ -305,6 +305,10 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RuleKey':
+          return RuleKeyTypeTransformer().decode(value);
+        case 'RuleResponseDto':
+          return RuleResponseDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetDto':

@@ -25,6 +25,7 @@ class AlbumResponseDto {
     this.lastModifiedAssetTimestamp,
     required this.owner,
     required this.ownerId,
+    this.rules = const [],
     required this.shared,
     this.sharedUsers = const [],
     this.startDate,
@@ -67,6 +68,8 @@ class AlbumResponseDto {
 
   String ownerId;
 
+  List<RuleResponseDto> rules;
+
   bool shared;
 
   List<UserResponseDto> sharedUsers;
@@ -95,6 +98,7 @@ class AlbumResponseDto {
      other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
      other.owner == owner &&
      other.ownerId == ownerId &&
+     other.rules == rules &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
      other.startDate == startDate &&
@@ -115,13 +119,14 @@ class AlbumResponseDto {
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
     (owner.hashCode) +
     (ownerId.hashCode) +
+    (rules.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
     (startDate == null ? 0 : startDate!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, rules=$rules, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -149,6 +154,7 @@ class AlbumResponseDto {
     }
       json[r'owner'] = this.owner;
       json[r'ownerId'] = this.ownerId;
+      json[r'rules'] = this.rules;
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
     if (this.startDate != null) {
@@ -180,6 +186,7 @@ class AlbumResponseDto {
         lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        rules: RuleResponseDto.listFromJson(json[r'rules']),
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
         startDate: mapDateTime(json, r'startDate', ''),
@@ -241,6 +248,7 @@ class AlbumResponseDto {
     'id',
     'owner',
     'ownerId',
+    'rules',
     'shared',
     'sharedUsers',
     'updatedAt',

@@ -240,6 +240,8 @@ Class | Method | HTTP request | Description
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [RuleKey](doc//RuleKey.md)
+ - [RuleResponseDto](doc//RuleResponseDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)

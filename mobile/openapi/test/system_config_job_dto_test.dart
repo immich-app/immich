@@ -51,6 +51,11 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto smartAlbum
+    test('to test the property `smartAlbum`', () async {
+      // TODO
+    });
+
     // JobSettingsDto storageTemplateMigration
     test('to test the property `storageTemplateMigration`', () async {
       // TODO

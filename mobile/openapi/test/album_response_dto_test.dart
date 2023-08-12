@@ -76,6 +76,11 @@ void main() {
       // TODO
     });
 
+    // List<RuleResponseDto> rules (default value: const [])
+    test('to test the property `rules`', () async {
+      // TODO
+    });
+
     // bool shared
     test('to test the property `shared`', () async {
       // TODO

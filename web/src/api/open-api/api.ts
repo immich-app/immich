@@ -254,6 +254,12 @@ export interface AlbumResponseDto {
     'ownerId': string;
     /**
      * 
+     * @type {Array<RuleResponseDto>}
+     * @memberof AlbumResponseDto
+     */
+    'rules': Array<RuleResponseDto>;
+    /**
+     * 
      * @type {boolean}
      * @memberof AlbumResponseDto
      */
@@ -325,6 +331,12 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'sidecar': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'smartAlbum': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
@@ -1453,7 +1465,8 @@ export const JobName = {
     BackgroundTask: 'backgroundTask',
     StorageTemplateMigration: 'storageTemplateMigration',
     Search: 'search',
-    Sidecar: 'sidecar'
+    Sidecar: 'sidecar',
+    SmartAlbum: 'smartAlbum'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
@@ -1848,6 +1861,59 @@ export interface QueueStatusDto {
      */
     'isPaused': boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const RuleKey = {
+    Person: 'person',
+    TakenAfter: 'taken-after',
+    City: 'city',
+    State: 'state',
+    Country: 'country',
+    Make: 'make',
+    Model: 'model',
+    Location: 'location'
+} as const;
+
+export type RuleKey = typeof RuleKey[keyof typeof RuleKey];
+
+
+/**
+ * 
+ * @export
+ * @interface RuleResponseDto
+ */
+export interface RuleResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof RuleResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {RuleKey}
+     * @memberof RuleResponseDto
+     */
+    'key': RuleKey;
+    /**
+     * 
+     * @type {string}
+     * @memberof RuleResponseDto
+     */
+    'ownerId': string;
+    /**
+     * 
+     * @type {object}
+     * @memberof RuleResponseDto
+     */
+    'value': object;
+}
+
+
 /**
  * 
  * @export
@@ -2579,6 +2645,12 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'sidecar': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'smartAlbum': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}

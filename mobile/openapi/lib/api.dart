@@ -105,6 +105,8 @@ part 'model/people_update_item.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_update_dto.dart';
 part 'model/queue_status_dto.dart';
+part 'model/rule_key.dart';
+part 'model/rule_response_dto.dart';
 part 'model/search_album_response_dto.dart';
 part 'model/search_asset_dto.dart';
 part 'model/search_asset_response_dto.dart';

@@ -73,6 +73,8 @@ doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
+doc/RuleKey.md
+doc/RuleResponseDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
 doc/SearchAssetDto.md
@@ -210,6 +212,8 @@ lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
+lib/model/rule_key.dart
+lib/model/rule_response_dto.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
@@ -326,6 +330,8 @@ test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
+test/rule_key_test.dart
+test/rule_response_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
 test/search_asset_dto_test.dart
