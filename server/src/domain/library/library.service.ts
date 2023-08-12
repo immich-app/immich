@@ -66,7 +66,10 @@ export class LibraryService {
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    this.access.requireUploadAccess(authUser);
+    if (dto.type === LibraryType.EXTERNAL && !authUser.isAdmin) {
+      // Only admins can create external libraries since such libraries can be used to access the server's filesystem
+      throw new BadRequestException('Only admins can create external libraries');
+    }
 
     const libraryEntity = await this.libraryRepository.create({
       owner: { id: authUser.id } as UserEntity,
@@ -83,22 +86,17 @@ export class LibraryService {
   async update(authUser: AuthUserDto, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.id);
 
-    const libraryEntity = await this.libraryRepository.getById(dto.id);
-
-    if (dto.name) {
-      libraryEntity.name = dto.name;
-    }
-    if (dto.importPaths) {
-      libraryEntity.importPaths = dto.importPaths;
-    }
-    if (dto.excludePatterns) {
-      libraryEntity.exclusionPatterns = dto.excludePatterns;
-    }
-    if (dto.isVisible) {
-      libraryEntity.isVisible = dto.isVisible;
+    if (dto.importPaths && !authUser.isAdmin) {
+      // Only admins can update import paths since external libraries can be used to access the server's filesystem
+      throw new BadRequestException('Only admins can set import paths');
     }
 
-    const updatedLibrary = await this.libraryRepository.update(libraryEntity);
+    if (dto.excludePatterns && !authUser.isAdmin) {
+      // Only admins can update exclusion patterns since external libraries can be used to access the server's filesystem
+      throw new BadRequestException('Only admins can set import paths');
+    }
+
+    const updatedLibrary = await this.libraryRepository.update(dto);
 
     return mapLibrary(updatedLibrary);
   }

@@ -35,6 +35,8 @@
 
   let dropdownOpen: boolean[] = [];
 
+  let isAdmin = false;
+
   let createLibraryDropdownOpen = false;
 
   onMount(() => {
@@ -60,7 +62,15 @@
     [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
   };
 
+  async function checkIfAdmin() {
+    const { data } = await api.userApi.getMyUserInfo();
+    const user = data;
+    isAdmin = user.isAdmin;
+  }
+
   async function readLibraryList() {
+    await checkIfAdmin();
+
     const { data } = await api.libraryApi.getAllLibraries();
     libraries = data;
 
@@ -183,7 +193,7 @@
     {#if libraries.length > 0}
       <table class="w-full text-left">
         <thead
-          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+          class="text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary mb-4 flex h-12 w-full rounded-md border bg-gray-50"
         >
           <tr class="flex w-full place-items-center">
             <th class="w-1/6 text-center text-sm font-medium">Type</th>
@@ -193,11 +203,11 @@
             <th class="w-1/6 text-center text-sm font-medium" />
           </tr>
         </thead>
-        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
           {#each libraries as library, index}
             {#key library.id}
               <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
                   index % 2 == 0
                     ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'
@@ -216,7 +226,7 @@
                 <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]} </td>
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
                   <button
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                    class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
                   >
                     <DotsVertical size="16" />
                   </button>
@@ -300,11 +310,15 @@
       </table>
     {/if}
     <div class="mb-2 flex justify-end">
-      <Button>Create Library</Button>
-      <Dropdown bind:open={createLibraryDropdownOpen}>
-        <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
-        <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
-      </Dropdown>
+      {#if isAdmin}
+        <Button>Create Library</Button>
+        <Dropdown bind:open={createLibraryDropdownOpen}>
+          <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
+          <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
+        </Dropdown>
+      {:else}
+        <Button on:click={() => handleCreate(LibraryType.Upload)}>Create Library</Button>
+      {/if}
     </div>
   </div>
 </section>
