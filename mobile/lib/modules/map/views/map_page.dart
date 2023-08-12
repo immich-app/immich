@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_settings.provider.dart';
+import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
+import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
+import 'package:immich_mobile/modules/map/ui/asset_marker.dart';
+import 'package:immich_mobile/modules/map/ui/asset_marker_icon.dart';
+import 'package:immich_mobile/modules/map/ui/cluster_marker.dart';
 import 'package:immich_mobile/modules/map/ui/map_settings_dialog.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,15 +23,16 @@ class MapPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
-    final mapSettingsNotifier = ref.watch(mapSettingsStateNotifier);
-    final isDarkTheme = useState(mapSettingsNotifier.isDarkTheme);
+    final mapState = ref.watch(mapStateNotifier);
+    final isDarkTheme = useState(mapState.isDarkTheme);
+    final mapMarkerProvider = ref.watch(mapMarkerFutureProvider);
 
     useEffect(
       () {
-        isDarkTheme.value = mapSettingsNotifier.isDarkTheme;
+        isDarkTheme.value = mapState.isDarkTheme;
         return null;
       },
-      [mapSettingsNotifier],
+      [mapState],
     );
 
     Widget buildBackButton() {
@@ -33,12 +41,12 @@ class MapPage extends HookConsumerWidget {
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           padding: const EdgeInsets.all(12),
-          backgroundColor: isDarkTheme.value ? Colors.white : theme.cardColor,
-          foregroundColor: theme.primaryColor,
+          backgroundColor: Colors.white,
+          foregroundColor: theme.colorScheme.onPrimary,
         ),
         child: Icon(
           Icons.arrow_back_ios_rounded,
-          color: isDarkTheme.value ? Colors.black : theme.primaryColor,
+          color: isDarkTheme.value ? Colors.black : theme.colorScheme.onPrimary,
         ),
       );
     }
@@ -56,12 +64,12 @@ class MapPage extends HookConsumerWidget {
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           padding: const EdgeInsets.all(12),
-          backgroundColor: isDarkTheme.value ? Colors.white : theme.cardColor,
-          foregroundColor: theme.primaryColor,
+          backgroundColor: Colors.white,
+          foregroundColor: theme.colorScheme.onPrimary,
         ),
         child: Icon(
           Icons.more_vert_rounded,
-          color: isDarkTheme.value ? Colors.black : theme.primaryColor,
+          color: isDarkTheme.value ? Colors.black : theme.colorScheme.onPrimary,
         ),
       );
     }
@@ -104,6 +112,124 @@ class MapPage extends HookConsumerWidget {
       );
     }
 
+    Size getClusterSize(List<Marker> markers) {
+      final size = markers.length >= 1000
+          ? 80.0
+          : markers.length >= 100
+              ? 60.0
+              : markers.length >= 10
+                  ? 50.0
+                  : 40.0;
+      return Size(size, size);
+    }
+
+    int getSpiderifyRadius(int markersLength) {
+      return markersLength <= 4
+          ? 80
+          : markersLength <= 7
+              ? 110
+              : 150;
+    }
+
+    Future<void> navigateToAsset(AssetMarker marker) async {
+      final asset = await ref.read(
+        mapMarkerAssetProvider(
+          marker.remoteId,
+        ).future,
+      );
+      if (asset != null) {
+        AutoRouter.of(context).push(
+          GalleryViewerRoute(
+            initialIndex: 0,
+            loadAsset: (index) => asset,
+            totalAssets: 1,
+            heroOffset: 0,
+          ),
+        );
+      }
+    }
+
+    Widget buildMarkers() {
+      return mapMarkerProvider.when(
+        loading: () => const Center(child: ImmichLoadingIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (markers) {
+          if (markers == null || markers.isEmpty) {
+            return const MarkerLayer(
+              markers: [],
+            );
+          }
+          // Uses a modified version of MarkerClusterLayerWidget to support conditional spiderfy, etc.
+          return MarkerClusterLayerWidget(
+            options: MarkerClusterLayerOptions(
+              anchor: AnchorPos.align(AnchorAlign.center),
+              disableClusteringAtZoom: 19,
+              maxChildrenToSpiderfy: 11,
+              computeSpiderfyRadius: getSpiderifyRadius,
+              circleSpiralSwitchover: -1,
+              showPolygon: false,
+              size: const Size(40, 40),
+              computeSize: getClusterSize,
+              markers: markers
+                  .map(
+                    (e) => AssetMarker(
+                      remoteId: e.assetId,
+                      anchorPos: AnchorPos.align(AnchorAlign.center),
+                      point: LatLng(
+                        e.latitude,
+                        e.longitude,
+                      ),
+                      width: 80,
+                      height: 80,
+                      builder: (ctx) => AssetMarkerIcon(
+                        id: e.assetId,
+                      ),
+                    ),
+                  )
+                  .toList(),
+              builder: (context, markers) {
+                return ClusterMarkerIcon(
+                  markers: markers,
+                  isDarkTheme: isDarkTheme.value,
+                );
+              },
+              onClusterTap: (cluster) async {
+                if (cluster.mapMarkers.length > 10) {
+                  final exifInfo = await ref.read(
+                    mapMarkerExifInfoProvider(
+                      (cluster.mapMarkers[0] as AssetMarker).remoteId,
+                    ).future,
+                  );
+                  var openFirstAsset = true;
+                  if (exifInfo != null) {
+                    final searchTerm = cluster.zoom > 12
+                        ? exifInfo.city
+                        : cluster.zoom > 9
+                            ? exifInfo.state
+                            : cluster.zoom > 4
+                                ? exifInfo.country
+                                : null;
+                    if (searchTerm != null) {
+                      openFirstAsset = false;
+                      AutoRouter.of(context).push(
+                        SearchResultRoute(searchTerm: 'm:$searchTerm'),
+                      );
+                    }
+                  }
+                  if (openFirstAsset && cluster.zoom > 8) {
+                    await navigateToAsset(cluster.mapMarkers[0] as AssetMarker);
+                  }
+                }
+              },
+              onMarkerTap: (marker) async {
+                await navigateToAsset(marker as AssetMarker);
+              },
+            ),
+          );
+        },
+      );
+    }
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.black.withOpacity(0.5),
@@ -113,20 +239,26 @@ class MapPage extends HookConsumerWidget {
         extendBodyBehindAppBar: true,
         body: FlutterMap(
           options: MapOptions(
-            center: LatLng(51, 0),
-            zoom: 9,
+            interactiveFlags: InteractiveFlag.doubleTapZoom |
+                InteractiveFlag.drag |
+                InteractiveFlag.flingAnimation |
+                InteractiveFlag.pinchMove |
+                InteractiveFlag.pinchZoom,
+            center: LatLng(20, 20),
+            zoom: 2,
+            minZoom: 1,
             maxZoom: 19, // max level supported by OSM
           ),
           nonRotatedChildren: [
             Positioned(
-              top: 40,
+              top: 60,
               height: 50,
               left: 10,
               width: 50,
               child: buildBackButton(),
             ),
             Positioned(
-              top: 40,
+              top: 60,
               height: 50,
               right: 10,
               width: 50,
@@ -134,7 +266,7 @@ class MapPage extends HookConsumerWidget {
             ),
             buildAttribution(),
           ],
-          children: [buildTileLayer()],
+          children: [buildTileLayer(), buildMarkers()],
         ),
       ),
     );

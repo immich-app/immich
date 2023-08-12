@@ -1,17 +1,17 @@
-class MapSettingsState {
+class MapState {
   final bool isDarkTheme;
   final bool showFavoriteOnly;
 
-  MapSettingsState({
+  MapState({
     required this.isDarkTheme,
     required this.showFavoriteOnly,
   });
 
-  MapSettingsState copyWith({
+  MapState copyWith({
     bool? isDarkTheme,
     bool? showFavoriteOnly,
   }) {
-    return MapSettingsState(
+    return MapState(
       isDarkTheme: isDarkTheme ?? this.isDarkTheme,
       showFavoriteOnly: showFavoriteOnly ?? this.showFavoriteOnly,
     );
@@ -26,7 +26,7 @@ class MapSettingsState {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is MapSettingsState &&
+    return other is MapState &&
         other.isDarkTheme == isDarkTheme &&
         other.showFavoriteOnly == showFavoriteOnly;
   }

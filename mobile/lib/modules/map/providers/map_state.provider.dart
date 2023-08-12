@@ -1,13 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/map/models/map_state.model.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
-class MapSettingsStateNotifier extends StateNotifier<MapSettingsState> {
-  MapSettingsStateNotifier(this.appSettingsProvider)
+class MapStateNotifier extends StateNotifier<MapState> {
+  MapStateNotifier(this.appSettingsProvider)
       : super(
-          MapSettingsState(
+          MapState(
             isDarkTheme: appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapThemeMode),
             showFavoriteOnly: appSettingsProvider
@@ -21,14 +20,13 @@ class MapSettingsStateNotifier extends StateNotifier<MapSettingsState> {
 
   void switchTheme(bool isDarkTheme) {
     state = state.copyWith(isDarkTheme: isDarkTheme);
-    debugPrint("[DEBUGGGGG] Theme switched to $isDarkTheme");
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) =>
       state = state.copyWith(showFavoriteOnly: isFavoriteOnly);
 }
 
-final mapSettingsStateNotifier =
-    StateNotifierProvider<MapSettingsStateNotifier, MapSettingsState>((ref) {
-  return MapSettingsStateNotifier(ref.watch(appSettingsServiceProvider));
+final mapStateNotifier =
+    StateNotifierProvider<MapStateNotifier, MapState>((ref) {
+  return MapStateNotifier(ref.watch(appSettingsServiceProvider));
 });

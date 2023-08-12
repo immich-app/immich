@@ -152,7 +152,7 @@ class SearchPage extends HookConsumerWidget {
                     end: FractionalOffset.bottomCenter,
                     colors: [
                       Colors.blueGrey.withOpacity(0.0),
-                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.4),
                     ],
                     stops: const [0.0, 1.0],
                   ),

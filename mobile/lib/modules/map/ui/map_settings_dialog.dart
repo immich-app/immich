@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_settings.provider.dart';
+import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
@@ -12,7 +12,7 @@ class MapSettingsDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsServiceProvider);
-    final mapSettings = ref.watch(mapSettingsStateNotifier.notifier);
+    final mapSettings = ref.watch(mapStateNotifier.notifier);
     final isDarkMode = useState(AppSettingsEnum.mapThemeMode.defaultValue);
     final showFavoriteOnly =
         useState(AppSettingsEnum.mapShowFavoriteOnly.defaultValue);

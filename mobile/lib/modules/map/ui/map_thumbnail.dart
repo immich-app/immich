@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_settings.provider.dart';
+import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -46,7 +46,7 @@ class MapThumbnail extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapSettingsNotifier = ref.watch(mapSettingsStateNotifier);
+    final mapSettingsNotifier = ref.watch(mapStateNotifier);
     final isDarkTheme = useState(mapSettingsNotifier.isDarkTheme);
 
     useEffect(
@@ -79,7 +79,8 @@ class MapThumbnail extends HookConsumerWidget {
                   TextSourceAttribution(
                     'OpenStreetMap contributors',
                     onTap: () => launchUrl(
-                        Uri.parse('https://openstreetmap.org/copyright')),
+                      Uri.parse('https://openstreetmap.org/copyright'),
+                    ),
                   ),
                 ],
               ),
