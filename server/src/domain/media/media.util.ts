@@ -3,6 +3,7 @@ import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
+  ThumbnailOptions,
   TranscodeOptions,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
@@ -68,7 +69,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.shouldToneMap(videoStream)) {
       options.push(...this.getToneMapping());
     }
-    options.push('format=yuv420p');
+    options.push(this.getFormat());
 
     return options;
   }
@@ -185,6 +186,10 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
+  getFormat() {
+    return 'yuv420p';
+  }
+
   getToneMapping() {
     const colors = this.getColors();
 
@@ -263,6 +268,10 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
+  constructor(protected config: SystemConfigFFmpegDto, protected thumbnailOptions: ThumbnailOptions) { super(config) }
+  getBaseInputOptions(): string[] {
+    return ['-sws_flags accurate_rnd+bitexact+full_chroma_int']
+  }
   getBaseOutputOptions() {
     return ['-ss 00:00:00.000', '-frames:v 1'];
   }
@@ -272,24 +281,31 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBitrateOptions() {
-    return [];
+    return [`-q:v ${this.thumbnailOptions.quality}`];
   }
 
   getScaling(videoStream: VideoStreamInfo) {
     let options = super.getScaling(videoStream);
+    options += ':flags=lanczos+accurate_rnd+bitexact+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=bt601:out_range=pc';
+      options += ':out_color_matrix=601:out_range=pc';
     }
     return options;
   }
 
   getColors() {
     return {
-      // jpeg and webp only support bt.601, so we need to convert to that directly when tone-mapping to avoid color shifts
-      primaries: 'bt470bg',
+      primaries: this.thumbnailOptions.wideGamut ? 'smpte432' : 'bt709',
       transfer: '601',
       matrix: 'bt470bg',
     };
+  }
+
+  getFormat() {
+    if (this.thumbnailOptions.quality >= 80) {
+      return 'yuv444p';
+    }
+    return 'yuv420p';
   }
 }
 

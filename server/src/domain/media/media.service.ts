@@ -9,7 +9,6 @@ import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
 import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
-
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
@@ -59,17 +58,13 @@ export class MediaService {
       return false;
     }
 
-    const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    this.storageRepository.mkdirSync(resizePath);
-    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
-    const { thumbnail } = await this.configCore.getConfig();
+    const jpegThumbnailPath = this.getPath(asset, 'jpeg');
+    const { ffmpeg, thumbnail } = await this.configCore.getConfig();
 
     switch (asset.type) {
       case AssetType.IMAGE:
-        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-          size: thumbnail.jpegSize,
-          format: 'jpeg',
-        });
+        const imageBuffer = await this.mediaRepository.resize(asset.originalPath, { size: thumbnail.jpegSize });
+        await this.mediaRepository.saveThumbnail(imageBuffer, jpegThumbnailPath, { format: 'jpeg', ...thumbnail });
         this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
@@ -80,12 +75,13 @@ export class MediaService {
           return false;
         }
         const mainAudioStream = this.getMainStream(audioStreams);
-        const { ffmpeg } = await this.configCore.getConfig();
-        const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString(), twoPass: false };
-        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
+        const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString() };
+        const options = new ThumbnailConfig(config, { format: 'jpeg', ...thumbnail }).getOptions(mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
+      default:
+        throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
 
     await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
@@ -99,10 +95,10 @@ export class MediaService {
       return false;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
-
+    const webpPath = this.getPath(asset, 'webp');
     const { thumbnail } = await this.configCore.getConfig();
-    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: thumbnail.webpSize, format: 'webp' });
+    const imageBuffer = await this.mediaRepository.resize(asset.originalPath, { size: thumbnail.webpSize });
+    await this.mediaRepository.saveThumbnail(imageBuffer, webpPath, { format: 'webp', ...thumbnail });
     await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;
@@ -215,8 +211,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
-        audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
@@ -288,5 +283,11 @@ export class MediaService {
     }
 
     return handler;
+  }
+
+  getPath(asset: AssetEntity, extension: string): string {
+    const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    this.storageRepository.mkdirSync(folderPath);
+    return join(folderPath, `${asset.id}.${extension}`);
   }
 }

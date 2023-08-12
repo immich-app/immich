@@ -1,10 +1,16 @@
 import { VideoCodec } from '@app/infra/entities';
+import { Writable } from 'stream';
 
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
   size: number;
+}
+
+export interface ThumbnailOptions {
   format: 'webp' | 'jpeg';
+  wideGamut: boolean;
+  quality: number;
 }
 
 export interface VideoStreamInfo {
@@ -67,11 +73,12 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface IMediaRepository {
   // image
-  resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
-  crop(input: string, options: CropOptions): Promise<Buffer>;
-  generateThumbhash(imagePath: string): Promise<Buffer>;
+  resize(input: string | Buffer, options: ResizeOptions): Promise<Buffer>;
+  crop(input: string | Buffer, options: CropOptions): Promise<Buffer>;
+  generateThumbhash(imagePath: string | Buffer): Promise<Buffer>;
+  saveThumbnail(imagePath: string | Buffer, output: string, options: ThumbnailOptions): Promise<void>;
 
   // video
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void>;
 }

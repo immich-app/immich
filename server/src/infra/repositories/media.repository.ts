@@ -1,8 +1,9 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, ResizeOptions, ThumbnailOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
+import { Writable } from 'typeorm/platform/PlatformTools.js';
 import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
@@ -11,7 +12,7 @@ sharp.concurrency(0);
 export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
 
-  crop(input: string, options: CropOptions): Promise<Buffer> {
+  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
       .extract({
         left: options.left,
@@ -22,11 +23,35 @@ export class MediaRepository implements IMediaRepository {
       .toBuffer();
   }
 
-  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
+  async resize(input: string | Buffer, options: ResizeOptions): Promise<Buffer> {
+    return sharp(input, { failOn: 'none' })
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .toFormat(options.format)
+      .toBuffer();
+  }
+
+  async saveThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+    let colorspace;
+    if (options.wideGamut) {
+      try {
+        const { space } = await sharp(input, { failOn: 'none' }).metadata()
+        if ((space as string) === 'rgb16' || space == null) {
+          colorspace = 'p3';
+        } else {
+          colorspace = 'srgb';
+        }
+      } catch (err) {
+        // if we can't read the metadata, assume it's a raw image and use p3
+        colorspace = "p3";
+      }
+    } else {
+      // no need to check metadata if we're not using wide gamut
+      colorspace = 'srgb';
+    }
+    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+    await sharp(input, { failOn: 'none' })
+      .toColorspace(colorspace)
+      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
       .toFile(output);
   }
 
@@ -61,7 +86,7 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
@@ -75,6 +100,10 @@ export class MediaRepository implements IMediaRepository {
           .on('end', resolve)
           .run();
       });
+    }
+
+    if (typeof output !== 'string') {
+      throw new Error('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice
