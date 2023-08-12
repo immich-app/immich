@@ -7287,13 +7287,21 @@
           "jpegSize": {
             "type": "integer"
           },
+          "quality": {
+            "type": "integer"
+          },
           "webpSize": {
             "type": "integer"
+          },
+          "wideGamut": {
+            "type": "boolean"
           }
         },
         "required": [
           "webpSize",
-          "jpegSize"
+          "jpegSize",
+          "quality",
+          "wideGamut"
         ],
         "type": "object"
       },

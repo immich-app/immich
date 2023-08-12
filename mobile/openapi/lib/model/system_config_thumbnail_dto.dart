@@ -14,31 +14,43 @@ class SystemConfigThumbnailDto {
   /// Returns a new [SystemConfigThumbnailDto] instance.
   SystemConfigThumbnailDto({
     required this.jpegSize,
+    required this.quality,
     required this.webpSize,
+    required this.wideGamut,
   });
 
   int jpegSize;
 
+  int quality;
+
   int webpSize;
+
+  bool wideGamut;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThumbnailDto &&
      other.jpegSize == jpegSize &&
-     other.webpSize == webpSize;
+     other.quality == quality &&
+     other.webpSize == webpSize &&
+     other.wideGamut == wideGamut;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (jpegSize.hashCode) +
-    (webpSize.hashCode);
+    (quality.hashCode) +
+    (webpSize.hashCode) +
+    (wideGamut.hashCode);
 
   @override
-  String toString() => 'SystemConfigThumbnailDto[jpegSize=$jpegSize, webpSize=$webpSize]';
+  String toString() => 'SystemConfigThumbnailDto[jpegSize=$jpegSize, quality=$quality, webpSize=$webpSize, wideGamut=$wideGamut]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'jpegSize'] = this.jpegSize;
+      json[r'quality'] = this.quality;
       json[r'webpSize'] = this.webpSize;
+      json[r'wideGamut'] = this.wideGamut;
     return json;
   }
 
@@ -51,7 +63,9 @@ class SystemConfigThumbnailDto {
 
       return SystemConfigThumbnailDto(
         jpegSize: mapValueOfType<int>(json, r'jpegSize')!,
+        quality: mapValueOfType<int>(json, r'quality')!,
         webpSize: mapValueOfType<int>(json, r'webpSize')!,
+        wideGamut: mapValueOfType<bool>(json, r'wideGamut')!,
       );
     }
     return null;
@@ -100,7 +114,9 @@ class SystemConfigThumbnailDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'jpegSize',
+    'quality',
     'webpSize',
+    'wideGamut',
   };
 }
 

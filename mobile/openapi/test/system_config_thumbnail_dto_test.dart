@@ -21,8 +21,18 @@ void main() {
       // TODO
     });
 
+    // int quality
+    test('to test the property `quality`', () async {
+      // TODO
+    });
+
     // int webpSize
     test('to test the property `webpSize`', () async {
+      // TODO
+    });
+
+    // bool wideGamut
+    test('to test the property `wideGamut`', () async {
       // TODO
     });
 
