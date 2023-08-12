@@ -115,5 +115,5 @@ This requires some database queries. You can do this on the command line (in the
       where "ownerId" = '<source id>' 
       and checksum not in (select checksum from assets where ownerId = '<destination id>')
    ```
-5. There might be left-over images in the 'source' user, if they are skipped by the last query because of duplicate checksums. These are probably duplicates indeed, and can be removed.
+4. There might be left-over images in the 'source' user, if they are skipped by the last query because of duplicate checksums. These are probably duplicates indeed, and can be removed.
    
