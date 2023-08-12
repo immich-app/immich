@@ -36,12 +36,17 @@ export class AppService implements OnModuleInit {
   }
 
   onConfig(config: SystemConfig) {
-    console.log(config.checkAvailableVersion);
-    if (config.checkAvailableVersion.enabled) {
+    if (
+      config.checkAvailableVersion.enabled &&
+      !this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
+    ) {
       const time = 60 * 60 * 1000;
       const interval = setInterval(() => this.systemConfigService.handleImmichLatestVersionAvailable(), time);
       this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
-    } else {
+    } else if (
+      !config.checkAvailableVersion.enabled &&
+      this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
+    ) {
       this.configCore.schedulerRegistry.deleteInterval('check-available-version');
     }
   }

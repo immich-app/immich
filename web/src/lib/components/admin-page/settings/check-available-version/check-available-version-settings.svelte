@@ -81,11 +81,7 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <div class="ml-4">
-            <SettingSwitch
-              title="ENABLED"
-              subtitle="Login with email and password"
-              bind:checked={checkAvailableVersionConfig.enabled}
-            />
+            <SettingSwitch title="ENABLED" bind:checked={checkAvailableVersionConfig.enabled} />
 
             <SettingButtonsRow
               on:reset={reset}
