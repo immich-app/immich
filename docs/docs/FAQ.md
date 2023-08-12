@@ -102,7 +102,7 @@ If you are using `My Photo Stream`, the Photos app temporarily creates duplicate
 
 ### How can I move all data (photos, persons, albums) from one user to another?
 
-This requires some database queries. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an Adminer container to the immich docker-compose.yml file, so that you can use a web-interface.
+This requires some database queries. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.
 
 :::warning
 This is an advanced operation. If you can't to do it with the steps described here, this is not for you.
@@ -112,12 +112,12 @@ This is an advanced operation. If you can't to do it with the steps described he
 2. Find the id of both the 'source' and the 'destination' user (it's the id column in the users table)
 3. Three tables need to be updated:
    ```
-   - update albums set ownerId = '<destination id>' where ownerId = '<source id>'
-   - update person set ownerId = '<destination id>' where ownerId = '<source id>'
+   - update albums set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
+   - update person set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
    - update assets 
       set "ownerId" = '<destination id>' 
       where "ownerId" = '<source id>' 
-      and checksum not in (select checksum from assets where ownerId = '<destination id>')
+      and checksum not in (select checksum from assets where "ownerId" = '<destination id>')
    ```
-4. There might be left-over images in the 'source' user, if they are skipped by the last query because of duplicate checksums. These are probably duplicates indeed, and can be removed.
+4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed. 
    
