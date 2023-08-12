@@ -57,37 +57,13 @@ describe(LibraryService.name, () => {
       jest.resetModules();
     });
 
-    it('should reject an invalid mime type', async () => {
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/potato'),
-      }));
-
-      mockfs({
-        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
-      createLibraryService();
-
-      const mockLibraryJob: ILibraryJob = {
-        libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
-        analyze: false,
-        emptyTrash: false,
-      };
-
-      await expect(async () => {
-        await sut.handleRefreshAsset(mockLibraryJob);
-      }).rejects.toThrowError('Unsupported file type image/potato');
-    });
-
-    it('should reject an unknown mime type', async () => {
+    it('should reject an unknown file extension', async () => {
       jest.mock('mime', () => ({
         lookup: jest.fn().mockReturnValue(null),
       }));
 
       mockfs({
-        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+        '/import/file.xyz': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
 
       createLibraryService();
@@ -95,14 +71,14 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/import/file.xyz',
         analyze: false,
         emptyTrash: false,
       };
 
       await expect(async () => {
         await sut.handleRefreshAsset(mockLibraryJob);
-      }).rejects.toThrowError('Cannot determine mime type of asset: /import/photo.jpg');
+      }).rejects.toThrowError('Unsupported file type /import/file.xyz');
     });
 
     it('should add a new image', async () => {

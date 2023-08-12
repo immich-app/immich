@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import fs from 'fs';
 import { glob } from 'glob';
-import mime from 'mime';
 import { basename, parse } from 'path';
 
 import path from 'node:path';
