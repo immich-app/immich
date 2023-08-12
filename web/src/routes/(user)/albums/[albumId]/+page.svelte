@@ -279,6 +279,16 @@
       handleError(error, 'Error updating album description');
     }
   };
+
+  const handleRulePeopleSelection = () => {
+    // viewMode = ViewMode.SELECT_ASSETS;
+    console.log('handleRuleFaceSelection');
+  };
+
+  const handleRuleLocationSelection = () => {
+    // viewMode = ViewMode.SELECT_ASSETS;
+    console.log('handleRuleLocationSelection');
+  };
 </script>
 
 <header>
@@ -550,5 +560,10 @@
 {/if}
 
 {#if viewMode === ViewMode.RULE_SELECTION}
-  <RuleSelection on:close={() => (viewMode = ViewMode.VIEW)} {album} />
+  <RuleSelection
+    on:close={() => (viewMode = ViewMode.VIEW)}
+    {album}
+    on:select-people={() => handleRulePeopleSelection()}
+    on:select-location={() => handleRuleLocationSelection()}
+  />
 {/if}

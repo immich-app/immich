@@ -39,7 +39,7 @@
       <p class="text-sm font-medium">LOCATION</p>
       <div class="mt-4">
         <button
-          class="immich-text-primary border-1 flex w-full place-content-center place-items-center rounded-2xl border border-gray-300 py-2 hover:bg-gray-500/20 dark:border-gray-500"
+          class="immich-text-primary border-1 flex w-full place-content-center place-items-center rounded-3xl border border-gray-300 py-2 hover:bg-gray-500/20 dark:border-gray-500"
           on:click={() => dispatch('select-location')}
         >
           <Plus size="24" />
