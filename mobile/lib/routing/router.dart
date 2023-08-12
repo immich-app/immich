@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
+import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/views/memory_page.dart';
 import 'package:immich_mobile/modules/partner/views/partner_detail_page.dart';
@@ -153,6 +154,7 @@ part 'router.gr.dart';
     ),
     AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: MemoryPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: MapPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )

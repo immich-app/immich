@@ -46,6 +46,8 @@ enum AppSettingsEnum<T> {
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
+  mapThemeMode<bool>(StoreKey.mapThemeMode, null, false),
+  mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

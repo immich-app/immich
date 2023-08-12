@@ -174,6 +174,9 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>(114, type: bool),
   logLevel<int>(115, type: int),
   preferRemoteImage<bool>(116, type: bool),
+  // map related settings
+  mapThemeMode<bool>(117, type: bool),
+  mapShowFavoriteOnly<bool>(118, type: bool),
   ;
 
   const StoreKey(
