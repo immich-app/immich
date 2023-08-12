@@ -41,7 +41,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
         albumInfo.assetCount.then((value) => assetCount.value = value);
         return null;
       },
-      [],
+      [albumInfo],
     );
 
     buildImageFilter() {
