@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { AssetEntity, LibraryEntity, LibraryType, UserEntity } from '../entities';
 
 export class AddLibraries1688392120838 implements MigrationInterface {
   name = 'AddLibraryTable1688392120838';
