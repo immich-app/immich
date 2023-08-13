@@ -113,7 +113,6 @@
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "glob": "^10.3.1",
     "jest": "^27.2.5",
     "jest-extended": "^4.0.0",
     "jest-when": "^3.5.2",
