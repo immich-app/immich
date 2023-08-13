@@ -85,7 +85,7 @@ Now we'll add the exclusion pattern to ignore the raw files folder
 - Click on Manage
 - Click on Scan Settings
 - Click on Add Exclusion Pattern
-- Enter "**/Raw/**" and click save.
+- Enter \*\*/Raw/\*\* and click save.
 - Click save
 - Click the drop-down menu on the newly created library
 - Click on Scan Library Files
