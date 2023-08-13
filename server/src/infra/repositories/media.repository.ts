@@ -27,7 +27,7 @@ export class MediaRepository implements IMediaRepository {
     let colorspace = options.wideGamut ? 'p3' : 'srgb';
     if (options.wideGamut) {
       try {
-        const { space } = await sharp(input, { failOn: 'none' }).metadata();
+        const { space } = await sharp(input).metadata();
         // if the image is already in srgb, keep it that way
         if (space && (space as string) === 'srgb') {
           colorspace = 'srgb';
