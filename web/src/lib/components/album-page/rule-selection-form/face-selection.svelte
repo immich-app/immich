@@ -6,7 +6,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import FaceThumbnail from '$lib/components/assets/thumbnail/face-thumbnail.svelte';
 
-  export let selectedPeopleIds: string[] = [];
+  export let selectedPeopleIds: Set<string> = new Set();
   let people: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
 
@@ -15,9 +15,7 @@
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
 
-    people = data.people;
-
-    selectedPeople = people.filter((p) => selectedPeopleIds.includes(p.id));
+    people = data.people.filter((p) => !selectedPeopleIds.has(p.id));
   });
 
   const handleSelection = (e: CustomEvent<{ person: PersonResponseDto }>) => {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import BaseModal from '$lib/components/shared-components/base-modal.svelte';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { RuleKey, type AlbumResponseDto, type PersonResponseDto, api } from '@api';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import Button from '../../elements/buttons/button.svelte';
@@ -12,11 +12,7 @@
 
   let peopleSelection = false;
   let locationSelection = false;
-  $: selectedFaces = album.rules.map((r) => {
-    if (r.key === RuleKey.Person) {
-      return String(r.value);
-    }
-  }) as string[];
+  let selectedPeopleIds = new Set<string>();
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -24,7 +20,7 @@
     peopleSelection = false;
     const people = e.detail.people;
 
-    selectedFaces = people.map((p) => p.id);
+    selectedPeopleIds = new Set([...selectedPeopleIds, ...people.map((p) => p.id)]);
   };
 
   const updateRule = async () => {
@@ -39,6 +35,16 @@
     //   album.rules = [...album.rules, data];
     // }
   };
+
+  onMount(() => {
+    const addedFaceIds = album.rules.map((r) => {
+      if (r.key === RuleKey.Person) {
+        return String(r.value);
+      }
+    }) as string[];
+
+    selectedPeopleIds = new Set([...selectedPeopleIds, ...addedFaceIds]);
+  });
 </script>
 
 <BaseModal
@@ -57,7 +63,14 @@
     <!--  People Selection -->
     <div id="people-selection">
       <p class="text-sm font-medium">PEOPLE</p>
-      <div class="mt-4">
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        {#each selectedPeopleIds as personId (personId)}
+          <button>
+            <img src={api.getPeopleThumbnailUrl(personId)} alt={personId} class="h-20 w-20 rounded-lg" />
+          </button>
+        {/each}
+
         <button
           class="immich-text-primary border-1 flex h-20 w-20 place-content-center place-items-center rounded-lg border border-gray-300 hover:bg-gray-500/20 dark:border-gray-500"
           on:click={() => (peopleSelection = true)}
@@ -65,10 +78,6 @@
           <Plus size="24" />
         </button>
       </div>
-
-      {#each selectedFaces as person (person)}
-        <div>id: {person}</div>
-      {/each}
     </div>
 
     <!-- Location Selection -->
@@ -98,15 +107,14 @@
         </div>
       </div>
     </div>
-
-    <!-- Buttons rows -->
-    <div>
-      <div class="mt-5 flex justify-end gap-2">
-        <Button size="sm" color="secondary" on:click={() => dispatch('close')}>Cancel</Button>
-        <Button size="sm" color="primary">Confirm</Button>
-      </div>
-    </div>
   </section>
+  <!-- Buttons rows -->
+  <svelte:fragment slot="sticky-bottom">
+    <div class="flex justify-end gap-2">
+      <Button size="sm" color="secondary" on:click={() => dispatch('close')}>Cancel</Button>
+      <Button size="sm" color="primary">Confirm</Button>
+    </div>
+  </svelte:fragment>
 </BaseModal>
 
 <Portal target="body">
@@ -115,11 +123,7 @@
       transition:fly={{ y: 500 }}
       class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200"
     >
-      <FaceSelection
-        on:close={() => (peopleSelection = false)}
-        on:confirm={handleFaceSelected}
-        selectedPeopleIds={selectedFaces}
-      />
+      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handleFaceSelected} {selectedPeopleIds} />
     </section>
   {/if}
 </Portal>

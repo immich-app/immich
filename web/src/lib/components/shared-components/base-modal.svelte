@@ -37,7 +37,7 @@
   <div
     use:clickOutside
     on:outclick={() => !ignoreClickOutside && dispatch('close')}
-    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg min-h-[200px] w-[450px] overflow-y-auto rounded-lg shadow-md"
+    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg max-h-[700px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg shadow-md"
   >
     <div class="dark:bg-immich-dark-gray bg-immich-bg sticky top-0 flex place-items-center justify-between px-5 py-3">
       <div>
@@ -49,8 +49,14 @@
       <CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
     </div>
 
-    <div class="max-h-[600px]">
+    <div class="">
       <slot />
     </div>
+
+    {#if $$slots['sticky-bottom']}
+      <div class="dark:bg-immich-dark-gray bg-immich-bg sticky bottom-0 px-5 pb-5 pt-3">
+        <slot name="sticky-bottom" />
+      </div>
+    {/if}
   </div>
 </div>
