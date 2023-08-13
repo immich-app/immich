@@ -177,6 +177,7 @@ enum StoreKey<T> {
   // map related settings
   mapThemeMode<bool>(117, type: bool),
   mapShowFavoriteOnly<bool>(118, type: bool),
+  mapRelativeDate<int>(119, type: int),
   ;
 
   const StoreKey(

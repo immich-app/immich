@@ -16,6 +16,8 @@ class MapSettingsDialog extends HookConsumerWidget {
     final isDarkMode = useState(AppSettingsEnum.mapThemeMode.defaultValue);
     final showFavoriteOnly =
         useState(AppSettingsEnum.mapShowFavoriteOnly.defaultValue);
+    final showRelativeDate =
+        useState(AppSettingsEnum.mapRelativeDate.defaultValue);
     final ThemeData theme = Theme.of(context);
 
     useEffect(
@@ -23,6 +25,8 @@ class MapSettingsDialog extends HookConsumerWidget {
         isDarkMode.value = settings.getSetting(AppSettingsEnum.mapThemeMode);
         showFavoriteOnly.value =
             settings.getSetting(AppSettingsEnum.mapShowFavoriteOnly);
+        showRelativeDate.value =
+            settings.getSetting(AppSettingsEnum.mapRelativeDate);
         return null;
       },
       [settings],
@@ -64,6 +68,63 @@ class MapSettingsDialog extends HookConsumerWidget {
       );
     }
 
+    Widget buildDateRangeSetting() {
+      final now = DateTime.now();
+      return DropdownMenu(
+        enableSearch: false,
+        enableFilter: false,
+        initialSelection: showRelativeDate.value,
+        onSelected: (value) {
+          showRelativeDate.value = value!;
+        },
+        dropdownMenuEntries: [
+          const DropdownMenuEntry(value: 0, label: "All"),
+          const DropdownMenuEntry(
+            value: 1,
+            label: "Past 24 hours",
+          ),
+          const DropdownMenuEntry(
+            value: 7,
+            label: "Past 7 days",
+          ),
+          const DropdownMenuEntry(
+            value: 30,
+            label: "Past 30 days",
+          ),
+          DropdownMenuEntry(
+            value: now
+                .difference(
+                  DateTime(
+                    now.year - 1,
+                    now.month,
+                    now.day,
+                    now.hour,
+                    now.minute,
+                    now.second,
+                  ),
+                )
+                .inDays,
+            label: "Past year",
+          ),
+          DropdownMenuEntry(
+            value: now
+                .difference(
+                  DateTime(
+                    now.year - 3,
+                    now.month,
+                    now.day,
+                    now.hour,
+                    now.minute,
+                    now.second,
+                  ),
+                )
+                .inDays,
+            label: "Past 3 years",
+          ),
+        ],
+      );
+    }
+
     List<Widget> getDialogActions() {
       return <Widget>[
         TextButton(
@@ -81,13 +142,20 @@ class MapSettingsDialog extends HookConsumerWidget {
         ),
         TextButton(
           onPressed: () {
+            // Save App settings
             settings.setSetting(AppSettingsEnum.mapThemeMode, isDarkMode.value);
             settings.setSetting(
               AppSettingsEnum.mapShowFavoriteOnly,
               showFavoriteOnly.value,
             );
+            settings.setSetting(
+              AppSettingsEnum.mapRelativeDate,
+              showRelativeDate.value,
+            );
+            // Notify listeners
             mapSettings.switchTheme(isDarkMode.value);
             mapSettings.switchFavoriteOnly(showFavoriteOnly.value);
+            mapSettings.setRelativeTime(showRelativeDate.value);
             Navigator.of(context).pop();
           },
           style: TextButton.styleFrom(
@@ -125,14 +193,25 @@ class MapSettingsDialog extends HookConsumerWidget {
           child: ListView(
             shrinkWrap: true,
             children: [
-              ...ListTile.divideTiles(
-                context: context,
-                tiles: [
-                  buildMapThemeSetting(),
-                  buildFavoriteOnlySetting(),
-                ],
-              ).toList(),
-            ],
+              buildMapThemeSetting(),
+              buildFavoriteOnlySetting(),
+              const SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Date range",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    buildDateRangeSetting(),
+                  ],
+                ),
+              ),
+            ].toList(),
           ),
         ),
       ),

@@ -22,10 +22,17 @@ class MapSerivce {
 
   MapSerivce(this._apiService, this._db);
 
-  Future<List<AssetMapMarker>?> getMapMarkers(bool? isFavorite) async {
+  Future<List<AssetMapMarker>?> getMapMarkers({
+    bool? isFavorite,
+    DateTime? fileCreatedAfter,
+    DateTime? fileCreatedBefore,
+  }) async {
     try {
-      final markers =
-          await _apiService.assetApi.getMapMarkers(isFavorite: isFavorite);
+      final markers = await _apiService.assetApi.getMapMarkers(
+        isFavorite: isFavorite,
+        fileCreatedAfter: fileCreatedAfter,
+        fileCreatedBefore: fileCreatedBefore,
+      );
       if (markers == null) {
         return null;
       }

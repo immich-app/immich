@@ -7,9 +7,19 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 final mapMarkerFutureProvider =
     FutureProvider.autoDispose<List<AssetMapMarker>?>((ref) async {
   final service = ref.watch(mapServiceProvider);
-  final isFavorite = ref.watch(mapStateNotifier).showFavoriteOnly;
+  final mapState = ref.watch(mapStateNotifier);
+  DateTime? fileCreatedAfter;
 
-  return await service.getMapMarkers(isFavorite);
+  int? relativeTime = mapState.relativeTime;
+  if (relativeTime != null && relativeTime != 0) {
+    fileCreatedAfter =
+        DateTime.now().subtract(Duration(days: mapState.relativeTime!));
+  }
+
+  return await service.getMapMarkers(
+    isFavorite: mapState.showFavoriteOnly,
+    fileCreatedAfter: fileCreatedAfter,
+  );
 });
 
 final mapMarkerAssetProvider =

@@ -48,6 +48,7 @@ enum AppSettingsEnum<T> {
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   mapThemeMode<bool>(StoreKey.mapThemeMode, null, false),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
+  mapRelativeDate<int>(StoreKey.mapRelativeDate, null, 0),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

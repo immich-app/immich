@@ -21,7 +21,7 @@ class ClusterMarkerIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(50),
         boxShadow: [
           BoxShadow(
-            color: borderColor, //New
+            color: borderColor,
             blurRadius: 10.0,
           ),
         ],

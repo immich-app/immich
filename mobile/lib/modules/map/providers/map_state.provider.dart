@@ -24,6 +24,9 @@ class MapStateNotifier extends StateNotifier<MapState> {
 
   void switchFavoriteOnly(bool isFavoriteOnly) =>
       state = state.copyWith(showFavoriteOnly: isFavoriteOnly);
+
+  void setRelativeTime(int relativeTime) =>
+      state = state.copyWith(relativeTime: relativeTime);
 }
 
 final mapStateNotifier =
