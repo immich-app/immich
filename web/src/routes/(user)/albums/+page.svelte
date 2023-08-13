@@ -159,15 +159,15 @@
           {album.albumName}
         </span>
 
-         <span>
-            {album.assetCount}
-            {album.assetCount == 1 ? `item` : `items`}
-         </span>
+        <span>
+          {album.assetCount}
+          {album.assetCount == 1 ? `item` : `items`}
+        </span>
 
-         <span>{new Date(album.updatedAt).toLocaleDateString($locale, dateFormats.album)}</span>
-         <span>{new Date(album.createdAt).toLocaleDateString($locale, dateFormats.album)}</span>
+        <span>{new Date(album.updatedAt).toLocaleDateString($locale, dateFormats.album)}</span>
+        <span>{new Date(album.createdAt).toLocaleDateString($locale, dateFormats.album)}</span>
 
-         <!-- <span>{album.startDate} - {album.endDate}</span> -->
+        <!-- <span>{album.startDate} - {album.endDate}</span> -->
       </a>
     {/each}
   {/if}
