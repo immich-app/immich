@@ -25,7 +25,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
     );
 
     // Create default library for each user and assign all assets to it
-    const userIds = await queryRunner.query(`SELECT id FROM "users"`);
+    const userIds: string[] = (await queryRunner.query(`SELECT id FROM "users"`)).map((user: any) => user.id);
 
     for (const userId of userIds) {
       await queryRunner.query(
