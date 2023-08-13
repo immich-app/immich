@@ -9,6 +9,7 @@
 
   const dispatch = createEventDispatcher();
   export let zIndex = 9999;
+  export let ignoreClickOutside = false;
 
   onMount(() => {
     if (browser) {
@@ -35,8 +36,8 @@
 >
   <div
     use:clickOutside
-    on:outclick={() => dispatch('close')}
-    class="max-h-[600px] min-h-[200px] w-[450px] rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    on:outclick={() => !ignoreClickOutside && dispatch('close')}
+    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg max-h-[600px] min-h-[200px] w-[450px] rounded-lg shadow-md"
   >
     <div class="flex place-items-center justify-between px-5 py-3">
       <div>

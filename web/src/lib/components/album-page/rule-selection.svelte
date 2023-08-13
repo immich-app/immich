@@ -4,12 +4,18 @@
   import type { AlbumResponseDto } from '@api';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import Portal from '../shared-components/portal/portal.svelte';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let album: AlbumResponseDto;
-  const dispatch = createEventDispatcher<{ close: void; 'select-people': void; 'select-location': void }>();
+
+  let peopleSelection = false;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 </script>
 
 <BaseModal
+  ignoreClickOutside
   on:close={() => {
     dispatch('close');
   }}
@@ -27,7 +33,7 @@
       <div class="mt-4">
         <button
           class="immich-text-primary border-1 flex h-20 w-20 place-content-center place-items-center rounded-lg border border-gray-300 hover:bg-gray-500/20 dark:border-gray-500"
-          on:click={() => dispatch('select-people')}
+          on:click={() => (peopleSelection = true)}
         >
           <Plus size="24" />
         </button>
@@ -71,3 +77,14 @@
     </div>
   </section>
 </BaseModal>
+
+<Portal target="body">
+  {#if peopleSelection}
+    <section>
+      <div class="absolute left-0 top-0 z-[10000] h-screen w-screen bg-white/90">
+        Try and trye
+        <button on:click={() => (peopleSelection = false)}>Close</button>
+      </div>
+    </section>
+  {/if}
+</Portal>

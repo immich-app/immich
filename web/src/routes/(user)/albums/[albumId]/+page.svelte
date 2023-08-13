@@ -279,16 +279,6 @@
       handleError(error, 'Error updating album description');
     }
   };
-
-  const handleRulePeopleSelection = () => {
-    // viewMode = ViewMode.SELECT_ASSETS;
-    console.log('handleRuleFaceSelection');
-  };
-
-  const handleRuleLocationSelection = () => {
-    // viewMode = ViewMode.SELECT_ASSETS;
-    console.log('handleRuleLocationSelection');
-  };
 </script>
 
 <header>
@@ -364,7 +354,7 @@
     {#if viewMode === ViewMode.SELECT_ASSETS}
       <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
         <svelte:fragment slot="leading">
-          <p class="text-lg dark:text-immich-dark-fg">
+          <p class="dark:text-immich-dark-fg text-lg">
             {#if $timelineSelected.size === 0}
               Add to album
             {:else}
@@ -376,7 +366,7 @@
         <svelte:fragment slot="trailing">
           <button
             on:click={handleSelectFromComputer}
-            class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+            class="text-immich-primary hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25 rounded-lg px-6 py-2 text-sm font-medium transition-all"
           >
             Select from computer
           </button>
@@ -395,7 +385,7 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+  class="bg-immich-bg dark:bg-immich-dark-bg relative h-screen overflow-hidden px-6 pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
 >
   {#if viewMode === ViewMode.SELECT_ASSETS}
     <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
@@ -413,9 +403,9 @@
           <input
             on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
             on:blur={handleUpdateName}
-            class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
+            class="text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent text-6xl outline-none transition-all {isOwned
               ? 'hover:border-gray-400'
-              : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
+              : 'hover:border-transparent'} bg-immich-bg focus:border-immich-primary dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray focus:border-b-2 focus:outline-none"
             type="text"
             bind:value={album.albumName}
             disabled={!isOwned}
@@ -489,11 +479,11 @@
       {#if album.assetCount === 0}
         <section id="empty-album" class=" mt-[200px] flex flex-col place-content-center place-items-center">
           <div class="w-[340px]">
-            <p class="text-sm dark:text-immich-dark-fg">ADD PHOTOS</p>
+            <p class="dark:text-immich-dark-fg text-sm">ADD PHOTOS</p>
 
             <button
               on:click={() => (viewMode = ViewMode.RULE_SELECTION)}
-              class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+              class="bg-immich-bg text-immich-fg hover:text-immich-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary mt-5 flex w-full place-items-center gap-6 rounded-md border px-8 py-8 transition-all hover:bg-gray-100 dark:border-none"
             >
               <span class="immich-text-primary"><FaceMan size="34" /> </span>
               <div class="text-left">
@@ -504,7 +494,7 @@
 
             <button
               on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+              class="bg-immich-bg text-immich-fg hover:text-immich-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary mt-5 flex w-full place-items-center gap-6 rounded-md border px-8 py-8 transition-all hover:bg-gray-100 dark:border-none"
             >
               <span class="immich-text-primary"><Plus size="34" /> </span>
               <span class="text-lg">Select photos</span>
@@ -560,10 +550,5 @@
 {/if}
 
 {#if viewMode === ViewMode.RULE_SELECTION}
-  <RuleSelection
-    on:close={() => (viewMode = ViewMode.VIEW)}
-    {album}
-    on:select-people={() => handleRulePeopleSelection()}
-    on:select-location={() => handleRuleLocationSelection()}
-  />
+  <RuleSelection on:close={() => (viewMode = ViewMode.VIEW)} {album} />
 {/if}
