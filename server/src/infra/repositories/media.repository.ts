@@ -27,13 +27,13 @@ export class MediaRepository implements IMediaRepository {
     let colorspace = options.wideGamut ? 'p3' : 'srgb';
     if (options.wideGamut) {
       try {
-        const { space } = await sharp(input, { failOn: 'none' }).metadata()
+        const { space } = await sharp(input, { failOn: 'none' }).metadata();
         // if the image is already in srgb, keep it that way
         if (space && (space as string) === 'srgb') {
           colorspace = 'srgb';
         }
       } catch (err) {
-        this.logger.warn(`Could not determine colorspace of image, defaulting to ${colorspace}`)
+        this.logger.warn(`Could not determine colorspace of image, defaulting to ${colorspace}`);
       }
     }
     const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp

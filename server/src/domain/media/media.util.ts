@@ -3,7 +3,6 @@ import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
-  ResizeOptions,
   TranscodeOptions,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
@@ -264,12 +263,11 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  constructor(protected config: SystemConfigFFmpegDto, protected thumbnailOptions: ResizeOptions) { super(config) }
   getBaseInputOptions(): string[] {
-    return ['-sws_flags accurate_rnd+bitexact+full_chroma_int']
+    return ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'];
   }
   getBaseOutputOptions() {
-    return ['-ss 00:00:00.000', '-frames:v 1'];
+    return ['-frames:v 1'];
   }
 
   getPresetOptions() {
@@ -277,7 +275,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBitrateOptions() {
-    return []
+    return [];
   }
 
   getScaling(videoStream: VideoStreamInfo) {

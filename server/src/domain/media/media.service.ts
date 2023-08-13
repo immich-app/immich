@@ -62,7 +62,13 @@ export class MediaService {
     const { ffmpeg, thumbnail } = await this.configCore.getConfig();
     switch (asset.type) {
       case AssetType.IMAGE:
-        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, { format: 'jpeg', size: thumbnail.jpegSize, ...thumbnail });
+        const thumbnailOptions = {
+          format: 'jpeg',
+          size: thumbnail.jpegSize,
+          wideGamut: thumbnail.wideGamut,
+          quality: thumbnail.quality,
+        } as const;
+        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, thumbnailOptions);
         this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
@@ -74,7 +80,7 @@ export class MediaService {
         }
         const mainAudioStream = this.getMainStream(audioStreams);
         const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString() };
-        const options = new ThumbnailConfig(config, { format: 'jpeg', size: thumbnail.jpegSize, ...thumbnail }).getOptions(mainVideoStream, mainAudioStream);
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
@@ -95,7 +101,13 @@ export class MediaService {
 
     const webpPath = this.getPath(asset, 'webp');
     const { thumbnail } = await this.configCore.getConfig();
-    await this.mediaRepository.resize(asset.resizePath, webpPath, { format: 'webp', size: thumbnail.webpSize, ...thumbnail });
+    const thumbnailOptions = {
+      format: 'webp',
+      size: thumbnail.webpSize,
+      wideGamut: thumbnail.wideGamut,
+      quality: thumbnail.quality,
+    } as const;
+    await this.mediaRepository.resize(asset.originalPath, webpPath, thumbnailOptions);
     await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;

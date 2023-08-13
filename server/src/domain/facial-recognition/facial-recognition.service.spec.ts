@@ -104,6 +104,7 @@ describe(FacialRecognitionService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -129,6 +130,7 @@ describe(FacialRecognitionService.name, () => {
       personMock,
       searchMock,
       storageMock,
+      configMock,
     );
   });
 
@@ -292,6 +294,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        wideGamut: true,
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
@@ -313,6 +317,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        wideGamut: true,
       });
     });
 
@@ -330,6 +336,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        wideGamut: true,
       });
     });
   });

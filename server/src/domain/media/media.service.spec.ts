@@ -134,6 +134,8 @@ describe(MediaService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
+        quality: 80,
+        wideGamut: true,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
@@ -148,12 +150,11 @@ describe(MediaService.name, () => {
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        inputOptions: [],
+        inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
         outputOptions: [
-          '-ss 00:00:00.000',
           '-frames:v 1',
           '-v verbose',
-          '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p',
+          '-vf scale=-2:1440:flags=lanczos+accurate_rnd+bitexact+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -170,12 +171,11 @@ describe(MediaService.name, () => {
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        inputOptions: [],
+        inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
         outputOptions: [
-          '-ss 00:00:00.000',
           '-frames:v 1',
           '-v verbose',
-          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -209,12 +209,13 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
 
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
-        '/uploads/user-id/thumbs/path.webp',
-        { format: 'webp', size: 250 },
-      );
-      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.webp' });
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.webp', {
+        format: 'webp',
+        size: 250,
+        quality: 80,
+        wideGamut: true,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: 'upload/thumbs/user-id/asset-id.webp' });
     });
   });
 

@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidationOptions, ValidateIf } from 'class-validator';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { Stream } from 'stream';
 
 export type Options = {
   optional?: boolean;
