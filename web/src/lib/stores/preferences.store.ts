@@ -22,6 +22,7 @@ export const locale = persisted<string | undefined>('locale', undefined, {
 export interface MapSettings {
   allowDarkMode: boolean;
   onlyFavorites: boolean;
+  showHidden: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -30,6 +31,7 @@ export interface MapSettings {
 export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
   onlyFavorites: false,
+  showHidden: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',

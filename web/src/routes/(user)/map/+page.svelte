@@ -41,7 +41,7 @@
     }
     abortController = new AbortController();
 
-    const { onlyFavorites } = $mapSettings;
+    const { onlyFavorites, showHidden } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
     const { data } = await api.assetApi.getMapMarkers(
@@ -54,7 +54,13 @@
         signal: abortController.signal,
       },
     );
-    return data;
+
+    let markers = data;
+
+    if (!showHidden) {
+      markers = data.filter((marker) => !(marker.lat === 0 && marker.lon === 0));
+    }
+    return markers;
   }
 
   function getFileCreatedDates() {
