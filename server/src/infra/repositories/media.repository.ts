@@ -24,18 +24,23 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    let colorspace;
+    let colorspace = options.wideGamut ? 'p3' : 'srgb';
     if (options.wideGamut) {
-      const { space } = await sharp(input, { failOn: 'none' }).metadata()
-      colorspace = space && (space as string) === 'srgb' ? 'srgb' : 'p3'; // if the image is already in srgb, keep it that way
-    } else {
-      colorspace = 'srgb';
+      try {
+        const { space } = await sharp(input, { failOn: 'none' }).metadata()
+        // if the image is already in srgb, keep it that way
+        if (space && (space as string) === 'srgb') {
+          colorspace = 'srgb';
+        }
+      } catch (err) {
+        this.logger.warn(`Could not determine colorspace of image, defaulting to ${colorspace}`)
+      }
     }
     const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
     sharp(input, { failOn: 'none' })
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .toColorspace(colorspace)
+      .withMetadata({ icc: colorspace })
       .toFormat(options.format, { quality: options.quality, chromaSubsampling })
       .toFile(output);
   }
