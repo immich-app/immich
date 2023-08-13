@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   albumStub,
-  assetEntityStub,
+  assetStub,
   asyncTick,
   authStub,
   faceStub,
@@ -192,14 +192,14 @@ describe(SearchService.name, () => {
 
     it('should index all the assets', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetStub.image],
         hasNextPage: false,
       });
 
       await sut.handleIndexAssets();
 
       expect(searchMock.importAssets.mock.calls).toEqual([
-        [[assetEntityStub.image], false],
+        [[assetStub.image], false],
         [[], true],
       ]);
     });
@@ -217,11 +217,11 @@ describe(SearchService.name, () => {
   describe('handleIndexAsset', () => {
     it('should skip if search is disabled', () => {
       const sut = makeSut('false');
-      sut.handleIndexAsset({ ids: [assetEntityStub.image.id] });
+      sut.handleIndexAsset({ ids: [assetStub.image.id] });
     });
 
     it('should index the asset', () => {
-      sut.handleIndexAsset({ ids: [assetEntityStub.image.id] });
+      sut.handleIndexAsset({ ids: [assetStub.image.id] });
     });
   });
 
@@ -367,7 +367,7 @@ describe(SearchService.name, () => {
     });
 
     it('should flush queued asset updates', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       sut.handleIndexAsset({ ids: ['asset1'] });
 
@@ -376,7 +376,7 @@ describe(SearchService.name, () => {
       await asyncTick(4);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith(['asset1']);
-      expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], false);
+      expect(searchMock.importAssets).toHaveBeenCalledWith([assetStub.image], false);
     });
 
     it('should flush queued asset deletes', async () => {

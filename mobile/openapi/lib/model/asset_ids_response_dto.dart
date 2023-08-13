@@ -14,41 +14,41 @@ class AssetIdsResponseDto {
   /// Returns a new [AssetIdsResponseDto] instance.
   AssetIdsResponseDto({
     required this.assetId,
-    required this.success,
     this.error,
+    required this.success,
   });
 
   String assetId;
 
-  bool success;
-
   AssetIdsResponseDtoErrorEnum? error;
+
+  bool success;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetIdsResponseDto &&
      other.assetId == assetId &&
-     other.success == success &&
-     other.error == error;
+     other.error == error &&
+     other.success == success;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetId.hashCode) +
-    (success.hashCode) +
-    (error == null ? 0 : error!.hashCode);
+    (error == null ? 0 : error!.hashCode) +
+    (success.hashCode);
 
   @override
-  String toString() => 'AssetIdsResponseDto[assetId=$assetId, success=$success, error=$error]';
+  String toString() => 'AssetIdsResponseDto[assetId=$assetId, error=$error, success=$success]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
-      json[r'success'] = this.success;
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
     //  json[r'error'] = null;
     }
+      json[r'success'] = this.success;
     return json;
   }
 
@@ -61,8 +61,8 @@ class AssetIdsResponseDto {
 
       return AssetIdsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        success: mapValueOfType<bool>(json, r'success')!,
         error: AssetIdsResponseDtoErrorEnum.fromJson(json[r'error']),
+        success: mapValueOfType<bool>(json, r'success')!,
       );
     }
     return null;

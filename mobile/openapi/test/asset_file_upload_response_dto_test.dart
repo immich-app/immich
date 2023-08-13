@@ -16,13 +16,13 @@ void main() {
   // final instance = AssetFileUploadResponseDto();
 
   group('test AssetFileUploadResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
+    // bool duplicate
+    test('to test the property `duplicate`', () async {
       // TODO
     });
 
-    // bool duplicate
-    test('to test the property `duplicate`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 

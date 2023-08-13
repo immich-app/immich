@@ -37,11 +37,21 @@ class ThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final assetContainerColor =
+        isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
-        return Icon(
-          Icons.check_circle,
-          color: Theme.of(context).primaryColor,
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: assetContainerColor,
+          ),
+          child: Icon(
+            Icons.check_circle_rounded,
+            color: Theme.of(context).primaryColor,
+          ),
         );
       } else {
         return const Icon(
@@ -49,6 +59,42 @@ class ThumbnailImage extends HookConsumerWidget {
           color: Colors.white,
         );
       }
+    }
+
+    Widget buildImage(Asset asset) {
+      var image = SizedBox(
+        width: 300,
+        height: 300,
+        child: Hero(
+          tag: asset.id + heroOffset,
+          child: ImmichImage(
+            asset,
+            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+      if (!multiselectEnabled || !isSelected) {
+        return image;
+      }
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 0,
+            color: assetContainerColor,
+          ),
+          color: assetContainerColor,
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(15.0),
+            bottomRight: Radius.circular(15.0),
+            bottomLeft: Radius.circular(15.0),
+            topLeft: Radius.zero,
+          ),
+          child: image,
+        ),
+      );
     }
 
     return GestureDetector(
@@ -74,78 +120,70 @@ class ThumbnailImage extends HookConsumerWidget {
         onSelect?.call();
         HapticFeedback.heavyImpact();
       },
-      child: Hero(
-        tag: asset.id + heroOffset,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: multiselectEnabled && isSelected
-                    ? Border.all(
-                        color: onDeselect == null
-                            ? Colors.grey
-                            : Theme.of(context).primaryColorLight,
-                        width: 10,
-                      )
-                    : const Border(),
-              ),
-              child: ImmichImage(
-                asset,
-                width: 300,
-                height: 300,
-                useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: multiselectEnabled && isSelected
+                  ? Border.all(
+                      color: onDeselect == null
+                          ? Colors.grey
+                          : assetContainerColor,
+                      width: 8,
+                    )
+                  : const Border(),
+            ),
+            child: buildImage(asset),
+          ),
+          if (multiselectEnabled)
+            Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: buildSelectionIcon(asset),
               ),
             ),
-            if (multiselectEnabled)
-              Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: buildSelectionIcon(asset),
-                ),
+          if (showStorageIndicator)
+            Positioned(
+              right: 10,
+              bottom: 5,
+              child: Icon(
+                storageIcon(asset),
+                color: Colors.white,
+                size: 18,
               ),
-            if (showStorageIndicator)
-              Positioned(
-                right: 10,
-                bottom: 5,
-                child: Icon(
-                  storageIcon(asset),
-                  color: Colors.white,
-                  size: 18,
-                ),
+            ),
+          if (asset.isFavorite)
+            const Positioned(
+              left: 10,
+              bottom: 5,
+              child: Icon(
+                Icons.favorite,
+                color: Colors.white,
+                size: 18,
               ),
-            if (asset.isFavorite)
-              const Positioned(
-                left: 10,
-                bottom: 5,
-                child: Icon(
-                  Icons.favorite,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            if (!asset.isImage)
-              Positioned(
-                top: 5,
-                right: 5,
-                child: Row(
-                  children: [
-                    Text(
-                      asset.duration.toString().substring(0, 7),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.play_circle_outline_rounded,
+            ),
+          if (!asset.isImage)
+            Positioned(
+              top: 5,
+              right: 5,
+              child: Row(
+                children: [
+                  Text(
+                    asset.duration.toString().substring(0, 7),
+                    style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 10,
                     ),
-                  ],
-                ),
+                  ),
+                  const Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: Colors.white,
+                  ),
+                ],
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

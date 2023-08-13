@@ -1,3 +1,5 @@
+import { ValidateUUID } from '../../domain.util';
+
 /** @deprecated Use `BulkIdResponseDto` instead */
 export enum AssetIdErrorReason {
   DUPLICATE = 'duplicate',
@@ -17,6 +19,11 @@ export enum BulkIdErrorReason {
   NO_PERMISSION = 'no_permission',
   NOT_FOUND = 'not_found',
   UNKNOWN = 'unknown',
+}
+
+export class BulkIdsDto {
+  @ValidateUUID({ each: true })
+  ids!: string[];
 }
 
 export class BulkIdResponseDto {

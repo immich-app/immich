@@ -233,7 +233,7 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt);
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone: asset.exifInfo?.timeZone || undefined });
 
     const dateTokens = [
       ...supportedYearTokens,

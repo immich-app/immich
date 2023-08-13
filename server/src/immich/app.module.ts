@@ -5,7 +5,6 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AlbumModule } from './api-v1/album/album.module';
 import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';
@@ -34,7 +33,6 @@ import {
   imports: [
     //
     DomainModule.register({ imports: [InfraModule] }),
-    AlbumModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],

@@ -16,6 +16,8 @@ class User {
     required this.isAdmin,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
+    this.profileImagePath = '',
+    this.memoryEnabled = true,
   });
 
   Id get isarId => fastHash(id);
@@ -28,7 +30,9 @@ class User {
         lastName = dto.lastName,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
-        isAdmin = dto.isAdmin;
+        profileImagePath = dto.profileImagePath,
+        isAdmin = dto.isAdmin,
+        memoryEnabled = dto.memoriesEnabled;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -39,6 +43,8 @@ class User {
   bool isPartnerSharedBy;
   bool isPartnerSharedWith;
   bool isAdmin;
+  String profileImagePath;
+  bool memoryEnabled;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -54,7 +60,9 @@ class User {
         lastName == other.lastName &&
         isPartnerSharedBy == other.isPartnerSharedBy &&
         isPartnerSharedWith == other.isPartnerSharedWith &&
-        isAdmin == other.isAdmin;
+        profileImagePath == other.profileImagePath &&
+        isAdmin == other.isAdmin &&
+        memoryEnabled == other.memoryEnabled;
   }
 
   @override
@@ -67,5 +75,7 @@ class User {
       lastName.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
-      isAdmin.hashCode;
+      profileImagePath.hashCode ^
+      isAdmin.hashCode ^
+      memoryEnabled.hashCode;
 }

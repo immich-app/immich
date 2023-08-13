@@ -21,18 +21,13 @@ void main() {
       // TODO
     });
 
-    // String userId
-    test('to test the property `userId`', () async {
-      // TODO
-    });
-
-    // String userEmail
-    test('to test the property `userEmail`', () async {
-      // TODO
-    });
-
     // String firstName
     test('to test the property `firstName`', () async {
+      // TODO
+    });
+
+    // bool isAdmin
+    test('to test the property `isAdmin`', () async {
       // TODO
     });
 
@@ -46,13 +41,18 @@ void main() {
       // TODO
     });
 
-    // bool isAdmin
-    test('to test the property `isAdmin`', () async {
+    // bool shouldChangePassword
+    test('to test the property `shouldChangePassword`', () async {
       // TODO
     });
 
-    // bool shouldChangePassword
-    test('to test the property `shouldChangePassword`', () async {
+    // String userEmail
+    test('to test the property `userEmail`', () async {
+      // TODO
+    });
+
+    // String userId
+    test('to test the property `userId`', () async {
       // TODO
     });
 

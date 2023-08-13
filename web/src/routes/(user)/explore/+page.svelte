@@ -8,6 +8,7 @@
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
   import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -147,6 +148,15 @@
           >
             <MotionPlayOutline size={24} />
             <span>Motion photos</span>
+          </a>
+        </div>
+        <div>
+          <a
+            href="/search?exifInfo.projectionType=EQUIRECTANGULAR"
+            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
+          >
+            <Rotate360Icon size={24} />
+            <span>Panorama photos</span>
           </a>
         </div>
       </div>

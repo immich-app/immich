@@ -67,16 +67,6 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getAssetByTimeBucket(GetAssetByTimeBucketDto getAssetByTimeBucketDto) async
-    test('test getAssetByTimeBucket', () async {
-      // TODO
-    });
-
-    //Future<AssetCountByTimeBucketResponseDto> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto) async
-    test('test getAssetCountByTimeBucket', () async {
-      // TODO
-    });
-
     //Future<List<String>> getAssetSearchTerms() async
     test('test getAssetSearchTerms', () async {
       // TODO
@@ -89,6 +79,11 @@ void main() {
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
+      // TODO
+    });
+
+    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
+    test('test getByTimeBucket', () async {
       // TODO
     });
 
@@ -114,6 +109,11 @@ void main() {
 
     //Future<List<MemoryLaneResponseDto>> getMemoryLane(DateTime timestamp) async
     test('test getMemoryLane', () async {
+      // TODO
+    });
+
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
+    test('test getTimeBuckets', () async {
       // TODO
     });
 
@@ -146,7 +146,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isReadOnly, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isReadOnly, bool isVisible, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO
     });

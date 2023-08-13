@@ -44,10 +44,9 @@
   const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
     showAlbumPicker = false;
     const album = event.detail.album;
-
     const assetIds = Array.from(getAssets()).map((asset) => asset.id);
-
-    addAssetsToAlbum(album.id, assetIds).then(clearSelect);
+    await addAssetsToAlbum(album.id, assetIds);
+    clearSelect();
   };
 </script>
 

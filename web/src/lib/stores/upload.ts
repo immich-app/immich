@@ -3,6 +3,8 @@ import type { UploadAsset } from '../models/upload-asset';
 
 function createUploadStore() {
   const uploadAssets = writable<Array<UploadAsset>>([]);
+  const duplicateCounter = writable(0);
+  const errorCounter = writable(0);
 
   const { subscribe } = uploadAssets;
 
@@ -35,6 +37,8 @@ function createUploadStore() {
 
   return {
     subscribe,
+    errorCounter,
+    duplicateCounter,
     isUploading,
     addNewUploadAsset,
     updateProgress,

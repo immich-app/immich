@@ -16,16 +16,6 @@ void main() {
   // final instance = SystemConfigTemplateStorageOptionDto();
 
   group('test SystemConfigTemplateStorageOptionDto', () {
-    // List<String> yearOptions (default value: const [])
-    test('to test the property `yearOptions`', () async {
-      // TODO
-    });
-
-    // List<String> monthOptions (default value: const [])
-    test('to test the property `monthOptions`', () async {
-      // TODO
-    });
-
     // List<String> dayOptions (default value: const [])
     test('to test the property `dayOptions`', () async {
       // TODO
@@ -41,13 +31,23 @@ void main() {
       // TODO
     });
 
-    // List<String> secondOptions (default value: const [])
-    test('to test the property `secondOptions`', () async {
+    // List<String> monthOptions (default value: const [])
+    test('to test the property `monthOptions`', () async {
       // TODO
     });
 
     // List<String> presetOptions (default value: const [])
     test('to test the property `presetOptions`', () async {
+      // TODO
+    });
+
+    // List<String> secondOptions (default value: const [])
+    test('to test the property `secondOptions`', () async {
+      // TODO
+    });
+
+    // List<String> yearOptions (default value: const [])
+    test('to test the property `yearOptions`', () async {
       // TODO
     });
 

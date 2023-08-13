@@ -16,6 +16,7 @@ import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './response-dto';
 import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
@@ -54,6 +55,7 @@ const adminUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: 'admin',
   externalPath: null,
+  memoriesEnabled: true,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -73,9 +75,10 @@ const immichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  memoriesEnabled: true,
 });
 
-const updatedImmichUser: UserEntity = Object.freeze({
+const updatedImmichUser = Object.freeze<UserEntity>({
   id: immichUserAuth.id,
   email: 'immich@test.com',
   password: 'immich_password',
@@ -92,9 +95,10 @@ const updatedImmichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  memoriesEnabled: true,
 });
 
-const adminUserResponse = Object.freeze({
+const adminUserResponse = Object.freeze<UserResponseDto>({
   id: adminUserAuth.id,
   email: 'admin@test.com',
   firstName: 'admin_first_name',
@@ -108,6 +112,7 @@ const adminUserResponse = Object.freeze({
   updatedAt: new Date('2021-01-01'),
   storageLabel: 'admin',
   externalPath: null,
+  memoriesEnabled: true,
 });
 
 describe(UserService.name, () => {
@@ -136,11 +141,11 @@ describe(UserService.name, () => {
     when(userMock.get).calledWith(immichUser.id, undefined).mockResolvedValue(immichUser);
   });
 
-  describe('getAllUsers', () => {
+  describe('getAll', () => {
     it('should get all users', async () => {
       userMock.getList.mockResolvedValue([adminUser]);
 
-      const response = await sut.getAllUsers(adminUserAuth, false);
+      const response = await sut.getAll(adminUserAuth, false);
 
       expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: true });
       expect(response).toEqual([
@@ -158,16 +163,17 @@ describe(UserService.name, () => {
           updatedAt: new Date('2021-01-01'),
           storageLabel: 'admin',
           externalPath: null,
+          memoriesEnabled: true,
         },
       ]);
     });
   });
 
-  describe('getUserById', () => {
+  describe('get', () => {
     it('should get a user by id', async () => {
       userMock.get.mockResolvedValue(adminUser);
 
-      const response = await sut.getUserById(adminUser.id);
+      const response = await sut.get(adminUser.id);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, false);
       expect(response).toEqual(adminUserResponse);
@@ -176,17 +182,17 @@ describe(UserService.name, () => {
     it('should throw an error if a user is not found', async () => {
       userMock.get.mockResolvedValue(null);
 
-      await expect(sut.getUserById(adminUser.id)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.get(adminUser.id)).rejects.toBeInstanceOf(NotFoundException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, false);
     });
   });
 
-  describe('getUserInfo', () => {
+  describe('getMe', () => {
     it("should get the auth user's info", async () => {
       userMock.get.mockResolvedValue(adminUser);
 
-      const response = await sut.getUserInfo(adminUser);
+      const response = await sut.getMe(adminUser);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, undefined);
       expect(response).toEqual(adminUserResponse);
@@ -195,17 +201,17 @@ describe(UserService.name, () => {
     it('should throw an error if a user is not found', async () => {
       userMock.get.mockResolvedValue(null);
 
-      await expect(sut.getUserInfo(adminUser)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getMe(adminUser)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, undefined);
     });
   });
 
-  describe('getUserCount', () => {
+  describe('getCount', () => {
     it('should get the user count', async () => {
       userMock.getList.mockResolvedValue([adminUser]);
 
-      const response = await sut.getUserCount({});
+      const response = await sut.getCount({});
 
       expect(userMock.getList).toHaveBeenCalled();
       expect(response).toEqual({ userCount: 1 });
@@ -221,14 +227,14 @@ describe(UserService.name, () => {
 
       when(userMock.update).calledWith(update.id, update).mockResolvedValueOnce(updatedImmichUser);
 
-      const updatedUser = await sut.updateUser(immichUserAuth, update);
+      const updatedUser = await sut.update(immichUserAuth, update);
       expect(updatedUser.shouldChangePassword).toEqual(true);
     });
 
     it('should not set an empty string for storage label', async () => {
       userMock.update.mockResolvedValue(updatedImmichUser);
 
-      await sut.updateUser(adminUserAuth, { id: immichUser.id, storageLabel: '' });
+      await sut.update(adminUserAuth, { id: immichUser.id, storageLabel: '' });
 
       expect(userMock.update).toHaveBeenCalledWith(immichUser.id, { id: immichUser.id, storageLabel: null });
     });
@@ -236,7 +242,7 @@ describe(UserService.name, () => {
     it('should omit a storage label set by non-admin users', async () => {
       userMock.update.mockResolvedValue(updatedImmichUser);
 
-      await sut.updateUser(immichUserAuth, { id: immichUser.id, storageLabel: 'admin' });
+      await sut.update(immichUserAuth, { id: immichUser.id, storageLabel: 'admin' });
 
       expect(userMock.update).toHaveBeenCalledWith(immichUser.id, { id: immichUser.id });
     });
@@ -249,7 +255,7 @@ describe(UserService.name, () => {
           id: 'not_immich_auth_user_id',
         });
 
-      const result = sut.updateUser(immichUserAuth, {
+      const result = sut.update(immichUserAuth, {
         id: 'not_immich_auth_user_id',
         password: 'I take over your account now',
       });
@@ -262,7 +268,7 @@ describe(UserService.name, () => {
       userMock.get.mockResolvedValue(immichUser);
       userMock.update.mockResolvedValue(immichUser);
 
-      await sut.updateUser(immichUser, dto);
+      await sut.update(immichUser, dto);
 
       expect(userMock.update).toHaveBeenCalledWith(immichUser.id, {
         id: 'user-id',
@@ -276,7 +282,7 @@ describe(UserService.name, () => {
       userMock.get.mockResolvedValue(immichUser);
       userMock.getByEmail.mockResolvedValue(adminUser);
 
-      await expect(sut.updateUser(immichUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(immichUser, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userMock.update).not.toHaveBeenCalled();
     });
@@ -287,7 +293,7 @@ describe(UserService.name, () => {
       userMock.get.mockResolvedValue(immichUser);
       userMock.getByStorageLabel.mockResolvedValue(adminUser);
 
-      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userMock.update).not.toHaveBeenCalled();
     });
@@ -300,7 +306,7 @@ describe(UserService.name, () => {
 
       when(userMock.update).calledWith(immichUser.id, update).mockResolvedValueOnce(updatedImmichUser);
 
-      const result = await sut.updateUser(adminUserAuth, update);
+      const result = await sut.update(adminUserAuth, update);
 
       expect(result).toBeDefined();
       expect(result.id).toEqual(updatedImmichUser.id);
@@ -310,7 +316,7 @@ describe(UserService.name, () => {
     it('update user information should throw error if user not found', async () => {
       when(userMock.get).calledWith(immichUser.id, undefined).mockResolvedValueOnce(null);
 
-      const result = sut.updateUser(adminUser, {
+      const result = sut.update(adminUser, {
         id: immichUser.id,
         shouldChangePassword: true,
       });
@@ -324,7 +330,7 @@ describe(UserService.name, () => {
       when(userMock.get).calledWith(adminUser.id).mockResolvedValueOnce(null);
       when(userMock.update).calledWith(adminUser.id, dto).mockResolvedValueOnce(adminUser);
 
-      await sut.updateUser(adminUser, dto);
+      await sut.update(adminUser, dto);
 
       expect(userMock.update).toHaveBeenCalledWith(adminUser.id, dto);
     });
@@ -334,31 +340,31 @@ describe(UserService.name, () => {
 
       when(userMock.get).calledWith(immichUser.id).mockResolvedValueOnce(immichUser);
 
-      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
-  describe('restoreUser', () => {
+  describe('restore', () => {
     it('should require an admin', async () => {
       when(userMock.get).calledWith(adminUser.id, true).mockResolvedValue(adminUser);
-      await expect(sut.restoreUser(immichUserAuth, adminUser.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.restore(immichUserAuth, adminUser.id)).rejects.toBeInstanceOf(ForbiddenException);
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, true);
     });
 
     it('should require the auth user be an admin', async () => {
-      await expect(sut.deleteUser(immichUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(immichUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(userMock.delete).not.toHaveBeenCalled();
     });
   });
 
-  describe('deleteUser', () => {
+  describe('delete', () => {
     it('cannot delete admin user', async () => {
-      await expect(sut.deleteUser(adminUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(adminUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should require the auth user be an admin', async () => {
-      await expect(sut.deleteUser(immichUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(immichUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(userMock.delete).not.toHaveBeenCalled();
     });
@@ -369,7 +375,7 @@ describe(UserService.name, () => {
       when(userMock.getAdmin).calledWith().mockResolvedValueOnce(null);
 
       await expect(
-        sut.createUser({
+        sut.create({
           email: 'john_smith@email.com',
           firstName: 'John',
           lastName: 'Smith',
@@ -394,7 +400,7 @@ describe(UserService.name, () => {
     it('should throw an error if the user does not exist', async () => {
       userMock.get.mockResolvedValue(null);
 
-      await expect(sut.getUserProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id, undefined);
     });
@@ -402,7 +408,7 @@ describe(UserService.name, () => {
     it('should throw an error if the user does not have a picture', async () => {
       userMock.get.mockResolvedValue(adminUser);
 
-      await expect(sut.getUserProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id, undefined);
     });

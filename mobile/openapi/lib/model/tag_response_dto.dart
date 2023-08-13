@@ -13,43 +13,43 @@ part of openapi.api;
 class TagResponseDto {
   /// Returns a new [TagResponseDto] instance.
   TagResponseDto({
-    required this.type,
     required this.id,
     required this.name,
+    required this.type,
     required this.userId,
   });
-
-  TagTypeEnum type;
 
   String id;
 
   String name;
 
+  TagTypeEnum type;
+
   String userId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
-     other.type == type &&
      other.id == id &&
      other.name == name &&
+     other.type == type &&
      other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
+    (type.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[type=$type, id=$id, name=$name, userId=$userId]';
+  String toString() => 'TagResponseDto[id=$id, name=$name, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+      json[r'type'] = this.type;
       json[r'userId'] = this.userId;
     return json;
   }
@@ -62,9 +62,9 @@ class TagResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TagResponseDto(
-        type: TagTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        type: TagTypeEnum.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
@@ -113,9 +113,9 @@ class TagResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
     'id',
     'name',
+    'type',
     'userId',
   };
 }

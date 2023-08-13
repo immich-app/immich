@@ -13,38 +13,38 @@ part of openapi.api;
 class AlbumCountResponseDto {
   /// Returns a new [AlbumCountResponseDto] instance.
   AlbumCountResponseDto({
+    required this.notShared,
     required this.owned,
     required this.shared,
-    required this.notShared,
   });
+
+  int notShared;
 
   int owned;
 
   int shared;
 
-  int notShared;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumCountResponseDto &&
+     other.notShared == notShared &&
      other.owned == owned &&
-     other.shared == shared &&
-     other.notShared == notShared;
+     other.shared == shared;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (notShared.hashCode) +
     (owned.hashCode) +
-    (shared.hashCode) +
-    (notShared.hashCode);
+    (shared.hashCode);
 
   @override
-  String toString() => 'AlbumCountResponseDto[owned=$owned, shared=$shared, notShared=$notShared]';
+  String toString() => 'AlbumCountResponseDto[notShared=$notShared, owned=$owned, shared=$shared]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'notShared'] = this.notShared;
       json[r'owned'] = this.owned;
       json[r'shared'] = this.shared;
-      json[r'notShared'] = this.notShared;
     return json;
   }
 
@@ -56,9 +56,9 @@ class AlbumCountResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumCountResponseDto(
+        notShared: mapValueOfType<int>(json, r'notShared')!,
         owned: mapValueOfType<int>(json, r'owned')!,
         shared: mapValueOfType<int>(json, r'shared')!,
-        notShared: mapValueOfType<int>(json, r'notShared')!,
       );
     }
     return null;
@@ -106,9 +106,9 @@ class AlbumCountResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'notShared',
     'owned',
     'shared',
-    'notShared',
   };
 }
 

@@ -1,6 +1,6 @@
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 
-export const assetSchemaVersion = 7;
+export const assetSchemaVersion = 8;
 export const assetSchema: CollectionCreateSchema = {
   name: `assets-v${assetSchemaVersion}`,
   fields: [
@@ -23,6 +23,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'exifInfo.make', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.model', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.orientation', type: 'string', optional: true },
+    { name: 'exifInfo.projectionType', type: 'string', facet: true, optional: true },
 
     // smart info
     { name: 'smartInfo.objects', type: 'string[]', facet: true, optional: true },

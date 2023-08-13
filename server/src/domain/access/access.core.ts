@@ -12,9 +12,10 @@ export enum Permission {
   ASSET_DOWNLOAD = 'asset.download',
 
   // ALBUM_CREATE = 'album.create',
-  // ALBUM_READ = 'album.read',
+  ALBUM_READ = 'album.read',
   ALBUM_UPDATE = 'album.update',
   ALBUM_DELETE = 'album.delete',
+  ALBUM_REMOVE_ASSET = 'album.removeAsset',
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
@@ -37,6 +38,16 @@ export class AccessCore {
     if (!hasAccess) {
       throw new BadRequestException(`Not found or no ${permission} access`);
     }
+  }
+
+  async hasAny(authUser: AuthUserDto, permissions: Array<{ permission: Permission; id: string }>) {
+    for (const { permission, id } of permissions) {
+      const hasAccess = await this.hasPermission(authUser, permission, id);
+      if (hasAccess) {
+        return true;
+      }
+    }
+    return false;
   }
 
   async hasPermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
@@ -76,12 +87,11 @@ export class AccessCore {
         // TODO: fix this to not use authUser.id for shared link access control
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
-      case Permission.ALBUM_DOWNLOAD: {
-        return !!authUser.isAllowDownload && (await this.repository.album.hasSharedLinkAccess(sharedLinkId, id));
-      }
+      case Permission.ALBUM_READ:
+        return this.repository.album.hasSharedLinkAccess(sharedLinkId, id);
 
-      // case Permission.ALBUM_READ:
-      //   return this.repository.album.hasSharedLinkAccess(sharedLinkId, id);
+      case Permission.ALBUM_DOWNLOAD:
+        return !!authUser.isAllowDownload && (await this.repository.album.hasSharedLinkAccess(sharedLinkId, id));
 
       default:
         return false;
@@ -122,8 +132,11 @@ export class AccessCore {
           (await this.repository.asset.hasPartnerAccess(authUser.id, id))
         );
 
-      // case Permission.ALBUM_READ:
-      //   return this.repository.album.hasOwnerAccess(authUser.id, id);
+      case Permission.ALBUM_READ:
+        return (
+          (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
+        );
 
       case Permission.ALBUM_UPDATE:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
@@ -140,13 +153,17 @@ export class AccessCore {
           (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
         );
 
+      case Permission.ALBUM_REMOVE_ASSET:
+        return this.repository.album.hasOwnerAccess(authUser.id, id);
+
       case Permission.LIBRARY_READ:
         return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
 
       case Permission.LIBRARY_DOWNLOAD:
         return authUser.id === id;
-    }
 
-    return false;
+      default:
+        return false;
+    }
   }
 }

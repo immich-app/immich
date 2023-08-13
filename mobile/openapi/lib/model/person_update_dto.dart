@@ -13,19 +13,10 @@ part of openapi.api;
 class PersonUpdateDto {
   /// Returns a new [PersonUpdateDto] instance.
   PersonUpdateDto({
-    this.name,
     this.featureFaceAssetId,
     this.isHidden,
+    this.name,
   });
-
-  /// Person name.
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? name;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -45,29 +36,33 @@ class PersonUpdateDto {
   ///
   bool? isHidden;
 
+  /// Person name.
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? name;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
-     other.name == name &&
      other.featureFaceAssetId == featureFaceAssetId &&
-     other.isHidden == isHidden;
+     other.isHidden == isHidden &&
+     other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name == null ? 0 : name!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
-    (isHidden == null ? 0 : isHidden!.hashCode);
+    (isHidden == null ? 0 : isHidden!.hashCode) +
+    (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[name=$name, featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden]';
+  String toString() => 'PersonUpdateDto[featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
-    }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
@@ -77,6 +72,11 @@ class PersonUpdateDto {
       json[r'isHidden'] = this.isHidden;
     } else {
     //  json[r'isHidden'] = null;
+    }
+    if (this.name != null) {
+      json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
     }
     return json;
   }
@@ -89,9 +89,9 @@ class PersonUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
-        name: mapValueOfType<String>(json, r'name'),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
+        name: mapValueOfType<String>(json, r'name'),
       );
     }
     return null;

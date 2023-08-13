@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { toEmail, toSanitized } from '../../domain.util';
 
 export class CreateUserDto {
@@ -27,6 +27,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   externalPath?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  memoriesEnabled?: boolean;
 }
 
 export class CreateAdminDto {

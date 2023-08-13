@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ProjectionType } from '$lib/constants';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
@@ -12,6 +13,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -94,7 +96,9 @@
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
             {:else if selected}
-              <CheckCircle size="24" class="text-immich-primary" />
+              <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+                <CheckCircle size="24" class="text-immich-primary" />
+              </div>
             {:else}
               <CheckCircle size="24" class="text-white/80 hover:text-white" />
             {/if}
@@ -105,10 +109,12 @@
       <div
         class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
         class:scale-[0.85]={selected}
+        class:rounded-xl={selected}
       >
         <!-- Gradient overlay on hover -->
         <div
           class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+          class:rounded-xl={selected}
         />
 
         <!-- Favorite asset star -->
@@ -124,6 +130,14 @@
           </div>
         {/if}
 
+        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Rotate360Icon size="24" />
+            </span>
+          </div>
+        {/if}
+
         {#if asset.resized}
           <ImageThumbnail
             url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
@@ -131,6 +145,7 @@
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}
+            curve={selected}
           />
         {:else}
           <div class="flex h-full w-full items-center justify-center p-4">
@@ -143,6 +158,7 @@
             <VideoThumbnail
               url={api.getAssetFileUrl(asset.id, false, true, publicSharedKey)}
               enablePlayback={mouseOver}
+              curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
             />
           </div>
@@ -155,6 +171,7 @@
               pauseIcon={MotionPauseOutline}
               playIcon={MotionPlayOutline}
               showTime={false}
+              curve={selected}
               playbackOnIconHover
             />
           </div>

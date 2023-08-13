@@ -8,14 +8,14 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | [**SharedLinkType**](SharedLinkType.md) |  | 
-**assetIds** | **List<String>** |  | [optional] [default to const []]
 **albumId** | **String** |  | [optional] 
+**allowDownload** | **bool** |  | [optional] [default to true]
+**allowUpload** | **bool** |  | [optional] [default to false]
+**assetIds** | **List<String>** |  | [optional] [default to const []]
 **description** | **String** |  | [optional] 
 **expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**allowUpload** | **bool** |  | [optional] [default to false]
-**allowDownload** | **bool** |  | [optional] [default to true]
 **showExif** | **bool** |  | [optional] [default to true]
+**type** | [**SharedLinkType**](SharedLinkType.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

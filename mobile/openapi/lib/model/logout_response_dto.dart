@@ -13,32 +13,32 @@ part of openapi.api;
 class LogoutResponseDto {
   /// Returns a new [LogoutResponseDto] instance.
   LogoutResponseDto({
-    required this.successful,
     required this.redirectUri,
+    required this.successful,
   });
-
-  bool successful;
 
   String redirectUri;
 
+  bool successful;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LogoutResponseDto &&
-     other.successful == successful &&
-     other.redirectUri == redirectUri;
+     other.redirectUri == redirectUri &&
+     other.successful == successful;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (successful.hashCode) +
-    (redirectUri.hashCode);
+    (redirectUri.hashCode) +
+    (successful.hashCode);
 
   @override
-  String toString() => 'LogoutResponseDto[successful=$successful, redirectUri=$redirectUri]';
+  String toString() => 'LogoutResponseDto[redirectUri=$redirectUri, successful=$successful]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'successful'] = this.successful;
       json[r'redirectUri'] = this.redirectUri;
+      json[r'successful'] = this.successful;
     return json;
   }
 
@@ -50,8 +50,8 @@ class LogoutResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LogoutResponseDto(
-        successful: mapValueOfType<bool>(json, r'successful')!,
         redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
+        successful: mapValueOfType<bool>(json, r'successful')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class LogoutResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'successful',
     'redirectUri',
+    'successful',
   };
 }
 

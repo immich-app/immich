@@ -21,13 +21,15 @@
   <a href="README_zh_CN.md">中文</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ca_ES.md">Català</a>
+  <a href="README_es_ES.md">Español</a>
 </p>
 
 ## Disclaimer
 
 - ⚠️ The project is under **very active** development.
 - ⚠️ Expect bugs and breaking changes.
-- ⚠️ **Do not use the app as the only way to store your photos and videos!**
+- ⚠️ **Do not use the app as the only way to store your photos and videos.**
+- ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 
 ## Content
 

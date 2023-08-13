@@ -10,11 +10,20 @@ import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
-import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
+import {
+  AssetIdsDto,
+  DownloadArchiveInfo,
+  DownloadDto,
+  DownloadResponseDto,
+  MemoryLaneDto,
+  TimeBucketAssetDto,
+  TimeBucketDto,
+} from './dto';
 import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
 import { MapMarkerDto } from './dto/map-marker.dto';
-import { mapAsset, MapMarkerResponseDto } from './response-dto';
+import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
+import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -133,6 +142,27 @@ export class AssetService {
     }
 
     return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
+  }
+
+  private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
+    if (dto.albumId) {
+      await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
+    } else if (dto.userId) {
+      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+    } else {
+      dto.userId = authUser.id;
+    }
+  }
+
+  async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
+    await this.timeBucketChecks(authUser, dto);
+    return this.assetRepository.getTimeBuckets(dto);
+  }
+
+  async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    await this.timeBucketChecks(authUser, dto);
+    const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
+    return assets.map(mapAsset);
   }
 
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {

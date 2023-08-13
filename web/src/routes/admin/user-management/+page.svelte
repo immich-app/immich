@@ -110,7 +110,7 @@
 <section>
   {#if shouldShowCreateUserForm}
     <FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
-      <CreateUserForm on:user-created={onUserCreated} />
+      <CreateUserForm on:user-created={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
     </FullScreenModal>
   {/if}
 

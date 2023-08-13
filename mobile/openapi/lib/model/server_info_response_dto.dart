@@ -13,62 +13,62 @@ part of openapi.api;
 class ServerInfoResponseDto {
   /// Returns a new [ServerInfoResponseDto] instance.
   ServerInfoResponseDto({
-    required this.diskSizeRaw,
-    required this.diskUseRaw,
-    required this.diskAvailableRaw,
-    required this.diskUsagePercentage,
-    required this.diskSize,
-    required this.diskUse,
     required this.diskAvailable,
+    required this.diskAvailableRaw,
+    required this.diskSize,
+    required this.diskSizeRaw,
+    required this.diskUsagePercentage,
+    required this.diskUse,
+    required this.diskUseRaw,
   });
-
-  int diskSizeRaw;
-
-  int diskUseRaw;
-
-  int diskAvailableRaw;
-
-  double diskUsagePercentage;
-
-  String diskSize;
-
-  String diskUse;
 
   String diskAvailable;
 
+  int diskAvailableRaw;
+
+  String diskSize;
+
+  int diskSizeRaw;
+
+  double diskUsagePercentage;
+
+  String diskUse;
+
+  int diskUseRaw;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerInfoResponseDto &&
-     other.diskSizeRaw == diskSizeRaw &&
-     other.diskUseRaw == diskUseRaw &&
+     other.diskAvailable == diskAvailable &&
      other.diskAvailableRaw == diskAvailableRaw &&
-     other.diskUsagePercentage == diskUsagePercentage &&
      other.diskSize == diskSize &&
+     other.diskSizeRaw == diskSizeRaw &&
+     other.diskUsagePercentage == diskUsagePercentage &&
      other.diskUse == diskUse &&
-     other.diskAvailable == diskAvailable;
+     other.diskUseRaw == diskUseRaw;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (diskSizeRaw.hashCode) +
-    (diskUseRaw.hashCode) +
+    (diskAvailable.hashCode) +
     (diskAvailableRaw.hashCode) +
-    (diskUsagePercentage.hashCode) +
     (diskSize.hashCode) +
+    (diskSizeRaw.hashCode) +
+    (diskUsagePercentage.hashCode) +
     (diskUse.hashCode) +
-    (diskAvailable.hashCode);
+    (diskUseRaw.hashCode);
 
   @override
-  String toString() => 'ServerInfoResponseDto[diskSizeRaw=$diskSizeRaw, diskUseRaw=$diskUseRaw, diskAvailableRaw=$diskAvailableRaw, diskUsagePercentage=$diskUsagePercentage, diskSize=$diskSize, diskUse=$diskUse, diskAvailable=$diskAvailable]';
+  String toString() => 'ServerInfoResponseDto[diskAvailable=$diskAvailable, diskAvailableRaw=$diskAvailableRaw, diskSize=$diskSize, diskSizeRaw=$diskSizeRaw, diskUsagePercentage=$diskUsagePercentage, diskUse=$diskUse, diskUseRaw=$diskUseRaw]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'diskSizeRaw'] = this.diskSizeRaw;
-      json[r'diskUseRaw'] = this.diskUseRaw;
-      json[r'diskAvailableRaw'] = this.diskAvailableRaw;
-      json[r'diskUsagePercentage'] = this.diskUsagePercentage;
-      json[r'diskSize'] = this.diskSize;
-      json[r'diskUse'] = this.diskUse;
       json[r'diskAvailable'] = this.diskAvailable;
+      json[r'diskAvailableRaw'] = this.diskAvailableRaw;
+      json[r'diskSize'] = this.diskSize;
+      json[r'diskSizeRaw'] = this.diskSizeRaw;
+      json[r'diskUsagePercentage'] = this.diskUsagePercentage;
+      json[r'diskUse'] = this.diskUse;
+      json[r'diskUseRaw'] = this.diskUseRaw;
     return json;
   }
 
@@ -80,13 +80,13 @@ class ServerInfoResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerInfoResponseDto(
-        diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
-        diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
-        diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
-        diskUsagePercentage: mapValueOfType<double>(json, r'diskUsagePercentage')!,
-        diskSize: mapValueOfType<String>(json, r'diskSize')!,
-        diskUse: mapValueOfType<String>(json, r'diskUse')!,
         diskAvailable: mapValueOfType<String>(json, r'diskAvailable')!,
+        diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
+        diskSize: mapValueOfType<String>(json, r'diskSize')!,
+        diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
+        diskUsagePercentage: mapValueOfType<double>(json, r'diskUsagePercentage')!,
+        diskUse: mapValueOfType<String>(json, r'diskUse')!,
+        diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
       );
     }
     return null;
@@ -134,13 +134,13 @@ class ServerInfoResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'diskSizeRaw',
-    'diskUseRaw',
-    'diskAvailableRaw',
-    'diskUsagePercentage',
-    'diskSize',
-    'diskUse',
     'diskAvailable',
+    'diskAvailableRaw',
+    'diskSize',
+    'diskSizeRaw',
+    'diskUsagePercentage',
+    'diskUse',
+    'diskUseRaw',
   };
 }
 

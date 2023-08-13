@@ -110,7 +110,7 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="md" showTitle={false} interactive />
+            <UserAvatar {user} size="lg" showTitle={false} interactive />
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
@@ -132,10 +132,3 @@
     </div>
   </div>
 </section>
-
-<style>
-  :root {
-    /* Used by layouts to ensure proper spacing between navbar and content */
-    --navbar-height: calc(theme(spacing.18) + 4px);
-  }
-</style>

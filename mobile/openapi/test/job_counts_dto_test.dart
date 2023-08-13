@@ -26,23 +26,23 @@ void main() {
       // TODO
     });
 
-    // int failed
-    test('to test the property `failed`', () async {
-      // TODO
-    });
-
     // int delayed
     test('to test the property `delayed`', () async {
       // TODO
     });
 
-    // int waiting
-    test('to test the property `waiting`', () async {
+    // int failed
+    test('to test the property `failed`', () async {
       // TODO
     });
 
     // int paused
     test('to test the property `paused`', () async {
+      // TODO
+    });
+
+    // int waiting
+    test('to test the property `waiting`', () async {
       // TODO
     });
 

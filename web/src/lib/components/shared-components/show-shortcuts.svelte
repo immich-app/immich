@@ -2,6 +2,7 @@
   import Close from 'svelte-material-icons/Close.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
+  import FullScreenModal from './full-screen-modal.svelte';
 
   const shortcuts = {
     general: [
@@ -21,8 +22,8 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<div class="absolute z-[99999] h-full w-full">
-  <div class="flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50">
+<FullScreenModal on:clickOutside={() => dispatch('close')}>
+  <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
     <div
       class="w-[400px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[650px]"
     >
@@ -76,4 +77,4 @@
       </div>
     </div>
   </div>
-</div>
+</FullScreenModal>

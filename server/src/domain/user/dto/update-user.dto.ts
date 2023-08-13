@@ -45,4 +45,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   shouldChangePassword?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  memoriesEnabled?: boolean;
 }

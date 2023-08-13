@@ -16,13 +16,13 @@ void main() {
   // final instance = CheckDuplicateAssetResponseDto();
 
   group('test CheckDuplicateAssetResponseDto', () {
-    // bool isExist
-    test('to test the property `isExist`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 
-    // String id
-    test('to test the property `id`', () async {
+    // bool isExist
+    test('to test the property `isExist`', () async {
       // TODO
     });
 

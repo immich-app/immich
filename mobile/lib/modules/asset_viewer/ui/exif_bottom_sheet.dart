@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -16,6 +18,33 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   bool get showMap =>
       asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
+
+  Future<Uri> _createCoordinatesUri(double latitude, double longitude) async {
+    const zoomLevel = 5;
+    if (Platform.isAndroid) {
+      Uri uri = Uri(
+        scheme: 'geo',
+        host: '$latitude,$longitude',
+        queryParameters: {'z': '$zoomLevel', 'q': '$latitude,$longitude'},
+      );
+      if (await canLaunchUrl(uri)) {
+        return uri;
+      }
+    } else if (Platform.isIOS) {
+      var params = {
+        'll': '$latitude,$longitude',
+        'q': '$latitude, $longitude',
+      };
+      Uri uri = Uri.https('maps.apple.com', '/', params);
+      if (!await canLaunchUrl(uri)) {
+        return uri;
+      }
+    }
+    return Uri.https(
+      'www.google.com',
+      '/maps/place/$latitude,$longitude/@$latitude,$longitude,${zoomLevel}z',
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,6 +71,18 @@ class ExifBottomSheet extends HookConsumerWidget {
                     exifInfo?.longitude ?? 0,
                   ),
                   zoom: 16.0,
+                  onTap: (tapPosition, latLong) async {
+                    if (exifInfo != null &&
+                        exifInfo.latitude != null &&
+                        exifInfo.longitude != null) {
+                      launchUrl(
+                        await _createCoordinatesUri(
+                          exifInfo.latitude!,
+                          exifInfo.longitude!,
+                        ),
+                      );
+                    }
+                  },
                 ),
                 nonRotatedChildren: [
                   RichAttributionWidget(

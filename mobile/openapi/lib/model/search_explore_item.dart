@@ -13,32 +13,32 @@ part of openapi.api;
 class SearchExploreItem {
   /// Returns a new [SearchExploreItem] instance.
   SearchExploreItem({
-    required this.value,
     required this.data,
+    required this.value,
   });
-
-  String value;
 
   AssetResponseDto data;
 
+  String value;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchExploreItem &&
-     other.value == value &&
-     other.data == data;
+     other.data == data &&
+     other.value == value;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (value.hashCode) +
-    (data.hashCode);
+    (data.hashCode) +
+    (value.hashCode);
 
   @override
-  String toString() => 'SearchExploreItem[value=$value, data=$data]';
+  String toString() => 'SearchExploreItem[data=$data, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'value'] = this.value;
       json[r'data'] = this.data;
+      json[r'value'] = this.value;
     return json;
   }
 
@@ -50,8 +50,8 @@ class SearchExploreItem {
       final json = value.cast<String, dynamic>();
 
       return SearchExploreItem(
-        value: mapValueOfType<String>(json, r'value')!,
         data: AssetResponseDto.fromJson(json[r'data'])!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;
@@ -99,8 +99,8 @@ class SearchExploreItem {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'value',
     'data',
+    'value',
   };
 }
 

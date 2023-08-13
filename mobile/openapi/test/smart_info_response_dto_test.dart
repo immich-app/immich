@@ -16,13 +16,13 @@ void main() {
   // final instance = SmartInfoResponseDto();
 
   group('test SmartInfoResponseDto', () {
-    // List<String> tags (default value: const [])
-    test('to test the property `tags`', () async {
+    // List<String> objects (default value: const [])
+    test('to test the property `objects`', () async {
       // TODO
     });
 
-    // List<String> objects (default value: const [])
-    test('to test the property `objects`', () async {
+    // List<String> tags (default value: const [])
+    test('to test the property `tags`', () async {
       // TODO
     });
 

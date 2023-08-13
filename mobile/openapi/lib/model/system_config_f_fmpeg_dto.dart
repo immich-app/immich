@@ -13,73 +13,85 @@ part of openapi.api;
 class SystemConfigFFmpegDto {
   /// Returns a new [SystemConfigFFmpegDto] instance.
   SystemConfigFFmpegDto({
+    required this.accel,
     required this.crf,
-    required this.threads,
-    required this.targetVideoCodec,
-    required this.targetAudioCodec,
-    required this.transcode,
-    required this.preset,
-    required this.targetResolution,
     required this.maxBitrate,
+    required this.preset,
+    required this.targetAudioCodec,
+    required this.targetResolution,
+    required this.targetVideoCodec,
+    required this.threads,
+    required this.tonemap,
+    required this.transcode,
     required this.twoPass,
   });
 
+  TranscodeHWAccel accel;
+
   int crf;
 
-  int threads;
-
-  VideoCodec targetVideoCodec;
-
-  AudioCodec targetAudioCodec;
-
-  TranscodePolicy transcode;
+  String maxBitrate;
 
   String preset;
 
+  AudioCodec targetAudioCodec;
+
   String targetResolution;
 
-  String maxBitrate;
+  VideoCodec targetVideoCodec;
+
+  int threads;
+
+  ToneMapping tonemap;
+
+  TranscodePolicy transcode;
 
   bool twoPass;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
+     other.accel == accel &&
      other.crf == crf &&
-     other.threads == threads &&
-     other.targetVideoCodec == targetVideoCodec &&
-     other.targetAudioCodec == targetAudioCodec &&
-     other.transcode == transcode &&
-     other.preset == preset &&
-     other.targetResolution == targetResolution &&
      other.maxBitrate == maxBitrate &&
+     other.preset == preset &&
+     other.targetAudioCodec == targetAudioCodec &&
+     other.targetResolution == targetResolution &&
+     other.targetVideoCodec == targetVideoCodec &&
+     other.threads == threads &&
+     other.tonemap == tonemap &&
+     other.transcode == transcode &&
      other.twoPass == twoPass;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (accel.hashCode) +
     (crf.hashCode) +
-    (threads.hashCode) +
-    (targetVideoCodec.hashCode) +
-    (targetAudioCodec.hashCode) +
-    (transcode.hashCode) +
-    (preset.hashCode) +
-    (targetResolution.hashCode) +
     (maxBitrate.hashCode) +
+    (preset.hashCode) +
+    (targetAudioCodec.hashCode) +
+    (targetResolution.hashCode) +
+    (targetVideoCodec.hashCode) +
+    (threads.hashCode) +
+    (tonemap.hashCode) +
+    (transcode.hashCode) +
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, threads=$threads, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, transcode=$transcode, preset=$preset, targetResolution=$targetResolution, maxBitrate=$maxBitrate, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'accel'] = this.accel;
       json[r'crf'] = this.crf;
-      json[r'threads'] = this.threads;
-      json[r'targetVideoCodec'] = this.targetVideoCodec;
-      json[r'targetAudioCodec'] = this.targetAudioCodec;
-      json[r'transcode'] = this.transcode;
-      json[r'preset'] = this.preset;
-      json[r'targetResolution'] = this.targetResolution;
       json[r'maxBitrate'] = this.maxBitrate;
+      json[r'preset'] = this.preset;
+      json[r'targetAudioCodec'] = this.targetAudioCodec;
+      json[r'targetResolution'] = this.targetResolution;
+      json[r'targetVideoCodec'] = this.targetVideoCodec;
+      json[r'threads'] = this.threads;
+      json[r'tonemap'] = this.tonemap;
+      json[r'transcode'] = this.transcode;
       json[r'twoPass'] = this.twoPass;
     return json;
   }
@@ -92,14 +104,16 @@ class SystemConfigFFmpegDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigFFmpegDto(
+        accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
-        threads: mapValueOfType<int>(json, r'threads')!,
-        targetVideoCodec: VideoCodec.fromJson(json[r'targetVideoCodec'])!,
-        targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
-        transcode: TranscodePolicy.fromJson(json[r'transcode'])!,
-        preset: mapValueOfType<String>(json, r'preset')!,
-        targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
+        preset: mapValueOfType<String>(json, r'preset')!,
+        targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
+        targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
+        targetVideoCodec: VideoCodec.fromJson(json[r'targetVideoCodec'])!,
+        threads: mapValueOfType<int>(json, r'threads')!,
+        tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
+        transcode: TranscodePolicy.fromJson(json[r'transcode'])!,
         twoPass: mapValueOfType<bool>(json, r'twoPass')!,
       );
     }
@@ -148,14 +162,16 @@ class SystemConfigFFmpegDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'accel',
     'crf',
-    'threads',
-    'targetVideoCodec',
-    'targetAudioCodec',
-    'transcode',
-    'preset',
-    'targetResolution',
     'maxBitrate',
+    'preset',
+    'targetAudioCodec',
+    'targetResolution',
+    'targetVideoCodec',
+    'threads',
+    'tonemap',
+    'transcode',
     'twoPass',
   };
 }

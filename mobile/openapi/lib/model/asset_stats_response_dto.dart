@@ -14,37 +14,37 @@ class AssetStatsResponseDto {
   /// Returns a new [AssetStatsResponseDto] instance.
   AssetStatsResponseDto({
     required this.images,
-    required this.videos,
     required this.total,
+    required this.videos,
   });
 
   int images;
 
-  int videos;
-
   int total;
+
+  int videos;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetStatsResponseDto &&
      other.images == images &&
-     other.videos == videos &&
-     other.total == total;
+     other.total == total &&
+     other.videos == videos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (images.hashCode) +
-    (videos.hashCode) +
-    (total.hashCode);
+    (total.hashCode) +
+    (videos.hashCode);
 
   @override
-  String toString() => 'AssetStatsResponseDto[images=$images, videos=$videos, total=$total]';
+  String toString() => 'AssetStatsResponseDto[images=$images, total=$total, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'images'] = this.images;
-      json[r'videos'] = this.videos;
       json[r'total'] = this.total;
+      json[r'videos'] = this.videos;
     return json;
   }
 
@@ -57,8 +57,8 @@ class AssetStatsResponseDto {
 
       return AssetStatsResponseDto(
         images: mapValueOfType<int>(json, r'images')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
         total: mapValueOfType<int>(json, r'total')!,
+        videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
     return null;
@@ -107,8 +107,8 @@ class AssetStatsResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'images',
-    'videos',
     'total',
+    'videos',
   };
 }
 

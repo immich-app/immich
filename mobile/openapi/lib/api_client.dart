@@ -189,10 +189,6 @@ class ApiClient {
           return APIKeyResponseDto.fromJson(value);
         case 'APIKeyUpdateDto':
           return APIKeyUpdateDto.fromJson(value);
-        case 'AddAssetsDto':
-          return AddAssetsDto.fromJson(value);
-        case 'AddAssetsResponseDto':
-          return AddAssetsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -211,10 +207,6 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
-        case 'AssetCountByTimeBucket':
-          return AssetCountByTimeBucket.fromJson(value);
-        case 'AssetCountByTimeBucketResponseDto':
-          return AssetCountByTimeBucketResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -233,6 +225,8 @@ class ApiClient {
           return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
+        case 'BulkIdsDto':
+          return BulkIdsDto.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
@@ -267,10 +261,6 @@ class ApiClient {
           return DownloadResponseDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'GetAssetByTimeBucketDto':
-          return GetAssetByTimeBucketDto.fromJson(value);
-        case 'GetAssetCountByTimeBucketDto':
-          return GetAssetCountByTimeBucketDto.fromJson(value);
         case 'ImportAssetDto':
           return ImportAssetDto.fromJson(value);
         case 'JobCommand':
@@ -315,8 +305,6 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
-        case 'RemoveAssetsDto':
-          return RemoveAssetsDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetDto':
@@ -371,14 +359,22 @@ class ApiClient {
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'SystemConfigThumbnailDto':
+          return SystemConfigThumbnailDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
           return TagTypeEnumTypeTransformer().decode(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
-        case 'TimeGroupEnum':
-          return TimeGroupEnumTypeTransformer().decode(value);
+        case 'TimeBucketResponseDto':
+          return TimeBucketResponseDto.fromJson(value);
+        case 'TimeBucketSize':
+          return TimeBucketSizeTypeTransformer().decode(value);
+        case 'ToneMapping':
+          return ToneMappingTypeTransformer().decode(value);
+        case 'TranscodeHWAccel':
+          return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
         case 'UpdateAlbumDto':

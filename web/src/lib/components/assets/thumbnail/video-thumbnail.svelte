@@ -10,6 +10,7 @@
   export let enablePlayback = false;
   export let playbackOnIconHover = false;
   export let showTime = true;
+  export let curve = false;
   export let playIcon = PlayCircleOutline;
   export let pauseIcon = PauseCircleOutline;
 
@@ -68,6 +69,7 @@
   <video
     bind:this={player}
     class="h-full w-full object-cover"
+    class:rounded-xl={curve}
     muted
     autoplay
     src={url}

@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -7,9 +7,8 @@ import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SI
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, VP9Config } from './media.util';
+import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -63,17 +62,27 @@ export class MediaService {
     const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
     this.storageRepository.mkdirSync(resizePath);
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
+    const { thumbnail } = await this.configCore.getConfig();
 
     switch (asset.type) {
       case AssetType.IMAGE:
         await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-          size: JPEG_THUMBNAIL_SIZE,
+          size: thumbnail.jpegSize,
           format: 'jpeg',
         });
+        this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
-        this.logger.log('Generating video thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+        const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainVideoStream(videoStreams);
+        if (!mainVideoStream) {
+          this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+          return false;
+        }
+        const { ffmpeg } = await this.configCore.getConfig();
+        const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString(), twoPass: false };
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream);
+        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
     }
@@ -91,7 +100,8 @@ export class MediaService {
 
     const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
 
-    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
+    const { thumbnail } = await this.configCore.getConfig();
+    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: thumbnail.webpSize, format: 'webp' });
     await this.assetRepository.save({ id: asset.id, webpPath });
 
     return true;
@@ -155,14 +165,26 @@ export class MediaService {
 
     let transcodeOptions;
     try {
-      transcodeOptions = this.getCodecConfig(config).getOptions(mainVideoStream);
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
     } catch (err) {
       this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
       return false;
     }
 
     this.logger.log(`Start encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
-    await this.mediaRepository.transcode(input, output, transcodeOptions);
+    try {
+      await this.mediaRepository.transcode(input, output, transcodeOptions);
+    } catch (err) {
+      this.logger.error(err);
+      if (config.accel && config.accel !== TranscodeHWAccel.DISABLED) {
+        this.logger.error(
+          `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
+        );
+      }
+      config.accel = TranscodeHWAccel.DISABLED;
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
+      await this.mediaRepository.transcode(input, output, transcodeOptions);
+    }
 
     this.logger.log(`Encoding success ${asset.id}`);
 
@@ -195,15 +217,11 @@ export class MediaService {
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
-    if (audioStream != null) {
-      this.logger.verbose(
-        `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
-      );
-    } else {
-      this.logger.verbose(
-        `${asset.id}: AudioCodecName None, AudioStreamCodecType None, containerExtension ${containerExtension}`,
-      );
-    }
+    this.logger.verbose(
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
+        audioStream?.codecType ?? 'None'
+      }, containerExtension ${containerExtension}`,
+    );
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
@@ -218,17 +236,24 @@ export class MediaService {
         return true;
 
       case TranscodePolicy.REQUIRED:
-        return !allTargetsMatching;
+        return !allTargetsMatching || videoStream.isHDR;
 
       case TranscodePolicy.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetRes;
+        return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
 
       default:
         return false;
     }
   }
 
-  private getCodecConfig(config: SystemConfigFFmpegDto) {
+  async getCodecConfig(config: SystemConfigFFmpegDto) {
+    if (config.accel === TranscodeHWAccel.DISABLED) {
+      return this.getSWCodecConfig(config);
+    }
+    return this.getHWCodecConfig(config);
+  }
+
+  private getSWCodecConfig(config: SystemConfigFFmpegDto) {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264:
         return new H264Config(config);
@@ -239,5 +264,32 @@ export class MediaService {
       default:
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
     }
+  }
+
+  private async getHWCodecConfig(config: SystemConfigFFmpegDto) {
+    let handler: VideoCodecHWConfig;
+    let devices: string[];
+    switch (config.accel) {
+      case TranscodeHWAccel.NVENC:
+        handler = new NVENCConfig(config);
+        break;
+      case TranscodeHWAccel.QSV:
+        devices = await this.storageRepository.readdir('/dev/dri');
+        handler = new QSVConfig(config, devices);
+        break;
+      case TranscodeHWAccel.VAAPI:
+        devices = await this.storageRepository.readdir('/dev/dri');
+        handler = new VAAPIConfig(config, devices);
+        break;
+      default:
+        throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);
+    }
+    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
+      throw new UnsupportedMediaTypeException(
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
+      );
+    }
+
+    return handler;
   }
 }

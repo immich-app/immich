@@ -16,18 +16,8 @@ void main() {
   // final instance = AuthDeviceResponseDto();
 
   group('test AuthDeviceResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // String createdAt
     test('to test the property `createdAt`', () async {
-      // TODO
-    });
-
-    // String updatedAt
-    test('to test the property `updatedAt`', () async {
       // TODO
     });
 
@@ -36,13 +26,23 @@ void main() {
       // TODO
     });
 
+    // String deviceOS
+    test('to test the property `deviceOS`', () async {
+      // TODO
+    });
+
     // String deviceType
     test('to test the property `deviceType`', () async {
       // TODO
     });
 
-    // String deviceOS
-    test('to test the property `deviceOS`', () async {
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // String updatedAt
+    test('to test the property `updatedAt`', () async {
       // TODO
     });
 

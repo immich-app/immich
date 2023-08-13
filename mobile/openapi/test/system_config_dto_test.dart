@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigJobDto job
+    test('to test the property `job`', () async {
+      // TODO
+    });
+
     // SystemConfigOAuthDto oauth
     test('to test the property `oauth`', () async {
       // TODO
@@ -36,8 +41,8 @@ void main() {
       // TODO
     });
 
-    // SystemConfigJobDto job
-    test('to test the property `job`', () async {
+    // SystemConfigThumbnailDto thumbnail
+    test('to test the property `thumbnail`', () async {
       // TODO
     });
 

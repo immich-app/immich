@@ -5,6 +5,7 @@ import { userFactory } from './user-factory';
 
 export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   albumName: Sync.each(() => faker.commerce.product()),
+  description: '',
   albumThumbnailAssetId: null,
   assetCount: Sync.each((i) => i % 5),
   assets: [],
@@ -15,4 +16,5 @@ export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   owner: userFactory.build(),
   shared: false,
   sharedUsers: [],
+  hasSharedLink: false,
 });

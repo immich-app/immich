@@ -16,13 +16,13 @@ void main() {
   // final instance = SearchAlbumResponseDto();
 
   group('test SearchAlbumResponseDto', () {
-    // int total
-    test('to test the property `total`', () async {
+    // int count
+    test('to test the property `count`', () async {
       // TODO
     });
 
-    // int count
-    test('to test the property `count`', () async {
+    // List<SearchFacetResponseDto> facets (default value: const [])
+    test('to test the property `facets`', () async {
       // TODO
     });
 
@@ -31,8 +31,8 @@ void main() {
       // TODO
     });
 
-    // List<SearchFacetResponseDto> facets (default value: const [])
-    test('to test the property `facets`', () async {
+    // int total
+    test('to test the property `total`', () async {
       // TODO
     });
 

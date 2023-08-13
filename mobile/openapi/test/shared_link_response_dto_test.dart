@@ -16,53 +16,8 @@ void main() {
   // final instance = SharedLinkResponseDto();
 
   group('test SharedLinkResponseDto', () {
-    // SharedLinkType type
-    test('to test the property `type`', () async {
-      // TODO
-    });
-
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // String description
-    test('to test the property `description`', () async {
-      // TODO
-    });
-
-    // String userId
-    test('to test the property `userId`', () async {
-      // TODO
-    });
-
-    // String key
-    test('to test the property `key`', () async {
-      // TODO
-    });
-
-    // DateTime createdAt
-    test('to test the property `createdAt`', () async {
-      // TODO
-    });
-
-    // DateTime expiresAt
-    test('to test the property `expiresAt`', () async {
-      // TODO
-    });
-
-    // List<AssetResponseDto> assets (default value: const [])
-    test('to test the property `assets`', () async {
-      // TODO
-    });
-
     // AlbumResponseDto album
     test('to test the property `album`', () async {
-      // TODO
-    });
-
-    // bool allowUpload
-    test('to test the property `allowUpload`', () async {
       // TODO
     });
 
@@ -71,8 +26,53 @@ void main() {
       // TODO
     });
 
+    // bool allowUpload
+    test('to test the property `allowUpload`', () async {
+      // TODO
+    });
+
+    // List<AssetResponseDto> assets (default value: const [])
+    test('to test the property `assets`', () async {
+      // TODO
+    });
+
+    // DateTime createdAt
+    test('to test the property `createdAt`', () async {
+      // TODO
+    });
+
+    // String description
+    test('to test the property `description`', () async {
+      // TODO
+    });
+
+    // DateTime expiresAt
+    test('to test the property `expiresAt`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
+    // String key
+    test('to test the property `key`', () async {
+      // TODO
+    });
+
     // bool showExif
     test('to test the property `showExif`', () async {
+      // TODO
+    });
+
+    // SharedLinkType type
+    test('to test the property `type`', () async {
+      // TODO
+    });
+
+    // String userId
+    test('to test the property `userId`', () async {
       // TODO
     });
 

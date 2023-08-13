@@ -1,3 +1,5 @@
+import { VideoCodec } from '@app/infra/entities';
+
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
@@ -12,6 +14,7 @@ export interface VideoStreamInfo {
   codecName?: string;
   codecType?: string;
   frameCount: number;
+  isHDR: boolean;
 }
 
 export interface AudioStreamInfo {
@@ -55,6 +58,10 @@ export interface VideoCodecSWConfig {
   getOptions(stream: VideoStreamInfo): TranscodeOptions;
 }
 
+export interface VideoCodecHWConfig extends VideoCodecSWConfig {
+  getSupportedCodecs(): Array<VideoCodec>;
+}
+
 export interface IMediaRepository {
   // image
   resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
@@ -62,7 +69,6 @@ export interface IMediaRepository {
   generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video
-  extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
 }

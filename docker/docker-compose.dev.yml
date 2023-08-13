@@ -47,6 +47,9 @@ services:
   immich-microservices:
     container_name: immich_microservices
     image: immich-microservices:latest
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
     build:
       context: ../server
       dockerfile: Dockerfile

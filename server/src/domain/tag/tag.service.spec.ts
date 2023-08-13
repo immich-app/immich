@@ -1,6 +1,6 @@
 import { TagType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { assetEntityStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
+import { assetStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
 import { when } from 'jest-when';
 import { AssetIdErrorReason } from '../asset';
 import { ITagRepository } from './tag.repository';
@@ -107,7 +107,7 @@ describe(TagService.name, () => {
 
     it('should get the assets for a tag', async () => {
       tagMock.getById.mockResolvedValue(tagStub.tag1);
-      tagMock.getAssets.mockResolvedValue([assetEntityStub.image]);
+      tagMock.getAssets.mockResolvedValue([assetStub.image]);
       await sut.getAssets(authStub.admin, 'tag-1');
       expect(tagMock.getById).toHaveBeenCalledWith(authStub.admin.id, 'tag-1');
       expect(tagMock.getAssets).toHaveBeenCalledWith(authStub.admin.id, 'tag-1');

@@ -1,7 +1,3 @@
-<script lang="ts" context="module">
-  export type ViewFrom = 'archive-page' | 'album-page' | 'favorites-page' | 'search-page' | 'shared-link-page';
-</script>
-
 <script lang="ts">
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
@@ -9,17 +5,16 @@
   import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import { flip } from 'svelte/animate';
-  import { archivedAsset } from '$lib/stores/archived-asset.store';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let assets: AssetResponseDto[];
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
-  export let viewFrom: ViewFrom;
   export let showArchiveIcon = false;
 
-  let isShowAssetViewer = false;
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let selectedAsset: AssetResponseDto;
   let currentViewAssetIndex = 0;
@@ -34,7 +29,7 @@
 
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     selectedAsset = assets[currentViewAssetIndex];
-    isShowAssetViewer = true;
+    $showAssetViewer = true;
     pushState(selectedAsset.id);
   };
 
@@ -82,18 +77,8 @@
   };
 
   const closeViewer = () => {
-    isShowAssetViewer = false;
+    $showAssetViewer = false;
     history.pushState(null, '', `${$page.url.pathname}`);
-  };
-
-  const handleUnarchivedSuccess = (event: CustomEvent) => {
-    const asset = event.detail as AssetResponseDto;
-    switch (viewFrom) {
-      case 'archive-page':
-        $archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
-        navigateAssetForward();
-        break;
-    }
   };
 </script>
 
@@ -118,14 +103,13 @@
 {/if}
 
 <!-- Overlay Asset Viewer -->
-{#if isShowAssetViewer}
+{#if $showAssetViewer}
   <AssetViewer
     asset={selectedAsset}
     publicSharedKey={sharedLink?.key}
     {sharedLink}
-    on:navigate-previous={navigateAssetBackward}
-    on:navigate-next={navigateAssetForward}
+    on:previous={navigateAssetBackward}
+    on:next={navigateAssetForward}
     on:close={closeViewer}
-    on:unarchived={handleUnarchivedSuccess}
   />
 {/if}

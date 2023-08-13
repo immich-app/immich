@@ -3,7 +3,15 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, AudioCodec, SystemConfigFFmpegDto, TranscodePolicy, VideoCodec } from '@api';
+  import {
+    api,
+    AudioCodec,
+    SystemConfigFFmpegDto,
+    ToneMapping,
+    TranscodeHWAccel,
+    TranscodePolicy,
+    VideoCodec,
+  } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
@@ -187,6 +195,55 @@
               },
             ]}
             isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
+          />
+
+          <SettingSelect
+            label="HARDWARE ACCELERATION"
+            desc="Experimental. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
+            bind:value={ffmpegConfig.accel}
+            name="accel"
+            options={[
+              { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
+              {
+                value: TranscodeHWAccel.Qsv,
+                text: 'Quick Sync (requires 7th gen Intel CPU or later)',
+              },
+              {
+                value: TranscodeHWAccel.Vaapi,
+                text: 'VAAPI',
+              },
+              {
+                value: TranscodeHWAccel.Disabled,
+                text: 'Disabled',
+              },
+            ]}
+            isEdited={!(ffmpegConfig.accel == savedConfig.accel)}
+          />
+
+          <SettingSelect
+            label="TONE-MAPPING"
+            desc="Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness."
+            bind:value={ffmpegConfig.tonemap}
+            name="tonemap"
+            options={[
+              {
+                value: ToneMapping.Hable,
+                text: 'Hable',
+              },
+              {
+                value: ToneMapping.Mobius,
+                text: 'Mobius',
+              },
+              {
+                value: ToneMapping.Reinhard,
+                text: 'Reinhard',
+              },
+              {
+                value: ToneMapping.Disabled,
+                text: 'Disabled',
+              },
+            ]}
+            isEdited={!(ffmpegConfig.tonemap == savedConfig.tonemap)}
           />
 
           <SettingSwitch

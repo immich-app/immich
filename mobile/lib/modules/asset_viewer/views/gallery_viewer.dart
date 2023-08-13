@@ -16,6 +16,8 @@ import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -239,6 +241,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     void handleSwipeUpDown(DragUpdateDetails details) {
       int sensitivity = 15;
       int dxThreshold = 50;
+      double ratioThreshold = 3.0;
 
       if (isZoomed.value) {
         return;
@@ -256,9 +259,10 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
-      if (details.delta.dy > sensitivity) {
+      final ratio = d.dy / max(d.dx.abs(), 1);
+      if (d.dy > sensitivity && ratio > ratioThreshold) {
         AutoRouter.of(context).pop();
-      } else if (details.delta.dy < -sensitivity) {
+      } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
     }
@@ -272,6 +276,21 @@ class GalleryViewerPage extends HookConsumerWidget {
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
       AutoRouter.of(context).pop();
+    }
+
+    handleUpload(Asset asset) {
+      showDialog(
+        context: context,
+        builder: (BuildContext _) {
+          return UploadDialog(
+            onUpload: () {
+              ref
+                  .read(manualUploadProvider.notifier)
+                  .uploadAssets(context, [asset]);
+            },
+          );
+        },
+      );
     }
 
     buildAppBar() {
@@ -289,6 +308,8 @@ class GalleryViewerPage extends HookConsumerWidget {
               onMoreInfoPressed: showInfo,
               onFavorite:
                   asset().isRemote ? () => toggleFavorite(asset()) : null,
+              onUploadPressed:
+                  asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
                   ? null
                   : () => ref

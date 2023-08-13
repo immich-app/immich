@@ -21,13 +21,18 @@ void main() {
       // TODO
     });
 
-    // List<String> sharedWithUserIds (default value: const [])
-    test('to test the property `sharedWithUserIds`', () async {
+    // List<String> assetIds (default value: const [])
+    test('to test the property `assetIds`', () async {
       // TODO
     });
 
-    // List<String> assetIds (default value: const [])
-    test('to test the property `assetIds`', () async {
+    // String description
+    test('to test the property `description`', () async {
+      // TODO
+    });
+
+    // List<String> sharedWithUserIds (default value: const [])
+    test('to test the property `sharedWithUserIds`', () async {
       // TODO
     });
 

@@ -16,13 +16,13 @@ void main() {
   // final instance = MemoryLaneResponseDto();
 
   group('test MemoryLaneResponseDto', () {
-    // String title
-    test('to test the property `title`', () async {
+    // List<AssetResponseDto> assets (default value: const [])
+    test('to test the property `assets`', () async {
       // TODO
     });
 
-    // List<AssetResponseDto> assets (default value: const [])
-    test('to test the property `assets`', () async {
+    // String title
+    test('to test the property `title`', () async {
       // TODO
     });
 
