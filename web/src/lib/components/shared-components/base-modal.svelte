@@ -37,9 +37,9 @@
   <div
     use:clickOutside
     on:outclick={() => !ignoreClickOutside && dispatch('close')}
-    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg max-h-[600px] min-h-[200px] w-[450px] rounded-lg shadow-md"
+    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg min-h-[200px] w-[450px] overflow-y-auto rounded-lg shadow-md"
   >
-    <div class="flex place-items-center justify-between px-5 py-3">
+    <div class="dark:bg-immich-dark-gray bg-immich-bg sticky top-0 flex place-items-center justify-between px-5 py-3">
       <div>
         <slot name="title">
           <p>Modal Title</p>
@@ -49,7 +49,7 @@
       <CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
     </div>
 
-    <div class="">
+    <div class="max-h-[600px]">
       <slot />
     </div>
   </div>

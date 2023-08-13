@@ -136,6 +136,10 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
+*RuleApi* | [**createRule**](doc//RuleApi.md#createrule) | **POST** /rule | 
+*RuleApi* | [**getRule**](doc//RuleApi.md#getrule) | **GET** /rule/{id} | 
+*RuleApi* | [**removeRule**](doc//RuleApi.md#removerule) | **DELETE** /rule/{id} | 
+*RuleApi* | [**updateRule**](doc//RuleApi.md#updaterule) | **PUT** /rule/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
@@ -208,6 +212,7 @@ Class | Method | HTTP request | Description
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
+ - [CreateRuleDto](doc//CreateRuleDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
  - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
@@ -280,6 +285,7 @@ Class | Method | HTTP request | Description
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateRuleDto](doc//UpdateRuleDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

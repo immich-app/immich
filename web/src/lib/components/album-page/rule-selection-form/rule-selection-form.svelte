@@ -1,7 +1,7 @@
 <script lang="ts">
   import BaseModal from '$lib/components/shared-components/base-modal.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { RuleKey, type AlbumResponseDto, type PersonResponseDto } from '@api';
+  import { RuleKey, type AlbumResponseDto, type PersonResponseDto, api } from '@api';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import Button from '../../elements/buttons/button.svelte';
   import Portal from '../../shared-components/portal/portal.svelte';
@@ -20,8 +20,24 @@
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  const handleFaceSelected = (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
+  const handleFaceSelected = async (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
     peopleSelection = false;
+    const people = e.detail.people;
+
+    selectedFaces = people.map((p) => p.id);
+  };
+
+  const updateRule = async () => {
+    // for (const person of people) {
+    //   const { data } = await api.ruleApi.createRule({
+    //     createRuleDto: {
+    //       albumId: album.id,
+    //       key: RuleKey.Person,
+    //       value: person.id,
+    //     },
+    //   });
+    //   album.rules = [...album.rules, data];
+    // }
   };
 </script>
 
@@ -49,6 +65,10 @@
           <Plus size="24" />
         </button>
       </div>
+
+      {#each selectedFaces as person (person)}
+        <div>id: {person}</div>
+      {/each}
     </div>
 
     <!-- Location Selection -->

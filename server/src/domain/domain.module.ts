@@ -18,6 +18,7 @@ import { StorageTemplateService } from './storage-template';
 import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
 import { TagService } from './tag';
 import { UserService } from './user';
+import { RuleService } from './rule';
 
 const providers: Provider[] = [
   AlbumService,
@@ -30,6 +31,7 @@ const providers: Provider[] = [
   MetadataService,
   PersonService,
   PartnerService,
+  RuleService,
   SearchService,
   ServerInfoService,
   SharedLinkService,

@@ -12,7 +12,7 @@ export class CreateRuleDto {
   key!: RuleKey;
 
   @IsNotEmpty()
-  value!: any;
+  value!: string;
 }
 
 export class UpdateRuleDto {

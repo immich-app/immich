@@ -11,6 +11,7 @@ import {
   OAuthApi,
   PartnerApi,
   PersonApi,
+  RuleApi,
   SearchApi,
   ServerInfoApi,
   SharedLinkApi,
@@ -30,13 +31,14 @@ export class ImmichApi {
   public keyApi: APIKeyApi;
   public oauthApi: OAuthApi;
   public partnerApi: PartnerApi;
+  public ruleApi: RuleApi;
   public searchApi: SearchApi;
   public serverInfoApi: ServerInfoApi;
   public sharedLinkApi: SharedLinkApi;
   public personApi: PersonApi;
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
-
+  
   private config: Configuration;
 
   constructor(params: ConfigurationParameters) {
@@ -49,6 +51,7 @@ export class ImmichApi {
     this.keyApi = new APIKeyApi(this.config);
     this.oauthApi = new OAuthApi(this.config);
     this.partnerApi = new PartnerApi(this.config);
+    this.ruleApi = new RuleApi(this.config);
     this.searchApi = new SearchApi(this.config);
     this.serverInfoApi = new ServerInfoApi(this.config);
     this.sharedLinkApi = new SharedLinkApi(this.config);
@@ -116,6 +119,7 @@ export class ImmichApi {
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
       [JobName.BackgroundTask]: 'Background Tasks',
       [JobName.Search]: 'Search',
+      [JobName.SmartAlbum]: 'Smart Albums',
     };
 
     return names[jobName];
