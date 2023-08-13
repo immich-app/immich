@@ -308,8 +308,16 @@ export class MetadataExtractionProcessor {
 
     const latitude = getExifProperty('GPSLatitude');
     const longitude = getExifProperty('GPSLongitude');
-    newExif.latitude = latitude !== null ? parseLatitude(latitude) : null;
-    newExif.longitude = longitude !== null ? parseLongitude(longitude) : null;
+    const lat = parseLatitude(latitude);
+    const lon = parseLongitude(longitude);
+
+    if (lat === 0 && lon === 0) {
+      this.logger.warn(`Latitude & Longitude were on Null Island (${lat},${lon}), not assigning coordinates`);
+    } else {
+      newExif.latitude = lat;
+      newExif.longitude = lon;
+    }
+
     if (getExifProperty('MotionPhoto')) {
       // Seen on more recent Pixel phones: starting as early as Pixel 4a, possibly earlier.
       const rawDirectory = getExifProperty('Directory');
