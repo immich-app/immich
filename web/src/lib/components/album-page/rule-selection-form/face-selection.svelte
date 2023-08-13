@@ -3,6 +3,8 @@
   import { PeopleResponseDto, PersonResponseDto, api } from '@api';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 
   let people: PersonResponseDto[] = [];
 
@@ -15,11 +17,13 @@
 </script>
 
 <div class="">
-  <p>Select faces</p>
-  <div>
-    <button on:click={() => dispatch('close')}>CLOSE</button>
-  </div>
-  <div class="flex flex-wrap">
+  <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => dispatch('close')}>
+    <svelte:fragment slot="leading">
+      <p class="text-immich-fg dark:text-immich-dark-fg font-medium">Select a face</p>
+    </svelte:fragment>
+  </ControlAppBar>
+
+  <div class="mt-24 flex flex-wrap gap-2 px-8">
     {#each people as person}
       <PeopleCard {person} selectionMode disableContextMenu />
     {/each}

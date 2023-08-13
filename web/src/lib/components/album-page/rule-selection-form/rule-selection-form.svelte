@@ -84,7 +84,7 @@
   {#if peopleSelection}
     <section
       transition:fly={{ y: 500 }}
-      class="absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-scroll bg-white/90"
+      class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-scroll bg-gray-200"
     >
       <FaceSelection on:close={() => (peopleSelection = false)} />
     </section>
