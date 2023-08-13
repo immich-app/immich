@@ -69,7 +69,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.shouldToneMap(videoStream)) {
       options.push(...this.getToneMapping());
     }
-    options.push(this.getFormat());
+    options.push(`format=yuv420p`);
 
     return options;
   }
@@ -186,10 +186,6 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  getFormat() {
-    return 'yuv420p';
-  }
-
   getToneMapping() {
     const colors = this.getColors();
 
@@ -281,10 +277,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBitrateOptions() {
-    // -q:v is a range from 1-31 rather than 1-100
-    let quality = 32 - Math.round(this.thumbnailOptions.quality / 100 * 31);
-    quality = Math.min(31, Math.max(1, quality));
-    return ['-qmin 1', `-q:v ${quality}`];
+    return []
   }
 
   getScaling(videoStream: VideoStreamInfo) {
@@ -298,17 +291,10 @@ export class ThumbnailConfig extends BaseConfig {
 
   getColors() {
     return {
-      primaries: this.thumbnailOptions.wideGamut ? 'smpte432' : 'bt709',
+      primaries: 'bt709',
       transfer: '601',
       matrix: 'bt470bg',
     };
-  }
-
-  getFormat() {
-    if (this.thumbnailOptions.quality >= 80) {
-      return 'yuv444p';
-    }
-    return 'yuv420p';
   }
 }
 
