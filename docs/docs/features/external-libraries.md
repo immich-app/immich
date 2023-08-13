@@ -80,6 +80,7 @@ Note: You must currently be an admin to add an external library
 - Click Save
 
 Now we'll add the exclusion pattern to ignore the raw files folder
+
 - Click the drop-down menu on the newly created library
 - Click on Manage
 - Click on Scan Settings
@@ -96,4 +97,5 @@ Next, do the same steps again for the video file. You can add that to the existi
 In the future there will be more library-specific configuration options or sharing features so plan your libraries accordingly.
 
 ### Refreshing
+
 Whenever the files are changed, go to the library and do Scan Library Files.
