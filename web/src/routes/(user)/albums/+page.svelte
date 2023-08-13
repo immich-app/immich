@@ -15,6 +15,8 @@
   import { flip } from 'svelte/animate';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { dateFormats } from '$lib/constants';
+  import { locale } from '$lib/stores/preferences.store';
   import {
     notificationController,
     NotificationType,
@@ -24,6 +26,15 @@
   export let data: PageData;
 
   const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
+  const viewOptions = [{
+    name: 'Cover',
+    icon: ViewGridOutline
+  }, {
+    name: 'List',
+    icon: FormatListBulletedSquare
+  }]
+  const viewOptionNames = viewOptions.map(option => option.name)
+  const viewOptionIcons = viewOptions.map(option => option.icon)
 
   const {
     albums: unsortedAlbums,
@@ -114,17 +125,49 @@
       </div>
     </LinkButton>
 
-    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} />
+    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} icons={[SwapVertical]} />
+    <Dropdown options={viewOptionNames} bind:value={$albumViewSettings.view} icons={viewOptionIcons} />
   </div>
 
   <!-- Album Card -->
-  <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+  {#if $albumViewSettings.view === 'Cover'}
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+      {#each $albums as album (album.id)}
+        <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
+          <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} user={data.user} />
+        </a>
+      {/each}
+    </div>
+  {:else if $albumViewSettings.view === 'List'}
+    <div class="grid grid-cols-4 text-white mb-2">
+      <span>Album title</span>
+      <span>Assets</span>
+      <span>Updated date</span>
+      <span>Created date</span>
+    </div>
+
     {#each $albums as album (album.id)}
-      <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-        <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} user={data.user} />
+      <a class="grid grid-cols-4" data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
+         <span
+          class="w-full truncate text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
+          data-testid="album-name"
+          title={album.albumName}
+        >
+          {album.albumName}
+        </span>
+
+         <span>
+            {album.assetCount}
+            {album.assetCount == 1 ? `item` : `items`}
+         </span>
+
+         <span>{new Date(album.updatedAt).toLocaleDateString($locale, dateFormats.album)}</span>
+         <span>{new Date(album.createdAt).toLocaleDateString($locale, dateFormats.album)}</span>
+
+         <!-- <span>{album.startDate} - {album.endDate}</span> -->
       </a>
     {/each}
-  </div>
+  {/if}
 
   <!-- Empty Message -->
   {#if $albums.length === 0}
