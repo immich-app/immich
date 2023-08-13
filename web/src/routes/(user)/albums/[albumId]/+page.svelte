@@ -23,7 +23,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import RuleSelection from '$lib/components/album-page/rule-selection.svelte';
+  import RuleSelection from '$lib/components/album-page/rule-selection-form/rule-selection-form.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';

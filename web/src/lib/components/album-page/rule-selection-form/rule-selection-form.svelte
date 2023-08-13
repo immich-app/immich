@@ -3,13 +3,15 @@
   import { createEventDispatcher } from 'svelte';
   import type { AlbumResponseDto } from '@api';
   import Plus from 'svelte-material-icons/Plus.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import Portal from '../shared-components/portal/portal.svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import Button from '../../elements/buttons/button.svelte';
+  import Portal from '../../shared-components/portal/portal.svelte';
+  import FaceSelection from './face-selection.svelte';
+  import { fly } from 'svelte/transition';
 
   export let album: AlbumResponseDto;
 
   let peopleSelection = false;
+  let locationSelection = false;
 
   const dispatch = createEventDispatcher<{ close: void }>();
 </script>
@@ -46,7 +48,7 @@
       <div class="mt-4">
         <button
           class="immich-text-primary border-1 flex w-full place-content-center place-items-center rounded-3xl border border-gray-300 py-2 hover:bg-gray-500/20 dark:border-gray-500"
-          on:click={() => dispatch('select-location')}
+          on:click={() => (locationSelection = true)}
         >
           <Plus size="24" />
         </button>
@@ -80,11 +82,11 @@
 
 <Portal target="body">
   {#if peopleSelection}
-    <section>
-      <div class="absolute left-0 top-0 z-[10000] h-screen w-screen bg-white/90">
-        Try and trye
-        <button on:click={() => (peopleSelection = false)}>Close</button>
-      </div>
+    <section
+      transition:fly={{ y: 500 }}
+      class="absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-scroll bg-white/90"
+    >
+      <FaceSelection on:close={() => (peopleSelection = false)} />
     </section>
   {/if}
 </Portal>
