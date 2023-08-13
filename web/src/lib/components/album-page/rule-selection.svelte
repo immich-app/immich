@@ -16,7 +16,7 @@
 >
   <svelte:fragment slot="title">
     <div class="flex place-items-center gap-2">
-      <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Automatically add photos</p>
+      <p class="text-immich-fg dark:text-immich-dark-fg font-medium">Automatically add photos</p>
     </div>
   </svelte:fragment>
 
@@ -57,7 +57,7 @@
         </div>
 
         <div class="mt-4">
-          <Button size="sm" }>Select</Button>
+          <Button size="sm">Select</Button>
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@
     <div>
       <div class="mt-5 flex justify-end gap-2">
         <Button size="sm" color="secondary" on:click={() => dispatch('close')}>Cancel</Button>
-        <Button size="sm" variant="primary">Confirm</Button>
+        <Button size="sm" color="primary">Confirm</Button>
       </div>
     </div>
   </section>
