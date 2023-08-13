@@ -9,11 +9,8 @@
   import { createEventDispatcher } from 'svelte';
 
   export let person: PersonResponseDto;
-  export let selectionMode = false;
-  export let disableContextMenu = false;
 
   let showContextMenu = false;
-
   let dispatch = createEventDispatcher();
 
   const onChangeNameClicked = () => {
@@ -30,7 +27,7 @@
 </script>
 
 <div id="people-card" class="relative">
-  <a href={!selectionMode ? '/people/{person.id}' : ''} draggable="false">
+  <a href="/people/{person.id}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
     </div>
@@ -41,28 +38,26 @@
     {/if}
   </a>
 
-  {#if !disableContextMenu}
-    <button
-      class="absolute right-2 top-2 z-20"
-      on:click|stopPropagation|preventDefault={() => {
-        showContextMenu = !showContextMenu;
-      }}
-      data-testid="context-button-parent"
-      id={`icon-${person.id}`}
-    >
-      <IconButton color="transparent-primary">
-        <DotsVertical size="20" />
-      </IconButton>
+  <button
+    class="absolute right-2 top-2 z-20"
+    on:click|stopPropagation|preventDefault={() => {
+      showContextMenu = !showContextMenu;
+    }}
+    data-testid="context-button-parent"
+    id={`icon-${person.id}`}
+  >
+    <IconButton color="transparent-primary">
+      <DotsVertical size="20" />
+    </IconButton>
 
-      {#if showContextMenu}
-        <ContextMenu on:outclick={() => (showContextMenu = false)}>
-          <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
-          <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
-          <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
-        </ContextMenu>
-      {/if}
-    </button>
-  {/if}
+    {#if showContextMenu}
+      <ContextMenu on:outclick={() => (showContextMenu = false)}>
+        <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
+        <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
+        <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
+      </ContextMenu>
+    {/if}
+  </button>
 </div>
 
 {#if showContextMenu}

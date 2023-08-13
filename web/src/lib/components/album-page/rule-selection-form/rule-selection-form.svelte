@@ -1,7 +1,7 @@
 <script lang="ts">
   import BaseModal from '$lib/components/shared-components/base-modal.svelte';
   import { createEventDispatcher } from 'svelte';
-  import type { AlbumResponseDto } from '@api';
+  import { RuleKey, type AlbumResponseDto, type PersonResponseDto } from '@api';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import Button from '../../elements/buttons/button.svelte';
   import Portal from '../../shared-components/portal/portal.svelte';
@@ -12,8 +12,17 @@
 
   let peopleSelection = false;
   let locationSelection = false;
+  $: selectedFaces = album.rules.map((r) => {
+    if (r.key === RuleKey.Person) {
+      return String(r.value);
+    }
+  }) as string[];
 
   const dispatch = createEventDispatcher<{ close: void }>();
+
+  const handleFaceSelected = (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
+    peopleSelection = false;
+  };
 </script>
 
 <BaseModal
@@ -84,9 +93,13 @@
   {#if peopleSelection}
     <section
       transition:fly={{ y: 500 }}
-      class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-scroll bg-gray-200"
+      class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200"
     >
-      <FaceSelection on:close={() => (peopleSelection = false)} />
+      <FaceSelection
+        on:close={() => (peopleSelection = false)}
+        on:confirm={handleFaceSelected}
+        selectedPeopleIds={selectedFaces}
+      />
     </section>
   {/if}
 </Portal>
