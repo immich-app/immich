@@ -58,39 +58,55 @@ export class MediaService {
       return false;
     }
 
-    const jpegThumbnailPath = this.getPath(asset, 'jpeg');
-    const { ffmpeg, thumbnail } = await this.configCore.getConfig();
     switch (asset.type) {
       case AssetType.IMAGE:
-        const thumbnailOptions = {
-          format: 'jpeg',
-          size: thumbnail.jpegSize,
-          wideGamut: thumbnail.wideGamut,
-          quality: thumbnail.quality,
-        } as const;
-        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, thumbnailOptions);
-        this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
-        break;
-      case AssetType.VIDEO:
-        const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-        const mainVideoStream = this.getMainStream(videoStreams);
-        if (!mainVideoStream) {
-          this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+        try {
+          await this.generateImageThumbnail(asset, 'jpeg');
+          this.logger.log(`Successfully generated JPEG image thumbnail ${asset.id}`);
+        } catch (err) {
+          this.logger.error(`Could not generate JPEG image thumbnail for asset ${asset.id}: ${err}`);
           return false;
         }
-        const mainAudioStream = this.getMainStream(audioStreams);
-        const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString() };
-        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
-        await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
-        this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
+        break;
+      case AssetType.VIDEO:
+        try {
+          await this.generateVideoThumbnail(asset, 'jpeg');
+          this.logger.log(`Successfully generated JPEG video thumbnail ${asset.id}`);
+        } catch (err) {
+          this.logger.error(`Could not generate JPEG video thumbnail for asset ${asset.id}: ${err}`);
+          return false;
+        }
         break;
       default:
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
 
-    await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
-
     return true;
+  }
+
+  async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+    const { thumbnail } = await this.configCore.getConfig();
+    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
+    const thumbnailOptions = { format, size, wideGamut: thumbnail.wideGamut, quality: thumbnail.quality };
+    const thumbnailPath = this.getPath(asset, format);
+    await this.mediaRepository.resize(asset.originalPath, thumbnailPath, thumbnailOptions);
+    await this.assetRepository.save({ id: asset.id, resizePath: thumbnailPath });
+  }
+
+  async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+    const { ffmpeg, thumbnail } = await this.configCore.getConfig();
+    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
+    const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+    const mainVideoStream = this.getMainStream(videoStreams);
+    if (!mainVideoStream) {
+      throw new UnsupportedMediaTypeException(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+    }
+    const mainAudioStream = this.getMainStream(audioStreams);
+    const thumbnailPath = this.getPath(asset, format);
+    const config = { ...ffmpeg, targetResolution: size.toString() };
+    const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
+    await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, options);
+    await this.assetRepository.save({ id: asset.id, resizePath: thumbnailPath });
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
@@ -99,16 +115,28 @@ export class MediaService {
       return false;
     }
 
-    const webpPath = this.getPath(asset, 'webp');
-    const { thumbnail } = await this.configCore.getConfig();
-    const thumbnailOptions = {
-      format: 'webp',
-      size: thumbnail.webpSize,
-      wideGamut: thumbnail.wideGamut,
-      quality: thumbnail.quality,
-    } as const;
-    await this.mediaRepository.resize(asset.originalPath, webpPath, thumbnailOptions);
-    await this.assetRepository.save({ id: asset.id, webpPath });
+    switch (asset.type) {
+      case AssetType.IMAGE:
+        try {
+          await this.generateImageThumbnail(asset, 'webp');
+          this.logger.log(`Successfully generated WebP image thumbnail ${asset.id}`);
+        } catch (err) {
+          this.logger.error(`Could not generate WebP image thumbnail for asset ${asset.id}: ${err}`);
+          return false;
+        }
+        break;
+      case AssetType.VIDEO:
+        try {
+          await this.generateVideoThumbnail(asset, 'webp');
+          this.logger.log(`Successfully generated WebP video thumbnail ${asset.id}`);
+        } catch (err) {
+          this.logger.error(`Could not generate WebP video thumbnail for asset ${asset.id}: ${err}`);
+          return false;
+        }
+        break;
+      default:
+        throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
+    }
 
     return true;
   }
