@@ -171,6 +171,10 @@
 
   //function for dragging the angle selection slider
   const initAngleSlider = async () => {
+    //Get original image aspect ratio
+    const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
+    aspectRatioNum = originalAspect;
+
     console.log('initAngleSlider');
     let pos1 = 0,
       pos2 = 0;
@@ -308,7 +312,26 @@
     angleSliderHandle.style.left = '0';
     angleSlider.style.left = '0';
     angle = 0;
-    imageElement.style.transform = `rotate(${angle}deg)`;
+    imageWrapper.style.transform = `rotate(${angle}deg)`;
+
+    const cropElementWidth = cropElement.offsetWidth;
+    const cropElementHeight = cropElement.offsetHeight;
+    const imageWrapperWidth = imageWrapper.offsetWidth;
+    const imageWrapperHeight = imageWrapper.offsetHeight;
+
+    const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
+    const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
+
+    const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
+    const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
+
+    if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
+      imageWrapper.style.width = `${x1 + x2}px`;
+      imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
+    } else {
+      imageWrapper.style.height = `${y1 + y2}px`;
+      imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
+    }
 
     await imageEditor.resetFlip().catch(() => {});
     await setAspectRatio('free');
@@ -371,7 +394,7 @@
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
     <div class="flex h-full w-full justify-center">
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
-      <div class="flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
+      <div class="-z-10 flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
         <div class="relative flex h-full w-full items-center justify-center">
           <div>
             <div bind:this={imageWrapper} class="">
@@ -379,8 +402,13 @@
             </div>
             <div
               bind:this={cropElement}
-              class="absolute left-1/2 top-1/2 mx-auto h-full w-full -translate-x-1/2 -translate-y-1/2 border-2 border-red-600"
-            />
+              class="absolute left-1/2 top-1/2 mx-auto h-full w-full -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
+            >
+              <div class="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white" />
+              <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-white" />
+              <div class="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-white" />
+              <div class="absolute -bottom-1 -right-1 h-2 w-2 rounded-full bg-white" />
+            </div>
           </div>
         </div>
       </div>
