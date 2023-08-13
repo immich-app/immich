@@ -5,6 +5,9 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
+  import FormatListBulletedSquare from 'svelte-material-icons/FormatListBulletedSquare.svelte';
+  import ViewGridOutline from 'svelte-material-icons/ViewGridOutline.svelte';
   import type { PageData } from './$types';
   import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
   import { useAlbums } from './albums.bloc';
