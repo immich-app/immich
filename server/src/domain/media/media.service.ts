@@ -81,6 +81,8 @@ export class MediaService {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
 
+    const resizePath = this.getPath(asset, 'jpeg');
+    await this.assetRepository.save({ id: asset.id, resizePath });
     return true;
   }
 
@@ -90,7 +92,6 @@ export class MediaService {
     const thumbnailOptions = { format, size, wideGamut: thumbnail.wideGamut, quality: thumbnail.quality };
     const thumbnailPath = this.getPath(asset, format);
     await this.mediaRepository.resize(asset.originalPath, thumbnailPath, thumbnailOptions);
-    await this.assetRepository.save({ id: asset.id, resizePath: thumbnailPath });
   }
 
   async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -99,14 +100,15 @@ export class MediaService {
     const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
-      throw new UnsupportedMediaTypeException(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
+      throw new UnsupportedMediaTypeException(
+        `Could not extract thumbnail for asset ${asset.id}: no video streams found`,
+      );
     }
     const mainAudioStream = this.getMainStream(audioStreams);
     const thumbnailPath = this.getPath(asset, format);
     const config = { ...ffmpeg, targetResolution: size.toString() };
     const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, options);
-    await this.assetRepository.save({ id: asset.id, resizePath: thumbnailPath });
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
@@ -138,6 +140,8 @@ export class MediaService {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
 
+    const webpPath = this.getPath(asset, 'webp');
+    await this.assetRepository.save({ id: asset.id, webpPath });
     return true;
   }
 
@@ -248,7 +252,8 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
+        audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
