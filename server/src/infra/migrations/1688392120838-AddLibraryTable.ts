@@ -25,17 +25,17 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `ALTER TABLE "assets" ADD CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c" FOREIGN KEY ("libraryId") REFERENCES "libraries"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
     );
 
-    // Create default library for each user
-    const users = await queryRunner.manager.find(UserEntity);
-    for (const user of users) {
-      const libraryEntity = await queryRunner.manager.save(LibraryEntity, {
-        name: 'Default Library',
-        owner: user,
-        type: LibraryType.UPLOAD,
-        importPaths: [],
-        exclusionPatterns: [],
-      });
-      await queryRunner.manager.update(AssetEntity, { ownerId: user.id }, { library: libraryEntity });
+    // Create default library for each user and assign all assets to it
+    const userIds = await queryRunner.query(`SELECT id FROM "users"`);
+
+    for (const userId of userIds) {
+      await queryRunner.query(
+        `INSERT INTO "libraries" ("name", "ownerId", "type", "importPaths", "exclusionPatterns") VALUES ('Default Library', '${userId}', 'UPLOAD', '{}', '{}')`,
+      );
+
+      await queryRunner.query(
+        `UPDATE "assets" SET "libraryId" = (SELECT id FROM "libraries" WHERE "ownerId" = '${userId}' LIMIT 1) WHERE "ownerId" = '${userId}'`,
+      );
     }
 
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" SET NOT NULL`);
