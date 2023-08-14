@@ -35,7 +35,6 @@
 
   let dropdownOpen: boolean[] = [];
 
-  let isAdmin = false;
 
   let createLibraryDropdownOpen = false;
 
@@ -62,15 +61,7 @@
     [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
   };
 
-  async function checkIfAdmin() {
-    const { data } = await api.userApi.getMyUserInfo();
-    const user = data;
-    isAdmin = user.isAdmin;
-  }
-
   async function readLibraryList() {
-    await checkIfAdmin();
-
     const { data } = await api.libraryApi.getAllLibraries();
     libraries = data;
 
@@ -310,15 +301,11 @@
       </table>
     {/if}
     <div class="mb-2 flex justify-end">
-      {#if isAdmin}
         <Button>Create Library</Button>
         <Dropdown bind:open={createLibraryDropdownOpen}>
           <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
           <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
         </Dropdown>
-      {:else}
-        <Button on:click={() => handleCreate(LibraryType.Upload)}>Create Library</Button>
-      {/if}
     </div>
   </div>
 </section>

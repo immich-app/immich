@@ -17,20 +17,22 @@
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
   <div
-    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
   >
     <div
-      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+      class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
     >
       <FolderSync size="4em" />
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
+      <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">
         {title}
       </h1>
     </div>
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <p class="p-5 text-sm">
-        Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.
+        Specify a folder to import. This folder, including subfolders, will be scanned for images and videos. Note that
+        you are only allowed to import paths inside of your account's external path, configured in the administrative
+        settings.
       </p>
 
       <div class="m-4 flex flex-col gap-2">

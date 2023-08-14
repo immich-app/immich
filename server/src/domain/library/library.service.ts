@@ -68,11 +68,6 @@ export class LibraryService {
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    if (dto.type === LibraryType.EXTERNAL && !authUser.isAdmin) {
-      // Only admins can create external libraries since such libraries can be used to access the server's filesystem
-      throw new BadRequestException('Only admins can create external libraries');
-    }
-
     const libraryEntity = await this.libraryRepository.create({
       owner: { id: authUser.id } as UserEntity,
       name: dto.name,
@@ -88,16 +83,6 @@ export class LibraryService {
 
   async update(authUser: AuthUserDto, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.id);
-
-    if (dto.importPaths && !authUser.isAdmin) {
-      // Only admins can update import paths since external libraries can be used to access the server's filesystem
-      throw new BadRequestException('Only admins can set import paths');
-    }
-
-    if (dto.excludePatterns && !authUser.isAdmin) {
-      // Only admins can update exclusion patterns since external libraries can be used to access the server's filesystem
-      throw new BadRequestException('Only admins can set import paths');
-    }
 
     const updatedLibrary = await this.libraryRepository.update(dto);
 
