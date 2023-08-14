@@ -102,6 +102,10 @@
     }
   };
 
+  const dateLocaleString = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString($locale, dateFormats.album)
+  }
+
   onMount(() => {
     removeAlbumsIfEmpty();
   });
@@ -142,34 +146,35 @@
       {/each}
     </div>
   {:else if $albumViewSettings.view === 'List'}
-    <div class="grid grid-cols-4 text-white mb-2">
-      <span>Album title</span>
-      <span>Assets</span>
-      <span>Updated date</span>
-      <span>Created date</span>
-    </div>
-
-    {#each $albums as album (album.id)}
-      <a class="grid grid-cols-4" data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
-         <span
-          class="w-full truncate text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
-          data-testid="album-name"
-          title={album.albumName}
-        >
-          {album.albumName}
-        </span>
-
-        <span>
-          {album.assetCount}
-          {album.assetCount == 1 ? `item` : `items`}
-        </span>
-
-        <span>{new Date(album.updatedAt).toLocaleDateString($locale, dateFormats.album)}</span>
-        <span>{new Date(album.createdAt).toLocaleDateString($locale, dateFormats.album)}</span>
-
-        <!-- <span>{album.startDate} - {album.endDate}</span> -->
-      </a>
-    {/each}
+    <table class="mt-5 w-full text-left">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+      >
+        <tr class="flex w-full place-items-center">
+          <th class="w-1/4 text-center text-sm font-medium">Album title</th>
+          <th class="w-1/4 text-center text-sm font-medium">Assets</th>
+          <th class="w-1/4 text-center text-sm font-medium">Updated date</th>
+          <th class="w-1/4 text-center text-sm font-medium">Created date</th>
+        </tr>
+      </thead>
+      <tbody
+        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+      >
+        {#each $albums as album (album.id)}
+            <tr
+              class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
+            >
+              <td class="w-1/4 text-ellipsis px-2 text-md">{album.albumName}</td>
+              <td class="w-1/4 text-ellipsis px-2 text-md">
+                 {album.assetCount}
+                 {album.assetCount == 1 ? `item` : `items`}
+              </td>
+              <td class="w-1/4 text-ellipsis px-2 text-md">{dateLocaleString(album.updatedAt)}</td>
+              <td class="w-1/4 text-ellipsis px-2 text-md">{dateLocaleString(album.createdAt)}</td>
+            </tr>
+        {/each}
+      </tbody>
+    </table>
   {/if}
 
   <!-- Empty Message -->
