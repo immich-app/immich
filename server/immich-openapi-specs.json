@@ -7152,8 +7152,7 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId",
-          "memoriesEnabled"
+          "oauthId"
         ],
         "type": "object"
       },
