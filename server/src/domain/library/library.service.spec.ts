@@ -1,3 +1,4 @@
+import { UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -56,12 +57,17 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleRefreshAsset', () => {
+    let mockUser: UserEntity;
+
     afterEach(() => {
       mockfs.restore();
     });
 
     beforeEach(() => {
       jest.resetModules();
+
+      mockUser = userStub.externalPath;
+      userMock.get.mockResolvedValue(mockUser);
     });
 
     it('should reject an unknown file extension', async () => {
@@ -73,13 +79,11 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         analyze: false,
         emptyTrash: false,
       };
-
-      userMock.get.mockResolvedValue(userStub.externalPath);
 
       await expect(async () => {
         await sut.handleRefreshAsset(mockLibraryJob);
@@ -95,13 +99,11 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
-
-      userMock.get.mockResolvedValue(userStub.externalPath);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -133,13 +135,12 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
         analyze: false,
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
 
@@ -161,7 +162,7 @@ describe(LibraryService.name, () => {
       });
     });
 
-    it('should not add an asset if external path is not set', async () => {
+    it('should reject an asset if external path is not set', async () => {
       mockfs({
         '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
@@ -170,35 +171,34 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
-
-      userMock.get.mockResolvedValue(userStub.admin);
 
       expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("User has no external path set, can't import asset"),
       );
     });
 
-    it('should not add an asset if it isn\'t in the external path', async () => {
+    it("should reject an asset if it isn't in the external path", async () => {
       mockfs({
         '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
 
       createLibraryService();
 
+      mockUser = userStub.admin;
+      userMock.get.mockResolvedValue(mockUser);
+
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
-        ownerId: userStub.admin.id,
+        ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
         analyze: false,
         emptyTrash: false,
       };
-
-      userMock.get.mockResolvedValue(userStub.externalPath);
 
       expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("Asset must be within the user's external path"),
@@ -212,13 +212,12 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
-        ownerId: assetStub.image.ownerId,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -242,13 +241,12 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.offlineImage.libraryId,
-        ownerId: assetStub.offlineImage.ownerId,
+        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
       assetMock.create.mockResolvedValue(assetStub.offlineImage);
 
@@ -291,7 +289,6 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -321,7 +318,6 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -346,7 +342,6 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
