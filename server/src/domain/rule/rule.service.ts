@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { RuleKey } from '../../infra/entities/rule.entity';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { CreateRuleDto, mapRule, UpdateRuleDto } from './rule.dto';
@@ -24,11 +25,13 @@ export class RuleService {
   async create(authUser: AuthUserDto, dto: CreateRuleDto) {
     await this.access.requirePermission(authUser, Permission.RULE_CREATE, dto.albumId);
 
-    // TODO additional validation on key and value
+    if (dto.key === RuleKey.PERSON) {
+      // TODO: validate personId
+    }
 
     const rule = await this.repository.create({
       key: dto.key,
-      value: dto.value,
+      value: dto.value.value,
       albumId: dto.albumId,
       ownerId: authUser.id,
     });
@@ -37,14 +40,7 @@ export class RuleService {
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateRuleDto) {
     await this.access.requirePermission(authUser, Permission.RULE_UPDATE, id);
-
-    // TODO additional validation on key and value
-
-    const rule = await this.repository.update({
-      id,
-      key: dto.key,
-      value: dto.value,
-    });
+    const rule = await this.repository.update({ id, key: dto.key, value: dto.value.value });
     return mapRule(rule);
   }
 

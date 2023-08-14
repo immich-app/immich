@@ -5578,9 +5578,9 @@
           }
         },
         "required": [
-          "albumId",
           "key",
-          "value"
+          "value",
+          "albumId"
         ],
         "type": "object"
       },
@@ -6325,8 +6325,8 @@
           "city",
           "state",
           "country",
-          "make",
-          "model",
+          "camera-make",
+          "camera-model",
           "location"
         ],
         "type": "string"
@@ -6343,13 +6343,13 @@
             "type": "string"
           },
           "value": {
-            "type": "object"
+            "type": "string"
           }
         },
         "required": [
           "key",
-          "id",
           "value",
+          "id",
           "ownerId"
         ],
         "type": "object"
@@ -7243,9 +7243,13 @@
             "$ref": "#/components/schemas/RuleKey"
           },
           "value": {
-            "type": "object"
+            "type": "string"
           }
         },
+        "required": [
+          "key",
+          "value"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

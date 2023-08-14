@@ -33,12 +33,12 @@ export enum RuleKey {
   CITY = 'city',
   STATE = 'state',
   COUNTRY = 'country',
-  MAKE = 'make',
-  MODEL = 'model',
+  CAMERA_MAKE = 'camera-make',
+  CAMERA_MODEL = 'camera-model',
   LOCATION = 'location',
 }
 
-export type RuleValue = string | Date | RuleGeoValue;
+export type RuleValue = string | Date | GeoRuleValue;
 
 export enum RuleValueType {
   UUID = 'uuid',
@@ -47,9 +47,9 @@ export enum RuleValueType {
   GEO = 'geo',
 }
 
-export interface RuleGeoValue {
+export interface GeoRuleValue {
   lat: number;
-  long: number;
+  lng: number;
   radius: number;
 }
 
@@ -59,7 +59,7 @@ export const RULE_TO_TYPE: Record<RuleKey, RuleValueType> = {
   [RuleKey.CITY]: RuleValueType.STRING,
   [RuleKey.STATE]: RuleValueType.STRING,
   [RuleKey.COUNTRY]: RuleValueType.STRING,
-  [RuleKey.MAKE]: RuleValueType.STRING,
-  [RuleKey.MODEL]: RuleValueType.STRING,
+  [RuleKey.CAMERA_MAKE]: RuleValueType.STRING,
+  [RuleKey.CAMERA_MODEL]: RuleValueType.STRING,
   [RuleKey.LOCATION]: RuleValueType.GEO,
 };

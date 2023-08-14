@@ -35,7 +35,7 @@ describe(RuleService.name, () => {
         sut.create(authStub.admin, {
           albumId: 'not-found-album',
           key: RuleKey.CITY,
-          value: 'abc',
+          value: { value: 'abc' },
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'not-found-album');
@@ -49,7 +49,7 @@ describe(RuleService.name, () => {
         sut.create(authStub.admin, {
           albumId: 'album-123',
           key: RuleKey.CITY,
-          value: 'abc',
+          value: { value: 'abc' },
         }),
       ).resolves.toEqual(responseDto);
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-123');
@@ -73,9 +73,12 @@ describe(RuleService.name, () => {
   describe('update', () => {
     it('should throw a bad request when the rule is not found', async () => {
       accessMock.rule.hasOwnerAccess.mockResolvedValue(false);
-      await expect(sut.update(authStub.admin, 'rule-1', { value: 'Atlanta' })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.update(authStub.admin, 'rule-1', {
+          key: RuleKey.CITY,
+          value: { value: 'Atlanta' },
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });
