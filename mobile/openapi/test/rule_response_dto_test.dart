@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    // Object value
+    // String value
     test('to test the property `value`', () async {
       // TODO
     });

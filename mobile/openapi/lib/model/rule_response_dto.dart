@@ -25,7 +25,7 @@ class RuleResponseDto {
 
   String ownerId;
 
-  Object value;
+  String value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RuleResponseDto &&
@@ -65,7 +65,7 @@ class RuleResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         key: RuleKey.fromJson(json[r'key'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;

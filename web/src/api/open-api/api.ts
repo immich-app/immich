@@ -1900,8 +1900,8 @@ export const RuleKey = {
     City: 'city',
     State: 'state',
     Country: 'country',
-    Make: 'make',
-    Model: 'model',
+    CameraMake: 'camera-make',
+    CameraModel: 'camera-model',
     Location: 'location'
 } as const;
 
@@ -1934,10 +1934,10 @@ export interface RuleResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {object}
+     * @type {string}
      * @memberof RuleResponseDto
      */
-    'value': object;
+    'value': string;
 }
 
 
@@ -3074,13 +3074,13 @@ export interface UpdateRuleDto {
      * @type {RuleKey}
      * @memberof UpdateRuleDto
      */
-    'key'?: RuleKey;
+    'key': RuleKey;
     /**
      * 
-     * @type {object}
+     * @type {string}
      * @memberof UpdateRuleDto
      */
-    'value'?: object;
+    'value': string;
 }
 
 

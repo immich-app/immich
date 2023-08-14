@@ -28,8 +28,8 @@ class RuleKey {
   static const city = RuleKey._(r'city');
   static const state = RuleKey._(r'state');
   static const country = RuleKey._(r'country');
-  static const make = RuleKey._(r'make');
-  static const model = RuleKey._(r'model');
+  static const cameraMake = RuleKey._(r'camera-make');
+  static const cameraModel = RuleKey._(r'camera-model');
   static const location = RuleKey._(r'location');
 
   /// List of all possible values in this [enum][RuleKey].
@@ -39,8 +39,8 @@ class RuleKey {
     city,
     state,
     country,
-    make,
-    model,
+    cameraMake,
+    cameraModel,
     location,
   ];
 
@@ -85,8 +85,8 @@ class RuleKeyTypeTransformer {
         case r'city': return RuleKey.city;
         case r'state': return RuleKey.state;
         case r'country': return RuleKey.country;
-        case r'make': return RuleKey.make;
-        case r'model': return RuleKey.model;
+        case r'camera-make': return RuleKey.cameraMake;
+        case r'camera-model': return RuleKey.cameraModel;
         case r'location': return RuleKey.location;
         default:
           if (!allowNull) {

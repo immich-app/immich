@@ -13,25 +13,13 @@ part of openapi.api;
 class UpdateRuleDto {
   /// Returns a new [UpdateRuleDto] instance.
   UpdateRuleDto({
-    this.key,
-    this.value,
+    required this.key,
+    required this.value,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  RuleKey? key;
+  RuleKey key;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? value;
+  String value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateRuleDto &&
@@ -41,24 +29,16 @@ class UpdateRuleDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (key == null ? 0 : key!.hashCode) +
-    (value == null ? 0 : value!.hashCode);
+    (key.hashCode) +
+    (value.hashCode);
 
   @override
   String toString() => 'UpdateRuleDto[key=$key, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.key != null) {
       json[r'key'] = this.key;
-    } else {
-    //  json[r'key'] = null;
-    }
-    if (this.value != null) {
       json[r'value'] = this.value;
-    } else {
-    //  json[r'value'] = null;
-    }
     return json;
   }
 
@@ -70,8 +50,8 @@ class UpdateRuleDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateRuleDto(
-        key: RuleKey.fromJson(json[r'key']),
-        value: mapValueOfType<Object>(json, r'value'),
+        key: RuleKey.fromJson(json[r'key'])!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;
@@ -119,6 +99,8 @@ class UpdateRuleDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'key',
+    'value',
   };
 }
 
