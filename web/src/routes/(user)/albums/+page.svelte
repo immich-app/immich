@@ -164,6 +164,8 @@
             <tr
               class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 border-[3px] border-transparent p-5 hover:cursor-pointer hover:border-immich-primary/75 dark:hover:border-immich-dark-primary/75"
               on:click={() => goto(`albums/${album.id}`)}
+              on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
+              tabindex="0"
             >
               <td class="w-1/4 text-ellipsis px-2 text-md">{album.albumName}</td>
               <td class="w-1/4 text-ellipsis px-2 text-md">
