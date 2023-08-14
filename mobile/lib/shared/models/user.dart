@@ -44,7 +44,7 @@ class User {
   bool isPartnerSharedWith;
   bool isAdmin;
   String profileImagePath;
-  bool memoryEnabled;
+  bool? memoryEnabled;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
