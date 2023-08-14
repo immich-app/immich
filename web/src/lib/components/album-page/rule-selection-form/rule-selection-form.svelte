@@ -1,60 +1,33 @@
 <script lang="ts">
   import BaseModal from '$lib/components/shared-components/base-modal.svelte';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { RuleKey, type AlbumResponseDto, type PersonResponseDto, api } from '@api';
+  import { PersonResponseDto, RuleKey, RuleResponseDto, api } from '@api';
+  import { createEventDispatcher } from 'svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
+  import { fly } from 'svelte/transition';
   import Button from '../../elements/buttons/button.svelte';
   import Portal from '../../shared-components/portal/portal.svelte';
   import FaceSelection from './face-selection.svelte';
-  import { fly } from 'svelte/transition';
 
-  export let album: AlbumResponseDto;
+  export let rules: RuleResponseDto[] = [];
 
   let peopleSelection = false;
   let locationSelection = false;
-  let selectedPeople = new Set<PersonResponseDto>();
 
-  const dispatch = createEventDispatcher<{ close: void }>();
+  $: peopleRules = rules.filter((rule) => rule.key === RuleKey.Person);
 
-  const handlePeopleSelected = async (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
+  const dispatch = createEventDispatcher<{
+    submit: RuleResponseDto[];
+    close: void;
+  }>();
+
+  const handleSelectPeople = async (people: PersonResponseDto[]) => {
+    rules = [...rules, ...people.map((person) => ({ key: RuleKey.Person, value: person.id } as RuleResponseDto))];
     peopleSelection = false;
-    const people = e.detail.people;
-
-    selectedPeople = new Set([...selectedPeople, ...people]);
   };
 
-  const handleRemovePerson = (person: PersonResponseDto) => {
-    const temp = new Set(selectedPeople);
-    temp.delete(person);
-    selectedPeople = temp;
+  const handleRemoveRule = async (rule: RuleResponseDto) => {
+    rules = rules.filter((_rule) => rule !== _rule);
   };
-
-  const updateRule = async () => {
-    // for (const person of people) {
-    //   const { data } = await api.ruleApi.createRule({
-    //     createRuleDto: {
-    //       albumId: album.id,
-    //       key: RuleKey.Person,
-    //       value: person.id,
-    //     },
-    //   });
-    //   album.rules = [...album.rules, data];
-    // }
-  };
-
-  onMount(async () => {
-    const addedPeople: PersonResponseDto[] = [];
-
-    for (const rule of album.rules) {
-      if (rule.key === RuleKey.Person) {
-        const personId = String(rule.value);
-        const { data } = await api.personApi.getPerson({ id: personId });
-        addedPeople.push(data);
-      }
-    }
-
-    selectedPeople = new Set([...selectedPeople, ...addedPeople]);
-  });
 </script>
 
 <BaseModal
@@ -65,7 +38,7 @@
 >
   <svelte:fragment slot="title">
     <div class="flex place-items-center gap-2">
-      <p class="text-immich-fg dark:text-immich-dark-fg font-medium">Automatically add photos</p>
+      <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Automatically add photos</p>
     </div>
   </svelte:fragment>
 
@@ -75,9 +48,9 @@
       <p class="text-sm">PEOPLE</p>
 
       <div class="mt-4 flex flex-wrap gap-2">
-        {#each selectedPeople as person (person.id)}
-          <button on:click={() => handleRemovePerson(person)}>
-            <img src={api.getPeopleThumbnailUrl(person.id)} alt={person.id} class="h-20 w-20 rounded-lg" />
+        {#each peopleRules as rule}
+          <button on:click={() => handleRemoveRule(rule)}>
+            <img src={api.getPeopleThumbnailUrl(rule.value)} alt={rule.value} class="h-20 w-20 rounded-lg" />
           </button>
         {/each}
 
@@ -122,7 +95,7 @@
   <svelte:fragment slot="sticky-bottom">
     <div class="flex justify-end gap-2">
       <Button size="sm" color="secondary" on:click={() => dispatch('close')}>Cancel</Button>
-      <Button size="sm" color="primary">Confirm</Button>
+      <Button size="sm" color="primary" on:click={() => dispatch('submit', rules)}>Confirm</Button>
     </div>
   </svelte:fragment>
 </BaseModal>
@@ -131,9 +104,13 @@
   {#if peopleSelection}
     <section
       transition:fly={{ y: 500 }}
-      class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200"
+      class="absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200 dark:bg-immich-dark-bg"
     >
-      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handlePeopleSelected} {selectedPeople} />
+      <FaceSelection
+        on:close={() => (peopleSelection = false)}
+        on:confirm={({ detail: people }) => handleSelectPeople(people)}
+        selectedIds={peopleRules.map(({ value }) => value)}
+      />
     </section>
   {/if}
 </Portal>

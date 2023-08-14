@@ -37,9 +37,9 @@
   <div
     use:clickOutside
     on:outclick={() => !ignoreClickOutside && dispatch('close')}
-    class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg max-h-[700px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg shadow-md"
+    class="max-h-[700px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
-    <div class="dark:bg-immich-dark-gray bg-immich-bg sticky top-0 flex place-items-center justify-between px-5 py-3">
+    <div class="sticky top-0 flex place-items-center justify-between bg-immich-bg px-5 py-3 dark:bg-immich-dark-gray">
       <div>
         <slot name="title">
           <p>Modal Title</p>
@@ -54,7 +54,7 @@
     </div>
 
     {#if $$slots['sticky-bottom']}
-      <div class="dark:bg-immich-dark-gray bg-immich-bg sticky bottom-0 px-5 pb-5 pt-3">
+      <div class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray">
         <slot name="sticky-bottom" />
       </div>
     {/if}

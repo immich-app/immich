@@ -38,7 +38,7 @@ export class ImmichApi {
   public personApi: PersonApi;
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
-  
+
   private config: Configuration;
 
   constructor(params: ConfigurationParameters) {
