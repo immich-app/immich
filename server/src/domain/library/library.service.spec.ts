@@ -162,12 +162,37 @@ describe(LibraryService.name, () => {
       });
     });
 
+    it('should reject an asset if the user cannot be found', async () => {
+      mockfs({
+        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      createLibraryService();
+
+      userMock.get.mockResolvedValue(null);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+        new BadRequestException("User has no external pathh set, can't import asset"),
+      );
+    });
+
     it('should reject an asset if external path is not set', async () => {
       mockfs({
         '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
 
       createLibraryService();
+
+      mockUser = userStub.admin;
+      userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
