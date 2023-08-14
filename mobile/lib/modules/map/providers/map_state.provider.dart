@@ -11,6 +11,8 @@ class MapStateNotifier extends StateNotifier<MapState> {
                 .getSetting<bool>(AppSettingsEnum.mapThemeMode),
             showFavoriteOnly: appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
+            relativeTime: appSettingsProvider
+                .getSetting<int>(AppSettingsEnum.mapRelativeDate),
           ),
         );
 
