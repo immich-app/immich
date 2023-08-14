@@ -16,11 +16,17 @@
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  const handleFaceSelected = async (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
+  const handlePeopleSelected = async (e: CustomEvent<{ people: PersonResponseDto[] }>) => {
     peopleSelection = false;
     const people = e.detail.people;
 
     selectedPeople = new Set([...selectedPeople, ...people]);
+  };
+
+  const handleRemovePerson = (person: PersonResponseDto) => {
+    const temp = new Set(selectedPeople);
+    temp.delete(person);
+    selectedPeople = temp;
   };
 
   const updateRule = async () => {
@@ -70,7 +76,7 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each selectedPeople as person (person.id)}
-          <button>
+          <button on:click={() => handleRemovePerson(person)}>
             <img src={api.getPeopleThumbnailUrl(person.id)} alt={person.id} class="h-20 w-20 rounded-lg" />
           </button>
         {/each}
@@ -127,7 +133,7 @@
       transition:fly={{ y: 500 }}
       class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200"
     >
-      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handleFaceSelected} {selectedPeople} />
+      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handlePeopleSelected} {selectedPeople} />
     </section>
   {/if}
 </Portal>

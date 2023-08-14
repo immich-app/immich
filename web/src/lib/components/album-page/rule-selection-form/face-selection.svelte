@@ -39,6 +39,8 @@
     <p class="text-immich-fg dark:text-immich-dark-fg font-medium">
       {#if newPeople.length === 0}
         Select faces
+      {:else if newPeople.length === 1}
+        1 person selected
       {:else}
         {newPeople.length} people selected
       {/if}
