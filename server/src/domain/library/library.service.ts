@@ -18,6 +18,7 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
+import { IUserRepository } from '../user';
 import {
   CrawlOptionsDto,
   CreateLibraryDto,
@@ -37,6 +38,7 @@ export class LibraryService {
 
   constructor(
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
@@ -133,6 +135,16 @@ export class LibraryService {
 
   async handleRefreshAsset(job: ILibraryJob) {
     this.logger.verbose(`Refreshing library asset: ${job.assetPath}`);
+
+    const user = await this.userRepository.get(job.ownerId);
+
+    if (!user?.externalPath) {
+      throw new BadRequestException("User has no external path set, can't import asset");
+    }
+
+    if (!job.assetPath.match(new RegExp(`^${user.externalPath}`))) {
+      throw new BadRequestException("Asset must be within the user's external path");
+    }
 
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 

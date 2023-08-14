@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
   libraryStub,
@@ -6,6 +7,7 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newUserRepositoryMock,
   userStub,
 } from '@test';
 import * as matchers from 'jest-extended';
@@ -14,6 +16,7 @@ import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
+import { IUserRepository } from '../user';
 import { CrawlOptionsDto, ILibraryRepository, LibraryService } from './index';
 
 expect.extend(matchers);
@@ -24,27 +27,31 @@ describe(LibraryService.name, () => {
   let accessMock: jest.Mocked<IAccessRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   const createLibraryService = () => {
+    // We can't import library service the normal way due to some mocking load order issues
+
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { LibraryService } = require('./library.service');
 
-    sut = new LibraryService(accessMock, libraryMock, assetMock, jobMock, cryptoMock);
+    sut = new LibraryService(accessMock, userMock, libraryMock, assetMock, jobMock, cryptoMock);
   };
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    userMock = newUserRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
-
-    createLibraryService();
   });
 
   it('should work', () => {
+    createLibraryService();
+
     expect(sut).toBeDefined();
   });
 
@@ -58,12 +65,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should reject an unknown file extension', async () => {
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue(null),
-      }));
-
       mockfs({
-        '/import/file.xyz': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+        '/data/user1/file.xyz': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
 
       createLibraryService();
@@ -71,34 +74,34 @@ describe(LibraryService.name, () => {
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/file.xyz',
+        assetPath: '/data/user1/file.xyz',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
+
       await expect(async () => {
         await sut.handleRefreshAsset(mockLibraryJob);
-      }).rejects.toThrowError('Unsupported file type /import/file.xyz');
+      }).rejects.toThrowError('Unsupported file type /data/user1/file.xyz');
     });
 
     it('should add a new image', async () => {
       mockfs({
-        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
-
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
 
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
+
+      userMock.get.mockResolvedValue(userStub.externalPath);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -123,23 +126,20 @@ describe(LibraryService.name, () => {
 
     it('should add a new video', async () => {
       mockfs({
-        '/import/video.mp4': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+        '/data/user1/video.mp4': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
-
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('video/mp4'),
-      }));
 
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/video.mp4',
+        assetPath: '/data/user1/video.mp4',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
 
@@ -161,23 +161,64 @@ describe(LibraryService.name, () => {
       });
     });
 
+    it('should not add an asset if external path is not set', async () => {
+      mockfs({
+        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      createLibraryService();
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
+        assetPath: '/data/user1/photo.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      userMock.get.mockResolvedValue(userStub.admin);
+
+      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+        new BadRequestException("User has no external path set, can't import asset"),
+      );
+    });
+
+    it('should not add an asset if it isn\'t in the external path', async () => {
+      mockfs({
+        '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      createLibraryService();
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: userStub.admin.id,
+        assetPath: '/etc/rootpassword.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      userMock.get.mockResolvedValue(userStub.externalPath);
+
+      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+        new BadRequestException("Asset must be within the user's external path"),
+      );
+    });
+
     it('should offline a missing asset', async () => {
       mockfs({});
-
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
 
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
         ownerId: assetStub.image.ownerId,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -190,27 +231,24 @@ describe(LibraryService.name, () => {
 
     it('should online a previously-offline asset', async () => {
       mockfs({
-        '/import/photo.jpg': mockfs.file({
+        '/data/user1/photo.jpg': mockfs.file({
           content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
           ctime: new Date(1),
           mtime: new Date(1),
         }),
       });
 
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.offlineImage.libraryId,
         ownerId: assetStub.offlineImage.ownerId,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
       assetMock.create.mockResolvedValue(assetStub.offlineImage);
 
@@ -236,27 +274,24 @@ describe(LibraryService.name, () => {
 
     it('should do nothing when mtime matches existing asset', async () => {
       mockfs({
-        '/import/photo.jpg': mockfs.file({
+        '/data/user1/photo.jpg': mockfs.file({
           content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
           ctime: new Date(1),
           mtime: assetStub.image.fileModifiedAt,
         }),
       });
 
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: assetStub.image.libraryId,
         ownerId: assetStub.image.ownerId,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -269,27 +304,24 @@ describe(LibraryService.name, () => {
       const filemtime = new Date();
       filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
       mockfs({
-        '/import/photo.jpg': mockfs.file({
+        '/data/user1/photo.jpg': mockfs.file({
           content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
           ctime: new Date(1),
           mtime: filemtime,
         }),
       });
 
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
@@ -304,26 +336,23 @@ describe(LibraryService.name, () => {
     it('should error when asset does not exist', async () => {
       mockfs({});
 
-      jest.mock('mime', () => ({
-        lookup: jest.fn().mockReturnValue('image/jpeg'),
-      }));
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
-        assetPath: '/import/photo.jpg',
+        assetPath: '/data/user1/photo.jpg',
         analyze: false,
         emptyTrash: false,
       };
 
+      userMock.get.mockResolvedValue(userStub.externalPath);
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(async () => {
         await sut.handleRefreshAsset(mockLibraryJob);
-      }).rejects.toThrowError("ENOENT, no such file or directory '/import/photo.jpg'");
+      }).rejects.toThrowError("ENOENT, no such file or directory '/data/user1/photo.jpg'");
     });
   });
 
