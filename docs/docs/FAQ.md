@@ -111,12 +111,17 @@ This is an advanced operation. If you can't to do it with the steps described he
 1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
 2. Find the id of both the 'source' and the 'destination' user (it's the id column in the users table)
 3. Three tables need to be updated:
+
+   ```sql
+   // reassign albums
+   update albums set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>';
+
+   // reassign people
+   update person set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>';
+
+   // reassign assets
+   update assets set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>'
+    and checksum not in (select checksum from assets where "ownerId" = '<destinationId>');
    ```
-   - update albums set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
-   - update person set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
-   - update assets
-      set "ownerId" = '<destination id>'
-      where "ownerId" = '<source id>'
-      and checksum not in (select checksum from assets where "ownerId" = '<destination id>')
-   ```
+
 4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
