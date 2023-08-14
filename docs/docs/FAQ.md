@@ -99,3 +99,29 @@ After removing the containers and volumes, the **Files** can be cleaned up (if n
 ### Why iOS app shows duplicate photos on the timeline while the web doesn't?
 
 If you are using `My Photo Stream`, the Photos app temporarily creates duplicates of photos taken in the last 30 days. These photos are included in the `Recents` album and thus shown up twice. To fix this, you can disable `My Photo Stream` in the native Photos app or choose a different album in the backup screen in Immich.
+
+### How can I move all data (photos, persons, albums) from one user to another?
+
+This requires some database queries. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.
+
+:::warning
+This is an advanced operation. If you can't to do it with the steps described here, this is not for you.
+:::
+
+1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
+2. Find the id of both the 'source' and the 'destination' user (it's the id column in the users table)
+3. Three tables need to be updated:
+
+   ```sql
+   // reassign albums
+   update albums set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>';
+
+   // reassign people
+   update person set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>';
+
+   // reassign assets
+   update assets set "ownerId" = '<destinationId>' where "ownerId" = '<sourceId>'
+    and checksum not in (select checksum from assets where "ownerId" = '<destinationId>');
+   ```
+
+4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.

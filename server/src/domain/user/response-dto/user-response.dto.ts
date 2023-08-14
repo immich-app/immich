@@ -14,7 +14,7 @@ export class UserResponseDto {
   deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
-  memoriesEnabled!: boolean;
+  memoriesEnabled?: boolean;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {

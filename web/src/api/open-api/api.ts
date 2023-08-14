@@ -3279,7 +3279,7 @@ export interface UserResponseDto {
      * @type {boolean}
      * @memberof UserResponseDto
      */
-    'memoriesEnabled': boolean;
+    'memoriesEnabled'?: boolean;
     /**
      * 
      * @type {string}
