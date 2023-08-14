@@ -8,30 +8,51 @@
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { api } from '@api';
+  import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, api } from '@api';
   import type { PageData } from './$types';
 
   export let data: PageData;
-
+  let config: SystemConfigDto;
+  let currentConfig: SystemConfigDto;
+  let defaultConfig: SystemConfigDto;
+  let templateOptions: SystemConfigTemplateStorageOptionDto;
   const getConfig = async () => {
-    const { data } = await api.systemConfigApi.getConfig();
-    return data;
+    [config, defaultConfig, templateOptions] = await Promise.all([
+      api.systemConfigApi.getConfig().then((res) => res.data),
+      api.systemConfigApi.getDefaults().then((res) => res.data),
+      api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data),
+    ]);
+
+    // deep copy
+    currentConfig = JSON.parse(JSON.stringify(config));
   };
 </script>
 
 <section class="">
   {#await getConfig()}
-    <LoadingSpinner />
-  {:then configs}
+    <div class="flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  {:then}
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
-      <ThumbnailSettings thumbnailConfig={configs.thumbnail} />
+      <ThumbnailSettings
+        savedConfig={currentConfig.thumbnail}
+        bind:config={currentConfig}
+        thumbnailConfig={config.thumbnail}
+        thumbnailDefault={defaultConfig.thumbnail}
+      />
     </SettingAccordion>
 
     <SettingAccordion
       title="FFmpeg Settings"
       subtitle="Manage the resolution and encoding information of the video files"
     >
-      <FFmpegSettings ffmpegConfig={configs.ffmpeg} />
+      <FFmpegSettings
+        savedConfig={currentConfig.ffmpeg}
+        bind:config={currentConfig}
+        ffmpegConfig={config.ffmpeg}
+        ffmpegDefault={defaultConfig.ffmpeg}
+      />
     </SettingAccordion>
 
     <SettingAccordion
@@ -39,15 +60,25 @@
       subtitle="Manage job concurrency"
       isOpen={$page.url.searchParams.get('open') === 'job-settings'}
     >
-      <JobSettings jobConfig={configs.job} />
+      <JobSettings savedConfig={currentConfig.job} bind:config jobConfig={config.job} jobDefault={defaultConfig.job} />
     </SettingAccordion>
 
     <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
-      <PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
+      <PasswordLoginSettings
+        savedConfig={currentConfig.passwordLogin}
+        bind:config={currentConfig}
+        passwordLoginConfig={config.passwordLogin}
+        passwordLoginDefault={defaultConfig.passwordLogin}
+      />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
-      <OAuthSettings oauthConfig={configs.oauth} />
+      <OAuthSettings
+        savedConfig={currentConfig.oauth}
+        bind:config={currentConfig}
+        oauthConfig={config.oauth}
+        oauthDefault={defaultConfig.oauth}
+      />
     </SettingAccordion>
 
     <SettingAccordion
@@ -55,7 +86,14 @@
       subtitle="Manage the folder structure and file name of the upload asset"
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
-      <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+      <StorageTemplateSettings
+        savedConfig={currentConfig.storageTemplate}
+        bind:config={currentConfig}
+        storageConfig={config.storageTemplate}
+        user={data.user}
+        storageDefault={defaultConfig.storageTemplate}
+        {templateOptions}
+      />
     </SettingAccordion>
   {/await}
 </section>

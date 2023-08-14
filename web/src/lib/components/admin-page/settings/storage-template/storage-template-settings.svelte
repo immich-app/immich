@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { api, SystemConfigStorageTemplateDto, SystemConfigTemplateStorageOptionDto, UserResponseDto } from '@api';
+  import {
+    api,
+    SystemConfigDto,
+    SystemConfigStorageTemplateDto,
+    SystemConfigTemplateStorageOptionDto,
+    UserResponseDto,
+  } from '@api';
   import * as luxon from 'luxon';
   import handlebar from 'handlebars';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { fade } from 'svelte/transition';
-  import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import { isEqual } from 'lodash-es';
@@ -14,28 +17,14 @@
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
+  export let config: SystemConfigDto;
   export let storageConfig: SystemConfigStorageTemplateDto;
+  export let storageDefault: SystemConfigStorageTemplateDto;
   export let user: UserResponseDto;
+  export let templateOptions: SystemConfigTemplateStorageOptionDto;
 
-  let savedConfig: SystemConfigStorageTemplateDto;
-  let defaultConfig: SystemConfigStorageTemplateDto;
-  let templateOptions: SystemConfigTemplateStorageOptionDto;
+  export let savedConfig: SystemConfigStorageTemplateDto;
   let selectedPreset = '';
-
-  async function getConfigs() {
-    [savedConfig, defaultConfig, templateOptions] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.storageTemplate),
-      api.systemConfigApi.getDefaults().then((res) => res.data.storageTemplate),
-      api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data),
-    ]);
-
-    selectedPreset = savedConfig.template;
-  }
-
-  const getSupportDateTimeFormat = async () => {
-    const { data } = await api.systemConfigApi.getStorageTemplateOptions();
-    return data;
-  };
 
   $: parsedTemplate = () => {
     try {
@@ -76,11 +65,7 @@
   };
 
   async function reset() {
-    const { data: resetConfig } = await api.systemConfigApi.getConfig();
-
-    storageConfig.template = resetConfig.storageTemplate.template;
-    savedConfig.template = resetConfig.storageTemplate.template;
-
+    storageConfig = { ...savedConfig };
     notificationController.show({
       message: 'Reset storage template settings to the recent saved settings',
       type: NotificationType.Info,
@@ -89,17 +74,16 @@
 
   async function saveSetting() {
     try {
-      const { data: currentConfig } = await api.systemConfigApi.getConfig();
-
-      const result = await api.systemConfigApi.updateConfig({
+      const { data } = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
-          ...currentConfig,
+          ...config,
           storageTemplate: storageConfig,
         },
       });
 
-      storageConfig.template = result.data.storageTemplate.template;
-      savedConfig.template = result.data.storageTemplate.template;
+      storageConfig = { ...data.storageTemplate };
+      savedConfig = { ...data.storageTemplate };
+      config = { ...data };
 
       notificationController.show({
         message: 'Storage template saved',
@@ -115,9 +99,7 @@
   }
 
   async function resetToDefault() {
-    const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
-
-    storageConfig.template = defaultConfig.storageTemplate.template;
+    storageConfig = { ...storageDefault };
 
     notificationController.show({
       message: 'Reset storage template to default',
@@ -131,94 +113,82 @@
 </script>
 
 <section class="dark:text-immich-dark-fg">
-  {#await getConfigs() then}
-    <div id="directory-path-builder" class="m-4">
-      <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
+  <div id="directory-path-builder" class="m-4">
+    <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
 
-      <section class="support-date">
-        {#await getSupportDateTimeFormat()}
-          <LoadingSpinner />
-        {:then options}
-          <div transition:fade={{ duration: 200 }}>
-            <SupportedDatetimePanel {options} />
+    <section class="support-date" />
+
+    <section class="support-date">
+      <SupportedVariablesPanel />
+    </section>
+
+    <div class="mt-4 flex flex-col">
+      <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
+
+      <div class="my-2 text-xs">
+        <h4>PREVIEW</h4>
+      </div>
+
+      <p class="text-xs">
+        Approximately path length limit : <span class="font-semibold text-immich-primary dark:text-immich-dark-primary"
+          >{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
+        >/260
+      </p>
+
+      <p class="text-xs">
+        <code>{user.storageLabel || user.id}</code> is the user's Storage Label
+      </p>
+
+      <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
+        <span class="text-immich-fg/25 dark:text-immich-dark-fg/50">UPLOAD_LOCATION/{user.storageLabel || user.id}</span
+        >/{parsedTemplate()}.jpg
+      </p>
+
+      <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
+        <div class="my-2 flex flex-col">
+          <label class="text-xs" for="presets">PRESET</label>
+          <select
+            class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
+            name="presets"
+            id="preset-select"
+            bind:value={selectedPreset}
+            on:change={handlePresetSelection}
+          >
+            {#each templateOptions.presetOptions as preset}
+              <option value={preset}>{renderTemplate(preset)}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="flex gap-2 align-bottom">
+          <SettingInputField
+            label="TEMPLATE"
+            required
+            inputType={SettingInputFieldType.TEXT}
+            bind:value={storageConfig.template}
+            isEdited={!(storageConfig.template === savedConfig.template)}
+          />
+
+          <div class="flex-0">
+            <SettingInputField label="EXTENSION" inputType={SettingInputFieldType.TEXT} value={'.jpg'} disabled />
           </div>
-        {/await}
-      </section>
-
-      <section class="support-date">
-        <SupportedVariablesPanel />
-      </section>
-
-      <div class="mt-4 flex flex-col">
-        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
-
-        <div class="my-2 text-xs">
-          <h4>PREVIEW</h4>
         </div>
 
-        <p class="text-xs">
-          Approximately path length limit : <span
-            class="font-semibold text-immich-primary dark:text-immich-dark-primary"
-            >{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
-          >/260
-        </p>
-
-        <p class="text-xs">
-          <code>{user.storageLabel || user.id}</code> is the user's Storage Label
-        </p>
-
-        <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
-          <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-            >UPLOAD_LOCATION/{user.storageLabel || user.id}</span
-          >/{parsedTemplate()}.jpg
-        </p>
-
-        <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
-          <div class="my-2 flex flex-col">
-            <label class="text-xs" for="presets">PRESET</label>
-            <select
-              class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
-              name="presets"
-              id="preset-select"
-              bind:value={selectedPreset}
-              on:change={handlePresetSelection}
+        <div id="migration-info" class="mt-4 text-sm">
+          <p>
+            Template changes will only apply to new assets. To retroactively apply the template to previously uploaded
+            assets, run the <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+              >Storage Migration Job</a
             >
-              {#each templateOptions.presetOptions as preset}
-                <option value={preset}>{renderTemplate(preset)}</option>
-              {/each}
-            </select>
-          </div>
-          <div class="flex gap-2 align-bottom">
-            <SettingInputField
-              label="TEMPLATE"
-              required
-              inputType={SettingInputFieldType.TEXT}
-              bind:value={storageConfig.template}
-              isEdited={!(storageConfig.template === savedConfig.template)}
-            />
+          </p>
+        </div>
 
-            <div class="flex-0">
-              <SettingInputField label="EXTENSION" inputType={SettingInputFieldType.TEXT} value={'.jpg'} disabled />
-            </div>
-          </div>
-
-          <div id="migration-info" class="mt-4 text-sm">
-            <p>
-              Template changes will only apply to new assets. To retroactively apply the template to previously uploaded
-              assets, run the <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
-                >Storage Migration Job</a
-              >
-            </p>
-          </div>
-
-          <SettingButtonsRow
-            on:reset={reset}
-            on:save={saveSetting}
-            on:reset-to-default={resetToDefault}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-          />
-        </form>
-      </div>
+        <SettingButtonsRow
+          on:reset={reset}
+          on:save={saveSetting}
+          on:reset-to-default={resetToDefault}
+          showResetToDefault={!isEqual(savedConfig, storageConfig)}
+        />
+      </form>
     </div>
-  {/await}
+  </div>
 </section>
