@@ -180,7 +180,7 @@ describe(LibraryService.name, () => {
       };
 
       expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
-        new BadRequestException("User has no external pathh set, can't import asset"),
+        new BadRequestException("User has no external path set, can't import asset"),
       );
     });
 
@@ -380,6 +380,8 @@ describe(LibraryService.name, () => {
     beforeAll(() => {
       // Write a dummy output before mock-fs to prevent some annoying errors
       console.log();
+
+      createLibraryService();
     });
 
     it('should return empty wnen crawling an empty path list', async () => {
