@@ -114,10 +114,9 @@ This is an advanced operation. If you can't to do it with the steps described he
    ```
    - update albums set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
    - update person set "ownerId" = '<destination id>' where "ownerId" = '<source id>'
-   - update assets 
-      set "ownerId" = '<destination id>' 
-      where "ownerId" = '<source id>' 
+   - update assets
+      set "ownerId" = '<destination id>'
+      where "ownerId" = '<source id>'
       and checksum not in (select checksum from assets where "ownerId" = '<destination id>')
    ```
-4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed. 
-   
+4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
