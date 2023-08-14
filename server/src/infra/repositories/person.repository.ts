@@ -56,6 +56,7 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .orderBy('COUNT(face.assetId)', 'DESC')
+      .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
       .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .limit(500)
