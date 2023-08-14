@@ -12,7 +12,7 @@
 
   let peopleSelection = false;
   let locationSelection = false;
-  let selectedPeopleIds = new Set<string>();
+  let selectedPeople = new Set<PersonResponseDto>();
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -20,7 +20,7 @@
     peopleSelection = false;
     const people = e.detail.people;
 
-    selectedPeopleIds = new Set([...selectedPeopleIds, ...people.map((p) => p.id)]);
+    selectedPeople = new Set([...selectedPeople, ...people]);
   };
 
   const updateRule = async () => {
@@ -36,14 +36,18 @@
     // }
   };
 
-  onMount(() => {
-    const addedFaceIds = album.rules.map((r) => {
-      if (r.key === RuleKey.Person) {
-        return String(r.value);
-      }
-    }) as string[];
+  onMount(async () => {
+    const addedPeople: PersonResponseDto[] = [];
 
-    selectedPeopleIds = new Set([...selectedPeopleIds, ...addedFaceIds]);
+    for (const rule of album.rules) {
+      if (rule.key === RuleKey.Person) {
+        const personId = String(rule.value);
+        const { data } = await api.personApi.getPerson({ id: personId });
+        addedPeople.push(data);
+      }
+    }
+
+    selectedPeople = new Set([...selectedPeople, ...addedPeople]);
   });
 </script>
 
@@ -65,9 +69,9 @@
       <p class="text-sm font-medium">PEOPLE</p>
 
       <div class="mt-4 flex flex-wrap gap-2">
-        {#each selectedPeopleIds as personId (personId)}
+        {#each selectedPeople as person (person.id)}
           <button>
-            <img src={api.getPeopleThumbnailUrl(personId)} alt={personId} class="h-20 w-20 rounded-lg" />
+            <img src={api.getPeopleThumbnailUrl(person.id)} alt={person.id} class="h-20 w-20 rounded-lg" />
           </button>
         {/each}
 
@@ -123,7 +127,7 @@
       transition:fly={{ y: 500 }}
       class="dark:bg-immich-dark-bg absolute left-0 top-0 z-[10000] h-full min-h-max w-full overflow-y-auto bg-gray-200"
     >
-      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handleFaceSelected} {selectedPeopleIds} />
+      <FaceSelection on:close={() => (peopleSelection = false)} on:confirm={handleFaceSelected} {selectedPeople} />
     </section>
   {/if}
 </Portal>

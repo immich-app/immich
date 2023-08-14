@@ -6,47 +6,47 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import FaceThumbnail from '$lib/components/assets/thumbnail/face-thumbnail.svelte';
 
-  export let selectedPeopleIds: Set<string> = new Set();
+  export let selectedPeople: Set<PersonResponseDto> = new Set();
   let people: PersonResponseDto[] = [];
-  let selectedPeople: PersonResponseDto[] = [];
+  let newPeople: PersonResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{ close: void; confirm: { people: PersonResponseDto[] } }>();
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
 
-    people = data.people.filter((p) => !selectedPeopleIds.has(p.id));
+    const selectedPeopleIds = Array.from(selectedPeople).map((p) => p.id);
+    people = data.people.filter((p) => !selectedPeopleIds.includes(p.id));
   });
 
   const handleSelection = (e: CustomEvent<{ person: PersonResponseDto }>) => {
     const person = e.detail.person;
 
-    if (selectedPeople.some((p) => p.id === person.id)) {
-      selectedPeople = selectedPeople.filter((p) => p.id !== person.id);
+    if (newPeople.some((p) => p.id === person.id)) {
+      newPeople = newPeople.filter((p) => p.id !== person.id);
     } else {
-      selectedPeople = [...selectedPeople, person];
+      newPeople = [...newPeople, person];
     }
   };
 
   const onConfirmClicked = () => {
-    dispatch('confirm', { people: selectedPeople });
+    dispatch('confirm', { people: newPeople });
   };
 </script>
 
 <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => dispatch('close')}>
   <svelte:fragment slot="leading">
     <p class="text-immich-fg dark:text-immich-dark-fg font-medium">
-      {#if selectedPeople.length === 0}
+      {#if newPeople.length === 0}
         Select faces
       {:else}
-        {selectedPeople.length} people selected
+        {newPeople.length} people selected
       {/if}
     </p>
   </svelte:fragment>
 
   <svelte:fragment slot="trailing">
-    <Button disabled={selectedPeople.length === 0} size="sm" title="Confirm" on:click={onConfirmClicked}>Confirm</Button
-    >
+    <Button disabled={newPeople.length === 0} size="sm" title="Confirm" on:click={onConfirmClicked}>Confirm</Button>
   </svelte:fragment>
 </ControlAppBar>
 
@@ -57,7 +57,7 @@
       thumbnailSize={180}
       on:select={handleSelection}
       on:click={handleSelection}
-      selected={selectedPeople.some((p) => p.id === person.id)}
+      selected={newPeople.some((p) => p.id === person.id)}
     />
   {/each}
 </div>
