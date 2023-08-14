@@ -239,6 +239,7 @@ class MapPage extends HookConsumerWidget {
         extendBodyBehindAppBar: true,
         body: FlutterMap(
           options: MapOptions(
+            maxBounds: LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
             interactiveFlags: InteractiveFlag.doubleTapZoom |
                 InteractiveFlag.drag |
                 InteractiveFlag.flingAnimation |
