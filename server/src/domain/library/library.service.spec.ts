@@ -214,7 +214,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      mockUser = userStub.admin;
+      mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryJob = {
