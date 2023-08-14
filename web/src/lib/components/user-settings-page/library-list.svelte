@@ -35,7 +35,6 @@
 
   let dropdownOpen: boolean[] = [];
 
-
   let createLibraryDropdownOpen = false;
 
   onMount(() => {
@@ -301,11 +300,11 @@
       </table>
     {/if}
     <div class="mb-2 flex justify-end">
-        <Button>Create Library</Button>
-        <Dropdown bind:open={createLibraryDropdownOpen}>
-          <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
-          <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
-        </Dropdown>
+      <Button>Create Library</Button>
+      <Dropdown bind:open={createLibraryDropdownOpen}>
+        <DropdownItem on:click={() => handleCreate(LibraryType.Upload)}>Create Upload Library</DropdownItem>
+        <DropdownItem on:click={() => handleCreate(LibraryType.External)}>Create External Library</DropdownItem>
+      </Dropdown>
     </div>
   </div>
 </section>
