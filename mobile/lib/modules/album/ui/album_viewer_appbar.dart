@@ -217,6 +217,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 toastType: ToastType.error,
               );
             }
+
+            titleFocusNode.unfocus();
           },
           icon: const Icon(Icons.check_rounded),
           splashRadius: 25,
