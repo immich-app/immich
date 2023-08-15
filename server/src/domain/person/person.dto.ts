@@ -18,7 +18,8 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
-  birthDate?: Date;
+  @ApiProperty({ format: 'date' })
+  birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.
@@ -63,7 +64,8 @@ export class PeopleUpdateItem {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
-  birthDate?: Date;
+  @ApiProperty({ format: 'date' })
+  birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.
@@ -94,6 +96,8 @@ export class PersonSearchDto {
 export class PersonResponseDto {
   id!: string;
   name!: string;
+  @ApiProperty({ format: 'date' })
+  birthDate?: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
 }
@@ -112,6 +116,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
+    birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
   };
