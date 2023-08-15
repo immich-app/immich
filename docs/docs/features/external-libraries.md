@@ -78,7 +78,6 @@ This action is done by the admin of the instance.
 
 ### Create external library
 
-
 - Click on your user name in the top right corner -> Account Settings
 - Click on Libraries
 - Click on Create Library, then Create External Library

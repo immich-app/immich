@@ -152,7 +152,7 @@ export class LibraryService {
       throw new BadRequestException("User has no external path set, can't import asset");
     }
 
-    if (!job.assetPath.match(new RegExp(`^${user.externalPath}`))) {
+    if (!path.normalize(job.assetPath).match(new RegExp(`^${user.externalPath}`))) {
       throw new BadRequestException("Asset must be within the user's external path");
     }
 
