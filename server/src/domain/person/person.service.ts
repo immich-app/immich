@@ -64,7 +64,7 @@ export class PersonService {
     let person = await this.findOrFail(authUser, id);
 
     if (dto.name != undefined || dto.isHidden !== undefined) {
-      person = await this.repository.update({ id, name: dto.name, isHidden: dto.isHidden });
+      person = await this.repository.update({ id, name: dto.name, birthDate: dto.birthDate, isHidden: dto.isHidden });
       const assets = await this.repository.getAssets(authUser.id, id);
       const ids = assets.map((asset) => asset.id);
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
@@ -104,6 +104,7 @@ export class PersonService {
         await this.update(authUser, person.id, {
           isHidden: person.isHidden,
           name: person.name,
+          birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
         }),
           results.push({ id: person.id, success: true });

@@ -1,7 +1,7 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -11,6 +11,14 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  /**
+   * Person date of birth.
+   */
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  birthDate?: Date;
 
   /**
    * Asset is used to get the feature face thumbnail.
@@ -48,6 +56,14 @@ export class PeopleUpdateItem {
   @IsOptional()
   @IsString()
   name?: string;
+
+  /**
+   * Person date of birth.
+   */
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  birthDate?: Date;
 
   /**
    * Asset is used to get the feature face thumbnail.
