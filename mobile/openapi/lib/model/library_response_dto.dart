@@ -15,7 +15,7 @@ class LibraryResponseDto {
   LibraryResponseDto({
     required this.assetCount,
     required this.createdAt,
-    this.excludePatterns = const [],
+    this.exclusionPatterns = const [],
     required this.id,
     this.importPaths = const [],
     required this.name,
@@ -29,7 +29,7 @@ class LibraryResponseDto {
 
   DateTime createdAt;
 
-  List<String> excludePatterns;
+  List<String> exclusionPatterns;
 
   String id;
 
@@ -49,7 +49,7 @@ class LibraryResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
      other.assetCount == assetCount &&
      other.createdAt == createdAt &&
-     other.excludePatterns == excludePatterns &&
+     other.exclusionPatterns == exclusionPatterns &&
      other.id == id &&
      other.importPaths == importPaths &&
      other.name == name &&
@@ -63,7 +63,7 @@ class LibraryResponseDto {
     // ignore: unnecessary_parenthesis
     (assetCount.hashCode) +
     (createdAt.hashCode) +
-    (excludePatterns.hashCode) +
+    (exclusionPatterns.hashCode) +
     (id.hashCode) +
     (importPaths.hashCode) +
     (name.hashCode) +
@@ -73,13 +73,13 @@ class LibraryResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, excludePatterns=$excludePatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetCount'] = this.assetCount;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'excludePatterns'] = this.excludePatterns;
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'id'] = this.id;
       json[r'importPaths'] = this.importPaths;
       json[r'name'] = this.name;
@@ -104,8 +104,8 @@ class LibraryResponseDto {
       return LibraryResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         createdAt: mapDateTime(json, r'createdAt', '')!,
-        excludePatterns: json[r'excludePatterns'] is List
-            ? (json[r'excludePatterns'] as List).cast<String>()
+        exclusionPatterns: json[r'exclusionPatterns'] is List
+            ? (json[r'exclusionPatterns'] as List).cast<String>()
             : const [],
         id: mapValueOfType<String>(json, r'id')!,
         importPaths: json[r'importPaths'] is List
@@ -165,7 +165,7 @@ class LibraryResponseDto {
   static const requiredKeys = <String>{
     'assetCount',
     'createdAt',
-    'excludePatterns',
+    'exclusionPatterns',
     'id',
     'importPaths',
     'name',

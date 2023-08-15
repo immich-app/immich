@@ -11,7 +11,7 @@
 
   let addExclusionPattern = false;
   let editExclusionPattern: number | null = null;
-  let deleteExcludePattern: number | null = null;
+  let deleteExclusionPattern: number | null = null;
 
   let exclusionPatternToAdd: string;
   let editedExclusionPattern: string;
@@ -19,10 +19,10 @@
   let exclusionPatterns: string[] = [];
 
   onMount(() => {
-    if (library.excludePatterns) {
-      exclusionPatterns = library.excludePatterns;
+    if (library.exclusionPatterns) {
+      exclusionPatterns = library.exclusionPatterns;
     } else {
-      library.excludePatterns = [];
+      library.exclusionPatterns = [];
     }
   });
 
@@ -40,14 +40,15 @@
       return;
     }
 
-    if (!library.excludePatterns) {
-      library.excludePatterns = [];
+    if (!library.exclusionPatterns) {
+      library.exclusionPatterns = [];
     }
 
     try {
-      library.excludePatterns.push(exclusionPatternToAdd);
-      exclusionPatterns = library.excludePatterns;
+      library.exclusionPatterns.push(exclusionPatternToAdd);
+      exclusionPatterns = library.exclusionPatterns;
       addExclusionPattern = false;
+      console.log(library);
     } catch (error) {
       handleError(error, 'Unable to add exclude pattern');
     }
@@ -58,13 +59,13 @@
       return;
     }
 
-    if (!library.excludePatterns) {
-      library.excludePatterns = [];
+    if (!library.exclusionPatterns) {
+      library.exclusionPatterns = [];
     }
 
     try {
-      library.excludePatterns[editExclusionPattern] = editedExclusionPattern;
-      exclusionPatterns = library.excludePatterns;
+      library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
+      exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
       editExclusionPattern = null;
       handleError(error, 'Unable to edit exclude pattern');
@@ -72,20 +73,20 @@
   };
 
   const handleDeleteExclusionPattern = async () => {
-    if (!deleteExcludePattern) {
+    if (!deleteExclusionPattern) {
       return;
     }
 
     try {
-      if (!library.excludePatterns) {
-        library.excludePatterns = [];
+      if (!library.exclusionPatterns) {
+        library.exclusionPatterns = [];
       }
 
-      const pathToDelete = library.excludePatterns[deleteExcludePattern];
-      library.excludePatterns = library.excludePatterns.filter((path) => path != pathToDelete);
-      exclusionPatterns = library.excludePatterns;
+      const pathToDelete = library.exclusionPatterns[deleteExclusionPattern];
+      library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
+      exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      deleteExcludePattern = null;
+      deleteExclusionPattern = null;
       handleError(error, 'Unable to delete exclude pattern');
     }
   };
@@ -123,22 +124,22 @@
 
   <div class="mt-4 flex w-full gap-4">
     <table class="w-full text-left">
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-        {#each exclusionPatterns as excludePattern, listIndex}
+      <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
+        {#each exclusionPatterns as exclusionPatterns, listIndex}
           <tr
-            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+            class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
               listIndex % 2 == 0
                 ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="w-3/4 text-ellipsis px-4 text-sm">{excludePattern}</td>
+            <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPatterns}</td>
             <td class="w-1/4 text-ellipsis px-4 text-sm">
               <button
                 on:click={() => {
                   editExclusionPattern = listIndex;
                 }}
-                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
               >
                 <PencilOutline size="16" />
               </button>
@@ -146,7 +147,7 @@
           </tr>
         {/each}
         <tr
-          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+          class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
             exclusionPatterns.length % 2 == 0
               ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'

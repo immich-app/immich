@@ -66,6 +66,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
+    console.log(library)
     return this.save(library);
   }
 

@@ -13,14 +13,14 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
-    this.excludePatterns = const [],
+    this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
     required this.name,
     required this.type,
   });
 
-  List<String> excludePatterns;
+  List<String> exclusionPatterns;
 
   List<String> importPaths;
 
@@ -38,7 +38,7 @@ class CreateLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
-     other.excludePatterns == excludePatterns &&
+     other.exclusionPatterns == exclusionPatterns &&
      other.importPaths == importPaths &&
      other.isVisible == isVisible &&
      other.name == name &&
@@ -47,18 +47,18 @@ class CreateLibraryDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (excludePatterns.hashCode) +
+    (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (name.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[excludePatterns=$excludePatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'excludePatterns'] = this.excludePatterns;
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'importPaths'] = this.importPaths;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
@@ -78,8 +78,8 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
-        excludePatterns: json[r'excludePatterns'] is List
-            ? (json[r'excludePatterns'] as List).cast<String>()
+        exclusionPatterns: json[r'exclusionPatterns'] is List
+            ? (json[r'exclusionPatterns'] as List).cast<String>()
             : const [],
         importPaths: json[r'importPaths'] is List
             ? (json[r'importPaths'] as List).cast<String>()
@@ -134,7 +134,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'excludePatterns',
+    'exclusionPatterns',
     'importPaths',
     'name',
     'type',

@@ -23,7 +23,7 @@ export class CreateLibraryDto {
 
   @IsOptional()
   @IsString({ each: true })
-  excludePatterns!: string[];
+  exclusionPatterns!: string[];
 }
 
 export class UpdateLibraryDto {
@@ -44,13 +44,13 @@ export class UpdateLibraryDto {
 
   @IsOptional()
   @IsString({ each: true })
-  excludePatterns!: string[];
+  exclusionPatterns!: string[];
 }
 
 export class CrawlOptionsDto {
   pathsToCrawl!: string[];
   includeHidden? = false;
-  excludePatterns?: string[];
+  exclusionPatterns?: string[];
 }
 
 export class GetLibrariesDto {
@@ -86,7 +86,7 @@ export class LibraryResponseDto {
 
   importPaths!: string[];
 
-  excludePatterns!: string[];
+  exclusionPatterns!: string[];
 
   createdAt!: Date;
   updatedAt!: Date;
@@ -122,6 +122,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     refreshedAt: entity.refreshedAt,
     assetCount,
     importPaths: entity.importPaths,
-    excludePatterns: entity.exclusionPatterns,
+    exclusionPatterns: entity.exclusionPatterns,
   };
 }

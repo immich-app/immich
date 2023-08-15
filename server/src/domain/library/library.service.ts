@@ -74,7 +74,7 @@ export class LibraryService {
       assets: [],
       type: dto.type,
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.excludePatterns ?? [],
+      exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
 
@@ -290,7 +290,7 @@ export class LibraryService {
     const crawledAssetPaths = (
       await this.crawl({
         pathsToCrawl: library.importPaths,
-        excludePatterns: library.exclusionPatterns,
+        exclusionPatterns: library.exclusionPatterns,
       })
     ).map(path.normalize);
 
@@ -358,6 +358,6 @@ export class LibraryService {
 
     paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
 
-    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns });
+    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns });
   }
 }

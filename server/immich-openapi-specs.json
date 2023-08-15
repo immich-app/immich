@@ -5696,7 +5696,7 @@
       },
       "CreateLibraryDto": {
         "properties": {
-          "excludePatterns": {
+          "exclusionPatterns": {
             "items": {
               "type": "string"
             },
@@ -5722,7 +5722,7 @@
           "type",
           "name",
           "importPaths",
-          "excludePatterns"
+          "exclusionPatterns"
         ],
         "type": "object"
       },
@@ -6211,7 +6211,7 @@
             "format": "date-time",
             "type": "string"
           },
-          "excludePatterns": {
+          "exclusionPatterns": {
             "items": {
               "type": "string"
             },
@@ -6252,7 +6252,7 @@
           "ownerId",
           "name",
           "importPaths",
-          "excludePatterns",
+          "exclusionPatterns",
           "createdAt",
           "updatedAt"
         ],
@@ -7485,7 +7485,7 @@
       },
       "UpdateLibraryDto": {
         "properties": {
-          "excludePatterns": {
+          "exclusionPatterns": {
             "items": {
               "type": "string"
             },
@@ -7512,7 +7512,7 @@
           "id",
           "name",
           "importPaths",
-          "excludePatterns"
+          "exclusionPatterns"
         ],
         "type": "object"
       },

@@ -925,7 +925,7 @@ export interface CreateLibraryDto {
      * @type {Array<string>}
      * @memberof CreateLibraryDto
      */
-    'excludePatterns': Array<string>;
+    'exclusionPatterns': Array<string>;
     /**
      * 
      * @type {Array<string>}
@@ -1578,7 +1578,7 @@ export interface LibraryResponseDto {
      * @type {Array<string>}
      * @memberof LibraryResponseDto
      */
-    'excludePatterns': Array<string>;
+    'exclusionPatterns': Array<string>;
     /**
      * 
      * @type {string}
@@ -3178,7 +3178,7 @@ export interface UpdateLibraryDto {
      * @type {Array<string>}
      * @memberof UpdateLibraryDto
      */
-    'excludePatterns': Array<string>;
+    'exclusionPatterns': Array<string>;
     /**
      * 
      * @type {string}
