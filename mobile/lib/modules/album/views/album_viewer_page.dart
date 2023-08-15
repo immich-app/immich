@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
@@ -36,7 +37,14 @@ class AlbumViewerPage extends HookConsumerWidget {
       () {
         // Fetch album updates, e.g., cover image
         ref.invalidate(albumDetailProvider(albumId));
-        return null;
+
+        titleFocusNode.addListener(() {
+          if (!titleFocusNode.hasFocus) {
+            ref.read(albumViewerProvider.notifier).disableEditAlbum();
+          }
+        });
+
+        return () => titleFocusNode.dispose();
       },
       [],
     );

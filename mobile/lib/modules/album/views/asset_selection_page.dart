@@ -73,9 +73,12 @@ class AssetSelectionPage extends HookConsumerWidget {
                 AutoRouter.of(context)
                     .popForced<AssetSelectionPageResult>(payload);
               },
-              child: const Text(
+              child: Text(
                 "share_add",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
               ).tr(),
             ),
         ],
