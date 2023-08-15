@@ -13,7 +13,7 @@ import { IAssetRepository } from './asset.repository';
 import {
   AssetIdsDto,
   DownloadArchiveInfo,
-  DownloadDto,
+  DownloadInfoDto,
   DownloadResponseDto,
   MemoryLaneDto,
   TimeBucketAssetDto,
@@ -148,6 +148,9 @@ export class AssetService {
     if (dto.albumId) {
       await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
     } else if (dto.userId) {
+      if (dto.isArchived !== false) {
+        await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
+      }
       await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
@@ -176,7 +179,7 @@ export class AssetService {
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
   }
 
-  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {
+  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
@@ -234,7 +237,7 @@ export class AssetService {
     return { stream: zip.stream };
   }
 
-  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadDto): Promise<AsyncGenerator<AssetEntity[]>> {
+  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<AsyncGenerator<AssetEntity[]>> {
     const PAGINATION_SIZE = 2500;
 
     if (dto.assetIds) {

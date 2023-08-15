@@ -19,6 +19,8 @@ export enum Permission {
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
+  ARCHIVE_READ = 'archive.read',
+
   LIBRARY_UPDATE = 'library.update',
   LIBRARY_DELETE = 'library.delete',
   LIBRARY_READ = 'library.read',
@@ -157,6 +159,9 @@ export class AccessCore {
 
       case Permission.ALBUM_REMOVE_ASSET:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ARCHIVE_READ:
+        return authUser.id === id;
 
       case Permission.LIBRARY_READ:
         return this.repository.library.hasOwnerAccess(authUser.id, id);

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsPositive } from 'class-validator';
 import { ValidateUUID } from '../../domain.util';
 
-export class DownloadDto {
+export class DownloadInfoDto {
   @ValidateUUID({ each: true, optional: true })
   assetIds?: string[];
 
@@ -15,6 +15,7 @@ export class DownloadDto {
   @IsInt()
   @IsPositive()
   @IsOptional()
+  @ApiProperty({ type: 'integer' })
   archiveSize?: number;
 }
 

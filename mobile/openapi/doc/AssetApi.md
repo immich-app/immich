@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
-[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download | 
+[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 [**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -23,7 +23,7 @@ Method | HTTP request | Description
 [**getByTimeBucket**](AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
+[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
@@ -842,7 +842,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getDownloadInfo**
-> DownloadResponseDto getDownloadInfo(assetIds, albumId, userId, archiveSize, key)
+> DownloadResponseDto getDownloadInfo(downloadInfoDto, key)
 
 
 
@@ -865,14 +865,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final assetIds = []; // List<String> | 
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final archiveSize = 8.14; // num | 
+final downloadInfoDto = DownloadInfoDto(); // DownloadInfoDto | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getDownloadInfo(assetIds, albumId, userId, archiveSize, key);
+    final result = api_instance.getDownloadInfo(downloadInfoDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getDownloadInfo: $e\n');
@@ -883,10 +880,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetIds** | [**List<String>**](String.md)|  | [optional] [default to const []]
- **albumId** | **String**|  | [optional] 
- **userId** | **String**|  | [optional] 
- **archiveSize** | **num**|  | [optional] 
+ **downloadInfoDto** | [**DownloadInfoDto**](DownloadInfoDto.md)|  | 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -899,7 +893,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

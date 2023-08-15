@@ -97,7 +97,7 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfo({ List<String> assetIds, String albumId, String userId, num archiveSize, String key }) async
+    //Future<DownloadResponseDto> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String key }) async
     test('test getDownloadInfo', () async {
       // TODO
     });
