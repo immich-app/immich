@@ -116,10 +116,12 @@
 {/if}
 
 <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-  <div class="mt-8 flex w-full gap-4 px-4">
+  <div class="flex w-full gap-4">
     <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
     <Button type="submit" fullwidth>Save</Button>
   </div>
+
+  <div class="mt-4 flex w-full gap-4">
   <table class="w-full text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as excludePattern, listIndex}
@@ -166,5 +168,6 @@
       >
     </tbody>
   </table>
+  </div>
   <div class="flex justify-end" />
 </form>

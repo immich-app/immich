@@ -276,17 +276,17 @@
                 </td>
               </tr>
               {#if renameLibrary == index}
-                <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryRenameForm {library} on:submit={handleEdit} on:cancel={() => (renameLibrary = null)} />
                 </div>
               {/if}
               {#if editImportPaths == index}
-                <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryImportPathsForm {library} on:submit={handleEdit} on:cancel={() => (editImportPaths = null)} />
                 </div>
               {/if}
               {#if editScanSettings == index}
-                <div transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
                     on:submit={handleEdit}
