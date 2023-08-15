@@ -297,7 +297,9 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
+            .toLowerCase()
+            .endsWith('.insp')}
           <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
