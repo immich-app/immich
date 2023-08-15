@@ -5,6 +5,7 @@
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
@@ -37,6 +38,7 @@
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
     SELECT_FACE = 'select-face',
+    SET_BIRTH_DATE = 'set-birth-date',
     MERGE_FACES = 'merge-faces',
     SUGGEST_MERGE = 'suggest-merge',
   }
@@ -185,6 +187,10 @@
   />
 {/if}
 
+{#if viewMode === ViewMode.SET_BIRTH_DATE}
+  <SetBirthDateModal />
+{/if}
+
 {#if viewMode === ViewMode.MERGE_FACES}
   <MergeFaceSelector person={data.person} on:go-back={() => (viewMode = ViewMode.VIEW_ASSETS)} />
 {/if}
@@ -211,6 +217,7 @@
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={DotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
+            <MenuOption text="Set birth date" on:click={() => (viewMode = ViewMode.SET_BIRTH_DATE)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
           </AssetSelectContextMenu>
         </svelte:fragment>
