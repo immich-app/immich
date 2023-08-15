@@ -32,6 +32,7 @@ export enum JobName {
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
   METADATA_EXTRACTION = 'metadata-extraction',
+  LINK_LIVE_PHOTOS = 'link-live-photos',
 
   // user deletion
   USER_DELETION = 'user-deletion',
@@ -98,6 +99,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
   [JobName.METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.LINK_LIVE_PHOTOS]: QueueName.METADATA_EXTRACTION,
 
   // storage template
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,

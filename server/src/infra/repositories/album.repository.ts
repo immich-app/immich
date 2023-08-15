@@ -1,7 +1,7 @@
 import { AlbumAssetCount, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 
@@ -10,6 +10,7 @@ export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   getById(id: string): Promise<AlbumEntity | null> {
@@ -82,7 +83,7 @@ export class AlbumRepository implements IAlbumRepository {
    */
   async getInvalidThumbnail(): Promise<string[]> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = dataSource
+    const albumHasAssets = this.dataSource
       .createQueryBuilder()
       .select('1')
       .from('albums_assets_assets', 'albums_assets')
@@ -146,6 +147,16 @@ export class AlbumRepository implements IAlbumRepository {
         owner: true,
       },
     });
+  }
+
+  async removeAsset(assetId: string): Promise<void> {
+    // Using dataSource, because there is no direct access to albums_assets_assets.
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId })
+      .execute();
   }
 
   hasAsset(id: string, assetId: string): Promise<boolean> {
