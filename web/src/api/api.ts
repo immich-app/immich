@@ -3,6 +3,7 @@ import {
   APIKeyApi,
   AssetApi,
   AssetApiFp,
+  AssetJobName,
   AuthenticationApi,
   Configuration,
   ConfigurationParameters,
@@ -119,6 +120,26 @@ export class ImmichApi {
     };
 
     return names[jobName];
+  }
+
+  public getAssetJobName(job: AssetJobName) {
+    const names: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: 'Refresh metadata',
+      [AssetJobName.RegenerateThumbnail]: 'Refresh thumbnails',
+      [AssetJobName.TranscodeVideo]: 'Refresh encoded videos',
+    };
+
+    return names[job];
+  }
+
+  public getAssetJobMessage(job: AssetJobName) {
+    const messages: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: 'Refreshing metadata',
+      [AssetJobName.RegenerateThumbnail]: `Regenerating thumbnails`,
+      [AssetJobName.TranscodeVideo]: `Refreshing encoded video`,
+    };
+
+    return messages[job];
   }
 }
 
