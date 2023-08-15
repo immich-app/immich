@@ -5,7 +5,7 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
-  DownloadDto,
+  DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -39,13 +39,13 @@ export class AssetController {
   }
 
   @SharedLinkRoute()
-  @Get('download')
-  getDownloadInfo(@AuthUser() authUser: AuthUserDto, @Query() dto: DownloadDto): Promise<DownloadResponseDto> {
+  @Post('download/info')
+  getDownloadInfo(@AuthUser() authUser: AuthUserDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     return this.service.getDownloadInfo(authUser, dto);
   }
 
   @SharedLinkRoute()
-  @Post('download')
+  @Post('download/archive')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   downloadArchive(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
