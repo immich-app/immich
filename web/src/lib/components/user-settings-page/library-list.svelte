@@ -64,8 +64,6 @@
     const { data } = await api.libraryApi.getAllLibraries();
     libraries = data;
 
-    console.log(data);
-
     dropdownOpen.length = libraries.length;
 
     for (let i = 0; i < libraries.length; i++) {
