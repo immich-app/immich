@@ -148,6 +148,9 @@ export class AssetService {
     if (dto.albumId) {
       await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
     } else if (dto.userId) {
+      if (dto.isArchived !== false) {
+        await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
+      }
       await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
