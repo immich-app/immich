@@ -2,8 +2,6 @@
   import { createEventDispatcher } from 'svelte';
   import FolderRemove from 'svelte-material-icons/FolderRemove.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { clickOutside } from '../../utils/click-outside';
-  import { fade } from 'svelte/transition';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let exclusionPattern: string;
@@ -17,13 +15,13 @@
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
   <div
-    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[500px] max-w-[95vw] rounded-3xl border p-4 py-8 shadow-sm"
   >
     <div
-      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+      class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
     >
       <FolderRemove size="4em" />
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Add Exclusion pattern</h1>
+      <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">Add Exclusion pattern</h1>
     </div>
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
