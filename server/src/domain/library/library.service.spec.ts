@@ -410,7 +410,7 @@ describe(LibraryService.name, () => {
 
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
-      options.excludePatterns = ['**/*.tif'];
+      options.exclusionPatterns = ['**/*.tif'];
       const paths: string[] = await sut.crawl(options);
       expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
     });
@@ -423,7 +423,7 @@ describe(LibraryService.name, () => {
 
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
-      options.excludePatterns = ['**/*.TIF'];
+      options.exclusionPatterns = ['**/*.TIF'];
       const paths: string[] = await sut.crawl(options);
       expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
     });
@@ -439,7 +439,7 @@ describe(LibraryService.name, () => {
 
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
-      options.excludePatterns = ['**/raw/**'];
+      options.exclusionPatterns = ['**/raw/**'];
       const paths: string[] = await sut.crawl(options);
       expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
     });
