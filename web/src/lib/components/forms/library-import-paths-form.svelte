@@ -107,7 +107,7 @@
   />
 {/if}
 
-{#if editImportPath}
+{#if editImportPath != null}
   <LibraryImportPathForm
     title="Edit Import Path"
     submitText="Save"
