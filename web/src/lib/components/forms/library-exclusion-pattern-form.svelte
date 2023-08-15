@@ -4,6 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { clickOutside } from '../../utils/click-outside';
   import { fade } from 'svelte/transition';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let exclusionPattern: string;
   export let canDelete = false;
@@ -14,43 +15,43 @@
   const handleSubmit = () => dispatch('submit', { excludePattern: exclusionPattern });
 </script>
 
-<section
-  in:fade={{ duration: 100 }}
-  out:fade={{ duration: 100 }}
-  class="fixed left-0 top-0 z-[991] flex h-screen w-screen place-content-center place-items-center bg-black/40"
->
-  <div class="z-[9999]" use:clickOutside on:outclick={() => handleCancel()}>
+<FullScreenModal on:clickOutside={() => handleCancel()}>
+  <div
+    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  >
     <div
-      class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <div
-        class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-      >
-        <FolderRemove size="4em" />
-        <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Add Exclusion pattern</h1>
-      </div>
-
-      <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-        <p class="p-5 text-sm">
-          Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have
-          folders that contain files you don't want to import, such as RAW files.
-          <br /><br />
-          Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named "Raw",
-          use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore".
-        </p>
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="pattern">Pattern</label>
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={exclusionPattern} />
-        </div>
-        <div class="mt-8 flex w-full gap-4 px-4">
-          <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-          {#if canDelete}
-            <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
-          {/if}
-
-          <Button type="submit" fullwidth>{submitText}</Button>
-        </div>
-      </form>
+      <FolderRemove size="4em" />
+      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Add Exclusion pattern</h1>
     </div>
+
+    <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+      <p class="p-5 text-sm">
+        Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have
+        folders that contain files you don't want to import, such as RAW files.
+        <br /><br />
+        Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named "Raw",
+        use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore".
+      </p>
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="pattern">Pattern</label>
+        <input
+          class="immich-form-input"
+          id="exclusionPattern"
+          name="exclusionPattern"
+          type="text"
+          bind:value={exclusionPattern}
+        />
+      </div>
+      <div class="mt-8 flex w-full gap-4 px-4">
+        <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
+        {#if canDelete}
+          <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+        {/if}
+
+        <Button type="submit" fullwidth>{submitText}</Button>
+      </div>
+    </form>
   </div>
-</section>
+</FullScreenModal>

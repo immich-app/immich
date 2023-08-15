@@ -11,7 +11,6 @@
 
   let addExclusionPattern = false;
   let editExclusionPattern: number | null = null;
-  let deleteExclusionPattern: number | null = null;
 
   let exclusionPatternToAdd: string;
   let editedExclusionPattern: string;
@@ -54,7 +53,7 @@
   };
 
   const handleEditExclusionPattern = async () => {
-    if (!editExclusionPattern) {
+    if (editExclusionPattern === null) {
       return;
     }
 
@@ -66,13 +65,14 @@
       library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      editExclusionPattern = null;
       handleError(error, 'Unable to edit exclude pattern');
+    } finally {
+      editExclusionPattern = null;
     }
   };
 
   const handleDeleteExclusionPattern = async () => {
-    if (!deleteExclusionPattern) {
+    if (editExclusionPattern === null) {
       return;
     }
 
@@ -81,12 +81,13 @@
         library.exclusionPatterns = [];
       }
 
-      const pathToDelete = library.exclusionPatterns[deleteExclusionPattern];
+      const pathToDelete = library.exclusionPatterns[editExclusionPattern];
       library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      deleteExclusionPattern = null;
       handleError(error, 'Unable to delete exclude pattern');
+    } finally {
+      editExclusionPattern = null;
     }
   };
 </script>
@@ -102,7 +103,7 @@
   />
 {/if}
 
-{#if editExclusionPattern}
+{#if editExclusionPattern != null}
   <LibraryExclusionPatternForm
     submitText="Save"
     canDelete={true}
@@ -124,7 +125,7 @@
   <div class="mt-4 flex w-full gap-4">
     <table class="w-full text-left">
       <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-        {#each exclusionPatterns as exclusionPatterns, listIndex}
+        {#each exclusionPatterns as exclusionPattern, listIndex}
           <tr
             class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
               listIndex % 2 == 0
@@ -132,11 +133,13 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPatterns}</td>
+            <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
             <td class="w-1/4 text-ellipsis px-4 text-sm">
               <button
+                type="button"
                 on:click={() => {
                   editExclusionPattern = listIndex;
+                  editedExclusionPattern = exclusionPattern;
                 }}
                 class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
               >
