@@ -30,6 +30,9 @@ export class PersonEntity {
   @Column({ default: '' })
   name!: string;
 
+  @Column({ type: 'date' })
+  birthDate?: Date | null;
+
   @Column({ default: '' })
   thumbnailPath!: string;
 
