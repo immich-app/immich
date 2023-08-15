@@ -3,11 +3,12 @@ import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/services/map.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:openapi/api.dart';
 
 final mapMarkerFutureProvider =
-    FutureProvider.autoDispose<List<AssetMapMarker>?>((ref) async {
-  final service = ref.watch(mapServiceProvider);
-  final mapState = ref.watch(mapStateNotifier);
+    FutureProvider.autoDispose<List<MapMarkerResponseDto>?>((ref) async {
+  final service = ref.read(mapServiceProvider);
+  final mapState = ref.read(mapStateNotifier);
   DateTime? fileCreatedAfter;
 
   int? relativeTime = mapState.relativeTime;
@@ -33,15 +34,3 @@ final mapMarkerExifInfoProvider =
   final service = ref.watch(mapServiceProvider);
   return await service.getExifInfoForMarker(remoteId);
 });
-
-class AssetMapMarker {
-  final double latitude;
-  final double longitude;
-  final String assetId;
-
-  AssetMapMarker({
-    required this.latitude,
-    required this.longitude,
-    required this.assetId,
-  });
-}

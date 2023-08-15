@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -7,6 +6,7 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 final mapServiceProvider = Provider(
   (ref) => MapSerivce(
@@ -22,7 +22,7 @@ class MapSerivce {
 
   MapSerivce(this._apiService, this._db);
 
-  Future<List<AssetMapMarker>?> getMapMarkers({
+  Future<List<MapMarkerResponseDto>> getMapMarkers({
     bool? isFavorite,
     DateTime? fileCreatedAfter,
     DateTime? fileCreatedBefore,
@@ -33,22 +33,11 @@ class MapSerivce {
         fileCreatedAfter: fileCreatedAfter,
         fileCreatedBefore: fileCreatedBefore,
       );
-      if (markers == null) {
-        return null;
-      }
 
-      return markers
-          .map(
-            (m) => AssetMapMarker(
-              latitude: m.lat,
-              longitude: m.lon,
-              assetId: m.id,
-            ),
-          )
-          .toList();
+      return markers ?? [];
     } catch (error, stack) {
       log.severe("Cannot get map markers ${error.toString()}", error, stack);
-      return null;
+      return [];
     }
   }
 

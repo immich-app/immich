@@ -15,6 +15,8 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MapPage extends HookConsumerWidget {
@@ -23,16 +25,44 @@ class MapPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
+    final log = Logger("MapService");
     final mapState = ref.watch(mapStateNotifier);
     final isDarkTheme = useState(mapState.isDarkTheme);
-    final mapMarkerProvider = ref.watch(mapMarkerFutureProvider);
+    var mapMarkerProvider = ref.watch(mapMarkerFutureProvider);
+    final ValueNotifier<List<MapMarkerResponseDto>?> mapMarkers =
+        useState(<MapMarkerResponseDto>[]);
 
     useEffect(
       () {
         isDarkTheme.value = mapState.isDarkTheme;
         return null;
       },
-      [mapState],
+      [mapState.isDarkTheme],
+    );
+
+    mapMarkers.value = mapMarkerProvider.when(
+      skipLoadingOnRefresh: false,
+      error: (error, stackTrace) {
+        log.warning(
+          "Cannot get map markers ${error.toString()}",
+          error,
+          stackTrace,
+        );
+        return [];
+      },
+      // Using null as a loading indicator
+      loading: () => null,
+      data: (data) {
+        if (data == null) return [];
+        return data;
+      },
+    );
+
+    useEffect(
+      () {
+        return () => ref.invalidate(mapMarkerFutureProvider);
+      },
+      [mapState.relativeTime, mapState.showFavoriteOnly],
     );
 
     Widget buildBackButton() {
@@ -150,84 +180,75 @@ class MapPage extends HookConsumerWidget {
     }
 
     Widget buildMarkers() {
-      return mapMarkerProvider.when(
-        loading: () => const Center(child: ImmichLoadingIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (markers) {
-          if (markers == null || markers.isEmpty) {
-            return const MarkerLayer(
-              markers: [],
-            );
-          }
-          // Uses a modified version of MarkerClusterLayerWidget to support conditional spiderfy, etc.
-          return MarkerClusterLayerWidget(
-            options: MarkerClusterLayerOptions(
-              anchor: AnchorPos.align(AnchorAlign.center),
-              disableClusteringAtZoom: 19,
-              maxChildrenToSpiderfy: 11,
-              computeSpiderfyRadius: getSpiderifyRadius,
-              circleSpiralSwitchover: -1,
-              showPolygon: false,
-              size: const Size(40, 40),
-              computeSize: getClusterSize,
-              markers: markers
-                  .map(
-                    (e) => AssetMarker(
-                      remoteId: e.assetId,
-                      anchorPos: AnchorPos.align(AnchorAlign.center),
-                      point: LatLng(
-                        e.latitude,
-                        e.longitude,
+      return mapMarkers.value == null
+          ? const Center(child: ImmichLoadingIndicator())
+          : MarkerClusterLayerWidget(
+              options: MarkerClusterLayerOptions(
+                anchor: AnchorPos.align(AnchorAlign.center),
+                disableClusteringAtZoom: 19,
+                maxChildrenToSpiderfy: 11,
+                computeSpiderfyRadius: getSpiderifyRadius,
+                circleSpiralSwitchover: -1,
+                showPolygon: false,
+                size: const Size(40, 40),
+                computeSize: getClusterSize,
+                markers: mapMarkers.value!
+                    .map(
+                      (e) => AssetMarker(
+                        remoteId: e.id,
+                        anchorPos: AnchorPos.align(AnchorAlign.center),
+                        point: LatLng(
+                          e.lat,
+                          e.lon,
+                        ),
+                        width: 80,
+                        height: 80,
+                        builder: (ctx) => AssetMarkerIcon(
+                          id: e.id,
+                        ),
                       ),
-                      width: 80,
-                      height: 80,
-                      builder: (ctx) => AssetMarkerIcon(
-                        id: e.assetId,
-                      ),
-                    ),
-                  )
-                  .toList(),
-              builder: (context, markers) {
-                return ClusterMarkerIcon(
-                  markers: markers,
-                  isDarkTheme: isDarkTheme.value,
-                );
-              },
-              onClusterTap: (cluster) async {
-                if (cluster.mapMarkers.length > 10) {
-                  final exifInfo = await ref.read(
-                    mapMarkerExifInfoProvider(
-                      (cluster.mapMarkers[0] as AssetMarker).remoteId,
-                    ).future,
+                    )
+                    .toList(),
+                builder: (context, markers) {
+                  return ClusterMarkerIcon(
+                    markers: markers,
+                    isDarkTheme: isDarkTheme.value,
                   );
-                  var openFirstAsset = true;
-                  if (exifInfo != null) {
-                    final searchTerm = cluster.zoom > 12
-                        ? exifInfo.city
-                        : cluster.zoom > 9
-                            ? exifInfo.state
-                            : cluster.zoom > 4
-                                ? exifInfo.country
-                                : null;
-                    if (searchTerm != null) {
-                      openFirstAsset = false;
-                      AutoRouter.of(context).push(
-                        SearchResultRoute(searchTerm: 'm:$searchTerm'),
-                      );
+                },
+                onClusterTap: (cluster) async {
+                  if (cluster.mapMarkers.length > 10) {
+                    final exifInfo = await ref.read(
+                      mapMarkerExifInfoProvider(
+                        (cluster.mapMarkers[0] as AssetMarker).remoteId,
+                      ).future,
+                    );
+                    var openFirstAsset = true;
+                    if (exifInfo != null) {
+                      final searchTerm = cluster.zoom > 12
+                          ? exifInfo.city
+                          : cluster.zoom > 9
+                              ? exifInfo.state
+                              : cluster.zoom > 4
+                                  ? exifInfo.country
+                                  : null;
+                      if (searchTerm != null) {
+                        openFirstAsset = false;
+                        AutoRouter.of(context).push(
+                          SearchResultRoute(searchTerm: 'm:$searchTerm'),
+                        );
+                      }
+                    }
+                    if (openFirstAsset && cluster.zoom > 8) {
+                      await navigateToAsset(
+                          cluster.mapMarkers[0] as AssetMarker);
                     }
                   }
-                  if (openFirstAsset && cluster.zoom > 8) {
-                    await navigateToAsset(cluster.mapMarkers[0] as AssetMarker);
-                  }
-                }
-              },
-              onMarkerTap: (marker) async {
-                await navigateToAsset(marker as AssetMarker);
-              },
-            ),
-          );
-        },
-      );
+                },
+                onMarkerTap: (marker) async {
+                  await navigateToAsset(marker as AssetMarker);
+                },
+              ),
+            );
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -248,7 +269,7 @@ class MapPage extends HookConsumerWidget {
             center: LatLng(20, 20),
             zoom: 2,
             minZoom: 1,
-            maxZoom: 19, // max level supported by OSM
+            maxZoom: 19, // max level supported by OSM,
           ),
           nonRotatedChildren: [
             Positioned(
