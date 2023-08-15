@@ -122,52 +122,52 @@
   </div>
 
   <div class="mt-4 flex w-full gap-4">
-  <table class="w-full text-left">
-    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each exclusionPatterns as excludePattern, listIndex}
+    <table class="w-full text-left">
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        {#each exclusionPatterns as excludePattern, listIndex}
+          <tr
+            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+              listIndex % 2 == 0
+                ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+            }`}
+          >
+            <td class="w-3/4 text-ellipsis px-4 text-sm">{excludePattern}</td>
+            <td class="w-1/4 text-ellipsis px-4 text-sm">
+              <button
+                on:click={() => {
+                  editExclusionPattern = listIndex;
+                }}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <PencilOutline size="16" />
+              </button>
+            </td>
+          </tr>
+        {/each}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            listIndex % 2 == 0
+            exclusionPatterns.length % 2 == 0
               ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-3/4 text-ellipsis px-4 text-sm">{excludePattern}</td>
-          <td class="w-1/4 text-ellipsis px-4 text-sm">
-            <button
-              on:click={() => {
-                editExclusionPattern = listIndex;
-              }}
-              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-            >
-              <PencilOutline size="16" />
-            </button>
+          <td class="w-3/4 text-ellipsis px-4 text-sm">
+            {#if exclusionPatterns.length === 0}
+              No pattern added
+            {/if}
           </td>
-        </tr>
-      {/each}
-      <tr
-        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          exclusionPatterns.length % 2 == 0
-            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-        }`}
-      >
-        <td class="w-3/4 text-ellipsis px-4 text-sm">
-          {#if exclusionPatterns.length === 0}
-            No pattern added
-          {/if}
-        </td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm"
-          ><Button
-            size="sm"
-            on:click={() => {
-              addExclusionPattern = true;
-            }}>Add Exclusion Pattern</Button
-          ></td
-        ></tr
-      >
-    </tbody>
-  </table>
+          <td class="w-1/4 text-ellipsis px-4 text-sm"
+            ><Button
+              size="sm"
+              on:click={() => {
+                addExclusionPattern = true;
+              }}>Add Exclusion Pattern</Button
+            ></td
+          ></tr
+        >
+      </tbody>
+    </table>
   </div>
   <div class="flex justify-end" />
 </form>
