@@ -7,17 +7,13 @@ export const load = (async ({ locals: { user }, locals }) => {
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
-  let keys: APIKeyResponseDto[] = [];
-  let devices: AuthDeviceResponseDto[] = [];
-  let partners: UserResponseDto[] = [];
-  let oauthEnabled = false;
 
-  [keys, devices, partners, oauthEnabled] = await Promise.all([
-    locals.api.keyApi.getKeys().then((res) => res.data),
-    locals.api.authenticationApi.getAuthDevices().then((res) => res.data),
-    locals.api.partnerApi.getPartners({ direction: 'shared-by' }).then((res) => res.data),
-    locals.api.systemConfigApi.getConfig().then((res) => res.data.oauth.enabled),
-  ]);
+  const keys: APIKeyResponseDto[] = await locals.api.keyApi.getKeys().then((res) => res.data);
+  const devices: AuthDeviceResponseDto[] = await locals.api.authenticationApi.getAuthDevices().then((res) => res.data);
+  const partners: UserResponseDto[] = await locals.api.partnerApi
+    .getPartners({ direction: 'shared-by' })
+    .then((res) => res.data);
+  const oauthEnabled = await locals.api.systemConfigApi.getConfig().then((res) => res.data.oauth.enabled);
 
   return {
     user,
