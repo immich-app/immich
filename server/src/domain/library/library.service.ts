@@ -97,6 +97,31 @@ export class LibraryService {
       throw new BadRequestException('Library not found');
     }
 
+    const assets = await this.assetRepository.getByLibraryId([id]);
+    this.logger.debug(`Will delete ${assets.length} asset(s) in library ${id}`);
+
+    for (const asset of assets) {
+      if (asset.faces) {
+        await Promise.all(
+          asset.faces.map(({ assetId, personId }) =>
+            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+          ),
+        );
+      }
+
+      await this.assetRepository.remove(asset);
+      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
+
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
+      });
+
+      // TODO: currently we can't delete live photos from libraries
+    }
+
+    this.logger.log(`Deleting library ${id}`);
+
     await this.libraryRepository.delete(id);
   }
 
@@ -260,35 +285,8 @@ export class LibraryService {
   async handleOfflineAsset(job: ILibraryJob) {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
-    if (!existingAssetEntity) {
-      throw new BadRequestException(`Asset does not exist in database: ${job.assetPath}`);
-    }
-
     if (job.emptyTrash && existingAssetEntity) {
       this.logger.verbose(`Removing offline asset: ${job.assetPath}`);
-
-      const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
-      if (!asset) {
-        throw new BadRequestException(`Asset does not exist in database: ${job.assetPath}`);
-      }
-
-      if (asset.faces) {
-        await Promise.all(
-          asset.faces.map(({ assetId, personId }) =>
-            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-          ),
-        );
-      }
-
-      await this.assetRepository.remove(asset);
-      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
-
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
-      });
-
-      // TODO: currently we can't delete live photos from libraries
 
       await this.assetRepository.remove(existingAssetEntity);
     } else if (existingAssetEntity) {
