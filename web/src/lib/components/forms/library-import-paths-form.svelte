@@ -140,6 +140,7 @@
           <td class="w-4/5 text-ellipsis px-4 text-sm">{importPath}</td>
           <td class="w-1/5 text-ellipsis px-4 text-sm">
             <button
+              type="button"
               on:click={() => {
                 editImportPath = listIndex;
               }}
@@ -160,6 +161,7 @@
         <td class="w-4/5 text-ellipsis px-4 text-sm" />
         <td class="w-1/5 text-ellipsis px-4 text-sm"
           ><Button
+            type="button"
             size="sm"
             on:click={() => {
               addImportPath = true;
