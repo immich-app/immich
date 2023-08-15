@@ -11,7 +11,6 @@
 
   let addImportPath = false;
   let editImportPath: number | null = null;
-  let deleteImportPath: number | null = null;
 
   let importPathToAdd: string;
   let editedImportPath: string;
@@ -55,7 +54,7 @@
   };
 
   const handleEditImportPath = async () => {
-    if (!editImportPath) {
+    if (editImportPath === null) {
       return;
     }
 
@@ -75,7 +74,7 @@
   };
 
   const handleDeleteImportPath = async () => {
-    if (!deleteImportPath) {
+    if (editImportPath === null) {
       return;
     }
 
@@ -84,13 +83,13 @@
         library.importPaths = [];
       }
 
-      const pathToDelete = library.importPaths[deleteImportPath];
+      const pathToDelete = library.importPaths[editImportPath];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
       importPaths = library.importPaths;
     } catch (error) {
       handleError(error, 'Unable to delete import path');
     } finally {
-      deleteImportPath = null;
+      editImportPath = null;
     }
   };
 </script>
