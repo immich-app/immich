@@ -230,7 +230,7 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it("should reject an asset if directory traversal is attempted", async () => {
+    it('should reject an asset if directory traversal is attempted', async () => {
       mockfs({
         '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });

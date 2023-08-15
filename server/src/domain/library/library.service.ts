@@ -266,6 +266,30 @@ export class LibraryService {
 
     if (job.emptyTrash && existingAssetEntity) {
       this.logger.verbose(`Removing offline asset: ${job.assetPath}`);
+
+      const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
+      if (!asset) {
+        throw new BadRequestException(`Asset does not exist in database: ${job.assetPath}`);
+      }
+
+      if (asset.faces) {
+        await Promise.all(
+          asset.faces.map(({ assetId, personId }) =>
+            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+          ),
+        );
+      }
+
+      await this.assetRepository.remove(asset);
+      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
+
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
+      });
+
+      // TODO: currently we can't delete live photos from libraries
+
       await this.assetRepository.remove(existingAssetEntity);
     } else if (existingAssetEntity) {
       this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
