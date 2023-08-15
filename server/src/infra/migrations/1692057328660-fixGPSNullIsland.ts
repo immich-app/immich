@@ -7,7 +7,6 @@ export class FixGPSNullIsland1692057328660 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`UPDATE "exif" SET latitude = 0, longitude = 0 WHERE latitude = NULL AND longitude = NULL;`);
     }
 
 }
