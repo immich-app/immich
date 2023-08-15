@@ -230,6 +230,29 @@ describe(LibraryService.name, () => {
       );
     });
 
+    it("should reject an asset if directory traversal is attempted", async () => {
+      mockfs({
+        '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      createLibraryService();
+
+      mockUser = userStub.externalPath;
+      userMock.get.mockResolvedValue(mockUser);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/../../etc/rootpassword.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+        new BadRequestException("Asset must be within the user's external path"),
+      );
+    });
+
     it('should offline a missing asset', async () => {
       mockfs({});
 

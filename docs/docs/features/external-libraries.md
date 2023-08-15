@@ -64,9 +64,20 @@ Internal and external path do not have to be identical but can make things easie
 
 _Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container._
 
+### Register the path for the user.
+
+This action is done by the admin of the instance.
+
+- Navigate to `Administration > Users` page on the web.
+- Click on the user edit button.
+- Add the gallery path to the `External Path` field for the corresponding user and confirm the changes.
+
+<img src={require('./img/me.png').default} width='33%' title='My Account Storage Path' />
+
+<img src={require('./img/my-wife.png').default} width='33%' title='My Wifes Account Storage Path' />
+
 ### Create external library
 
-Note: You must currently be an admin to add an external library
 
 - Click on your user name in the top right corner -> Account Settings
 - Click on Libraries
@@ -75,8 +86,14 @@ Note: You must currently be an admin to add an external library
 - Click Edit Import Paths
 - Click on Add Path
 - Enter "/mnt/media/christmas-trip" then click Add
+
+NOTE: this path must be inside the user's external path
+
 - Click on Add Path
 - Enter "/mnt/media/old-pics" then click Add
+
+NOTE: this path must be inside the user's external path
+
 - Click Save
 
 Now we'll add the exclusion pattern to ignore the raw files folder
