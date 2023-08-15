@@ -45,6 +45,7 @@ doc/DeleteAssetDto.md
 doc/DeleteAssetResponseDto.md
 doc/DeleteAssetStatus.md
 doc/DownloadArchiveInfo.md
+doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/ExifResponseDto.md
 doc/ImportAssetDto.md
@@ -186,6 +187,7 @@ lib/model/delete_asset_dto.dart
 lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
 lib/model/download_archive_info.dart
+lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/import_asset_dto.dart
@@ -298,6 +300,7 @@ test/delete_asset_dto_test.dart
 test/delete_asset_response_dto_test.dart
 test/delete_asset_status_test.dart
 test/download_archive_info_test.dart
+test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/exif_response_dto_test.dart
 test/import_asset_dto_test.dart

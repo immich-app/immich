@@ -91,7 +91,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
-*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download | 
+*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -101,7 +101,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getByTimeBucket**](doc//AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
+*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
@@ -216,6 +216,7 @@ Class | Method | HTTP request | Description
  - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
+ - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [ImportAssetDto](doc//ImportAssetDto.md)
