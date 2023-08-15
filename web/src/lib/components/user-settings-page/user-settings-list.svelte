@@ -17,11 +17,17 @@
   export let devices: AuthDeviceResponseDto[] = [];
   export let partners: UserResponseDto[] = [];
 
-  export let oauthEnabled = false;
+  let oauthEnabled = false;
   let oauthOpen = false;
 
-  onMount(() => {
+  onMount(async () => {
     oauthOpen = oauth.isCallback(window.location);
+    try {
+      const { data } = await oauth.getConfig(window.location);
+      oauthEnabled = data.enabled;
+    } catch {
+      // noop
+    }
   });
 </script>
 
