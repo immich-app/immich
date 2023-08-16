@@ -9,8 +9,10 @@
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../../utils/handle-error';
+  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
   export let onAssetDelete: OnAssetDelete;
+  export let menuItem = false;
   const { getAssets, clearSelect } = getAssetControlContext();
 
   let isShowConfirmation = false;
@@ -46,7 +48,11 @@
   };
 </script>
 
-<CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+{#if menuItem}
+  <MenuOption text="Delete" on:click={() => (isShowConfirmation = true)} />
+{:else}
+  <CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+{/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
