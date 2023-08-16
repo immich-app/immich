@@ -38,7 +38,6 @@
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
     SELECT_FACE = 'select-face',
-    SET_BIRTH_DATE = 'set-birth-date',
     MERGE_FACES = 'merge-faces',
     SUGGEST_MERGE = 'suggest-merge',
   }
@@ -53,6 +52,7 @@
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
+  let isSettingBirthDate = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let people = data.people.people;
   let personMerge1: PersonResponseDto;
@@ -174,6 +174,12 @@
     }
     changeName();
   };
+
+  const handleSetBirthDate = async (birthDate: any) => {
+    // TODO
+    console.log(birthDate);
+    isSettingBirthDate = false;
+  }
 </script>
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
@@ -187,8 +193,12 @@
   />
 {/if}
 
-{#if viewMode === ViewMode.SET_BIRTH_DATE}
-  <SetBirthDateModal />
+{#if isSettingBirthDate}
+  <SetBirthDateModal
+    birthDate=""
+    on:cancel={() => (isSettingBirthDate = false)}
+    on:submit={(event) => handleSetBirthDate(event.detail)}
+  />
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
@@ -217,7 +227,7 @@
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={DotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
-            <MenuOption text="Set birth date" on:click={() => (viewMode = ViewMode.SET_BIRTH_DATE)} />
+            <MenuOption text="Set birth date" on:click={() => (isSettingBirthDate = true)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
           </AssetSelectContextMenu>
         </svelte:fragment>
