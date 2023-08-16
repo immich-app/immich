@@ -1404,6 +1404,45 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /asset' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
+  Future<Response> updateAssetsWithHttpInfo(AssetBulkUpdateDto assetBulkUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetBulkUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
+  Future<void> updateAssets(AssetBulkUpdateDto assetBulkUpdateDto,) async {
+    final response = await updateAssetsWithHttpInfo(assetBulkUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///

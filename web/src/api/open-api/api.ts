@@ -347,6 +347,31 @@ export interface AllJobStatusResponseDto {
 /**
  * 
  * @export
+ * @interface AssetBulkUpdateDto
+ */
+export interface AssetBulkUpdateDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AssetBulkUpdateDto
+     */
+    'ids': Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkUpdateDto
+     */
+    'isArchived'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkUpdateDto
+     */
+    'isFavorite'?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface AssetBulkUploadCheckDto
  */
 export interface AssetBulkUploadCheckDto {
@@ -5873,6 +5898,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {AssetBulkUpdateDto} assetBulkUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateAssets: async (assetBulkUpdateDto: AssetBulkUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetBulkUpdateDto' is not null or undefined
+            assertParamExists('updateAssets', 'assetBulkUpdateDto', assetBulkUpdateDto)
+            const localVarPath = `/asset`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetBulkUpdateDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -6261,6 +6330,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {AssetBulkUpdateDto} assetBulkUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateAssets(assetBulkUpdateDto: AssetBulkUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAssets(assetBulkUpdateDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -6494,6 +6573,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         updateAsset(requestParameters: AssetApiUpdateAssetRequest, options?: AxiosRequestConfig): AxiosPromise<AssetResponseDto> {
             return localVarFp.updateAsset(requestParameters.id, requestParameters.updateAssetDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUpdateAssetsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7012,6 +7100,20 @@ export interface AssetApiUpdateAssetRequest {
 }
 
 /**
+ * Request parameters for updateAssets operation in AssetApi.
+ * @export
+ * @interface AssetApiUpdateAssetsRequest
+ */
+export interface AssetApiUpdateAssetsRequest {
+    /**
+     * 
+     * @type {AssetBulkUpdateDto}
+     * @memberof AssetApiUpdateAssets
+     */
+    readonly assetBulkUpdateDto: AssetBulkUpdateDto
+}
+
+/**
  * Request parameters for uploadFile operation in AssetApi.
  * @export
  * @interface AssetApiUploadFileRequest
@@ -7364,6 +7466,17 @@ export class AssetApi extends BaseAPI {
      */
     public updateAsset(requestParameters: AssetApiUpdateAssetRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).updateAsset(requestParameters.id, requestParameters.updateAssetDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUpdateAssetsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
