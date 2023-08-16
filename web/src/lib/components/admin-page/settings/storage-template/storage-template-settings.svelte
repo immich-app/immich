@@ -1,11 +1,5 @@
 <script lang="ts">
-  import {
-    api,
-    SystemConfigDto,
-    SystemConfigStorageTemplateDto,
-    SystemConfigTemplateStorageOptionDto,
-    UserResponseDto,
-  } from '@api';
+  import type { SystemConfigStorageTemplateDto, SystemConfigTemplateStorageOptionDto, UserResponseDto } from '@api';
   import * as luxon from 'luxon';
   import handlebar from 'handlebars';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
@@ -16,8 +10,12 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  export let config: SystemConfigDto;
+  const dispatch = createEventDispatcher<{
+    save: SystemConfigStorageTemplateDto;
+  }>();
+
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let storageDefault: SystemConfigStorageTemplateDto;
   export let user: UserResponseDto;
@@ -67,35 +65,9 @@
   async function reset() {
     storageConfig = { ...savedConfig };
     notificationController.show({
-      message: 'Reset storage template settings to the recent saved settings',
+      message: 'Reset storage template settings to the last saved settings',
       type: NotificationType.Info,
     });
-  }
-
-  async function saveSetting() {
-    try {
-      const { data } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...config,
-          storageTemplate: storageConfig,
-        },
-      });
-
-      storageConfig = { ...data.storageTemplate };
-      savedConfig = { ...data.storageTemplate };
-      config = { ...data };
-
-      notificationController.show({
-        message: 'Storage template saved',
-        type: NotificationType.Info,
-      });
-    } catch (e) {
-      console.error('Error [storage-template-settings] [saveSetting]', e);
-      notificationController.show({
-        message: 'Unable to save settings',
-        type: NotificationType.Error,
-      });
-    }
   }
 
   async function resetToDefault() {
@@ -184,7 +156,7 @@
 
         <SettingButtonsRow
           on:reset={reset}
-          on:save={saveSetting}
+          on:save={() => dispatch('save', savedConfig)}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(savedConfig, storageConfig)}
         />

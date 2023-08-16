@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
-  import { api, SystemConfigDto, SystemConfigThumbnailDto } from '@api';
+  import type { SystemConfigThumbnailDto } from '@api';
   import { fade } from 'svelte/transition';
   import { isEqual } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
@@ -8,8 +8,11 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { createEventDispatcher } from 'svelte';
 
-  export let config: SystemConfigDto;
+  const dispatch = createEventDispatcher<{
+    save: SystemConfigThumbnailDto;
+  }>();
 
   export let thumbnailConfig: SystemConfigThumbnailDto; // this is the config that is being edited
   export let thumbnailDefault: SystemConfigThumbnailDto;
@@ -19,7 +22,7 @@
     thumbnailConfig = { ...savedConfig };
 
     notificationController.show({
-      message: 'Reset thumbnail settings to the recent saved settings',
+      message: 'Reset thumbnail settings to the last saved settings',
       type: NotificationType.Info,
     });
   }
@@ -31,32 +34,6 @@
       message: 'Reset thumbnail settings to default',
       type: NotificationType.Info,
     });
-  }
-
-  async function saveSetting() {
-    try {
-      const { data } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...config,
-          thumbnail: thumbnailConfig,
-        },
-      });
-
-      thumbnailConfig = { ...data.thumbnail };
-      savedConfig = { ...data.thumbnail };
-      config = { ...data };
-
-      notificationController.show({
-        message: 'Thumbnail settings saved',
-        type: NotificationType.Info,
-      });
-    } catch (e) {
-      console.error('Error [thumbnail-settings] [saveSetting]', e);
-      notificationController.show({
-        message: 'Unable to save settings',
-        type: NotificationType.Error,
-      });
-    }
   }
 </script>
 
@@ -96,7 +73,7 @@
       <div class="ml-4">
         <SettingButtonsRow
           on:reset={reset}
-          on:save={saveSetting}
+          on:save={() => dispatch('save', thumbnailConfig)}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(thumbnailConfig, thumbnailDefault)}
         />

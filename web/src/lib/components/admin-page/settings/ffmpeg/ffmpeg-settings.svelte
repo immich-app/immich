@@ -3,59 +3,28 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import {
-    api,
-    AudioCodec,
-    SystemConfigDto,
-    SystemConfigFFmpegDto,
-    ToneMapping,
-    TranscodeHWAccel,
-    TranscodePolicy,
-    VideoCodec,
-  } from '@api';
+  import { AudioCodec, SystemConfigFFmpegDto, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
 
-  export let config: SystemConfigDto;
   export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
   export let ffmpegDefault: SystemConfigFFmpegDto;
   export let savedConfig: SystemConfigFFmpegDto;
 
-  async function saveSetting() {
-    try {
-      const { data } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...config,
-          ffmpeg: ffmpegConfig,
-        },
-      });
-
-      ffmpegConfig = { ...data.ffmpeg };
-      savedConfig = { ...data.ffmpeg };
-      config = { ...data };
-
-      notificationController.show({
-        message: 'FFmpeg settings saved',
-        type: NotificationType.Info,
-      });
-    } catch (e) {
-      console.error('Error [ffmpeg-settings] [saveSetting]', e);
-      notificationController.show({
-        message: 'Unable to save settings',
-        type: NotificationType.Error,
-      });
-    }
-  }
+  const dispatch = createEventDispatcher<{
+    save: SystemConfigFFmpegDto;
+  }>();
 
   async function reset() {
     ffmpegConfig = { ...savedConfig };
 
     notificationController.show({
-      message: 'Reset FFmpeg settings to the recent saved settings',
+      message: 'Reset FFmpeg settings to the last saved settings',
       type: NotificationType.Info,
     });
   }
@@ -243,7 +212,7 @@
       <div class="ml-4">
         <SettingButtonsRow
           on:reset={reset}
-          on:save={saveSetting}
+          on:save={() => dispatch('save', ffmpegConfig)}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(ffmpegConfig, ffmpegDefault)}
         />

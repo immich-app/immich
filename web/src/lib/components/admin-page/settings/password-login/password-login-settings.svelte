@@ -3,25 +3,34 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigDto, SystemConfigPasswordLoginDto } from '@api';
+  import type { SystemConfigDto, SystemConfigPasswordLoginDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher<{
+    save: SystemConfigPasswordLoginDto;
+  }>();
 
   export let config: SystemConfigDto;
   export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
   export let passwordLoginDefault: SystemConfigPasswordLoginDto;
   export let savedConfig: SystemConfigPasswordLoginDto;
-
+  console.log(config);
+  console.log(passwordLoginConfig);
+  console.log(savedConfig);
   let isConfirmOpen = false;
   let handleConfirm: (value: boolean) => void;
 
   const openConfirmModal = () => {
     return new Promise((resolve) => {
       handleConfirm = (value: boolean) => {
+        if (!value) {
+          passwordLoginConfig.enabled = !passwordLoginConfig.enabled;
+        }
         isConfirmOpen = false;
         resolve(value);
       };
@@ -30,36 +39,21 @@
   };
 
   async function saveSetting() {
-    try {
-      if (!config.oauth.enabled && config.passwordLogin.enabled && !passwordLoginConfig.enabled) {
-        const confirmed = await openConfirmModal();
-        if (!confirmed) {
-          return;
-        }
+    if (!config.oauth.enabled && savedConfig.enabled && !passwordLoginConfig.enabled) {
+      const confirmed = await openConfirmModal();
+      if (!confirmed) {
+        return;
       }
-
-      const { data } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...config,
-          passwordLogin: passwordLoginConfig,
-        },
-      });
-
-      passwordLoginConfig = { ...data.passwordLogin };
-      savedConfig = { ...data.passwordLogin };
-      config = { ...data };
-
-      notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
-    } catch (error) {
-      handleError(error, 'Unable to save settings');
     }
+
+    dispatch('save', passwordLoginConfig);
   }
 
   async function reset() {
     passwordLoginConfig = { ...savedConfig };
 
     notificationController.show({
-      message: 'Reset settings to the recent saved settings',
+      message: 'Reset password authentication settings to the last saved settings',
       type: NotificationType.Info,
     });
   }
@@ -68,7 +62,7 @@
     passwordLoginConfig = { ...passwordLoginDefault };
 
     notificationController.show({
-      message: 'Reset password settings to default',
+      message: 'Reset password authentication settings to default',
       type: NotificationType.Info,
     });
   }

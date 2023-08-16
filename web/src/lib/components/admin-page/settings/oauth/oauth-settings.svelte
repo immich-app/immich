@@ -3,14 +3,18 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigDto, SystemConfigOAuthDto } from '@api';
+  import type { SystemConfigDto, SystemConfigOAuthDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher<{
+    save: SystemConfigOAuthDto;
+  }>();
 
   export let config: SystemConfigDto;
   export let oauthConfig: SystemConfigOAuthDto;
@@ -24,12 +28,8 @@
       oauthConfig.mobileRedirectUri = window.location.origin + '/api/oauth/mobile-redirect';
     }
   };
-
   async function reset() {
-    const { data: resetConfig } = await api.systemConfigApi.getConfig();
-
-    oauthConfig = { ...resetConfig.oauth };
-    savedConfig = { ...resetConfig.oauth };
+    oauthConfig = { ...savedConfig };
 
     notificationController.show({
       message: 'Reset OAuth settings to the last saved settings',
@@ -43,6 +43,9 @@
   const openConfirmModal = () => {
     return new Promise((resolve) => {
       handleConfirm = (value: boolean) => {
+        if (!value) {
+          oauthConfig.enabled = !oauthConfig.enabled;
+        }
         isConfirmOpen = false;
         resolve(value);
       };
@@ -51,33 +54,18 @@
   };
 
   async function saveSetting() {
-    try {
-      if (!config.passwordLogin.enabled && config.oauth.enabled && !oauthConfig.enabled) {
-        const confirmed = await openConfirmModal();
-        if (!confirmed) {
-          return;
-        }
+    if (!config.passwordLogin.enabled && savedConfig.enabled && !oauthConfig.enabled) {
+      const confirmed = await openConfirmModal();
+      if (!confirmed) {
+        return;
       }
-
-      if (!oauthConfig.mobileOverrideEnabled) {
-        oauthConfig.mobileRedirectUri = '';
-      }
-
-      const { data } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...config,
-          oauth: oauthConfig,
-        },
-      });
-
-      oauthConfig = { ...data.oauth };
-      savedConfig = { ...data.oauth };
-      config = { ...data };
-
-      notificationController.show({ message: 'OAuth settings saved', type: NotificationType.Info });
-    } catch (error) {
-      handleError(error, 'Unable to save OAuth settings');
     }
+
+    if (!oauthConfig.mobileOverrideEnabled) {
+      oauthConfig.mobileRedirectUri = '';
+    }
+
+    dispatch('save', oauthConfig);
   }
 
   async function resetToDefault() {
