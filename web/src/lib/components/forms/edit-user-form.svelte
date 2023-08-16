@@ -67,13 +67,13 @@
 </script>
 
 <div
-  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-scroll rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="bg-immich-bg dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border p-4 py-8 shadow-sm"
 >
   <div
-    class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+    class="text-immich-primary dark:text-immich-dark-primary flex flex-col place-content-center place-items-center gap-4 px-4"
   >
     <AccountEditOutline size="4em" />
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
+    <h1 class="text-immich-primary dark:text-immich-dark-primary text-2xl font-medium">Edit user</h1>
   </div>
 
   <form on:submit|preventDefault={editUser} autocomplete="off">
@@ -138,7 +138,7 @@
     {/if}
 
     {#if success}
-      <p class="ml-4 text-sm text-immich-primary">{success}</p>
+      <p class="text-immich-primary ml-4 text-sm">{success}</p>
     {/if}
     <div class="mt-8 flex w-full gap-4 px-4">
       {#if canResetPassword}
