@@ -414,9 +414,9 @@
 
   {#if showSetBirthDateModal}
     <SetBirthDateModal
-      birthDate="{edittingPerson?.birthDate}"
-      on:cancel={() => (showSetBirthDateModal = false)}
-      on:submit={(event) => submitBirthDateChange(event.detail)}
+      birthDate="{edittingPerson?.birthDate ?? ''}"
+      on:close={() => (showSetBirthDateModal = false)}
+      on:updated={(event) => submitBirthDateChange(event.detail)}
     />
   {/if}
 </UserPageLayout>

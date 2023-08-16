@@ -4,11 +4,15 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
-  export let birthDate: string | undefined;
+  export let birthDate: string;
 
-  const dispatch = createEventDispatcher();
-  const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', birthDate);
+  const dispatch = createEventDispatcher<{
+    close: void;
+    updated: string;
+  }>();
+
+  const handleCancel = () => dispatch('close');
+  const handleSubmit = () => dispatch('updated', birthDate);
 </script>
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>

@@ -216,9 +216,9 @@
 
 {#if isSettingBirthDate}
   <SetBirthDateModal
-    birthDate="{data.person.birthDate}"
-    on:cancel={() => (isSettingBirthDate = false)}
-    on:submit={(event) => handleSetBirthDate(event.detail)}
+    birthDate="{data.person.birthDate ?? ''}"
+    on:close={() => (isSettingBirthDate = false)}
+    on:updated={(event) => handleSetBirthDate(event.detail)}
   />
 {/if}
 
