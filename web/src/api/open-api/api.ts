@@ -1931,7 +1931,7 @@ export interface PersonUpdateDto {
      * @type {date}
      * @memberof PersonUpdateDto
      */
-    'birthDate'?: string;
+    'birthDate'?: string | null;
 }
 /**
  *

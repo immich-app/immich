@@ -2,7 +2,7 @@ import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { toBoolean, ValidateUUID } from '../domain.util';
+import { toBoolean, toDate, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
   /**
@@ -17,7 +17,7 @@ export class PersonUpdateDto {
    */
   @IsOptional()
   @IsDate()
-  @Type(() => Date)
+  @Transform(toDate)
   @ApiProperty({ format: 'date' })
   birthDate?: Date;
 
