@@ -37,6 +37,13 @@ export interface ILibraryFileJob extends IBaseJob {
   emptyTrash: boolean;
 }
 
+export interface ILibraryRefreshJob extends IBaseJob {
+  libraryId: string;
+  ownerId: string;
+  analyze: boolean;
+  emptyTrash: boolean;
+}
+
 export interface ILibraryJob extends IBaseJob {
   libraryId: string;
 }

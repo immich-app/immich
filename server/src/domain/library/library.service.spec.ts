@@ -86,7 +86,7 @@ describe(LibraryService.name, () => {
       };
 
       await expect(async () => {
-        await sut.handleRefreshAsset(mockLibraryJob);
+        await sut.handleAssetRefresh(mockLibraryJob);
       }).rejects.toThrowError('Unsupported file type /data/user1/file.xyz');
     });
 
@@ -108,7 +108,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -144,7 +144,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -179,7 +179,7 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("User has no external path set, can't import asset"),
       );
     });
@@ -202,7 +202,7 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("User has no external path set, can't import asset"),
       );
     });
@@ -225,7 +225,7 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("Asset must be within the user's external path"),
       );
     });
@@ -248,7 +248,7 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      expect(sut.handleRefreshAsset(mockLibraryJob)).rejects.toThrow(
+      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
         new BadRequestException("Asset must be within the user's external path"),
       );
     });
@@ -269,7 +269,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
 
@@ -298,7 +298,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
       assetMock.create.mockResolvedValue(assetStub.offlineImage);
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
 
@@ -342,7 +342,7 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.save).not.toHaveBeenCalled();
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
     });
 
     it('should refresh an existing asset with modified mtime', async () => {
@@ -369,7 +369,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.create).toHaveBeenCalled();
       const createdAsset = assetMock.create.mock.calls[0][0];
@@ -394,7 +394,7 @@ describe(LibraryService.name, () => {
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(async () => {
-        await sut.handleRefreshAsset(mockLibraryJob);
+        await sut.handleAssetRefresh(mockLibraryJob);
       }).rejects.toThrowError("ENOENT, no such file or directory '/data/user1/photo.jpg'");
     });
   });

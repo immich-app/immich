@@ -17,7 +17,14 @@ import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
-import { IJobRepository, ILibraryFileJob, ILibraryJob, IOfflineLibraryFileJob, JobName } from '../job';
+import {
+  IJobRepository,
+  ILibraryFileJob,
+  ILibraryJob,
+  ILibraryRefreshJob,
+  IOfflineLibraryFileJob,
+  JobName,
+} from '../job';
 import { IUserRepository } from '../user';
 import {
   CrawlOptionsDto,
@@ -158,7 +165,7 @@ export class LibraryService {
     return mapLibrary(libraryEntity);
   }
 
-  async handleRefreshAsset(job: ILibraryFileJob) {
+  async handleAssetRefresh(job: ILibraryFileJob) {
     this.logger.verbose(`Refreshing library asset: ${job.assetPath}`);
 
     const user = await this.userRepository.get(job.ownerId);
@@ -297,7 +304,7 @@ export class LibraryService {
     return true;
   }
 
-  async handleOfflineAsset(job: IOfflineLibraryFileJob) {
+  async handleOfflineAsset(job: IOfflineLibraryFileJob): Promise<boolean> {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
     if (job.emptyTrash && existingAssetEntity) {
@@ -315,9 +322,20 @@ export class LibraryService {
   async refresh(authUser: AuthUserDto, libraryId: string, dto: RefreshLibraryDto) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
 
-    const library = await this.libraryRepository.getById(libraryId);
+    const libraryRefreshJobData: ILibraryRefreshJob = {
+      libraryId: libraryId,
+      ownerId: authUser.id,
+      analyze: dto.analyze ?? false,
+      emptyTrash: dto.emptyTrash ?? false,
+    };
 
-    this.logger.verbose(`Refreshing library: ${libraryId}`);
+    await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY, data: libraryRefreshJobData });
+  }
+
+  async handleLibraryRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+    const library = await this.libraryRepository.getById(job.libraryId);
+
+    this.logger.verbose(`Refreshing library: ${job.libraryId}`);
 
     if (library.type != LibraryType.EXTERNAL) {
       Logger.error('Only imported libraries can be refreshed');
@@ -333,30 +351,30 @@ export class LibraryService {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
 
-    const assetsInLibrary = await this.assetRepository.getByLibraryId([libraryId]);
+    const assetsInLibrary = await this.assetRepository.getByLibraryId([job.libraryId]);
 
     const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
 
-    this.logger.debug(`Found ${offlineAssets.length} offline assets in library ${libraryId}`);
+    this.logger.debug(`Found ${offlineAssets.length} offline assets in library ${job.libraryId}`);
 
     for (const offlineAsset of offlineAssets) {
       const offlineJobData: IOfflineLibraryFileJob = {
         assetPath: offlineAsset.originalPath,
         assetId: offlineAsset.id,
-        libraryId: libraryId,
-        emptyTrash: dto.emptyTrash ?? false,
+        libraryId: job.libraryId,
+        emptyTrash: job.emptyTrash ?? false,
       };
 
-      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: offlineJobData });
+      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_ASSET, data: offlineJobData });
     }
 
-    if (!dto.emptyTrash && crawledAssetPaths.length > 0) {
+    if (!job.emptyTrash && crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
-      if (dto.analyze) {
+      if (job.analyze) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const existingPaths = await this.libraryRepository.getAssetPaths(libraryId);
-        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${libraryId}`);
+        const existingPaths = await this.libraryRepository.getAssetPaths(job.libraryId);
+        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${job.libraryId}`);
 
         filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.includes(assetPath));
         this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
@@ -365,15 +383,17 @@ export class LibraryService {
       for (const assetPath of filteredPaths) {
         const libraryJobData: ILibraryFileJob = {
           assetPath: path.normalize(assetPath),
-          ownerId: authUser.id,
-          libraryId: libraryId,
-          analyze: dto.analyze ?? false,
-          emptyTrash: dto.emptyTrash ?? false,
+          ownerId: job.ownerId,
+          libraryId: job.libraryId,
+          analyze: job.analyze ?? false,
+          emptyTrash: job.emptyTrash ?? false,
         };
 
-        await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_FILE, data: libraryJobData });
+        await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_ASSET, data: libraryJobData });
       }
     }
+
+    return true;
   }
 
   public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
