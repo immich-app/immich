@@ -8,6 +8,7 @@ export interface ResizeOptions {
 }
 
 export interface VideoStreamInfo {
+  index: number;
   height: number;
   width: number;
   rotation: number;
@@ -18,8 +19,10 @@ export interface VideoStreamInfo {
 }
 
 export interface AudioStreamInfo {
+  index: number;
   codecName?: string;
   codecType?: string;
+  frameCount: number;
 }
 
 export interface VideoFormat {
@@ -55,7 +58,7 @@ export interface BitrateDistribution {
 }
 
 export interface VideoCodecSWConfig {
-  getOptions(stream: VideoStreamInfo): TranscodeOptions;
+  getOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {

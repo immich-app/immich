@@ -73,15 +73,16 @@ export class MediaService {
         this.logger.log(`Successfully generated image thumbnail ${asset.id}`);
         break;
       case AssetType.VIDEO:
-        const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-        const mainVideoStream = this.getMainVideoStream(videoStreams);
+        const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainStream(videoStreams);
         if (!mainVideoStream) {
           this.logger.error(`Could not extract thumbnail for asset ${asset.id}: no video streams found`);
           return false;
         }
+        const mainAudioStream = this.getMainStream(audioStreams);
         const { ffmpeg } = await this.configCore.getConfig();
         const config = { ...ffmpeg, targetResolution: thumbnail.jpegSize.toString(), twoPass: false };
-        const options = new ThumbnailConfig(config).getOptions(mainVideoStream);
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, jpegThumbnailPath, options);
         this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
         break;
@@ -149,8 +150,8 @@ export class MediaService {
     this.storageRepository.mkdirSync(outputFolder);
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
-    const mainVideoStream = this.getMainVideoStream(videoStreams);
-    const mainAudioStream = this.getMainAudioStream(audioStreams);
+    const mainVideoStream = this.getMainStream(videoStreams);
+    const mainAudioStream = this.getMainStream(audioStreams);
     const containerExtension = format.formatName;
     if (!mainVideoStream || !containerExtension) {
       return false;
@@ -165,7 +166,7 @@ export class MediaService {
 
     let transcodeOptions;
     try {
-      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream, mainAudioStream));
     } catch (err) {
       this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
       return false;
@@ -176,13 +177,13 @@ export class MediaService {
       await this.mediaRepository.transcode(input, output, transcodeOptions);
     } catch (err) {
       this.logger.error(err);
-      if (config.accel && config.accel !== TranscodeHWAccel.DISABLED) {
+      if (config.accel !== TranscodeHWAccel.DISABLED) {
         this.logger.error(
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
         );
       }
       config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream, mainAudioStream));
       await this.mediaRepository.transcode(input, output, transcodeOptions);
     }
 
@@ -193,12 +194,8 @@ export class MediaService {
     return true;
   }
 
-  private getMainVideoStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {
+  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
-  }
-
-  private getMainAudioStream(streams: AudioStreamInfo[]): AudioStreamInfo | null {
-    return streams[0];
   }
 
   private isTranscodeRequired(
