@@ -280,7 +280,7 @@
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
         id: edittingPerson.id,
-        personUpdateDto: { birthDate: value?.length > 0 ? value : null },
+        personUpdateDto: { birthDate: value.length > 0 ? value : null },
       });
 
       people = people.map((person: PersonResponseDto) => {

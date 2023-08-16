@@ -182,7 +182,7 @@
 
       const { data: updatedPerson } = await api.personApi.updatePerson({
         id: data.person.id,
-        personUpdateDto: { birthDate: birthDate?.length > 0 ? birthDate : null },
+        personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
       });
 
       people = people.map((person: PersonResponseDto) => {
