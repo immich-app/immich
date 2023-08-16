@@ -51,16 +51,22 @@ export class PersonRepository implements IPersonRepository {
   }
 
   getAll(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
-    return this.personRepository
+    const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
-      .orderBy('COUNT(face.assetId)', 'DESC')
+      .orderBy('person.isHidden', 'ASC')
+      .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
+      .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
       .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
-      .limit(500)
-      .getMany();
+      .limit(500);
+    if (!options?.withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+
+    return queryBuilder.getMany();
   }
 
   getAllWithoutFaces(): Promise<PersonEntity[]> {
