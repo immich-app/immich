@@ -78,6 +78,7 @@ export class AppService {
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
       [JobName.REFRESH_LIBRARY_FILE]: (data) => this.libraryService.handleRefreshAsset(data),
       [JobName.OFFLINE_LIBRARY_FILE]: (data) => this.libraryService.handleOfflineAsset(data),
+      [JobName.DELETE_LIBRARY]: (data) => this.libraryService.handleDeleteLibrary(data),
     });
 
     process.on('uncaughtException', (error: Error | any) => {

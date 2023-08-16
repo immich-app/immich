@@ -91,4 +91,5 @@ export interface IAssetRepository {
   remove(asset: AssetEntity): Promise<AssetEntity>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  getById(assetId: string): Promise<AssetEntity>;
 }

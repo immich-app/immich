@@ -56,6 +56,7 @@ export enum JobName {
   // library managment
   OFFLINE_LIBRARY_FILE = 'offline-library-file',
   REFRESH_LIBRARY_FILE = 'refresh-library-file',
+  DELETE_LIBRARY = 'delete-library',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -145,4 +146,5 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // Library managment
   [JobName.REFRESH_LIBRARY_FILE]: QueueName.LIBRARY,
   [JobName.OFFLINE_LIBRARY_FILE]: QueueName.LIBRARY,
+  [JobName.DELETE_LIBRARY]: QueueName.LIBRARY,
 };

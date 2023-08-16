@@ -17,7 +17,7 @@ import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
-import { IJobRepository, ILibraryJob, JobName } from '../job';
+import { IJobRepository, ILibraryFileJob, ILibraryJob, IOfflineLibraryFileJob, JobName } from '../job';
 import { IUserRepository } from '../user';
 import {
   CrawlOptionsDto,
@@ -89,18 +89,34 @@ export class LibraryService {
     return mapLibrary(updatedLibrary);
   }
 
-  async delete(authUser: AuthUserDto, id: string): Promise<void> {
+  async delete(authUser: AuthUserDto, id: string) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
 
-    const exists = await this.libraryRepository.getById(id);
-    if (!exists) {
+    this.jobRepository.queue({ name: JobName.DELETE_LIBRARY, data: { libraryId: id } });
+  }
+
+  async handleDeleteLibrary(job: ILibraryJob): Promise<boolean> {
+    const library = await this.libraryRepository.getById(job.libraryId);
+    if (!library) {
       throw new BadRequestException('Library not found');
     }
+    const assetIds = await this.libraryRepository.getAssetIds(job.libraryId);
+    this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.libraryId}`);
 
-    const assets = await this.assetRepository.getByLibraryId([id]);
-    this.logger.debug(`Will delete ${assets.length} asset(s) in library ${id}`);
+    await this.deleteLibraryFiles(assetIds);
 
-    for (const asset of assets) {
+    this.logger.log(`Deleting library ${job.libraryId}`);
+
+    await this.libraryRepository.delete(job.libraryId);
+
+    return true;
+  }
+
+  private async deleteLibraryFiles(assetIds: string[]) {
+    for (const assetId of assetIds) {
+      const asset = await this.assetRepository.getById(assetId);
+      this.logger.debug(`Deleting library asset ${asset.originalPath}`);
+
       if (asset.faces) {
         await Promise.all(
           asset.faces.map(({ assetId, personId }) =>
@@ -117,12 +133,11 @@ export class LibraryService {
         data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
       });
 
-      // TODO: currently we can't delete live photos from libraries
+      // TODO refactor this to use cascades
+      if (asset.livePhotoVideoId && !assetIds.includes(asset.livePhotoVideoId)) {
+        assetIds.push(asset.livePhotoVideoId);
+      }
     }
-
-    this.logger.log(`Deleting library ${id}`);
-
-    await this.libraryRepository.delete(id);
   }
 
   async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
@@ -143,7 +158,7 @@ export class LibraryService {
     return mapLibrary(libraryEntity);
   }
 
-  async handleRefreshAsset(job: ILibraryJob) {
+  async handleRefreshAsset(job: ILibraryFileJob) {
     this.logger.verbose(`Refreshing library asset: ${job.assetPath}`);
 
     const user = await this.userRepository.get(job.ownerId);
@@ -282,13 +297,13 @@ export class LibraryService {
     return true;
   }
 
-  async handleOfflineAsset(job: ILibraryJob) {
+  async handleOfflineAsset(job: IOfflineLibraryFileJob) {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
     if (job.emptyTrash && existingAssetEntity) {
       this.logger.verbose(`Removing offline asset: ${job.assetPath}`);
 
-      await this.assetRepository.remove(existingAssetEntity);
+      await this.deleteLibraryFiles([job.assetId]);
     } else if (existingAssetEntity) {
       this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
       await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
@@ -320,23 +335,19 @@ export class LibraryService {
 
     const assetsInLibrary = await this.assetRepository.getByLibraryId([libraryId]);
 
-    const offlineAssets = assetsInLibrary
-      .map((asset) => asset.originalPath)
-      .map(path.normalize)
-      .filter((assetPath) => !crawledAssetPaths.includes(assetPath));
+    const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
 
     this.logger.debug(`Found ${offlineAssets.length} offline assets in library ${libraryId}`);
 
-    for (const offlineAssetPath of offlineAssets) {
-      const libraryJobData: ILibraryJob = {
-        assetPath: offlineAssetPath,
-        ownerId: authUser.id,
+    for (const offlineAsset of offlineAssets) {
+      const offlineJobData: IOfflineLibraryFileJob = {
+        assetPath: offlineAsset.originalPath,
+        assetId: offlineAsset.id,
         libraryId: libraryId,
-        analyze: false,
         emptyTrash: dto.emptyTrash ?? false,
       };
 
-      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: libraryJobData });
+      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: offlineJobData });
     }
 
     if (!dto.emptyTrash && crawledAssetPaths.length > 0) {
@@ -352,7 +363,7 @@ export class LibraryService {
       }
 
       for (const assetPath of filteredPaths) {
-        const libraryJobData: ILibraryJob = {
+        const libraryJobData: ILibraryFileJob = {
           assetPath: path.normalize(assetPath),
           ownerId: authUser.id,
           libraryId: libraryId,
@@ -380,6 +391,8 @@ export class LibraryService {
 
     paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
 
-    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns });
+    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
+      path.normalize(assetPath),
+    );
   }
 }

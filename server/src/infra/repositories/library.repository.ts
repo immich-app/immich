@@ -107,6 +107,24 @@ export class LibraryRepository implements ILibraryRepository {
     return results;
   }
 
+  async getAssetIds(libraryId: string): Promise<string[]> {
+    // Return all asset paths for a given library
+    const rawResults = await this.libraryRepository
+      .createQueryBuilder('library')
+      .innerJoinAndSelect('library.assets', 'assets')
+      .where('library.id = :id', { id: libraryId })
+      .select('assets.id')
+      .getRawMany();
+
+    const results: string[] = [];
+
+    for (const rawPath of rawResults) {
+      results.push(rawPath.assets_id);
+    }
+
+    return results;
+  }
+
   private async save(library: Partial<LibraryEntity>) {
     const { id } = await this.libraryRepository.save(library);
     return this.libraryRepository.findOneOrFail({

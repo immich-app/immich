@@ -14,4 +14,5 @@ export interface ILibraryRepository {
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   getStatistics(id: string): Promise<LibraryStatsResponseDto>;
   getAssetPaths(libraryId: string): Promise<string[]>;
+  getAssetIds(libraryId: string): Promise<string[]>;
 }

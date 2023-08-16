@@ -127,6 +127,23 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getById(assetId: string): Promise<AssetEntity> {
+    return this.repository.findOneOrFail({
+      where: {
+        id: assetId,
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        faces: {
+          person: true,
+        },
+      },
+    });
+  }
+
   remove(asset: AssetEntity): Promise<AssetEntity> {
     return this.repository.remove(asset);
   }
