@@ -175,7 +175,7 @@
 
         <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
           <div class="my-2 flex flex-col">
-            <label class="text-xs" for="presets">PRESET</label>
+            <label class="text-xs" for="preset-select">PRESET</label>
             <select
               class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
               name="presets"
