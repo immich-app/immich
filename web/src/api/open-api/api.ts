@@ -1841,6 +1841,12 @@ export interface PeopleUpdateDto {
  */
 export interface PeopleUpdateItem {
     /**
+     * Person date of birth.
+     * @type {string}
+     * @memberof PeopleUpdateItem
+     */
+    'birthDate'?: string;
+    /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
      * @memberof PeopleUpdateItem
@@ -1876,6 +1882,12 @@ export interface PersonResponseDto {
      * @type {string}
      * @memberof PersonResponseDto
      */
+    'birthDate'?: string | null;
+    /**
+     *
+     * @type {string}
+     * @memberof PersonResponseDto
+     */
     'id': string;
     /**
      *
@@ -1890,12 +1902,6 @@ export interface PersonResponseDto {
      */
     'name': string;
     /**
-     * Person date of birth.
-     * @type {string}
-     * @memberof PersonUpdateDto
-     */
-    'birthDate'?: string;
-    /**
      *
      * @type {string}
      * @memberof PersonResponseDto
@@ -1908,6 +1914,12 @@ export interface PersonResponseDto {
  * @interface PersonUpdateDto
  */
 export interface PersonUpdateDto {
+    /**
+     * Person date of birth.
+     * @type {string}
+     * @memberof PersonUpdateDto
+     */
+    'birthDate'?: string;
     /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
@@ -1926,12 +1938,6 @@ export interface PersonUpdateDto {
      * @memberof PersonUpdateDto
      */
     'name'?: string;
-    /**
-     * Person date of birth.
-     * @type {date}
-     * @memberof PersonUpdateDto
-     */
-    'birthDate'?: string | null;
 }
 /**
  *

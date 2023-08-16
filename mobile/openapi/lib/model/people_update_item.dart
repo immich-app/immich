@@ -13,11 +13,21 @@ part of openapi.api;
 class PeopleUpdateItem {
   /// Returns a new [PeopleUpdateItem] instance.
   PeopleUpdateItem({
+    this.birthDate,
     this.featureFaceAssetId,
     required this.id,
     this.isHidden,
     this.name,
   });
+
+  /// Person date of birth.
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? birthDate;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -51,6 +61,7 @@ class PeopleUpdateItem {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
+     other.birthDate == birthDate &&
      other.featureFaceAssetId == featureFaceAssetId &&
      other.id == id &&
      other.isHidden == isHidden &&
@@ -59,16 +70,22 @@ class PeopleUpdateItem {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (birthDate == null ? 0 : birthDate!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (id.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdateItem[featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name]';
+  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.birthDate != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    } else {
+    //  json[r'birthDate'] = null;
+    }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
@@ -96,6 +113,7 @@ class PeopleUpdateItem {
       final json = value.cast<String, dynamic>();
 
       return PeopleUpdateItem(
+        birthDate: mapDateTime(json, r'birthDate', ''),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
