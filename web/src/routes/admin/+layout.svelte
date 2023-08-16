@@ -69,8 +69,8 @@
     </div>
   </SideBarSection>
 
-  <section id="setting-content" class="mx-4 flex place-content-center">
-    <section class="w-full pb-28 pt-5 sm:w-5/6 md:w-[800px]">
+  <section id="setting-content" class="flex place-content-center sm:mx-4">
+    <section class="w-full pb-28 pt-5 sm:w-5/6 md:w-[850px]">
       <slot />
     </section>
   </section>
