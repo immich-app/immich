@@ -37,7 +37,7 @@
 
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <ArchiveAction unarchive onAssetArchive={(asset) => assetStore.removeAsset(asset.id)} />
+    <ArchiveAction unarchive onArchive={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={Plus} title="Add">
