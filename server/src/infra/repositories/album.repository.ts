@@ -1,7 +1,7 @@
-import { AlbumAssetCount, IAlbumRepository } from '@app/domain';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 
@@ -13,25 +13,27 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  getById(id: string): Promise<AlbumEntity | null> {
-    return this.repository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        owner: true,
-        sharedUsers: true,
-        assets: {
-          exifInfo: true,
-        },
-        sharedLinks: true,
-      },
-      order: {
-        assets: {
-          fileCreatedAt: 'DESC',
-        },
-      },
-    });
+  getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
+    const relations: FindOptionsRelations<AlbumEntity> = {
+      owner: true,
+      sharedUsers: true,
+      assets: false,
+      sharedLinks: true,
+    };
+
+    const order: FindOptionsOrder<AlbumEntity> = {};
+
+    if (options.withAssets) {
+      relations.assets = {
+        exifInfo: true,
+      };
+
+      order.assets = {
+        fileCreatedAt: 'DESC',
+      };
+    }
+
+    return this.repository.findOne({ where: { id }, relations, order });
   }
 
   getByIds(ids: string[]): Promise<AlbumEntity[]> {

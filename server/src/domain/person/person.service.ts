@@ -26,8 +26,10 @@ export class PersonService {
   ) {}
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
-
+    const people = await this.repository.getAll(authUser.id, {
+      minimumFaceCount: 1,
+      withHidden: dto.withHidden || false,
+    });
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)

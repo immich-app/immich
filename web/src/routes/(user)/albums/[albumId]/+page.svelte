@@ -100,7 +100,7 @@
   });
 
   const refreshAlbum = async () => {
-    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: false });
+    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
     album = data;
   };
 
@@ -261,9 +261,9 @@
     }
   };
 
-  const handleUpdateDescription = (description: string) => {
+  const handleUpdateDescription = async (description: string) => {
     try {
-      api.albumApi.updateAlbumInfo({
+      await api.albumApi.updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           description,

@@ -7,8 +7,12 @@ export interface AlbumAssetCount {
   assetCount: number;
 }
 
+export interface AlbumInfoOptions {
+  withAssets: boolean;
+}
+
 export interface IAlbumRepository {
-  getById(id: string): Promise<AlbumEntity | null>;
+  getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
   hasAsset(id: string, assetId: string): Promise<boolean>;
