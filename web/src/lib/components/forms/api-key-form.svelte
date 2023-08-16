@@ -30,7 +30,7 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="email">Name</label>
+        <label class="immich-form-label" for="name">Name</label>
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
       </div>
 

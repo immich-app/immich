@@ -199,6 +199,8 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkUpdateDto':
+          return AssetBulkUpdateDto.fromJson(value);
         case 'AssetBulkUploadCheckDto':
           return AssetBulkUploadCheckDto.fromJson(value);
         case 'AssetBulkUploadCheckItem':
