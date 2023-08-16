@@ -16,7 +16,7 @@ import mockfs from 'mock-fs';
 import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, ILibraryFileJob, ILibraryJob, JobName } from '../job';
+import { IJobRepository, ILibraryFileJob, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { CrawlOptionsDto, ILibraryRepository, LibraryService } from './index';
 
