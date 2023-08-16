@@ -36,7 +36,7 @@ export const toDate = ({ value }: IValue) => {
     return new Date(value);
   }
   return value;
-}
+};
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 

@@ -26,19 +26,14 @@
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Set date of birth</h1>
 
       <p class="text-sm dark:text-immich-dark-fg">
-        Date of birth will be used to calculate the age of this person at the time of a photo (<i>not implemented yet</i>).
+        Date of birth will be used to calculate the age of this person at the time of a photo (<i>not implemented yet</i
+        >).
       </p>
     </div>
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <input
-          class="immich-form-input"
-          id="birthDate"
-          name="birthDate"
-          type="date"
-          bind:value={birthDate}
-        />
+        <input class="immich-form-input" id="birthDate" name="birthDate" type="date" bind:value={birthDate} />
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>

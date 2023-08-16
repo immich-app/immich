@@ -297,7 +297,7 @@
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
-  }
+  };
 
   const changeName = async () => {
     showMergeModal = false;
@@ -414,7 +414,7 @@
 
   {#if showSetBirthDateModal}
     <SetBirthDateModal
-      birthDate="{edittingPerson?.birthDate ?? ''}"
+      birthDate={edittingPerson?.birthDate ?? ''}
       on:close={() => (showSetBirthDateModal = false)}
       on:updated={(event) => submitBirthDateChange(event.detail)}
     />

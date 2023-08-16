@@ -199,8 +199,7 @@
     } catch (error) {
       handleError(error, 'Unable to save date of birth');
     }
-
-  }
+  };
 </script>
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
@@ -216,7 +215,7 @@
 
 {#if isSettingBirthDate}
   <SetBirthDateModal
-    birthDate="{data.person.birthDate ?? ''}"
+    birthDate={data.person.birthDate ?? ''}
     on:close={() => (isSettingBirthDate = false)}
     on:updated={(event) => handleSetBirthDate(event.detail)}
   />
