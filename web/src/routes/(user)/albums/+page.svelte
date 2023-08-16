@@ -19,7 +19,7 @@
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { dateFormats } from '$lib/constants';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, AlbumViewMode } from '$lib/stores/preferences.store';
   import {
     notificationController,
     NotificationType,
@@ -30,10 +30,10 @@
 
   const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
   const viewOptions = [{
-    name: 'Cover',
+    name: AlbumViewMode.Cover,
     icon: ViewGridOutline
   }, {
-    name: 'List',
+    name: AlbumViewMode.List,
     icon: FormatListBulletedSquare
   }]
   const viewOptionNames = viewOptions.map(option => option.name)
@@ -137,7 +137,7 @@
   </div>
 
   <!-- Album Card -->
-  {#if $albumViewSettings.view === 'Cover'}
+  {#if $albumViewSettings.view === AlbumViewMode.Cover}
     <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
       {#each $albums as album (album.id)}
         <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
@@ -145,7 +145,7 @@
         </a>
       {/each}
     </div>
-  {:else if $albumViewSettings.view === 'List'}
+  {:else if $albumViewSettings.view === AlbumViewMode.List}
     <table class="mt-5 w-full text-left">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
