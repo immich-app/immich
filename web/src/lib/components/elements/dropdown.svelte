@@ -4,9 +4,14 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
 
-  export let options: string[] = [];
+  interface DropdownOption {
+    value: string;
+    icon?: typeof LinkButton;
+  }
+
+  export let options: DropdownOption[] = [];
   export let value = options[0];
-  export let icons: any[] = undefined;
+  export let icons: typeof LinkButton[] | undefined = undefined;
 
   let showMenu = false;
 
