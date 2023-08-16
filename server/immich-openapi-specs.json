@@ -6179,6 +6179,7 @@
           "birthDate": {
             "description": "Person date of birth.",
             "format": "date",
+            "nullable": true,
             "type": "string"
           },
           "featureFaceAssetId": {
@@ -6236,6 +6237,7 @@
           "birthDate": {
             "description": "Person date of birth.",
             "format": "date",
+            "nullable": true,
             "type": "string"
           },
           "featureFaceAssetId": {

@@ -19,7 +19,7 @@ export class PersonUpdateDto {
   @IsDate()
   @Transform(toDate)
   @ApiProperty({ format: 'date' })
-  birthDate?: Date;
+  birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.
@@ -65,7 +65,7 @@ export class PeopleUpdateItem {
   @IsDate()
   @Type(() => Date)
   @ApiProperty({ format: 'date' })
-  birthDate?: Date;
+  birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.

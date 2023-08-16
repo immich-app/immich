@@ -1845,7 +1845,7 @@ export interface PeopleUpdateItem {
      * @type {string}
      * @memberof PeopleUpdateItem
      */
-    'birthDate'?: string;
+    'birthDate'?: string | null;
     /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
@@ -1919,7 +1919,7 @@ export interface PersonUpdateDto {
      * @type {string}
      * @memberof PersonUpdateDto
      */
-    'birthDate'?: string;
+    'birthDate'?: string | null;
     /**
      * Asset is used to get the feature face thumbnail.
      * @type {string}
