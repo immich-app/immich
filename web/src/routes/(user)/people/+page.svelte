@@ -20,6 +20,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
 
   export let data: PageData;
   let selectHidden = false;
@@ -35,6 +36,7 @@
   let toggleVisibility = false;
 
   let showChangeNameModal = false;
+  let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
   let personMerge1: PersonResponseDto;
@@ -201,6 +203,11 @@
     edittingPerson = detail;
   };
 
+  const handleSetBirthDate = ({ detail }: CustomEvent<PersonResponseDto>) => {
+    showSetBirthDateModal = true;
+    edittingPerson = detail;
+  };
+
   const handleHideFace = async (event: CustomEvent<PersonResponseDto>) => {
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
@@ -260,6 +267,37 @@
     }
     changeName();
   };
+
+  const submitBirthDateChange = async (value: string) => {
+    showSetBirthDateModal = false;
+    if (!edittingPerson) {
+      return;
+    }
+    if (value === edittingPerson.name) {
+      return;
+    }
+
+    try {
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: edittingPerson.id,
+        personUpdateDto: { birthDate: value?.length > 0 ? value : null },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: 'Date of birth saved succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
+  }
 
   const changeName = async () => {
     showMergeModal = false;
@@ -324,6 +362,7 @@
             <PeopleCard
               {person}
               on:change-name={handleChangeName}
+              on:set-birth-date={handleSetBirthDate}
               on:merge-faces={handleMergeFaces}
               on:hide-face={handleHideFace}
             />
@@ -371,6 +410,14 @@
         </form>
       </div>
     </FullScreenModal>
+  {/if}
+
+  {#if showSetBirthDateModal}
+    <SetBirthDateModal
+      birthDate="{edittingPerson?.birthDate}"
+      on:cancel={() => (showSetBirthDateModal = false)}
+      on:submit={(event) => submitBirthDateChange(event.detail)}
+    />
   {/if}
 </UserPageLayout>
 {#if selectHidden}

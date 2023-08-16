@@ -17,6 +17,10 @@
     dispatch('change-name', person);
   };
 
+  const onSetBirthDateClicked = () => {
+    dispatch('set-birth-date', person);
+  };
+
   const onMergeFacesClicked = () => {
     dispatch('merge-faces', person);
   };
@@ -54,6 +58,7 @@
       <ContextMenu on:outclick={() => (showContextMenu = false)}>
         <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
         <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
+        <MenuOption on:click={() => onSetBirthDateClicked()} text="Set date of birth" />
         <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
       </ContextMenu>
     {/if}
