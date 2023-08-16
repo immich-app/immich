@@ -248,7 +248,7 @@
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={DotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
-            <MenuOption text="Set birth date" on:click={() => (isSettingBirthDate = true)} />
+            <MenuOption text="Set date of birth" on:click={() => (isSettingBirthDate = true)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
           </AssetSelectContextMenu>
         </svelte:fragment>
