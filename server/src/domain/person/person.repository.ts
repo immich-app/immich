@@ -4,6 +4,7 @@ export const IPersonRepository = 'IPersonRepository';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
+  withHidden: boolean;
 }
 
 export interface UpdateFacesData {
