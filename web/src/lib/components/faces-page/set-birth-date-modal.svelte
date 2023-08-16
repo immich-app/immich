@@ -4,7 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
-  export let birthDate: string;
+  export let birthDate: string | undefined;
 
   const dispatch = createEventDispatcher();
   const handleCancel = () => dispatch('cancel');

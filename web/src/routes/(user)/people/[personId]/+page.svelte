@@ -175,10 +175,31 @@
     changeName();
   };
 
-  const handleSetBirthDate = async (birthDate: any) => {
-    // TODO
-    console.log(birthDate);
-    isSettingBirthDate = false;
+  const handleSetBirthDate = async (birthDate: string) => {
+    try {
+      isSettingBirthDate = false;
+      data.person.birthDate = birthDate;
+
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: data.person.id,
+        personUpdateDto: { birthDate: birthDate },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: 'Date of birth saved succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save date of birth');
+    }
+
   }
 </script>
 
@@ -195,7 +216,7 @@
 
 {#if isSettingBirthDate}
   <SetBirthDateModal
-    birthDate=""
+    birthDate="{data.person.birthDate}"
     on:cancel={() => (isSettingBirthDate = false)}
     on:submit={(event) => handleSetBirthDate(event.detail)}
   />
