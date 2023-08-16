@@ -42,8 +42,8 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
-          label="WEBP RESOLUTION"
-          desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+          label="SMALL THUMBNAIL RESOLUTION"
+          desc="Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
           bind:value={thumbnailConfig.webpSize}
           options={[
@@ -57,8 +57,8 @@
         />
 
         <SettingSelect
-          label="JPEG RESOLUTION"
-          desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+          label="LARGE THUMBNAIL RESOLUTION"
+          desc="Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
           bind:value={thumbnailConfig.jpegSize}
           options={[

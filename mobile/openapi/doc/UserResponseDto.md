@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | 
 **lastName** | **String** |  | 
-**memoriesEnabled** | **bool** |  | 
+**memoriesEnabled** | **bool** |  | [optional] 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 

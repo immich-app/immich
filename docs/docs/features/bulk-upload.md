@@ -170,4 +170,10 @@ The proper command for above would be as shown below. You should have access to 
 immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive /path/to/media --import
 ```
 
+If you are running the import using the docker command, please note that the volumes should point to the `/path/to/media` exactly on the environment the CLI command is being run on
+
+```
+docker run -it --rm -v "/path/to/media:/path/to/media" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive /path/to/media --import
+```
+
 :::

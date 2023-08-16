@@ -7,6 +7,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
@@ -100,7 +101,7 @@
   });
 
   const refreshAlbum = async () => {
-    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: false });
+    const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
     album = data;
   };
 
@@ -261,9 +262,9 @@
     }
   };
 
-  const handleUpdateDescription = (description: string) => {
+  const handleUpdateDescription = async (description: string) => {
     try {
-      api.albumApi.updateAlbumInfo({
+      await api.albumApi.updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           description,
@@ -287,14 +288,17 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      {#if isOwned || isAllUserOwned}
-        <RemoveFromAlbum bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
-      {/if}
       <AssetSelectContextMenu icon={DotsVertical} title="Menu">
         {#if isAllUserOwned}
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         {/if}
         <DownloadAction menuItem filename="{album.albumName}.zip" />
+        {#if isOwned || isAllUserOwned}
+          <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+        {/if}
+        {#if isAllUserOwned}
+          <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+        {/if}
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}

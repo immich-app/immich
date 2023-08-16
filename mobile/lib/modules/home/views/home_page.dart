@@ -342,10 +342,11 @@ class HomePage extends HookConsumerWidget {
                           listener: selectionListener,
                           selectionActive: selectionEnabledHook.value,
                           onRefresh: refreshAssets,
-                          topWidget:
-                              (currentUser != null && currentUser.memoryEnabled)
-                                  ? const MemoryLane()
-                                  : const SizedBox(),
+                          topWidget: (currentUser != null &&
+                                  currentUser.memoryEnabled != null &&
+                                  currentUser.memoryEnabled!)
+                              ? const MemoryLane()
+                              : const SizedBox(),
                         ),
                   error: (error, _) => Center(child: Text(error.toString())),
                   loading: buildLoadingIndicator,

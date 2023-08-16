@@ -1,4 +1,5 @@
 import {
+  IAlbumRepository,
   IAssetRepository,
   IBaseJob,
   ICryptoRepository,
@@ -59,6 +60,7 @@ export class MetadataExtractionProcessor {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IGeocodingRepository) private geocodingRepository: IGeocodingRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -90,6 +92,38 @@ export class MetadataExtractionProcessor {
     } catch (error: any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
+  }
+
+  async handleLivePhotoLinking(job: IEntityJob) {
+    const { id } = job;
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset?.exifInfo) {
+      return false;
+    }
+
+    if (!asset.exifInfo.livePhotoCID) {
+      return true;
+    }
+
+    const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
+    const match = await this.assetRepository.findLivePhotoMatch({
+      livePhotoCID: asset.exifInfo.livePhotoCID,
+      ownerId: asset.ownerId,
+      otherAssetId: asset.id,
+      type: otherType,
+    });
+
+    if (!match) {
+      return true;
+    }
+
+    const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
+
+    await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
+    await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
+    await this.albumRepository.removeAsset(motionAsset.id);
+
+    return true;
   }
 
   async handleQueueMetadataExtraction(job: IBaseJob) {
@@ -308,8 +342,16 @@ export class MetadataExtractionProcessor {
 
     const latitude = getExifProperty('GPSLatitude');
     const longitude = getExifProperty('GPSLongitude');
-    newExif.latitude = latitude !== null ? parseLatitude(latitude) : null;
-    newExif.longitude = longitude !== null ? parseLongitude(longitude) : null;
+    const lat = parseLatitude(latitude);
+    const lon = parseLongitude(longitude);
+
+    if (lat === 0 && lon === 0) {
+      this.logger.warn(`Latitude & Longitude were on Null Island (${lat},${lon}), not assigning coordinates`);
+    } else {
+      newExif.latitude = lat;
+      newExif.longitude = lon;
+    }
+
     if (getExifProperty('MotionPhoto')) {
       // Seen on more recent Pixel phones: starting as early as Pixel 4a, possibly earlier.
       const rawDirectory = getExifProperty('Directory');
@@ -343,19 +385,6 @@ export class MetadataExtractionProcessor {
     }
 
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
-    if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-      const motionAsset = await this.assetRepository.findLivePhotoMatch({
-        livePhotoCID: newExif.livePhotoCID,
-        otherAssetId: asset.id,
-        ownerId: asset.ownerId,
-        type: AssetType.VIDEO,
-      });
-      if (motionAsset) {
-        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
-        await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
-      }
-    }
-
     await this.applyReverseGeocoding(asset, newExif);
 
     /**
@@ -419,19 +448,6 @@ export class MetadataExtractionProcessor {
     newExif.country = null;
     newExif.fps = null;
     newExif.livePhotoCID = exifData?.ContentIdentifier || null;
-
-    if (newExif.livePhotoCID) {
-      const photoAsset = await this.assetRepository.findLivePhotoMatch({
-        livePhotoCID: newExif.livePhotoCID,
-        ownerId: asset.ownerId,
-        otherAssetId: asset.id,
-        type: AssetType.IMAGE,
-      });
-      if (photoAsset) {
-        await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
-        await this.assetRepository.save({ id: asset.id, isVisible: false });
-      }
-    }
 
     if (videoTags && videoTags['location']) {
       const location = videoTags['location'] as string;

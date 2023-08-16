@@ -81,6 +81,7 @@ part 'model/delete_asset_dto.dart';
 part 'model/delete_asset_response_dto.dart';
 part 'model/delete_asset_status.dart';
 part 'model/download_archive_info.dart';
+part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';
 part 'model/exif_response_dto.dart';
 part 'model/import_asset_dto.dart';

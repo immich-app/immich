@@ -1,62 +1,25 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import type { AssetFileUploadResponseDto } from '@api';
+import { api, AssetFileUploadResponseDto } from '@api';
 import axios from 'axios';
 import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 
-const extensions = [
-  '.3fr',
-  '.3gp',
-  '.ari',
-  '.arw',
-  '.avi',
-  '.avif',
-  '.cap',
-  '.cin',
-  '.cr2',
-  '.cr3',
-  '.crw',
-  '.dcr',
-  '.dng',
-  '.erf',
-  '.fff',
-  '.flv',
-  '.gif',
-  '.heic',
-  '.heif',
-  '.iiq',
-  '.jpeg',
-  '.jpg',
-  '.k25',
-  '.kdc',
-  '.mkv',
-  '.mov',
-  '.mp2t',
-  '.mp4',
-  '.mpeg',
-  '.mrw',
-  '.nef',
-  '.orf',
-  '.ori',
-  '.pef',
-  '.png',
-  '.raf',
-  '.raw',
-  '.rwl',
-  '.sr2',
-  '.srf',
-  '.srw',
-  '.tiff',
-  '.webm',
-  '.webp',
-  '.wmv',
-  '.x3f',
-];
+let _extensions: string[];
+
+const getExtensions = async () => {
+  if (!_extensions) {
+    const { data } = await api.serverInfoApi.getSupportedMediaTypes();
+    _extensions = [...data.image, ...data.video];
+  }
+  return _extensions;
+};
 
 export const openFileUploadDialog = async (
   albumId: string | undefined = undefined,
   sharedKey: string | undefined = undefined,
 ) => {
+  const extensions = await getExtensions();
+
   return new Promise<(string | undefined)[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
@@ -87,6 +50,7 @@ export const fileUploadHandler = async (
   albumId: string | undefined = undefined,
   sharedKey: string | undefined = undefined,
 ) => {
+  const extensions = await getExtensions();
   const iterable = {
     files: files.filter((file) => extensions.some((ext) => file.name.toLowerCase().endsWith(ext)))[Symbol.iterator](),
 

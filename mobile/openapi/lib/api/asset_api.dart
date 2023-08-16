@@ -230,7 +230,7 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /asset/download' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/download/archive' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
@@ -238,7 +238,7 @@ class AssetApi {
   /// * [String] key:
   Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download';
+    final path = r'/asset/download/archive';
 
     // ignore: prefer_final_locals
     Object? postBody = assetIdsDto;
@@ -853,51 +853,33 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/download' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/download/info' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [List<String>] assetIds:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] userId:
-  ///
-  /// * [num] archiveSize:
+  /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
+  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download';
+    final path = r'/asset/download/info';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = downloadInfoDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (assetIds != null) {
-      queryParams.addAll(_queryParams('multi', 'assetIds', assetIds));
-    }
-    if (albumId != null) {
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
-    }
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
-    if (archiveSize != null) {
-      queryParams.addAll(_queryParams('', 'archiveSize', archiveSize));
-    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -908,17 +890,11 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [List<String>] assetIds:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] userId:
-  ///
-  /// * [num] archiveSize:
+  /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo( assetIds: assetIds, albumId: albumId, userId: userId, archiveSize: archiveSize, key: key, );
+  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

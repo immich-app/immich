@@ -29,7 +29,7 @@
 
     <form on:submit|preventDefault={handleSave} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="email">Description</label>
+        <label class="immich-form-label" for="name">Description</label>
         <!-- svelte-ignore a11y-autofocus -->
         <textarea
           class="immich-form-input focus:outline-none"

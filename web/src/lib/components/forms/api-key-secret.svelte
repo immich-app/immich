@@ -45,7 +45,7 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <!-- <label class="immich-form-label" for="email">API Key</label> -->
+      <!-- <label class="immich-form-label" for="secret">API Key</label> -->
       <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret} />
     </div>
 
