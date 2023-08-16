@@ -1,4 +1,5 @@
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
   AssetResponseDto,
   AssetService,
@@ -15,7 +16,7 @@ import {
 } from '@app/domain';
 import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
 import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
 import { asStreamableFile, UseValidation } from '../app.utils';
@@ -75,5 +76,11 @@ export class AssetController {
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
     return this.service.getByTimeBucket(authUser, dto);
+  }
+
+  @Put()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
+    return this.service.updateAll(authUser, dto);
   }
 }

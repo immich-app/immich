@@ -1,16 +1,18 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AlbumResponseDto, api } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined = undefined;
+  export let menuItem = false;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -48,11 +50,15 @@
   };
 </script>
 
-<CircleIconButton title="Remove from album" on:click={() => (isShowConfirmation = true)} logo={DeleteOutline} />
+{#if menuItem}
+  <MenuOption text="Remove from album" on:click={() => (isShowConfirmation = true)} />
+{:else}
+  <CircleIconButton title="Remove from album" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+{/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Remove Asset{getAssets().size > 1 ? 's' : ''}"
+    title="Remove from {album.albumName}"
     confirmText="Remove"
     on:confirm={removeFromAlbum}
     on:cancel={() => (isShowConfirmation = false)}

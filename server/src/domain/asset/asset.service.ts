@@ -11,6 +11,7 @@ import { HumanReadableSize, usePagination } from '../domain.util';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
@@ -267,5 +268,11 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+    const { ids, ...options } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.assetRepository.updateAll(ids, options);
   }
 }

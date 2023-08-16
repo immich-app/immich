@@ -15,6 +15,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getById: jest.fn(),
     getByLibraryIdAndOriginalPath: jest.fn(),
     getAll: jest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
+    updateAll: jest.fn(),
     deleteAll: jest.fn(),
     save: jest.fn(),
     findLivePhotoMatch: jest.fn(),
