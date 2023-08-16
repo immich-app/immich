@@ -353,7 +353,7 @@
 
         <form on:submit|preventDefault={submitNameChange} autocomplete="off">
           <div class="m-4 flex flex-col gap-2">
-            <label class="immich-form-label" for="email">Name</label>
+            <label class="immich-form-label" for="name">Name</label>
             <!-- svelte-ignore a11y-autofocus -->
             <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
           </div>
