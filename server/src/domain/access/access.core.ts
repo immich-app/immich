@@ -24,6 +24,8 @@ export enum Permission {
   RULE_UPDATE = 'rule.update',
   RULE_DELETE = 'rule.delete',
 
+  ARCHIVE_READ = 'archive.read',
+
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
@@ -172,6 +174,9 @@ export class AccessCore {
       case Permission.RULE_UPDATE:
       case Permission.RULE_DELETE:
         return this.repository.rule.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ARCHIVE_READ:
+        return authUser.id === id;
 
       case Permission.LIBRARY_READ:
         return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));

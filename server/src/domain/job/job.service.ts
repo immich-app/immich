@@ -149,6 +149,10 @@ export class JobService {
         break;
 
       case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
+        break;
+
+      case JobName.LINK_LIVE_PHOTOS:
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
 
@@ -186,7 +190,7 @@ export class JobService {
       case JobName.CLASSIFY_IMAGE:
       case JobName.ENCODE_CLIP:
       case JobName.RECOGNIZE_FACES:
-      case JobName.METADATA_EXTRACTION:
+      case JobName.LINK_LIVE_PHOTOS:
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
         break;
     }

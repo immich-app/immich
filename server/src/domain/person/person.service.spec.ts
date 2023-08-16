@@ -47,7 +47,7 @@ describe(PersonService.name, () => {
         visible: 1,
         people: [responseDto],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: false });
     });
     it('should get all visible people with thumbnails', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
@@ -56,7 +56,7 @@ describe(PersonService.name, () => {
         visible: 1,
         people: [responseDto],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: false });
     });
     it('should get all hidden and visible people with thumbnails', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
@@ -73,7 +73,7 @@ describe(PersonService.name, () => {
           },
         ],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1 });
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: true });
     });
   });
 

@@ -12,7 +12,7 @@ import {
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
 } from './album-response.dto';
-import { IAlbumRepository } from './album.repository';
+import { AlbumInfoOptions, IAlbumRepository } from './album.repository';
 import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 
 @Injectable()
@@ -84,7 +84,7 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto) {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id), !dto.withoutAssets);
+    return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
@@ -111,7 +111,7 @@ export class AlbumService {
   async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_UPDATE, id);
 
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(id, { withAssets: true });
 
     if (dto.albumThumbnailAssetId) {
       const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
@@ -129,13 +129,13 @@ export class AlbumService {
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
 
-    return mapAlbumWithAssets(updatedAlbum);
+    return mapAlbumWithoutAssets(updatedAlbum);
   }
 
   async delete(authUser: AuthUserDto, id: string): Promise<void> {
     await this.access.requirePermission(authUser, Permission.ALBUM_DELETE, id);
 
-    const album = await this.albumRepository.getById(id);
+    const album = await this.findOrFail(id, { withAssets: false });
     if (!album) {
       throw new BadRequestException('Album not found');
     }
@@ -145,7 +145,7 @@ export class AlbumService {
   }
 
   async addAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(id, { withAssets: true });
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
@@ -181,7 +181,7 @@ export class AlbumService {
   }
 
   async removeAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(id, { withAssets: true });
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
@@ -225,7 +225,7 @@ export class AlbumService {
   async addUsers(authUser: AuthUserDto, id: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, id);
 
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(id, { withAssets: false });
 
     for (const userId of dto.sharedUserIds) {
       const exists = album.sharedUsers.find((user) => user.id === userId);
@@ -247,7 +247,7 @@ export class AlbumService {
         updatedAt: new Date(),
         sharedUsers: album.sharedUsers,
       })
-      .then(mapAlbumWithAssets);
+      .then(mapAlbumWithoutAssets);
   }
 
   async removeUser(authUser: AuthUserDto, id: string, userId: string | 'me'): Promise<void> {
@@ -255,7 +255,7 @@ export class AlbumService {
       userId = authUser.id;
     }
 
-    const album = await this.findOrFail(id);
+    const album = await this.findOrFail(id, { withAssets: false });
 
     if (album.ownerId === userId) {
       throw new BadRequestException('Cannot remove album owner');
@@ -278,8 +278,8 @@ export class AlbumService {
     });
   }
 
-  private async findOrFail(id: string) {
-    const album = await this.albumRepository.getById(id);
+  private async findOrFail(id: string, options: AlbumInfoOptions) {
+    const album = await this.albumRepository.getById(id, options);
     if (!album) {
       throw new BadRequestException('Album not found');
     }

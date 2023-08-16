@@ -168,11 +168,11 @@
       class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="w-1/4 text-center text-sm font-medium">Email</th>
-        <th class="w-1/4 text-center text-sm font-medium">First name</th>
-        <th class="w-1/4 text-center text-sm font-medium">Last name</th>
-        <th class="w-1/4 text-center text-sm font-medium">Can import</th>
-        <th class="w-1/4 text-center text-sm font-medium">Action</th>
+        <th class="w-4/12 text-center text-sm font-medium">Email</th>
+        <th class="w-2/12 text-center text-sm font-medium">First name</th>
+        <th class="w-2/12 text-center text-sm font-medium">Last name</th>
+        <th class="w-2/12 text-center text-sm font-medium">Can import</th>
+        <th class="w-2/12 text-center text-sm font-medium">Action</th>
       </tr>
     </thead>
     <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
@@ -187,10 +187,10 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.email}</td>
-            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.firstName}</td>
-            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">{user.lastName}</td>
-            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">
+            <td class="w-4/12 text-ellipsis break-all px-2 text-sm">{user.email}</td>
+            <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.firstName}</td>
+            <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.lastName}</td>
+            <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
               <div class="container mx-auto flex flex-wrap justify-center">
                 {#if user.externalPath}
                   <Check size="16" />
@@ -199,7 +199,7 @@
                 {/if}
               </div>
             </td>
-            <td class="w-1/4 text-ellipsis break-all px-4 text-sm">
+            <td class="w-2/12 text-ellipsis break-all px-4 text-sm">
               {#if !isDeleted(user)}
                 <button
                   on:click={() => editUserHandler(user)}
@@ -237,11 +237,9 @@
       class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="flex w-1/2 justify-around text-center text-sm font-medium">
-          <span>Name</span>
-          <span>Email</span>
-        </th>
-        <th class="w-1/2 text-center text-sm font-medium">Action</th>
+        <th class="w-1/4 text-center text-sm font-medium">Name</th>
+        <th class="w-1/2 text-center text-sm font-medium">Email</th>
+        <th class="w-1/4 text-center text-sm font-medium">Action</th>
       </tr>
     </thead>
     <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
@@ -256,11 +254,9 @@
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
             }`}
           >
-            <td class="w-2/3 text-ellipsis px-4 text-sm">
-              <span>{user.firstName} {user.lastName}</span>
-              <span>{user.email}</span>
-            </td>
-            <td class="w-1/3 text-ellipsis px-4 text-sm">
+            <td class="w-1/4 text-ellipsis break-words px-2 text-sm">{user.firstName} {user.lastName}</td>
+            <td class="w-1/2 text-ellipsis break-all px-2 text-sm">{user.email}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">
               {#if !isDeleted(user)}
                 <button
                   on:click={() => editUserHandler(user)}

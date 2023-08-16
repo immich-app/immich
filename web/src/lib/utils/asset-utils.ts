@@ -1,6 +1,6 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
-import { api, AssetApiGetDownloadInfoRequest, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto } from '@api';
+import { api, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto, DownloadInfoDto } from '@api';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (
@@ -32,15 +32,11 @@ const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export const downloadArchive = async (
-  fileName: string,
-  options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
-  key?: string,
-) => {
+export const downloadArchive = async (fileName: string, options: DownloadInfoDto, key?: string) => {
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.assetApi.getDownloadInfo({ ...options, key });
+    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key });
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
