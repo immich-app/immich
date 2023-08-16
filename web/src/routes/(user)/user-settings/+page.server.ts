@@ -12,7 +12,6 @@ export const load = (async ({ parent, locals }) => {
   const { data: devices } = await locals.api.authenticationApi.getAuthDevices();
   const { data: partners } = await locals.api.partnerApi.getPartners({ direction: 'shared-by' });
 
-  console.log(keys);
   return {
     user,
     keys,
