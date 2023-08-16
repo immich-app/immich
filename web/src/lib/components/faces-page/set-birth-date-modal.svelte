@@ -20,14 +20,14 @@
     >
       <Cake size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Set date of birth</h1>
+
+      <p class="text-sm dark:text-immich-dark-fg">
+        Date of birth will be used to calculate the age of this person at the time of a photo (<i>not implemented yet</i>).
+      </p>
     </div>
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-      <p class="p-5 text-sm">
-        Date of birth will be used to calculate the age of this person when viewing their photos.
-      </p>
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="birthDate">Date of birth</label>
         <input
           class="immich-form-input"
           id="birthDate"
