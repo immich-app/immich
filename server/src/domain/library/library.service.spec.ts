@@ -16,7 +16,7 @@ import mockfs from 'mock-fs';
 import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, ILibraryJob, JobName } from '../job';
+import { IJobRepository, ILibraryFileJob, ILibraryJob, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { CrawlOptionsDto, ILibraryRepository, LibraryService } from './index';
 
@@ -77,7 +77,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
@@ -97,7 +97,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
@@ -133,7 +133,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
@@ -171,7 +171,7 @@ describe(LibraryService.name, () => {
 
       userMock.get.mockResolvedValue(null);
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
@@ -194,7 +194,7 @@ describe(LibraryService.name, () => {
       mockUser = userStub.admin;
       userMock.get.mockResolvedValue(mockUser);
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
@@ -217,7 +217,7 @@ describe(LibraryService.name, () => {
       mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
@@ -240,7 +240,7 @@ describe(LibraryService.name, () => {
       mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/../../etc/rootpassword.jpg',
@@ -258,7 +258,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: assetStub.image.libraryId,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
@@ -287,7 +287,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: assetStub.offlineImage.libraryId,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
@@ -329,7 +329,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: assetStub.image.libraryId,
         ownerId: assetStub.image.ownerId,
         assetPath: '/data/user1/photo.jpg',
@@ -358,7 +358,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
@@ -382,7 +382,7 @@ describe(LibraryService.name, () => {
 
       createLibraryService();
 
-      const mockLibraryJob: ILibraryJob = {
+      const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.importLibrary.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
