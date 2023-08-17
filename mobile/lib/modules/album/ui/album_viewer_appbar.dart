@@ -198,6 +198,42 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void buildBottomSheet() {
+      final ownerActions = [
+        ListTile(
+          leading: const Icon(Icons.person_add_alt_rounded),
+          onTap: () {
+            Navigator.pop(context);
+            onAddUsers!(album);
+          },
+          title: const Text(
+            "album_viewer_page_share_add_users",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+        ListTile(
+          leading: const Icon(Icons.settings_rounded),
+          onTap: () =>
+              AutoRouter.of(context).navigate(AlbumOptionsRoute(album: album)),
+          title: const Text(
+            "translated_text_options",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ];
+
+      final commonActions = [
+        ListTile(
+          leading: const Icon(Icons.add_photo_alternate_outlined),
+          onTap: () {
+            Navigator.pop(context);
+            onAddPhotos!(album);
+          },
+          title: const Text(
+            "share_add_photos",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ];
       showModalBottomSheet(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         isScrollControlled: false,
@@ -208,32 +244,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
               mainAxisSize: MainAxisSize.min,
               children: [
                 buildBottomSheetActionButton(),
-                if (selected.isEmpty && onAddPhotos != null)
-                  ListTile(
-                    leading: const Icon(Icons.add_photo_alternate_outlined),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onAddPhotos!(album);
-                    },
-                    title: const Text(
-                      "share_add_photos",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
+                if (selected.isEmpty && onAddPhotos != null) ...commonActions,
                 if (selected.isEmpty &&
                     onAddPhotos != null &&
                     userId == album.ownerId)
-                  ListTile(
-                    leading: const Icon(Icons.person_add_alt_rounded),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onAddUsers!(album);
-                    },
-                    title: const Text(
-                      "album_viewer_page_share_add_users",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
+                  ...ownerActions
               ],
             ),
           );

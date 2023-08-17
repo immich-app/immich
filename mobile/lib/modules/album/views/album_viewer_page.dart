@@ -185,30 +185,34 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildSharedUserIconsRow(Album album) {
-      return SizedBox(
-        height: 50,
-        child: ListView.builder(
-          padding: const EdgeInsets.only(left: 16),
-          scrollDirection: Axis.horizontal,
-          itemBuilder: ((context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.grey[300],
-                radius: 18,
-                child: Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50.0),
-                    child: Image.asset(
-                      'assets/immich-logo-no-outline.png',
+      return GestureDetector(
+        onTap: () =>
+            AutoRouter.of(context).navigate(AlbumOptionsRoute(album: album)),
+        child: SizedBox(
+          height: 50,
+          child: ListView.builder(
+            padding: const EdgeInsets.only(left: 16),
+            scrollDirection: Axis.horizontal,
+            itemBuilder: ((context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[300],
+                  radius: 18,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50.0),
+                      child: Image.asset(
+                        'assets/immich-logo-no-outline.png',
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-          itemCount: album.sharedUsers.length,
+              );
+            }),
+            itemCount: album.sharedUsers.length,
+          ),
         ),
       );
     }
