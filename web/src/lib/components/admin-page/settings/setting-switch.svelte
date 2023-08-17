@@ -32,7 +32,7 @@
       {/if}
     </div>
 
-    <p class="dark:text-immich-dark-fg text-sm">{subtitle}</p>
+    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">
