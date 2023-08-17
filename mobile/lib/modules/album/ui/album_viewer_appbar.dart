@@ -78,11 +78,28 @@ class AlbumViewerAppbar extends HookConsumerWidget
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.pop(context, 'Cancel'),
-                child: const Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               TextButton(
-                onPressed: () => deleteAlbum(),
-                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context, 'Confirm');
+                  deleteAlbum();
+                },
+                child: Text(
+                  'Confirm',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.red
+                        : Colors.red[300],
+                  ),
+                ),
               ),
             ],
           );

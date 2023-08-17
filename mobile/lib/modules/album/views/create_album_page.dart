@@ -31,7 +31,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets = useState<Set<Asset>>(
-        initialAssets != null ? Set.from(initialAssets!) : const {});
+        initialAssets != null ? Set.from(initialAssets!) : const {},);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() async {
