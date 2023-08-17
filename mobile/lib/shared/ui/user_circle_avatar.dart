@@ -35,7 +35,6 @@ class UserCircleAvatar extends ConsumerWidget {
       Colors.indigo[200],
       Colors.cyan[200],
       Colors.brown[200],
-      Colors.grey[200],
     ];
 
     final profileImageUrl =

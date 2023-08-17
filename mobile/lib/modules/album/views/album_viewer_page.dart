@@ -17,6 +17,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
@@ -196,18 +197,10 @@ class AlbumViewerPage extends HookConsumerWidget {
             itemBuilder: ((context, index) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.grey[300],
+                child: UserCircleAvatar(
+                  user: album.sharedUsers.toList()[index],
                   radius: 18,
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50.0),
-                      child: Image.asset(
-                        'assets/immich-logo-no-outline.png',
-                      ),
-                    ),
-                  ),
+                  useRandomBackgroundColor: true,
                 ),
               );
             }),
