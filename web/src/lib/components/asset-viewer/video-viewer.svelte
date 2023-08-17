@@ -18,16 +18,17 @@
       video.muted = true;
       await video.play();
       video.muted = false;
-
-      isVideoLoading = false;
     } catch (error) {
       handleError(error, 'Unable to play video');
+    } finally {
+      isVideoLoading = false;
     }
   };
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
+    autoplay
     controls
     class="h-full object-contain"
     on:canplay={handleCanPlay}
