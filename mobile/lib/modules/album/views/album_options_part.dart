@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class AlbumOptionsPage extends HookConsumerWidget {
   final Album album;
@@ -12,6 +13,30 @@ class AlbumOptionsPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsers = album.sharedUsers.toList();
+    final owner = album.owner.value;
+
+    buildOwnerInfo() {
+      return ListTile(
+        leading: owner != null
+            ? UserCircleAvatar(
+                user: owner,
+                useRandomBackgroundColor: true,
+              )
+            : const SizedBox(),
+        title: Text(
+          album.owner.value?.firstName ?? "",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        trailing: const Text(
+          "Owner",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
 
     buildSharedUsersList() {
       return ListView.builder(
@@ -20,11 +45,20 @@ class AlbumOptionsPage extends HookConsumerWidget {
         itemBuilder: (context, index) {
           final user = sharedUsers[index];
           return ListTile(
-            leading: CircleAvatar(
-              child: Text(user.firstName[0]),
+            leading: UserCircleAvatar(
+              user: user,
+              useRandomBackgroundColor: true,
             ),
-            title: Text(user.firstName),
-            subtitle: Text(user.email),
+            title: Text(
+              user.firstName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              user.email,
+              style: TextStyle(color: Colors.grey[500]),
+            ),
             onTap: () {},
           );
         },
@@ -54,6 +88,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           buildSectionTitle("PEOPLE"),
+          buildOwnerInfo(),
           buildSharedUsersList(),
         ],
       ),
