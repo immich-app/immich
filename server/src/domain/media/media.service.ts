@@ -58,20 +58,25 @@ export class MediaService {
       return false;
     }
 
+    const resizePath = await this.generateThumbnail(asset, 'jpeg');
+    await this.assetRepository.save({ id: asset.id, resizePath });
+    return true;
+  }
+
+  async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+    let path;
     switch (asset.type) {
       case AssetType.IMAGE:
-        await this.generateImageThumbnail(asset, 'jpeg');
+        path = await this.generateImageThumbnail(asset, format);
         break;
       case AssetType.VIDEO:
-        await this.generateVideoThumbnail(asset, 'jpeg');
+        path = await this.generateVideoThumbnail(asset, format);
         break;
       default:
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
-
-    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
-    await this.assetRepository.save({ id: asset.id, resizePath });
-    return true;
+    this.logger.log(`Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`);
+    return path;
   }
 
   async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -80,7 +85,7 @@ export class MediaService {
     const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
     const path = this.ensureThumbnailPath(asset, format);
     await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
-    this.logger.log(`Successfully generated ${format.toUpperCase()} thumbnail for asset ${asset.id}`);
+    return path;
   }
 
   async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -97,6 +102,7 @@ export class MediaService {
     const config = { ...ffmpeg, targetResolution: size.toString() };
     const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
     await this.mediaRepository.transcode(asset.originalPath, path, options);
+    return path;
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
@@ -105,18 +111,7 @@ export class MediaService {
       return false;
     }
 
-    switch (asset.type) {
-      case AssetType.IMAGE:
-        await this.generateImageThumbnail(asset, 'webp');
-        break;
-      case AssetType.VIDEO:
-        await this.generateVideoThumbnail(asset, 'webp');
-        break;
-      default:
-        throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
-    }
-
-    const webpPath = this.ensureThumbnailPath(asset, 'webp');
+    const webpPath = await this.generateThumbnail(asset, 'webp');
     await this.assetRepository.save({ id: asset.id, webpPath });
     return true;
   }
@@ -228,8 +223,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
-        audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
