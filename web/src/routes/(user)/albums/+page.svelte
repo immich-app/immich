@@ -25,6 +25,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
+  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
 
   export let data: PageData;
 
@@ -40,7 +41,7 @@
     },
   ];
   const viewOptionNames = viewOptions.map((option) => option.name);
-  const viewOptionIcons = viewOptions.map((option) => option.icon);
+  const viewOptionIcons: (typeof Icon)[] = viewOptions.map((option) => option.icon);
 
   const {
     albums: unsortedAlbums,
@@ -151,7 +152,7 @@
   {:else if $albumViewSettings.view === AlbumViewMode.List}
     <table class="mt-5 w-full text-left">
       <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+        class="text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary mb-4 flex h-12 w-full rounded-md border bg-gray-50"
       >
         <tr class="flex w-full place-items-center">
           <th class="w-1/4 text-center text-sm font-medium">Album title</th>
@@ -161,11 +162,11 @@
         </tr>
       </thead>
       <tbody
-        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="dark:border-immich-dark-gray dark:text-immich-dark-fg block max-h-[320px] w-full overflow-y-auto rounded-md border"
       >
         {#each $albums as album (album.id)}
           <tr
-            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            class="odd:bg-immich-gray even:bg-immich-bg hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center hover:cursor-pointer"
             on:click={() => goto(`albums/${album.id}`)}
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"

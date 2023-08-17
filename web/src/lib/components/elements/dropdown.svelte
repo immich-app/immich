@@ -3,15 +3,16 @@
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
+  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
 
   interface DropdownOption {
     value: string;
-    icon?: typeof LinkButton;
+    icon?: Icon;
   }
 
-  export let options: DropdownOption[] = [];
+  export let options: DropdownOption[] | string[] = [];
   export let value = options[0];
-  export let icons: (typeof LinkButton)[] | undefined = undefined;
+  export let icons: (typeof Icon)[] | undefined = undefined;
 
   let showMenu = false;
 
@@ -51,10 +52,10 @@
           on:click={() => handleSelectOption(index)}
         >
           {#if value == option}
-            <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
+            <div class="text-immich-primary dark:text-immich-dark-primary font-medium">
               <Check size="18" />
             </div>
-            <p class="justify-self-start font-medium text-immich-primary dark:text-immich-dark-primary">
+            <p class="text-immich-primary dark:text-immich-dark-primary justify-self-start font-medium">
               {option}
             </p>
           {:else}
