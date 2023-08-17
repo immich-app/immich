@@ -5,6 +5,9 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
+  import FormatListBulletedSquare from 'svelte-material-icons/FormatListBulletedSquare.svelte';
+  import ViewGridOutline from 'svelte-material-icons/ViewGridOutline.svelte';
   import type { PageData } from './$types';
   import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
   import { useAlbums } from './albums.bloc';
@@ -15,15 +18,30 @@
   import { flip } from 'svelte/animate';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { dateFormats } from '$lib/constants';
+  import { locale, AlbumViewMode } from '$lib/stores/preferences.store';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
+  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
 
   export let data: PageData;
 
   const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
+  const viewOptions = [
+    {
+      name: AlbumViewMode.Cover,
+      icon: ViewGridOutline,
+    },
+    {
+      name: AlbumViewMode.List,
+      icon: FormatListBulletedSquare,
+    },
+  ];
+  const viewOptionNames = viewOptions.map((option) => option.name);
+  const viewOptionIcons: (typeof Icon)[] = viewOptions.map((option) => option.icon);
 
   const {
     albums: unsortedAlbums,
@@ -88,6 +106,10 @@
     }
   };
 
+  const dateLocaleString = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
+  };
+
   onMount(() => {
     removeAlbumsIfEmpty();
   });
@@ -114,17 +136,53 @@
       </div>
     </LinkButton>
 
-    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} />
+    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} icons={[SwapVertical]} />
+    <Dropdown options={viewOptionNames} bind:value={$albumViewSettings.view} icons={viewOptionIcons} />
   </div>
 
   <!-- Album Card -->
-  <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
-    {#each $albums as album (album.id)}
-      <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-        <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} user={data.user} />
-      </a>
-    {/each}
-  </div>
+  {#if $albumViewSettings.view === AlbumViewMode.Cover}
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+      {#each $albums as album (album.id)}
+        <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
+          <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} user={data.user} />
+        </a>
+      {/each}
+    </div>
+  {:else if $albumViewSettings.view === AlbumViewMode.List}
+    <table class="mt-5 w-full text-left">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+      >
+        <tr class="flex w-full place-items-center">
+          <th class="w-1/4 text-center text-sm font-medium">Album title</th>
+          <th class="w-1/4 text-center text-sm font-medium">Assets</th>
+          <th class="w-1/4 text-center text-sm font-medium">Updated date</th>
+          <th class="w-1/4 text-center text-sm font-medium">Created date</th>
+        </tr>
+      </thead>
+      <tbody
+        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+      >
+        {#each $albums as album (album.id)}
+          <tr
+            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            on:click={() => goto(`albums/${album.id}`)}
+            on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
+            tabindex="0"
+          >
+            <td class="text-md w-1/4 text-ellipsis px-2">{album.albumName}</td>
+            <td class="text-md w-1/4 text-ellipsis px-2">
+              {album.assetCount}
+              {album.assetCount == 1 ? `item` : `items`}
+            </td>
+            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.createdAt)}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
 
   <!-- Empty Message -->
   {#if $albums.length === 0}
