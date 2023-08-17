@@ -39,7 +39,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
-    void onDeleteAlbumPressed() async {
+    deleteAlbum() async {
       ImmichLoadingOverlayController.appLoader.show();
 
       final bool success;
@@ -63,6 +63,35 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
 
       ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    Future<void> showConfirmationDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Delete album'),
+            content: const Text(
+              'Are you sure you want to delete this album from your account?',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'Cancel'),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => deleteAlbum(),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void onDeleteAlbumPressed() async {
+      showConfirmationDialog();
     }
 
     void onLeaveAlbumPressed() async {
