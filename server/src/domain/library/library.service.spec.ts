@@ -41,6 +41,10 @@ describe(LibraryService.name, () => {
     sut = new LibraryService(accessMock, userMock, libraryMock, assetMock, jobMock, cryptoMock);
   };
 
+  beforeAll(() => {
+    mockfs.restore();
+  });
+
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
@@ -158,6 +162,69 @@ describe(LibraryService.name, () => {
         name: JobName.VIDEO_CONVERSION,
         data: {
           id: assetStub.video.id,
+        },
+      });
+    });
+
+    it('should not import an asset when mtime matches db asset', async () => {
+      mockfs({
+        '/data/user1/photo.jpg': mockfs.file({
+          mtime: assetStub.image.fileModifiedAt,
+        }),
+      });
+
+      createLibraryService();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should import an asset when mtime differs from db asset', async () => {
+      mockfs({
+        '/data/user1/photo.jpg': mockfs.file({
+          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+          mtime: new Date(assetStub.image.fileModifiedAt.getTime() - 1),
+        }),
+      });
+
+      createLibraryService();
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.METADATA_EXTRACTION,
+        data: {
+          id: assetStub.image.id,
+          source: 'upload',
+        },
+      });
+
+      expect(jobMock.queue).not.toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: {
+          id: assetStub.image.id,
         },
       });
     });

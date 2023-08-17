@@ -122,7 +122,7 @@ export class LibraryService {
   private async deleteLibraryFiles(assetIds: string[]) {
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.getById(assetId);
-      this.logger.debug(`Deleting library asset ${asset.originalPath}`);
+      this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
 
       if (asset.faces) {
         await Promise.all(
@@ -210,7 +210,7 @@ export class LibraryService {
       // This asset is new to us, read it from disk
       this.logger.debug(`Importing new asset: ${job.assetPath}`);
       doImport = true;
-    } else if (stats.mtime.toISOString !== existingAssetEntity.fileModifiedAt.toISOString) {
+    } else if (stats.mtime.toISOString() !== existingAssetEntity.fileModifiedAt.toISOString()) {
       // File modification time has changed since last time we checked, re-read from disk
       this.logger.debug(
         `File modification time has changed, re-importing asset: ${job.assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
