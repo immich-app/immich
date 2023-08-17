@@ -66,6 +66,7 @@ const image: Record<string, string[]> = {
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],
   '.srw': ['image/srw', 'image/x-samsung-srw'],
+  '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],
   '.webp': ['image/webp'],
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],

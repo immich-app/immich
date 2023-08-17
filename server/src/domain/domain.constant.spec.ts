@@ -37,6 +37,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/sr2', extension: '.sr2' },
     { mimetype: 'image/srf', extension: '.srf' },
     { mimetype: 'image/srw', extension: '.srw' },
+    { mimetype: 'image/tiff', extension: '.tif' },
     { mimetype: 'image/tiff', extension: '.tiff' },
     { mimetype: 'image/webp', extension: '.webp' },
     { mimetype: 'image/x-adobe-dng', extension: '.dng' },
@@ -82,7 +83,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/x-ms-wmv', extension: '.wmv' },
     { mimetype: 'video/x-msvideo', extension: '.avi' },
   ]) {
-    it(`should map ${extension} to ${mimetype}`, async () => {
+    it(`should map ${extension} to ${mimetype}`, () => {
       expect({ ...mimeTypes.image, ...mimeTypes.video }[extension]).toContain(mimetype);
     });
   }
