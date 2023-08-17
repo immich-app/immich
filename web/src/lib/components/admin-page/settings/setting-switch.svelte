@@ -7,7 +7,9 @@
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
-  export let onToggle: (checked: boolean) => void;
+  export let onToggle: (checked: boolean) => void = () => {
+    return;
+  };
   export const handler = (e: Event) => {
     const target = e.target as HTMLInputElement;
     onToggle(target.checked);
@@ -30,7 +32,7 @@
       {/if}
     </div>
 
-    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    <p class="dark:text-immich-dark-fg text-sm">{subtitle}</p>
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">
