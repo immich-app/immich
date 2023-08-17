@@ -142,7 +142,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildTitle(Album album) {
       return Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8),
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 24),
         child: userId == album.ownerId && album.isRemote
             ? AlbumViewerEditableTitle(
                 album: album,

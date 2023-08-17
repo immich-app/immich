@@ -2,7 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class AlbumOptionsPage extends HookConsumerWidget {
@@ -14,6 +16,22 @@ class AlbumOptionsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsers = album.sharedUsers.toList();
     final owner = album.owner.value;
+    final userId = ref.watch(authenticationProvider).userId;
+    final isOwner = owner?.id == userId;
+
+    void handleUserClick(User user) {
+      if (user.id == userId) {
+        print("leave");
+
+        return;
+      }
+
+      if (isOwner) {
+        print("remove");
+
+        return;
+      }
+    }
 
     buildOwnerInfo() {
       return ListTile(
@@ -59,7 +77,12 @@ class AlbumOptionsPage extends HookConsumerWidget {
               user.email,
               style: TextStyle(color: Colors.grey[500]),
             ),
-            onTap: () {},
+            trailing: userId == user.id || isOwner
+                ? const Icon(Icons.more_horiz_rounded)
+                : const SizedBox(),
+            onTap: userId == user.id || isOwner
+                ? () => handleUserClick(user)
+                : null,
           );
         },
       );
