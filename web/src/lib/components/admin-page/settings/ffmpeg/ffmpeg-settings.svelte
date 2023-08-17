@@ -30,7 +30,7 @@
   }
 
   async function resetToDefault() {
-    ffmpegConfig = ffmpegDefault;
+    ffmpegConfig = { ...ffmpegDefault };
 
     notificationController.show({
       message: 'Reset FFmpeg settings to default',

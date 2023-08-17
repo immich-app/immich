@@ -69,7 +69,7 @@
   }
 
   async function resetToDefault() {
-    oauthConfig = oauthDefault;
+    oauthConfig = { ...oauthDefault };
 
     notificationController.show({
       message: 'Reset OAuth settings to default',

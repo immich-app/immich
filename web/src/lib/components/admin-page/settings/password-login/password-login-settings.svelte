@@ -19,9 +19,7 @@
   export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
   export let passwordLoginDefault: SystemConfigPasswordLoginDto;
   export let savedConfig: SystemConfigPasswordLoginDto;
-  console.log(config);
-  console.log(passwordLoginConfig);
-  console.log(savedConfig);
+
   let isConfirmOpen = false;
   let handleConfirm: (value: boolean) => void;
 

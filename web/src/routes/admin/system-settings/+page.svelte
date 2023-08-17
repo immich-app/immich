@@ -41,9 +41,6 @@
       });
     }
   };
-  $: {
-    console.log(config);
-  }
 </script>
 
 <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
@@ -74,7 +71,7 @@
           ...currentConfig,
           ffmpeg,
         },
-        'ffmpeg',
+        'FFmpeg',
       );
     }}
   />
@@ -87,7 +84,6 @@
 >
   <JobSettings
     bind:savedConfig={currentConfig.job}
-    bind:config
     bind:jobConfig={config.job}
     jobDefault={defaultConfig.job}
     on:save={({ detail: job }) => {
@@ -96,7 +92,7 @@
           ...currentConfig,
           job,
         },
-        'Password Authentication',
+        'Job Settings',
       );
     }}
   />
