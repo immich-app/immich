@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
-  import { api, SystemConfigThumbnailDto } from '@api';
+  import { api, Colorspace, SystemConfigThumbnailDto } from '@api';
   import { fade } from 'svelte/transition';
   import { isEqual } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
@@ -93,7 +93,7 @@
               { value: 250, text: '250p' },
             ]}
             name="resolution"
-            isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
+            isEdited={thumbnailConfig.webpSize !== savedConfig.webpSize}
             {disabled}
           />
 
@@ -107,7 +107,7 @@
               { value: 1440, text: '1440p' },
             ]}
             name="resolution"
-            isEdited={!(thumbnailConfig.jpegSize === savedConfig.jpegSize)}
+            isEdited={thumbnailConfig.jpegSize !== savedConfig.jpegSize}
             {disabled}
           />
 
@@ -116,14 +116,14 @@
             label="QUALITY"
             desc="Thumbnail quality from 1-100. Higher is better for quality but produces larger files."
             bind:value={thumbnailConfig.quality}
-            isEdited={!(thumbnailConfig.quality === savedConfig.quality)}
+            isEdited={thumbnailConfig.quality !== savedConfig.quality}
           />
 
           <SettingSwitch
             title="PREFER WIDE GAMUT"
-            subtitle="Use the Display P3 colorspace for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
-            bind:checked={thumbnailConfig.wideGamut}
-            isEdited={!(thumbnailConfig.wideGamut === savedConfig.wideGamut)}
+            subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
+            onToggle={(enabled) => (thumbnailConfig.colorspace = enabled ? Colorspace.P3 : Colorspace.Srgb)}
+            isEdited={thumbnailConfig.colorspace !== savedConfig.colorspace}
           />
         </div>
 

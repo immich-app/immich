@@ -1049,6 +1049,20 @@ export interface ClassificationConfig {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const Colorspace = {
+    Srgb: 'srgb',
+    P3: 'p3'
+} as const;
+
+export type Colorspace = typeof Colorspace[keyof typeof Colorspace];
+
+
+/**
+ * 
+ * @export
  * @interface CreateAlbumDto
  */
 export interface CreateAlbumDto {
@@ -3186,6 +3200,12 @@ export interface SystemConfigTemplateStorageOptionDto {
 export interface SystemConfigThumbnailDto {
     /**
      * 
+     * @type {Colorspace}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'colorspace': Colorspace;
+    /**
+     * 
      * @type {number}
      * @memberof SystemConfigThumbnailDto
      */
@@ -3202,13 +3222,9 @@ export interface SystemConfigThumbnailDto {
      * @memberof SystemConfigThumbnailDto
      */
     'webpSize': number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigThumbnailDto
-     */
-    'wideGamut': boolean;
 }
+
+
 /**
  * 
  * @export

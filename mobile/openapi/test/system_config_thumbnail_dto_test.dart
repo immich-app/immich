@@ -16,6 +16,11 @@ void main() {
   // final instance = SystemConfigThumbnailDto();
 
   group('test SystemConfigThumbnailDto', () {
+    // Colorspace colorspace
+    test('to test the property `colorspace`', () async {
+      // TODO
+    });
+
     // int jpegSize
     test('to test the property `jpegSize`', () async {
       // TODO
@@ -28,11 +33,6 @@ void main() {
 
     // int webpSize
     test('to test the property `webpSize`', () async {
-      // TODO
-    });
-
-    // bool wideGamut
-    test('to test the property `wideGamut`', () async {
       // TODO
     });
 

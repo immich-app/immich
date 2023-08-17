@@ -95,7 +95,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
     quality: 80,
-    colorspace: 'p3',
+    colorspace: Colorspace.P3,
   },
 });
 

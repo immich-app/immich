@@ -135,7 +135,7 @@ describe(MediaService.name, () => {
         size: 1440,
         format: 'jpeg',
         quality: 80,
-        colorspace: 'p3',
+        colorspace: Colorspace.P3,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
@@ -213,7 +213,7 @@ describe(MediaService.name, () => {
         format: 'webp',
         size: 250,
         quality: 80,
-        colorspace: 'p3',
+        colorspace: Colorspace.P3,
       });
       expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: 'upload/thumbs/user-id/asset-id.webp' });
     });

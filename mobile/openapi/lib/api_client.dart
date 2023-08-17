@@ -253,6 +253,8 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'ClassificationConfig':
           return ClassificationConfig.fromJson(value);
+        case 'Colorspace':
+          return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateProfileImageResponseDto':

@@ -78,8 +78,8 @@ export class MediaService {
     const { thumbnail } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
     const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
-    const thumbnailPath = this.getPath(asset, format);
-    await this.mediaRepository.resize(asset.originalPath, thumbnailPath, thumbnailOptions);
+    const path = this.ensureThumbnailPath(asset, format);
+    await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
   }
 
   async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -93,10 +93,10 @@ export class MediaService {
       );
     }
     const mainAudioStream = this.getMainStream(audioStreams);
-    const thumbnailPath = this.getPath(asset, format);
+    const path = this.ensureThumbnailPath(asset, format);
     const config = { ...ffmpeg, targetResolution: size.toString() };
     const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, options);
+    await this.mediaRepository.transcode(asset.originalPath, path, options);
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
@@ -302,7 +302,7 @@ export class MediaService {
     return handler;
   }
 
-  getPath(asset: AssetEntity, extension: string): string {
+  ensureThumbnailPath(asset: AssetEntity, extension: string): string {
     const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
     this.storageRepository.mkdirSync(folderPath);
     return join(folderPath, `${asset.id}.${extension}`);
