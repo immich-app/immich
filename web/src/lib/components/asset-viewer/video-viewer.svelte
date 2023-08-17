@@ -4,21 +4,25 @@
   import { createEventDispatcher } from 'svelte';
   import { videoViewerVolume } from '$lib/stores/preferences.store';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { handleError } from '../../utils/handle-error';
 
   export let assetId: string;
   export let publicSharedKey: string | undefined = undefined;
 
   let isVideoLoading = true;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ onVideoEnded: void }>();
 
-  const handleCanPlay = (ev: Event & { currentTarget: HTMLVideoElement }) => {
-    const playerNode = ev.currentTarget;
+  const handleCanPlay = async (event: Event) => {
+    try {
+      const video = event.currentTarget as HTMLVideoElement;
+      video.muted = true;
+      await video.play();
+      video.muted = false;
 
-    playerNode.muted = true;
-    playerNode.play();
-    playerNode.muted = false;
-
-    isVideoLoading = false;
+      isVideoLoading = false;
+    } catch (error) {
+      handleError(error, 'Unable to play video');
+    }
   };
 </script>
 
