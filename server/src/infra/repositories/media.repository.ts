@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import sharp from 'sharp';
 import { Writable } from 'typeorm/platform/PlatformTools.js';
 import { promisify } from 'util';
+import { Colorspace } from '@app/infra/entities';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);

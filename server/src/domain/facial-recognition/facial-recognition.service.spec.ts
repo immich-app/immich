@@ -22,6 +22,7 @@ import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
+import { Colorspace } from '@app/infra/entities';
 
 const croppedFace = Buffer.from('Cropped Face');
 
