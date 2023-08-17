@@ -46,10 +46,10 @@ export interface AlbumViewSettings {
 
 export enum AlbumViewMode {
   Cover = 'Cover',
-  List = 'List'
+  List = 'List',
 }
 
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
-  view: AlbumViewMode.Cover
+  view: AlbumViewMode.Cover,
 });

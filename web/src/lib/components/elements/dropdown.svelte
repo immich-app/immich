@@ -11,7 +11,7 @@
 
   export let options: DropdownOption[] = [];
   export let value = options[0];
-  export let icons: typeof LinkButton[] | undefined = undefined;
+  export let icons: (typeof LinkButton)[] | undefined = undefined;
 
   let showMenu = false;
 
@@ -24,8 +24,8 @@
     showMenu = false;
   };
 
-  $: index = options.findIndex(option => option === value)
-  $: icon = icons?.[index]
+  $: index = options.findIndex((option) => option === value);
+  $: icon = icons?.[index];
 </script>
 
 <div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside}>
