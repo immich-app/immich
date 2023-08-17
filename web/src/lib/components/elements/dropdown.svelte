@@ -52,10 +52,10 @@
           on:click={() => handleSelectOption(index)}
         >
           {#if value == option}
-            <div class="text-immich-primary dark:text-immich-dark-primary font-medium">
+            <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
               <Check size="18" />
             </div>
-            <p class="text-immich-primary dark:text-immich-dark-primary justify-self-start font-medium">
+            <p class="justify-self-start font-medium text-immich-primary dark:text-immich-dark-primary">
               {option}
             </p>
           {:else}
