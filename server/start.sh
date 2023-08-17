@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 export LD_PRELOAD=/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2
 
