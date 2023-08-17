@@ -47,6 +47,10 @@ class AlbumOptionsPage extends HookConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        subtitle: Text(
+          album.owner.value?.email ?? "",
+          style: TextStyle(color: Colors.grey[500]),
+        ),
         trailing: const Text(
           "Owner",
           style: TextStyle(
@@ -66,6 +70,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
             leading: UserCircleAvatar(
               user: user,
               useRandomBackgroundColor: true,
+              radius: 22,
             ),
             title: Text(
               user.firstName,
