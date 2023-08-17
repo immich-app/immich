@@ -5,13 +5,12 @@
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import { handleError } from '../../utils/handle-error';
-  import { onMount } from 'svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let user: UserResponseDto;
 
-  let partners: UserResponseDto[] = [];
+  export let partners: UserResponseDto[];
   let createPartner = false;
   let removePartner: UserResponseDto | null = null;
 
@@ -46,10 +45,6 @@
       handleError(error, 'Unable to add partners');
     }
   };
-
-  onMount(async () => {
-    await refreshPartners();
-  });
 </script>
 
 <section class="my-4">
