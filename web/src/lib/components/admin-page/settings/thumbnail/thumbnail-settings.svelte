@@ -122,6 +122,7 @@
           <SettingSwitch
             title="PREFER WIDE GAMUT"
             subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
+            checked={thumbnailConfig.colorspace === Colorspace.P3}
             onToggle={(enabled) => (thumbnailConfig.colorspace = enabled ? Colorspace.P3 : Colorspace.Srgb)}
             isEdited={thumbnailConfig.colorspace !== savedConfig.colorspace}
           />

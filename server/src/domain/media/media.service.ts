@@ -80,6 +80,7 @@ export class MediaService {
     const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
     const path = this.ensureThumbnailPath(asset, format);
     await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
+    this.logger.log(`Successfully generated ${format.toUpperCase()} thumbnail for asset ${asset.id}`);
   }
 
   async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
@@ -227,8 +228,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
-        audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
