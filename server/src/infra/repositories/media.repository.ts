@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import sharp from 'sharp';
 import { Writable } from 'typeorm/platform/PlatformTools.js';
 import { promisify } from 'util';
+import { Colorspace } from '../entities';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -24,13 +25,13 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    let colorspace = options.wideGamut ? 'p3' : 'srgb';
-    if (options.wideGamut) {
+    let colorspace = options.colorspace;
+    if (options.colorspace !== Colorspace.SRGB) {
       try {
         const { space } = await sharp(input).metadata();
         // if the image is already in srgb, keep it that way
-        if (space && (space as string) === 'srgb') {
-          colorspace = 'srgb';
+        if (space && space === Colorspace.SRGB) {
+          colorspace = Colorspace.SRGB;
         }
       } catch (err) {
         this.logger.warn(`Could not determine colorspace of image, defaulting to ${colorspace}`);

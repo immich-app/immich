@@ -6,7 +6,7 @@ export const IMediaRepository = 'IMediaRepository';
 export interface ResizeOptions {
   size: number;
   format: 'webp' | 'jpeg';
-  wideGamut: boolean;
+  colorspace: string;
   quality: number;
 }
 

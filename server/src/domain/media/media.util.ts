@@ -68,7 +68,7 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.shouldToneMap(videoStream)) {
       options.push(...this.getToneMapping());
     }
-    options.push(`format=yuv420p`);
+    options.push('format=yuv420p');
 
     return options;
   }

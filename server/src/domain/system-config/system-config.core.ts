@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  Colorspace,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -99,7 +100,7 @@ export const defaults = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
     quality: 80,
-    wideGamut: true,
+    colorspace: Colorspace.P3,
   },
 });
 
@@ -127,7 +128,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);

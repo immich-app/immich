@@ -1,7 +1,7 @@
-import { toBoolean } from '@app/domain/domain.util';
+import { Colorspace } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, Max, Min } from 'class-validator';
 
 export class SystemConfigThumbnailDto {
   @IsInt()
@@ -23,8 +23,7 @@ export class SystemConfigThumbnailDto {
   @ApiProperty({ type: 'integer' })
   quality!: number;
 
-  @IsBoolean()
-  @Transform(toBoolean)
-  @ApiProperty({ type: 'boolean' })
-  wideGamut!: boolean;
+  @IsEnum(Colorspace)
+  @ApiProperty({ enumName: 'Colorspace', enum: Colorspace })
+  colorspace!: Colorspace;
 }

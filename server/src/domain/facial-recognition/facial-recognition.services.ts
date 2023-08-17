@@ -167,7 +167,7 @@ export class FacialRecognitionService {
     const thumbnailOptions = {
       format: 'jpeg',
       size: FACE_THUMBNAIL_SIZE,
-      wideGamut: thumbnail.wideGamut,
+      colorspace: thumbnail.colorspace,
       quality: thumbnail.quality,
     } as const;
     await this.mediaRepository.resize(croppedOutput, output, thumbnailOptions);
