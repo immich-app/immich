@@ -1,5 +1,6 @@
 import {
   AssetType,
+  Colorspace,
   SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
@@ -21,7 +22,6 @@ import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IMediaRepository } from './media.repository';
 import { MediaService } from './media.service';
-import { Colorspace } from '@app/infra/entities';
 
 describe(MediaService.name, () => {
   let sut: MediaService;

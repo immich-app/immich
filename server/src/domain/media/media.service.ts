@@ -88,7 +88,7 @@ export class MediaService {
     const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
-      this.logger.warn(`Skipped thumbnail generation for asset ${asset.id}: no video streams found`)
+      this.logger.warn(`Skipped thumbnail generation for asset ${asset.id}: no video streams found`);
       return;
     }
     const mainAudioStream = this.getMainStream(audioStreams);
@@ -227,7 +227,8 @@ export class MediaService {
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
 
     this.logger.verbose(
-      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${audioStream?.codecType ?? 'None'
+      `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${
+        audioStream?.codecType ?? 'None'
       }, containerExtension ${containerExtension}`,
     );
 
