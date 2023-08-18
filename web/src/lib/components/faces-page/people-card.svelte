@@ -12,10 +12,10 @@
 
   let showContextMenu = false;
   let dispatch = createEventDispatcher<{
-    'change-name': void,
-    'set-birth-date': void,
-    'merge-faces': void,
-    'hide-face': void,
+    'change-name': void;
+    'set-birth-date': void;
+    'merge-faces': void;
+    'hide-face': void;
   }>();
 </script>
 
