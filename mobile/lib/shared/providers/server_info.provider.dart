@@ -10,7 +10,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   ServerInfoNotifier(this._serverInfoService)
       : super(
           ServerInfoState(
-            serverVersion: ServerVersionReponseDto(
+            serverVersion: ServerVersionResponseDto(
               major: 0,
               patch_: 0,
               minor: 0,
@@ -23,7 +23,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   final ServerInfoService _serverInfoService;
 
   getServerVersion() async {
-    ServerVersionReponseDto? serverVersion =
+    ServerVersionResponseDto? serverVersion =
         await _serverInfoService.getServerVersion();
 
     if (serverVersion == null) {

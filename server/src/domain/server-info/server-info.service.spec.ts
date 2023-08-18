@@ -1,19 +1,22 @@
-import { newStorageRepositoryMock, newUserRepositoryMock } from '@test';
+import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
 import { serverVersion } from '../domain.constant';
+import { ISystemConfigRepository } from '../index';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
+    configMock = newSystemConfigRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(userMock, storageMock);
+    sut = new ServerInfoService(configMock, userMock, storageMock);
   });
 
   it('should work', () => {
@@ -139,6 +142,19 @@ describe(ServerInfoService.name, () => {
   describe('getVersion', () => {
     it('should respond the server version', () => {
       expect(sut.getVersion()).toEqual(serverVersion);
+    });
+
+    describe('getFeatures', () => {
+      it('should respond the server features', async () => {
+        await expect(sut.getFeatures()).resolves.toEqual({
+          machineLearning: true,
+          oauth: false,
+          oauthAutoLaunch: false,
+          passwordLogin: true,
+          search: true,
+        });
+        expect(configMock.load).toHaveBeenCalled();
+      });
     });
   });
 

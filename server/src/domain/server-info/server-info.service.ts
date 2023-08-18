@@ -1,24 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { mimeTypes, serverVersion } from '../domain.constant';
+import { MACHINE_LEARNING_ENABLED, mimeTypes, SEARCH_ENABLED, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
 import {
+  ServerFeaturesDto,
   ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
   UsageByUserDto,
-} from './response-dto';
+} from './server-info.dto';
 
 @Injectable()
 export class ServerInfoService {
   private storageCore = new StorageCore();
+  private configCore: SystemConfigCore;
 
   constructor(
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
     const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
@@ -38,11 +45,25 @@ export class ServerInfoService {
   }
 
   ping(): ServerPingResponse {
-    return new ServerPingResponse('pong');
+    return { res: 'pong' };
   }
 
   getVersion() {
     return serverVersion;
+  }
+
+  async getFeatures(): Promise<ServerFeaturesDto> {
+    const config = await this.configCore.getConfig();
+
+    return {
+      machineLearning: MACHINE_LEARNING_ENABLED,
+      search: SEARCH_ENABLED,
+
+      // TODO: use these instead of `POST oauth/config`
+      oauth: config.oauth.enabled,
+      oauthAutoLaunch: config.oauth.autoLaunch,
+      passwordLogin: config.passwordLogin.enabled,
+    };
   }
 
   async getStats(): Promise<ServerStatsResponseDto> {

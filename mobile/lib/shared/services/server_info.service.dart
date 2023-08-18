@@ -24,7 +24,7 @@ class ServerInfoService {
     }
   }
 
-  Future<ServerVersionReponseDto?> getServerVersion() async {
+  Future<ServerVersionResponseDto?> getServerVersion() async {
     try {
       return await _apiService.serverInfoApi.getServerVersion();
     } catch (e) {
