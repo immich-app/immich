@@ -21,6 +21,7 @@ enum AppStateEnum {
   paused,
   resumed,
   detached,
+  hidden,
 }
 
 class AppStateNotiifer extends StateNotifier<AppStateEnum> {
@@ -83,6 +84,10 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
   void handleAppDetached() {
     state = AppStateEnum.detached;
     ref.watch(manualUploadProvider.notifier).cancelBackup();
+  }
+
+  void handleAppHidden() {
+    state = AppStateEnum.hidden;
   }
 }
 
