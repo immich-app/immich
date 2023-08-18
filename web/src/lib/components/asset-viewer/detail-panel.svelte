@@ -121,6 +121,13 @@
               thumbhash={null}
             />
             <p class="mt-1 truncate font-medium">{person.name}</p>
+            <p class="font-light">
+              {#if person.birthDate}
+                Age {Math.floor(
+                  DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
+                )}
+              {/if}
+            </p>
           </a>
         {/each}
       </div>

@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**birthDate** | [**DateTime**](DateTime.md) |  | 
 **id** | **String** |  | 
 **isHidden** | **bool** |  | 
 **name** | **String** |  | 

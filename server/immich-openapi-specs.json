@@ -6176,6 +6176,12 @@
       },
       "PeopleUpdateItem": {
         "properties": {
+          "birthDate": {
+            "description": "Person date of birth.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -6200,6 +6206,11 @@
       },
       "PersonResponseDto": {
         "properties": {
+          "birthDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -6214,6 +6225,7 @@
           }
         },
         "required": [
+          "birthDate",
           "id",
           "name",
           "thumbnailPath",
@@ -6223,6 +6235,12 @@
       },
       "PersonUpdateDto": {
         "properties": {
+          "birthDate": {
+            "description": "Person date of birth.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"

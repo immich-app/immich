@@ -11,19 +11,12 @@
   export let person: PersonResponseDto;
 
   let showContextMenu = false;
-  let dispatch = createEventDispatcher();
-
-  const onChangeNameClicked = () => {
-    dispatch('change-name', person);
-  };
-
-  const onMergeFacesClicked = () => {
-    dispatch('merge-faces', person);
-  };
-
-  const onHideFaceClicked = () => {
-    dispatch('hide-face', person);
-  };
+  let dispatch = createEventDispatcher<{
+    'change-name': void;
+    'set-birth-date': void;
+    'merge-faces': void;
+    'hide-face': void;
+  }>();
 </script>
 
 <div id="people-card" class="relative">
@@ -52,9 +45,10 @@
 
     {#if showContextMenu}
       <ContextMenu on:outclick={() => (showContextMenu = false)}>
-        <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
-        <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
-        <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
+        <MenuOption on:click={() => dispatch('hide-face')} text="Hide face" />
+        <MenuOption on:click={() => dispatch('change-name')} text="Change name" />
+        <MenuOption on:click={() => dispatch('set-birth-date')} text="Set date of birth" />
+        <MenuOption on:click={() => dispatch('merge-faces')} text="Merge faces" />
       </ContextMenu>
     {/if}
   </button>
