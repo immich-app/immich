@@ -26,7 +26,7 @@ import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -114,7 +114,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
           return;
         }
-        Wakelock.enable();
+        WakelockPlus.enable();
         const limit = 100;
         final toDelete = await ref
             .read(backupVerificationServiceProvider)
@@ -140,7 +140,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
         }
       } finally {
-        Wakelock.disable();
+        WakelockPlus.disable();
         checkInProgress.value = false;
       }
     }
