@@ -1,21 +1,18 @@
-import  { io, Socket, } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import type { AssetResponseDto } from '../../api/open-api';
 import { writable } from 'svelte/store';
 
 let websocket: Socket;
 
-
-function initWebsocketStore()  {
+function initWebsocketStore() {
   const onUploadSuccess = writable<AssetResponseDto>();
 
   return {
     onUploadSuccess,
-  }
+  };
 }
 
 export const websocketStore = initWebsocketStore();
-
-
 
 export const openWebsocketConnection = () => {
   try {
@@ -33,12 +30,10 @@ export const openWebsocketConnection = () => {
   }
 };
 
-const listenToEvent = async (socket: Socket)  => {
-
+const listenToEvent = async (socket: Socket) => {
   socket.on('on_upload_success', (payload) => {
-
     const asset: AssetResponseDto = JSON.parse(payload);
-    
+
     websocketStore.onUploadSuccess.set(asset);
   });
 
@@ -50,5 +45,3 @@ const listenToEvent = async (socket: Socket)  => {
 export const closeWebsocketConnection = () => {
   websocket?.close();
 };
-
-
