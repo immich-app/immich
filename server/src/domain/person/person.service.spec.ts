@@ -159,10 +159,7 @@ describe(PersonService.name, () => {
 
       expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_INDEX_ASSET,
-        data: { ids: [assetStub.image.id] },
-      });
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should update a person visibility', async () => {
