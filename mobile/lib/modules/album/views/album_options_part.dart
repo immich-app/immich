@@ -1,11 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumOptionsPage extends HookConsumerWidget {
   final Album album;
@@ -14,23 +20,97 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsers = album.sharedUsers.toList();
+    final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
     final userId = ref.watch(authenticationProvider).userId;
     final isOwner = owner?.id == userId;
 
-    void handleUserClick(User user) {
-      if (user.id == userId) {
-        print("leave");
+    void showErrorMessage() {
+      Navigator.pop(context);
+      ImmichToast.show(
+        context: context,
+        msg: "Error leaving/removing from album",
+        toastType: ToastType.error,
+        gravity: ToastGravity.BOTTOM,
+      );
+    }
 
-        return;
+    void leaveAlbum() async {
+      ImmichLoadingOverlayController.appLoader.show();
+
+      try {
+        final isSuccess =
+            await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
+
+        if (isSuccess) {
+          AutoRouter.of(context)
+              .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        } else {
+          showErrorMessage();
+        }
+      } catch (_) {
+        showErrorMessage();
+      }
+
+      ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    void removeUserFromAlbum(User user) async {
+      ImmichLoadingOverlayController.appLoader.show();
+
+      try {
+        await ref
+            .read(sharedAlbumProvider.notifier)
+            .removeUserFromAlbum(album, user);
+        album.sharedUsers.remove(user);
+        sharedUsers.value = album.sharedUsers.toList();
+      } catch (error) {
+        showErrorMessage();
+      }
+
+      Navigator.pop(context);
+      ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    void handleUserClick(User user) {
+      var actions = [];
+
+      if (user.id == userId) {
+        actions = [
+          ListTile(
+            leading: const Icon(Icons.exit_to_app_rounded),
+            title: const Text("Leave album"),
+            onTap: leaveAlbum,
+          ),
+        ];
       }
 
       if (isOwner) {
-        print("remove");
-
-        return;
+        actions = [
+          ListTile(
+            leading: const Icon(Icons.person_remove_rounded),
+            title: const Text("Remove user from album"),
+            onTap: () => removeUserFromAlbum(user),
+          ),
+        ];
       }
+
+      showModalBottomSheet(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        isScrollControlled: false,
+        context: context,
+        builder: (context) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [...actions],
+              ),
+            ),
+          );
+        },
+      );
     }
 
     buildOwnerInfo() {
@@ -63,9 +143,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
     buildSharedUsersList() {
       return ListView.builder(
         shrinkWrap: true,
-        itemCount: sharedUsers.length,
+        itemCount: sharedUsers.value.length,
         itemBuilder: (context, index) {
-          final user = sharedUsers[index];
+          final user = sharedUsers.value[index];
           return ListTile(
             leading: UserCircleAvatar(
               user: user,

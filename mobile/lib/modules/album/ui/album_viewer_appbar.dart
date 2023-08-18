@@ -240,16 +240,19 @@ class AlbumViewerAppbar extends HookConsumerWidget
         context: context,
         builder: (context) {
           return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildBottomSheetActionButton(),
-                if (selected.isEmpty && onAddPhotos != null) ...commonActions,
-                if (selected.isEmpty &&
-                    onAddPhotos != null &&
-                    userId == album.ownerId)
-                  ...ownerActions
-              ],
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildBottomSheetActionButton(),
+                  if (selected.isEmpty && onAddPhotos != null) ...commonActions,
+                  if (selected.isEmpty &&
+                      onAddPhotos != null &&
+                      userId == album.ownerId)
+                    ...ownerActions
+                ],
+              ),
             ),
           );
         },
