@@ -225,7 +225,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
             color: Colors.grey,
-          )
+          ),
       ],
     );
   }

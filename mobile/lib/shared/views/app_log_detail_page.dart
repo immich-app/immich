@@ -47,7 +47,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                     size: 16.0,
                     color: Theme.of(context).primaryColor,
                   ),
-                )
+                ),
               ],
             ),
             Container(
@@ -106,7 +106,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                     size: 16.0,
                     color: Theme.of(context).primaryColor,
                   ),
-                )
+                ),
               ],
             ),
             Container(
@@ -181,7 +181,7 @@ class AppLogDetailPage extends HookConsumerWidget {
             if (logMessage.context1 != null)
               buildLogContext1(logMessage.context1.toString()),
             if (logMessage.context2 != null)
-              buildStackMessage(logMessage.context2.toString())
+              buildStackMessage(logMessage.context2.toString()),
           ],
         ),
       ),

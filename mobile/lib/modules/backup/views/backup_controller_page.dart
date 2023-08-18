@@ -202,7 +202,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 child: const Text('backup_controller_page_storage_format').tr(
                   args: [
                     backupState.serverInfo.diskUse,
-                    backupState.serverInfo.diskSize
+                    backupState.serverInfo.diskSize,
                   ],
                 ),
               ),
@@ -256,7 +256,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -624,7 +624,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   style: TextStyle(fontSize: 12),
                 ).tr(),
                 buildSelectedAlbumName(),
-                buildExcludedAlbumName()
+                buildExcludedAlbumName(),
               ],
             ),
           ),
@@ -776,7 +776,7 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             const CurrentUploadingAssetInfoBox(),
             if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
-            buildBackupButton()
+            buildBackupButton(),
           ],
         ),
       ),

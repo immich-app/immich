@@ -199,7 +199,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               Text(
                 "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
                 style: const TextStyle(fontSize: 12),
-              )
+              ),
             ],
           ),
         ],

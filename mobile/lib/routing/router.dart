@@ -75,7 +75,7 @@ part 'router.gr.dart';
         AutoRoute(page: HomePage, guards: [AuthGuard, DuplicateGuard]),
         AutoRoute(page: SearchPage, guards: [AuthGuard, DuplicateGuard]),
         AutoRoute(page: SharingPage, guards: [AuthGuard, DuplicateGuard]),
-        AutoRoute(page: LibraryPage, guards: [AuthGuard, DuplicateGuard])
+        AutoRoute(page: LibraryPage, guards: [AuthGuard, DuplicateGuard]),
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),

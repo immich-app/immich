@@ -89,7 +89,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
                 perRow.value = 7 - scaleFactor.value.toInt();
               }
             };
-          })
+          }),
         },
         child: ImmichAssetGridView(
           onRefresh: onRefresh,

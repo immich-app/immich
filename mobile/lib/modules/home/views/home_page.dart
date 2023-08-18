@@ -221,7 +221,7 @@ class HomePage extends HookConsumerWidget {
                   namedArgs: {
                     "album": album.name,
                     "added": result.successfullyAdded.toString(),
-                    "failed": result.alreadyInAlbum.length.toString()
+                    "failed": result.alreadyInAlbum.length.toString(),
                   },
                 ),
               );
@@ -323,7 +323,7 @@ class HomePage extends HookConsumerWidget {
                     ).tr(),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -365,7 +365,7 @@ class HomePage extends HookConsumerWidget {
                 enabled: !processing.value,
                 selectionAssetState: selectionAssetState.value,
               ),
-            if (processing.value) const Center(child: ImmichLoadingIndicator())
+            if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],
         ),
       );

@@ -110,7 +110,7 @@ class MemoryCard extends HookConsumerWidget {
               left: 18.0,
               bottom: 18.0,
               child: buildTitle(),
-            )
+            ),
         ],
       ),
     );

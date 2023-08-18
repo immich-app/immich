@@ -123,7 +123,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                   } else {
                     sharedUsersList.value = {
                       ...sharedUsersList.value,
-                      users[index]
+                      users[index],
                     };
                   }
                 },
@@ -163,7 +163,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                 // color: Theme.of(context).primaryColor,
               ),
             ).tr(),
-          )
+          ),
         ],
       ),
       body: suggestedShareUsers.when(

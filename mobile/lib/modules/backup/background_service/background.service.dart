@@ -90,7 +90,7 @@ class BackgroundService {
           requireUnmetered,
           requireCharging,
           triggerUpdateDelay,
-          triggerMaxDelay
+          triggerMaxDelay,
         ],
       );
       return ok;

@@ -57,7 +57,7 @@ class GroupDividerTitle extends ConsumerWidget {
                     Icons.check_circle_outline_rounded,
                     color: Colors.grey,
                   ),
-          )
+          ),
         ],
       ),
     );
