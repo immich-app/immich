@@ -31,13 +31,6 @@ export const toBoolean = ({ value }: IValue) => {
   return value;
 };
 
-export const toDate = ({ value }: IValue) => {
-  if (value && value.length > 0) {
-    return new Date(value);
-  }
-  return value;
-};
-
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
 
 export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
