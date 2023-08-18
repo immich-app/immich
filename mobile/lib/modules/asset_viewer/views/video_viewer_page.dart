@@ -155,8 +155,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Future<void> initializePlayer() async {
     try {
       videoPlayerController = widget.file == null
-          ? VideoPlayerController.network(
-              widget.url!,
+          ? VideoPlayerController.networkUrl(
+              Uri.file(widget.url!),
               httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
             )
           : VideoPlayerController.file(widget.file!);
@@ -210,8 +210,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
         child: Center(
           child: Stack(
             children: [
-              if (widget.placeholder != null)
-                widget.placeholder!,
+              if (widget.placeholder != null) widget.placeholder!,
               const Center(
                 child: ImmichLoadingIndicator(),
               ),
