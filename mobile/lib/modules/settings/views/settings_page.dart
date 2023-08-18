@@ -42,7 +42,7 @@ class SettingsPage extends HookConsumerWidget {
               const AssetListSettings(),
               const NotificationSetting(),
               // const ExperimentalSettings(),
-              const AdvancedSettings()
+              const AdvancedSettings(),
             ],
           ).toList(),
         ],

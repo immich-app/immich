@@ -94,7 +94,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

@@ -102,7 +102,7 @@ class LocalNotificationService {
                       cancelUploadActionID,
                       'Cancel',
                       showsUserInterface: true,
-                    )
+                    ),
                   ]
                 : null,
           )

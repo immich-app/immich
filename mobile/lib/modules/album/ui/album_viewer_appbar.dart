@@ -250,7 +250,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   if (selected.isEmpty &&
                       onAddPhotos != null &&
                       userId == album.ownerId)
-                    ...ownerActions
+                    ...ownerActions,
                 ],
               ),
             ),

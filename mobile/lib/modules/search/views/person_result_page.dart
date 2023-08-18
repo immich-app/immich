@@ -56,7 +56,7 @@ class PersonResultPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   onTap: showEditNameDialog,
-                )
+                ),
               ],
             ),
           );
@@ -134,7 +134,7 @@ class PersonResultPage extends HookConsumerWidget {
                               getFaceThumbnailUrl(personId),
                               headers: {
                                 "Authorization":
-                                    "Bearer ${isar_store.Store.get(isar_store.StoreKey.accessToken)}"
+                                    "Bearer ${isar_store.Store.get(isar_store.StoreKey.accessToken)}",
                               },
                             ),
                           ),

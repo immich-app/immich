@@ -15,7 +15,7 @@ class ShareDialog extends StatelessWidget {
             margin: const EdgeInsets.only(top: 12),
             child: const Text('share_dialog_preparing')
                 .tr(),
-          )
+          ),
         ],
       ),
     );

@@ -45,7 +45,7 @@ void main() {
         AlbumSchema,
         UserSchema,
         StoreValueSchema,
-        LoggerMessageSchema
+        LoggerMessageSchema,
       ],
       maxSizeMiB: 256,
       directory: ".",

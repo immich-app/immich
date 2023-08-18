@@ -153,6 +153,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         child = buildRequestPermission();
         break;
       case PermissionStatus.granted:
+      case PermissionStatus.provisional:
         child = buildPermissionGranted();
         break;
       case PermissionStatus.restricted:
@@ -183,7 +184,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                 ),
                 TextButton(
                   child: const Text('permission_onboarding_log_out').tr(),
-                  onPressed: () { 
+                  onPressed: () {
                     ref.read(authenticationProvider.notifier).logout();
                     AutoRouter.of(context).replace(
                       const LoginRoute(),

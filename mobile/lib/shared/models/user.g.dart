@@ -157,7 +157,7 @@ User _userDeserialize(
     isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
     isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
     lastName: reader.readString(offsets[6]),
-    memoryEnabled: reader.readBoolOrNull(offsets[7]) ?? true,
+    memoryEnabled: reader.readBoolOrNull(offsets[7]),
     profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
     updatedAt: reader.readDateTime(offsets[9]),
   );
@@ -186,7 +186,7 @@ P _userDeserializeProp<P>(
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 9:
@@ -979,8 +979,24 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'memoryEnabled',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'memoryEnabled',
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
-      bool value) {
+      bool? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'memoryEnabled',
@@ -1661,7 +1677,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, bool, QQueryOperations> memoryEnabledProperty() {
+  QueryBuilder<User, bool?, QQueryOperations> memoryEnabledProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'memoryEnabled');
     });

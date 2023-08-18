@@ -62,7 +62,7 @@ class UserCircleAvatar extends ConsumerWidget {
                 image: NetworkImage(
                   profileImageUrl,
                   headers: {
-                    "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"
+                    "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
                   },
                 ),
                 fadeInDuration: const Duration(milliseconds: 200),
