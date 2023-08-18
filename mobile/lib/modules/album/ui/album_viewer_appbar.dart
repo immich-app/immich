@@ -39,7 +39,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
-    void onDeleteAlbumPressed() async {
+    deleteAlbum() async {
       ImmichLoadingOverlayController.appLoader.show();
 
       final bool success;
@@ -63,6 +63,52 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
 
       ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    Future<void> showConfirmationDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Delete album'),
+            content: const Text(
+              'Are you sure you want to delete this album from your account?',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, 'Confirm');
+                  deleteAlbum();
+                },
+                child: Text(
+                  'Confirm',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.red
+                        : Colors.red[300],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void onDeleteAlbumPressed() async {
+      showConfirmationDialog();
     }
 
     void onLeaveAlbumPressed() async {
@@ -152,43 +198,61 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void buildBottomSheet() {
+      final ownerActions = [
+        ListTile(
+          leading: const Icon(Icons.person_add_alt_rounded),
+          onTap: () {
+            Navigator.pop(context);
+            onAddUsers!(album);
+          },
+          title: const Text(
+            "album_viewer_page_share_add_users",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+        ListTile(
+          leading: const Icon(Icons.settings_rounded),
+          onTap: () =>
+              AutoRouter.of(context).navigate(AlbumOptionsRoute(album: album)),
+          title: const Text(
+            "translated_text_options",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ];
+
+      final commonActions = [
+        ListTile(
+          leading: const Icon(Icons.add_photo_alternate_outlined),
+          onTap: () {
+            Navigator.pop(context);
+            onAddPhotos!(album);
+          },
+          title: const Text(
+            "share_add_photos",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ];
       showModalBottomSheet(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {
           return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildBottomSheetActionButton(),
-                if (selected.isEmpty && onAddPhotos != null)
-                  ListTile(
-                    leading: const Icon(Icons.add_photo_alternate_outlined),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onAddPhotos!(album);
-                    },
-                    title: const Text(
-                      "share_add_photos",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
-                if (selected.isEmpty &&
-                    onAddPhotos != null &&
-                    userId == album.ownerId)
-                  ListTile(
-                    leading: const Icon(Icons.person_add_alt_rounded),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onAddUsers!(album);
-                    },
-                    title: const Text(
-                      "album_viewer_page_share_add_users",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildBottomSheetActionButton(),
+                  if (selected.isEmpty && onAddPhotos != null) ...commonActions,
+                  if (selected.isEmpty &&
+                      onAddPhotos != null &&
+                      userId == album.ownerId)
+                    ...ownerActions
+                ],
+              ),
             ),
           );
         },
@@ -217,6 +281,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 toastType: ToastType.error,
               );
             }
+
+            titleFocusNode.unfocus();
           },
           icon: const Icon(Icons.check_rounded),
           splashRadius: 25,

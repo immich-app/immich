@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/modules/album/views/album_options_part.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
@@ -152,6 +153,7 @@ part 'router.gr.dart';
     ),
     AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: MemoryPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {

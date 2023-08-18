@@ -10,6 +10,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key, required this.assets})
@@ -56,10 +57,8 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           ),
         );
       } else {
-        return CircleAvatar(
-          backgroundImage:
-              const AssetImage('assets/immich-logo-no-outline.png'),
-          backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
+        return UserCircleAvatar(
+          user: user,
         );
       }
     }

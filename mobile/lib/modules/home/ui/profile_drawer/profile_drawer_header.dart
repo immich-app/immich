@@ -3,7 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
-import 'package:immich_mobile/modules/home/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -19,11 +20,13 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final user = Store.get(StoreKey.currentUser);
 
     buildUserProfileImage() {
-      var userImage = const UserCircleAvatar(
+      var userImage = UserCircleAvatar(
         radius: 35,
         size: 66,
+        user: user,
       );
 
       if (authState.profileImagePath.isEmpty) {
