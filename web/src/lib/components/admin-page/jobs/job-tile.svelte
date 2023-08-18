@@ -36,7 +36,7 @@
 </script>
 
 <div
-  class="dark:bg-immich-dark-gray flex flex-col overflow-hidden rounded-2xl bg-gray-100 sm:flex-row sm:rounded-[35px]"
+  class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]"
 >
   <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
@@ -45,7 +45,7 @@
       <JobTileStatus color="success">Active</JobTileStatus>
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
-      <div class="text-immich-primary dark:text-immich-dark-primary flex items-center gap-4 text-xl font-semibold">
+      <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
         <span class="flex items-center gap-2">
           <svelte:component this={icon} size="1.25em" class="hidden shrink-0 sm:block" />
           {title.toUpperCase()}
@@ -76,7 +76,7 @@
 
       <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray rounded-t-lg text-white sm:rounded-l-lg sm:rounded-r-none"
+          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
         >
           <p>Active</p>
           <p class="text-2xl">
@@ -85,7 +85,7 @@
         </div>
 
         <div
-          class="{commonClasses} text-immich-dark-bg dark:text-immich-gray flex-row-reverse rounded-b-lg bg-gray-200 dark:bg-gray-700 sm:rounded-l-none sm:rounded-r-lg"
+          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-l-none sm:rounded-r-lg"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
