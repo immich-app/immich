@@ -300,7 +300,13 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Text _labelBuilder(int pos) {
-    final date = widget.renderList.elements[pos].date;
+    final maxLength = widget.renderList.elements.length;
+    if (pos < 0 || pos >= maxLength) {
+      return const Text("");
+    }
+
+    final date = widget.renderList.elements[pos % maxLength].date;
+
     return Text(
       DateFormat.yMMMM().format(date),
       style: const TextStyle(
@@ -335,7 +341,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: widget.renderList.elements.length + (widget.topWidget != null ? 1 : 0),
+      itemCount: widget.renderList.elements.length +
+          (widget.topWidget != null ? 1 : 0),
       addRepaintBoundaries: true,
     );
 
