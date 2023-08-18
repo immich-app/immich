@@ -11,23 +11,12 @@
   export let person: PersonResponseDto;
 
   let showContextMenu = false;
-  let dispatch = createEventDispatcher();
-
-  const onChangeNameClicked = () => {
-    dispatch('change-name', person);
-  };
-
-  const onSetBirthDateClicked = () => {
-    dispatch('set-birth-date', person);
-  };
-
-  const onMergeFacesClicked = () => {
-    dispatch('merge-faces', person);
-  };
-
-  const onHideFaceClicked = () => {
-    dispatch('hide-face', person);
-  };
+  let dispatch = createEventDispatcher<{
+    'change-name': PersonResponseDto,
+    'set-birth-date': PersonResponseDto,
+    'merge-faces': PersonResponseDto,
+    'hide-face': PersonResponseDto,
+  }>();
 </script>
 
 <div id="people-card" class="relative">
@@ -56,10 +45,10 @@
 
     {#if showContextMenu}
       <ContextMenu on:outclick={() => (showContextMenu = false)}>
-        <MenuOption on:click={() => onHideFaceClicked()} text="Hide face" />
-        <MenuOption on:click={() => onChangeNameClicked()} text="Change name" />
-        <MenuOption on:click={() => onSetBirthDateClicked()} text="Set date of birth" />
-        <MenuOption on:click={() => onMergeFacesClicked()} text="Merge faces" />
+        <MenuOption on:click={() => dispatch('hide-face', person)} text="Hide face" />
+        <MenuOption on:click={() => dispatch('change-name', person)} text="Change name" />
+        <MenuOption on:click={() => dispatch('set-birth-date', person)} text="Set date of birth" />
+        <MenuOption on:click={() => dispatch('merge-faces', person)} text="Merge faces" />
       </ContextMenu>
     {/if}
   </button>
