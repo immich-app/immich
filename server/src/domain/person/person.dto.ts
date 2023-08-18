@@ -107,7 +107,7 @@ export class PersonResponseDto {
   id!: string;
   name!: string;
   @ApiProperty({ format: 'date' })
-  birthDate?: Date | null;
+  birthDate!: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
 }
