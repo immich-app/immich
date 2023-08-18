@@ -31,7 +31,7 @@ export class PersonEntity {
   name!: string;
 
   @Column({ type: 'date', nullable: true })
-  birthDate?: Date | null;
+  birthDate!: Date | null;
 
   @Column({ default: '' })
   thumbnailPath!: string;
