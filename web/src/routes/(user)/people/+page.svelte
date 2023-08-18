@@ -267,10 +267,7 @@
 
   const submitBirthDateChange = async (value: string) => {
     showSetBirthDateModal = false;
-    if (!edittingPerson) {
-      return;
-    }
-    if (value === edittingPerson.name) {
+    if (!edittingPerson || value === edittingPerson.birthDate) {
       return;
     }
 
