@@ -187,8 +187,10 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
-        onTap: () =>
-            AutoRouter.of(context).push(AlbumOptionsRoute(album: album)),
+        onTap: () async {
+          await AutoRouter.of(context).push(AlbumOptionsRoute(album: album));
+          ref.invalidate(albumDetailProvider(album.id));
+        },
         child: SizedBox(
           height: 50,
           child: ListView.builder(

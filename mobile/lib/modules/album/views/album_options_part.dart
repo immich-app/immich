@@ -185,7 +185,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            AutoRouter.of(context).popForced(null);
+            AutoRouter.of(context).pop(null);
           },
         ),
         centerTitle: true,
