@@ -7001,6 +7001,9 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "bframes": {
+            "type": "integer"
+          },
           "crf": {
             "type": "integer"
           },
@@ -7037,6 +7040,7 @@
           "threads",
           "targetVideoCodec",
           "targetAudioCodec",
+          "bframes",
           "transcode",
           "accel",
           "tonemap",

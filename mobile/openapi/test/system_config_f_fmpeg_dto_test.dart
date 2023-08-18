@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // int bframes
+    test('to test the property `bframes`', () async {
+      // TODO
+    });
+
     // int crf
     test('to test the property `crf`', () async {
       // TODO

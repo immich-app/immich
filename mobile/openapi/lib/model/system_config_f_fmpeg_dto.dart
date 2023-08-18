@@ -14,6 +14,7 @@ class SystemConfigFFmpegDto {
   /// Returns a new [SystemConfigFFmpegDto] instance.
   SystemConfigFFmpegDto({
     required this.accel,
+    required this.bframes,
     required this.crf,
     required this.maxBitrate,
     required this.preset,
@@ -27,6 +28,8 @@ class SystemConfigFFmpegDto {
   });
 
   TranscodeHWAccel accel;
+
+  int bframes;
 
   int crf;
 
@@ -51,6 +54,7 @@ class SystemConfigFFmpegDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
      other.accel == accel &&
+     other.bframes == bframes &&
      other.crf == crf &&
      other.maxBitrate == maxBitrate &&
      other.preset == preset &&
@@ -66,6 +70,7 @@ class SystemConfigFFmpegDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accel.hashCode) +
+    (bframes.hashCode) +
     (crf.hashCode) +
     (maxBitrate.hashCode) +
     (preset.hashCode) +
@@ -78,11 +83,12 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, crf=$crf, maxBitrate=$maxBitrate, preset=$preset, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accel'] = this.accel;
+      json[r'bframes'] = this.bframes;
       json[r'crf'] = this.crf;
       json[r'maxBitrate'] = this.maxBitrate;
       json[r'preset'] = this.preset;
@@ -105,6 +111,7 @@ class SystemConfigFFmpegDto {
 
       return SystemConfigFFmpegDto(
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
+        bframes: mapValueOfType<int>(json, r'bframes')!,
         crf: mapValueOfType<int>(json, r'crf')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
         preset: mapValueOfType<String>(json, r'preset')!,
@@ -163,6 +170,7 @@ class SystemConfigFFmpegDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accel',
+    'bframes',
     'crf',
     'maxBitrate',
     'preset',
