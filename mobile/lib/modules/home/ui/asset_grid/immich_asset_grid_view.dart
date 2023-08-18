@@ -300,11 +300,15 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Text _labelBuilder(int pos) {
-    final date = widget.renderList.elements[pos].date;
-    var validDate = DateTime.tryParse(date.toIso8601String()) ?? DateTime.now();
+    final maxLength = widget.renderList.elements.length;
+    if (pos < 0 || pos >= maxLength) {
+      return const Text("");
+    }
+
+    final date = widget.renderList.elements[pos % maxLength].date;
 
     return Text(
-      DateFormat.yMMMM().format(validDate),
+      DateFormat.yMMMM().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
