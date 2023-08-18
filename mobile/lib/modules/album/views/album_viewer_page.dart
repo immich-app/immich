@@ -188,7 +188,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
         onTap: () =>
-            AutoRouter.of(context).navigate(AlbumOptionsRoute(album: album)),
+            AutoRouter.of(context).push(AlbumOptionsRoute(album: album)),
         child: SizedBox(
           height: 50,
           child: ListView.builder(
@@ -200,6 +200,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 child: UserCircleAvatar(
                   user: album.sharedUsers.toList()[index],
                   radius: 18,
+                  size: 36,
                   useRandomBackgroundColor: true,
                 ),
               );
