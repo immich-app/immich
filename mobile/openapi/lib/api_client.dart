@@ -327,6 +327,8 @@ class ApiClient {
           return SearchFacetResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
+        case 'ServerFeaturesDto':
+          return ServerFeaturesDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
@@ -335,8 +337,8 @@ class ApiClient {
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
-        case 'ServerVersionReponseDto':
-          return ServerVersionReponseDto.fromJson(value);
+        case 'ServerVersionResponseDto':
+          return ServerVersionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':

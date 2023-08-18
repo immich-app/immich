@@ -17,12 +17,17 @@ void main() {
   // final instance = ServerInfoApi();
 
   group('tests for ServerInfoApi', () {
+    //Future<ServerFeaturesDto> getServerFeatures() async
+    test('test getServerFeatures', () async {
+      // TODO
+    });
+
     //Future<ServerInfoResponseDto> getServerInfo() async
     test('test getServerInfo', () async {
       // TODO
     });
 
-    //Future<ServerVersionReponseDto> getServerVersion() async
+    //Future<ServerVersionResponseDto> getServerVersion() async
     test('test getServerVersion', () async {
       // TODO
     });
