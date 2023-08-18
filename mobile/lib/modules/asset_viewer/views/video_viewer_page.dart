@@ -156,7 +156,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
     try {
       videoPlayerController = widget.file == null
           ? VideoPlayerController.networkUrl(
-              Uri.file(widget.url!),
+              Uri.parse(widget.url!),
               httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
             )
           : VideoPlayerController.file(widget.file!);
