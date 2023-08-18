@@ -245,10 +245,7 @@
 
   const submitNameChange = async () => {
     showChangeNameModal = false;
-    if (!edittingPerson) {
-      return;
-    }
-    if (personName === edittingPerson.name) {
+    if (!edittingPerson || personName === edittingPerson.name) {
       return;
     }
     // We check if another person has the same name as the name entered by the user
