@@ -196,22 +196,22 @@
     }
   };
 
-  const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
+  const handleChangeName = (detail: PersonResponseDto) => {
     showChangeNameModal = true;
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
   };
 
-  const handleSetBirthDate = ({ detail }: CustomEvent<PersonResponseDto>) => {
+  const handleSetBirthDate = (detail: PersonResponseDto) => {
     showSetBirthDateModal = true;
     edittingPerson = detail;
   };
 
-  const handleHideFace = async (event: CustomEvent<PersonResponseDto>) => {
+  const handleHideFace = async (detail: PersonResponseDto) => {
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
-        id: event.detail.id,
+        id: detail.id,
         personUpdateDto: { isHidden: true },
       });
 
@@ -239,8 +239,8 @@
     }
   };
 
-  const handleMergeFaces = (event: CustomEvent<PersonResponseDto>) => {
-    goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
+  const handleMergeFaces = (detail: PersonResponseDto) => {
+    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge`);
   };
 
   const submitNameChange = async () => {
@@ -358,10 +358,10 @@
           {#if !person.isHidden}
             <PeopleCard
               {person}
-              on:change-name={handleChangeName}
-              on:set-birth-date={handleSetBirthDate}
-              on:merge-faces={handleMergeFaces}
-              on:hide-face={handleHideFace}
+              on:change-name={() => handleChangeName(person)}
+              on:set-birth-date={() => handleSetBirthDate(person)}
+              on:merge-faces={() => handleMergeFaces(person)}
+              on:hide-face={() => handleHideFace(person)}
             />
           {/if}
         {/each}
