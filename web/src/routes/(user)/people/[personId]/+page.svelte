@@ -267,7 +267,7 @@
     singleSelect={viewMode === ViewMode.SELECT_FACE}
     on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
   >
-    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE}
+    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <!-- Face information block -->
       <section class="flex place-items-center p-4 sm:px-6">
         {#if isEditingName}
