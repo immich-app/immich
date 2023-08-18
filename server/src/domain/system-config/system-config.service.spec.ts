@@ -41,6 +41,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     maxBitrate: '0',
+    bframes: 3,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,

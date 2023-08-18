@@ -34,6 +34,13 @@ export class SystemConfigFFmpegDto {
   @IsString()
   maxBitrate!: string;
 
+  @IsInt()
+  @Min(-1)
+  @Max(16)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  bframes!: number;
+
   @IsBoolean()
   twoPass!: boolean;
 

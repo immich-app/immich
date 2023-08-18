@@ -21,6 +21,7 @@ export enum SystemConfigKey {
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
+  FFMPEG_BFRAMES = 'ffmpeg.bframes',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
@@ -114,6 +115,7 @@ export interface SystemConfig {
     targetAudioCodec: AudioCodec;
     targetResolution: string;
     maxBitrate: string;
+    bframes: number;
     twoPass: boolean;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;

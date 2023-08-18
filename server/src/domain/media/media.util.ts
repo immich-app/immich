@@ -9,7 +9,7 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
-  constructor(protected config: SystemConfigFFmpegDto) {}
+  constructor(protected config: SystemConfigFFmpegDto) { }
 
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
@@ -323,7 +323,6 @@ export class NVENCConfig extends BaseHWConfig {
       '-tune hq',
       '-qmin 0',
       '-g 250',
-      '-bf 3',
       '-b_ref_mode middle',
       '-temporal-aq 1',
       '-rc-lookahead 20',
@@ -391,7 +390,6 @@ export class QSVConfig extends BaseHWConfig {
       '-g 256',
       '-extbrc 1',
       '-refs 5',
-      '-bf 7',
       ...super.getBaseOutputOptions(videoStream, audioStream),
     ];
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
@@ -464,16 +462,24 @@ export class VAAPIConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
+    const options = [];
+    if (this.config.targetVideoCodec === VideoCodec.VP9) {
+      // seems to be needed for VP9 outputs to look correct
+      options.push('-bsf:v vp9_raw_reorder,vp9_superframe')
+    }
+
     // VAAPI doesn't allow setting both quality and max bitrate
     if (bitrates.max > 0) {
-      return [
+      options.push(
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
         '-rc_mode 3',
-      ]; // variable bitrate
+      ); // variable bitrate
     } else {
-      return [`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1']; // constant quality
+      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1'); // constant quality
     }
+
+    return options;
   }
 }
