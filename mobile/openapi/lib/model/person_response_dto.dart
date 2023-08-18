@@ -13,7 +13,7 @@ part of openapi.api;
 class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
-    this.birthDate,
+    required this.birthDate,
     required this.id,
     required this.isHidden,
     required this.name,
@@ -124,6 +124,7 @@ class PersonResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'birthDate',
     'id',
     'isHidden',
     'name',

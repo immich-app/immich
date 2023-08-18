@@ -1882,7 +1882,7 @@ export interface PersonResponseDto {
      * @type {string}
      * @memberof PersonResponseDto
      */
-    'birthDate'?: string | null;
+    'birthDate': string | null;
     /**
      * 
      * @type {string}

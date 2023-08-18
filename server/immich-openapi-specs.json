@@ -6225,6 +6225,7 @@
           }
         },
         "required": [
+          "birthDate",
           "id",
           "name",
           "thumbnailPath",
