@@ -3248,6 +3248,27 @@
         ]
       }
     },
+    "/server-info/features": {
+      "get": {
+        "operationId": "getServerFeatures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerFeaturesDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/media-types": {
       "get": {
         "operationId": "getSupportedMediaTypes",
@@ -3331,7 +3352,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                  "$ref": "#/components/schemas/ServerVersionResponseDto"
                 }
               }
             },
@@ -6331,6 +6352,33 @@
         ],
         "type": "object"
       },
+      "ServerFeaturesDto": {
+        "properties": {
+          "machineLearning": {
+            "type": "boolean"
+          },
+          "oauth": {
+            "type": "boolean"
+          },
+          "oauthAutoLaunch": {
+            "type": "boolean"
+          },
+          "passwordLogin": {
+            "type": "boolean"
+          },
+          "search": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "machineLearning",
+          "search",
+          "oauth",
+          "oauthAutoLaunch",
+          "passwordLogin"
+        ],
+        "type": "object"
+      },
       "ServerInfoResponseDto": {
         "properties": {
           "diskAvailable": {
@@ -6450,7 +6498,7 @@
         ],
         "type": "object"
       },
-      "ServerVersionReponseDto": {
+      "ServerVersionResponseDto": {
         "properties": {
           "major": {
             "type": "integer"

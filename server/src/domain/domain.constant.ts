@@ -21,6 +21,8 @@ export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${s
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
+export const SEARCH_ENABLED = process.env.TYPESENSE_ENABLED !== 'false';
+
 export const MACHINE_LEARNING_URL = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
 export const MACHINE_LEARNING_ENABLED = MACHINE_LEARNING_URL !== 'false';
 

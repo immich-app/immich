@@ -1,6 +1,5 @@
 <script lang="ts">
   import '../app.css';
-
   import { page } from '$app/stores';
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
@@ -14,7 +13,9 @@
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
-
+  import { onMount } from 'svelte';
+  import { loadFeatureFlags } from '$lib/stores/feature-flags.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
 
   let showNavigationLoadingBar = false;
@@ -27,6 +28,14 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
+  });
+
+  onMount(async () => {
+    try {
+      await loadFeatureFlags();
+    } catch (error) {
+      handleError(error, 'Unable to load feature flags');
+    }
   });
 
   const dropHandler = async ({ dataTransfer }: DragEvent) => {

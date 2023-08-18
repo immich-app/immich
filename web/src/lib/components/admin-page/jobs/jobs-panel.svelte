@@ -4,6 +4,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
   import type { ComponentType } from 'svelte';
@@ -29,6 +30,7 @@
     subtitle?: string;
     allText?: string;
     missingText?: string;
+    disabled?: boolean;
     icon: typeof Icon;
     allowForceCommand?: boolean;
     component?: ComponentType;
@@ -51,7 +53,7 @@
     handleCommand(JobName.RecognizeFaces, { command: JobCommand.Start, force: true });
   };
 
-  const jobDetails: Partial<Record<JobName, JobDetails>> = {
+  $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: FileJpgBox,
       title: api.getJobName(JobName.ThumbnailGeneration),
@@ -73,17 +75,20 @@
       icon: TagMultiple,
       title: api.getJobName(JobName.ObjectTagging),
       subtitle: 'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
+      disabled: !$featureFlags.machineLearning,
     },
     [JobName.ClipEncoding]: {
       icon: VectorCircle,
       title: api.getJobName(JobName.ClipEncoding),
       subtitle: 'Run machine learning to generate clip embeddings',
+      disabled: !$featureFlags.machineLearning,
     },
     [JobName.RecognizeFaces]: {
       icon: FaceRecognition,
       title: api.getJobName(JobName.RecognizeFaces),
       subtitle: 'Run machine learning to recognize faces',
       handleCommand: handleFaceCommand,
+      disabled: !$featureFlags.machineLearning,
     },
     [JobName.VideoConversion]: {
       icon: Video,
@@ -97,8 +102,7 @@
       component: StorageMigrationDescription,
     },
   };
-
-  const jobDetailsArray = Object.entries(jobDetails) as [JobName, JobDetails][];
+  $: jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
 
   async function handleCommand(jobId: JobName, jobCommand: JobCommandDto) {
     const title = jobDetails[jobId]?.title;
@@ -138,11 +142,12 @@
       </Button>
     </a>
   </div>
-  {#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
       {title}
+      {disabled}
       {subtitle}
       allText={allText || 'ALL'}
       missingText={missingText || 'MISSING'}
