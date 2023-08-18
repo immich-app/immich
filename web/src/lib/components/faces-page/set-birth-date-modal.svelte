@@ -37,7 +37,7 @@
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-        <Button type="submit" fullwidth>Ok</Button>
+        <Button type="submit" fullwidth>Set</Button>
       </div>
     </form>
   </div>

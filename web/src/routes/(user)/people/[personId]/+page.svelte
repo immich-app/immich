@@ -40,6 +40,7 @@
     SELECT_FACE = 'select-face',
     MERGE_FACES = 'merge-faces',
     SUGGEST_MERGE = 'suggest-merge',
+    BIRTH_DATE = 'birth-date',
   }
 
   const assetStore = new AssetStore({
@@ -52,7 +53,6 @@
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
-  let isSettingBirthDate = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let people = data.people.people;
   let personMerge1: PersonResponseDto;
@@ -177,7 +177,7 @@
 
   const handleSetBirthDate = async (birthDate: string) => {
     try {
-      isSettingBirthDate = false;
+      viewMode = ViewMode.VIEW_ASSETS;
       data.person.birthDate = birthDate;
 
       const { data: updatedPerson } = await api.personApi.updatePerson({
@@ -192,10 +192,7 @@
         return person;
       });
 
-      notificationController.show({
-        message: 'Date of birth saved succesfully',
-        type: NotificationType.Info,
-      });
+      notificationController.show({ message: 'Date of birth saved successfully', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to save date of birth');
     }
@@ -213,10 +210,10 @@
   />
 {/if}
 
-{#if isSettingBirthDate}
+{#if viewMode === ViewMode.BIRTH_DATE}
   <SetBirthDateModal
     birthDate={data.person.birthDate ?? ''}
-    on:close={() => (isSettingBirthDate = false)}
+    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:updated={(event) => handleSetBirthDate(event.detail)}
   />
 {/if}
@@ -242,12 +239,12 @@
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
-    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE}
+    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={DotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
-            <MenuOption text="Set date of birth" on:click={() => (isSettingBirthDate = true)} />
+            <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
           </AssetSelectContextMenu>
         </svelte:fragment>
