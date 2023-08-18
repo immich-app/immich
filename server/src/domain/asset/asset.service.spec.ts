@@ -7,15 +7,17 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
+  newJobRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
+import { IJobRepository, JobName } from '../index';
 import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
-import { AssetStatsResponseDto, DownloadResponseDto } from './dto';
+import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
 import { mapAsset } from './response-dto';
 
 const downloadResponse: DownloadResponseDto = {
@@ -145,6 +147,7 @@ describe(AssetService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   it('should work', () => {
@@ -155,8 +158,9 @@ describe(AssetService.name, () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, storageMock);
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
   });
 
   describe('canUpload', () => {
@@ -530,6 +534,26 @@ describe(AssetService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
       expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+    });
+  });
+
+  describe('run', () => {
+    it('should run the refresh metadata job', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA }),
+        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } });
+    });
+
+    it('should run the refresh thumbnails job', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
+        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } });
+    });
+
+    it('should run the transcode video', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO }),
+        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } });
     });
   });
 });

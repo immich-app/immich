@@ -107,6 +107,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
+*AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -197,6 +198,8 @@ Class | Method | HTTP request | Description
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
+ - [AssetJobName](doc//AssetJobName.md)
+ - [AssetJobsDto](doc//AssetJobsDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)

@@ -528,6 +528,42 @@ export type AssetIdsResponseDtoErrorEnum = typeof AssetIdsResponseDtoErrorEnum[k
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const AssetJobName = {
+    RegenerateThumbnail: 'regenerate-thumbnail',
+    RefreshMetadata: 'refresh-metadata',
+    TranscodeVideo: 'transcode-video'
+} as const;
+
+export type AssetJobName = typeof AssetJobName[keyof typeof AssetJobName];
+
+
+/**
+ * 
+ * @export
+ * @interface AssetJobsDto
+ */
+export interface AssetJobsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AssetJobsDto
+     */
+    'assetIds': Array<string>;
+    /**
+     * 
+     * @type {AssetJobName}
+     * @memberof AssetJobsDto
+     */
+    'name': AssetJobName;
+}
+
+
+/**
+ * 
+ * @export
  * @interface AssetResponseDto
  */
 export interface AssetResponseDto {
@@ -5786,6 +5822,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {AssetJobsDto} assetJobsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        runAssetJobs: async (assetJobsDto: AssetJobsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetJobsDto' is not null or undefined
+            assertParamExists('runAssetJobs', 'assetJobsDto', assetJobsDto)
+            const localVarPath = `/asset/jobs`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetJobsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {SearchAssetDto} searchAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6333,6 +6413,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {AssetJobsDto} assetJobsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async runAssetJobs(assetJobsDto: AssetJobsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.runAssetJobs(assetJobsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {SearchAssetDto} searchAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6583,6 +6673,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         importFile(requestParameters: AssetApiImportFileRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFileUploadResponseDto> {
             return localVarFp.importFile(requestParameters.importAssetDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiRunAssetJobsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        runAssetJobs(requestParameters: AssetApiRunAssetJobsRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.runAssetJobs(requestParameters.assetJobsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7067,6 +7166,20 @@ export interface AssetApiImportFileRequest {
 }
 
 /**
+ * Request parameters for runAssetJobs operation in AssetApi.
+ * @export
+ * @interface AssetApiRunAssetJobsRequest
+ */
+export interface AssetApiRunAssetJobsRequest {
+    /**
+     * 
+     * @type {AssetJobsDto}
+     * @memberof AssetApiRunAssetJobs
+     */
+    readonly assetJobsDto: AssetJobsDto
+}
+
+/**
  * Request parameters for searchAsset operation in AssetApi.
  * @export
  * @interface AssetApiSearchAssetRequest
@@ -7470,6 +7583,17 @@ export class AssetApi extends BaseAPI {
      */
     public importFile(requestParameters: AssetApiImportFileRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).importFile(requestParameters.importAssetDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiRunAssetJobsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public runAssetJobs(requestParameters: AssetApiRunAssetJobsRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).runAssetJobs(requestParameters.assetJobsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

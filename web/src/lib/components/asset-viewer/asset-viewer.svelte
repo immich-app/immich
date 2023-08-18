@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -245,6 +245,15 @@
         return 'Asset';
     }
   };
+
+  const handleRunJob = async (name: AssetJobName) => {
+    try {
+      await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
+      notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
+    } catch (error) {
+      handleError(error, `Unable to submit job`);
+    }
+  };
 </script>
 
 <section
@@ -270,6 +279,7 @@
       on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
       on:toggleArchive={toggleArchive}
       on:asProfileImage={() => (isShowProfileImageCrop = true)}
+      on:runJob={({ detail: job }) => handleRunJob(job)}
     />
   </div>
 

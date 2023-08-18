@@ -1367,6 +1367,41 @@
         ]
       }
     },
+    "/asset/jobs": {
+      "post": {
+        "operationId": "runAssetJobs",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetJobsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/map-marker": {
       "get": {
         "operationId": "getMapMarkers",
@@ -5039,6 +5074,33 @@
         "required": [
           "assetId",
           "success"
+        ],
+        "type": "object"
+      },
+      "AssetJobName": {
+        "enum": [
+          "regenerate-thumbnail",
+          "refresh-metadata",
+          "transcode-video"
+        ],
+        "type": "string"
+      },
+      "AssetJobsDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "$ref": "#/components/schemas/AssetJobName"
+          }
+        },
+        "required": [
+          "assetIds",
+          "name"
         ],
         "type": "object"
       },

@@ -8,11 +8,14 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
+import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
   AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobName,
+  AssetJobsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
@@ -54,6 +57,7 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
@@ -274,5 +278,25 @@ export class AssetService {
     const { ids, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
     await this.assetRepository.updateAll(ids, options);
+  }
+
+  async run(authUser: AuthUserDto, dto: AssetJobsDto) {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, dto.assetIds);
+
+    for (const id of dto.assetIds) {
+      switch (dto.name) {
+        case AssetJobName.REFRESH_METADATA:
+          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          break;
+
+        case AssetJobName.REGENERATE_THUMBNAIL:
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          break;
+
+        case AssetJobName.TRANSCODE_VIDEO:
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          break;
+      }
+    }
   }
 }

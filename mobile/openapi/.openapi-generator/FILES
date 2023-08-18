@@ -23,6 +23,8 @@ doc/AssetBulkUploadCheckResult.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
+doc/AssetJobName.md
+doc/AssetJobsDto.md
 doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
@@ -168,6 +170,8 @@ lib/model/asset_bulk_upload_check_result.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
+lib/model/asset_job_name.dart
+lib/model/asset_jobs_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
@@ -282,6 +286,8 @@ test/asset_bulk_upload_check_result_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
+test/asset_job_name_test.dart
+test/asset_jobs_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
