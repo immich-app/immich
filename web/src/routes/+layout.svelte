@@ -18,6 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
+  import { openWebsocketConnection } from '$lib/stores/websocket';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
@@ -36,6 +37,8 @@
   });
 
   onMount(async () => {
+    openWebsocketConnection();
+
     try {
       await loadConfig();
     } catch (error) {
@@ -86,7 +89,7 @@
 </svelte:head>
 
 <noscript
-  class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+  class="bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg absolute z-[1000] flex h-screen w-screen place-content-center place-items-center"
 >
   <FullscreenContainer title="Welcome to Immich">
     To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
