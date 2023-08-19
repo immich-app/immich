@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/map/models/map_subscription_event.mode.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
@@ -13,13 +14,15 @@ import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class AssetsInBoundBottomSheet extends StatefulHookConsumerWidget {
-  final StreamController markersInSheetSC;
-  final Stream assetMarkersInBoundStream;
+  final StreamController bottomSheetEventSC;
+  final Stream mapPageEventStream;
+  final DraggableScrollableController? scrollableController;
 
   const AssetsInBoundBottomSheet(
-    this.assetMarkersInBoundStream,
-    this.markersInSheetSC, {
+    this.mapPageEventStream,
+    this.bottomSheetEventSC, {
     super.key,
+    this.scrollableController,
   });
 
   @override
@@ -34,15 +37,29 @@ class AssetsInBoundBottomSheetState
   RenderList? _cachedRenderList;
   List<Asset> assetsInBound = [];
   late final Debounce debounceListUpdated;
+  bool hasUserScrolledSheet = false;
+  bool didUserTapOnMap = false;
+  int assetOffsetInBottomSheet = -1;
 
   @override
   void initState() {
     super.initState();
-    subscription = widget.assetMarkersInBoundStream.listen((event) {
-      if (mounted) {
-        setState(() {
-          assetsInBound = event;
-        });
+    subscription = widget.mapPageEventStream.listen((event) {
+      if (event is MapPageAssetsInBoundUpdated) {
+        if (mounted) {
+          setState(() {
+            assetsInBound = event.assets;
+          });
+        }
+      }
+      if (event is MapPageOnTapEvent) {
+        if (mounted) {
+          setState(() {
+            hasUserScrolledSheet = false;
+            didUserTapOnMap = true;
+            assetOffsetInBottomSheet = -1;
+          });
+        }
       }
     });
     debounceListUpdated = Debounce(
@@ -68,7 +85,15 @@ class AssetsInBoundBottomSheetState
           : renderElement.totalCount - 1;
       final asset =
           _cachedRenderList?.allAssets?[renderElement.offset + assetRowOffset];
-      widget.markersInSheetSC.add(asset);
+      if (!didUserTapOnMap) {
+        widget.bottomSheetEventSC.add(
+          MapPageBottomSheetScrolled(asset),
+        );
+      }
+      setState(() {
+        hasUserScrolledSheet = true;
+        didUserTapOnMap = false;
+      });
     }
   }
 
@@ -84,6 +109,24 @@ class AssetsInBoundBottomSheetState
   Widget build(BuildContext context) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final sheetExpanded = useState(false);
+
+    useEffect(
+      () {
+        sheetExpandedCallback() {
+          if (sheetExpanded.value == false) {
+            setState(() {
+              hasUserScrolledSheet = false;
+              didUserTapOnMap = true;
+              assetOffsetInBottomSheet = -1;
+            });
+          }
+        }
+
+        sheetExpanded.addListener(sheetExpandedCallback);
+        return () => sheetExpanded.removeListener(sheetExpandedCallback);
+      },
+      [],
+    );
 
     Widget buildNoPhotosWidget() {
       const image = Image(
@@ -136,25 +179,43 @@ class AssetsInBoundBottomSheetState
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
         ),
-        child: Column(
+        child: Stack(
           children: [
-            const SizedBox(height: 12),
-            const CustomDraggingHandle(),
-            const SizedBox(height: 12),
-            Text(
-              textToDisplay,
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).textTheme.displayLarge?.color,
-              ),
+            Column(
+              children: [
+                const SizedBox(height: 12),
+                const CustomDraggingHandle(),
+                const SizedBox(height: 12),
+                Text(
+                  textToDisplay,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).textTheme.displayLarge?.color,
+                  ),
+                ),
+                Divider(
+                  color: Theme.of(context)
+                      .textTheme
+                      .displayLarge
+                      ?.color
+                      ?.withOpacity(0.5),
+                ),
+              ],
             ),
-            Divider(
-              color: Theme.of(context)
-                  .textTheme
-                  .displayLarge
-                  ?.color
-                  ?.withOpacity(0.5),
-            )
+            if (sheetExpanded.value && hasUserScrolledSheet)
+              Positioned(
+                top: 5,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.map_outlined,
+                    color: Theme.of(context).textTheme.displayLarge?.color,
+                  ),
+                  iconSize: 20,
+                  tooltip: 'Zoom to bounds',
+                  onPressed: () {},
+                ),
+              )
           ],
         ),
       );
@@ -170,6 +231,7 @@ class AssetsInBoundBottomSheetState
         return true;
       },
       child: DraggableScrollableSheet(
+        controller: widget.scrollableController,
         initialChildSize: 0.1,
         minChildSize: 0.1,
         maxChildSize: 0.55,

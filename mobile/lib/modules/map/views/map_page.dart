@@ -9,6 +9,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/map/models/map_subscription_event.mode.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker.dart';
@@ -35,14 +36,14 @@ class MapPageState extends ConsumerState<MapPage>
     with TickerProviderStateMixin {
   // State variables
   late final MapController _mapController;
-  final StreamController assetsInBoundsSC =
-      StreamController<List<Asset>?>.broadcast();
-  late final Stream assetsInBoundsStream;
-  final StreamController markerSheetItemSC =
-      StreamController<Asset?>.broadcast();
-  StreamSubscription<dynamic>? markerSheetItemSubscription;
+  final StreamController mapPageEventSC =
+      StreamController<MapPageEventBase>.broadcast();
+  final StreamController bottomSheetEventSC =
+      StreamController<MapPageEventBase>.broadcast();
+  StreamSubscription<dynamic>? bottomSheetEventStream;
   List<AssetMarkerData> assetsInBounds = [];
   late final Debounce debounceBoundsUpdate;
+  late final DraggableScrollableController bottomSheetScrollController;
 
   List<AssetMarkerData> getAssetsMarkersInBound(
     List<AssetMarkerData>? assetMarkers,
@@ -61,8 +62,10 @@ class MapPageState extends ConsumerState<MapPage>
     final bounds = _mapController.bounds;
     if (bounds != null) {
       assetsInBounds = getAssetsMarkersInBound(assetMarkers);
-      assetsInBoundsSC.add(
-        assetsInBounds.map((e) => e.asset).toList(),
+      mapPageEventSC.add(
+        MapPageAssetsInBoundUpdated(
+          assetsInBounds.map((e) => e.asset).toList(),
+        ),
       );
     }
   }
@@ -71,7 +74,7 @@ class MapPageState extends ConsumerState<MapPage>
   void initState() {
     super.initState();
     _mapController = MapController();
-    assetsInBoundsStream = assetsInBoundsSC.stream;
+    bottomSheetScrollController = DraggableScrollableController();
     // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
     debounceBoundsUpdate = Debounce(
       const Duration(milliseconds: 100),
@@ -82,7 +85,7 @@ class MapPageState extends ConsumerState<MapPage>
   void dispose() {
     super.dispose();
     debounceBoundsUpdate.dispose();
-    markerSheetItemSubscription?.cancel();
+    bottomSheetEventStream?.cancel();
   }
 
   @override
@@ -129,21 +132,24 @@ class MapPageState extends ConsumerState<MapPage>
 
     useEffect(
       () {
-        markerSheetItemSubscription = markerSheetItemSC.stream.listen((asset) {
-          if (asset != null) {
-            final assetMarker = mapMarkers.value
-                ?.firstWhere((element) => element.asset.id == asset.id);
-            selectedAsset.value = assetMarker;
-            if (assetMarker != null && _mapController.zoom >= 5) {
-              LatLng? newCenter = moveByBottomPadding(
-                assetMarker.point,
-                const Offset(0, -120),
-              );
-              if (newCenter != null) {
-                _mapController.move(
-                  newCenter,
-                  _mapController.zoom,
+        bottomSheetEventStream = bottomSheetEventSC.stream.listen((event) {
+          if (event is MapPageBottomSheetScrolled) {
+            final asset = event.asset;
+            if (asset != null) {
+              final assetMarker = mapMarkers.value
+                  ?.firstWhere((element) => element.asset.id == asset.id);
+              selectedAsset.value = assetMarker;
+              if (assetMarker != null && _mapController.zoom >= 5) {
+                LatLng? newCenter = moveByBottomPadding(
+                  assetMarker.point,
+                  const Offset(0, -120),
                 );
+                if (newCenter != null) {
+                  _mapController.move(
+                    newCenter,
+                    _mapController.zoom,
+                  );
+                }
               }
             }
           }
@@ -404,6 +410,16 @@ class MapPageState extends ConsumerState<MapPage>
         (element) =>
             getDistance(element.point, point) < getThreshold(currentZoom),
       );
+      if (selectedAsset.value == null) {
+        bottomSheetScrollController.animateTo(
+          0.1,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.linearToEaseOut,
+        );
+        mapPageEventSC.add(
+          const MapPageOnTapEvent(),
+        );
+      }
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -460,8 +476,9 @@ class MapPageState extends ConsumerState<MapPage>
             Theme(
               data: isDarkTheme.value ? immichDarkTheme : immichLightTheme,
               child: AssetsInBoundBottomSheet(
-                assetsInBoundsStream,
-                markerSheetItemSC,
+                mapPageEventSC.stream,
+                bottomSheetEventSC,
+                scrollableController: bottomSheetScrollController,
               ),
             ),
           ],
