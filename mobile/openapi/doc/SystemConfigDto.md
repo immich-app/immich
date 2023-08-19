@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ffmpeg** | [**SystemConfigFFmpegDto**](SystemConfigFFmpegDto.md) |  | 
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
+**machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 

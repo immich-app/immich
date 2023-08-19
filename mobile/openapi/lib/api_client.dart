@@ -323,8 +323,6 @@ class ApiClient {
           return SearchAssetDto.fromJson(value);
         case 'SearchAssetResponseDto':
           return SearchAssetResponseDto.fromJson(value);
-        case 'SearchConfigResponseDto':
-          return SearchConfigResponseDto.fromJson(value);
         case 'SearchExploreItem':
           return SearchExploreItem.fromJson(value);
         case 'SearchExploreResponseDto':
@@ -365,6 +363,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
+        case 'SystemConfigMachineLearningDto':
+          return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
