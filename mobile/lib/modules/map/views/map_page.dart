@@ -32,8 +32,7 @@ class MapPage extends StatefulHookConsumerWidget {
   MapPageState createState() => MapPageState();
 }
 
-class MapPageState extends ConsumerState<MapPage>
-    with TickerProviderStateMixin {
+class MapPageState extends ConsumerState<MapPage> {
   // State variables
   late final MapController _mapController;
   final StreamController mapPageEventSC =
@@ -99,6 +98,7 @@ class MapPageState extends ConsumerState<MapPage>
         useState(<AssetMarkerData>[]);
     final heatMapData = useState(<WeightedLatLng>[]);
     final ValueNotifier<AssetMarkerData?> selectedAsset = useState(null);
+    bool forceAssetUpdate = false;
 
     CustomPoint<double> rotatePoint(
       CustomPoint<double> mapCenter,
@@ -150,6 +150,20 @@ class MapPageState extends ConsumerState<MapPage>
                     _mapController.zoom,
                   );
                 }
+              }
+            }
+          }
+          if (event is MapPageZoomToAsset) {
+            final asset = event.asset;
+            if (asset != null) {
+              final assetMarker = mapMarkers.value
+                  ?.firstWhere((element) => element.asset.id == asset.id);
+              if (assetMarker != null) {
+                forceAssetUpdate = true;
+                _mapController.move(
+                  assetMarker.point,
+                  6,
+                );
               }
             }
           }
@@ -350,7 +364,7 @@ class MapPageState extends ConsumerState<MapPage>
                   0.40: Colors.blue,
                   0.60: Colors.green,
                   0.95: Colors.yellow,
-                  1.0: Colors.deepOrange
+                  1.0: Colors.deepOrange,
                 },
               ),
             )
@@ -358,9 +372,14 @@ class MapPageState extends ConsumerState<MapPage>
     }
 
     void onMapEvent(MapEvent mapEvent) {
-      if (mapEvent.source != MapEventSource.mapController &&
-          (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom)) {
-        debounceBoundsUpdate(() => reloadAssetsInBound(mapMarkers.value));
+      if (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom) {
+        if (forceAssetUpdate ||
+            mapEvent.source != MapEventSource.mapController) {
+          debounceBoundsUpdate(() {
+            reloadAssetsInBound(mapMarkers.value);
+            forceAssetUpdate = false;
+          });
+        }
       }
     }
 
@@ -392,7 +411,7 @@ class MapPageState extends ConsumerState<MapPage>
         50,
         25,
         10,
-        5
+        5,
       ];
       return scale[math.max(0, math.min(20, zoomLevel.round() + 2))]
               .toDouble() /

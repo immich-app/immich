@@ -90,10 +90,13 @@ class AssetsInBoundBottomSheetState
           MapPageBottomSheetScrolled(asset),
         );
       }
-      setState(() {
-        hasUserScrolledSheet = true;
-        didUserTapOnMap = false;
-      });
+      if (mounted) {
+        setState(() {
+          hasUserScrolledSheet = true;
+          didUserTapOnMap = false;
+          assetOffsetInBottomSheet = renderElement.offset + assetRowOffset;
+        });
+      }
     }
   }
 
@@ -114,11 +117,13 @@ class AssetsInBoundBottomSheetState
       () {
         sheetExpandedCallback() {
           if (sheetExpanded.value == false) {
-            setState(() {
-              hasUserScrolledSheet = false;
-              didUserTapOnMap = true;
-              assetOffsetInBottomSheet = -1;
-            });
+            if (mounted) {
+              setState(() {
+                hasUserScrolledSheet = false;
+                didUserTapOnMap = true;
+                assetOffsetInBottomSheet = -1;
+              });
+            }
           }
         }
 
@@ -169,6 +174,16 @@ class AssetsInBoundBottomSheetState
           : const SizedBox.shrink();
     }
 
+    void onTapMapButton() {
+      if (assetOffsetInBottomSheet != -1) {
+        widget.bottomSheetEventSC.add(
+          MapPageZoomToAsset(
+            _cachedRenderList?.allAssets?[assetOffsetInBottomSheet],
+          ),
+        );
+      }
+    }
+
     Widget buildDragHandle(ScrollController scrollController) {
       final textToDisplay = assetsInBound.isNotEmpty
           ? "${assetsInBound.length} photo${assetsInBound.length > 1 ? "s" : ""}"
@@ -213,7 +228,7 @@ class AssetsInBoundBottomSheetState
                   ),
                   iconSize: 20,
                   tooltip: 'Zoom to bounds',
-                  onPressed: () {},
+                  onPressed: onTapMapButton,
                 ),
               )
           ],
