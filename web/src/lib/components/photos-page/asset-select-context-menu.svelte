@@ -1,4 +1,5 @@
 <script lang="ts" context="module">
+  import { clickOutside } from '$lib/utils/click-outside';
   import { createContext } from '$lib/utils/context';
 
   const { get: getMenuContext, set: setContext } = createContext<() => void>();
@@ -25,12 +26,13 @@
   setContext(() => (showContextMenu = false));
 </script>
 
-<CircleIconButton {title} logo={icon} on:click={handleShowMenu} />
-
-{#if showContextMenu}
-  <ContextMenu {...contextMenuPosition} on:outclick={() => (showContextMenu = false)}>
-    <div class="flex flex-col rounded-lg">
-      <slot />
-    </div>
-  </ContextMenu>
-{/if}
+<div use:clickOutside on:outclick={() => (showContextMenu = false)}>
+  <CircleIconButton {title} logo={icon} on:click={handleShowMenu} />
+  {#if showContextMenu}
+    <ContextMenu {...contextMenuPosition}>
+      <div class="flex flex-col rounded-lg">
+        <slot />
+      </div>
+    </ContextMenu>
+  {/if}
+</div>
