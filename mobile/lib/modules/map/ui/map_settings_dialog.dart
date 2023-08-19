@@ -168,7 +168,7 @@ class MapSettingsDialog extends HookConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-        )
+        ),
       ];
     }
 

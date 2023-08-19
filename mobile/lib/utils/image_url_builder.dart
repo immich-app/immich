@@ -36,7 +36,7 @@ String getAlbumThumbnailUrl(
     return '';
   }
   return getThumbnailUrlForRemoteId(album.thumbnail.value!.remoteId!,
-      type: type);
+      type: type,);
 }
 
 String getAlbumThumbNailCacheKey(

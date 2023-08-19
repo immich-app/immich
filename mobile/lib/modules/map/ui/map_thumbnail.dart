@@ -87,7 +87,7 @@ class MapThumbnail extends HookConsumerWidget {
           ],
           children: [
             _buildTileLayer(isDarkTheme.value),
-            if (markers.isNotEmpty) MarkerLayer(markers: markers)
+            if (markers.isNotEmpty) MarkerLayer(markers: markers),
           ],
         ),
       ),

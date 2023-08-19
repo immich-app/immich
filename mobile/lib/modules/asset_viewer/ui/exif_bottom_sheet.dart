@@ -44,7 +44,7 @@ class ExifBottomSheet extends HookConsumerWidget {
         host: '$latitude,$longitude',
         queryParameters: {
           'z': '$zoomLevel',
-          'q': '$latitude,$longitude($formattedDateTime)'
+          'q': '$latitude,$longitude($formattedDateTime)',
         },
       );
       if (await canLaunchUrl(uri)) {

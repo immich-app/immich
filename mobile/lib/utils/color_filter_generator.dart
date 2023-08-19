@@ -66,7 +66,7 @@ class _ColorFilterGenerator {
     }
 
     return List<double>.from(<double>[
-      1, 0, 0, 0, value, 0, 1, 0, 0, value, 0, 0, 1, 0, value, 0, 0, 0, 1, 0 //
+      1, 0, 0, 0, value, 0, 1, 0, 0, value, 0, 0, 1, 0, value, 0, 0, 0, 1, 0, //
     ]).map((i) => i.toDouble()).toList();
   }
 

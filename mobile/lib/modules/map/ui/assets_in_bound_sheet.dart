@@ -230,7 +230,7 @@ class AssetsInBoundBottomSheetState
                   tooltip: 'Zoom to bounds',
                   onPressed: onTapMapButton,
                 ),
-              )
+              ),
           ],
         ),
       );
