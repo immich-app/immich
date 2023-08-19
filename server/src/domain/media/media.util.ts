@@ -50,10 +50,10 @@ class BaseConfig implements VideoCodecSWConfig {
     if (this.getBFrames() > -1) {
       options.push(`-bf ${this.getBFrames()}`);
     }
-    if (this.getRefs() > -1) {
+    if (this.getRefs() > 0) {
       options.push(`-refs ${this.getRefs()}`);
     }
-    if (this.getGopSize() > -1) {
+    if (this.getGopSize() > 0) {
       options.push(`-g ${this.getGopSize()}`);
     }
     return options;
@@ -415,7 +415,7 @@ export class NVENCConfig extends BaseHWConfig {
   getRefs() {
     const bframes = this.getBFrames();
     if (bframes > 0 && bframes < 3 && this.config.refs < 3) {
-      return -1;
+      return 0;
     }
     return this.config.refs;
   }
@@ -480,7 +480,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getRefs() {
-    if (this.config.refs < 0) {
+    if (this.config.refs <= 0) {
       return 5;
     }
     return this.config.refs;

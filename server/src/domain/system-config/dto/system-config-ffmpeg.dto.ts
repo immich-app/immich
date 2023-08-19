@@ -42,7 +42,7 @@ export class SystemConfigFFmpegDto {
   bframes!: number;
 
   @IsInt()
-  @Min(-1)
+  @Min(0)
   @Max(6)
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })

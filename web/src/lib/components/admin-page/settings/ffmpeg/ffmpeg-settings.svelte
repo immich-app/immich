@@ -282,30 +282,35 @@
             isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
           />
 
-          <SettingAccordion title="Advanced" subtitle="Manage your account">
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label="B-FRAMES"
-              desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
-              bind:value={ffmpegConfig.bframes}
-              isEdited={!(ffmpegConfig.bframes == savedConfig.bframes)}
-            />
+          <SettingAccordion
+            title="Advanced"
+            subtitle="You shouldn't need to change these settings unless you have a specific reason"
+          >
+            <div class="ml-4 mt-4 flex flex-col gap-4">
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="B-FRAMES"
+                desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+                bind:value={ffmpegConfig.bframes}
+                isEdited={!(ffmpegConfig.bframes == savedConfig.bframes)}
+              />
 
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label="REFERENCE FRAMES"
-              desc="The number of frames to reference when compresing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 disables reference frames, while -1 sets this value automatically."
-              bind:value={ffmpegConfig.refs}
-              isEdited={!(ffmpegConfig.refs == savedConfig.refs)}
-            />
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="REFERENCE FRAMES"
+                desc="The number of frames to reference when compresing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
+                bind:value={ffmpegConfig.refs}
+                isEdited={!(ffmpegConfig.refs == savedConfig.refs)}
+              />
 
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label="MAX KEYFRAME INTERVAL"
-              desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
-              bind:value={ffmpegConfig.gopSize}
-              isEdited={!(ffmpegConfig.gopSize == savedConfig.gopSize)}
-            />
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="MAX KEYFRAME INTERVAL"
+                desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
+                bind:value={ffmpegConfig.gopSize}
+                isEdited={!(ffmpegConfig.gopSize == savedConfig.gopSize)}
+              />
+            </div>
           </SettingAccordion>
         </div>
 
