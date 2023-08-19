@@ -42,7 +42,10 @@ class ExifBottomSheet extends HookConsumerWidget {
       Uri uri = Uri(
         scheme: 'geo',
         host: '$latitude,$longitude',
-        queryParameters: {'z': '$zoomLevel', 'q': formattedDateTime},
+        queryParameters: {
+          'z': '$zoomLevel',
+          'q': '$latitude,$longitude($formattedDateTime)'
+        },
       );
       if (await canLaunchUrl(uri)) {
         return uri;
@@ -85,18 +88,6 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
               height: 150,
               zoom: 16.0,
-              onTap: (tapPosition, latLong) async {
-                if (exifInfo != null &&
-                    exifInfo.latitude != null &&
-                    exifInfo.longitude != null) {
-                  launchUrl(
-                    await _createCoordinatesUri(
-                      exifInfo.latitude!,
-                      exifInfo.longitude!,
-                    ),
-                  );
-                }
-              },
               markers: [
                 Marker(
                   anchorPos: AnchorPos.align(AnchorAlign.top),
@@ -107,24 +98,18 @@ class ExifBottomSheet extends HookConsumerWidget {
                   builder: (ctx) => const Image(
                     image: AssetImage('assets/location-pin.png'),
                   ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        anchorPos: AnchorPos.align(AnchorAlign.top),
-                        point: LatLng(
-                          exifInfo?.latitude ?? 0,
-                          exifInfo?.longitude ?? 0,
-                        ),
-                        builder: (ctx) => const Image(
-                          image: AssetImage('assets/location-pin.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
                 ),
               ],
+              onTap: (tapPosition, latLong) async {
+                Uri? uri = await _createCoordinatesUri();
+
+                if (uri == null) {
+                  return;
+                }
+
+                debugPrint('Opening Map Uri: $uri');
+                launchUrl(uri);
+              },
             );
           },
         ),
