@@ -22,6 +22,8 @@ export enum SystemConfigKey {
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
   FFMPEG_BFRAMES = 'ffmpeg.bframes',
+  FFMPEG_REFS = 'ffmpeg.refs',
+  FFMPEG_GOP_SIZE = 'ffmpeg.gopSize',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
@@ -116,6 +118,8 @@ export interface SystemConfig {
     targetResolution: string;
     maxBitrate: string;
     bframes: number;
+    refs: number;
+    gopSize: number;
     twoPass: boolean;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;

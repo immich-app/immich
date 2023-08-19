@@ -41,6 +41,19 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ type: 'integer' })
   bframes!: number;
 
+  @IsInt()
+  @Min(-1)
+  @Max(6)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  refs!: number;
+
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  gopSize!: number;
+
   @IsBoolean()
   twoPass!: boolean;
 

@@ -19,6 +19,7 @@
   import HelpCircleOutline from 'svelte-material-icons/HelpCircleOutline.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
+  import SettingAccordion from '../setting-accordion.svelte';
 
   export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
   export let disabled = false;
@@ -198,14 +199,6 @@
             isEdited={!(ffmpegConfig.threads == savedConfig.threads)}
           />
 
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            label="B-FRAMES"
-            desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 uses the encoder default."
-            bind:value={ffmpegConfig.bframes}
-            isEdited={!(ffmpegConfig.bframes == savedConfig.bframes)}
-          />
-
           <SettingSelect
             label="TRANSCODE POLICY"
             {disabled}
@@ -288,6 +281,32 @@
             bind:checked={ffmpegConfig.twoPass}
             isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
           />
+
+          <SettingAccordion title="Advanced" subtitle="Manage your account">
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="B-FRAMES"
+              desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+              bind:value={ffmpegConfig.bframes}
+              isEdited={!(ffmpegConfig.bframes == savedConfig.bframes)}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="REFERENCE FRAMES"
+              desc="The number of frames to reference when compresing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 disables reference frames, while -1 sets this value automatically."
+              bind:value={ffmpegConfig.refs}
+              isEdited={!(ffmpegConfig.refs == savedConfig.refs)}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="MAX KEYFRAME INTERVAL"
+              desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
+              bind:value={ffmpegConfig.gopSize}
+              isEdited={!(ffmpegConfig.gopSize == savedConfig.gopSize)}
+            />
+          </SettingAccordion>
         </div>
 
         <div class="ml-4">

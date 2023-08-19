@@ -9,7 +9,8 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
-  constructor(protected config: SystemConfigFFmpegDto) {}
+  presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
+  constructor(protected config: SystemConfigFFmpegDto) { }
 
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
@@ -45,6 +46,15 @@ class BaseConfig implements VideoCodecSWConfig {
     ];
     if (audioStream) {
       options.push(`-map 0:${audioStream.index}`);
+    }
+    if (this.getBFrames() > -1) {
+      options.push(`-bf ${this.getBFrames()}`);
+    }
+    if (this.getRefs() > -1) {
+      options.push(`-refs ${this.getRefs()}`);
+    }
+    if (this.getGopSize() > -1) {
+      options.push(`-g ${this.getGopSize()}`);
     }
     return options;
   }
@@ -155,8 +165,7 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getPresetIndex() {
-    const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-    return presets.indexOf(this.config.preset);
+    return this.presets.indexOf(this.config.preset);
   }
 
   getColors() {
@@ -186,6 +195,18 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getVideoCodec(): string {
     return this.config.targetVideoCodec;
+  }
+
+  getBFrames() {
+    return this.config.bframes;
+  }
+
+  getRefs() {
+    return this.config.refs;
+  }
+
+  getGopSize() {
+    return this.config.gopSize;
   }
 }
 
@@ -221,6 +242,13 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
   getVideoCodec(): string {
     return `${this.config.targetVideoCodec}_${this.config.accel}`;
+  }
+
+  getGopSize() {
+    if (this.config.gopSize < 0) {
+      return 256;
+    }
+    return this.config.gopSize;
   }
 }
 
@@ -318,18 +346,20 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    return [
+    const options = [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
       '-qmin 0',
-      '-g 250',
-      '-b_ref_mode middle',
       '-temporal-aq 1',
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
-      '-b_qfactor 1.1',
       ...super.getBaseOutputOptions(videoStream, audioStream),
     ];
+    if (this.getBFrames() > 0) {
+      options.push('-b_ref_mode middle');
+      options.push('-b_qfactor 1.1');
+    }
+    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -374,6 +404,21 @@ export class NVENCConfig extends BaseHWConfig {
   getThreadOptions() {
     return [];
   }
+
+  getBFrames() {
+    if (this.config.bframes < 0) {
+      return 3;
+    }
+    return this.config.bframes;
+  }
+
+  getRefs() {
+    const bframes = this.getBFrames();
+    if (bframes > 0 && bframes < 3 && this.config.refs < 3) {
+      return -1;
+    }
+    return this.config.refs;
+  }
 }
 
 export class QSVConfig extends BaseHWConfig {
@@ -385,13 +430,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [
-      '-g 256',
-      '-extbrc 1',
-      '-refs 5',
-      ...super.getBaseOutputOptions(videoStream, audioStream),
-    ];
+    const options = super.getBaseOutputOptions(videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -431,6 +470,21 @@ export class QSVConfig extends BaseHWConfig {
     }
     return options;
   }
+
+  // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
+  getBFrames() {
+    if (this.config.bframes < 0) {
+      return 7;
+    }
+    return this.config.bframes;
+  }
+
+  getRefs() {
+    if (this.config.refs < 0) {
+      return 5;
+    }
+    return this.config.refs;
+  }
 }
 
 export class VAAPIConfig extends BaseHWConfig {
@@ -439,6 +493,10 @@ export class VAAPIConfig extends BaseHWConfig {
       throw Error('No VAAPI device found');
     }
     return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
+  }
+
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
+    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`, ...super.getBaseOutputOptions(videoStream, audioStream)];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
