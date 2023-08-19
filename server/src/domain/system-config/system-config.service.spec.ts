@@ -46,6 +46,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
   },
+  machineLearning: {
+    enabled: true,
+    url: 'http://immich-machine-learning:3003',
+    facialRecognitionEnabled: true,
+    tagImageEnabled: true,
+    clipEncodeEnabled: true,
+  },
   oauth: {
     autoLaunch: true,
     autoRegister: true,

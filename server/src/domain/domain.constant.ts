@@ -1,5 +1,4 @@
 import { AssetType } from '@app/infra/entities';
-import { BadRequestException } from '@nestjs/common';
 import { Duration } from 'luxon';
 import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
@@ -23,17 +22,6 @@ export const serverVersion: IServerVersion = {
 export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-
-export const SEARCH_ENABLED = process.env.TYPESENSE_ENABLED !== 'false';
-
-export const MACHINE_LEARNING_URL = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
-export const MACHINE_LEARNING_ENABLED = MACHINE_LEARNING_URL !== 'false';
-
-export function assertMachineLearningEnabled() {
-  if (!MACHINE_LEARNING_ENABLED) {
-    throw new BadRequestException('Machine learning is not enabled.');
-  }
-}
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

@@ -20,8 +20,8 @@ export interface DetectFaceResult {
 }
 
 export interface IMachineLearningRepository {
-  classifyImage(input: MachineLearningInput): Promise<string[]>;
-  encodeImage(input: MachineLearningInput): Promise<number[]>;
-  encodeText(input: string): Promise<number[]>;
-  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]>;
+  classifyImage(url: string, input: MachineLearningInput): Promise<string[]>;
+  encodeImage(url: string, input: MachineLearningInput): Promise<number[]>;
+  encodeText(url: string, input: string): Promise<number[]>;
+  detectFaces(url: string, input: MachineLearningInput): Promise<DetectFaceResult[]>;
 }

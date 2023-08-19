@@ -2,11 +2,12 @@
   import { page } from '$app/stores';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
-  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
+  import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
+  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { api } from '@api';
   import type { PageData } from './$types';
@@ -48,6 +49,10 @@
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
       <OAuthSettings oauthConfig={configs.oauth} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Machine Learning" subtitle="Manage machine learning settings">
+      <MachineLearningSettings />
     </SettingAccordion>
 
     <SettingAccordion
