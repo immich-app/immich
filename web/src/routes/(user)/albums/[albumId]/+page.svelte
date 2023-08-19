@@ -167,7 +167,7 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = ({ x, y }: MouseEvent) => {
+  const handleOpenAlbumOptions = ({ x }: MouseEvent) => {
     const navigationBarHeight = 75;
     contextMenuPosition = { x: x, y: navigationBarHeight };
     viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;

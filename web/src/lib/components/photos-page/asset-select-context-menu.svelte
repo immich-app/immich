@@ -17,7 +17,7 @@
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
 
-  const handleShowMenu = ({ x, y }: MouseEvent) => {
+  const handleShowMenu = ({ x }: MouseEvent) => {
     const navigationBarHeight = 75;
     contextMenuPosition = { x: x, y: navigationBarHeight };
     showContextMenu = !showContextMenu;
