@@ -2826,6 +2826,12 @@ export interface SystemConfigFFmpegDto {
     'crf': number;
     /**
      * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'gopSize': number;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
@@ -2836,6 +2842,12 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'preset': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'refs': number;
     /**
      * 
      * @type {AudioCodec}

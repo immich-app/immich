@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // int gopSize
+    test('to test the property `gopSize`', () async {
+      // TODO
+    });
+
     // String maxBitrate
     test('to test the property `maxBitrate`', () async {
       // TODO
@@ -38,6 +43,11 @@ void main() {
 
     // String preset
     test('to test the property `preset`', () async {
+      // TODO
+    });
+
+    // int refs
+    test('to test the property `refs`', () async {
       // TODO
     });
 

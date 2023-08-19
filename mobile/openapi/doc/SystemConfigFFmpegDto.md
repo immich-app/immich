@@ -11,8 +11,10 @@ Name | Type | Description | Notes
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
 **bframes** | **int** |  | 
 **crf** | **int** |  | 
+**gopSize** | **int** |  | 
 **maxBitrate** | **String** |  | 
 **preset** | **String** |  | 
+**refs** | **int** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 
 **targetResolution** | **String** |  | 
 **targetVideoCodec** | [**VideoCodec**](VideoCodec.md) |  | 
