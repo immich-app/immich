@@ -245,7 +245,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getGopSize() {
-    if (this.config.gopSize < 0) {
+    if (this.config.gopSize <= 0) {
       return 256;
     }
     return this.config.gopSize;
