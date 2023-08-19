@@ -53,7 +53,9 @@
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
-    getAllAlbums();
+    if (!sharedLink) {
+      getAllAlbums();
+    }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
@@ -67,7 +69,7 @@
     }
   });
 
-  $: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
 
   const getAllAlbums = async () => {
     try {
@@ -294,7 +296,7 @@
       {#if !asset.resized}
         <div class="flex h-full w-full justify-center">
           <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            class="px-auto dark:bg-immich-dark-gray flex aspect-square h-full items-center justify-center bg-gray-100"
           >
             <ImageBrokenVariant size="25%" />
           </div>
@@ -330,12 +332,13 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="bg-immich-bg dark:border-l-immich-dark-gray dark:bg-immich-dark-bg z-[1002] row-span-full w-[360px] overflow-y-auto transition-all dark:border-l"
       translate="yes"
     >
       <DetailPanel
         {asset}
         albums={appearsInAlbums}
+        {sharedLink}
         on:close={() => ($isShowDetail = false)}
         on:close-viewer={handleCloseViewer}
         on:description-focus-in={disableKeyDownEvent}
