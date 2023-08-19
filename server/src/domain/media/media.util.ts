@@ -521,8 +521,8 @@ export class VAAPIConfig extends BaseHWConfig {
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     const options = [];
-    if (this.config.targetVideoCodec === VideoCodec.VP9) {
-      // seems to be needed for VP9 outputs to look correct
+    if (this.getBFrames() > 0 && this.config.targetVideoCodec === VideoCodec.VP9) {
+      // seems to be needed for VP9 outputs to look correct when using b-frames
       options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
     }
 
