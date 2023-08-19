@@ -43,7 +43,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     maxBitrate: '0',
     bframes: -1,
     refs: -1,
-    bframes: -1,
+    gopSize: -1,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
