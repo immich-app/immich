@@ -225,6 +225,7 @@ Class | Method | HTTP request | Description
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [FaceGeometryDto](doc//FaceGeometryDto.md)
  - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)

@@ -77,23 +77,23 @@
   };
 </script>
 
-<section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2">
   <div class="flex place-items-center gap-2">
     <button
-      class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
+      class="dark:text-immich-dark-fg flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:hover:bg-gray-900"
       on:click={() => dispatch('close')}
     >
       <Close size="24" />
     </button>
 
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
+    <p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
   </div>
 
   <section class="mx-4 mt-10">
     <textarea
       bind:this={textarea}
-      class="max-h-[500px]
-      w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
+      class="focus:border-immich-primary
+      dark:focus:border-immich-dark-primary max-h-[500px] w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 disabled:border-none dark:text-white"
       placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
       style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
       on:focusin={handleFocusIn}
@@ -110,7 +110,15 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+          <a
+            href="/people/{person.id}"
+            class="w-[90px]"
+            on:click={() => dispatch('close-viewer')}
+            on:mouseover={() => {
+              console.log(asset);
+            }}
+            on:focus={() => console.log('focus')}
+          >
             <ImageThumbnail
               curve
               shadow
@@ -262,7 +270,7 @@
   </div>
 {/if}
 
-<section class="p-2 dark:text-immich-dark-fg">
+<section class="dark:text-immich-dark-fg p-2">
   <div class="px-4 py-4">
     {#if albums.length > 0}
       <p class="pb-4 text-sm">APPEARS IN</p>

@@ -87,6 +87,7 @@ part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';
 part 'model/exif_response_dto.dart';
+part 'model/face_geometry_dto.dart';
 part 'model/import_asset_dto.dart';
 part 'model/job_command.dart';
 part 'model/job_command_dto.dart';

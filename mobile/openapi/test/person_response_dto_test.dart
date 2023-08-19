@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // FaceGeometryDto geometry
+    test('to test the property `geometry`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

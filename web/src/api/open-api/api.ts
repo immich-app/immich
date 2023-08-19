@@ -1379,6 +1379,49 @@ export interface ExifResponseDto {
 /**
  * 
  * @export
+ * @interface FaceGeometryDto
+ */
+export interface FaceGeometryDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'boundingBoxX1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'boundingBoxX2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'boundingBoxY1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'boundingBoxY2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'imageHeight': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FaceGeometryDto
+     */
+    'imageWidth': number;
+}
+/**
+ * 
+ * @export
  * @interface ImportAssetDto
  */
 export interface ImportAssetDto {
@@ -1883,6 +1926,12 @@ export interface PersonResponseDto {
      * @memberof PersonResponseDto
      */
     'birthDate': string | null;
+    /**
+     * 
+     * @type {FaceGeometryDto}
+     * @memberof PersonResponseDto
+     */
+    'geometry'?: FaceGeometryDto;
     /**
      * 
      * @type {string}

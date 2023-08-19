@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **birthDate** | [**DateTime**](DateTime.md) |  | 
+**geometry** | [**FaceGeometryDto**](FaceGeometryDto.md) |  | [optional] 
 **id** | **String** |  | 
 **isHidden** | **bool** |  | 
 **name** | **String** |  | 

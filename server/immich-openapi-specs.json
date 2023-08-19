@@ -5814,6 +5814,37 @@
         },
         "type": "object"
       },
+      "FaceGeometryDto": {
+        "properties": {
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "imageWidth",
+          "imageHeight",
+          "boundingBoxX1",
+          "boundingBoxY1",
+          "boundingBoxX2",
+          "boundingBoxY2"
+        ],
+        "type": "object"
+      },
       "ImportAssetDto": {
         "properties": {
           "assetPath": {
@@ -6210,6 +6241,9 @@
             "format": "date",
             "nullable": true,
             "type": "string"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/FaceGeometryDto"
           },
           "id": {
             "type": "string"

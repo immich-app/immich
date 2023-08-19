@@ -14,6 +14,7 @@ class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
     required this.birthDate,
+    this.geometry,
     required this.id,
     required this.isHidden,
     required this.name,
@@ -21,6 +22,14 @@ class PersonResponseDto {
   });
 
   DateTime? birthDate;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  FaceGeometryDto? geometry;
 
   String id;
 
@@ -33,6 +42,7 @@ class PersonResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
      other.birthDate == birthDate &&
+     other.geometry == geometry &&
      other.id == id &&
      other.isHidden == isHidden &&
      other.name == name &&
@@ -42,13 +52,14 @@ class PersonResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
+    (geometry == null ? 0 : geometry!.hashCode) +
     (id.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, geometry=$geometry, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -56,6 +67,11 @@ class PersonResponseDto {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
     //  json[r'birthDate'] = null;
+    }
+    if (this.geometry != null) {
+      json[r'geometry'] = this.geometry;
+    } else {
+    //  json[r'geometry'] = null;
     }
       json[r'id'] = this.id;
       json[r'isHidden'] = this.isHidden;
@@ -73,6 +89,7 @@ class PersonResponseDto {
 
       return PersonResponseDto(
         birthDate: mapDateTime(json, r'birthDate', ''),
+        geometry: FaceGeometryDto.fromJson(json[r'geometry']),
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,

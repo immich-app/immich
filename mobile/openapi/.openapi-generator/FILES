@@ -51,6 +51,7 @@ doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/ExifResponseDto.md
+doc/FaceGeometryDto.md
 doc/ImportAssetDto.md
 doc/JobApi.md
 doc/JobCommand.md
@@ -197,6 +198,7 @@ lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/exif_response_dto.dart
+lib/model/face_geometry_dto.dart
 lib/model/import_asset_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
@@ -314,6 +316,7 @@ test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/exif_response_dto_test.dart
+test/face_geometry_dto_test.dart
 test/import_asset_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart

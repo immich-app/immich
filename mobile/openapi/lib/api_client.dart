@@ -269,6 +269,8 @@ class ApiClient {
           return DownloadResponseDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'FaceGeometryDto':
+          return FaceGeometryDto.fromJson(value);
         case 'ImportAssetDto':
           return ImportAssetDto.fromJson(value);
         case 'JobCommand':

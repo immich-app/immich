@@ -103,6 +103,21 @@ export class PersonSearchDto {
   withHidden?: boolean = false;
 }
 
+export class FaceGeometryDto {
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+}
+
 export class PersonResponseDto {
   id!: string;
   name!: string;
@@ -110,6 +125,7 @@ export class PersonResponseDto {
   birthDate!: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
+  geometry?: FaceGeometryDto;
 }
 
 export class PeopleResponseDto {
@@ -132,6 +148,23 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity): PersonResponseDto {
-  return mapPerson(face.person);
+export function mapGeometry(entity: AssetFaceEntity) {
+  return {
+    imageWidth: entity.imageWidth,
+    imageHeight: entity.imageHeight,
+    boundingBoxX1: entity.boundingBoxX1,
+    boundingBoxY1: entity.boundingBoxY1,
+    boundingBoxX2: entity.boundingBoxX2,
+    boundingBoxY2: entity.boundingBoxY2,
+  };
+}
+export function mapFace(entity: AssetFaceEntity): PersonResponseDto {
+  return {
+    id: entity.person.id,
+    name: entity.person.name,
+    birthDate: entity.person.birthDate,
+    thumbnailPath: entity.person.thumbnailPath,
+    isHidden: entity.person.isHidden,
+    geometry: mapGeometry(entity),
+  };
 }
