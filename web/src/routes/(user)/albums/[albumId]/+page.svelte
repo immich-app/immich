@@ -167,8 +167,8 @@
   };
 
   const handleOpenAlbumOptions = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
-    viewMode = ViewMode.ALBUM_OPTIONS;
+    const navigationBarHeight = 75;
+    contextMenuPosition = { x: x, y: navigationBarHeight };
   };
 
   const handleSelectFromComputer = async () => {
