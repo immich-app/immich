@@ -166,7 +166,7 @@
       >
         {#each $albums as album (album.id)}
           <tr
-            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
             on:click={() => goto(`albums/${album.id}`)}
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
