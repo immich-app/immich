@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -54,24 +53,6 @@ class MapSerivce {
     } catch (error, stack) {
       log.severe(
         "Cannot get asset for marker ${error.toString()}",
-        error,
-        stack,
-      );
-      return null;
-    }
-  }
-
-  // TODO: Need to check if ExifInfo can be obtained from local DB
-  Future<ExifInfo?> getExifInfoForMarker(String remoteId) async {
-    try {
-      final dto = await _apiService.assetApi.getAssetById(remoteId);
-      if (dto == null || dto.exifInfo == null) {
-        return null;
-      }
-      return ExifInfo.fromDto(dto.exifInfo!);
-    } catch (error, stack) {
-      log.severe(
-        "Cannot get exif info for remote id ${error.toString()}",
         error,
         stack,
       );

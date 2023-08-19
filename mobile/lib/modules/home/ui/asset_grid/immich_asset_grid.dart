@@ -31,6 +31,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
       visibleItemsListener;
   final Widget? topWidget;
   final bool shrinkWrap;
+  final bool showDragScroll;
 
   const ImmichAssetGrid({
     super.key,
@@ -49,6 +50,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.visibleItemsListener,
     this.topWidget,
     this.shrinkWrap = false,
+    this.showDragScroll = true,
   });
 
   @override
@@ -111,6 +113,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           topWidget: topWidget,
           heroOffset: heroOffset(),
           shrinkWrap: shrinkWrap,
+          showDragScroll: showDragScroll,
         ),
       );
     }

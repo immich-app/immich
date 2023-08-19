@@ -36,6 +36,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final Widget? topWidget;
   final int heroOffset;
   final bool shrinkWrap;
+  final bool showDragScroll;
 
   const ImmichAssetGridView({
     super.key,
@@ -54,6 +55,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.topWidget,
     this.heroOffset = 0,
     this.shrinkWrap = false,
+    this.showDragScroll = true,
   });
 
   @override
@@ -326,7 +328,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _buildAssetGrid() {
-    final useDragScrolling = widget.renderList.totalAssets >= 20;
+    final useDragScrolling =
+        widget.showDragScroll && widget.renderList.totalAssets >= 20;
 
     void dragScrolling(bool active) {
       if (active != _scrolling) {

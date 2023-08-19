@@ -18,6 +18,7 @@ import 'package:immich_mobile/modules/map/ui/map_settings_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:logging/logging.dart';
@@ -32,6 +33,58 @@ class MapPage extends StatefulHookConsumerWidget {
 
 class MapPageState extends ConsumerState<MapPage>
     with TickerProviderStateMixin {
+  // State variables
+  late final MapController _mapController;
+  final StreamController assetsInBoundsSC =
+      StreamController<List<Asset>?>.broadcast();
+  late final Stream assetsInBoundsStream;
+  final StreamController markerSheetItemSC =
+      StreamController<Asset?>.broadcast();
+  StreamSubscription<dynamic>? markerSheetItemSubscription;
+  List<AssetMarkerData> assetsInBounds = [];
+  late final Debounce debounceBoundsUpdate;
+
+  List<AssetMarkerData> getAssetsMarkersInBound(
+    List<AssetMarkerData>? assetMarkers,
+  ) {
+    final bounds = _mapController.bounds;
+    return bounds != null
+        ? assetMarkers
+                ?.where((e) => bounds.contains(e.point))
+                .map((e) => e)
+                .toList() ??
+            []
+        : [];
+  }
+
+  void reloadAssetsInBound(List<AssetMarkerData>? assetMarkers) {
+    final bounds = _mapController.bounds;
+    if (bounds != null) {
+      assetsInBounds = getAssetsMarkersInBound(assetMarkers);
+      assetsInBoundsSC.add(
+        assetsInBounds.map((e) => e.asset).toList(),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+    assetsInBoundsStream = assetsInBoundsSC.stream;
+    // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
+    debounceBoundsUpdate = Debounce(
+      const Duration(milliseconds: 100),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    debounceBoundsUpdate.dispose();
+    markerSheetItemSubscription?.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     final log = Logger("MapService");
@@ -42,7 +95,63 @@ class MapPageState extends ConsumerState<MapPage>
     final ValueNotifier<List<AssetMarkerData>?> mapMarkers =
         useState(<AssetMarkerData>[]);
     final heatMapData = useState(<WeightedLatLng>[]);
-    final ValueNotifier<List<AssetMarkerData>> selectedAsset = useState([]);
+    final ValueNotifier<AssetMarkerData?> selectedAsset = useState(null);
+
+    CustomPoint<double> rotatePoint(
+      CustomPoint<double> mapCenter,
+      CustomPoint<double> point, {
+      bool counterRotation = true,
+    }) {
+      final counterRotationFactor = counterRotation ? -1 : 1;
+
+      final m = Matrix4.identity()
+        ..translate(mapCenter.x, mapCenter.y)
+        ..rotateZ(degToRadian(_mapController.rotation) * counterRotationFactor)
+        ..translate(-mapCenter.x, -mapCenter.y);
+
+      final tp = MatrixUtils.transformPoint(m, Offset(point.x, point.y));
+
+      return CustomPoint(tp.dx, tp.dy);
+    }
+
+    LatLng? moveByBottomPadding(
+      LatLng coordinates,
+      Offset offset,
+    ) {
+      const crs = Epsg3857();
+      final oldCenterPt = crs.latLngToPoint(coordinates, _mapController.zoom);
+      final mapCenterPoint = rotatePoint(
+        oldCenterPt,
+        oldCenterPt - CustomPoint(offset.dx, offset.dy),
+      );
+      return crs.pointToLatLng(mapCenterPoint, _mapController.zoom);
+    }
+
+    useEffect(
+      () {
+        markerSheetItemSubscription = markerSheetItemSC.stream.listen((asset) {
+          if (asset != null) {
+            final assetMarker = mapMarkers.value
+                ?.firstWhere((element) => element.asset.id == asset.id);
+            selectedAsset.value = assetMarker;
+            if (assetMarker != null && _mapController.zoom >= 5) {
+              LatLng? newCenter = moveByBottomPadding(
+                assetMarker.point,
+                const Offset(0, -120),
+              );
+              if (newCenter != null) {
+                _mapController.move(
+                  newCenter,
+                  _mapController.zoom,
+                );
+              }
+            }
+          }
+        });
+        return null;
+      },
+      [],
+    );
 
     useEffect(
       () {
@@ -87,7 +196,7 @@ class MapPageState extends ConsumerState<MapPage>
                   )
                   .toList() ??
               [];
-          debounceBoundsUpdate(mapMarkers.value);
+          debounceBoundsUpdate(() => reloadAssetsInBound(mapMarkers.value));
         }
 
         mapMarkers.addListener(mapMarkersCallback);
@@ -199,25 +308,25 @@ class MapPageState extends ConsumerState<MapPage>
     }
 
     Widget buildMarkerLayer() {
+      final selectedMarker = selectedAsset.value;
       return MarkerLayer(
-        markers: selectedAsset.value
-            .map(
-              (e) => AssetMarker(
-                remoteId: e.asset.remoteId!,
-                anchorPos: AnchorPos.align(AnchorAlign.top),
-                point: e.point,
-                width: 100,
-                height: 100,
-                builder: (ctx) => GestureDetector(
-                  onTap: () => navigateToAsset(e.asset),
-                  child: AssetMarkerIcon(
-                    isDarkTheme: isDarkTheme.value,
-                    id: e.asset.remoteId!,
-                  ),
+        markers: [
+          if (selectedMarker != null)
+            AssetMarker(
+              remoteId: selectedMarker.asset.remoteId!,
+              anchorPos: AnchorPos.align(AnchorAlign.top),
+              point: selectedMarker.point,
+              width: 100,
+              height: 100,
+              builder: (ctx) => GestureDetector(
+                onTap: () => navigateToAsset(selectedMarker.asset),
+                child: AssetMarkerIcon(
+                  isDarkTheme: isDarkTheme.value,
+                  id: selectedMarker.asset.remoteId!,
                 ),
               ),
-            )
-            .toList(),
+            ),
+        ],
       );
     }
 
@@ -243,8 +352,9 @@ class MapPageState extends ConsumerState<MapPage>
     }
 
     void onMapEvent(MapEvent mapEvent) {
-      if (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom) {
-        debounceBoundsUpdate(mapMarkers.value);
+      if (mapEvent.source != MapEventSource.mapController &&
+          (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom)) {
+        debounceBoundsUpdate(() => reloadAssetsInBound(mapMarkers.value));
       }
     }
 
@@ -290,11 +400,10 @@ class MapPageState extends ConsumerState<MapPage>
       );
       final currentZoom = _mapController.zoom;
       // First asset less than the threshold from the tap point
-      final asset = assetsInBounds.firstWhereOrNull(
+      selectedAsset.value = assetsInBounds.firstWhereOrNull(
         (element) =>
             getDistance(element.point, point) < getThreshold(currentZoom),
       );
-      selectedAsset.value = asset != null ? [asset] : [];
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -350,87 +459,14 @@ class MapPageState extends ConsumerState<MapPage>
             ),
             Theme(
               data: isDarkTheme.value ? immichDarkTheme : immichLightTheme,
-              child: AssetsInBoundBottomSheet(assetsInBoundsStream),
+              child: AssetsInBoundBottomSheet(
+                assetsInBoundsStream,
+                markerSheetItemSC,
+              ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  late final MapController _mapController;
-  final StreamController assetsInBoundsSC =
-      StreamController<List<Asset>?>.broadcast();
-  late final Stream assetsInBoundsStream;
-  List<AssetMarkerData> assetsInBounds = [];
-  late final DebounceBoundsUpdate debounceBoundsUpdate;
-
-  List<AssetMarkerData> getAssetsMarkersInBound(
-    List<AssetMarkerData>? assetMarkers,
-  ) {
-    final bounds = _mapController.bounds;
-    return bounds != null
-        ? assetMarkers
-                ?.where((e) => bounds.contains(e.point))
-                .map((e) => e)
-                .toList() ??
-            []
-        : [];
-  }
-
-  void reloadAssetsInBound(List<AssetMarkerData>? assetMarkers) {
-    final bounds = _mapController.bounds;
-    if (bounds != null) {
-      assetsInBounds = getAssetsMarkersInBound(assetMarkers);
-      assetsInBoundsSC.add(
-        assetsInBounds.map((e) => e.asset).toList(),
-      );
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-    assetsInBoundsStream = assetsInBoundsSC.stream;
-    // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
-    debounceBoundsUpdate = DebounceBoundsUpdate(
-      reloadAssetsInBound,
-      const Duration(milliseconds: 100),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    debounceBoundsUpdate.dispose();
-  }
-}
-
-class DebounceBoundsUpdate {
-  DebounceBoundsUpdate(this._fun, Duration interval)
-      : _interval = interval.inMilliseconds;
-  final void Function(List<AssetMarkerData>?) _fun;
-  final int _interval;
-  List<AssetMarkerData>? _assetMarkers;
-  Timer? _timer;
-
-  void call(List<AssetMarkerData>? markers) {
-    _assetMarkers =
-        _assetMarkers == null || _assetMarkers?.length != markers?.length
-            ? markers
-            : _assetMarkers;
-    _timer?.cancel();
-    _timer = Timer(Duration(milliseconds: _interval), _onTimeElapsed);
-  }
-
-  void _onTimeElapsed() {
-    _fun(_assetMarkers);
-    _timer = null;
-  }
-
-  void dispose() {
-    _timer?.cancel();
-    _timer = null;
   }
 }

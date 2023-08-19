@@ -1,11 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/services/map.service.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:latlong2/latlong.dart';
 
 final mapMarkerFutureProvider =
@@ -34,20 +30,6 @@ final mapMarkerFutureProvider =
   );
 
   return assetMarkerData.nonNulls.toList();
-});
-
-final mapMarkerAssetsInBoundProvider = FutureProvider.family
-    .autoDispose<RenderList, List<Asset>>((ref, assets) async {
-  final settings = ref.watch(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
-  return await RenderList.fromAssets(assets, groupBy);
-});
-
-final mapMarkerExifInfoProvider =
-    FutureProvider.family.autoDispose<ExifInfo?, String>((ref, remoteId) async {
-  final service = ref.watch(mapServiceProvider);
-  return await service.getExifInfoForMarker(remoteId);
 });
 
 class AssetMarkerData {
