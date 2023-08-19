@@ -41,7 +41,7 @@ class MapSerivce {
     }
   }
 
-  Future<Asset?> getAssetForMarker(String remoteId) async {
+  Future<Asset?> getAssetForMarkerId(String remoteId) async {
     try {
       final assets = await _db.assets.getAllByRemoteId([remoteId]);
       if (assets.isNotEmpty) return assets[0];

@@ -30,6 +30,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
   final Widget? topWidget;
+  final bool shrinkWrap;
 
   const ImmichAssetGrid({
     super.key,
@@ -47,6 +48,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
     this.topWidget,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -108,6 +110,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           visibleItemsListener: visibleItemsListener,
           topWidget: topWidget,
           heroOffset: heroOffset(),
+          shrinkWrap: shrinkWrap,
         ),
       );
     }
