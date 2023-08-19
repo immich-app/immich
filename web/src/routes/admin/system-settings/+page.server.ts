@@ -1,7 +1,6 @@
 import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import type { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from '@api';
 
 export const load: PageServerLoad = async ({ parent, locals }) => {
   const { user } = await parent();
@@ -12,12 +11,9 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     throw redirect(302, AppRoute.PHOTOS);
   }
 
-  const config: SystemConfigDto = await locals.api.systemConfigApi.getConfig().then((res) => res.data);
-  const defaultConfig: SystemConfigDto = await locals.api.systemConfigApi.getDefaults().then((res) => res.data);
-  const templateOptions: SystemConfigTemplateStorageOptionDto = await locals.api.systemConfigApi
-    .getStorageTemplateOptions()
-    .then((res) => res.data);
-
+  const { data: config } = await locals.api.systemConfigApi.getConfig();
+  const { data: defaultConfig } = await locals.api.systemConfigApi.getDefaults();
+  const { data: templateOptions } = await locals.api.systemConfigApi.getStorageTemplateOptions();
   return {
     user,
     config,

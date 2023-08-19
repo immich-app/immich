@@ -13,11 +13,12 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { cloneDeep } from 'lodash-es';
 
   export let data: PageData;
   let config: SystemConfigDto = data.config;
 
-  let currentConfig: SystemConfigDto = JSON.parse(JSON.stringify(config));
+  let currentConfig: SystemConfigDto = cloneDeep(config);
   let defaultConfig: SystemConfigDto = data.defaultConfig;
   let templateOptions: SystemConfigTemplateStorageOptionDto = data.templateOptions;
 
@@ -27,8 +28,8 @@
         systemConfigDto: config,
       });
 
-      config = JSON.parse(JSON.stringify(data));
-      currentConfig = JSON.parse(JSON.stringify(data));
+      config = cloneDeep(data);
+      currentConfig = cloneDeep(data);
       notificationController.show({
         message: `${settingsMessage} settings saved`,
         type: NotificationType.Info,
