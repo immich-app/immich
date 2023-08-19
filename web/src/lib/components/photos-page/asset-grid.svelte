@@ -23,6 +23,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let publicSharedKey: string | undefined = undefined;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -349,6 +350,7 @@
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}
                 {viewport}
+                {publicSharedKey}
               />
             {/if}
           </div>
