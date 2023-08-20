@@ -170,11 +170,11 @@
     if (aspectRatioNum > 1) {
       cropElement.style.width = '100%';
       cropElement.style.height = 'auto';
-      cropElement.style.maxHeight = '100%';
+      //cropElement.style.maxHeight = '100%';
     } else {
       cropElement.style.width = 'auto';
       cropElement.style.height = '100%';
-      cropElement.style.maxWidth = '100%';
+      //cropElement.style.maxWidth = '100%';
     }
 
     calcImageElement();
@@ -206,6 +206,12 @@
       }
       angle = Math.round((a / 125) * 49);
       angle = angle * -1;
+
+      // DEBUG:
+      console.log('angle', angle);
+      console.log('originalWidth', imageElement.naturalWidth);
+      console.log('originalHeight', imageElement.naturalHeight);
+      // END DEBUG
 
       imageWrapper.style.transform = `rotate(${angle}deg)`;
 
@@ -281,35 +287,14 @@
   };
 
   const resetCropAndRotate = async () => {
-    //TODO: Revert all crop and rotate changes to the image by looking at the original image or revert history
-    await imageEditor.stopDrawingMode();
-    await imageEditor.setAngle(0);
     angleSliderHandle.style.left = '0';
     angleSlider.style.left = '0';
     angle = 0;
     imageWrapper.style.transform = `rotate(${angle}deg)`;
+    imageWrapper.style.width = `${imageElement.naturalWidth}px`;
+    imageWrapper.style.height = `${imageElement.naturalHeight}px`;
 
-    const cropElementWidth = cropElement.offsetWidth;
-    const cropElementHeight = cropElement.offsetHeight;
-    const imageWrapperWidth = imageWrapper.offsetWidth;
-    const imageWrapperHeight = imageWrapper.offsetHeight;
-
-    const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
-    const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
-
-    const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
-    const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
-
-    if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
-      imageWrapper.style.width = `${x1 + x2}px`;
-      imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
-    } else {
-      imageWrapper.style.height = `${y1 + y2}px`;
-      imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
-    }
-
-    await imageEditor.resetFlip().catch(() => {});
-    await setAspectRatio('free');
+    await setAspectRatio('original');
   };
 
   const flipVertical = async () => {
@@ -347,7 +332,7 @@
 <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" />
 
 <div
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-[1fr_1fr_1fr_360px] grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-[1fr_1fr_1fr_360px] grid-rows-[64px_1fr] overflow-hidden bg-black"
 >
   <div class="z-[1000] col-span-3 col-start-1 row-span-1 row-start-1 flex items-center transition-transform">
     <button
@@ -377,7 +362,7 @@
             </div>
             <div
               bind:this={cropElement}
-              class="absolute left-1/2 top-1/2 mx-auto h-full w-full -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
+              class="absolute left-1/2 top-1/2 mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
             >
               <div class="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white" />
               <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-white" />
