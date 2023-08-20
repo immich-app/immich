@@ -1,0 +1,9 @@
+@@ -339,6 +339,8 @@
+     option=GetImageOption(image_info,"dng:use_camera_wb");
+   if (option != (const char *) NULL)
+     raw_info->params.use_camera_wb=IsStringTrue(option);
++  else
++    raw_info->params.use_camera_wb=MagickTrue;
+   option=GetImageOption(image_info,"dng:use-auto-wb");
+   if (option == (const char *) NULL)
+     option=GetImageOption(image_info,"dng:use_auto_wb");
