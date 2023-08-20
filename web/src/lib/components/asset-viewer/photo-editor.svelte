@@ -41,6 +41,9 @@
 
   let currentAngle = 0;
   let currentAngleOffset = 0;
+  let currentAspectRatio: string | aspectRatio = 'original';
+  let currentFlipY = false;
+  let currentFlipX = false;
 
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
@@ -64,7 +67,6 @@
     | '3_2'
     | '2_3'
     | 'square';
-  let aspectRatio: aspectRatio = 'free';
 
   export let asset: AssetResponseDto;
   let assetData: string;
@@ -114,7 +116,7 @@
       case 'autofix':
         break;
       case 'crop':
-        await setAspectRatio('free');
+        await setAspectRatio('original', false);
         initAngleSlider();
         break;
       case 'adjust':
@@ -125,9 +127,20 @@
     }
   };
 
-  const setAspectRatio = async (ratio: aspectRatio) => {
-    aspectRatio = ratio;
+  const setAspectRatio = async (aspectRatio: string | aspectRatio, rotate: boolean | null) => {
     const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
+
+    if (rotate) {
+      if (!['free', 'square', 'original'].includes(aspectRatio)) {
+        const strings = aspectRatio.split('_');
+        aspectRatio = strings[1] + '_' + strings[0];
+      }
+      if (currentAngleOffset % 180 !== 0) {
+        rotate = false;
+      }
+    }
+    currentAspectRatio = aspectRatio;
+
     switch (aspectRatio) {
       case 'free':
         // free ratio selection
@@ -138,6 +151,9 @@
         break;
       case 'original':
         aspectRatioNum = originalAspect;
+        if (rotate) {
+          aspectRatioNum = 1 / originalAspect;
+        }
         break;
       case '16_9':
         aspectRatioNum = 16 / 9;
@@ -212,12 +228,6 @@
       let angle = Math.round((a / 125) * 49);
       angle = angle * -1;
 
-      // DEBUG:
-      console.log('angle', angle);
-      console.log('originalWidth', imageElement.naturalWidth);
-      console.log('originalHeight', imageElement.naturalHeight);
-      // END DEBUG
-
       rotate(angle, currentAngleOffset);
     };
 
@@ -242,35 +252,24 @@
     const cropElementWidth = cropElement.offsetWidth;
     const cropElementHeight = cropElement.offsetHeight;
 
-    console.log('cropElementWidth', cropElementWidth);
-    console.log('cropElementHeight', cropElementHeight);
-    console.log('angle', angle);
-    console.log(Math.cos((Math.abs(angle) * Math.PI) / 180));
-
     const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
     const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
 
     const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
     const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
 
-    console.log('x1', x1);
-    console.log('x2', x2);
-
-    console.log('y1', y1);
-    console.log('y2', y2);
-
-    if (currentAngleOffset === 90) {
+    if (currentAngleOffset === 90 || currentAngleOffset === 270) {
       if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
         imageWrapper.style.height = `${x1 + x2}px`;
-        imageWrapper.style.width = `${(x1 + x2) / (1/originalAspect)}px`;
+        imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
       } else {
         imageWrapper.style.width = `${y1 + y2}px`;
-        imageWrapper.style.height = `${(y1 + y2) / (originalAspect)}px`;
+        imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
       }
     } else {
       if ((x1 + x2) / (y1 + y2) > originalAspect) {
         imageWrapper.style.width = `${x1 + x2}px`;
-        imageWrapper.style.height = `${(x1 + x2) / (originalAspect)}px`;
+        imageWrapper.style.height = `${(x1 + x2) / originalAspect}px`;
       } else {
         imageWrapper.style.height = `${y1 + y2}px`;
         imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
@@ -303,34 +302,44 @@
   };
 
   const resetCropAndRotate = async () => {
+    currentFlipX = false;
+    currentFlipY = false;
     rotate(0, 0);
-    console.log(imageElement.naturalWidth, imageElement.naturalHeight);
-    await setAspectRatio('original');
+    await setAspectRatio('original', false);
   };
 
   const flipVertical = async () => {
-    await imageEditor.stopDrawingMode();
-    await imageEditor.flipY();
-    await setAspectRatio(aspectRatio);
+    currentFlipY = !currentFlipY;
+    console.log('flipVertical');
+    rotate(currentAngle, currentAngleOffset);
   };
   const flipHorizontal = async () => {
-    await imageEditor.stopDrawingMode();
-    await imageEditor.flipX();
-    await setAspectRatio(aspectRatio);
+    currentFlipX = !currentFlipX;
+    console.log('flipHorizontal');
+    rotate(currentAngle, currentAngleOffset);
   };
-  const rotate = async (angle: number, angleOffset: number) => {
+
+  const rotate = async (angle: number, angleOffset: number, isRotate?: boolean) => {
+    console.log('rotate', angleOffset);
+    setAspectRatio(currentAspectRatio, isRotate ? true : false);
+
     if (angleOffset > 360) {
       angleOffset = angleOffset - 360;
     }
 
-    // Save angle to session storage
+    // Save angle to  global variable
     currentAngle = angle;
     currentAngleOffset = angleOffset;
 
-    sessionStorage.setItem('angle', angle.toString());
-    sessionStorage.setItem('angleOffset', angleOffset.toString());
-
-    imageWrapper.style.transform = `rotate(${angle + angleOffset}deg)`;
+    if (currentFlipX && currentFlipY) {
+      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleX(-1) scaleY(-1)`;
+    } else if (currentFlipY) {
+      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleY(-1)`;
+    } else if (currentFlipX) {
+      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleX(-1)`;
+    } else {
+      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg)`;
+    }
     calcImageElement(angle);
     let a = -1 * angle * (125 / 49);
     let b = a + 'px';
@@ -412,7 +421,7 @@
           </div>
           <div class="z-10 flex h-full w-full items-center justify-center bg-black">
             <button
-              on:click={() => rotate(currentAngle, currentAngleOffset + 90)}
+              on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
               class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
             >
               <FormatRotate90 />
@@ -585,43 +594,55 @@
         <!-- Crop & Rotate -->
         <div class="text-immich-gray/60 mb-4">Aspect Ratio</div>
         <div class="grid grid-cols-2 gap-y-4">
-          <AspectRatioButton on:click={() => setAspectRatio('free')} isActive={aspectRatio === 'free'} title="Free">
+          <AspectRatioButton
+            on:click={() => setAspectRatio('free')}
+            isActive={currentAspectRatio === 'free'}
+            title="Free"
+          >
             <Fullscreen />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('original')}
-            isActive={aspectRatio === 'original'}
+            isActive={currentAspectRatio === 'original'}
             title="Original"
           >
             <RelativeScale />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('16_9')} isActive={aspectRatio === '16_9'} title="16:9">
+          <AspectRatioButton
+            on:click={() => setAspectRatio('16_9')}
+            isActive={currentAspectRatio === '16_9'}
+            title="16:9"
+          >
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('9_16')} isActive={aspectRatio === '9_16'} title="9:16">
+          <AspectRatioButton
+            on:click={() => setAspectRatio('9_16')}
+            isActive={currentAspectRatio === '9_16'}
+            title="9:16"
+          >
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('5_4')} isActive={aspectRatio === '5_4'} title="5:4">
+          <AspectRatioButton on:click={() => setAspectRatio('5_4')} isActive={currentAspectRatio === '5_4'} title="5:4">
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('4_5')} isActive={aspectRatio === '4_5'} title="4:5">
+          <AspectRatioButton on:click={() => setAspectRatio('4_5')} isActive={currentAspectRatio === '4_5'} title="4:5">
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('4_3')} isActive={aspectRatio === '4_3'} title="4:3">
+          <AspectRatioButton on:click={() => setAspectRatio('4_3')} isActive={currentAspectRatio === '4_3'} title="4:3">
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('3_4')} isActive={aspectRatio === '3_4'} title="3:4">
+          <AspectRatioButton on:click={() => setAspectRatio('3_4')} isActive={currentAspectRatio === '3_4'} title="3:4">
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('3_2')} isActive={aspectRatio === '3_2'} title="3:2">
+          <AspectRatioButton on:click={() => setAspectRatio('3_2')} isActive={currentAspectRatio === '3_2'} title="3:2">
             <RectangleOutline />
           </AspectRatioButton>
-          <AspectRatioButton on:click={() => setAspectRatio('2_3')} isActive={aspectRatio === '2_3'} title="2:3">
+          <AspectRatioButton on:click={() => setAspectRatio('2_3')} isActive={currentAspectRatio === '2_3'} title="2:3">
             <RectangleOutline />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('square')}
-            isActive={aspectRatio === 'square'}
+            isActive={currentAspectRatio === 'square'}
             title="Square"
           >
             <SquareOutline />
