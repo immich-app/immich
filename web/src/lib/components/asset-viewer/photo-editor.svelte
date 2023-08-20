@@ -228,7 +228,6 @@
   };
 
   const calcImageElement = () => {
-
     // Get image wrapper width and height
     const imageWrapperWidth = imageWrapper.offsetWidth;
     const imageWrapperHeight = imageWrapper.offsetHeight;
@@ -418,7 +417,7 @@
             <!-- Angle selector slider -->
             <div
               bind:this={angleSlider}
-              class="angle-slider absolute grid h-full w-full grid-cols-[repeat(13,1fr)] grid-rows-2 justify-around text-center text-xs"
+              class="angle-slider absolute grid h-full w-full select-none grid-cols-[repeat(13,1fr)] grid-rows-2 justify-around text-center text-xs"
             >
               <div>-90°</div>
               <div>-75°</div>
