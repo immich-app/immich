@@ -127,7 +127,7 @@
     }
   };
 
-  const setAspectRatio = async (aspectRatio: string | aspectRatio, rotate: boolean | null) => {
+  const setAspectRatio = async (aspectRatio: string | aspectRatio, rotate?: boolean) => {
     const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
 
     if (rotate) {
@@ -305,7 +305,7 @@
     currentFlipX = false;
     currentFlipY = false;
     rotate(0, 0);
-    await setAspectRatio('original', false);
+    await setAspectRatio('original');
   };
 
   const flipVertical = async () => {
