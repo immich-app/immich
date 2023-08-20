@@ -39,7 +39,9 @@
   let imageWrapper: HTMLDivElement;
   let cropElement: HTMLDivElement;
 
-  let angle = 0;
+  let currentAngle = 0;
+  let currentAngleOffset = 0;
+
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
 
@@ -177,7 +179,7 @@
       //cropElement.style.maxWidth = '100%';
     }
 
-    calcImageElement();
+    calcImageElement(currentAngle);
   };
 
   //function for dragging the angle selection slider
@@ -204,7 +206,10 @@
       } else {
         a = Math.min(a, (125 / 49) * 45);
       }
-      angle = Math.round((a / 125) * 49);
+
+      console.log('a', a);
+
+      let angle = Math.round((a / 125) * 49);
       angle = angle * -1;
 
       // DEBUG:
@@ -213,13 +218,7 @@
       console.log('originalHeight', imageElement.naturalHeight);
       // END DEBUG
 
-      imageWrapper.style.transform = `rotate(${angle}deg)`;
-
-      calcImageElement();
-
-      let b = a + 'px';
-      angleSliderHandle.style.left = b;
-      angleSlider.style.left = b;
+      rotate(angle, currentAngleOffset);
     };
 
     const dragMouseDown = (e: MouseEvent) => {
@@ -233,10 +232,11 @@
     angleSliderHandle.onmousedown = dragMouseDown;
   };
 
-  const calcImageElement = () => {
+  const calcImageElement = (angle: number) => {
     // Get image wrapper width and height
     const imageWrapperWidth = imageWrapper.offsetWidth;
     const imageWrapperHeight = imageWrapper.offsetHeight;
+    const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
 
     // Get crop element width and height
     const cropElementWidth = cropElement.offsetWidth;
@@ -253,12 +253,28 @@
     const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
     const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
 
-    if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
-      imageWrapper.style.width = `${x1 + x2}px`;
-      imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
+    console.log('x1', x1);
+    console.log('x2', x2);
+
+    console.log('y1', y1);
+    console.log('y2', y2);
+
+    if (currentAngleOffset === 90) {
+      if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
+        imageWrapper.style.height = `${x1 + x2}px`;
+        imageWrapper.style.width = `${(x1 + x2) / (1/originalAspect)}px`;
+      } else {
+        imageWrapper.style.width = `${y1 + y2}px`;
+        imageWrapper.style.height = `${(y1 + y2) / (originalAspect)}px`;
+      }
     } else {
-      imageWrapper.style.height = `${y1 + y2}px`;
-      imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
+      if ((x1 + x2) / (y1 + y2) > originalAspect) {
+        imageWrapper.style.width = `${x1 + x2}px`;
+        imageWrapper.style.height = `${(x1 + x2) / (originalAspect)}px`;
+      } else {
+        imageWrapper.style.height = `${y1 + y2}px`;
+        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
+      }
     }
   };
 
@@ -287,13 +303,8 @@
   };
 
   const resetCropAndRotate = async () => {
-    angleSliderHandle.style.left = '0';
-    angleSlider.style.left = '0';
-    angle = 0;
-    imageWrapper.style.transform = `rotate(${angle}deg)`;
-    imageWrapper.style.width = `${imageElement.naturalWidth}px`;
-    imageWrapper.style.height = `${imageElement.naturalHeight}px`;
-
+    rotate(0, 0);
+    console.log(imageElement.naturalWidth, imageElement.naturalHeight);
     await setAspectRatio('original');
   };
 
@@ -307,15 +318,24 @@
     await imageEditor.flipX();
     await setAspectRatio(aspectRatio);
   };
-  const rotate = async (angle: number) => {
-    await imageEditor.stopDrawingMode();
-    await imageEditor.rotate(angle);
-    await setAspectRatio(aspectRatio);
-  };
+  const rotate = async (angle: number, angleOffset: number) => {
+    if (angleOffset > 360) {
+      angleOffset = angleOffset - 360;
+    }
 
-  const applyCrop = async () => {
-    await imageEditor.crop(await imageEditor.getCropzoneRect());
-    await setAspectRatio('free');
+    // Save angle to session storage
+    currentAngle = angle;
+    currentAngleOffset = angleOffset;
+
+    sessionStorage.setItem('angle', angle.toString());
+    sessionStorage.setItem('angleOffset', angleOffset.toString());
+
+    imageWrapper.style.transform = `rotate(${angle + angleOffset}deg)`;
+    calcImageElement(angle);
+    let a = -1 * angle * (125 / 49);
+    let b = a + 'px';
+    angleSliderHandle.style.left = b;
+    angleSlider.style.left = b;
   };
 
   // Temporary function
@@ -391,7 +411,10 @@
             </button>
           </div>
           <div class="z-10 flex h-full w-full items-center justify-center bg-black">
-            <button on:click={() => rotate(90)} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
+            <button
+              on:click={() => rotate(currentAngle, currentAngleOffset + 90)}
+              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
+            >
               <FormatRotate90 />
             </button>
           </div>
@@ -461,7 +484,7 @@
             <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full cursor-pointer" />
             <div class="angle-slider-selection absolute left-[calc(50%-56px)] w-28 text-lg text-white">
               <div class="-mt-1.5 flex justify-center">
-                {angle}°
+                {currentAngle}°
               </div>
               <div class="mt-1.5 flex justify-center">
                 <TriangleSmallUp />
@@ -604,12 +627,6 @@
             <SquareOutline />
           </AspectRatioButton>
         </div>
-        <button
-          on:click={() => applyCrop()}
-          class="bg-immich-dark-primary hover:bg-immich-dark-primary/80 ml-0 mr-auto mt-5 rounded-md p-[6px] px-4 text-black"
-        >
-          Apply
-        </button>
       </div>
     {:else if activeButton === 'adjust'}
       <div class="grid gap-y-2 px-6 pt-2">
