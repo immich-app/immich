@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import Any
 
 from huggingface_hub import snapshot_download
+from optimum.pipelines import pipeline
 from PIL.Image import Image
-from transformers.pipelines import pipeline
 
 from ..config import settings
 from ..schemas import ModelType
@@ -32,7 +32,11 @@ class ImageClassifier(InferenceModel):
         self.model = pipeline(
             self.model_type.value,
             self.model_name,
-            model_kwargs={"cache_dir": self.cache_dir, **model_kwargs},
+            model_kwargs={
+                "cache_dir": self.cache_dir,
+                "provider": model_kwargs.pop("provider", self.providers[0]),
+                **model_kwargs,
+            },
         )
 
     def _predict(self, image: Image) -> list[str]:

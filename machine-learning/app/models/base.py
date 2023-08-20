@@ -22,6 +22,8 @@ class InferenceModel(ABC):
         self._loaded = False
         self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
         loader = self.load if eager else self.download
+        self.providers = ["CPUExecutionProvider"]
+
         try:
             loader(**model_kwargs)
         except (OSError, InvalidProtobuf, BadZipFile):
