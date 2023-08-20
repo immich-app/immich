@@ -25,7 +25,9 @@
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
     </div>
     {#if person.name}
-      <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+      <span
+        class="text-white-shadow absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white"
+      >
         {person.name}
       </span>
     {/if}
@@ -40,7 +42,7 @@
     id={`icon-${person.id}`}
   >
     <IconButton color="transparent-primary">
-      <DotsVertical size="20" />
+      <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
     </IconButton>
 
     {#if showContextMenu}
