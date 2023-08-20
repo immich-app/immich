@@ -154,7 +154,7 @@
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <tr class="flex w-full p-5 place-items-center">
+        <tr class="flex w-full place-items-center p-5">
           <th class="w-1/4 text-left text-sm font-medium">Album title</th>
           <th class="w-1/4 text-right text-sm font-medium">Assets</th>
           <th class="w-1/4 text-right text-sm font-medium">Updated date</th>
@@ -171,13 +171,13 @@
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-left text-md w-1/4 text-ellipsis">{album.albumName}</td>
-            <td class="text-right text-md w-1/4 text-ellipsis">
+            <td class="text-md w-1/4 text-ellipsis text-left">{album.albumName}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-right text-md w-1/4 text-ellipsis">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-right text-md w-1/4 text-ellipsis">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.createdAt)}</td>
           </tr>
         {/each}
       </tbody>
