@@ -22,28 +22,33 @@ const AlbumSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'localId': PropertySchema(
+    r'lastModifiedAssetTimestamp': PropertySchema(
       id: 1,
+      name: r'lastModifiedAssetTimestamp',
+      type: IsarType.dateTime,
+    ),
+    r'localId': PropertySchema(
+      id: 2,
       name: r'localId',
       type: IsarType.string,
     ),
     r'modifiedAt': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'shared': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'shared',
       type: IsarType.bool,
     )
@@ -143,11 +148,12 @@ void _albumSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeString(offsets[1], object.localId);
-  writer.writeDateTime(offsets[2], object.modifiedAt);
-  writer.writeString(offsets[3], object.name);
-  writer.writeString(offsets[4], object.remoteId);
-  writer.writeBool(offsets[5], object.shared);
+  writer.writeDateTime(offsets[1], object.lastModifiedAssetTimestamp);
+  writer.writeString(offsets[2], object.localId);
+  writer.writeDateTime(offsets[3], object.modifiedAt);
+  writer.writeString(offsets[4], object.name);
+  writer.writeString(offsets[5], object.remoteId);
+  writer.writeBool(offsets[6], object.shared);
 }
 
 Album _albumDeserialize(
@@ -158,11 +164,12 @@ Album _albumDeserialize(
 ) {
   final object = Album(
     createdAt: reader.readDateTime(offsets[0]),
-    localId: reader.readStringOrNull(offsets[1]),
-    modifiedAt: reader.readDateTime(offsets[2]),
-    name: reader.readString(offsets[3]),
-    remoteId: reader.readStringOrNull(offsets[4]),
-    shared: reader.readBool(offsets[5]),
+    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[1]),
+    localId: reader.readStringOrNull(offsets[2]),
+    modifiedAt: reader.readDateTime(offsets[3]),
+    name: reader.readString(offsets[4]),
+    remoteId: reader.readStringOrNull(offsets[5]),
+    shared: reader.readBool(offsets[6]),
   );
   object.id = id;
   return object;
@@ -178,14 +185,16 @@ P _albumDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
+    case 4:
+      return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -512,6 +521,80 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastModifiedAssetTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastModifiedAssetTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastModifiedAssetTimestamp',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1158,6 +1241,19 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> sortByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy>
+      sortByLastModifiedAssetTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByLocalId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'localId', Sort.asc);
@@ -1244,6 +1340,19 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> thenByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy>
+      thenByLastModifiedAssetTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> thenByLocalId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'localId', Sort.asc);
@@ -1312,6 +1421,12 @@ extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
     });
   }
 
+  QueryBuilder<Album, Album, QDistinct> distinctByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastModifiedAssetTimestamp');
+    });
+  }
+
   QueryBuilder<Album, Album, QDistinct> distinctByLocalId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1356,6 +1471,13 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations>
+      lastModifiedAssetTimestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastModifiedAssetTimestamp');
     });
   }
 
