@@ -36,15 +36,14 @@ async def load_models() -> None:
     different_clip = settings.clip_image_model != settings.clip_text_model
     models: list[tuple[str, ModelType, dict[str, Any]]] = [
         (settings.classification_model, ModelType.IMAGE_CLASSIFICATION, {}),
-        (settings.clip_image_model, ModelType.CLIP, {"vision_only": different_clip}),
-        (settings.clip_text_model, ModelType.CLIP, {"text_only": different_clip}),
+        (settings.clip_image_model, ModelType.CLIP, {"mode": "vision" if different_clip else None}),
+        (settings.clip_text_model, ModelType.CLIP, {"mode": "text" if different_clip else None}),
         (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION, {}),
     ]
 
     # Get all models
     for model_name, model_type, model_kwargs in models:
-        if settings.eager_startup:
-            await app.state.model_cache.get(model_name, model_type, **model_kwargs)
+        await app.state.model_cache.get(model_name, model_type, eager=settings.eager_startup, **model_kwargs)
 
 
 @app.on_event("startup")
@@ -62,7 +61,7 @@ def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
     return Image.open(BytesIO(byte_image))
 
 
-def dep_cv_image(byte_image: bytes = Body(...)) -> cv2.Mat:
+def dep_cv_image(byte_image: bytes = Body(...)) -> np.ndarray:
     byte_image_np = np.frombuffer(byte_image, np.uint8)
     return cv2.imdecode(byte_image_np, cv2.IMREAD_COLOR)
 
