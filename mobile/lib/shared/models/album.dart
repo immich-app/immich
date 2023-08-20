@@ -18,6 +18,7 @@ class Album {
     required this.name,
     required this.createdAt,
     required this.modifiedAt,
+    this.lastModifiedAssetTimestamp,
     required this.shared,
   });
 
@@ -29,6 +30,7 @@ class Album {
   String name;
   DateTime createdAt;
   DateTime modifiedAt;
+  DateTime? lastModifiedAssetTimestamp;
   bool shared;
   final IsarLink<User> owner = IsarLink<User>();
   final IsarLink<Asset> thumbnail = IsarLink<Asset>();
@@ -83,12 +85,21 @@ class Album {
   @override
   bool operator ==(other) {
     if (other is! Album) return false;
+
+    final lastModifiedAssetTimestampIsSetAndEqual =
+        lastModifiedAssetTimestamp != null &&
+                other.lastModifiedAssetTimestamp != null
+            ? lastModifiedAssetTimestamp!
+                .isAtSameMomentAs(other.lastModifiedAssetTimestamp!)
+            : true;
+
     return id == other.id &&
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
         createdAt.isAtSameMomentAs(other.createdAt) &&
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
+        lastModifiedAssetTimestampIsSetAndEqual &&
         shared == other.shared &&
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
@@ -105,6 +116,7 @@ class Album {
       name.hashCode ^
       createdAt.hashCode ^
       modifiedAt.hashCode ^
+      lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
       owner.value.hashCode ^
       thumbnail.value.hashCode ^
@@ -130,6 +142,7 @@ class Album {
       name: dto.albumName,
       createdAt: dto.createdAt,
       modifiedAt: dto.updatedAt,
+      lastModifiedAssetTimestamp: dto.lastModifiedAssetTimestamp,
       shared: dto.shared,
     );
     a.owner.value = await db.users.getById(dto.ownerId);

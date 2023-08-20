@@ -223,6 +223,9 @@ class SyncService {
     if (!_hasAlbumResponseDtoChanged(dto, album)) {
       return false;
     }
+    // loadDetails (/api/album/:id) will not include lastModifiedAssetTimestamp,
+    // i.e. it will always be null. Save it here.
+    final originalDto = dto;
     dto = await loadDetails(dto);
     if (dto.assetCount != dto.assets.length) {
       return false;
@@ -262,6 +265,7 @@ class SyncService {
     album.name = dto.albumName;
     album.shared = dto.shared;
     album.modifiedAt = dto.updatedAt;
+    album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -742,5 +746,13 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt);
+      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
+      (dto.lastModifiedAssetTimestamp == null &&
+          a.lastModifiedAssetTimestamp != null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp == null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp != null &&
+          !dto.lastModifiedAssetTimestamp!
+              .isAtSameMomentAs(a.lastModifiedAssetTimestamp!));
 }
