@@ -47,7 +47,7 @@
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
   let activeEdit: activeEdit;
 
-  let aspectRatioNum = 4 / 3;
+  let aspectRatioNum = 9 / 16;
 
   type aspectRatio =
     | 'free'
@@ -125,62 +125,46 @@
 
   const setAspectRatio = async (ratio: aspectRatio) => {
     aspectRatio = ratio;
-    // Switch for all aspect ratios
-    await imageEditor.startDrawingMode('CROPPER');
+    const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
     switch (aspectRatio) {
       case 'free':
-        imageEditor.setCropzoneRect();
+        // free ratio selection
+        aspectRatioNum = 0;
         break;
       case 'square':
-        imageEditor.setCropzoneRect(1 / 1);
+        aspectRatioNum = 1;
         break;
       case 'original':
-        // const canvasSize = imageEditor.getCanvasSize();
-        // imageEditor.setCropzoneRect(canvasSize.width / canvasSize.height);
-        imageEditor.setCropzoneRect();
+        aspectRatioNum = originalAspect;
         break;
       case '16_9':
-        imageEditor.setCropzoneRect(16 / 9);
+        aspectRatioNum = 16 / 9;
         break;
       case '9_16':
-        imageEditor.setCropzoneRect(9 / 16);
+        aspectRatioNum = 9 / 16;
         break;
       case '5_4':
-        imageEditor.setCropzoneRect(5 / 4);
+        aspectRatioNum = 5 / 4;
         break;
       case '4_5':
-        imageEditor.setCropzoneRect(4 / 5);
+        aspectRatioNum = 4 / 5;
         break;
       case '4_3':
-        imageEditor.setCropzoneRect(4 / 3);
+        aspectRatioNum = 4 / 3;
         break;
       case '3_4':
-        imageEditor.setCropzoneRect(3 / 4);
+        aspectRatioNum = 3 / 4;
         break;
       case '3_2':
-        imageEditor.setCropzoneRect(3 / 2);
+        aspectRatioNum = 3 / 2;
         break;
       case '2_3':
-        imageEditor.setCropzoneRect(2 / 3);
+        aspectRatioNum = 2 / 3;
         break;
       default:
-        imageEditor.setCropzoneRect();
+        aspectRatioNum = originalAspect;
         break;
     }
-  };
-
-  //function for dragging the angle selection slider
-  const initAngleSlider = async () => {
-    //Get original image aspect ratio
-    const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
-    aspectRatioNum = originalAspect;
-
-    console.log('initAngleSlider');
-    let pos1 = 0,
-      pos2 = 0;
-
-    //imageWrapper.style.marginTop = -(imageWrapper.offsetHeight - cropElement.offsetHeight) / 2 + 'px';
-    //imageWrapper.style.marginLeft = -(imageWrapper.offsetWidth - cropElement.offsetWidth) / 2 + 'px';
 
     cropElement.style.aspectRatio = '' + aspectRatioNum;
     if (aspectRatioNum > 1) {
@@ -193,25 +177,20 @@
       cropElement.style.maxWidth = '100%';
     }
 
+    calcImageElement();
+  };
+
+  //function for dragging the angle selection slider
+  const initAngleSlider = async () => {
+    console.log('initAngleSlider');
+    let pos1 = 0,
+      pos2 = 0;
+
     const closeDragElement = () => {
       // stop moving when mouse button is released:
       document.onmouseup = null;
       document.onmousemove = null;
     };
-
-    // // Set crop element aspect ratio
-
-    // if (aspectRatioNum > 1) {
-    //   imageWrapper.style.width = '100%';
-    //   imageWrapper.style.height = 'auto';
-    //   imageWrapper.style.maxHeight = '100%';
-    // } else {
-    //   imageWrapper.style.width = 'auto';
-    //   imageWrapper.style.height = '100%';
-    //   imageWrapper.style.maxWidth = '100%';
-    // }
-
-    // imageWrapper.style.aspectRatio = '' + aspectRatioNum;
 
     const elementDrag = async (e: MouseEvent) => {
       e.preventDefault();
@@ -230,40 +209,7 @@
 
       imageWrapper.style.transform = `rotate(${angle}deg)`;
 
-      // const imageWrapperWidth = imageWrapper.offsetWidth;
-
-      // //TODO: Maybe use relative units instead of px
-      // const imageWrapperHeight = imageWrapper.offsetHeight - 112;
-
-      // Get image wrapper width and height
-      const imageWrapperWidth = imageWrapper.offsetWidth;
-      const imageWrapperHeight = imageWrapper.offsetHeight;
-
-      // Get crop element width and height
-      const cropElementWidth = cropElement.offsetWidth;
-      const cropElementHeight = cropElement.offsetHeight;
-
-      console.log('cropElementWidth', cropElementWidth);
-      console.log('cropElementHeight', cropElementHeight);
-      console.log('angle', angle);
-      console.log(Math.cos((Math.abs(angle) * Math.PI) / 180));
-
-      const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
-      const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
-
-      const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
-      const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
-
-      if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
-        imageWrapper.style.width = `${x1 + x2}px`;
-        imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
-      } else {
-        imageWrapper.style.height = `${y1 + y2}px`;
-        imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
-      }
-
-      //imageWrapper.style.width = `${x1 + x2}px`;
-      //imageWrapper.style.height = `${y1 + y2}px`;
+      calcImageElement();
 
       let b = a + 'px';
       angleSliderHandle.style.left = b;
@@ -279,6 +225,36 @@
       document.onmousemove = elementDrag;
     };
     angleSliderHandle.onmousedown = dragMouseDown;
+  };
+
+  const calcImageElement = () => {
+
+    // Get image wrapper width and height
+    const imageWrapperWidth = imageWrapper.offsetWidth;
+    const imageWrapperHeight = imageWrapper.offsetHeight;
+
+    // Get crop element width and height
+    const cropElementWidth = cropElement.offsetWidth;
+    const cropElementHeight = cropElement.offsetHeight;
+
+    console.log('cropElementWidth', cropElementWidth);
+    console.log('cropElementHeight', cropElementHeight);
+    console.log('angle', angle);
+    console.log(Math.cos((Math.abs(angle) * Math.PI) / 180));
+
+    const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
+    const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
+
+    const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
+    const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
+
+    if ((x1 + x2) / (y1 + y2) > imageWrapperWidth / imageWrapperHeight) {
+      imageWrapper.style.width = `${x1 + x2}px`;
+      imageWrapper.style.height = `${(x1 + x2) / (imageWrapperWidth / imageWrapperHeight)}px`;
+    } else {
+      imageWrapper.style.height = `${y1 + y2}px`;
+      imageWrapper.style.width = `${(y1 + y2) / (imageWrapperHeight / imageWrapperWidth)}px`;
+    }
   };
 
   const navigateEdit = (edit: activeEdit) => {
@@ -500,7 +476,7 @@
               </div>
             </div>
             <div class="angle-slider-shadow absolute h-full w-full" />
-            <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full" />
+            <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full cursor-pointer" />
             <div class="angle-slider-selection absolute left-[calc(50%-56px)] w-28 text-lg text-white">
               <div class="-mt-1.5 flex justify-center">
                 {angle}°
