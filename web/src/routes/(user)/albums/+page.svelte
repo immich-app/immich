@@ -154,30 +154,30 @@
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <tr class="flex w-full place-items-center">
-          <th class="w-1/4 text-center text-sm font-medium">Album title</th>
-          <th class="w-1/4 text-center text-sm font-medium">Assets</th>
-          <th class="w-1/4 text-center text-sm font-medium">Updated date</th>
-          <th class="w-1/4 text-center text-sm font-medium">Created date</th>
+        <tr class="flex w-full p-5 place-items-center">
+          <th class="w-1/4 text-left text-sm font-medium">Album title</th>
+          <th class="w-1/4 text-right text-sm font-medium">Assets</th>
+          <th class="w-1/4 text-right text-sm font-medium">Updated date</th>
+          <th class="w-1/4 text-right text-sm font-medium">Created date</th>
         </tr>
       </thead>
       <tbody
-        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each $albums as album (album.id)}
           <tr
-            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
             on:click={() => goto(`albums/${album.id}`)}
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-1/4 text-ellipsis px-2">{album.albumName}</td>
-            <td class="text-md w-1/4 text-ellipsis px-2">
+            <td class="text-left text-md w-1/4 text-ellipsis">{album.albumName}</td>
+            <td class="text-right text-md w-1/4 text-ellipsis">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-right text-md w-1/4 text-ellipsis">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-right text-md w-1/4 text-ellipsis">{dateLocaleString(album.createdAt)}</td>
           </tr>
         {/each}
       </tbody>
