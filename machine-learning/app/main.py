@@ -3,13 +3,14 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from typing import Any
-from app.models.base import InferenceModel
 
 import cv2
 import numpy as np
 import uvicorn
 from fastapi import Body, Depends, FastAPI
 from PIL import Image
+
+from app.models.base import InferenceModel
 
 from .config import settings
 from .models.cache import ModelCache

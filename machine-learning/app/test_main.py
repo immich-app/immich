@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
-
+import onnxruntime as ort
 from .config import settings
 from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
@@ -76,43 +76,45 @@ class TestCLIP:
     def test_eager_init(self, mocker: MockerFixture) -> None:
         mocker.patch.object(CLIPEncoder, "download")
         mock_load = mocker.patch.object(CLIPEncoder, "load")
-        clip_model = CLIPEncoder("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
+        clip_model = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", eager=True, test_arg="test_arg")
 
-        assert clip_model.model_name == "test_model_name"
+        assert clip_model.model_name == "ViT-B-32::openai"
         mock_load.assert_called_once_with(test_arg="test_arg")
 
     def test_lazy_init(self, mocker: MockerFixture) -> None:
         mock_download = mocker.patch.object(CLIPEncoder, "download")
         mock_load = mocker.patch.object(CLIPEncoder, "load")
-        clip_model = CLIPEncoder("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
+        clip_model = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", eager=False, test_arg="test_arg")
 
-        assert clip_model.model_name == "test_model_name"
+        assert clip_model.model_name == "ViT-B-32::openai"
         mock_download.assert_called_once_with(test_arg="test_arg")
         mock_load.assert_not_called()
 
     def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "load")
-        clip_encoder = CLIPEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.vision_model = mock.Mock()
-        clip_encoder.vision_model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
+        assert clip_encoder.mode == "vision"
         embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.vision_model.encode.assert_called_once()
+        clip_encoder.vision_model.run.assert_called_once()
 
     def test_basic_text(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "load")
-        clip_encoder = CLIPEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.text_model = mock.Mock()
-        clip_encoder.text_model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
+        assert clip_encoder.mode == "text"
         embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.text_model.encode.assert_called_once()
+        clip_encoder.text_model.run.assert_called_once()
 
 
 class TestFaceRecognition:

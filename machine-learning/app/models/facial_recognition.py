@@ -4,10 +4,11 @@ from typing import Any
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
-import onnxruntime as ort
+
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel

@@ -1,11 +1,12 @@
 from pathlib import Path
 from typing import Any
 
+from huggingface_hub import snapshot_download
 from optimum.onnxruntime import ORTModelForImageClassification
 from optimum.pipelines import pipeline
 from PIL.Image import Image
 from transformers import AutoImageProcessor
-from huggingface_hub import snapshot_download
+
 from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
