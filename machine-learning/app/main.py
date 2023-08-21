@@ -30,7 +30,7 @@ app = FastAPI()
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
     # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
-    app.state.thread_pool = ThreadPoolExecutor()
+    app.state.thread_pool = ThreadPoolExecutor(settings.request_threads)
 
 
 async def load_models() -> None:
