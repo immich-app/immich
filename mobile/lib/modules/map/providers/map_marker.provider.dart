@@ -9,6 +9,7 @@ final mapMarkerFutureProvider =
   final service = ref.read(mapServiceProvider);
   final mapState = ref.read(mapStateNotifier);
   DateTime? fileCreatedAfter;
+  bool? isFavorite;
 
   int? relativeTime = mapState.relativeTime;
   if (relativeTime != null && relativeTime != 0) {
@@ -16,8 +17,12 @@ final mapMarkerFutureProvider =
         DateTime.now().subtract(Duration(days: mapState.relativeTime!));
   }
 
+  if (mapState.showFavoriteOnly) {
+    isFavorite = true;
+  }
+
   final markers = await service.getMapMarkers(
-    isFavorite: mapState.showFavoriteOnly,
+    isFavorite: isFavorite,
     fileCreatedAfter: fileCreatedAfter,
   );
 

@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid_view.dart';
 import 'package:immich_mobile/modules/map/models/map_subscription_event.mode.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
@@ -17,12 +18,16 @@ class AssetsInBoundBottomSheet extends StatefulHookConsumerWidget {
   final StreamController bottomSheetEventSC;
   final Stream mapPageEventStream;
   final DraggableScrollableController? scrollableController;
+  final ValueNotifier<bool> selectionEnabledHook;
+  final ImmichAssetGridSelectionListener selectionlistener;
 
-  const AssetsInBoundBottomSheet(
-    this.mapPageEventStream,
-    this.bottomSheetEventSC, {
+  const AssetsInBoundBottomSheet({
     super.key,
+    required this.mapPageEventStream,
+    required this.bottomSheetEventSC,
     this.scrollableController,
+    required this.selectionEnabledHook,
+    required this.selectionlistener,
   });
 
   @override
@@ -33,7 +38,7 @@ class AssetsInBoundBottomSheet extends StatefulHookConsumerWidget {
 class AssetsInBoundBottomSheetState
     extends ConsumerState<AssetsInBoundBottomSheet> {
   // State variables
-  late final StreamSubscription<dynamic> subscription;
+  late final StreamSubscription<dynamic>? subscription;
   RenderList? _cachedRenderList;
   List<Asset> assetsInBound = [];
   late final Debounce debounceListUpdated;
@@ -70,7 +75,7 @@ class AssetsInBoundBottomSheetState
   @override
   void dispose() {
     super.dispose();
-    subscription.cancel();
+    subscription?.cancel();
   }
 
   void _visibleItemsListener(ItemPosition start, ItemPosition end) {
@@ -283,6 +288,9 @@ class AssetsInBoundBottomSheetState
                             shrinkWrap: true,
                             renderList: renderList,
                             showDragScroll: false,
+                            selectionActive: widget.selectionEnabledHook.value,
+                            showMultiSelectIndicator: false,
+                            listener: widget.selectionlistener,
                             visibleItemsListener: visibleItemsListener,
                           );
 

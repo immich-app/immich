@@ -15,15 +15,16 @@ import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker_icon.dart';
 import 'package:immich_mobile/modules/map/ui/assets_in_bound_sheet.dart';
-import 'package:immich_mobile/modules/map/ui/map_settings_dialog.dart';
+import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MapPage extends StatefulHookConsumerWidget {
   const MapPage({super.key});
@@ -92,12 +93,14 @@ class MapPageState extends ConsumerState<MapPage> {
     final log = Logger("MapService");
     final mapState = ref.watch(mapStateNotifier);
     final isDarkTheme = useState(mapState.isDarkTheme);
-    final buttonThemeData =
-        useState(isDarkTheme.value ? immichDarkTheme : immichLightTheme);
     final ValueNotifier<List<AssetMarkerData>?> mapMarkers =
         useState(<AssetMarkerData>[]);
     final heatMapData = useState(<WeightedLatLng>[]);
     final ValueNotifier<AssetMarkerData?> selectedAsset = useState(null);
+    final selectionEnabledHook = useState(false);
+    final selectedAssets = useState(<Asset>{});
+    final processingSelection = useState(false);
+    final refetchMarkers = useState(false);
     bool forceAssetUpdate = false;
 
     CustomPoint<double> rotatePoint(
@@ -176,15 +179,7 @@ class MapPageState extends ConsumerState<MapPage> {
     useEffect(
       () {
         isDarkTheme.value = mapState.isDarkTheme;
-        themeCallBack() {
-          buttonThemeData.value =
-              isDarkTheme.value ? immichDarkTheme : immichLightTheme;
-        }
-
-        isDarkTheme.addListener(themeCallBack);
-        return () {
-          isDarkTheme.removeListener(themeCallBack);
-        };
+        return null;
       },
       [mapState.isDarkTheme],
     );
@@ -226,77 +221,8 @@ class MapPageState extends ConsumerState<MapPage> {
           mapMarkers.removeListener(mapMarkersCallback);
         };
       },
-      [mapState.relativeTime, mapState.showFavoriteOnly],
+      [mapState.relativeTime, mapState.showFavoriteOnly, refetchMarkers.value],
     );
-
-    Widget buildBackButton() {
-      return ElevatedButton(
-        onPressed: () async => await AutoRouter.of(context).pop(),
-        style: ElevatedButton.styleFrom(
-          shape: const CircleBorder(),
-          padding: const EdgeInsets.all(12),
-          backgroundColor:
-              isDarkTheme.value ? Colors.grey[900] : Colors.grey[100],
-          foregroundColor: isDarkTheme.value
-              ? Colors.grey[100]
-              : buttonThemeData.value.textTheme.displayLarge?.color,
-        ),
-        child: Icon(
-          Icons.arrow_back_ios_rounded,
-          color: isDarkTheme.value
-              ? Colors.grey[100]
-              : buttonThemeData.value.textTheme.displayLarge?.color,
-        ),
-      );
-    }
-
-    Widget buildSettingsButton() {
-      return ElevatedButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext _) {
-              return const MapSettingsDialog();
-            },
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          shape: const CircleBorder(),
-          padding: const EdgeInsets.all(12),
-          backgroundColor:
-              isDarkTheme.value ? Colors.grey[900] : Colors.grey[100],
-          foregroundColor: isDarkTheme.value
-              ? Colors.grey[100]
-              : buttonThemeData.value.textTheme.displayLarge?.color,
-        ),
-        child: Icon(
-          Icons.more_vert_rounded,
-          color: isDarkTheme.value
-              ? Colors.grey[100]
-              : buttonThemeData.value.textTheme.displayLarge?.color,
-        ),
-      );
-    }
-
-    Widget buildAttribution() {
-      return ColoredBox(
-        color: (isDarkTheme.value ? Colors.grey[900] : Colors.grey[100])!,
-        child: Padding(
-          padding: const EdgeInsets.all(3),
-          child: GestureDetector(
-            onTap: () =>
-                launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
-            child: Text(
-              'flutter_map | © OpenStreetMap contributors',
-              style: TextStyle(
-                  fontSize: 10,
-                  color:
-                      !isDarkTheme.value ? Colors.grey[900] : Colors.grey[100]),
-            ),
-          ),
-        ),
-      );
-    }
 
     Widget buildTileLayer() {
       Widget tileLayer = TileLayer(
@@ -379,6 +305,7 @@ class MapPageState extends ConsumerState<MapPage> {
         if (forceAssetUpdate ||
             mapEvent.source != MapEventSource.mapController) {
           debounceBoundsUpdate(() {
+            selectionEnabledHook.value = false;
             reloadAssetsInBound(mapMarkers.value);
             forceAssetUpdate = false;
           });
@@ -438,10 +365,43 @@ class MapPageState extends ConsumerState<MapPage> {
           duration: const Duration(milliseconds: 200),
           curve: Curves.linearToEaseOut,
         );
+        selectionEnabledHook.value = false;
         mapPageEventSC.add(
           const MapPageOnTapEvent(),
         );
       }
+    }
+
+    void onShareAsset() {
+      handleShareAssets(ref, context, selectedAssets.value.toList());
+      selectionEnabledHook.value = false;
+    }
+
+    void onFavoriteAsset() async {
+      processingSelection.value = true;
+      try {
+        await handleFavoriteAssets(ref, context, selectedAssets.value.toList());
+      } finally {
+        processingSelection.value = false;
+        selectionEnabledHook.value = false;
+        refetchMarkers.value = !refetchMarkers.value;
+      }
+    }
+
+    void onArchiveAsset() async {
+      processingSelection.value = true;
+      try {
+        await handleArchiveAssets(ref, context, selectedAssets.value.toList());
+      } finally {
+        processingSelection.value = false;
+        selectionEnabledHook.value = false;
+        refetchMarkers.value = !refetchMarkers.value;
+      }
+    }
+
+    void selectionListener(bool isMultiSelect, Set<Asset> selection) {
+      selectionEnabledHook.value = isMultiSelect;
+      selectedAssets.value = selection;
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -450,6 +410,14 @@ class MapPageState extends ConsumerState<MapPage> {
         statusBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
+        appBar: MapAppBar(
+          isDarkTheme: isDarkTheme.value,
+          selectionEnabled: selectionEnabledHook,
+          selectedAssetsLength: selectedAssets.value.length,
+          onShare: onShareAsset,
+          onArchive: onArchiveAsset,
+          onFavorite: onFavoriteAsset,
+        ),
         extendBodyBehindAppBar: true,
         body: Stack(
           children: [
@@ -472,27 +440,6 @@ class MapPageState extends ConsumerState<MapPage> {
                 },
                 onTap: onTapEvent,
               ),
-              nonRotatedChildren: [
-                Positioned(
-                  top: 60,
-                  height: 50,
-                  left: 10,
-                  width: 50,
-                  child: buildBackButton(),
-                ),
-                Positioned(
-                  top: 60,
-                  height: 50,
-                  right: 10,
-                  width: 50,
-                  child: buildSettingsButton(),
-                ),
-                Positioned(
-                  top: 25,
-                  right: 0,
-                  child: buildAttribution(),
-                ),
-              ],
               children: [
                 buildTileLayer(),
                 buildHeatMapLayer(),
@@ -502,11 +449,19 @@ class MapPageState extends ConsumerState<MapPage> {
             Theme(
               data: isDarkTheme.value ? immichDarkTheme : immichLightTheme,
               child: AssetsInBoundBottomSheet(
-                mapPageEventSC.stream,
-                bottomSheetEventSC,
+                mapPageEventStream: mapPageEventSC.stream,
+                bottomSheetEventSC: bottomSheetEventSC,
                 scrollableController: bottomSheetScrollController,
+                selectionEnabledHook: selectionEnabledHook,
+                selectionlistener: selectionListener,
               ),
             ),
+            if (processingSelection.value)
+              Positioned(
+                top: MediaQuery.of(context).size.height * 0.35,
+                left: MediaQuery.of(context).size.width * 0.425,
+                child: const ImmichLoadingIndicator(),
+              ),
           ],
         ),
       ),
