@@ -96,7 +96,7 @@ async def image_classification(
 async def clip_encode_image(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[float]:
-    model = await app.state.model_cache.get(settings.clip_image_model, ModelType.CLIP)
+    model = await app.state.model_cache.get(settings.clip_image_model, ModelType.CLIP, mode="vision")
     embedding = await predict(model, image)
     return embedding
 
@@ -107,7 +107,7 @@ async def clip_encode_image(
     status_code=200,
 )
 async def clip_encode_text(payload: TextModelRequest) -> list[float]:
-    model = await app.state.model_cache.get(settings.clip_text_model, ModelType.CLIP)
+    model = await app.state.model_cache.get(settings.clip_text_model, ModelType.CLIP, mode="text")
     embedding = await predict(model, payload.text)
     return embedding
 
