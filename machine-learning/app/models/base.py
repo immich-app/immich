@@ -45,6 +45,7 @@ class InferenceModel(ABC):
 
     def download(self, **model_kwargs: Any) -> None:
         if not self.cached:
+            print(f"Downloading {self.model_type.value.replace('_', ' ')} model...")
             self._download(**model_kwargs)
 
     def load(self, **model_kwargs: Any) -> None:
@@ -54,6 +55,7 @@ class InferenceModel(ABC):
 
     def predict(self, inputs: Any) -> Any:
         if not self._loaded:
+            print(f"Loading {self.model_type.value.replace('_', ' ')} model...")
             self.load()
         return self._predict(inputs)
 

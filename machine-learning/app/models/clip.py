@@ -112,7 +112,6 @@ class CLIPEncoder(InferenceModel):
 
     def _download_model(self, model_name, model_md5) -> bool:
         # downloading logic is adapted from clip-server's CLIPOnnxModel class
-        # since it assumes models are already downloaded if passing in a path
         download_model(
             url=_S3_BUCKET_V2 + model_name,
             target_folder=self.cache_dir.as_posix(),

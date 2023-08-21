@@ -33,11 +33,10 @@ def init_state() -> None:
 
 
 async def load_models() -> None:
-    different_clip = settings.clip_image_model != settings.clip_text_model
     models: list[tuple[str, ModelType, dict[str, Any]]] = [
         (settings.classification_model, ModelType.IMAGE_CLASSIFICATION, {}),
-        (settings.clip_image_model, ModelType.CLIP, {"mode": "vision" if different_clip else None}),
-        (settings.clip_text_model, ModelType.CLIP, {"mode": "text" if different_clip else None}),
+        (settings.clip_image_model, ModelType.CLIP, {"mode": "vision"}),
+        (settings.clip_text_model, ModelType.CLIP, {"mode": "text"}),
         (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION, {}),
     ]
 
