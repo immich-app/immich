@@ -279,19 +279,22 @@ class MapPageState extends ConsumerState<MapPage> {
     }
 
     Widget buildAttribution() {
-      return RichAttributionWidget(
-        animationConfig: const ScaleRAWA(), // Or `FadeRAWA` as is default
-        attributions: [
-          TextSourceAttribution(
-            'OpenStreetMap contributors',
+      return ColoredBox(
+        color: (isDarkTheme.value ? Colors.grey[900] : Colors.grey[100])!,
+        child: Padding(
+          padding: const EdgeInsets.all(3),
+          child: GestureDetector(
             onTap: () =>
                 launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+            child: Text(
+              'flutter_map | © OpenStreetMap contributors',
+              style: TextStyle(
+                  fontSize: 10,
+                  color:
+                      !isDarkTheme.value ? Colors.grey[900] : Colors.grey[100]),
+            ),
           ),
-          const TextSourceAttribution(
-            'This attribution is the same throughout this app, except where otherwise specified',
-            prependCopyright: false,
-          ),
-        ],
+        ),
       );
     }
 
@@ -484,7 +487,11 @@ class MapPageState extends ConsumerState<MapPage> {
                   width: 50,
                   child: buildSettingsButton(),
                 ),
-                buildAttribution(),
+                Positioned(
+                  top: 25,
+                  right: 0,
+                  child: buildAttribution(),
+                ),
               ],
               children: [
                 buildTileLayer(),
