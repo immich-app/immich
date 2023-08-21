@@ -57,10 +57,7 @@ class MapThumbnail extends HookConsumerWidget {
       [mapSettingsNotifier],
     );
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+    return SizedBox(
       height: height,
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(15)),

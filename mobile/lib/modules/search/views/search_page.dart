@@ -3,19 +3,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
-import 'package:immich_mobile/modules/search/ui/curated_row.dart';
+import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
 import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:latlong2/latlong.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -107,7 +105,7 @@ class SearchPage extends HookConsumerWidget {
         child: curatedLocation.when(
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (locations) => CuratedRow(
+          data: (locations) => CuratedPlacesRow(
             content: locations
                 .map(
                   (o) => CuratedContent(
@@ -124,55 +122,6 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
             },
-          ),
-        ),
-      );
-    }
-
-    Widget buildMapThumbnail() {
-      return GestureDetector(
-        onTap: () => AutoRouter.of(context).push(
-          const MapRoute(),
-        ),
-        child: SizedBox(
-          height: imageSize * 0.75,
-          child: Stack(
-            children: [
-              MapThumbnail(
-                coords: LatLng(13, 80),
-                height: imageSize * 0.75,
-                showAttribution: false,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Colors.black,
-                  gradient: LinearGradient(
-                    begin: FractionalOffset.topCenter,
-                    end: FractionalOffset.bottomCenter,
-                    colors: [
-                      Colors.blueGrey.withOpacity(0.0),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                    stops: const [0.0, 1.0],
-                  ),
-                ),
-              ),
-              const Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    "Your Map",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       );
@@ -206,7 +155,6 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   top: 0,
                 ),
-                buildMapThumbnail(),
                 const SizedBox(height: 16.0),
                 buildPlaces(),
                 const SizedBox(height: 24.0),
