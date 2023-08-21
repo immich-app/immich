@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provide
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid_view.dart';
-import 'package:immich_mobile/modules/map/models/map_subscription_event.mode.dart';
+import 'package:immich_mobile/modules/map/models/map_subscription_event.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';

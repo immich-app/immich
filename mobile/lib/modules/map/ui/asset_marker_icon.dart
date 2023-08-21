@@ -18,45 +18,49 @@ class AssetMarkerIcon extends StatelessWidget {
     final imageUrl = getThumbnailUrlForRemoteId(id);
     final cacheKey = getThumbnailCacheKeyForRemoteId(id);
     return LayoutBuilder(
-      builder: (context, constraints) => Stack(
-        children: [
-          Positioned(
-            bottom: 0,
-            left: constraints.maxWidth * 0.5,
-            child: CustomPaint(
-              painter: _PinPainter(
-                primaryColor: isDarkTheme ? Colors.white : Colors.black,
-                secondaryColor: isDarkTheme ? Colors.black : Colors.white,
-              ),
-              child: const SizedBox(
-                height: 14,
-                width: 14,
-              ),
-            ),
-          ),
-          Positioned(
-            top: constraints.maxHeight * 0.07,
-            left: constraints.maxWidth * 0.17,
-            child: CircleAvatar(
-              radius: 40,
-              backgroundColor: isDarkTheme ? Colors.white : Colors.black,
-              child: CircleAvatar(
-                radius: 37,
-                backgroundImage: CachedNetworkImageProvider(
-                  imageUrl,
-                  cacheKey: cacheKey,
-                  headers: {
-                    "Authorization":
-                        "Bearer ${Store.get(StoreKey.accessToken)}",
-                  },
-                  errorListener: () =>
-                      const Icon(Icons.image_not_supported_outlined),
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            Positioned(
+              bottom: 0,
+              left: constraints.maxWidth * 0.5,
+              child: CustomPaint(
+                painter: _PinPainter(
+                  primaryColor: isDarkTheme ? Colors.white : Colors.black,
+                  secondaryColor: isDarkTheme ? Colors.black : Colors.white,
+                  primaryRadius: constraints.maxHeight * 0.06,
+                  secondaryRadius: constraints.maxHeight * 0.038,
+                ),
+                child: SizedBox(
+                  height: constraints.maxHeight * 0.14,
+                  width: constraints.maxWidth * 0.14,
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+            Positioned(
+              top: constraints.maxHeight * 0.07,
+              left: constraints.maxWidth * 0.17,
+              child: CircleAvatar(
+                radius: constraints.maxHeight * 0.40,
+                backgroundColor: isDarkTheme ? Colors.white : Colors.black,
+                child: CircleAvatar(
+                  radius: constraints.maxHeight * 0.37,
+                  backgroundImage: CachedNetworkImageProvider(
+                    imageUrl,
+                    cacheKey: cacheKey,
+                    headers: {
+                      "Authorization":
+                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                    },
+                    errorListener: () =>
+                        const Icon(Icons.image_not_supported_outlined),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -64,10 +68,14 @@ class AssetMarkerIcon extends StatelessWidget {
 class _PinPainter extends CustomPainter {
   final Color primaryColor;
   final Color secondaryColor;
+  final double primaryRadius;
+  final double secondaryRadius;
 
   _PinPainter({
     this.primaryColor = Colors.black,
     this.secondaryColor = Colors.white,
+    required this.primaryRadius,
+    required this.secondaryRadius,
   });
 
   @override
@@ -85,8 +93,16 @@ class _PinPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    canvas.drawCircle(Offset(size.width / 2, size.height), 6, primaryBrush);
-    canvas.drawCircle(Offset(size.width / 2, size.height), 3.8, secondaryBrush);
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height),
+      primaryRadius,
+      primaryBrush,
+    );
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height),
+      secondaryRadius,
+      secondaryBrush,
+    );
     canvas.drawPath(getTrianglePath(size.width, size.height), primaryBrush);
     // The line is to make the above triangluar path more prominent since it has a slight curve
     canvas.drawLine(
