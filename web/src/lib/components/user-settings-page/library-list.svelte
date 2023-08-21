@@ -205,9 +205,9 @@
               >
                 <td class="w-1/6 px-4 text-left text-sm">
                   {#if library.type === LibraryType.External}
-                    <Database size="40" />
+                    <Database size="40" title="External library" />
                   {:else if library.type === LibraryType.Upload}
-                    <Upload size="40" />
+                    <Upload size="40" title="Upload library" />
                   {/if}</td
                 >
 
