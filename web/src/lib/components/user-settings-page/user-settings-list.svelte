@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { oauth, UserResponseDto } from '@api';
-  import { onMount } from 'svelte';
+  import { APIKeyResponseDto, AuthDeviceResponseDto, oauth, UserResponseDto } from '@api';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
@@ -11,15 +10,19 @@
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import LibraryList from './library-list.svelte';
+  import { onMount } from 'svelte';
 
   export let user: UserResponseDto;
+
+  export let keys: APIKeyResponseDto[] = [];
+  export let devices: AuthDeviceResponseDto[] = [];
+  export let partners: UserResponseDto[] = [];
 
   let oauthEnabled = false;
   let oauthOpen = false;
 
   onMount(async () => {
     oauthOpen = oauth.isCallback(window.location);
-
     try {
       const { data } = await oauth.getConfig(window.location);
       oauthEnabled = data.enabled;
@@ -38,11 +41,11 @@
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
-  <UserAPIKeyList />
+  <UserAPIKeyList bind:keys />
 </SettingAccordion>
 
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
-  <DeviceList />
+  <DeviceList bind:devices />
 </SettingAccordion>
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
@@ -64,5 +67,5 @@
 </SettingAccordion>
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-  <PartnerSettings {user} />
+  <PartnerSettings {user} bind:partners />
 </SettingAccordion>

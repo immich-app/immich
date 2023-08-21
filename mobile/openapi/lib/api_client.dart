@@ -215,6 +215,10 @@ class ApiClient {
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
           return AssetIdsResponseDto.fromJson(value);
+        case 'AssetJobName':
+          return AssetJobNameTypeTransformer().decode(value);
+        case 'AssetJobsDto':
+          return AssetJobsDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
@@ -337,6 +341,8 @@ class ApiClient {
           return SearchFacetResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
+        case 'ServerFeaturesDto':
+          return ServerFeaturesDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
@@ -345,8 +351,8 @@ class ApiClient {
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
-        case 'ServerVersionReponseDto':
-          return ServerVersionReponseDto.fromJson(value);
+        case 'ServerVersionResponseDto':
+          return ServerVersionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':

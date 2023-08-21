@@ -108,7 +108,7 @@ class ProfileDrawer extends HookConsumerWidget {
               buildSignOutButton(),
             ],
           ),
-          const ServerInfoBox()
+          const ServerInfoBox(),
         ],
       ),
     );

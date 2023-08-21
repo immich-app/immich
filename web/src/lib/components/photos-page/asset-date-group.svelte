@@ -21,6 +21,7 @@
   export let isSelectionMode = false;
   export let viewport: Viewport;
   export let singleSelect = false;
+  export let publicSharedKey: string | undefined = undefined;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -189,6 +190,7 @@
               disabled={$assetStore.albumAssets.has(asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}
+              {publicSharedKey}
             />
           </div>
         {/each}

@@ -139,6 +139,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         debugPrint("[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
         break;
+      case AppLifecycleState.hidden:
+        debugPrint("[APP STATE] hidden");
+        ref.read(appStateProvider.notifier).handleAppHidden();
+        break;
     }
   }
 

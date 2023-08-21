@@ -83,7 +83,7 @@ class FavoritesPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     ),
                     onTap: processing.value ? null : unfavorite,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -108,7 +108,7 @@ class FavoritesPage extends HookConsumerWidget {
                         selectionActive: selectionEnabledHook.value,
                         listener: selectionListener,
                       ),
-                      if (selectionEnabledHook.value) buildBottomBar()
+                      if (selectionEnabledHook.value) buildBottomBar(),
                     ],
                   ),
           ),

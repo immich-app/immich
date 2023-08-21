@@ -1,48 +1,66 @@
 <script lang="ts">
   import { browser } from '$app/environment';
+  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, AssetResponseDto, SharedLinkResponseDto } from '@api';
+  import { TimeBucketSize, type AlbumResponseDto, type SharedLinkResponseDto } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
   import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import { dateFormats } from '../../constants';
+  import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
+  import { AssetStore } from '../../stores/assets.store';
   import { downloadArchive } from '../../utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
+  import AssetGrid from '../photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
 
-  export let album: AlbumResponseDto;
   export let sharedLink: SharedLinkResponseDto;
+
+  const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id, key: sharedLink.key });
+  const assetInteractionStore = createAssetInteractionStore();
+  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      fileUploadHandler(value.files, album.id, sharedLink?.key);
+      fileUploadHandler(value.files, album.id, sharedLink.key);
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
 
-  let multiSelectAsset: Set<AssetResponseDto> = new Set();
-  $: isMultiSelectionMode = multiSelectAsset.size > 0;
-
   const getDateRange = () => {
-    const startDate = new Date(album.assets[0].fileCreatedAt);
-    const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
+    const { startDate, endDate } = album;
 
-    const startDateString = startDate.toLocaleDateString($locale, dateFormats.album);
-    const endDateString = endDate.toLocaleDateString($locale, dateFormats.album);
+    let start = '';
+    let end = '';
 
-    // If the start and end date are the same, only show one date
-    return startDateString === endDateString ? startDateString : `${startDateString} - ${endDateString}`;
+    if (startDate) {
+      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (endDate) {
+      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (startDate && endDate && start !== end) {
+      return `${start} - ${end}`;
+    }
+
+    if (start) {
+      return start;
+    }
+
+    return '';
   };
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -61,8 +79,8 @@
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
-          if (isMultiSelectionMode) {
-            multiSelectAsset = new Set();
+          if ($isMultiSelectState) {
+            assetInteractionStore.clearMultiselect();
           }
           return;
       }
@@ -70,18 +88,14 @@
   };
 
   const downloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id }, sharedLink?.key);
-  };
-
-  const handleSelectAll = () => {
-    multiSelectAsset = new Set(album.assets);
+    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id }, sharedLink.key);
   };
 </script>
 
-<section class="bg-immich-bg dark:bg-immich-dark-bg">
-  {#if isMultiSelectionMode}
-    <AssetSelectControlBar assets={multiSelectAsset} clearSelect={() => (multiSelectAsset = new Set())}>
-      <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
+<header>
+  {#if $isMultiSelectState}
+    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+      <SelectAllAssets {assetStore} {assetInteractionStore} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink.key} />
       {/if}
@@ -116,29 +130,33 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
+</header>
 
-  <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <!-- ALBUM TITLE -->
-    <p
-      class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
-    >
-      {album.albumName}
-    </p>
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+>
+  <AssetGrid {assetStore} {assetInteractionStore} publicSharedKey={sharedLink.key}>
+    <section class="pt-24">
+      <!-- ALBUM TITLE -->
+      <p
+        class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+      >
+        {album.albumName}
+      </p>
 
-    <!-- ALBUM SUMMARY -->
-    {#if album.assetCount > 0}
-      <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-        <p class="">{getDateRange()}</p>
-        <p>·</p>
-        <p>{album.assetCount} items</p>
-      </span>
-    {/if}
+      <!-- ALBUM SUMMARY -->
+      {#if album.assetCount > 0}
+        <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+          <p class="">{getDateRange()}</p>
+          <p>·</p>
+          <p>{album.assetCount} items</p>
+        </span>
+      {/if}
 
-    <!-- ALBUM DESCRIPTION -->
-    <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
-      {album.description}
-    </p>
-
-    <GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
-  </section>
-</section>
+      <!-- ALBUM DESCRIPTION -->
+      <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
+        {album.description}
+      </p>
+    </section>
+  </AssetGrid>
+</main>

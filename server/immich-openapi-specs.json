@@ -1367,6 +1367,41 @@
         ]
       }
     },
+    "/asset/jobs": {
+      "post": {
+        "operationId": "runAssetJobs",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetJobsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/map-marker": {
       "get": {
         "operationId": "getMapMarkers",
@@ -3567,6 +3602,27 @@
         ]
       }
     },
+    "/server-info/features": {
+      "get": {
+        "operationId": "getServerFeatures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerFeaturesDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/media-types": {
       "get": {
         "operationId": "getSupportedMediaTypes",
@@ -3650,7 +3706,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                  "$ref": "#/components/schemas/ServerVersionResponseDto"
                 }
               }
             },
@@ -4916,7 +4972,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.73.0",
+    "version": "1.74.0",
     "contact": {}
   },
   "tags": [],
@@ -5341,6 +5397,33 @@
         "required": [
           "assetId",
           "success"
+        ],
+        "type": "object"
+      },
+      "AssetJobName": {
+        "enum": [
+          "regenerate-thumbnail",
+          "refresh-metadata",
+          "transcode-video"
+        ],
+        "type": "string"
+      },
+      "AssetJobsDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "$ref": "#/components/schemas/AssetJobName"
+          }
+        },
+        "required": [
+          "assetIds",
+          "name"
         ],
         "type": "object"
       },
@@ -6561,6 +6644,12 @@
       },
       "PeopleUpdateItem": {
         "properties": {
+          "birthDate": {
+            "description": "Person date of birth.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -6585,6 +6674,11 @@
       },
       "PersonResponseDto": {
         "properties": {
+          "birthDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -6599,6 +6693,7 @@
           }
         },
         "required": [
+          "birthDate",
           "id",
           "name",
           "thumbnailPath",
@@ -6608,6 +6703,12 @@
       },
       "PersonUpdateDto": {
         "properties": {
+          "birthDate": {
+            "description": "Person date of birth.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -6812,6 +6913,33 @@
         ],
         "type": "object"
       },
+      "ServerFeaturesDto": {
+        "properties": {
+          "machineLearning": {
+            "type": "boolean"
+          },
+          "oauth": {
+            "type": "boolean"
+          },
+          "oauthAutoLaunch": {
+            "type": "boolean"
+          },
+          "passwordLogin": {
+            "type": "boolean"
+          },
+          "search": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "machineLearning",
+          "search",
+          "oauth",
+          "oauthAutoLaunch",
+          "passwordLogin"
+        ],
+        "type": "object"
+      },
       "ServerInfoResponseDto": {
         "properties": {
           "diskAvailable": {
@@ -6931,7 +7059,7 @@
         ],
         "type": "object"
       },
-      "ServerVersionReponseDto": {
+      "ServerVersionResponseDto": {
         "properties": {
           "major": {
             "type": "integer"

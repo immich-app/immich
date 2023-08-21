@@ -129,6 +129,11 @@ void main() {
       // TODO
     });
 
+    //Future runAssetJobs(AssetJobsDto assetJobsDto) async
+    test('test runAssetJobs', () async {
+      // TODO
+    });
+
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO

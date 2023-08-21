@@ -44,7 +44,7 @@ class PartnerPage extends HookConsumerWidget {
                       Text("${u.firstName} ${u.lastName}"),
                     ],
                   ),
-                )
+                ),
             ],
           );
         },
@@ -151,7 +151,7 @@ class PartnerPage extends HookConsumerWidget {
                 availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
             tooltip: "partner_page_add_partner".tr(),
-          )
+          ),
         ],
       ),
       body: buildUserList(partners),

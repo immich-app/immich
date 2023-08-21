@@ -83,7 +83,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/x-ms-wmv', extension: '.wmv' },
     { mimetype: 'video/x-msvideo', extension: '.avi' },
   ]) {
-    it(`should map ${extension} to ${mimetype}`, async () => {
+    it(`should map ${extension} to ${mimetype}`, () => {
       expect({ ...mimeTypes.image, ...mimeTypes.video }[extension]).toContain(mimetype);
     });
   }

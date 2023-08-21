@@ -1,6 +1,7 @@
 import {
   AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobsDto,
   AssetResponseDto,
   AssetService,
   AssetStatsDto,
@@ -76,6 +77,12 @@ export class AssetController {
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
     return this.service.getByTimeBucket(authUser, dto);
+  }
+
+  @Post('jobs')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  runAssetJobs(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetJobsDto): Promise<void> {
+    return this.service.run(authUser, dto);
   }
 
   @Put()

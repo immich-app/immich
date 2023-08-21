@@ -129,7 +129,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

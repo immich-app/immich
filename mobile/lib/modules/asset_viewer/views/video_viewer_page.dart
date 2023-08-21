@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
@@ -136,16 +136,16 @@ class _VideoPlayerState extends State<VideoPlayer> {
     videoPlayerController.addListener(() {
       if (videoPlayerController.value.isInitialized) {
         if (videoPlayerController.value.isPlaying) {
-          Wakelock.enable();
+          WakelockPlus.enable();
           widget.onPlaying?.call();
         } else if (!videoPlayerController.value.isPlaying) {
-          Wakelock.disable();
+          WakelockPlus.disable();
           widget.onPaused?.call();
         }
 
         if (videoPlayerController.value.position ==
             videoPlayerController.value.duration) {
-          Wakelock.disable();
+          WakelockPlus.disable();
           widget.onVideoEnded();
         }
       }
@@ -155,8 +155,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Future<void> initializePlayer() async {
     try {
       videoPlayerController = widget.file == null
-          ? VideoPlayerController.network(
-              widget.url!,
+          ? VideoPlayerController.networkUrl(
+              Uri.parse(widget.url!),
               httpHeaders: {"Authorization": "Bearer ${widget.jwtToken}"},
             )
           : VideoPlayerController.file(widget.file!);
@@ -210,8 +210,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
         child: Center(
           child: Stack(
             children: [
-              if (widget.placeholder != null)
-                widget.placeholder!,
+              if (widget.placeholder != null) widget.placeholder!,
               const Center(
                 child: ImmichLoadingIndicator(),
               ),

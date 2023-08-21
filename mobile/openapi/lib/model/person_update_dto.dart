@@ -13,10 +13,14 @@ part of openapi.api;
 class PersonUpdateDto {
   /// Returns a new [PersonUpdateDto] instance.
   PersonUpdateDto({
+    this.birthDate,
     this.featureFaceAssetId,
     this.isHidden,
     this.name,
   });
+
+  /// Person date of birth.
+  DateTime? birthDate;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -47,6 +51,7 @@ class PersonUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
+     other.birthDate == birthDate &&
      other.featureFaceAssetId == featureFaceAssetId &&
      other.isHidden == isHidden &&
      other.name == name;
@@ -54,15 +59,21 @@ class PersonUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (birthDate == null ? 0 : birthDate!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden, name=$name]';
+  String toString() => 'PersonUpdateDto[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.birthDate != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    } else {
+    //  json[r'birthDate'] = null;
+    }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
@@ -89,6 +100,7 @@ class PersonUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
+        birthDate: mapDateTime(json, r'birthDate', ''),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

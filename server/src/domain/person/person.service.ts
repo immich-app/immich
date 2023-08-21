@@ -63,11 +63,13 @@ export class PersonService {
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     let person = await this.findOrFail(authUser, id);
 
-    if (dto.name != undefined || dto.isHidden !== undefined) {
-      person = await this.repository.update({ id, name: dto.name, isHidden: dto.isHidden });
-      const assets = await this.repository.getAssets(authUser.id, id);
-      const ids = assets.map((asset) => asset.id);
-      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    if (dto.name !== undefined || dto.birthDate !== undefined || dto.isHidden !== undefined) {
+      person = await this.repository.update({ id, name: dto.name, birthDate: dto.birthDate, isHidden: dto.isHidden });
+      if (this.needsSearchIndexUpdate(dto)) {
+        const assets = await this.repository.getAssets(authUser.id, id);
+        const ids = assets.map((asset) => asset.id);
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+      }
     }
 
     if (dto.featureFaceAssetId) {
@@ -104,6 +106,7 @@ export class PersonService {
         await this.update(authUser, person.id, {
           isHidden: person.isHidden,
           name: person.name,
+          birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
         }),
           results.push({ id: person.id, success: true });
@@ -168,6 +171,15 @@ export class PersonService {
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
 
     return results;
+  }
+
+  /**
+   * Returns true if the given person update is going to require an update of the search index.
+   * @param dto the Person going to be updated
+   * @private
+   */
+  private needsSearchIndexUpdate(dto: PersonUpdateDto): boolean {
+    return dto.name !== undefined || dto.isHidden !== undefined;
   }
 
   private async findOrFail(authUser: AuthUserDto, id: string) {

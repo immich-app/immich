@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -e
 
 export IMMICH_WEB_URL="${IMMICH_WEB_URL:-http://immich-web:3000}"

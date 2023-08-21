@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/album/providers/suggested_shared_users.pro
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final Album album;
@@ -35,10 +36,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           ),
         );
       } else {
-        return CircleAvatar(
-          backgroundImage:
-              const AssetImage('assets/immich-logo-no-outline.png'),
-          backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
+        return UserCircleAvatar(
+          user: user,
         );
       }
     }
@@ -103,7 +102,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                   } else {
                     sharedUsersList.value = {
                       ...sharedUsersList.value,
-                      users[index]
+                      users[index],
                     };
                   }
                 },
@@ -136,7 +135,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
               "share_add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ).tr(),
-          )
+          ),
         ],
       ),
       body: suggestedShareUsers.when(

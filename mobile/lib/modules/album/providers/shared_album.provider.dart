@@ -56,6 +56,16 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     return _albumService.removeAssetFromAlbum(album, assets);
   }
 
+  Future<bool> removeUserFromAlbum(Album album, User user) async {
+    final result = await _albumService.removeUserFromAlbum(album, user);
+
+    if (result && album.sharedUsers.isEmpty) {
+      state = state.where((element) => element.id != album.id).toList();
+    }
+
+    return result;
+  }
+
   @override
   void dispose() {
     _streamSub.cancel();

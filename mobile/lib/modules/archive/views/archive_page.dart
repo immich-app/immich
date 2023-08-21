@@ -91,7 +91,7 @@ class ArchivePage extends HookConsumerWidget {
                               selectionEnabledHook.value = false;
                             }
                           },
-                  )
+                  ),
                 ],
               ),
             ),
@@ -124,7 +124,7 @@ class ArchivePage extends HookConsumerWidget {
                   ),
                   if (selectionEnabledHook.value) buildBottomBar(),
                   if (processing.value)
-                    const Center(child: ImmichLoadingIndicator())
+                    const Center(child: ImmichLoadingIndicator()),
                 ],
               ),
       ),

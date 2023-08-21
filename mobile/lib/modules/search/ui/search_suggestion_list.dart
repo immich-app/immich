@@ -39,7 +39,7 @@ class SearchSuggestionList extends ConsumerWidget {
                               color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.bold,
                             ),
-                      )
+                      ),
                     ],
                   ),
                 ),

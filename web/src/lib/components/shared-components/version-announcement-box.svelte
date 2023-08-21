@@ -2,16 +2,16 @@
   import { getGithubVersion } from '$lib/utils/get-github-version';
   import { onMount } from 'svelte';
   import FullScreenModal from './full-screen-modal.svelte';
-  import type { ServerVersionReponseDto } from '@api';
+  import type { ServerVersionResponseDto } from '@api';
   import Button from '../elements/buttons/button.svelte';
 
-  export let serverVersion: ServerVersionReponseDto;
+  export let serverVersion: ServerVersionResponseDto;
 
   let showModal = false;
   let githubVersion: string;
   $: serverVersionName = semverToName(serverVersion);
 
-  function semverToName({ major, minor, patch }: ServerVersionReponseDto) {
+  function semverToName({ major, minor, patch }: ServerVersionResponseDto) {
     return `v${major}.${minor}.${patch}`;
   }
 
