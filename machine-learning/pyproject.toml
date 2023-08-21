@@ -70,13 +70,20 @@ warn_untyped_fields = true
 [[tool.mypy.overrides]]
 module = [
     "huggingface_hub",
-    "transformers.pipelines",
+    "transformers",
     "cv2",
     "insightface.model_zoo",
     "insightface.utils.face_align",
     "insightface.utils.storage",
-    "sentence_transformers",
-    "sentence_transformers.util",
+    "onnxruntime",
+    "optimum",
+    "optimum.pipelines",
+    "optimum.onnxruntime",
+    "clip_server.model.clip",
+    "clip_server.model.clip_onnx",
+    "clip_server.model.pretrained_models",
+    "clip_server.model.tokenization",
+    "torchvision.transforms",
     "aiocache.backends.memory",
     "aiocache.lock",
     "aiocache.plugins"

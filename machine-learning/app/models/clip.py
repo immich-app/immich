@@ -35,9 +35,7 @@ class CLIPEncoder(InferenceModel):
         if mode is not None and mode not in ("text", "vision"):
             raise ValueError(f"Mode must be 'text', 'vision', or omitted; got '{mode}'")
         if "vit-b" not in model_name.lower():
-            raise ValueError(
-                f"Only ViT-B models are currently supported as larger models have different embedding sizes; got '{model_name}'"
-            )
+            raise ValueError(f"Only ViT-B models are currently supported; got '{model_name}'")
         self.mode = mode
         jina_model_name = self._get_jina_model_name(model_name)
         super().__init__(jina_model_name, cache_dir, **model_kwargs)
@@ -104,13 +102,14 @@ class CLIPEncoder(InferenceModel):
             return model_name
         elif model_name in _ST_TO_JINA_MODEL_NAME:
             print(
-                f"Warning: Sentence-Transformer model names such as '{model_name}' are no longer supported.\nUsing '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the closest match for '{model_name}'."
+                (f"Warning: Sentence-Transformer model names such as '{model_name}' are no longer supported."),
+                (f"Using '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the best match for '{model_name}'."),
             )
             return _ST_TO_JINA_MODEL_NAME[model_name]
         else:
             raise ValueError(f"Unknown model name {model_name}.")
 
-    def _download_model(self, model_name, model_md5) -> bool:
+    def _download_model(self, model_name: str, model_md5: str) -> bool:
         # downloading logic is adapted from clip-server's CLIPOnnxModel class
         download_model(
             url=_S3_BUCKET_V2 + model_name,
@@ -127,7 +126,7 @@ class CLIPEncoder(InferenceModel):
 
 
 # same as `_transform_blob` without `_blob2image`
-def _transform_pil_image(n_px) -> Compose:
+def _transform_pil_image(n_px: int) -> Compose:
     return Compose(
         [
             Resize(n_px, interpolation=BICUBIC),

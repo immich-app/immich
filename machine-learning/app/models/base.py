@@ -113,7 +113,7 @@ class PicklableSessionOptions(ort.SessionOptions):
     def __getstate__(self) -> bytes:
         return pickle.dumps([(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))])
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: Any) -> None:
         self.__init__()  # type: ignore
         for attr, val in pickle.loads(state):
             setattr(self, attr, val)

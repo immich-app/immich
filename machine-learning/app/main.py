@@ -61,7 +61,7 @@ def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
     return Image.open(BytesIO(byte_image))
 
 
-def dep_cv_image(byte_image: bytes = Body(...)) -> np.ndarray:
+def dep_cv_image(byte_image: bytes = Body(...)) -> np.ndarray[int, np.dtype[Any]]:
     byte_image_np = np.frombuffer(byte_image, np.uint8)
     return cv2.imdecode(byte_image_np, cv2.IMREAD_COLOR)
 

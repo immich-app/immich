@@ -5,11 +5,12 @@ from unittest import mock
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
-import onnxruntime as ort
+
 from .config import settings
 from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
