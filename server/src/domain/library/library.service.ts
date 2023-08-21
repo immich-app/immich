@@ -7,7 +7,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { glob } from 'glob';
 import { basename, parse } from 'path';
 
 import { R_OK } from 'node:constants';
