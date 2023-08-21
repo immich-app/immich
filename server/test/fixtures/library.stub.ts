@@ -30,7 +30,7 @@ export const libraryStub = {
     isVisible: true,
     exclusionPatterns: [],
   }),
-  importLibrary: Object.freeze<LibraryEntity>({
+  externalLibrary1: Object.freeze<LibraryEntity>({
     id: 'library-id',
     name: 'test_library',
     assets: [],

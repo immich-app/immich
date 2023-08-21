@@ -2,6 +2,7 @@ import { UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
+  authStub,
   libraryStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
@@ -13,13 +14,26 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { IAccessRepository } from '../access';
+import { AccessCore, IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
 import { ILibraryRepository, LibraryService } from './index';
+
+const mockRequirePermission = jest.fn();
+
+jest.mock('../access', () => {
+  return {
+    AccessCore: jest.fn().mockImplementation(() => {
+      return {
+        requirePermission: mockRequirePermission,
+      };
+    }),
+    Permission: jest.requireActual('../access'),
+  };
+});
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -55,6 +69,8 @@ describe(LibraryService.name, () => {
       mtime: new Date('2023-01-01'),
       ctime: new Date('2023-01-01'),
     } as Stats);
+
+    mockRequirePermission.mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -81,7 +97,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         analyze: false,
@@ -108,7 +124,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         analyze: false,
@@ -133,7 +149,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -174,7 +190,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
         analyze: false,
@@ -215,7 +231,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -248,7 +264,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -291,7 +307,7 @@ describe(LibraryService.name, () => {
       userMock.get.mockResolvedValue(null);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -310,7 +326,7 @@ describe(LibraryService.name, () => {
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -329,7 +345,7 @@ describe(LibraryService.name, () => {
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
         analyze: false,
@@ -348,7 +364,7 @@ describe(LibraryService.name, () => {
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/../../etc/rootpassword.jpg',
         analyze: false,
@@ -445,7 +461,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -477,7 +493,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         analyze: false,
@@ -498,16 +514,13 @@ describe(LibraryService.name, () => {
 
     beforeEach(() => {
       jest.resetModules();
-
-      mockUser = userStub.externalPath;
-      userMock.get.mockResolvedValue(mockUser);
     });
 
     it('should mark an asset as offline', async () => {
       createLibraryService();
 
       const offlineJob: IOfflineLibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
         assetId: assetStub.image.id,
         emptyTrash: false,
@@ -527,7 +540,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       const offlineJob: IOfflineLibraryFileJob = {
-        libraryId: libraryStub.importLibrary.id,
+        libraryId: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
         assetId: assetStub.image.id,
         emptyTrash: true,
@@ -539,6 +552,27 @@ describe(LibraryService.name, () => {
       await expect(sut.handleOfflineAsset(offlineJob)).resolves.toBe(true);
 
       expect(assetMock.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    let mockUser: UserEntity;
+
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('should delete a library', async () => {
+      createLibraryService();
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+
+      await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_LIBRARY,
+        data: { libraryId: libraryStub.externalLibrary1.id },
+      });
     });
   });
 });

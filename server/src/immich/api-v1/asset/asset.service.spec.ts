@@ -289,7 +289,7 @@ describe('AssetService', () => {
         resizePath: 'resize-path-3',
         webpPath: 'web-path-3',
         encodedVideoPath: 'encoded-video-path-2',
-        library: libraryStub.importLibrary,
+        library: libraryStub.externalLibrary1,
       };
 
       when(assetRepositoryMock.get)
