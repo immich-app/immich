@@ -7,10 +7,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import fs from 'fs';
 import { glob } from 'glob';
 import { basename, parse } from 'path';
 
+import { R_OK } from 'node:constants';
+import { Stats } from 'node:fs';
 import path from 'node:path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository } from '../asset';
@@ -25,9 +26,9 @@ import {
   IOfflineLibraryFileJob,
   JobName,
 } from '../job';
+import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
 import {
-  CrawlOptionsDto,
   CreateLibraryDto,
   GetLibrariesDto,
   LibraryResponseDto,
@@ -50,6 +51,7 @@ export class LibraryService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
   }
@@ -180,9 +182,9 @@ export class LibraryService {
 
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
-    let stats: fs.Stats;
+    let stats: Stats;
     try {
-      stats = await fs.promises.stat(job.assetPath);
+      stats = await this.storageRepository.stat(job.assetPath);
     } catch (error) {
       // Can't access file, probably offline
       if (existingAssetEntity) {
@@ -234,9 +236,6 @@ export class LibraryService {
       return true;
     }
 
-    const checksum = await this.cryptoRepository.hashFile(job.assetPath);
-    const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
-
     let assetType: AssetType;
 
     if (mimeTypes.isImage(job.assetPath)) {
@@ -252,9 +251,12 @@ export class LibraryService {
     // TODO: doesn't xmp replace the file extension? Will need investigation
     let sidecarPath: string | null = null;
     try {
-      await fs.promises.access(`${job.assetPath}.xmp`, fs.constants.R_OK);
+      await this.storageRepository.checkFileExists(`${job.assetPath}.xmp`, R_OK);
       sidecarPath = `${job.assetPath}.xmp`;
     } catch (error) {}
+
+    const checksum = await this.cryptoRepository.hashFile(job.assetPath);
+    const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
 
     // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
     const addedAsset = await this.assetRepository.create({
@@ -343,7 +345,7 @@ export class LibraryService {
     }
 
     const crawledAssetPaths = (
-      await this.crawl({
+      await this.storageRepository.crawl({
         pathsToCrawl: library.importPaths,
         exclusionPatterns: library.exclusionPatterns,
       })
@@ -394,25 +396,5 @@ export class LibraryService {
     }
 
     return true;
-  }
-
-  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl = crawlOptions.pathsToCrawl;
-
-    let paths: string;
-    if (!pathsToCrawl) {
-      // No paths to crawl, return empty list
-      return [];
-    } else if (pathsToCrawl.length === 1) {
-      paths = pathsToCrawl[0];
-    } else {
-      paths = '{' + pathsToCrawl.join(',') + '}';
-    }
-
-    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
-
-    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
-      path.normalize(assetPath),
-    );
   }
 }

@@ -1,7 +1,15 @@
-import { DiskUsage, ImmichReadStream, ImmichZipStream, IStorageRepository } from '@app/domain';
+import {
+  CrawlOptionsDto,
+  DiskUsage,
+  ImmichReadStream,
+  ImmichZipStream,
+  IStorageRepository,
+  mimeTypes,
+} from '@app/domain';
 import archiver from 'archiver';
-import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
+import { constants, createReadStream, existsSync, mkdirSync, Stats } from 'fs';
 import fs, { readdir } from 'fs/promises';
+import { glob } from 'glob';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
@@ -52,6 +60,10 @@ export class FilesystemProvider implements IStorageRepository {
     await fs.unlink(file);
   }
 
+  async stat(filepath: string): Promise<Stats> {
+    return await fs.stat(filepath);
+  }
+
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
     await fs.rm(folder, options);
   }
@@ -91,6 +103,26 @@ export class FilesystemProvider implements IStorageRepository {
       free: stats.bfree * stats.bsize,
       total: stats.blocks * stats.bsize,
     };
+  }
+
+  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const pathsToCrawl = crawlOptions.pathsToCrawl;
+
+    let paths: string;
+    if (!pathsToCrawl) {
+      // No paths to crawl, return empty list
+      return [];
+    } else if (pathsToCrawl.length === 1) {
+      paths = pathsToCrawl[0];
+    } else {
+      paths = '{' + pathsToCrawl.join(',') + '}';
+    }
+
+    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
+
+    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
+      path.normalize(assetPath),
+    );
   }
 
   readdir = readdir;

@@ -8,19 +8,18 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newStorageRepositoryMock,
   newUserRepositoryMock,
   userStub,
 } from '@test';
-import * as matchers from 'jest-extended';
-import mockfs from 'mock-fs';
+import { Stats } from 'fs';
 import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryFileJob, JobName } from '../job';
+import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
-import { CrawlOptionsDto, ILibraryRepository, LibraryService } from './index';
-
-expect.extend(matchers);
+import { ILibraryRepository, LibraryService } from './index';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -31,6 +30,7 @@ describe(LibraryService.name, () => {
   let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
 
   const createLibraryService = () => {
     // We can't import library service the normal way due to some mocking load order issues
@@ -38,12 +38,8 @@ describe(LibraryService.name, () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { LibraryService } = require('./library.service');
 
-    sut = new LibraryService(accessMock, userMock, libraryMock, assetMock, jobMock, cryptoMock);
+    sut = new LibraryService(accessMock, userMock, libraryMock, assetMock, jobMock, cryptoMock, storageMock);
   };
-
-  beforeAll(() => {
-    mockfs.restore();
-  });
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -52,6 +48,17 @@ describe(LibraryService.name, () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    storageMock = newStorageRepositoryMock();
+
+    storageMock.stat.mockResolvedValue({
+      size: 100,
+      mtime: new Date('2023-01-01'),
+      ctime: new Date('2023-01-01'),
+    } as Stats);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should work', () => {
@@ -63,10 +70,6 @@ describe(LibraryService.name, () => {
   describe('handleRefreshAsset', () => {
     let mockUser: UserEntity;
 
-    afterEach(() => {
-      mockfs.restore();
-    });
-
     beforeEach(() => {
       jest.resetModules();
 
@@ -75,10 +78,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should reject an unknown file extension', async () => {
-      mockfs({
-        '/data/user1/file.xyz': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -89,16 +88,48 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => false,
+          isVideo: () => false,
+          isAsset: () => false,
+        },
+      }));
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+
       await expect(async () => {
         await sut.handleAssetRefresh(mockLibraryJob);
       }).rejects.toThrowError('Unsupported file type /data/user1/file.xyz');
     });
 
-    it('should add a new image', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
+    it('should reject an unknown file type', async () => {
+      createLibraryService();
 
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: libraryStub.importLibrary.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/file.xyz',
+        analyze: false,
+        emptyTrash: false,
+      };
+
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => false,
+          isVideo: () => false,
+          isAsset: () => true,
+        },
+      }));
+
+      await expect(async () => {
+        await sut.handleAssetRefresh(mockLibraryJob);
+      }).rejects.toThrowError('Unknown error when checking file type of /data/user1/file.xyz');
+    });
+
+    it('should add a new image', async () => {
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -108,6 +139,15 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
+
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => true,
+          isVideo: () => false,
+          isAsset: () => true,
+        },
+      }));
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -131,10 +171,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should add a new video', async () => {
-      mockfs({
-        '/data/user1/video.mp4': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -144,6 +180,15 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
+
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => false,
+          isVideo: () => true,
+          isAsset: () => true,
+        },
+      }));
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
@@ -167,12 +212,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should not import an asset when mtime matches db asset', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': mockfs.file({
-          mtime: assetStub.image.fileModifiedAt,
-        }),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -182,6 +221,21 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
+
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => true,
+          isVideo: () => false,
+          isAsset: () => true,
+        },
+      }));
+
+      storageMock.stat.mockResolvedValue({
+        size: 100,
+        mtime: assetStub.image.fileModifiedAt,
+        ctime: new Date('2023-01-01'),
+      } as Stats);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
 
@@ -191,13 +245,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should import an asset when mtime differs from db asset', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': mockfs.file({
-          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-          mtime: new Date(assetStub.image.fileModifiedAt.getTime() - 1),
-        }),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -207,6 +254,15 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
+
+      jest.mock('../domain.constant', () => ({
+        __esModule: true,
+        mimeTypes: {
+          isImage: () => true,
+          isVideo: () => false,
+          isAsset: () => true,
+        },
+      }));
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -230,10 +286,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should reject an asset if the user cannot be found', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       userMock.get.mockResolvedValue(null);
@@ -252,10 +304,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should reject an asset if external path is not set', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       mockUser = userStub.admin;
@@ -275,10 +323,6 @@ describe(LibraryService.name, () => {
     });
 
     it("should reject an asset if it isn't in the external path", async () => {
-      mockfs({
-        '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       mockUser = userStub.externalPath;
@@ -298,10 +342,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should reject an asset if directory traversal is attempted', async () => {
-      mockfs({
-        '/etc/rootpassword.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-      });
-
       createLibraryService();
 
       mockUser = userStub.externalPath;
@@ -321,7 +361,9 @@ describe(LibraryService.name, () => {
     });
 
     it('should offline a missing asset', async () => {
-      mockfs({});
+      storageMock.stat.mockImplementation(() => {
+        throw new Error();
+      });
 
       createLibraryService();
 
@@ -344,14 +386,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should online a previously-offline asset', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': mockfs.file({
-          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-          ctime: new Date(1),
-          mtime: new Date(1),
-        }),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -386,14 +420,6 @@ describe(LibraryService.name, () => {
     });
 
     it('should do nothing when mtime matches existing asset', async () => {
-      mockfs({
-        '/data/user1/photo.jpg': mockfs.file({
-          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-          ctime: new Date(1),
-          mtime: assetStub.image.fileModifiedAt,
-        }),
-      });
-
       createLibraryService();
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -415,13 +441,6 @@ describe(LibraryService.name, () => {
     it('should refresh an existing asset with modified mtime', async () => {
       const filemtime = new Date();
       filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
-      mockfs({
-        '/data/user1/photo.jpg': mockfs.file({
-          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
-          ctime: new Date(1),
-          mtime: filemtime,
-        }),
-      });
 
       createLibraryService();
 
@@ -432,6 +451,12 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
+
+      storageMock.stat.mockResolvedValue({
+        size: 100,
+        mtime: filemtime,
+        ctime: new Date('2023-01-01'),
+      } as Stats);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -445,7 +470,9 @@ describe(LibraryService.name, () => {
     });
 
     it('should error when asset does not exist', async () => {
-      mockfs({});
+      storageMock.stat.mockImplementation(() => {
+        throw new Error("ENOENT, no such file or directory '/data/user1/photo.jpg'");
+      });
 
       createLibraryService();
 
@@ -463,213 +490,6 @@ describe(LibraryService.name, () => {
       await expect(async () => {
         await sut.handleAssetRefresh(mockLibraryJob);
       }).rejects.toThrowError("ENOENT, no such file or directory '/data/user1/photo.jpg'");
-    });
-  });
-
-  describe('crawl', () => {
-    beforeAll(() => {
-      // Write a dummy output before mock-fs to prevent some annoying errors
-      console.log();
-
-      createLibraryService();
-    });
-
-    it('should return empty wnen crawling an empty path list', async () => {
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = [];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toBeEmpty();
-    });
-
-    it('should crawl a single path', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-    });
-
-    it('should exclude by file extension', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/image.tif': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      options.exclusionPatterns = ['**/*.tif'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-    });
-
-    it('should exclude by file extension without case sensitivity', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/image.tif': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      options.exclusionPatterns = ['**/*.TIF'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-    });
-
-    it('should exclude by folder', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/raw/image.jpg': '',
-        '/photos/raw2/image.jpg': '',
-        '/photos/folder/raw/image.jpg': '',
-        '/photos/crawl/image.jpg': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      options.exclusionPatterns = ['**/raw/**'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
-    });
-
-    it('should crawl multiple paths', async () => {
-      mockfs({
-        '/photos/image1.jpg': '',
-        '/images/image2.jpg': '',
-        '/albums/image3.jpg': '',
-      });
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/', '/images/', '/albums/'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
-    });
-
-    it('should support globbing paths', async () => {
-      mockfs({
-        '/photos1/image1.jpg': '',
-        '/photos2/image2.jpg': '',
-        '/images/image3.jpg': '',
-      });
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos*'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos1/image1.jpg', '/photos2/image2.jpg']);
-    });
-
-    it('should crawl a single path without trailing slash', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-      });
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-    });
-
-    // TODO: test for hidden paths (not yet implemented)
-
-    it('should crawl a single path', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/subfolder/image1.jpg': '',
-        '/photos/subfolder/image2.jpg': '',
-        '/image1.jpg': '',
-      });
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/subfolder/image1.jpg',
-        '/photos/subfolder/image2.jpg',
-      ]);
-    });
-
-    it('should filter file extensions', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/image.txt': '',
-        '/photos/1': '',
-      });
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-    });
-
-    it('should include photo and video extensions', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/image.jpeg': '',
-        '/photos/image.heic': '',
-        '/photos/image.heif': '',
-        '/photos/image.png': '',
-        '/photos/image.gif': '',
-        '/photos/image.tif': '',
-        '/photos/image.tiff': '',
-        '/photos/image.webp': '',
-        '/photos/image.dng': '',
-        '/photos/image.nef': '',
-        '/videos/video.mp4': '',
-        '/videos/video.mov': '',
-        '/videos/video.webm': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/', '/videos/'];
-      const paths: string[] = await sut.crawl(options);
-
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/image.jpeg',
-        '/photos/image.heic',
-        '/photos/image.heif',
-        '/photos/image.png',
-        '/photos/image.gif',
-        '/photos/image.tif',
-        '/photos/image.tiff',
-        '/photos/image.webp',
-        '/photos/image.dng',
-        '/photos/image.nef',
-        '/videos/video.mp4',
-        '/videos/video.mov',
-        '/videos/video.webm',
-      ]);
-    });
-
-    it('should check file extensions without case sensitivity', async () => {
-      mockfs({
-        '/photos/image.jpg': '',
-        '/photos/image.Jpg': '',
-        '/photos/image.jpG': '',
-        '/photos/image.JPG': '',
-        '/photos/image.jpEg': '',
-        '/photos/image.TIFF': '',
-        '/photos/image.tif': '',
-        '/photos/image.dng': '',
-        '/photos/image.NEF': '',
-      });
-
-      const options = new CrawlOptionsDto();
-      options.pathsToCrawl = ['/photos/'];
-      const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/image.Jpg',
-        '/photos/image.jpG',
-        '/photos/image.JPG',
-        '/photos/image.jpEg',
-        '/photos/image.TIFF',
-        '/photos/image.tif',
-        '/photos/image.dng',
-        '/photos/image.NEF',
-      ]);
-    });
-
-    afterEach(() => {
-      mockfs.restore();
     });
   });
 });

@@ -1,4 +1,6 @@
+import { Stats } from 'fs';
 import { Readable } from 'stream';
+import { CrawlOptionsDto } from '../library';
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -30,4 +32,6 @@ export interface IStorageRepository {
   mkdirSync(filepath: string): void;
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
+  stat(filepath: string): Promise<Stats>;
+  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
 }
