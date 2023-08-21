@@ -16,13 +16,17 @@
   import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-
+  import Pause from 'svelte-material-icons/Pause.svelte';
+  import Play from 'svelte-material-icons/Play.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import Close from 'svelte-material-icons/Close.svelte';
+  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -47,7 +51,21 @@
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
+
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
+
+  function checkIsLastAsset() {
+    const currentIndex = assetStore?.assets.findIndex((a) => a.id === asset.id);
+    if (currentIndex === undefined) {
+      return true;
+    }
+
+    if (assetStore?.assets.length === currentIndex + 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -263,33 +281,125 @@
       handleError(error, `Unable to submit job`);
     }
   };
+
+  /**
+   * Slide show mode
+   */
+
+  let isSlideshowMode = false;
+  let assetViewerHtmlElement: HTMLElement;
+  let progressBar: ProgressBar;
+  let progressBarStatus: ProgressBarStatus;
+
+  const handleVideoStarted = () => {
+    if (isSlideshowMode) {
+      pauseSlideshow();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    if (isSlideshowMode) {
+      navigateAssetForward();
+      progressBar.restart(true);
+    }
+  };
+
+  const playSlideshow = async () => {
+    // Enter fullscreen mode
+    await assetViewerHtmlElement.requestFullscreen();
+
+    // Disable navigation button
+    showNavigation = false;
+
+    // Show slideshow controller
+    isSlideshowMode = true;
+
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+  };
+
+  const stopSlideshow = async () => {
+    // Exit fullscreen mode
+    await document.exitFullscreen().catch((e) => {
+      console.error('Error exiting fullscreen', e);
+    });
+
+    // Show navigation buttons
+    showNavigation = true;
+    // Hide slide show controller
+    isSlideshowMode = false;
+    // Stop play timer
+    progressBar.restart(false);
+  };
+
+  const pauseSlideshow = () => {
+    progressBar.pause();
+  };
+
+  const resumeSlideshow = () => {
+    progressBar.play();
+  };
+
+  const handleSlideShowTransition = () => {
+    navigateAssetForward();
+
+    if (checkIsLastAsset()) {
+      stopSlideshow();
+    } else {
+      progressBar.restart(true);
+    }
+  };
 </script>
 
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  bind:this={assetViewerHtmlElement}
 >
   <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    <AssetViewerNavBar
-      {asset}
-      isMotionPhotoPlaying={shouldPlayMotionPhoto}
-      showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-      showZoomButton={asset.type === AssetTypeEnum.Image}
-      showMotionPlayButton={!!asset.livePhotoVideoId}
-      showDownloadButton={shouldShowDownloadButton}
-      on:goBack={closeViewer}
-      on:showDetail={showDetailInfoHandler}
-      on:download={() => downloadFile(asset)}
-      on:delete={() => (isShowDeleteConfirmation = true)}
-      on:favorite={toggleFavorite}
-      on:addToAlbum={() => openAlbumPicker(false)}
-      on:addToSharedAlbum={() => openAlbumPicker(true)}
-      on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-      on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-      on:toggleArchive={toggleArchive}
-      on:asProfileImage={() => (isShowProfileImageCrop = true)}
-      on:runJob={({ detail: job }) => handleRunJob(job)}
-    />
+    {#if isSlideshowMode}
+      <!-- SlideShowController -->
+      <div class="flex">
+        <div class="m-4 flex gap-2">
+          <CircleIconButton logo={Close} on:click={stopSlideshow} title="Exit Slideshow" />
+          <CircleIconButton
+            logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
+            on:click={progressBarStatus === ProgressBarStatus.Paused ? resumeSlideshow : pauseSlideshow}
+            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
+          />
+        </div>
+        <ProgressBar
+          autoplay
+          bind:this={progressBar}
+          bind:status={progressBarStatus}
+          on:done={handleSlideShowTransition}
+          duration={2000}
+        />
+      </div>
+    {:else}
+      <AssetViewerNavBar
+        {asset}
+        isMotionPhotoPlaying={shouldPlayMotionPhoto}
+        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+        showZoomButton={asset.type === AssetTypeEnum.Image}
+        showMotionPlayButton={!!asset.livePhotoVideoId}
+        showDownloadButton={shouldShowDownloadButton}
+        on:goBack={closeViewer}
+        on:showDetail={showDetailInfoHandler}
+        on:download={() => downloadFile(asset)}
+        on:delete={() => (isShowDeleteConfirmation = true)}
+        on:favorite={toggleFavorite}
+        on:addToAlbum={() => openAlbumPicker(false)}
+        on:addToSharedAlbum={() => openAlbumPicker(true)}
+        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+        on:toggleArchive={toggleArchive}
+        on:asProfileImage={() => (isShowProfileImageCrop = true)}
+        on:runJob={({ detail: job }) => handleRunJob(job)}
+        on:playSlideShow={playSlideshow}
+      />
+    {/if}
   </div>
 
   {#if showNavigation}
@@ -323,7 +433,12 @@
           <PhotoViewer {asset} on:close={closeViewer} />
         {/if}
       {:else}
-        <VideoViewer assetId={asset.id} on:close={closeViewer} />
+        <VideoViewer
+          assetId={asset.id}
+          on:close={closeViewer}
+          on:onVideoEnded={handleVideoEnded}
+          on:onVideoStarted={handleVideoStarted}
+        />
       {/if}
     {/key}
   </div>

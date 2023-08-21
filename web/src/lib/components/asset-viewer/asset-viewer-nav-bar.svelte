@@ -29,7 +29,7 @@
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob';
+  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -44,6 +44,7 @@
     addToSharedAlbum: void;
     asProfileImage: void;
     runJob: AssetJobName;
+    playSlideShow: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -161,6 +162,8 @@
                 />
               {/if}
             {/if}
+
+            <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
           </ContextMenu>
         {/if}
       </div>
