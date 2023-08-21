@@ -29,6 +29,7 @@ doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
 doc/AudioCodec.md
+doc/AuditApi.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/BulkIdResponseDto.md
@@ -134,6 +135,7 @@ lib/api.dart
 lib/api/album_api.dart
 lib/api/api_key_api.dart
 lib/api/asset_api.dart
+lib/api/audit_api.dart
 lib/api/authentication_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
@@ -292,6 +294,7 @@ test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/audio_codec_test.dart
+test/audit_api_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart

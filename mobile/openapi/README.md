@@ -113,6 +113,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AuditApi* | [**getAuditRecords**](doc//AuditApi.md#getauditrecords) | **GET** /audit/records | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 

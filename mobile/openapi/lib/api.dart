@@ -31,6 +31,7 @@ part 'auth/http_bearer_auth.dart';
 part 'api/api_key_api.dart';
 part 'api/album_api.dart';
 part 'api/asset_api.dart';
+part 'api/audit_api.dart';
 part 'api/authentication_api.dart';
 part 'api/job_api.dart';
 part 'api/o_auth_api.dart';

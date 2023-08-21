@@ -2071,10 +2071,20 @@
         ]
       }
     },
-    "/audit": {
+    "/audit/records": {
       "get": {
         "operationId": "getAuditRecords",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "lastTime",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {

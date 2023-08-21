@@ -1,4 +1,11 @@
-import { EntitySubscriberInterface, EventSubscriber, InsertEvent, LoadEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import {
+  EntityManager,
+  EntitySubscriberInterface,
+  EventSubscriber,
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from 'typeorm';
 import { AssetEntity, AuditEntity, DatabaseAction, EntityType } from '../entities';
 
 @EventSubscriber()
@@ -14,24 +21,21 @@ export class AssetAudit implements EntitySubscriberInterface<AssetEntity> {
   }
 
   async afterInsert(event: InsertEvent<AssetEntity>): Promise<any> {
-    const auditRepository = event.manager.getRepository(AuditEntity);
-    const auditEntity = this.getAssetAudit(DatabaseAction.CREATE);
-
-    await auditRepository.save(auditEntity);
+    await this.addAction(DatabaseAction.CREATE, event.manager);
   }
 
   async afterRemove(event: RemoveEvent<AssetEntity>): Promise<any> {
-    const auditRepository = event.manager.getRepository(AuditEntity);
-    const auditEntity = this.getAssetAudit(DatabaseAction.DELETE);
-
-    await auditRepository.save(auditEntity);
+    await this.addAction(DatabaseAction.DELETE, event.manager);
   }
 
   async afterUpdate(event: UpdateEvent<AssetEntity>): Promise<any> {
-    const auditRepository = event.manager.getRepository(AuditEntity);
-    const auditEntity = this.getAssetAudit(DatabaseAction.UPDATE);
+    await this.addAction(DatabaseAction.UPDATE, event.manager);
+  }
 
-    await auditRepository.save(auditEntity);
+  private async addAction(action: DatabaseAction, manager: EntityManager): Promise<any> {
+    const auditEntity = this.getAssetAudit(action);
+    const repository = manager.getRepository(AuditEntity);
+    await repository.save(auditEntity);
   }
 
   private getAssetAudit(action: DatabaseAction): AuditEntity {
@@ -41,7 +45,6 @@ export class AssetAudit implements EntitySubscriberInterface<AssetEntity> {
     auditEntity.entityType = EntityType.ASSET;
     auditEntity.entityId = this.assetEntity.id;
     auditEntity.ownerId = this.assetEntity.ownerId;
-    auditEntity.userId = this.assetEntity.ownerId;
 
     return auditEntity;
   }

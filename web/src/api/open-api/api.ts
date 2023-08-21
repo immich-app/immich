@@ -7672,6 +7672,135 @@ export class AssetApi extends BaseAPI {
 
 
 /**
+ * AuditApi - axios parameter creator
+ * @export
+ */
+export const AuditApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} lastTime 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAuditRecords: async (lastTime: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'lastTime' is not null or undefined
+            assertParamExists('getAuditRecords', 'lastTime', lastTime)
+            const localVarPath = `/audit/records`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (lastTime !== undefined) {
+                localVarQueryParameter['lastTime'] = (lastTime as any instanceof Date) ?
+                    (lastTime as any).toISOString() :
+                    lastTime;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * AuditApi - functional programming interface
+ * @export
+ */
+export const AuditApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = AuditApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} lastTime 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAuditRecords(lastTime: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAuditRecords(lastTime, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * AuditApi - factory interface
+ * @export
+ */
+export const AuditApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = AuditApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {AuditApiGetAuditRecordsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAuditRecords(requestParameters: AuditApiGetAuditRecordsRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.getAuditRecords(requestParameters.lastTime, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for getAuditRecords operation in AuditApi.
+ * @export
+ * @interface AuditApiGetAuditRecordsRequest
+ */
+export interface AuditApiGetAuditRecordsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AuditApiGetAuditRecords
+     */
+    readonly lastTime: string
+}
+
+/**
+ * AuditApi - object-oriented interface
+ * @export
+ * @class AuditApi
+ * @extends {BaseAPI}
+ */
+export class AuditApi extends BaseAPI {
+    /**
+     * 
+     * @param {AuditApiGetAuditRecordsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuditApi
+     */
+    public getAuditRecords(requestParameters: AuditApiGetAuditRecordsRequest, options?: AxiosRequestConfig) {
+        return AuditApiFp(this.configuration).getAuditRecords(requestParameters.lastTime, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
  * AuthenticationApi - axios parameter creator
  * @export
  */

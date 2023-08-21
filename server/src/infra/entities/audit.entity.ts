@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum DatabaseAction {
   CREATE = 'CREATE',
@@ -11,6 +11,7 @@ export enum EntityType {
 }
 
 @Entity('audit')
+@Index('IDX_ownerId_time', ['ownerId', 'time'])
 export class AuditEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
@@ -18,18 +19,15 @@ export class AuditEntity {
   @Column()
   entityType!: EntityType;
 
-  @Column()
+  @Column({ type: 'uuid' })
   entityId!: string;
 
   @Column()
   action!: DatabaseAction;
 
-  @Column()
+  @Column({ type: 'uuid' })
   ownerId!: string;
 
-  @Column()
-  userId!: string;
-
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  time!: Date;
 }
