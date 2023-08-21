@@ -16,7 +16,7 @@ import { Stats } from 'fs';
 import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, ILibraryFileJob, JobName } from '../job';
+import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
 import { ILibraryRepository, LibraryService } from './index';
@@ -490,6 +490,55 @@ describe(LibraryService.name, () => {
       await expect(async () => {
         await sut.handleAssetRefresh(mockLibraryJob);
       }).rejects.toThrowError("ENOENT, no such file or directory '/data/user1/photo.jpg'");
+    });
+  });
+
+  describe('handleOfflineAsset', () => {
+    let mockUser: UserEntity;
+
+    beforeEach(() => {
+      jest.resetModules();
+
+      mockUser = userStub.externalPath;
+      userMock.get.mockResolvedValue(mockUser);
+    });
+
+    it('should mark an asset as offline', async () => {
+      createLibraryService();
+
+      const offlineJob: IOfflineLibraryFileJob = {
+        libraryId: libraryStub.importLibrary.id,
+        assetPath: '/data/user1/photo.jpg',
+        assetId: assetStub.image.id,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+
+      await expect(sut.handleOfflineAsset(offlineJob)).resolves.toBe(true);
+
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        isOffline: true,
+      });
+    });
+
+    it('should delete a missing asset when emptying trash', async () => {
+      createLibraryService();
+
+      const offlineJob: IOfflineLibraryFileJob = {
+        libraryId: libraryStub.importLibrary.id,
+        assetPath: '/data/user1/photo.jpg',
+        assetId: assetStub.image.id,
+        emptyTrash: true,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.getById.mockResolvedValue(assetStub.image);
+
+      await expect(sut.handleOfflineAsset(offlineJob)).resolves.toBe(true);
+
+      expect(assetMock.save).not.toHaveBeenCalled();
     });
   });
 });
