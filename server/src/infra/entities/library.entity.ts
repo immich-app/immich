@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinTable,
   ManyToOne,
@@ -45,6 +46,9 @@ export class LibraryEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
   refreshedAt?: Date | null;
