@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { DateTime, Duration } from 'luxon';
 import { IAuditRepository } from '.';
 import { AuthUserDto } from '..';
 import { AuditResponseDto } from './audit-response.dto';
@@ -18,5 +19,11 @@ export class AuditService {
     } catch (e) {
       return null;
     }
+  }
+
+  async handleCleanup(): Promise<boolean> {
+    const date = DateTime.now().minus(Duration.fromObject({ days: 100 }));
+    await this.repository.cleanOldEntries(date.toJSDate());
+    return true;
   }
 }

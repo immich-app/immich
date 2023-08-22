@@ -1,6 +1,6 @@
 import { IAuditRepository } from '@app/domain/audit/audit.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { DeleteResult, LessThan, LessThanOrEqual, Repository } from 'typeorm';
 import { AuditEntity } from '../entities';
 
 export class AuditRepository implements IAuditRepository {
@@ -18,5 +18,9 @@ export class AuditRepository implements IAuditRepository {
 
   countOlderForOwner(ownerId: string, time: Date): Promise<number> {
     return this.repository.countBy({ ownerId: ownerId, time: LessThanOrEqual(time) });
+  }
+
+  cleanOldEntries(before: Date): Promise<DeleteResult> {
+    return this.repository.delete({ time: LessThan(before) });
   }
 }
