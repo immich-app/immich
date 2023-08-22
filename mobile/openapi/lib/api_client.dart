@@ -235,6 +235,8 @@ class ApiClient {
           return BulkIdsDto.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
+        case 'ChangedAssetsResponseDto':
+          return ChangedAssetsResponseDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':

@@ -99,6 +99,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetStats**](doc//AssetApi.md#getassetstats) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getByTimeBucket**](doc//AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
+*AssetApi* | [**getChanges**](doc//AssetApi.md#getchanges) | **GET** /asset/changes | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
@@ -209,6 +210,7 @@ Class | Method | HTTP request | Description
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
+ - [ChangedAssetsResponseDto](doc//ChangedAssetsResponseDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)

@@ -865,6 +865,31 @@ export interface ChangePasswordDto {
 /**
  * 
  * @export
+ * @interface ChangedAssetsResponseDto
+ */
+export interface ChangedAssetsResponseDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ChangedAssetsResponseDto
+     */
+    'deleted': Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ChangedAssetsResponseDto
+     */
+    'needsFullSync': boolean;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof ChangedAssetsResponseDto
+     */
+    'upserted': Array<AssetResponseDto>;
+}
+/**
+ * 
+ * @export
  * @interface CheckDuplicateAssetDto
  */
 export interface CheckDuplicateAssetDto {
@@ -5450,6 +5475,58 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {string} lastTime 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getChanges: async (lastTime: string, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'lastTime' is not null or undefined
+            assertParamExists('getChanges', 'lastTime', lastTime)
+            const localVarPath = `/asset/changes`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+            if (lastTime !== undefined) {
+                localVarQueryParameter['lastTime'] = (lastTime as any instanceof Date) ?
+                    (lastTime as any).toISOString() :
+                    lastTime;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -6344,6 +6421,17 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} lastTime 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getChanges(lastTime: string, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ChangedAssetsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getChanges(lastTime, userId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -6621,6 +6709,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiGetChangesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getChanges(requestParameters: AssetApiGetChangesRequest, options?: AxiosRequestConfig): AxiosPromise<ChangedAssetsResponseDto> {
+            return localVarFp.getChanges(requestParameters.lastTime, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7034,6 +7131,27 @@ export interface AssetApiGetByTimeBucketRequest {
      * @memberof AssetApiGetByTimeBucket
      */
     readonly key?: string
+}
+
+/**
+ * Request parameters for getChanges operation in AssetApi.
+ * @export
+ * @interface AssetApiGetChangesRequest
+ */
+export interface AssetApiGetChangesRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetChanges
+     */
+    readonly lastTime: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetChanges
+     */
+    readonly userId?: string
 }
 
 /**
@@ -7515,6 +7633,17 @@ export class AssetApi extends BaseAPI {
      */
     public getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiGetChangesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getChanges(requestParameters: AssetApiGetChangesRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getChanges(requestParameters.lastTime, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

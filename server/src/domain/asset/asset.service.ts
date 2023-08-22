@@ -1,9 +1,10 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, DatabaseAction } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
+import { IAuditRepository } from '../audit';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
@@ -24,8 +25,10 @@ import {
   TimeBucketDto,
 } from './dto';
 import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
+import { ChangedAssetsDto } from './dto/changed-assets.dto';
 import { MapMarkerDto } from './dto/map-marker.dto';
 import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
+import { ChangedAssetsResponseDto } from './response-dto/changed-assets-response.dto';
 import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
 import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
 
@@ -59,6 +62,7 @@ export class AssetService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IAuditRepository) private auditRepository: IAuditRepository,
   ) {
     this.access = new AccessCore(accessRepository);
   }
@@ -272,6 +276,19 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async getChanges(authUser: AuthUserDto, dto: ChangedAssetsDto): Promise<ChangedAssetsResponseDto> {
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const count = await this.auditRepository.countOlderForOwner(userId, dto.lastTime);
+    if (count == 0) return { needsFullSync: true, upserted: [], deleted: [] };
+
+    const entries = await this.auditRepository.getNewestForOwnerSince(userId, dto.lastTime);
+    const idsToDelete = entries.filter((e) => e.action == DatabaseAction.DELETE).map((e) => e.entityId);
+    const idsToFetch = entries.filter((e) => e.action != DatabaseAction.DELETE).map((e) => e.entityId);
+    const assetsToUpsert = await this.assetRepository.getByIds(idsToFetch);
+    return { needsFullSync: false, upserted: assetsToUpsert.map(mapAsset), deleted: idsToDelete };
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {

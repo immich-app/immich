@@ -87,6 +87,11 @@ void main() {
       // TODO
     });
 
+    //Future<ChangedAssetsResponseDto> getChanges(DateTime lastTime, { String userId }) async
+    test('test getChanges', () async {
+      // TODO
+    });
+
     //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
     test('test getCuratedLocations', () async {
       // TODO

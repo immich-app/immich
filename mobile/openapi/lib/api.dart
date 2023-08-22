@@ -71,6 +71,7 @@ part 'model/auth_device_response_dto.dart';
 part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';
 part 'model/change_password_dto.dart';
+part 'model/changed_assets_response_dto.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';
 part 'model/check_existing_assets_dto.dart';

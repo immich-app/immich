@@ -765,6 +765,62 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /asset/changes' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [DateTime] lastTime (required):
+  ///
+  /// * [String] userId:
+  Future<Response> getChangesWithHttpInfo(DateTime lastTime, { String? userId, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/changes';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+      queryParams.addAll(_queryParams('', 'lastTime', lastTime));
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [DateTime] lastTime (required):
+  ///
+  /// * [String] userId:
+  Future<ChangedAssetsResponseDto?> getChanges(DateTime lastTime, { String? userId, }) async {
+    final response = await getChangesWithHttpInfo(lastTime,  userId: userId, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ChangedAssetsResponseDto',) as ChangedAssetsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /asset/curated-locations' operation and returns the [Response].
   Future<Response> getCuratedLocationsWithHttpInfo() async {
     // ignore: prefer_const_declarations

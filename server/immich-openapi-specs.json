@@ -937,6 +937,57 @@
         ]
       }
     },
+    "/asset/changes": {
+      "get": {
+        "operationId": "getChanges",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastTime",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangedAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/check": {
       "post": {
         "description": "Check duplicated asset before uploading - for Web upload used",
@@ -5365,6 +5416,31 @@
         "required": [
           "password",
           "newPassword"
+        ],
+        "type": "object"
+      },
+      "ChangedAssetsResponseDto": {
+        "properties": {
+          "deleted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          },
+          "upserted": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "upserted",
+          "deleted",
+          "needsFullSync"
         ],
         "type": "object"
       },
