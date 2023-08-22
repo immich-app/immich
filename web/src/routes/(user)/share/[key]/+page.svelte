@@ -6,6 +6,7 @@
 
   export let data: PageData;
   const { sharedLink } = data;
+
   let isOwned = data.user ? data.user.id === sharedLink.userId : false;
 </script>
 
