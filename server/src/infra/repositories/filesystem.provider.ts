@@ -48,19 +48,6 @@ export class FilesystemProvider implements IStorageRepository {
     }
   }
 
-  async readFile(): Promise<string> {
-    const path = process.env.CONFIG_FILE;
-    if (!path) {
-      throw new Error('Config file not set in env variable');
-    }
-
-    if (!(await this.checkFileExists(path, constants.R_OK))) {
-      throw new Error(`Couldn't read file ${path}`);
-    }
-
-    return fs.readFile(path, 'utf-8');
-  }
-
   async unlink(file: string) {
     await fs.unlink(file);
   }

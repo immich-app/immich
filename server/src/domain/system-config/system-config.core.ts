@@ -9,11 +9,10 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
-import { IStorageRepository } from '..';
 import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from './system-config.repository';
 
@@ -83,10 +82,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(
-    private repository: ISystemConfigRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+  constructor(private repository: ISystemConfigRepository) {}
 
   public getDefaults(): SystemConfig {
     return defaults;
@@ -99,8 +95,7 @@ export class SystemConfigCore {
   public async getConfig() {
     let config: DeepPartial<SystemConfig> = {};
     if (process.env.CONFIG_FILE) {
-      const file = await this.storageRepository.readFile();
-      config = JSON.parse(file);
+      config = await this.repository.readConfigFile();
       config.isConfigFile = true;
     } else {
       const overrides = await this.repository.load();

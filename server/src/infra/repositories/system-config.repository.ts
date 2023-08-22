@@ -1,7 +1,9 @@
 import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { SystemConfigEntity } from '../entities';
+import { constants } from 'fs';
+import fs from 'fs/promises';
+import { DeepPartial, In, Repository } from 'typeorm';
+import { SystemConfig, SystemConfigEntity } from '../entities';
 
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
@@ -11,6 +13,23 @@ export class SystemConfigRepository implements ISystemConfigRepository {
 
   load(): Promise<SystemConfigEntity[]> {
     return this.repository.find();
+  }
+
+  async readConfigFile(): Promise<DeepPartial<SystemConfig>> {
+    const path = process.env.CONFIG_FILE;
+    if (!path) {
+      throw new Error('Config file not set in env variable');
+    }
+
+    try {
+      await fs.access(path, constants.R_OK);
+    } catch (_) {
+      throw new Error(`Couldn't read file ${path}`);
+    }
+
+    const config: DeepPartial<SystemConfig> = JSON.parse(await fs.readFile(path, 'utf-8'));
+
+    return config;
   }
 
   saveAll(items: SystemConfigEntity[]): Promise<SystemConfigEntity[]> {

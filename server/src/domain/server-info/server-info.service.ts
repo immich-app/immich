@@ -24,7 +24,7 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository, storageRepository);
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {

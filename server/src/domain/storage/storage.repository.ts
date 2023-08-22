@@ -22,7 +22,6 @@ export const IStorageRepository = 'IStorageRepository';
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
-  readFile(): Promise<string>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string): Promise<void>;

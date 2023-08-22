@@ -6,10 +6,8 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
-  newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IStorageRepository } from '..';
 import { IAssetRepository } from '../asset';
 import { ICommunicationRepository } from '../communication';
 import { ISystemConfigRepository } from '../system-config';
@@ -32,15 +30,13 @@ describe(JobService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    sut = new JobService(assetMock, communicationMock, jobMock, configMock, storageMock);
+    sut = new JobService(assetMock, communicationMock, jobMock, configMock);
   });
 
   it('should work', () => {
@@ -218,7 +214,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.registerHandlers(makeMockHandlers(false));
 
-      const configCore = new SystemConfigCore(newSystemConfigRepositoryMock(), newStorageRepositoryMock());
+      const configCore = new SystemConfigCore(newSystemConfigRepositoryMock());
       configCore.config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },

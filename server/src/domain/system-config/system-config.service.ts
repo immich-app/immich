@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ISystemConfigRepository } from '.';
 import { IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage/storage.repository';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -21,9 +20,8 @@ export class SystemConfigService {
   constructor(
     @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.core = new SystemConfigCore(repository, storageRepository);
+    this.core = new SystemConfigCore(repository);
   }
 
   get config$() {
