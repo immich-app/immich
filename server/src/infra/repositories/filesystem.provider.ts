@@ -5,6 +5,7 @@ import fs, { readdir } from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
+import { SystemConfig } from '../entities';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
 
@@ -46,6 +47,22 @@ export class FilesystemProvider implements IStorageRepository {
     } catch (_) {
       return false;
     }
+  }
+
+  async readConfigFile(): Promise<SystemConfig> {
+    const path = process.env.CONFIG_FILE;
+    if (!path) {
+      throw new Error('Config file not set in env variable');
+    }
+
+    if (!(await this.checkFileExists(path, constants.R_OK))) {
+      throw new Error(`Couldn't read file ${path}`);
+    }
+
+    const file = await fs.readFile(path, 'utf-8');
+    const config: SystemConfig = JSON.parse(file);
+
+    return config;
   }
 
   async unlink(file: string) {
