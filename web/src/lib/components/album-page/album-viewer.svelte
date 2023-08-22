@@ -22,7 +22,6 @@
   import ThemeButton from '../shared-components/theme-button.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
-
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
