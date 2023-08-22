@@ -24,7 +24,8 @@
   };
 </script>
 
-<div id="people-card"
+<div
+  id="people-card"
   class="relative"
   on:mouseenter={() => (showVerticalDots = true)}
   on:mouseleave={() => (showVerticalDots = false)}
