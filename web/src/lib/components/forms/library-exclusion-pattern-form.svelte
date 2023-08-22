@@ -33,7 +33,7 @@
         use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore".
       </p>
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="pattern">Pattern</label>
+        <label class="immich-form-label" for="exclusionPattern">Pattern</label>
         <input
           class="immich-form-input"
           id="exclusionPattern"
