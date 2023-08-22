@@ -70,6 +70,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
   },
+
+  isConfigFile: false,
 });
 
 describe(SystemConfigService.name, () => {

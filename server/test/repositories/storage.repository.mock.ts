@@ -4,6 +4,7 @@ export const newStorageRepositoryMock = (): jest.Mocked<IStorageRepository> => {
   return {
     createZipStream: jest.fn(),
     createReadStream: jest.fn(),
+    readConfigFile: jest.fn(),
     unlink: jest.fn(),
     unlinkDir: jest.fn().mockResolvedValue(true),
     removeEmptyDirs: jest.fn(),

@@ -7,6 +7,7 @@ import {
   newCryptoRepositoryMock,
   newKeyRepositoryMock,
   newSharedLinkRepositoryMock,
+  newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   newUserTokenRepositoryMock,
@@ -18,6 +19,7 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
+import { IStorageRepository } from '..';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISharedLinkRepository } from '../shared-link';
@@ -55,6 +57,7 @@ describe('AuthService', () => {
   let shareMock: jest.Mocked<ISharedLinkRepository>;
   let keyMock: jest.Mocked<IKeyRepository>;
   let callbackMock: jest.Mock;
+  let storageMock: jest.Mocked<IStorageRepository>;
 
   afterEach(() => {
     jest.resetModules();
@@ -85,8 +88,9 @@ describe('AuthService', () => {
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
+    storageMock = newStorageRepositoryMock();
 
-    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock, storageMock);
   });
 
   it('should be defined', () => {
