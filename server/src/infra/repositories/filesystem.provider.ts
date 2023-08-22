@@ -5,8 +5,6 @@ import fs, { readdir } from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
-import { DeepPartial } from 'typeorm';
-import { SystemConfig } from '../entities';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
 

@@ -1,6 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
 import { Readable } from 'stream';
-import { DeepPartial } from 'typeorm';
 
 export interface ImmichReadStream {
   stream: Readable;
