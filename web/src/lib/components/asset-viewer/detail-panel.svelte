@@ -9,19 +9,21 @@
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
+  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat, SharedLinkResponseDto } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getAssetFilename } from '$lib/utils/asset-utils';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+
   let textarea: HTMLTextAreaElement;
   let description: string;
 
   $: {
     // Get latest description from server
-    if (asset.id) {
+    if (asset.id && !sharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
