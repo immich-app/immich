@@ -2602,6 +2602,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'thumbnail': SystemConfigThumbnailDto;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigDto
+     */
+    'isConfigFile': boolean;
 }
 /**
  * 

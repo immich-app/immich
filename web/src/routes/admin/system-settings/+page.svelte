@@ -27,12 +27,12 @@
     <LoadingSpinner />
   {:then configs}
   {#if configs.isConfigFile}
-  	<div class="flex flex-row items-center gap-2 rounded-md dark:bg-gray-800 bg-gray-100 p-3">
+    <div class="flex flex-row items-center gap-2 rounded-md dark:bg-gray-800 bg-gray-100 p-3">
       <Alert class="text-yellow-400" size={18}/>
       <h2 class="text-md text-immich-primary dark:text-immich-dark-primary ">Config is currently set by a config file</h2>
     </div>
   {:else}
-  		<div class="flex justify-end">
+      <div class="flex justify-end">
       <Button size="sm" on:click={() => {
         // isConfigFile is part of the provided config, but it should not be specified manually.
         let data = configs;
