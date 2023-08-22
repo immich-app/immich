@@ -14,7 +14,7 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { AccessCore, IAccessRepository } from '../access';
+import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
@@ -22,7 +22,10 @@ import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
 import { ILibraryRepository, LibraryService } from './index';
 
-const mockRequirePermission = jest.fn();
+const mockRequirePermission = jest.fn().mockResolvedValue(true);
+const mockIsImage = jest.fn();
+const mockIsVideo = jest.fn();
+const mockIsAsset = jest.fn();
 
 jest.mock('../access', () => {
   return {
@@ -34,6 +37,14 @@ jest.mock('../access', () => {
     Permission: jest.requireActual('../access'),
   };
 });
+
+jest.doMock('../domain.constant', () => ({
+  mimeTypes: {
+    isImage: mockIsImage,
+    isVideo: mockIsVideo,
+    isAsset: mockIsAsset,
+  },
+}));
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -70,6 +81,10 @@ describe(LibraryService.name, () => {
       ctime: new Date('2023-01-01'),
     } as Stats);
 
+    mockIsImage.mockReturnValue(true);
+    mockIsVideo.mockReturnValue(false);
+    mockIsAsset.mockReturnValue(true);
+
     mockRequirePermission.mockResolvedValue(true);
   });
 
@@ -104,14 +119,9 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => false,
-          isVideo: () => false,
-          isAsset: () => false,
-        },
-      }));
+      mockIsImage.mockReturnValue(false);
+      mockIsVideo.mockReturnValue(false);
+      mockIsAsset.mockReturnValue(false);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
 
@@ -131,14 +141,9 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => false,
-          isVideo: () => false,
-          isAsset: () => true,
-        },
-      }));
+      mockIsImage.mockReturnValue(false);
+      mockIsVideo.mockReturnValue(false);
+      mockIsAsset.mockReturnValue(true);
 
       await expect(async () => {
         await sut.handleAssetRefresh(mockLibraryJob);
@@ -155,15 +160,6 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
-
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => true,
-          isVideo: () => false,
-          isAsset: () => true,
-        },
-      }));
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
@@ -197,14 +193,9 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => false,
-          isVideo: () => true,
-          isAsset: () => true,
-        },
-      }));
+      mockIsImage.mockReturnValue(false);
+      mockIsVideo.mockReturnValue(true);
+      mockIsAsset.mockReturnValue(true);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
@@ -238,15 +229,6 @@ describe(LibraryService.name, () => {
         emptyTrash: false,
       };
 
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => true,
-          isVideo: () => false,
-          isAsset: () => true,
-        },
-      }));
-
       storageMock.stat.mockResolvedValue({
         size: 100,
         mtime: assetStub.image.fileModifiedAt,
@@ -270,15 +252,6 @@ describe(LibraryService.name, () => {
         analyze: false,
         emptyTrash: false,
       };
-
-      jest.mock('../domain.constant', () => ({
-        __esModule: true,
-        mimeTypes: {
-          isImage: () => true,
-          isVideo: () => false,
-          isAsset: () => true,
-        },
-      }));
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       assetMock.create.mockResolvedValue(assetStub.image);
