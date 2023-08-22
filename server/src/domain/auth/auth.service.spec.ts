@@ -19,10 +19,10 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IStorageRepository } from '..';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISharedLinkRepository } from '../shared-link';
+import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
 import { AuthType } from './auth.constant';

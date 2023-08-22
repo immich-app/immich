@@ -99,7 +99,8 @@ export class SystemConfigCore {
   public async getConfig() {
     let config: DeepPartial<SystemConfig> = {};
     if (process.env.CONFIG_FILE) {
-      config = await this.storageRepository.readConfigFile();
+      const file = await this.storageRepository.readFile();
+      config = JSON.parse(file);
       config.isConfigFile = true;
     } else {
       const overrides = await this.repository.load();

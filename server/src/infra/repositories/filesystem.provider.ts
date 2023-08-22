@@ -50,7 +50,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
   }
 
-  async readConfigFile(): Promise<DeepPartial<SystemConfig>> {
+  async readFile(): Promise<string> {
     const path = process.env.CONFIG_FILE;
     if (!path) {
       throw new Error('Config file not set in env variable');
@@ -60,10 +60,7 @@ export class FilesystemProvider implements IStorageRepository {
       throw new Error(`Couldn't read file ${path}`);
     }
 
-    const file = await fs.readFile(path, 'utf-8');
-    const config: DeepPartial<SystemConfig> = JSON.parse(file);
-
-    return config;
+    return fs.readFile(path, 'utf-8');
   }
 
   async unlink(file: string) {

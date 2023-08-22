@@ -36,8 +36,7 @@
       <Button size="sm" on:click={() => {
         // isConfigFile is part of the provided config, but it should not be specified manually.
         let data = configs;
-        delete data.isConfigFile
-        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+        navigator.clipboard.writeText(JSON.stringify({...data, isConfigFile: undefined}, null, 2));
       }} >
         <ContentCopy size="18" />
         <span class="pl-2">Copy settings</span>
