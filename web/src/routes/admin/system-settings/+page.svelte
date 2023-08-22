@@ -1,5 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import Alert from "svelte-material-icons/Alert.svelte";
+  import ContentCopy from "svelte-material-icons/ContentCopy.svelte";
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
@@ -10,6 +12,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { api } from '@api';
   import type { PageData } from './$types';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   export let data: PageData;
 
@@ -23,15 +26,32 @@
   {#await getConfig()}
     <LoadingSpinner />
   {:then configs}
+  {#if configs.isConfigFile}
+  	<div class="flex flex-row items-center gap-2 rounded-md dark:bg-gray-800 bg-gray-100 p-3">
+      <Alert class="text-yellow-400" size={18}/>
+      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary ">Config is currently set by a config file</h2>
+    </div>
+  {:else}
+  		<div class="flex justify-end">
+      <Button size="sm" on:click={() => {
+        // isConfigFile is part of the provided config, but it should not be specified manually.
+        let data = configs;
+        delete data.isConfigFile
+        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+      }} >
+        <ContentCopy size="18" />
+        <span class="pl-2">Copy settings</span>
+      </Button></div>
+  {/if}
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
-      <ThumbnailSettings thumbnailConfig={configs.thumbnail} />
+      <ThumbnailSettings disabled={configs.isConfigFile} thumbnailConfig={configs.thumbnail} />
     </SettingAccordion>
 
     <SettingAccordion
       title="FFmpeg Settings"
       subtitle="Manage the resolution and encoding information of the video files"
     >
-      <FFmpegSettings ffmpegConfig={configs.ffmpeg} />
+      <FFmpegSettings disabled={configs.isConfigFile} ffmpegConfig={configs.ffmpeg} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -39,15 +59,15 @@
       subtitle="Manage job concurrency"
       isOpen={$page.url.searchParams.get('open') === 'job-settings'}
     >
-      <JobSettings jobConfig={configs.job} />
+      <JobSettings disabled={configs.isConfigFile} jobConfig={configs.job} />
     </SettingAccordion>
 
     <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
-      <PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
+      <PasswordLoginSettings disabled={configs.isConfigFile} passwordLoginConfig={configs.passwordLogin} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
-      <OAuthSettings oauthConfig={configs.oauth} />
+      <OAuthSettings disabled={configs.isConfigFile} oauthConfig={configs.oauth} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -55,7 +75,7 @@
       subtitle="Manage the folder structure and file name of the upload asset"
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
-      <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+      <StorageTemplateSettings disabled={configs.isConfigFile} storageConfig={configs.storageTemplate} user={data.user} />
     </SettingAccordion>
   {/await}
 </section>

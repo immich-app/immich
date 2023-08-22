@@ -11,6 +11,7 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let jobConfig: SystemConfigJobDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigJobDto;
   let defaultConfig: SystemConfigJobDto;
@@ -78,6 +79,7 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
+              {disabled}
               label="{api.getJobName(jobName)} Concurrency"
               desc=""
               bind:value={jobConfig[jobName].concurrency}
@@ -93,6 +95,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </div>
       </form>

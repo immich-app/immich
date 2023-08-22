@@ -16,6 +16,7 @@
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let user: UserResponseDto;
+  export let disabled = false;
 
   let savedConfig: SystemConfigStorageTemplateDto;
   let defaultConfig: SystemConfigStorageTemplateDto;
@@ -178,6 +179,7 @@
             <label class="text-xs" for="preset-select">PRESET</label>
             <select
               class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
+              {disabled}
               name="presets"
               id="preset-select"
               bind:value={selectedPreset}
@@ -191,6 +193,7 @@
           <div class="flex gap-2 align-bottom">
             <SettingInputField
               label="TEMPLATE"
+              {disabled}
               required
               inputType={SettingInputFieldType.TEXT}
               bind:value={storageConfig.template}
@@ -216,6 +219,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </form>
       </div>

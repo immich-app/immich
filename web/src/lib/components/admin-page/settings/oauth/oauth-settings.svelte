@@ -13,6 +13,7 @@
   import SettingSwitch from '../setting-switch.svelte';
 
   export let oauthConfig: SystemConfigOAuthDto;
+  export let disabled = false;
 
   let savedConfig: SystemConfigOAuthDto;
   let defaultConfig: SystemConfigOAuthDto;
@@ -117,14 +118,14 @@
           >.
         </p>
 
-        <SettingSwitch title="ENABLE" bind:checked={oauthConfig.enabled} />
+        <SettingSwitch {disabled} title="ENABLE" bind:checked={oauthConfig.enabled} />
         <hr />
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="ISSUER URL"
           bind:value={oauthConfig.issuerUrl}
           required={true}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           isEdited={!(oauthConfig.issuerUrl == savedConfig.issuerUrl)}
         />
 
@@ -133,7 +134,7 @@
           label="CLIENT ID"
           bind:value={oauthConfig.clientId}
           required={true}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           isEdited={!(oauthConfig.clientId == savedConfig.clientId)}
         />
 
@@ -142,7 +143,7 @@
           label="CLIENT SECRET"
           bind:value={oauthConfig.clientSecret}
           required={true}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           isEdited={!(oauthConfig.clientSecret == savedConfig.clientSecret)}
         />
 
@@ -151,7 +152,7 @@
           label="SCOPE"
           bind:value={oauthConfig.scope}
           required={true}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           isEdited={!(oauthConfig.scope == savedConfig.scope)}
         />
 
@@ -161,7 +162,7 @@
           desc="Automatically set the user's storage label to the value of this claim."
           bind:value={oauthConfig.storageLabelClaim}
           required={true}
-          disabled={!oauthConfig.storageLabelClaim}
+          disabled={disabled || !oauthConfig.storageLabelClaim}
           isEdited={!(oauthConfig.storageLabelClaim == savedConfig.storageLabelClaim)}
         />
 
@@ -170,7 +171,7 @@
           label="BUTTON TEXT"
           bind:value={oauthConfig.buttonText}
           required={false}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           isEdited={!(oauthConfig.buttonText == savedConfig.buttonText)}
         />
 
@@ -178,20 +179,20 @@
           title="AUTO REGISTER"
           subtitle="Automatically register new users after signing in with OAuth"
           bind:checked={oauthConfig.autoRegister}
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
         />
 
         <SettingSwitch
           title="AUTO LAUNCH"
           subtitle="Start the OAuth login flow automatically upon navigating to the login page"
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           bind:checked={oauthConfig.autoLaunch}
         />
 
         <SettingSwitch
           title="MOBILE REDIRECT URI OVERRIDE"
           subtitle="Enable when `app.immich:/` is an invalid redirect URI."
-          disabled={!oauthConfig.enabled}
+          disabled={disabled || !oauthConfig.enabled}
           on:click={() => handleToggleOverride()}
           bind:checked={oauthConfig.mobileOverrideEnabled}
         />
@@ -202,7 +203,7 @@
             label="MOBILE REDIRECT URI"
             bind:value={oauthConfig.mobileRedirectUri}
             required={true}
-            disabled={!oauthConfig.enabled}
+            disabled={disabled || !oauthConfig.enabled}
             isEdited={!(oauthConfig.mobileRedirectUri == savedConfig.mobileRedirectUri)}
           />
         {/if}
@@ -212,6 +213,7 @@
           on:save={saveSetting}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          {disabled}
         />
       </form>
     </div>

@@ -4682,6 +4682,10 @@
       }
     },
     "schemas": {
+      "": {
+        "properties": {},
+        "type": "object"
+      },
       "APIKeyCreateDto": {
         "properties": {
           "name": {
@@ -6781,6 +6785,9 @@
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
+          "isConfigFile": {
+            "$ref": "#/components/schemas/"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -6798,6 +6805,7 @@
           }
         },
         "required": [
+          "isConfigFile",
           "ffmpeg",
           "oauth",
           "passwordLogin",

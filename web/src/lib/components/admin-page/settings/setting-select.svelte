@@ -9,6 +9,7 @@
   export let name = '';
   export let isEdited = false;
   export let number = false;
+  export let disabled = false;
 
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
@@ -40,6 +41,7 @@
 
   <select
     class="immich-form-input w-full pb-2"
+    {disabled}
     aria-describedby={desc ? `${name}-desc` : undefined}
     {name}
     id="{name}-select"

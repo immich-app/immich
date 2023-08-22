@@ -109,6 +109,7 @@ export class SystemConfigCore {
       // set via dot notation
       _.set(config, key, value);
     }
+    config.isConfigFile = false;
 
     return _.defaultsDeep(config, defaults) as SystemConfig;
   }
