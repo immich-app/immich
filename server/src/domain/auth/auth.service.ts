@@ -7,6 +7,7 @@ import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'op
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISharedLinkRepository } from '../shared-link';
+import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
@@ -60,8 +61,9 @@ export class AuthService {
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = new SystemConfigCore(configRepository, storageRepository);
     this.userCore = new UserCore(userRepository, cryptoRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30000 });

@@ -3,6 +3,7 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { assertMachineLearningEnabled } from '../domain.constant';
+import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
@@ -19,8 +20,9 @@ export class JobService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = new SystemConfigCore(configRepository, storageRepository);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

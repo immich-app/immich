@@ -1,3 +1,4 @@
+import { SystemConfig } from '@app/infra/entities';
 import { Readable } from 'stream';
 
 export interface ImmichReadStream {
@@ -22,6 +23,7 @@ export const IStorageRepository = 'IStorageRepository';
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
+  readConfigFile(): Promise<SystemConfig>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string): Promise<void>;

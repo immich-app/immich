@@ -10,6 +10,7 @@ import {
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { IStorageRepository } from '..';
 import { IJobRepository, JobName, QueueName } from '../job';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
@@ -75,11 +76,12 @@ describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, jobMock);
+    sut = new SystemConfigService(configMock, jobMock, storageMock);
   });
 
   it('should work', () => {

@@ -23,7 +23,7 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
   ) {
-    this.configCore = new SystemConfigCore(systemConfig);
+    this.configCore = new SystemConfigCore(systemConfig, storageRepository);
   }
 
   async handleQueueGenerateThumbnails(job: IBaseJob) {
