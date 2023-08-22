@@ -125,10 +125,10 @@
 
   <div class="mt-4 flex w-full gap-4">
     <table class="w-full text-left">
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+      <tbody class="dark:border-immich-dark-gray block w-full overflow-y-auto rounded-md border">
         {#each exclusionPatterns as exclusionPattern, listIndex}
           <tr
-            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+            class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
               listIndex % 2 == 0
                 ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                 : 'bg-immich-bg dark:bg-immich-dark-gray/50'
@@ -142,7 +142,7 @@
                   editExclusionPattern = listIndex;
                   editedExclusionPattern = exclusionPattern;
                 }}
-                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                class="bg-immich-primary hover:bg-immich-primary/75 dark:bg-immich-dark-primary rounded-full p-3 text-gray-100 transition-all duration-150 dark:text-gray-700"
               >
                 <PencilOutline size="16" />
               </button>
@@ -150,7 +150,7 @@
           </tr>
         {/each}
         <tr
-          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+          class={`dark:text-immich-dark-fg flex h-[80px] w-full place-items-center text-center ${
             exclusionPatterns.length % 2 == 0
               ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'

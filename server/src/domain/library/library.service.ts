@@ -100,6 +100,8 @@ export class LibraryService {
   async delete(authUser: AuthUserDto, id: string) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
 
+    await this.libraryRepository.softDelete(id);
+
     this.jobRepository.queue({ name: JobName.DELETE_LIBRARY, data: { libraryId: id } });
   }
 

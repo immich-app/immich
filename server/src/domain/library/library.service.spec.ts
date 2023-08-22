@@ -535,6 +535,7 @@ describe(LibraryService.name, () => {
       createLibraryService();
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      libraryMock.softDelete.mockImplementation(() => Promise.resolve());
 
       await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
 
@@ -542,6 +543,8 @@ describe(LibraryService.name, () => {
         name: JobName.DELETE_LIBRARY,
         data: { libraryId: libraryStub.externalLibrary1.id },
       });
+
+      expect(libraryMock.softDelete).toHaveBeenCalledWith(libraryStub.externalLibrary1.id);
     });
   });
 
@@ -628,7 +631,7 @@ describe(LibraryService.name, () => {
           type: libraryStub.externalLibrary1.type,
           importPaths: [],
           exclusionPatterns: [],
-        }), 
+        }),
       ).resolves.toEqual(
         expect.objectContaining({
           id: libraryStub.externalLibrary1.id,

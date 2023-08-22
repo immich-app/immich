@@ -65,6 +65,10 @@ export class LibraryRepository implements ILibraryRepository {
     await this.libraryRepository.delete({ id });
   }
 
+  async softDelete(id: string): Promise<void> {
+    await this.libraryRepository.softDelete({ id });
+  }
+
   async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
     return this.save(library);
   }
