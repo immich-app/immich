@@ -22,6 +22,7 @@
   import ThemeButton from '../shared-components/theme-button.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
+
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -108,7 +109,7 @@
           href="https://immich.app"
         >
           <ImmichLogo height={30} width={30} />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+          <h1 class="font-immich-title text-immich-primary dark:text-immich-dark-primary text-lg">IMMICH</h1>
         </a>
       </svelte:fragment>
 
@@ -132,13 +133,13 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+  class="bg-immich-bg dark:bg-immich-dark-bg relative h-screen overflow-hidden px-6 pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
 >
   <AssetGrid {assetStore} {assetInteractionStore} publicSharedKey={sharedLink.key}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
       <p
-        class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+        class="bg-immich-bg text-immich-primary dark:bg-immich-dark-bg dark:text-immich-dark-primary text-6xl outline-none transition-all"
       >
         {album.albumName}
       </p>
