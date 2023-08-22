@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import Alert from "svelte-material-icons/Alert.svelte";
-  import ContentCopy from "svelte-material-icons/ContentCopy.svelte";
+  import Alert from 'svelte-material-icons/Alert.svelte';
+  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
@@ -26,22 +26,28 @@
   {#await getConfig()}
     <LoadingSpinner />
   {:then configs}
-  {#if configs.isConfigFile}
-    <div class="flex flex-row items-center gap-2 rounded-md dark:bg-gray-800 bg-gray-100 p-3">
-      <Alert class="text-yellow-400" size={18}/>
-      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary ">Config is currently set by a config file</h2>
-    </div>
-  {:else}
+    {#if configs.isConfigFile}
+      <div class="flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
+        <Alert class="text-yellow-400" size={18} />
+        <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
+          Config is currently set by a config file
+        </h2>
+      </div>
+    {:else}
       <div class="flex justify-end">
-      <Button size="sm" on:click={() => {
-        // isConfigFile is part of the provided config, but it should not be specified manually.
-        let data = configs;
-        navigator.clipboard.writeText(JSON.stringify({...data, isConfigFile: undefined}, null, 2));
-      }} >
-        <ContentCopy size="18" />
-        <span class="pl-2">Copy settings</span>
-      </Button></div>
-  {/if}
+        <Button
+          size="sm"
+          on:click={() => {
+            // isConfigFile is part of the provided config, but it should not be specified manually.
+            let data = configs;
+            navigator.clipboard.writeText(JSON.stringify({ ...data, isConfigFile: undefined }, null, 2));
+          }}
+        >
+          <ContentCopy size="18" />
+          <span class="pl-2">Copy settings</span>
+        </Button>
+      </div>
+    {/if}
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
       <ThumbnailSettings disabled={configs.isConfigFile} thumbnailConfig={configs.thumbnail} />
     </SettingAccordion>
@@ -74,7 +80,11 @@
       subtitle="Manage the folder structure and file name of the upload asset"
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
-      <StorageTemplateSettings disabled={configs.isConfigFile} storageConfig={configs.storageTemplate} user={data.user} />
+      <StorageTemplateSettings
+        disabled={configs.isConfigFile}
+        storageConfig={configs.storageTemplate}
+        user={data.user}
+      />
     </SettingAccordion>
   {/await}
 </section>
