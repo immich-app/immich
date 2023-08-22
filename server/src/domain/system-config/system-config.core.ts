@@ -97,19 +97,17 @@ export class SystemConfigCore {
   }
 
   public async getConfig() {
+    let config: DeepPartial<SystemConfig> = {};
     if (process.env.CONFIG_FILE) {
-      const config = await this.storageRepository.readConfigFile();
+      config = await this.storageRepository.readConfigFile();
       config.isConfigFile = true;
-      return config;
+    } else {
+      const overrides = await this.repository.load();
+      for (const { key, value } of overrides) {
+        // set via dot notation
+        _.set(config, key, value);
+      }
     }
-
-    const overrides = await this.repository.load();
-    const config: DeepPartial<SystemConfig> = {};
-    for (const { key, value } of overrides) {
-      // set via dot notation
-      _.set(config, key, value);
-    }
-    config.isConfigFile = false;
 
     return _.defaultsDeep(config, defaults) as SystemConfig;
   }

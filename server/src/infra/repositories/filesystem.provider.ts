@@ -5,6 +5,7 @@ import fs, { readdir } from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
+import { DeepPartial } from 'typeorm';
 import { SystemConfig } from '../entities';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
@@ -49,7 +50,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
   }
 
-  async readConfigFile(): Promise<SystemConfig> {
+  async readConfigFile(): Promise<DeepPartial<SystemConfig>> {
     const path = process.env.CONFIG_FILE;
     if (!path) {
       throw new Error('Config file not set in env variable');
@@ -60,7 +61,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
 
     const file = await fs.readFile(path, 'utf-8');
-    const config: SystemConfig = JSON.parse(file);
+    const config: DeepPartial<SystemConfig> = JSON.parse(file);
 
     return config;
   }

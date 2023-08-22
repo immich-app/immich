@@ -1,5 +1,6 @@
 import { SystemConfig } from '@app/infra/entities';
 import { Readable } from 'stream';
+import { DeepPartial } from 'typeorm';
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -23,7 +24,7 @@ export const IStorageRepository = 'IStorageRepository';
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
-  readConfigFile(): Promise<SystemConfig>;
+  readConfigFile(): Promise<DeepPartial<SystemConfig>>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string): Promise<void>;
