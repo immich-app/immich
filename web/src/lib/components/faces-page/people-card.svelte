@@ -12,7 +12,6 @@
 
   let showVerticalDots = false;
   let showContextMenu = false;
-</
   let contextMenuPosition = { x: 0, y: 0 };
   const handleShowMenu = (e: MouseEvent) => {
     contextMenuPosition = { x: e.clientX, y: e.clientY };
@@ -23,7 +22,7 @@
     showContextMenu = false;
     eventDispatcher(event, person);
   };
-  script>
+</script>
 
 <div id="people-card"
   class="relative"
