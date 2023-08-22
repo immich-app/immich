@@ -1,7 +1,9 @@
 import { SystemConfigThumbnailDto } from '@app/domain/system-config';
 import { SystemConfig } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsObject, ValidateNested } from 'class-validator';
+import { IsBoolean, IsObject, ValidateNested } from 'class-validator';
+import { boolean } from 'joi';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
@@ -38,6 +40,11 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   thumbnail!: SystemConfigThumbnailDto;
+
+  @Type(() => Boolean)
+  @IsBoolean()
+  @ApiProperty({ type: boolean })
+  isConfigFile!: boolean;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

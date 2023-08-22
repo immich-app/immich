@@ -70,6 +70,8 @@ export const defaults = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
   },
+
+  isConfigFile: false,
 });
 
 const singleton = new Subject<SystemConfig>();
@@ -96,7 +98,9 @@ export class SystemConfigCore {
 
   public async getConfig() {
     if (process.env.CONFIG_FILE) {
-      return await this.storageRepository.readConfigFile();
+      const config = await this.storageRepository.readConfigFile();
+      config.isConfigFile = true;
+      return config;
     }
 
     const overrides = await this.repository.load();
