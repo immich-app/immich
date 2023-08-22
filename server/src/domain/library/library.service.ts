@@ -81,8 +81,8 @@ export class LibraryService {
       name: dto.name,
       assets: [],
       type: dto.type,
-      importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? [],
+      importPaths: dto.importPaths,
+      exclusionPatterns: dto.exclusionPatterns,
       isVisible: dto.isVisible ?? true,
     });
 

@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   assetStub,
   authStub,
@@ -483,8 +483,6 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleOfflineAsset', () => {
-    let mockUser: UserEntity;
-
     beforeEach(() => {
       jest.resetModules();
     });
@@ -529,8 +527,6 @@ describe(LibraryService.name, () => {
   });
 
   describe('delete', () => {
-    let mockUser: UserEntity;
-
     beforeEach(() => {
       jest.resetModules();
     });
@@ -546,6 +542,155 @@ describe(LibraryService.name, () => {
         name: JobName.DELETE_LIBRARY,
         data: { libraryId: libraryStub.externalLibrary1.id },
       });
+    });
+  });
+
+  describe('getCount', () => {
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('should call the repository', async () => {
+      createLibraryService();
+
+      libraryMock.getCountForUser.mockResolvedValue(17);
+
+      await expect(sut.getCount(authStub.admin)).resolves.toBe(17);
+
+      expect(libraryMock.getCountForUser).toHaveBeenCalledWith(authStub.admin.id);
+    });
+  });
+
+  describe('get', () => {
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('can return a library', async () => {
+      createLibraryService();
+
+      libraryMock.get.mockResolvedValue(libraryStub.library1);
+      await expect(sut.get(authStub.admin, libraryStub.library1.id)).resolves.toEqual(
+        expect.objectContaining({
+          id: libraryStub.library1.id,
+          name: libraryStub.library1.name,
+          ownerId: libraryStub.library1.ownerId,
+        }),
+      );
+
+      expect(libraryMock.get).toHaveBeenCalledWith(libraryStub.library1.id);
+    });
+
+    it('can error when library is not found', async () => {
+      createLibraryService();
+
+      libraryMock.get.mockResolvedValue(null);
+      await expect(sut.get(authStub.admin, libraryStub.library1.id)).rejects.toThrowError(
+        new NotFoundException('Library Not Found'),
+      );
+
+      expect(libraryMock.get).toHaveBeenCalledWith(libraryStub.library1.id);
+    });
+  });
+
+  describe('getStatistics', () => {
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('can return library statistics', async () => {
+      createLibraryService();
+
+      libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
+      await expect(sut.getStatistics(authStub.admin, libraryStub.library1.id)).resolves.toEqual({
+        photos: 10,
+        videos: 0,
+        total: 10,
+        usage: 1337,
+      });
+
+      expect(libraryMock.getStatistics).toHaveBeenCalledWith(libraryStub.library1.id);
+    });
+  });
+
+  describe('create', () => {
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('can create a library', async () => {
+      createLibraryService();
+
+      libraryMock.create.mockResolvedValue(libraryStub.externalLibrary1);
+      await expect(
+        sut.create(authStub.admin, {
+          name: libraryStub.externalLibrary1.name,
+          type: libraryStub.externalLibrary1.type,
+          importPaths: [],
+          exclusionPatterns: [],
+        }), 
+      ).resolves.toEqual(
+        expect.objectContaining({
+          id: libraryStub.externalLibrary1.id,
+          name: libraryStub.externalLibrary1.name,
+          ownerId: libraryStub.externalLibrary1.ownerId,
+          assetCount: 0,
+        }),
+      );
+
+      expect(libraryMock.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: libraryStub.externalLibrary1.name,
+          type: libraryStub.externalLibrary1.type,
+          importPaths: [],
+          exclusionPatterns: [],
+          isVisible: true,
+        }),
+      );
+    });
+
+    it('can create a library with non-default parameters', async () => {
+      createLibraryService();
+
+      const mockImportPaths = ['/data/user1', '/data/user2'];
+      const mockExclusionPatterns = ['*.tmp', '*.bak'];
+
+      const mockLibraryEntity = {
+        ...libraryStub.externalLibrary1,
+        importPaths: mockImportPaths,
+        exclusionPatterns: mockExclusionPatterns,
+        isVisible: false,
+      };
+
+      libraryMock.create.mockResolvedValue(mockLibraryEntity);
+      await expect(
+        sut.create(authStub.admin, {
+          name: libraryStub.externalLibrary1.name,
+          type: libraryStub.externalLibrary1.type,
+          importPaths: mockImportPaths,
+          exclusionPatterns: mockExclusionPatterns,
+          isVisible: false,
+        }),
+      ).resolves.toEqual(
+        expect.objectContaining({
+          id: libraryStub.externalLibrary1.id,
+          name: libraryStub.externalLibrary1.name,
+          ownerId: libraryStub.externalLibrary1.ownerId,
+          assetCount: 0,
+          importPaths: mockImportPaths,
+          exclusionPatterns: mockExclusionPatterns,
+        }),
+      );
+
+      expect(libraryMock.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: libraryStub.externalLibrary1.name,
+          type: libraryStub.externalLibrary1.type,
+          importPaths: mockImportPaths,
+          exclusionPatterns: mockExclusionPatterns,
+          isVisible: false,
+        }),
+      );
     });
   });
 });
