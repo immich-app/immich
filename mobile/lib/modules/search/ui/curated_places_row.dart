@@ -37,6 +37,7 @@ class CuratedPlacesRow extends CuratedRow {
                   ),
                   height: imageSize,
                   showAttribution: false,
+                  isDarkTheme: Theme.of(context).brightness == Brightness.dark,
                 ),
               ),
               Container(

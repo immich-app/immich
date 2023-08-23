@@ -8,11 +8,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/models/map_subscription_event.model.dart';
+import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker_icon.dart';
-import 'package:immich_mobile/modules/map/ui/assets_in_bound_sheet.dart';
+import 'package:immich_mobile/modules/map/ui/map_page_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -34,8 +34,7 @@ class MapPage extends StatefulHookConsumerWidget {
 
 class MapPageState extends ConsumerState<MapPage> {
   // Non-State variables
-  late final MapController _mapController;
-  late final DraggableScrollableController _bottomSheetScrollController;
+  late final MapController mapController;
   // Streams are used instead of callbacks to prevent unnecessary rebuilds on events
   final StreamController mapPageEventSC =
       StreamController<MapPageEventBase>.broadcast();
@@ -44,14 +43,19 @@ class MapPageState extends ConsumerState<MapPage> {
   late final Stream bottomSheetEventStream;
   // Making assets in bounds as a state variable will result in un-necessary rebuilds of the bottom sheet
   // resulting in it getting reloaded each time a map move occurs
-  List<AssetMarkerData> assetsInBounds = [];
+  Set<AssetMarkerData> assetsInBounds = {};
+  // TODO: Migrate the handling to MapEventMove#id when flutter_map is upgraded
+  // https://github.com/fleaflet/flutter_map/issues/1542
+  // The below is used instead of MapEventMove#id to handle event from controller
+  // in onMapEvent() since MapEventMove#id is not populated properly in the
+  // current version of flutter_map(4.0.0) used
+  bool forceAssetUpdate = false;
   late final Debounce debounce;
 
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
-    _bottomSheetScrollController = DraggableScrollableController();
+    mapController = MapController();
     bottomSheetEventStream = bottomSheetEventSC.stream;
     // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
     debounce = Debounce(
@@ -65,16 +69,22 @@ class MapPageState extends ConsumerState<MapPage> {
     super.dispose();
   }
 
-  void reloadAssetsInBound(List<AssetMarkerData>? assetMarkers) {
-    final bounds = _mapController.bounds;
+  void reloadAssetsInBound(Set<AssetMarkerData>? assetMarkers,
+      {bool forceReload = false}) {
+    final bounds = mapController.bounds;
     if (bounds != null) {
+      final oldAssetsInBounds = assetsInBounds.toSet();
       assetsInBounds =
-          assetMarkers?.where((e) => bounds.contains(e.point)).toList() ?? [];
-      mapPageEventSC.add(
-        MapPageAssetsInBoundUpdated(
-          assetsInBounds.map((e) => e.asset).toList(),
-        ),
-      );
+          assetMarkers?.where((e) => bounds.contains(e.point)).toSet() ?? {};
+      final shouldReload = forceReload ||
+          assetsInBounds.difference(oldAssetsInBounds).isNotEmpty;
+      if (shouldReload) {
+        mapPageEventSC.add(
+          MapPageAssetsInBoundUpdated(
+            assetsInBounds.map((e) => e.asset).toList(),
+          ),
+        );
+      }
     }
   }
 
@@ -94,22 +104,72 @@ class MapPageState extends ConsumerState<MapPage> {
     final log = Logger("MapService");
     final isDarkTheme =
         ref.watch(mapStateNotifier.select((state) => state.isDarkTheme));
-    final ValueNotifier<List<AssetMarkerData>> mapMarkerData =
-        useState(<AssetMarkerData>[]);
+    final ValueNotifier<Set<AssetMarkerData>> mapMarkerData =
+        useState(<AssetMarkerData>{});
     final ValueNotifier<AssetMarkerData?> closestAssetMarker = useState(null);
     final selectionEnabledHook = useState(false);
     final selectedAssets = useState(<Asset>{});
     final showLoadingIndicator = useState(false);
-    // TODO: Migrate the handling to MapEventMove#id when flutter_map is upgraded
-    // https://github.com/fleaflet/flutter_map/issues/1542
-    // The below is used instead of MapEventMove#id to handle event from controller
-    // in onMapEvent() since MapEventMove#id is not populated properly in the
-    // current version of flutter_map(4.0.0) used
-    bool forceAssetUpdate = false;
 
     final refetchMarkers = useState(true);
-    void refetchMapMarkers() {
-      refetchMarkers.value = true;
+
+    if (refetchMarkers.value) {
+      mapMarkerData.value = ref.watch(mapMarkersProvider).when(
+            skipLoadingOnRefresh: false,
+            error: (error, stackTrace) {
+              log.warning(
+                "Cannot get map markers ${error.toString()}",
+                error,
+                stackTrace,
+              );
+              showLoadingIndicator.value = false;
+              return {};
+            },
+            loading: () {
+              showLoadingIndicator.value = true;
+              return {};
+            },
+            data: (data) {
+              showLoadingIndicator.value = false;
+              refetchMarkers.value = false;
+              closestAssetMarker.value = null;
+              debounce(
+                () => reloadAssetsInBound(
+                  mapMarkerData.value,
+                  forceReload: true,
+                ),
+              );
+              return data;
+            },
+          );
+    }
+
+    ref.listen(mapStateNotifier, (previous, next) {
+      bool shouldRefetch =
+          previous?.showFavoriteOnly != next.showFavoriteOnly ||
+              previous?.relativeTime != next.relativeTime;
+      if (shouldRefetch) {
+        refetchMarkers.value = shouldRefetch;
+        ref.invalidate(mapMarkersProvider);
+      }
+    });
+
+    void onZoomToAssetEvent(Asset? assetInBottomSheet) {
+      if (assetInBottomSheet != null) {
+        final mapMarker = mapMarkerData.value
+            .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
+        if (mapMarker != null) {
+          LatLng? newCenter = mapController.centerBoundsWithPadding(
+            mapMarker.point,
+            const Offset(0, -120),
+            zoomLevel: 6,
+          );
+          if (newCenter != null) {
+            forceAssetUpdate = true;
+            mapController.move(newCenter, 6);
+          }
+        }
+      }
     }
 
     void handleBottomSheetEvents(dynamic event) {
@@ -119,19 +179,21 @@ class MapPageState extends ConsumerState<MapPage> {
           final mapMarker = mapMarkerData.value
               .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
           closestAssetMarker.value = mapMarker;
-          if (mapMarker != null && _mapController.zoom >= 5) {
-            LatLng? newCenter = _mapController.moveByBottomPadding(
+          if (mapMarker != null && mapController.zoom >= 5) {
+            LatLng? newCenter = mapController.centerBoundsWithPadding(
               mapMarker.point,
               const Offset(0, -120),
             );
             if (newCenter != null) {
-              _mapController.move(
+              mapController.move(
                 newCenter,
-                _mapController.zoom,
+                mapController.zoom,
               );
             }
           }
         }
+      } else if (event is MapPageZoomToAsset) {
+        onZoomToAssetEvent(event.asset);
       }
     }
 
@@ -144,95 +206,45 @@ class MapPageState extends ConsumerState<MapPage> {
       [bottomSheetEventStream],
     );
 
-    if (refetchMarkers.value) {
-      mapMarkerData.value = ref.watch(mapMarkerFutureProvider).when(
-            skipLoadingOnRefresh: false,
-            error: (error, stackTrace) {
-              log.warning(
-                "Cannot get map markers ${error.toString()}",
-                error,
-                stackTrace,
-              );
-              showLoadingIndicator.value = false;
-              return [];
-            },
-            loading: () {
-              showLoadingIndicator.value = true;
-              return [];
-            },
-            data: (data) {
-              showLoadingIndicator.value = false;
-              refetchMarkers.value = false;
-              closestAssetMarker.value = null;
-              debounce(() => reloadAssetsInBound(mapMarkerData.value));
-              return data;
-            },
-          );
-    }
-
-    ref.listen(mapStateNotifier, (previous, next) {
-      bool shouldRefetch =
-          previous?.showFavoriteOnly != next.showFavoriteOnly ||
-              previous?.relativeTime != next.relativeTime;
-      if (shouldRefetch) {
-        refetchMarkers.value = shouldRefetch;
-        ref.invalidate(mapMarkerFutureProvider);
-      }
-    });
-
-    void onMapEvent(MapEvent mapEvent) {
-      if (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom) {
-        if (forceAssetUpdate ||
-            mapEvent.source != MapEventSource.mapController) {
-          debounce(() {
-            selectionEnabledHook.value = false;
-            reloadAssetsInBound(mapMarkerData.value);
-            forceAssetUpdate = false;
-          });
-        }
-      }
-    }
-
-    void onZoomToAssetEvent(Asset? assetInBottomSheet) {
-      if (assetInBottomSheet != null) {
-        final mapMarker = mapMarkerData.value
-            .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
-        if (mapMarker != null) {
-          forceAssetUpdate = true;
-          _mapController.move(
-            mapMarker.point,
-            6, // zoomLevel
-          );
-        }
-      }
-    }
-
-    void onMapTapEvent(TapPosition tapPosition, LatLng tapPoint) {
+    void handleMapTapEvent(LatLng tapPosition) {
       const d = Distance();
-      assetsInBounds.sort(
+      final assetsInBoundsList = assetsInBounds.toList();
+      assetsInBoundsList.sort(
         (a, b) => d
-            .distance(a.point, tapPoint)
-            .compareTo(d.distance(b.point, tapPoint)),
+            .distance(a.point, tapPosition)
+            .compareTo(d.distance(b.point, tapPosition)),
       );
       // First asset less than the threshold from the tap point
-      final nearestAsset = assetsInBounds.firstWhereOrNull(
+      final nearestAsset = assetsInBoundsList.firstWhereOrNull(
         (element) =>
-            d.distance(element.point, tapPoint) <
-            _mapController.getTapThresholdForZoomLevel(),
+            d.distance(element.point, tapPosition) <
+            mapController.getTapThresholdForZoomLevel(),
       );
       // Reset marker if no assets are near the tap point
       if (nearestAsset == null && closestAssetMarker.value != null) {
-        _bottomSheetScrollController.animateTo(
-          0.1,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.linearToEaseOut,
-        );
         selectionEnabledHook.value = false;
         mapPageEventSC.add(
           const MapPageOnTapEvent(),
         );
       }
       closestAssetMarker.value = nearestAsset;
+    }
+
+    void onMapEvent(MapEvent mapEvent) {
+      if (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom) {
+        if (forceAssetUpdate ||
+            mapEvent.source != MapEventSource.mapController) {
+          debounce(() {
+            if (selectionEnabledHook.value) {
+              selectionEnabledHook.value = false;
+            }
+            reloadAssetsInBound(mapMarkerData.value);
+            forceAssetUpdate = false;
+          });
+        }
+      } else if (mapEvent is MapEventTap) {
+        handleMapTapEvent(mapEvent.tapPosition);
+      }
     }
 
     void onShareAsset() {
@@ -247,7 +259,7 @@ class MapPageState extends ConsumerState<MapPage> {
       } finally {
         showLoadingIndicator.value = false;
         selectionEnabledHook.value = false;
-        refetchMapMarkers();
+        refetchMarkers.value = true;
       }
     }
 
@@ -258,7 +270,7 @@ class MapPageState extends ConsumerState<MapPage> {
       } finally {
         showLoadingIndicator.value = false;
         selectionEnabledHook.value = false;
-        refetchMapMarkers();
+        refetchMarkers.value = true;
       }
     }
 
@@ -330,15 +342,6 @@ class MapPageState extends ConsumerState<MapPage> {
           )
         : const SizedBox.shrink();
 
-    final bottomSheet = AssetsInBoundBottomSheet(
-      mapPageEventStream: mapPageEventSC.stream,
-      bottomSheetEventSC: bottomSheetEventSC,
-      scrollableController: _bottomSheetScrollController,
-      selectionEnabledHook: selectionEnabledHook,
-      selectionlistener: selectionListener,
-      onZoomToAssetCb: onZoomToAssetEvent,
-    );
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.black.withOpacity(0.5),
@@ -360,7 +363,7 @@ class MapPageState extends ConsumerState<MapPage> {
           body: Stack(
             children: [
               FlutterMap(
-                mapController: _mapController,
+                mapController: mapController,
                 options: MapOptions(
                   maxBounds:
                       LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
@@ -374,9 +377,8 @@ class MapPageState extends ConsumerState<MapPage> {
                   minZoom: 1,
                   maxZoom: 18, // max level supported by OSM,
                   onMapReady: () {
-                    _mapController.mapEventStream.listen(onMapEvent);
+                    mapController.mapEventStream.listen(onMapEvent);
                   },
-                  onTap: onMapTapEvent,
                 ),
                 children: [
                   isDarkTheme ? darkTileLayer : tileLayer,
@@ -384,7 +386,12 @@ class MapPageState extends ConsumerState<MapPage> {
                   markerLayer,
                 ],
               ),
-              bottomSheet,
+              MapPageBottomSheet(
+                mapPageEventStream: mapPageEventSC.stream,
+                bottomSheetEventSC: bottomSheetEventSC,
+                selectionEnabled: selectionEnabledHook.value,
+                selectionlistener: selectionListener,
+              ),
               if (showLoadingIndicator.value)
                 Positioned(
                   top: MediaQuery.of(context).size.height * 0.35,

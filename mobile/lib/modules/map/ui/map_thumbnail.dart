@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,6 +13,7 @@ class MapThumbnail extends HookConsumerWidget {
   final List<Marker> markers;
   final double height;
   final bool showAttribution;
+  final bool isDarkTheme;
 
   const MapThumbnail({
     super.key,
@@ -23,38 +22,15 @@ class MapThumbnail extends HookConsumerWidget {
     this.onTap,
     this.zoom = 1,
     this.showAttribution = true,
+    this.isDarkTheme = false,
     this.markers = const [],
   });
 
-  Widget _buildTileLayer(
-    bool isDarkTheme,
-  ) {
-    Widget tile = TileLayer(
-      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      subdomains: const ['a', 'b', 'c'],
-    );
-    if (!isDarkTheme) {
-      return tile;
-    }
-    return InvertionFilter(
-      child: SaturationFilter(
-        saturation: -1,
-        child: tile,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapSettingsNotifier = ref.watch(mapStateNotifier);
-    final isDarkTheme = useState(mapSettingsNotifier.isDarkTheme);
-
-    useEffect(
-      () {
-        isDarkTheme.value = mapSettingsNotifier.isDarkTheme;
-        return null;
-      },
-      [mapSettingsNotifier],
+    final tileLayer = TileLayer(
+      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      subdomains: const ['a', 'b', 'c'],
     );
 
     return SizedBox(
@@ -83,7 +59,14 @@ class MapThumbnail extends HookConsumerWidget {
               ),
           ],
           children: [
-            _buildTileLayer(isDarkTheme.value),
+            isDarkTheme
+                ? InvertionFilter(
+                    child: SaturationFilter(
+                      saturation: -1,
+                      child: tileLayer,
+                    ),
+                  )
+                : tileLayer,
             if (markers.isNotEmpty) MarkerLayer(markers: markers),
           ],
         ),

@@ -11,8 +11,8 @@ class MapSettingsDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appSettingsStore = ref.watch(appSettingsServiceProvider);
-    final mapSettings = ref.watch(mapStateNotifier.notifier);
+    final appSettingsStore = ref.read(appSettingsServiceProvider);
+    final mapSettings = ref.read(mapStateNotifier.notifier);
     final isDarkMode = useState(AppSettingsEnum.mapThemeMode.defaultValue);
     final showFavoriteOnly =
         useState(AppSettingsEnum.mapShowFavoriteOnly.defaultValue);
@@ -30,7 +30,7 @@ class MapSettingsDialog extends HookConsumerWidget {
             appSettingsStore.getSetting(AppSettingsEnum.mapRelativeDate);
         return null;
       },
-      [appSettingsStore],
+      [],
     );
 
     Widget buildMapThemeSetting() {
@@ -42,7 +42,7 @@ class MapSettingsDialog extends HookConsumerWidget {
         activeColor: theme.primaryColor,
         dense: true,
         title: Text(
-          "Allow dark mode".tr(),
+          "map_settings_dark_mode".tr(),
           style:
               theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
@@ -58,7 +58,7 @@ class MapSettingsDialog extends HookConsumerWidget {
         activeColor: theme.primaryColor,
         dense: true,
         title: Text(
-          "Show Favorite Only".tr(),
+          "map_settings_only_show_favorites".tr(),
           style:
               theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
@@ -131,7 +131,7 @@ class MapSettingsDialog extends HookConsumerWidget {
                 mapSettings.isDarkTheme ? Colors.grey[100] : Colors.grey[700],
           ),
           child: Text(
-            "Cancel",
+            "map_settings_dialog_cancel".tr(),
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color:
@@ -164,7 +164,7 @@ class MapSettingsDialog extends HookConsumerWidget {
             backgroundColor: theme.primaryColor,
           ),
           child: Text(
-            "Save",
+            "map_settings_dialog_save".tr(),
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: theme.primaryTextTheme.labelLarge?.color,
@@ -178,7 +178,7 @@ class MapSettingsDialog extends HookConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: Center(
         child: Text(
-          "Map Settings",
+          "map_settings_dialog_title".tr(),
           style: TextStyle(
             color: theme.primaryColor,
             fontWeight: FontWeight.bold,
@@ -205,9 +205,9 @@ class MapSettingsDialog extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Date range",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      "map_settings_only_relative_range".tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     buildDateRangeSetting(),
                   ],

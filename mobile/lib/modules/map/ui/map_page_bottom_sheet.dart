@@ -1,35 +1,32 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid_view.dart';
-import 'package:immich_mobile/modules/map/models/map_subscription_event.model.dart';
+import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class AssetsInBoundBottomSheet extends ConsumerStatefulWidget {
+class MapPageBottomSheet extends StatefulHookConsumerWidget {
   final Stream mapPageEventStream;
   final StreamController bottomSheetEventSC;
-  final DraggableScrollableController? scrollableController;
-  final ValueNotifier<bool> selectionEnabledHook;
+  final bool selectionEnabled;
   final ImmichAssetGridSelectionListener selectionlistener;
 
-  final void Function(Asset? asset) onZoomToAssetCb;
-
-  const AssetsInBoundBottomSheet({
+  const MapPageBottomSheet({
     super.key,
     required this.mapPageEventStream,
     required this.bottomSheetEventSC,
-    required this.selectionEnabledHook,
+    required this.selectionEnabled,
     required this.selectionlistener,
-    required this.onZoomToAssetCb,
-    this.scrollableController,
   });
 
   @override
@@ -37,43 +34,25 @@ class AssetsInBoundBottomSheet extends ConsumerStatefulWidget {
       AssetsInBoundBottomSheetState();
 }
 
-class AssetsInBoundBottomSheetState
-    extends ConsumerState<AssetsInBoundBottomSheet> {
+class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
   // State variables
   bool isSheetExpanded = false;
   bool isSheetScrolled = false;
-  // Non-State variables
   List<Asset> assetsInBound = [];
-  late final StreamSubscription<dynamic>? _mapPageEventSubscription;
-  late final Debounce debounce;
+  // Non-State variables
   bool userTappedOnMap = false;
   RenderList? _cachedRenderList;
   int lastAssetOffsetInSheet = -1;
+  late final DraggableScrollableController bottomSheetController;
+  late final Debounce debounce;
 
   @override
   void initState() {
     super.initState();
-    _mapPageEventSubscription =
-        widget.mapPageEventStream.listen(handleMapPageEvents);
+    bottomSheetController = DraggableScrollableController();
     debounce = Debounce(
       const Duration(milliseconds: 200),
     );
-  }
-
-  @override
-  void didUpdateWidget(covariant AssetsInBoundBottomSheet oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.mapPageEventStream != oldWidget.mapPageEventStream) {
-      _mapPageEventSubscription?.cancel();
-      _mapPageEventSubscription =
-          widget.mapPageEventStream.listen(handleMapPageEvents);
-    }
-  }
-
-  @override
-  void dispose() {
-    _mapPageEventSubscription?.cancel();
-    super.dispose();
   }
 
   void handleMapPageEvents(dynamic event) {
@@ -86,6 +65,11 @@ class AssetsInBoundBottomSheetState
     } else if (event is MapPageOnTapEvent) {
       userTappedOnMap = true;
       lastAssetOffsetInSheet = -1;
+      bottomSheetController.animateTo(
+        0.1,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.linearToEaseOut,
+      );
       if (mounted && isSheetScrolled) {
         setState(() {
           isSheetScrolled = false;
@@ -133,6 +117,15 @@ class AssetsInBoundBottomSheetState
   Widget build(BuildContext context) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
+    useEffect(
+      () {
+        final mapPageEventSubscription =
+            widget.mapPageEventStream.listen(handleMapPageEvents);
+        return mapPageEventSubscription.cancel;
+      },
+      [widget.mapPageEventStream],
+    );
+
     Widget buildNoPhotosWidget() {
       const image = Image(
         image: AssetImage('assets/lighthouse.png'),
@@ -163,7 +156,7 @@ class AssetsInBoundBottomSheetState
                   height: 20,
                 ),
                 Text(
-                  "Zoom out to see photos",
+                  "map_zoom_to_see_photos".tr(),
                   style: TextStyle(
                     fontSize: 20,
                     color: Theme.of(context).textTheme.displayLarge?.color,
@@ -176,8 +169,10 @@ class AssetsInBoundBottomSheetState
 
     void onTapMapButton() {
       if (lastAssetOffsetInSheet != -1) {
-        widget.onZoomToAssetCb.call(
-          _cachedRenderList?.allAssets?[lastAssetOffsetInSheet],
+        widget.bottomSheetEventSC.add(
+          MapPageZoomToAsset(
+            _cachedRenderList?.allAssets?[lastAssetOffsetInSheet],
+          ),
         );
       }
     }
@@ -185,7 +180,7 @@ class AssetsInBoundBottomSheetState
     Widget buildDragHandle(ScrollController scrollController) {
       final textToDisplay = assetsInBound.isNotEmpty
           ? "${assetsInBound.length} photo${assetsInBound.length > 1 ? "s" : ""}"
-          : "No photos in this area";
+          : "map_no_assets_in_bounds".tr();
       final dragHandle = Container(
         height: 75,
         width: double.infinity,
@@ -258,7 +253,7 @@ class AssetsInBoundBottomSheetState
         return true;
       },
       child: DraggableScrollableSheet(
-        controller: widget.scrollableController,
+        controller: bottomSheetController,
         initialChildSize: 0.1,
         minChildSize: 0.1,
         maxChildSize: 0.55,
@@ -295,7 +290,7 @@ class AssetsInBoundBottomSheetState
                             shrinkWrap: true,
                             renderList: renderList,
                             showDragScroll: false,
-                            selectionActive: widget.selectionEnabledHook.value,
+                            selectionActive: widget.selectionEnabled,
                             showMultiSelectIndicator: false,
                             listener: widget.selectionlistener,
                             visibleItemsListener: visibleItemsListener,

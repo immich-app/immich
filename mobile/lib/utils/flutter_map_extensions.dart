@@ -5,17 +5,18 @@ import 'dart:math' as math;
 
 extension MoveByBounds on MapController {
   // TODO: Remove this in favor of built-in method when upgrading flutter_map to 5.0.0
-  LatLng? moveByBottomPadding(
+  LatLng? centerBoundsWithPadding(
     LatLng coordinates,
-    Offset offset,
-  ) {
+    Offset offset, {
+    double? zoomLevel,
+  }) {
     const crs = Epsg3857();
-    final oldCenterPt = crs.latLngToPoint(coordinates, zoom);
+    final oldCenterPt = crs.latLngToPoint(coordinates, zoomLevel ?? zoom);
     final mapCenterPoint = _rotatePoint(
       oldCenterPt,
       oldCenterPt - CustomPoint(offset.dx, offset.dy),
     );
-    return crs.pointToLatLng(mapCenterPoint, zoom);
+    return crs.pointToLatLng(mapCenterPoint, zoomLevel ?? zoom);
   }
 
   CustomPoint<double> _rotatePoint(

@@ -9,8 +9,8 @@ import 'package:openapi/api.dart';
 
 final mapServiceProvider = Provider(
   (ref) => MapSerivce(
-    ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
+    ref.read(apiServiceProvider),
+    ref.read(dbProvider),
   ),
 );
 

@@ -4,6 +4,7 @@ enum MapPageEventType {
   mapTap,
   bottomSheetScrolled,
   assetsInBoundUpdated,
+  zoomToAsset,
 }
 
 class MapPageEventBase {
@@ -26,4 +27,9 @@ class MapPageBottomSheetScrolled extends MapPageEventBase {
   Asset? asset;
   MapPageBottomSheetScrolled(this.asset)
       : super(MapPageEventType.bottomSheetScrolled);
+}
+
+class MapPageZoomToAsset extends MapPageEventBase {
+  Asset? asset;
+  MapPageZoomToAsset(this.asset) : super(MapPageEventType.zoomToAsset);
 }

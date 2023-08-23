@@ -4,8 +4,8 @@ import 'package:immich_mobile/modules/map/services/map.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:latlong2/latlong.dart';
 
-final mapMarkerFutureProvider =
-    FutureProvider.autoDispose<List<AssetMarkerData>>((ref) async {
+final mapMarkersProvider =
+    FutureProvider.autoDispose<Set<AssetMarkerData>>((ref) async {
   final service = ref.read(mapServiceProvider);
   final mapState = ref.read(mapStateNotifier);
   DateTime? fileCreatedAfter;
@@ -34,7 +34,7 @@ final mapMarkerFutureProvider =
     }),
   );
 
-  return assetMarkerData.nonNulls.toList();
+  return assetMarkerData.nonNulls.toSet();
 });
 
 class AssetMarkerData {
@@ -42,4 +42,16 @@ class AssetMarkerData {
   final Asset asset;
 
   const AssetMarkerData(this.asset, this.point);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is AssetMarkerData && other.asset.remoteId == asset.remoteId;
+  }
+
+  @override
+  int get hashCode {
+    return asset.remoteId.hashCode;
+  }
 }
