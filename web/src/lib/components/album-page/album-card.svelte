@@ -77,7 +77,7 @@
       class:hidden={!showVerticalDots}
       data-testid="context-button-parent"
     >
-      <IconButton color="overlay-primary">
+      <IconButton color="transparent-primary">
         <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
       </IconButton>
     </div>
