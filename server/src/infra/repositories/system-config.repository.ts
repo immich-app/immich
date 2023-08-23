@@ -1,5 +1,7 @@
-import { ISystemConfigRepository } from '@app/domain';
+import { ISystemConfigRepository, SystemConfigDto } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
 import { constants } from 'fs';
 import fs from 'fs/promises';
 import { DeepPartial, In, Repository } from 'typeorm';
@@ -27,7 +29,19 @@ export class SystemConfigRepository implements ISystemConfigRepository {
       throw new Error(`Couldn't read file ${path}`);
     }
 
-    const config: DeepPartial<SystemConfig> = JSON.parse(await fs.readFile(path, 'utf-8'));
+    const config: DeepPartial<SystemConfig> = plainToClass(
+      SystemConfigDto,
+      JSON.parse(await fs.readFile(path, 'utf-8')),
+    );
+
+    const error = await validate(config, {
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      skipMissingProperties: true,
+    });
+    if (error.length > 0) {
+      throw new Error(`Invalid value(s) in file: ${error}`);
+    }
 
     return config;
   }
