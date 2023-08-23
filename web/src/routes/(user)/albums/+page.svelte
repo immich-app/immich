@@ -154,15 +154,15 @@
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <tr class="flex w-full place-items-center">
-          <th class="w-1/4 text-center text-sm font-medium">Album title</th>
-          <th class="w-1/4 text-center text-sm font-medium">Assets</th>
-          <th class="w-1/4 text-center text-sm font-medium">Updated date</th>
-          <th class="w-1/4 text-center text-sm font-medium">Created date</th>
+        <tr class="flex w-full place-items-center p-5">
+          <th class="w-1/4 text-left text-sm font-medium">Album title</th>
+          <th class="w-1/4 text-right text-sm font-medium">Assets</th>
+          <th class="w-1/4 text-right text-sm font-medium">Updated date</th>
+          <th class="w-1/4 text-right text-sm font-medium">Created date</th>
         </tr>
       </thead>
       <tbody
-        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each $albums as album (album.id)}
           <tr
@@ -171,13 +171,13 @@
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-1/4 text-ellipsis px-2">{album.albumName}</td>
-            <td class="text-md w-1/4 text-ellipsis px-2">
+            <td class="text-md w-1/4 text-ellipsis text-left">{album.albumName}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-1/4 text-ellipsis px-2">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.createdAt)}</td>
           </tr>
         {/each}
       </tbody>

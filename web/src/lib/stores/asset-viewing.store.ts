@@ -5,8 +5,8 @@ function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
   const viewState = writable<boolean>(false);
 
-  const setAssetId = async (id: string) => {
-    const { data } = await api.assetApi.getAssetById({ id });
+  const setAssetId = async (id: string, key?: string) => {
+    const { data } = await api.assetApi.getAssetById({ id, key });
     viewingAssetStoreState.set(data);
     viewState.set(true);
   };

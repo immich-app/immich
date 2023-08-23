@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     clip_text_model: str = "clip-ViT-B-32"
     facial_recognition_model: str = "buffalo_l"
     min_tag_score: float = 0.9
-    eager_startup: bool = True
+    eager_startup: bool = False
     model_ttl: int = 0
     host: str = "0.0.0.0"
     port: int = 3003

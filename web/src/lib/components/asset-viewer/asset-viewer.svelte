@@ -53,7 +53,9 @@
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
-    getAllAlbums();
+    if (!sharedLink) {
+      getAllAlbums();
+    }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
@@ -67,7 +69,7 @@
     }
   });
 
-  $: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
 
   const getAllAlbums = async () => {
     try {
@@ -336,6 +338,7 @@
       <DetailPanel
         {asset}
         albums={appearsInAlbums}
+        {sharedLink}
         on:close={() => ($isShowDetail = false)}
         on:close-viewer={handleCloseViewer}
         on:description-focus-in={disableKeyDownEvent}

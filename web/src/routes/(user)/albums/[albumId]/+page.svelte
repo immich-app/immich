@@ -44,6 +44,7 @@
   import Plus from 'svelte-material-icons/Plus.svelte';
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export let data: PageData;
 
@@ -166,9 +167,10 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
-    viewMode = ViewMode.ALBUM_OPTIONS;
+  const handleOpenAlbumOptions = ({ x }: MouseEvent) => {
+    const navigationBarHeight = 75;
+    contextMenuPosition = { x: x, y: navigationBarHeight };
+    viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
   };
 
   const handleSelectFromComputer = async () => {
@@ -330,13 +332,15 @@
             <CircleIconButton title="Download" on:click={handleDownloadAlbum} logo={FolderDownloadOutline} />
 
             {#if isOwned}
-              <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} logo={DotsVertical}>
-                {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                  <ContextMenu {...contextMenuPosition} on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                    <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                  </ContextMenu>
-                {/if}
-              </CircleIconButton>
+              <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
+                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} logo={DotsVertical}>
+                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
+                    <ContextMenu {...contextMenuPosition}>
+                      <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                    </ContextMenu>
+                  {/if}
+                </CircleIconButton>
+              </div>
             {/if}
           {/if}
 

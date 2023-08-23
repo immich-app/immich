@@ -27,7 +27,6 @@
   export let assetInteractionStore: AssetInteractionStore;
 
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
-
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
     selectAssets: AssetResponseDto;
@@ -97,7 +96,7 @@
       return;
     }
 
-    assetViewingStore.setAssetId(asset.id);
+    assetViewingStore.setAssetId(asset.id, publicSharedKey);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });

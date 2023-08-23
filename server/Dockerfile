@@ -13,7 +13,7 @@ mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-med
 # debian build for imagemagick has broken RAW support, so build manually
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 ENV LD_RUN_PATH=/usr/local/lib:$LD_RUN_PATH
-COPY bin/build-libraw.sh bin/build-imagemagick.sh bin/build-libvips.sh ./
+COPY bin/build-libraw.sh bin/build-imagemagick.sh bin/build-libvips.sh bin/use-camera-wb.patch ./
 RUN ./build-libraw.sh
 RUN ./build-imagemagick.sh
 RUN ./build-libvips.sh

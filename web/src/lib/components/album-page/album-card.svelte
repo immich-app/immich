@@ -74,7 +74,7 @@
       data-testid="context-button-parent"
     >
       <IconButton color="overlay-primary">
-        <DotsVertical size="20" />
+        <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
       </IconButton>
     </div>
   {/if}

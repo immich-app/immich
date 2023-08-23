@@ -13,6 +13,7 @@ sha256sum -c imagemagick.sha256
 tar -xvf ${IMAGEMAGICK_VERSION}.tar.gz -C ImageMagick --strip-components=1
 rm ${IMAGEMAGICK_VERSION}.tar.gz
 rm imagemagick.sha256
+patch -u ImageMagick/coders/dng.c -i use-camera-wb.patch
 cd ImageMagick
 ./configure --with-modules
 make -j$(nproc)
