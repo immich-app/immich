@@ -3011,6 +3011,173 @@
         ]
       }
     },
+    "/rule": {
+      "post": {
+        "operationId": "createRule",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRuleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Rule"
+        ]
+      }
+    },
+    "/rule/{id}": {
+      "delete": {
+        "operationId": "removeRule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Rule"
+        ]
+      },
+      "get": {
+        "operationId": "getRule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Rule"
+        ]
+      },
+      "put": {
+        "operationId": "updateRule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRuleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Rule"
+        ]
+      }
+    },
     "/search": {
       "get": {
         "operationId": "search",
@@ -4848,6 +5015,12 @@
           "ownerId": {
             "type": "string"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResponseDto"
+            },
+            "type": "array"
+          },
           "shared": {
             "type": "boolean"
           },
@@ -4879,7 +5052,8 @@
           "sharedUsers",
           "hasSharedLink",
           "assets",
-          "owner"
+          "owner",
+          "rules"
         ],
         "type": "object"
       },
@@ -4906,6 +5080,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "smartAlbum": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -4926,7 +5103,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "object"
       },
@@ -5497,6 +5675,26 @@
         ],
         "type": "object"
       },
+      "CreateRuleDto": {
+        "properties": {
+          "albumId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "key": {
+            "$ref": "#/components/schemas/RuleKey"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "albumId"
+        ],
+        "type": "object"
+      },
       "CreateTagDto": {
         "properties": {
           "name": {
@@ -5929,7 +6127,8 @@
           "backgroundTask",
           "storageTemplateMigration",
           "search",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "string"
       },
@@ -6268,6 +6467,42 @@
         "required": [
           "isActive",
           "isPaused"
+        ],
+        "type": "object"
+      },
+      "RuleKey": {
+        "enum": [
+          "person",
+          "taken-after",
+          "city",
+          "state",
+          "country",
+          "camera-make",
+          "camera-model",
+          "location"
+        ],
+        "type": "string"
+      },
+      "RuleResponseDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "$ref": "#/components/schemas/RuleKey"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "id",
+          "ownerId"
         ],
         "type": "object"
       },
@@ -6881,6 +7116,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "smartAlbum": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -6901,7 +7139,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "smartAlbum"
         ],
         "type": "object"
       },
@@ -7175,6 +7414,21 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "UpdateRuleDto": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/RuleKey"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

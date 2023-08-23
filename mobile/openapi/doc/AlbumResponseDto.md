@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
+**rules** | [**List<RuleResponseDto>**](RuleResponseDto.md) |  | [default to const []]
 **shared** | **bool** |  | 
 **sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 

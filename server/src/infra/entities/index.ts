@@ -4,6 +4,7 @@ import { AssetFaceEntity } from './asset-face.entity';
 import { AssetEntity } from './asset.entity';
 import { PartnerEntity } from './partner.entity';
 import { PersonEntity } from './person.entity';
+import { RuleEntity } from './rule.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { SystemConfigEntity } from './system-config.entity';
@@ -18,6 +19,7 @@ export * from './asset.entity';
 export * from './exif.entity';
 export * from './partner.entity';
 export * from './person.entity';
+export * from './rule.entity';
 export * from './shared-link.entity';
 export * from './smart-info.entity';
 export * from './system-config.entity';
@@ -33,6 +35,7 @@ export const databaseEntities = [
   PartnerEntity,
   PersonEntity,
   SharedLinkEntity,
+  RuleEntity,
   SmartInfoEntity,
   SystemConfigEntity,
   TagEntity,

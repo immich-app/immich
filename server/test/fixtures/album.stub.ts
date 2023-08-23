@@ -17,6 +17,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -31,6 +32,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1],
+    rules: [],
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -45,6 +47,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
+    rules: [],
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -59,6 +62,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [userStub.admin],
+    rules: [],
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -73,6 +77,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -87,6 +92,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -101,6 +107,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -115,6 +122,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -129,6 +137,7 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -143,5 +152,6 @@ export const albumStub = {
     updatedAt: new Date(),
     sharedLinks: [],
     sharedUsers: [],
+    rules: [],
   }),
 };

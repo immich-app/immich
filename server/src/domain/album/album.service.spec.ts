@@ -185,6 +185,7 @@ describe(AlbumService.name, () => {
         endDate: undefined,
         hasSharedLink: false,
         updatedAt: expect.anything(),
+        rules: [],
       });
 
       expect(jobMock.queue).toHaveBeenCalledWith({

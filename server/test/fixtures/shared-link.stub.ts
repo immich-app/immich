@@ -80,6 +80,7 @@ const albumResponse: AlbumResponseDto = {
   hasSharedLink: false,
   assets: [],
   assetCount: 1,
+  rules: [],
 };
 
 export const sharedLinkStub = {
@@ -222,6 +223,7 @@ export const sharedLinkStub = {
           sidecarPath: null,
         },
       ],
+      rules: [],
     },
   }),
 };

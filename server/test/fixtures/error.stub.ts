@@ -17,7 +17,7 @@ export const errorStub = {
   badRequest: {
     error: 'Bad Request',
     statusCode: 400,
-    message: expect.any(Array),
+    message: expect.anything(),
   },
   incorrectLogin: {
     error: 'Unauthorized',

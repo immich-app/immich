@@ -9,6 +9,7 @@ export enum QueueName {
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  SMART_ALBUM = 'smartAlbum',
 }
 
 export enum JobCommand {
@@ -75,6 +76,9 @@ export enum JobName {
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
+
+  // smart albums
+  SMART_ALBUM_INDEX = 'smart-album-index',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -138,4 +142,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+
+  // smart albums
+  [JobName.SMART_ALBUM_INDEX]: QueueName.SMART_ALBUM,
 };

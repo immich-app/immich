@@ -247,6 +247,8 @@ class ApiClient {
           return CreateAlbumDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CreateRuleDto':
+          return CreateRuleDto.fromJson(value);
         case 'CreateTagDto':
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
@@ -313,6 +315,10 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RuleKey':
+          return RuleKeyTypeTransformer().decode(value);
+        case 'RuleResponseDto':
+          return RuleResponseDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetDto':
@@ -391,6 +397,8 @@ class ApiClient {
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
+        case 'UpdateRuleDto':
+          return UpdateRuleDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':

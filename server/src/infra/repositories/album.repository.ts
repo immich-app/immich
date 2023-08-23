@@ -19,6 +19,7 @@ export class AlbumRepository implements IAlbumRepository {
       sharedUsers: true,
       assets: false,
       sharedLinks: true,
+      rules: true,
     };
 
     const order: FindOptionsOrder<AlbumEntity> = {};
@@ -44,6 +45,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: {
         owner: true,
         sharedUsers: true,
+        rules: true,
       },
     });
   }
@@ -51,7 +53,7 @@ export class AlbumRepository implements IAlbumRepository {
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: { ownerId, assets: { id: assetId } },
-      relations: { owner: true, sharedUsers: true },
+      relations: { owner: true, sharedUsers: true, rules: true },
       order: { createdAt: 'DESC' },
     });
   }
@@ -107,7 +109,7 @@ export class AlbumRepository implements IAlbumRepository {
 
   getOwned(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { sharedUsers: true, sharedLinks: true, owner: true, rules: true },
       where: { ownerId },
       order: { createdAt: 'DESC' },
     });
@@ -118,7 +120,7 @@ export class AlbumRepository implements IAlbumRepository {
    */
   getShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { sharedUsers: true, sharedLinks: true, owner: true, rules: true },
       where: [
         { sharedUsers: { id: ownerId } },
         { sharedLinks: { userId: ownerId } },
@@ -133,7 +135,7 @@ export class AlbumRepository implements IAlbumRepository {
    */
   getNotShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { sharedUsers: true, sharedLinks: true, owner: true, rules: true },
       where: { ownerId, sharedUsers: { id: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
     });
@@ -196,6 +198,7 @@ export class AlbumRepository implements IAlbumRepository {
         sharedUsers: true,
         sharedLinks: true,
         assets: true,
+        rules: true,
       },
     });
   }

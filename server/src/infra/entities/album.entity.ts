@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
+import { RuleEntity } from './rule.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserEntity } from './user.entity';
 
@@ -52,4 +53,7 @@ export class AlbumEntity {
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
   sharedLinks!: SharedLinkEntity[];
+
+  @OneToMany(() => RuleEntity, (rule) => rule.album)
+  rules!: RuleEntity[];
 }

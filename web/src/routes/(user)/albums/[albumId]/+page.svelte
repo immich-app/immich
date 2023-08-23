@@ -25,6 +25,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import RuleSelection from '$lib/components/album-page/rule-selection-form/rule-selection-form.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
@@ -34,7 +35,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { TimeBucketSize, UserResponseDto, api } from '@api';
+  import { RuleResponseDto, TimeBucketSize, UserResponseDto, api } from '@api';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -42,6 +43,7 @@
   import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
   import Link from 'svelte-material-icons/Link.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
+  import FaceMan from 'svelte-material-icons/FaceMan.svelte';
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -59,6 +61,7 @@
     SELECT_ASSETS = 'select-assets',
     ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
+    RULE_SELECTION = 'rule-selection',
     VIEW = 'view',
   }
 
@@ -280,6 +283,28 @@
       handleError(error, 'Error updating album description');
     }
   };
+
+  const handleUpdateRules = async (rules: RuleResponseDto[]) => {
+    let ids = rules.filter((rule) => !!rule.id).map((rule) => rule.id);
+
+    for (const rule of album.rules) {
+      if (!ids.includes(rule.id)) {
+        await api.ruleApi.removeRule({ id: rule.id });
+      }
+    }
+
+    for (const { id, key, value } of rules) {
+      if (!id) {
+        await api.ruleApi.createRule({ createRuleDto: { albumId: album.id, key, value } });
+      } else {
+        await api.ruleApi.updateRule({ id, updateRuleDto: { key, value } });
+      }
+    }
+
+    await refreshAlbum();
+
+    viewMode = ViewMode.VIEW;
+  };
 </script>
 
 <header>
@@ -348,7 +373,7 @@
             <Button
               size="sm"
               rounded="lg"
-              disabled={album.assetCount == 0}
+              disabled={album.assetCount === 0}
               on:click={() => (viewMode = ViewMode.SELECT_USERS)}
             >
               Share
@@ -362,7 +387,7 @@
       <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
         <svelte:fragment slot="leading">
           <p class="text-lg dark:text-immich-dark-fg">
-            {#if $timelineSelected.size == 0}
+            {#if $timelineSelected.size === 0}
               Add to album
             {:else}
               {$timelineSelected.size.toLocaleString($locale)} selected
@@ -408,7 +433,7 @@
         <!-- ALBUM TITLE -->
         <section class="pt-24">
           <input
-            on:keydown={(e) => e.key == 'Enter' && titleInput.blur()}
+            on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
             on:blur={handleUpdateName}
             class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
               ? 'hover:border-gray-400'
@@ -484,14 +509,26 @@
       {/if}
 
       {#if album.assetCount === 0}
-        <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-          <div class="w-[300px]">
-            <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+        <section id="empty-album" class=" mt-[200px] flex flex-col place-content-center place-items-center">
+          <div class="w-[340px]">
+            <p class="text-sm dark:text-immich-dark-fg">ADD PHOTOS</p>
+
+            <button
+              on:click={() => (viewMode = ViewMode.RULE_SELECTION)}
+              class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+            >
+              <span class="immich-text-primary"><FaceMan size="34" /> </span>
+              <div class="text-left">
+                <div class="text-lg">Select people & rules</div>
+                <div class="text-sm">Create an auto-updating album</div>
+              </div>
+            </button>
+
             <button
               on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
               class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
             >
-              <span class="text-text-immich-primary dark:text-immich-dark-primary"><Plus size="24" /> </span>
+              <span class="immich-text-primary"><Plus size="34" /> </span>
               <span class="text-lg">Select photos</span>
             </button>
           </div>
@@ -541,5 +578,13 @@
     {album}
     on:close={() => (isEditingDescription = false)}
     on:updated={({ detail: description }) => handleUpdateDescription(description)}
+  />
+{/if}
+
+{#if viewMode === ViewMode.RULE_SELECTION}
+  <RuleSelection
+    on:close={() => (viewMode = ViewMode.VIEW)}
+    rules={album.rules}
+    on:submit={({ detail: rules }) => handleUpdateRules(rules)}
   />
 {/if}

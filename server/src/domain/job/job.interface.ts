@@ -29,3 +29,13 @@ export interface IBulkEntityJob extends IBaseJob {
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }
+
+export interface ISmartAlbumIndexJob extends IBaseJob {
+  albumId: string;
+  ruleId: string;
+}
+
+export interface ISmartAlbumInsertJob extends IBaseJob {
+  albumId: string;
+  assetId: string;
+}
