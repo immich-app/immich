@@ -133,8 +133,6 @@ class _PinPainter extends CustomPainter {
         secondEndPoint.dx,
         secondEndPoint.dy,
       )
-      // ..lineTo(firstEndPoint.dx, firstEndPoint.dy)
-      // ..lineTo(secondEndPoint.dx, secondEndPoint.dy)
       ..lineTo(0, 0);
   }
 

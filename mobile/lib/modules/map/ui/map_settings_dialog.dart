@@ -11,7 +11,7 @@ class MapSettingsDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsServiceProvider);
+    final appSettingsStore = ref.watch(appSettingsServiceProvider);
     final mapSettings = ref.watch(mapStateNotifier.notifier);
     final isDarkMode = useState(AppSettingsEnum.mapThemeMode.defaultValue);
     final showFavoriteOnly =
@@ -22,14 +22,15 @@ class MapSettingsDialog extends HookConsumerWidget {
 
     useEffect(
       () {
-        isDarkMode.value = settings.getSetting(AppSettingsEnum.mapThemeMode);
+        isDarkMode.value =
+            appSettingsStore.getSetting(AppSettingsEnum.mapThemeMode);
         showFavoriteOnly.value =
-            settings.getSetting(AppSettingsEnum.mapShowFavoriteOnly);
+            appSettingsStore.getSetting(AppSettingsEnum.mapShowFavoriteOnly);
         showRelativeDate.value =
-            settings.getSetting(AppSettingsEnum.mapRelativeDate);
+            appSettingsStore.getSetting(AppSettingsEnum.mapRelativeDate);
         return null;
       },
-      [settings],
+      [appSettingsStore],
     );
 
     Widget buildMapThemeSetting() {
@@ -38,14 +39,12 @@ class MapSettingsDialog extends HookConsumerWidget {
         onChanged: (value) {
           isDarkMode.value = value;
         },
-        activeColor: Theme.of(context).primaryColor,
+        activeColor: theme.primaryColor,
         dense: true,
         title: Text(
           "Allow dark mode".tr(),
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style:
+              theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       );
     }
@@ -56,14 +55,12 @@ class MapSettingsDialog extends HookConsumerWidget {
         onChanged: (value) {
           showFavoriteOnly.value = value;
         },
-        activeColor: Theme.of(context).primaryColor,
+        activeColor: theme.primaryColor,
         dense: true,
         title: Text(
           "Show Favorite Only".tr(),
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style:
+              theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       );
     }
@@ -130,25 +127,30 @@ class MapSettingsDialog extends HookConsumerWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(
-            backgroundColor: Colors.white,
+            backgroundColor:
+                mapSettings.isDarkTheme ? Colors.grey[100] : Colors.grey[700],
           ),
-          child: const Text(
+          child: Text(
             "Cancel",
-            style: TextStyle(
-              color: Colors.black,
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
+              color:
+                  mapSettings.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
             ),
           ),
         ),
         TextButton(
           onPressed: () {
             // Save App settings
-            settings.setSetting(AppSettingsEnum.mapThemeMode, isDarkMode.value);
-            settings.setSetting(
+            appSettingsStore.setSetting(
+              AppSettingsEnum.mapThemeMode,
+              isDarkMode.value,
+            );
+            appSettingsStore.setSetting(
               AppSettingsEnum.mapShowFavoriteOnly,
               showFavoriteOnly.value,
             );
-            settings.setSetting(
+            appSettingsStore.setSetting(
               AppSettingsEnum.mapRelativeDate,
               showRelativeDate.value,
             );
@@ -161,11 +163,11 @@ class MapSettingsDialog extends HookConsumerWidget {
           style: TextButton.styleFrom(
             backgroundColor: theme.primaryColor,
           ),
-          child: const Text(
+          child: Text(
             "Save",
-            style: TextStyle(
-              color: Colors.black,
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
+              color: theme.primaryTextTheme.labelLarge?.color,
             ),
           ),
         ),

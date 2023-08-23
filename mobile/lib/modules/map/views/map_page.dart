@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
@@ -12,7 +11,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/map/models/map_subscription_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
-import 'package:immich_mobile/modules/map/ui/asset_marker.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker_icon.dart';
 import 'package:immich_mobile/modules/map/ui/assets_in_bound_sheet.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
@@ -21,6 +19,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
+import 'package:immich_mobile/utils/flutter_map_extensions.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:latlong2/latlong.dart';
@@ -34,34 +33,43 @@ class MapPage extends StatefulHookConsumerWidget {
 }
 
 class MapPageState extends ConsumerState<MapPage> {
-  // State variables
+  // Non-State variables
   late final MapController _mapController;
+  late final DraggableScrollableController _bottomSheetScrollController;
+  // Streams are used instead of callbacks to prevent unnecessary rebuilds on events
   final StreamController mapPageEventSC =
       StreamController<MapPageEventBase>.broadcast();
   final StreamController bottomSheetEventSC =
       StreamController<MapPageEventBase>.broadcast();
-  StreamSubscription<dynamic>? bottomSheetEventStream;
+  late final Stream bottomSheetEventStream;
+  // Making assets in bounds as a state variable will result in un-necessary rebuilds of the bottom sheet
+  // resulting in it getting reloaded each time a map move occurs
   List<AssetMarkerData> assetsInBounds = [];
-  late final Debounce debounceBoundsUpdate;
-  late final DraggableScrollableController bottomSheetScrollController;
+  late final Debounce debounce;
 
-  List<AssetMarkerData> getAssetsMarkersInBound(
-    List<AssetMarkerData>? assetMarkers,
-  ) {
-    final bounds = _mapController.bounds;
-    return bounds != null
-        ? assetMarkers
-                ?.where((e) => bounds.contains(e.point))
-                .map((e) => e)
-                .toList() ??
-            []
-        : [];
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+    _bottomSheetScrollController = DraggableScrollableController();
+    bottomSheetEventStream = bottomSheetEventSC.stream;
+    // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
+    debounce = Debounce(
+      const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    debounce.dispose();
+    super.dispose();
   }
 
   void reloadAssetsInBound(List<AssetMarkerData>? assetMarkers) {
     final bounds = _mapController.bounds;
     if (bounds != null) {
-      assetsInBounds = getAssetsMarkersInBound(assetMarkers);
+      assetsInBounds =
+          assetMarkers?.where((e) => bounds.contains(e.point)).toList() ?? [];
       mapPageEventSC.add(
         MapPageAssetsInBoundUpdated(
           assetsInBounds.map((e) => e.asset).toList(),
@@ -70,297 +78,151 @@ class MapPageState extends ConsumerState<MapPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-    bottomSheetScrollController = DraggableScrollableController();
-    // Map zoom events and move events are triggered often. Throttle the call to limit rebuilds
-    debounceBoundsUpdate = Debounce(
-      const Duration(milliseconds: 100),
+  void openAssetInViewer(Asset asset) {
+    AutoRouter.of(context).push(
+      GalleryViewerRoute(
+        initialIndex: 0,
+        loadAsset: (index) => asset,
+        totalAssets: 1,
+        heroOffset: 0,
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    debounceBoundsUpdate.dispose();
-    bottomSheetEventStream?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     final log = Logger("MapService");
-    final mapState = ref.watch(mapStateNotifier);
-    final isDarkTheme = useState(mapState.isDarkTheme);
-    final ValueNotifier<List<AssetMarkerData>?> mapMarkers =
+    final isDarkTheme =
+        ref.watch(mapStateNotifier.select((state) => state.isDarkTheme));
+    final ValueNotifier<List<AssetMarkerData>> mapMarkerData =
         useState(<AssetMarkerData>[]);
-    final heatMapData = useState(<WeightedLatLng>[]);
-    final ValueNotifier<AssetMarkerData?> selectedAsset = useState(null);
+    final ValueNotifier<AssetMarkerData?> closestAssetMarker = useState(null);
     final selectionEnabledHook = useState(false);
     final selectedAssets = useState(<Asset>{});
-    final processingSelection = useState(false);
-    final refetchMarkers = useState(false);
+    final showLoadingIndicator = useState(false);
+    // TODO: Migrate the handling to MapEventMove#id when flutter_map is upgraded
+    // https://github.com/fleaflet/flutter_map/issues/1542
+    // The below is used instead of MapEventMove#id to handle event from controller
+    // in onMapEvent() since MapEventMove#id is not populated properly in the
+    // current version of flutter_map(4.0.0) used
     bool forceAssetUpdate = false;
 
-    CustomPoint<double> rotatePoint(
-      CustomPoint<double> mapCenter,
-      CustomPoint<double> point, {
-      bool counterRotation = true,
-    }) {
-      final counterRotationFactor = counterRotation ? -1 : 1;
-
-      final m = Matrix4.identity()
-        ..translate(mapCenter.x, mapCenter.y)
-        ..rotateZ(degToRadian(_mapController.rotation) * counterRotationFactor)
-        ..translate(-mapCenter.x, -mapCenter.y);
-
-      final tp = MatrixUtils.transformPoint(m, Offset(point.x, point.y));
-
-      return CustomPoint(tp.dx, tp.dy);
+    final refetchMarkers = useState(true);
+    void refetchMapMarkers() {
+      refetchMarkers.value = true;
     }
 
-    LatLng? moveByBottomPadding(
-      LatLng coordinates,
-      Offset offset,
-    ) {
-      const crs = Epsg3857();
-      final oldCenterPt = crs.latLngToPoint(coordinates, _mapController.zoom);
-      final mapCenterPoint = rotatePoint(
-        oldCenterPt,
-        oldCenterPt - CustomPoint(offset.dx, offset.dy),
-      );
-      return crs.pointToLatLng(mapCenterPoint, _mapController.zoom);
-    }
-
-    useEffect(
-      () {
-        bottomSheetEventStream = bottomSheetEventSC.stream.listen((event) {
-          if (event is MapPageBottomSheetScrolled) {
-            final asset = event.asset;
-            if (asset != null) {
-              final assetMarker = mapMarkers.value
-                  ?.firstWhere((element) => element.asset.id == asset.id);
-              selectedAsset.value = assetMarker;
-              if (assetMarker != null && _mapController.zoom >= 5) {
-                LatLng? newCenter = moveByBottomPadding(
-                  assetMarker.point,
-                  const Offset(0, -120),
-                );
-                if (newCenter != null) {
-                  _mapController.move(
-                    newCenter,
-                    _mapController.zoom,
-                  );
-                }
-              }
-            }
-          }
-          if (event is MapPageZoomToAsset) {
-            final asset = event.asset;
-            if (asset != null) {
-              final assetMarker = mapMarkers.value
-                  ?.firstWhere((element) => element.asset.id == asset.id);
-              if (assetMarker != null) {
-                forceAssetUpdate = true;
-                _mapController.move(
-                  assetMarker.point,
-                  6,
-                );
-              }
-            }
-          }
-        });
-        return null;
-      },
-      [],
-    );
-
-    useEffect(
-      () {
-        isDarkTheme.value = mapState.isDarkTheme;
-        return null;
-      },
-      [mapState.isDarkTheme],
-    );
-
-    mapMarkers.value = ref.watch(mapMarkerFutureProvider).when(
-          skipLoadingOnRefresh: false,
-          error: (error, stackTrace) {
-            log.warning(
-              "Cannot get map markers ${error.toString()}",
-              error,
-              stackTrace,
+    void handleBottomSheetEvents(dynamic event) {
+      if (event is MapPageBottomSheetScrolled) {
+        final assetInBottomSheet = event.asset;
+        if (assetInBottomSheet != null) {
+          final mapMarker = mapMarkerData.value
+              .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
+          closestAssetMarker.value = mapMarker;
+          if (mapMarker != null && _mapController.zoom >= 5) {
+            LatLng? newCenter = _mapController.moveByBottomPadding(
+              mapMarker.point,
+              const Offset(0, -120),
             );
-            return [];
-          },
-          // Using null as a loading indicator
-          loading: () => null,
-          data: (data) => data,
-        );
+            if (newCenter != null) {
+              _mapController.move(
+                newCenter,
+                _mapController.zoom,
+              );
+            }
+          }
+        }
+      }
+    }
 
     useEffect(
       () {
-        mapMarkersCallback() {
-          heatMapData.value = mapMarkers.value
-                  ?.map(
-                    (e) => WeightedLatLng(
-                      LatLng(e.point.latitude, e.point.longitude),
-                      1,
-                    ),
-                  )
-                  .toList() ??
-              [];
-          debounceBoundsUpdate(() => reloadAssetsInBound(mapMarkers.value));
-        }
-
-        mapMarkers.addListener(mapMarkersCallback);
-
-        return () {
-          ref.invalidate(mapMarkerFutureProvider);
-          mapMarkers.removeListener(mapMarkersCallback);
-        };
+        final bottomSheetEventSubscription =
+            bottomSheetEventStream.listen(handleBottomSheetEvents);
+        return bottomSheetEventSubscription.cancel;
       },
-      [mapState.relativeTime, mapState.showFavoriteOnly, refetchMarkers.value],
+      [bottomSheetEventStream],
     );
 
-    Widget buildTileLayer() {
-      Widget tileLayer = TileLayer(
-        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        subdomains: const ['a', 'b', 'c'],
-        maxNativeZoom: 19,
-        maxZoom: 19,
-      );
-      if (!isDarkTheme.value) {
-        return tileLayer;
+    if (refetchMarkers.value) {
+      mapMarkerData.value = ref.watch(mapMarkerFutureProvider).when(
+            skipLoadingOnRefresh: false,
+            error: (error, stackTrace) {
+              log.warning(
+                "Cannot get map markers ${error.toString()}",
+                error,
+                stackTrace,
+              );
+              showLoadingIndicator.value = false;
+              return [];
+            },
+            loading: () {
+              showLoadingIndicator.value = true;
+              return [];
+            },
+            data: (data) {
+              showLoadingIndicator.value = false;
+              refetchMarkers.value = false;
+              closestAssetMarker.value = null;
+              debounce(() => reloadAssetsInBound(mapMarkerData.value));
+              return data;
+            },
+          );
+    }
+
+    ref.listen(mapStateNotifier, (previous, next) {
+      bool shouldRefetch =
+          previous?.showFavoriteOnly != next.showFavoriteOnly ||
+              previous?.relativeTime != next.relativeTime;
+      if (shouldRefetch) {
+        refetchMarkers.value = shouldRefetch;
+        ref.invalidate(mapMarkerFutureProvider);
       }
-      return InvertionFilter(
-        child: SaturationFilter(
-          saturation: -1,
-          child: BrightnessFilter(
-            brightness: -1,
-            child: tileLayer,
-          ),
-        ),
-      );
-    }
-
-    void navigateToAsset(Asset asset) {
-      AutoRouter.of(context).push(
-        GalleryViewerRoute(
-          initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
-          heroOffset: 0,
-        ),
-      );
-    }
-
-    Widget buildMarkerLayer() {
-      final selectedMarker = selectedAsset.value;
-      return MarkerLayer(
-        markers: [
-          if (selectedMarker != null)
-            AssetMarker(
-              remoteId: selectedMarker.asset.remoteId!,
-              anchorPos: AnchorPos.align(AnchorAlign.top),
-              point: selectedMarker.point,
-              width: 100,
-              height: 100,
-              builder: (ctx) => GestureDetector(
-                onTap: () => navigateToAsset(selectedMarker.asset),
-                child: AssetMarkerIcon(
-                  isDarkTheme: isDarkTheme.value,
-                  id: selectedMarker.asset.remoteId!,
-                ),
-              ),
-            ),
-        ],
-      );
-    }
-
-    Widget buildHeatMapLayer() {
-      return heatMapData.value.isNotEmpty
-          ? HeatMapLayer(
-              heatMapDataSource: InMemoryHeatMapDataSource(
-                data: heatMapData.value,
-              ),
-              heatMapOptions: HeatMapOptions(
-                radius: 60,
-                layerOpacity: 0.5,
-                gradient: {
-                  0.20: Colors.deepPurple,
-                  0.40: Colors.blue,
-                  0.60: Colors.green,
-                  0.95: Colors.yellow,
-                  1.0: Colors.deepOrange,
-                },
-              ),
-            )
-          : const SizedBox.shrink();
-    }
+    });
 
     void onMapEvent(MapEvent mapEvent) {
       if (mapEvent is MapEventMove || mapEvent is MapEventDoubleTapZoom) {
         if (forceAssetUpdate ||
             mapEvent.source != MapEventSource.mapController) {
-          debounceBoundsUpdate(() {
+          debounce(() {
             selectionEnabledHook.value = false;
-            reloadAssetsInBound(mapMarkers.value);
+            reloadAssetsInBound(mapMarkerData.value);
             forceAssetUpdate = false;
           });
         }
       }
     }
 
-    double getDistance(LatLng a, LatLng b) {
-      return const Distance().distance(a, b);
+    void onZoomToAssetEvent(Asset? assetInBottomSheet) {
+      if (assetInBottomSheet != null) {
+        final mapMarker = mapMarkerData.value
+            .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
+        if (mapMarker != null) {
+          forceAssetUpdate = true;
+          _mapController.move(
+            mapMarker.point,
+            6, // zoomLevel
+          );
+        }
+      }
     }
 
-    double getThreshold(double zoomLevel) {
-      const scale = [
-        25000000,
-        15000000,
-        8000000,
-        4000000,
-        2000000,
-        1000000,
-        500000,
-        250000,
-        100000,
-        50000,
-        25000,
-        15000,
-        8000,
-        4000,
-        2000,
-        1000,
-        500,
-        250,
-        100,
-        50,
-        25,
-        10,
-        5,
-      ];
-      return scale[math.max(0, math.min(20, zoomLevel.round() + 2))]
-              .toDouble() /
-          6;
-    }
-
-    void onTapEvent(TapPosition tapPosition, LatLng point) {
+    void onMapTapEvent(TapPosition tapPosition, LatLng tapPoint) {
+      const d = Distance();
       assetsInBounds.sort(
-        (a, b) =>
-            getDistance(a.point, point).compareTo(getDistance(b.point, point)),
+        (a, b) => d
+            .distance(a.point, tapPoint)
+            .compareTo(d.distance(b.point, tapPoint)),
       );
-      final currentZoom = _mapController.zoom;
       // First asset less than the threshold from the tap point
-      selectedAsset.value = assetsInBounds.firstWhereOrNull(
+      final nearestAsset = assetsInBounds.firstWhereOrNull(
         (element) =>
-            getDistance(element.point, point) < getThreshold(currentZoom),
+            d.distance(element.point, tapPoint) <
+            _mapController.getTapThresholdForZoomLevel(),
       );
-      if (selectedAsset.value == null) {
-        bottomSheetScrollController.animateTo(
+      // Reset marker if no assets are near the tap point
+      if (nearestAsset == null && closestAssetMarker.value != null) {
+        _bottomSheetScrollController.animateTo(
           0.1,
           duration: const Duration(milliseconds: 200),
           curve: Curves.linearToEaseOut,
@@ -370,6 +232,7 @@ class MapPageState extends ConsumerState<MapPage> {
           const MapPageOnTapEvent(),
         );
       }
+      closestAssetMarker.value = nearestAsset;
     }
 
     void onShareAsset() {
@@ -378,24 +241,24 @@ class MapPageState extends ConsumerState<MapPage> {
     }
 
     void onFavoriteAsset() async {
-      processingSelection.value = true;
+      showLoadingIndicator.value = true;
       try {
         await handleFavoriteAssets(ref, context, selectedAssets.value.toList());
       } finally {
-        processingSelection.value = false;
+        showLoadingIndicator.value = false;
         selectionEnabledHook.value = false;
-        refetchMarkers.value = !refetchMarkers.value;
+        refetchMapMarkers();
       }
     }
 
     void onArchiveAsset() async {
-      processingSelection.value = true;
+      showLoadingIndicator.value = true;
       try {
         await handleArchiveAssets(ref, context, selectedAssets.value.toList());
       } finally {
-        processingSelection.value = false;
+        showLoadingIndicator.value = false;
         selectionEnabledHook.value = false;
-        refetchMarkers.value = !refetchMarkers.value;
+        refetchMapMarkers();
       }
     }
 
@@ -404,67 +267,148 @@ class MapPageState extends ConsumerState<MapPage> {
       selectedAssets.value = selection;
     }
 
+    final tileLayer = TileLayer(
+      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      subdomains: const ['a', 'b', 'c'],
+      maxNativeZoom: 19,
+      maxZoom: 19,
+    );
+
+    final darkTileLayer = InvertionFilter(
+      child: SaturationFilter(
+        saturation: -1,
+        child: BrightnessFilter(
+          brightness: -1,
+          child: tileLayer,
+        ),
+      ),
+    );
+
+    final markerLayer = MarkerLayer(
+      markers: [
+        if (closestAssetMarker.value != null)
+          AssetMarker(
+            remoteId: closestAssetMarker.value!.asset.remoteId!,
+            anchorPos: AnchorPos.align(AnchorAlign.top),
+            point: closestAssetMarker.value!.point,
+            width: 100,
+            height: 100,
+            builder: (ctx) => GestureDetector(
+              onTap: () => openAssetInViewer(closestAssetMarker.value!.asset),
+              child: AssetMarkerIcon(
+                isDarkTheme: isDarkTheme,
+                id: closestAssetMarker.value!.asset.remoteId!,
+              ),
+            ),
+          ),
+      ],
+    );
+
+    final heatMapLayer = mapMarkerData.value.isNotEmpty
+        ? HeatMapLayer(
+            heatMapDataSource: InMemoryHeatMapDataSource(
+              data: mapMarkerData.value
+                  .map(
+                    (e) => WeightedLatLng(
+                      LatLng(e.point.latitude, e.point.longitude),
+                      1,
+                    ),
+                  )
+                  .toList(),
+            ),
+            heatMapOptions: HeatMapOptions(
+              radius: 60,
+              layerOpacity: 0.5,
+              gradient: {
+                0.20: Colors.deepPurple,
+                0.40: Colors.blue,
+                0.60: Colors.green,
+                0.95: Colors.yellow,
+                1.0: Colors.deepOrange,
+              },
+            ),
+          )
+        : const SizedBox.shrink();
+
+    final bottomSheet = AssetsInBoundBottomSheet(
+      mapPageEventStream: mapPageEventSC.stream,
+      bottomSheetEventSC: bottomSheetEventSC,
+      scrollableController: _bottomSheetScrollController,
+      selectionEnabledHook: selectionEnabledHook,
+      selectionlistener: selectionListener,
+      onZoomToAssetCb: onZoomToAssetEvent,
+    );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.black.withOpacity(0.5),
         statusBarIconBrightness: Brightness.light,
       ),
-      child: Scaffold(
-        appBar: MapAppBar(
-          isDarkTheme: isDarkTheme.value,
-          selectionEnabled: selectionEnabledHook,
-          selectedAssetsLength: selectedAssets.value.length,
-          onShare: onShareAsset,
-          onArchive: onArchiveAsset,
-          onFavorite: onFavoriteAsset,
-        ),
-        extendBodyBehindAppBar: true,
-        body: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                maxBounds:
-                    LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
-                interactiveFlags: InteractiveFlag.doubleTapZoom |
-                    InteractiveFlag.drag |
-                    InteractiveFlag.flingAnimation |
-                    InteractiveFlag.pinchMove |
-                    InteractiveFlag.pinchZoom,
-                center: LatLng(20, 20),
-                zoom: 2,
-                minZoom: 1,
-                maxZoom: 18, // max level supported by OSM,
-                onMapReady: () {
-                  _mapController.mapEventStream.listen(onMapEvent);
-                },
-                onTap: onTapEvent,
+      child: Theme(
+        // Override app theme based on map theme
+        data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+        child: Scaffold(
+          appBar: MapAppBar(
+            isDarkTheme: isDarkTheme,
+            selectionEnabled: selectionEnabledHook,
+            selectedAssetsLength: selectedAssets.value.length,
+            onShare: onShareAsset,
+            onArchive: onArchiveAsset,
+            onFavorite: onFavoriteAsset,
+          ),
+          extendBodyBehindAppBar: true,
+          body: Stack(
+            children: [
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  maxBounds:
+                      LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
+                  interactiveFlags: InteractiveFlag.doubleTapZoom |
+                      InteractiveFlag.drag |
+                      InteractiveFlag.flingAnimation |
+                      InteractiveFlag.pinchMove |
+                      InteractiveFlag.pinchZoom,
+                  center: LatLng(20, 20),
+                  zoom: 2,
+                  minZoom: 1,
+                  maxZoom: 18, // max level supported by OSM,
+                  onMapReady: () {
+                    _mapController.mapEventStream.listen(onMapEvent);
+                  },
+                  onTap: onMapTapEvent,
+                ),
+                children: [
+                  isDarkTheme ? darkTileLayer : tileLayer,
+                  heatMapLayer,
+                  markerLayer,
+                ],
               ),
-              children: [
-                buildTileLayer(),
-                buildHeatMapLayer(),
-                buildMarkerLayer(),
-              ],
-            ),
-            Theme(
-              data: isDarkTheme.value ? immichDarkTheme : immichLightTheme,
-              child: AssetsInBoundBottomSheet(
-                mapPageEventStream: mapPageEventSC.stream,
-                bottomSheetEventSC: bottomSheetEventSC,
-                scrollableController: bottomSheetScrollController,
-                selectionEnabledHook: selectionEnabledHook,
-                selectionlistener: selectionListener,
-              ),
-            ),
-            if (processingSelection.value)
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.35,
-                left: MediaQuery.of(context).size.width * 0.425,
-                child: const ImmichLoadingIndicator(),
-              ),
-          ],
+              bottomSheet,
+              if (showLoadingIndicator.value)
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.35,
+                  left: MediaQuery.of(context).size.width * 0.425,
+                  child: const ImmichLoadingIndicator(),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class AssetMarker extends Marker {
+  String remoteId;
+
+  AssetMarker({
+    super.key,
+    required this.remoteId,
+    super.anchorPos,
+    required super.point,
+    super.width = 100.0,
+    super.height = 100.0,
+    required super.builder,
+  });
 }

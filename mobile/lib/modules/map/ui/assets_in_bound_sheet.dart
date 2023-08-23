@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
@@ -14,20 +13,23 @@ import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class AssetsInBoundBottomSheet extends StatefulHookConsumerWidget {
-  final StreamController bottomSheetEventSC;
+class AssetsInBoundBottomSheet extends ConsumerStatefulWidget {
   final Stream mapPageEventStream;
+  final StreamController bottomSheetEventSC;
   final DraggableScrollableController? scrollableController;
   final ValueNotifier<bool> selectionEnabledHook;
   final ImmichAssetGridSelectionListener selectionlistener;
+
+  final void Function(Asset? asset) onZoomToAssetCb;
 
   const AssetsInBoundBottomSheet({
     super.key,
     required this.mapPageEventStream,
     required this.bottomSheetEventSC,
-    this.scrollableController,
     required this.selectionEnabledHook,
     required this.selectionlistener,
+    required this.onZoomToAssetCb,
+    this.scrollableController,
   });
 
   @override
@@ -38,44 +40,58 @@ class AssetsInBoundBottomSheet extends StatefulHookConsumerWidget {
 class AssetsInBoundBottomSheetState
     extends ConsumerState<AssetsInBoundBottomSheet> {
   // State variables
-  late final StreamSubscription<dynamic>? subscription;
-  RenderList? _cachedRenderList;
+  bool isSheetExpanded = false;
+  bool isSheetScrolled = false;
+  // Non-State variables
   List<Asset> assetsInBound = [];
-  late final Debounce debounceListUpdated;
-  bool hasUserScrolledSheet = false;
-  bool didUserTapOnMap = false;
-  int assetOffsetInBottomSheet = -1;
+  late final StreamSubscription<dynamic>? _mapPageEventSubscription;
+  late final Debounce debounce;
+  bool userTappedOnMap = false;
+  RenderList? _cachedRenderList;
+  int lastAssetOffsetInSheet = -1;
 
   @override
   void initState() {
     super.initState();
-    subscription = widget.mapPageEventStream.listen((event) {
-      if (event is MapPageAssetsInBoundUpdated) {
-        if (mounted) {
-          setState(() {
-            assetsInBound = event.assets;
-          });
-        }
-      }
-      if (event is MapPageOnTapEvent) {
-        if (mounted) {
-          setState(() {
-            hasUserScrolledSheet = false;
-            didUserTapOnMap = true;
-            assetOffsetInBottomSheet = -1;
-          });
-        }
-      }
-    });
-    debounceListUpdated = Debounce(
-      const Duration(milliseconds: 100),
+    _mapPageEventSubscription =
+        widget.mapPageEventStream.listen(handleMapPageEvents);
+    debounce = Debounce(
+      const Duration(milliseconds: 200),
     );
   }
 
   @override
+  void didUpdateWidget(covariant AssetsInBoundBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.mapPageEventStream != oldWidget.mapPageEventStream) {
+      _mapPageEventSubscription?.cancel();
+      _mapPageEventSubscription =
+          widget.mapPageEventStream.listen(handleMapPageEvents);
+    }
+  }
+
+  @override
   void dispose() {
+    _mapPageEventSubscription?.cancel();
     super.dispose();
-    subscription?.cancel();
+  }
+
+  void handleMapPageEvents(dynamic event) {
+    if (event is MapPageAssetsInBoundUpdated) {
+      if (mounted) {
+        setState(() {
+          assetsInBound = event.assets;
+        });
+      }
+    } else if (event is MapPageOnTapEvent) {
+      userTappedOnMap = true;
+      lastAssetOffsetInSheet = -1;
+      if (mounted && isSheetScrolled) {
+        setState(() {
+          isSheetScrolled = false;
+        });
+      }
+    }
   }
 
   void _visibleItemsListener(ItemPosition start, ItemPosition end) {
@@ -83,23 +99,23 @@ class AssetsInBoundBottomSheetState
     if (renderElement == null) {
       return;
     }
+    final rowOffset = renderElement.offset;
     if ((-start.itemLeadingEdge) != 0) {
-      var assetRowOffset = -start.itemLeadingEdge ~/ 0.05;
-      assetRowOffset = assetRowOffset < renderElement.totalCount
-          ? assetRowOffset
+      var columnOffset = -start.itemLeadingEdge ~/ 0.05;
+      columnOffset = columnOffset < renderElement.totalCount
+          ? columnOffset
           : renderElement.totalCount - 1;
-      final asset =
-          _cachedRenderList?.allAssets?[renderElement.offset + assetRowOffset];
-      if (!didUserTapOnMap) {
+      lastAssetOffsetInSheet = rowOffset + columnOffset;
+      final asset = _cachedRenderList?.allAssets?[lastAssetOffsetInSheet];
+      userTappedOnMap = false;
+      if (!userTappedOnMap && isSheetExpanded) {
         widget.bottomSheetEventSC.add(
           MapPageBottomSheetScrolled(asset),
         );
       }
-      if (mounted) {
+      if (mounted && !isSheetScrolled && isSheetExpanded) {
         setState(() {
-          hasUserScrolledSheet = true;
-          didUserTapOnMap = false;
-          assetOffsetInBottomSheet = renderElement.offset + assetRowOffset;
+          isSheetScrolled = true;
         });
       }
     }
@@ -107,43 +123,22 @@ class AssetsInBoundBottomSheetState
 
   void visibleItemsListener(ItemPosition start, ItemPosition end) {
     if (_cachedRenderList == null) {
-      debounceListUpdated.dispose();
+      debounce.dispose();
       return;
     }
-    debounceListUpdated.call(() => _visibleItemsListener(start, end));
+    debounce.call(() => _visibleItemsListener(start, end));
   }
 
   @override
   Widget build(BuildContext context) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final sheetExpanded = useState(false);
-
-    useEffect(
-      () {
-        sheetExpandedCallback() {
-          if (sheetExpanded.value == false) {
-            if (mounted) {
-              setState(() {
-                hasUserScrolledSheet = false;
-                didUserTapOnMap = true;
-                assetOffsetInBottomSheet = -1;
-              });
-            }
-          }
-        }
-
-        sheetExpanded.addListener(sheetExpandedCallback);
-        return () => sheetExpanded.removeListener(sheetExpandedCallback);
-      },
-      [],
-    );
 
     Widget buildNoPhotosWidget() {
       const image = Image(
         image: AssetImage('assets/lighthouse.png'),
       );
 
-      return sheetExpanded.value
+      return isSheetExpanded
           ? Column(
               children: [
                 const SizedBox(
@@ -180,11 +175,9 @@ class AssetsInBoundBottomSheetState
     }
 
     void onTapMapButton() {
-      if (assetOffsetInBottomSheet != -1) {
-        widget.bottomSheetEventSC.add(
-          MapPageZoomToAsset(
-            _cachedRenderList?.allAssets?[assetOffsetInBottomSheet],
-          ),
+      if (lastAssetOffsetInSheet != -1) {
+        widget.onZoomToAssetCb.call(
+          _cachedRenderList?.allAssets?[lastAssetOffsetInSheet],
         );
       }
     }
@@ -222,7 +215,7 @@ class AssetsInBoundBottomSheetState
                 ),
               ],
             ),
-            if (sheetExpanded.value && hasUserScrolledSheet)
+            if (isSheetExpanded && isSheetScrolled)
               Positioned(
                 top: 5,
                 right: 10,
@@ -247,7 +240,21 @@ class AssetsInBoundBottomSheetState
 
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (DraggableScrollableNotification notification) {
-        sheetExpanded.value = notification.extent > 0.2;
+        final sheetExtended = notification.extent > 0.2;
+        if (!sheetExtended) {
+          // reset state
+          userTappedOnMap = false;
+          lastAssetOffsetInSheet = -1;
+        }
+        if (mounted && isSheetExpanded != sheetExtended) {
+          setState(() {
+            isSheetExpanded = sheetExtended;
+            if (!sheetExtended && isSheetScrolled) {
+              isSheetScrolled = false;
+            }
+          });
+        }
+
         return true;
       },
       child: DraggableScrollableSheet(
@@ -295,7 +302,7 @@ class AssetsInBoundBottomSheetState
                           );
 
                           return Expanded(
-                            child: sheetExpanded.value
+                            child: isSheetExpanded
                                 ? assetGrid
                                 : const SizedBox.shrink(),
                           );

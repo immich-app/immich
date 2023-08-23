@@ -18,7 +18,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
 
   final AppSettingsService appSettingsProvider;
 
-  bool isDarkTheme() => state.isDarkTheme;
+  bool get isDarkTheme => state.isDarkTheme;
 
   void switchTheme(bool isDarkTheme) {
     state = state.copyWith(isDarkTheme: isDarkTheme);
