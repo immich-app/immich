@@ -10,17 +10,28 @@
 
   export let person: PersonResponseDto;
 
+  type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-faces' | 'hide-face';
+  let dispatch = createEventDispatcher<{
+    'change-name': void;
+    'set-birth-date': void;
+    'merge-faces': void;
+    'hide-face': void;
+  }>();
+
   let showVerticalDots = false;
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
-  const handleShowMenu = (e: MouseEvent) => {
-    contextMenuPosition = { x: e.clientX, y: e.clientY };
+  const showMenu = ({ x, y }: MouseEvent) => {
+    contextMenuPosition = { x, y };
     showContextMenu = !showContextMenu;
   };
-  let eventDispatcher = createEventDispatcher();
-  let dispatch = (event: string) => {
+  const onMenuExit = () => {
+    showVerticalDots = false;
     showContextMenu = false;
-    eventDispatcher(event, person);
+  };
+  const onMenuClick = (event: MenuItemEvent) => {
+    onMenuExit();
+    dispatch(event);
   };
 </script>
 
@@ -28,7 +39,7 @@
   id="people-card"
   class="relative"
   on:mouseenter={() => (showVerticalDots = true)}
-  on:mouseleave={() => (showVerticalDots = false)}
+  on:mouseleave={() => (showVerticalDots = showContextMenu)}
   role="group"
 >
   <a href="/people/{person.id}" draggable="false">
@@ -46,7 +57,7 @@
 
   <button
     class="absolute right-2 top-2 z-20"
-    on:click|stopPropagation|preventDefault={handleShowMenu}
+    on:click|stopPropagation|preventDefault={showMenu}
     class:hidden={!showVerticalDots}
     data-testid="context-button-parent"
     id={`icon-${person.id}`}
@@ -59,11 +70,11 @@
 
 {#if showContextMenu}
   <Portal target="body">
-    <ContextMenu {...contextMenuPosition} on:outclick={() => (showContextMenu = false)}>
-      <MenuOption on:click={() => dispatch('hide-face')} text="Hide face" />
-      <MenuOption on:click={() => dispatch('change-name')} text="Change name" />
-      <MenuOption on:click={() => dispatch('set-birth-date')} text="Set date of birth" />
-      <MenuOption on:click={() => dispatch('merge-faces')} text="Merge faces" />
+    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+      <MenuOption on:click={() => onMenuClick('hide-face')} text="Hide face" />
+      <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
+      <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
+      <MenuOption on:click={() => onMenuClick('merge-faces')} text="Merge faces" />
     </ContextMenu>
     <div class="heyo absolute left-0 top-0 z-10 h-screen w-screen bg-transparent" />
   </Portal>
