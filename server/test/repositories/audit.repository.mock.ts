@@ -2,8 +2,8 @@ import { IAuditRepository } from '@app/domain';
 
 export const newAuditRepositoryMock = (): jest.Mocked<IAuditRepository> => {
   return {
-    countOlderForOwner: jest.fn(),
-    getNewestForOwnerSince: jest.fn(),
-    cleanOldEntries: jest.fn(),
+    countBefore: jest.fn(),
+    getAfter: jest.fn(),
+    deleteBefore: jest.fn(),
   };
 };

@@ -1,4 +1,4 @@
-import { AssetType } from '@app/infra/entities';
+import { AssetType, EntityType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   assetStub,
@@ -528,17 +528,17 @@ describe(AssetService.name, () => {
 
   describe('getChanges', () => {
     it('should require full sync if there are no older audit entries', async () => {
-      auditMock.countOlderForOwner.mockResolvedValue(0);
+      auditMock.countBefore.mockResolvedValue(0);
       const date = new Date();
       await expect(sut.getChanges(authStub.admin, { lastTime: date })).resolves.toEqual(changesRequireSync);
-      expect(auditMock.countOlderForOwner).toHaveBeenCalledWith(authStub.admin.id, date);
+      expect(auditMock.countBefore).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
     });
 
     it('should get any new or updated assets and deleted ids', async () => {
-      auditMock.countOlderForOwner.mockResolvedValue(1);
+      auditMock.countBefore.mockResolvedValue(1);
       const date = new Date();
       assetMock.getByIds.mockResolvedValue([assetStub.image, assetStub.image1]);
-      auditMock.getNewestForOwnerSince.mockResolvedValue([
+      auditMock.getAfter.mockResolvedValue([
         { ...auditStub.create, entityId: assetStub.image.id },
         { ...auditStub.delete, entityId: 'asset-deleted' },
         { ...auditStub.update, entityId: assetStub.image1.id },
@@ -549,8 +549,8 @@ describe(AssetService.name, () => {
         needsFullSync: false,
       });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id, assetStub.image1.id]);
-      expect(auditMock.countOlderForOwner).toHaveBeenCalledWith(authStub.admin.id, date);
-      expect(auditMock.getNewestForOwnerSince).toHaveBeenCalledWith(authStub.admin.id, date);
+      expect(auditMock.countBefore).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
+      expect(auditMock.getAfter).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
     });
   });
 

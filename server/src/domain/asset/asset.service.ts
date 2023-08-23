@@ -1,10 +1,10 @@
-import { AssetEntity, DatabaseAction } from '@app/infra/entities';
+import { AssetEntity, DatabaseAction, EntityType } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
-import { IAuditRepository } from '../audit';
+import { IAuditRepository } from '../audit/audit.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
@@ -281,10 +281,10 @@ export class AssetService {
   async getChanges(authUser: AuthUserDto, dto: ChangedAssetsDto): Promise<ChangedAssetsResponseDto> {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
-    const count = await this.auditRepository.countOlderForOwner(userId, dto.lastTime);
+    const count = await this.auditRepository.countBefore(userId, dto.lastTime, EntityType.ASSET);
     if (count == 0) return { needsFullSync: true, upserted: [], deleted: [] };
 
-    const entries = await this.auditRepository.getNewestForOwnerSince(userId, dto.lastTime);
+    const entries = await this.auditRepository.getAfter(userId, dto.lastTime, EntityType.ASSET);
     const idsToDelete = entries.filter((e) => e.action == DatabaseAction.DELETE).map((e) => e.entityId);
     const idsToFetch = entries.filter((e) => e.action != DatabaseAction.DELETE).map((e) => e.entityId);
     const assetsToUpsert = await this.assetRepository.getByIds(idsToFetch);

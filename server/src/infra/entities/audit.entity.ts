@@ -11,7 +11,7 @@ export enum EntityType {
 }
 
 @Entity('audit')
-@Index('IDX_ownerId_time', ['ownerId', 'time'])
+@Index('IDX_ownerId_createdAt', ['ownerId', 'createdAt'])
 export class AuditEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
@@ -29,5 +29,5 @@ export class AuditEntity {
   ownerId!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  time!: Date;
+  createdAt!: Date;
 }

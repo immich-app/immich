@@ -1,10 +1,10 @@
-import { AuditEntity } from '@app/infra/entities';
+import { AuditEntity, EntityType } from '@app/infra/entities';
 import { DeleteResult } from 'typeorm';
 
 export const IAuditRepository = 'IAuditRepository';
 
 export interface IAuditRepository {
-  getNewestForOwnerSince(ownerId: string, since: Date): Promise<AuditEntity[]>;
-  countOlderForOwner(ownerId: string, time: Date): Promise<number>;
-  cleanOldEntries(before: Date): Promise<DeleteResult>;
+  getAfter(ownerId: string, since: Date, type: EntityType): Promise<AuditEntity[]>;
+  countBefore(ownerId: string, time: Date, type: EntityType): Promise<number>;
+  deleteBefore(before: Date): Promise<DeleteResult>;
 }

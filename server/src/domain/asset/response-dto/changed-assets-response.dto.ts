@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '.';
+import { AssetResponseDto } from '@app/domain';
 
 export class ChangedAssetsResponseDto {
   upserted!: AssetResponseDto[];

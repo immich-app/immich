@@ -8,7 +8,7 @@ export const auditStub = {
     action: DatabaseAction.CREATE,
     entityType: EntityType.ASSET,
     ownerId: authStub.admin.id,
-    time: new Date(),
+    createdAt: new Date(),
   }),
   update: Object.freeze<AuditEntity>({
     id: 2,
@@ -16,7 +16,7 @@ export const auditStub = {
     action: DatabaseAction.UPDATE,
     entityType: EntityType.ASSET,
     ownerId: authStub.admin.id,
-    time: new Date(),
+    createdAt: new Date(),
   }),
   delete: Object.freeze<AuditEntity>({
     id: 3,
@@ -24,6 +24,6 @@ export const auditStub = {
     action: DatabaseAction.DELETE,
     entityType: EntityType.ASSET,
     ownerId: authStub.admin.id,
-    time: new Date(),
+    createdAt: new Date(),
   }),
 };
