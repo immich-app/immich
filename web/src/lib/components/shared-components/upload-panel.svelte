@@ -1,42 +1,44 @@
 <script lang="ts">
   import { quartInOut } from 'svelte/easing';
-  import { scale, fade } from 'svelte/transition';
+  import { fade, scale } from 'svelte/transition';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
   import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
+  import Cancel from 'svelte-material-icons/Cancel.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 
-  let showDetail = true;
-  let uploadLength = 0;
+  let showDetail = false;
+  let remainingUploads = 0;
   let duplicateCount = 0;
   let errorCount = 0;
+  let totalUploadCount = 0;
+  let successUploadCount = 0;
   let isUploading = false;
+  let hasErrors = false;
 
-  // Reactive action to update asset uploadLength whenever there is a new one added to the list
-  $: {
-    if ($uploadAssetsStore.length != uploadLength) {
-      uploadLength = $uploadAssetsStore.length;
-    }
-  }
-
+  uploadAssetsStore.hasError.subscribe((value) => (hasErrors = value));
+  uploadAssetsStore.remainingUploads.subscribe((value) => (remainingUploads = value));
+  uploadAssetsStore.successCounter.subscribe((value) => (successUploadCount = value));
+  uploadAssetsStore.totalUploadCounter.subscribe((value) => (totalUploadCount = value));
+  uploadAssetsStore.duplicateCounter.subscribe((value) => (duplicateCount = value));
+  uploadAssetsStore.errorCounter.subscribe((value) => (errorCount = value));
   uploadAssetsStore.isUploading.subscribe((value) => {
     isUploading = value;
-  });
+    if (!isUploading && showDetail) {
+      showDetail = false;
+    }
 
-  uploadAssetsStore.duplicateCounter.subscribe((value) => {
-    duplicateCount = value;
-  });
-
-  uploadAssetsStore.errorCounter.subscribe((value) => {
-    errorCount = value;
+    if (isUploading && !showDetail) {
+      showDetail = true;
+    }
   });
 </script>
 
-{#if isUploading}
+{#if hasErrors || remainingUploads}
   <div
     in:fade={{ duration: 250 }}
-    out:fade={{ duration: 250, delay: 1000 }}
+    out:fade={{ duration: 250 }}
     on:outroend={() => {
       const errorInfo =
         errorCount > 0 ? `Upload completed with ${errorCount} error${errorCount > 1 ? 's' : ''}` : 'Upload success';
@@ -47,15 +49,14 @@
         type,
       });
 
-      uploadAssetsStore.errorCounter.set(0);
-
       if (duplicateCount > 0) {
         notificationController.show({
           message: `Skipped ${duplicateCount} duplicate picture${duplicateCount > 1 ? 's' : ''}`,
           type: NotificationType.Warning,
         });
-        uploadAssetsStore.duplicateCounter.set(0);
       }
+
+      uploadAssetsStore.resetStore();
     }}
     class="absolute bottom-6 right-6 z-[10000]"
   >
@@ -65,13 +66,29 @@
         class="w-[300px] rounded-lg border bg-gray-200 p-4 text-sm shadow-sm"
       >
         <div class="place-item-center mb-4 flex justify-between">
-          <p class="text-xs text-gray-500">UPLOADING {$uploadAssetsStore.length}</p>
-          <button
-            on:click={() => (showDetail = false)}
-            class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
-          >
-            <WindowMinimize />
-          </button>
+          <p class="text-xs text-gray-500">
+            Remaining {remainingUploads} - Processed {successUploadCount + errorCount}/{totalUploadCount} <br />
+            Uploaded <span class="text-immich-success">{successUploadCount}</span> - Error
+            <span class="text-immich-error">{errorCount}</span>
+            - Duplicates <span class="text-immich-warning">{duplicateCount}</span>
+          </p>
+          <div class="flex flex-col">
+            <button
+              on:click={() => (showDetail = false)}
+              class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
+            >
+              <WindowMinimize />
+            </button>
+            {#if hasErrors}
+              <button
+                on:click={() => uploadAssetsStore.dismissErrors()}
+                title="Dismiss all errors"
+                class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
+              >
+                <span class="text-immich-error"><Cancel /></span>
+              </button>
+            {/if}
+          </div>
         </div>
 
         <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
@@ -89,8 +106,17 @@
           on:click={() => (showDetail = true)}
           class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
-          {$uploadAssetsStore.length}
+          {remainingUploads}
         </button>
+        {#if hasErrors}
+          <button
+            in:scale={{ duration: 250, easing: quartInOut }}
+            on:click={() => (showDetail = true)}
+            class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
+          >
+            {errorCount}
+          </button>
+        {/if}
         <button
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
