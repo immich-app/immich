@@ -1,9 +1,12 @@
 # Config File
+
 A config file can be provided as an alternative to the UI configuration.
 
 ### Step 1 - Create a new config file
+
 In JSON format, create a new config file (e.g. `immich.config`) and put it in a location that can be accessed by Immich.
 The default configuration looks like this:
+
 ```json
 {
   "ffmpeg": {
@@ -83,5 +86,6 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 :::
 
 ### Step 2 - Specify the file location
+
 In your `.env` file, set the variable `CONFIG_FILE` to the path of your config.
 For more information, refer to the [Environment Variables](https://docs.immich.app/docs/install/environment-variables) section.
