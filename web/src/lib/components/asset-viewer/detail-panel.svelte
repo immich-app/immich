@@ -40,6 +40,10 @@
     }
   })();
 
+  $: disp_lat = latlng?.[0]?.toFixed(7);
+
+  $: disp_lng = latlng?.[1]?.toFixed(7);
+
   $: people = asset.people || [];
 
   const dispatch = createEventDispatcher();
@@ -258,7 +262,14 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}
         />
-        <Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+        <Marker {latlng}>
+          <p>
+            {disp_lat}, {disp_lng}
+          </p>
+          <a href={`https://www.openstreetmap.org/?mlat=${disp_lat}&mlon=${disp_lng}&zoom=15#map=15/${disp_lat}/${disp_lng}`}>
+            Open in OpenStreetMap
+          </a>
+        </Marker>
       </Map>
     {/await}
   </div>
