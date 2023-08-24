@@ -54,7 +54,7 @@
     {/if}
   </a>
 
-  <div
+  <button
     class="absolute right-2 top-2 z-20"
     on:click|stopPropagation|preventDefault={showMenu}
     class:hidden={!showVerticalDots}
@@ -64,7 +64,7 @@
     <IconButton color="transparent-primary">
       <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
     </IconButton>
-  </div>
+  </button>
 </div>
 
 <Portal target="body">
