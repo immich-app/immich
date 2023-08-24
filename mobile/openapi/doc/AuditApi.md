@@ -9,11 +9,11 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAuditRecords**](AuditApi.md#getauditrecords) | **GET** /audit/records | 
+[**getAuditDeletes**](AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 
 
-# **getAuditRecords**
-> Object getAuditRecords(lastTime)
+# **getAuditDeletes**
+> AuditDeletesResponseDto getAuditDeletes(entityType, after, userId)
 
 
 
@@ -36,13 +36,15 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AuditApi();
-final lastTime = 2013-10-20T19:20:30+01:00; // DateTime | 
+final entityType = ; // EntityType | 
+final after = 2013-10-20T19:20:30+01:00; // DateTime | 
+final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getAuditRecords(lastTime);
+    final result = api_instance.getAuditDeletes(entityType, after, userId);
     print(result);
 } catch (e) {
-    print('Exception when calling AuditApi->getAuditRecords: $e\n');
+    print('Exception when calling AuditApi->getAuditDeletes: $e\n');
 }
 ```
 
@@ -50,11 +52,13 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **lastTime** | **DateTime**|  | 
+ **entityType** | [**EntityType**](.md)|  | 
+ **after** | **DateTime**|  | 
+ **userId** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**AuditDeletesResponseDto**](AuditDeletesResponseDto.md)
 
 ### Authorization
 

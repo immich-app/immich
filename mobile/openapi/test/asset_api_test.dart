@@ -55,7 +55,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, DateTime updatedAfter, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -84,11 +84,6 @@ void main() {
 
     //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
     test('test getByTimeBucket', () async {
-      // TODO
-    });
-
-    //Future<ChangedAssetsResponseDto> getChanges(DateTime lastTime, { String userId }) async
-    test('test getChanges', () async {
       // TODO
     });
 

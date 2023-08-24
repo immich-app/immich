@@ -755,6 +755,25 @@ export type AudioCodec = typeof AudioCodec[keyof typeof AudioCodec];
 /**
  * 
  * @export
+ * @interface AuditDeletesResponseDto
+ */
+export interface AuditDeletesResponseDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AuditDeletesResponseDto
+     */
+    'ids': Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AuditDeletesResponseDto
+     */
+    'needsFullSync': boolean;
+}
+/**
+ * 
+ * @export
  * @interface AuthDeviceResponseDto
  */
 export interface AuthDeviceResponseDto {
@@ -861,31 +880,6 @@ export interface ChangePasswordDto {
      * @memberof ChangePasswordDto
      */
     'password': string;
-}
-/**
- * 
- * @export
- * @interface ChangedAssetsResponseDto
- */
-export interface ChangedAssetsResponseDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ChangedAssetsResponseDto
-     */
-    'deleted': Array<string>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ChangedAssetsResponseDto
-     */
-    'needsFullSync': boolean;
-    /**
-     * 
-     * @type {Array<AssetResponseDto>}
-     * @memberof ChangedAssetsResponseDto
-     */
-    'upserted': Array<AssetResponseDto>;
 }
 /**
  * 
@@ -1268,6 +1262,20 @@ export interface DownloadResponseDto {
      */
     'totalSize': number;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const EntityType = {
+    Asset: 'ASSET',
+    Album: 'ALBUM'
+} as const;
+
+export type EntityType = typeof EntityType[keyof typeof EntityType];
+
+
 /**
  * 
  * @export
@@ -5145,11 +5153,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isArchived] 
          * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
+         * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5189,6 +5198,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (skip !== undefined) {
                 localVarQueryParameter['skip'] = skip;
+            }
+
+            if (updatedAfter !== undefined) {
+                localVarQueryParameter['updatedAfter'] = (updatedAfter as any instanceof Date) ?
+                    (updatedAfter as any).toISOString() :
+                    updatedAfter;
             }
 
             if (ifNoneMatch != null) {
@@ -5460,58 +5475,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (key !== undefined) {
                 localVarQueryParameter['key'] = key;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} lastTime 
-         * @param {string} [userId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getChanges: async (lastTime: string, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'lastTime' is not null or undefined
-            assertParamExists('getChanges', 'lastTime', lastTime)
-            const localVarPath = `/asset/changes`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
-            }
-
-            if (lastTime !== undefined) {
-                localVarQueryParameter['lastTime'] = (lastTime as any instanceof Date) ?
-                    (lastTime as any).toISOString() :
-                    lastTime;
             }
 
 
@@ -6351,12 +6314,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isArchived] 
          * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
+         * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6417,17 +6381,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
          */
         async getByTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, key, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} lastTime 
-         * @param {string} [userId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getChanges(lastTime: string, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ChangedAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getChanges(lastTime, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6664,7 +6617,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -6709,15 +6662,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.key, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {AssetApiGetChangesRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getChanges(requestParameters: AssetApiGetChangesRequest, options?: AxiosRequestConfig): AxiosPromise<ChangedAssetsResponseDto> {
-            return localVarFp.getChanges(requestParameters.lastTime, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6993,6 +6937,13 @@ export interface AssetApiGetAllAssetsRequest {
     readonly skip?: number
 
     /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly updatedAfter?: string
+
+    /**
      * ETag of data already cached on the client
      * @type {string}
      * @memberof AssetApiGetAllAssets
@@ -7131,27 +7082,6 @@ export interface AssetApiGetByTimeBucketRequest {
      * @memberof AssetApiGetByTimeBucket
      */
     readonly key?: string
-}
-
-/**
- * Request parameters for getChanges operation in AssetApi.
- * @export
- * @interface AssetApiGetChangesRequest
- */
-export interface AssetApiGetChangesRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetChanges
-     */
-    readonly lastTime: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetChanges
-     */
-    readonly userId?: string
 }
 
 /**
@@ -7578,7 +7508,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7633,17 +7563,6 @@ export class AssetApi extends BaseAPI {
      */
     public getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {AssetApiGetChangesRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public getChanges(requestParameters: AssetApiGetChangesRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getChanges(requestParameters.lastTime, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7808,14 +7727,18 @@ export const AuditApiAxiosParamCreator = function (configuration?: Configuration
     return {
         /**
          * 
-         * @param {string} lastTime 
+         * @param {EntityType} entityType 
+         * @param {string} after 
+         * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAuditRecords: async (lastTime: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'lastTime' is not null or undefined
-            assertParamExists('getAuditRecords', 'lastTime', lastTime)
-            const localVarPath = `/audit/records`;
+        getAuditDeletes: async (entityType: EntityType, after: string, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'entityType' is not null or undefined
+            assertParamExists('getAuditDeletes', 'entityType', entityType)
+            // verify required parameter 'after' is not null or undefined
+            assertParamExists('getAuditDeletes', 'after', after)
+            const localVarPath = `/audit/deletes`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -7836,10 +7759,18 @@ export const AuditApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (lastTime !== undefined) {
-                localVarQueryParameter['lastTime'] = (lastTime as any instanceof Date) ?
-                    (lastTime as any).toISOString() :
-                    lastTime;
+            if (entityType !== undefined) {
+                localVarQueryParameter['entityType'] = entityType;
+            }
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+            if (after !== undefined) {
+                localVarQueryParameter['after'] = (after as any instanceof Date) ?
+                    (after as any).toISOString() :
+                    after;
             }
 
 
@@ -7865,12 +7796,14 @@ export const AuditApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {string} lastTime 
+         * @param {EntityType} entityType 
+         * @param {string} after 
+         * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAuditRecords(lastTime: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAuditRecords(lastTime, options);
+        async getAuditDeletes(entityType: EntityType, after: string, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuditDeletesResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAuditDeletes(entityType, after, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -7885,28 +7818,42 @@ export const AuditApiFactory = function (configuration?: Configuration, basePath
     return {
         /**
          * 
-         * @param {AuditApiGetAuditRecordsRequest} requestParameters Request parameters.
+         * @param {AuditApiGetAuditDeletesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAuditRecords(requestParameters: AuditApiGetAuditRecordsRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.getAuditRecords(requestParameters.lastTime, options).then((request) => request(axios, basePath));
+        getAuditDeletes(requestParameters: AuditApiGetAuditDeletesRequest, options?: AxiosRequestConfig): AxiosPromise<AuditDeletesResponseDto> {
+            return localVarFp.getAuditDeletes(requestParameters.entityType, requestParameters.after, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * Request parameters for getAuditRecords operation in AuditApi.
+ * Request parameters for getAuditDeletes operation in AuditApi.
  * @export
- * @interface AuditApiGetAuditRecordsRequest
+ * @interface AuditApiGetAuditDeletesRequest
  */
-export interface AuditApiGetAuditRecordsRequest {
+export interface AuditApiGetAuditDeletesRequest {
+    /**
+     * 
+     * @type {EntityType}
+     * @memberof AuditApiGetAuditDeletes
+     */
+    readonly entityType: EntityType
+
     /**
      * 
      * @type {string}
-     * @memberof AuditApiGetAuditRecords
+     * @memberof AuditApiGetAuditDeletes
      */
-    readonly lastTime: string
+    readonly after: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AuditApiGetAuditDeletes
+     */
+    readonly userId?: string
 }
 
 /**
@@ -7918,13 +7865,13 @@ export interface AuditApiGetAuditRecordsRequest {
 export class AuditApi extends BaseAPI {
     /**
      * 
-     * @param {AuditApiGetAuditRecordsRequest} requestParameters Request parameters.
+     * @param {AuditApiGetAuditDeletesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuditApi
      */
-    public getAuditRecords(requestParameters: AuditApiGetAuditRecordsRequest, options?: AxiosRequestConfig) {
-        return AuditApiFp(this.configuration).getAuditRecords(requestParameters.lastTime, options).then((request) => request(this.axios, this.basePath));
+    public getAuditDeletes(requestParameters: AuditApiGetAuditDeletesRequest, options?: AxiosRequestConfig) {
+        return AuditApiFp(this.configuration).getAuditDeletes(requestParameters.entityType, requestParameters.after, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

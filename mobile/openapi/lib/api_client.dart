@@ -227,6 +227,8 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
+        case 'AuditDeletesResponseDto':
+          return AuditDeletesResponseDto.fromJson(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
@@ -235,8 +237,6 @@ class ApiClient {
           return BulkIdsDto.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'ChangedAssetsResponseDto':
-          return ChangedAssetsResponseDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':
@@ -269,6 +269,8 @@ class ApiClient {
           return DownloadInfoDto.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
+        case 'EntityType':
+          return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'ImportAssetDto':

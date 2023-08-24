@@ -21,7 +21,6 @@ Method | HTTP request | Description
 [**getAssetStats**](AssetApi.md#getassetstats) | **GET** /asset/statistics | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 [**getByTimeBucket**](AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
-[**getChanges**](AssetApi.md#getchanges) | **GET** /asset/changes | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
@@ -381,7 +380,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch)
 
 
 
@@ -411,10 +410,11 @@ final isFavorite = true; // bool |
 final isArchived = true; // bool | 
 final withoutThumbs = true; // bool | Include assets without thumbnails
 final skip = 8.14; // num | 
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch);
+    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -430,6 +430,7 @@ Name | Type | Description  | Notes
  **isArchived** | **bool**|  | [optional] 
  **withoutThumbs** | **bool**| Include assets without thumbnails | [optional] 
  **skip** | **num**|  | [optional] 
+ **updatedAfter** | **DateTime**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type
@@ -730,63 +731,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**List<AssetResponseDto>**](AssetResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getChanges**
-> ChangedAssetsResponseDto getChanges(lastTime, userId)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final lastTime = 2013-10-20T19:20:30+01:00; // DateTime | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-
-try {
-    final result = api_instance.getChanges(lastTime, userId);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getChanges: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **lastTime** | **DateTime**|  | 
- **userId** | **String**|  | [optional] 
-
-### Return type
-
-[**ChangedAssetsResponseDto**](ChangedAssetsResponseDto.md)
 
 ### Authorization
 

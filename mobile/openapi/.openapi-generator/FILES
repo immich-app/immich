@@ -30,12 +30,12 @@ doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuditApi.md
+doc/AuditDeletesResponseDto.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/BulkIdResponseDto.md
 doc/BulkIdsDto.md
 doc/ChangePasswordDto.md
-doc/ChangedAssetsResponseDto.md
 doc/CheckDuplicateAssetDto.md
 doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
@@ -52,6 +52,7 @@ doc/DeleteAssetStatus.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
+doc/EntityType.md
 doc/ExifResponseDto.md
 doc/ImportAssetDto.md
 doc/JobApi.md
@@ -179,11 +180,11 @@ lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
+lib/model/audit_deletes_response_dto.dart
 lib/model/auth_device_response_dto.dart
 lib/model/bulk_id_response_dto.dart
 lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
-lib/model/changed_assets_response_dto.dart
 lib/model/check_duplicate_asset_dto.dart
 lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
@@ -200,6 +201,7 @@ lib/model/delete_asset_status.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
+lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
 lib/model/import_asset_dto.dart
 lib/model/job_command.dart
@@ -297,12 +299,12 @@ test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/audit_api_test.dart
+test/audit_deletes_response_dto_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart
 test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
-test/changed_assets_response_dto_test.dart
 test/check_duplicate_asset_dto_test.dart
 test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
@@ -319,6 +321,7 @@ test/delete_asset_status_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
+test/entity_type_test.dart
 test/exif_response_dto_test.dart
 test/import_asset_dto_test.dart
 test/job_api_test.dart

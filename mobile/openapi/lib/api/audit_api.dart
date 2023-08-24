@@ -16,13 +16,17 @@ class AuditApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /audit/records' operation and returns the [Response].
+  /// Performs an HTTP 'GET /audit/deletes' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [DateTime] lastTime (required):
-  Future<Response> getAuditRecordsWithHttpInfo(DateTime lastTime,) async {
+  /// * [EntityType] entityType (required):
+  ///
+  /// * [DateTime] after (required):
+  ///
+  /// * [String] userId:
+  Future<Response> getAuditDeletesWithHttpInfo(EntityType entityType, DateTime after, { String? userId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/audit/records';
+    final path = r'/audit/deletes';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -31,7 +35,11 @@ class AuditApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'lastTime', lastTime));
+      queryParams.addAll(_queryParams('', 'entityType', entityType));
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+      queryParams.addAll(_queryParams('', 'after', after));
 
     const contentTypes = <String>[];
 
@@ -49,9 +57,13 @@ class AuditApi {
 
   /// Parameters:
   ///
-  /// * [DateTime] lastTime (required):
-  Future<Object?> getAuditRecords(DateTime lastTime,) async {
-    final response = await getAuditRecordsWithHttpInfo(lastTime,);
+  /// * [EntityType] entityType (required):
+  ///
+  /// * [DateTime] after (required):
+  ///
+  /// * [String] userId:
+  Future<AuditDeletesResponseDto?> getAuditDeletes(EntityType entityType, DateTime after, { String? userId, }) async {
+    final response = await getAuditDeletesWithHttpInfo(entityType, after,  userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -59,7 +71,7 @@ class AuditApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AuditDeletesResponseDto',) as AuditDeletesResponseDto;
     
     }
     return null;

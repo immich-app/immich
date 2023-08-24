@@ -17,8 +17,8 @@ void main() {
   // final instance = AuditApi();
 
   group('tests for AuditApi', () {
-    //Future<Object> getAuditRecords(DateTime lastTime) async
-    test('test getAuditRecords', () async {
+    //Future<AuditDeletesResponseDto> getAuditDeletes(EntityType entityType, DateTime after, { String userId }) async
+    test('test getAuditDeletes', () async {
       // TODO
     });
 
