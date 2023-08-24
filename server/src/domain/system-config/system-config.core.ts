@@ -45,7 +45,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
   machineLearning: {
-    enabled: process.env.IMMICH_MACHINE_LEARNING_URL !== 'false',
+    enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
     facialRecognitionEnabled: true,
     tagImageEnabled: true,
