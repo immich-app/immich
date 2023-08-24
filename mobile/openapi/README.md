@@ -113,6 +113,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
@@ -204,6 +205,7 @@ Class | Method | HTTP request | Description
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
+ - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
@@ -224,6 +226,7 @@ Class | Method | HTTP request | Description
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
+ - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)

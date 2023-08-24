@@ -55,7 +55,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, DateTime updatedAfter, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });

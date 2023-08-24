@@ -1,4 +1,5 @@
 import {
+  AuditService,
   FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
@@ -35,11 +36,13 @@ export class AppService {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
+    private auditService: AuditService,
   ) {}
 
   async init() {
     await this.jobService.registerHandlers({
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
+      [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
       [JobName.QUEUE_OBJECT_TAGGING]: (data) => this.smartInfoService.handleQueueObjectTagging(data),
