@@ -100,6 +100,11 @@ export class LibraryService {
   async delete(authUser: AuthUserDto, id: string) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
 
+    const defaultUploadLibrary = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+    if (defaultUploadLibrary && defaultUploadLibrary.id == id) {
+      throw new BadRequestException('Cannot delete the default upload library');
+    }
+
     await this.libraryRepository.softDelete(id);
 
     this.jobRepository.queue({ name: JobName.DELETE_LIBRARY, data: { libraryId: id } });
