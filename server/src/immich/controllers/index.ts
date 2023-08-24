@@ -2,7 +2,6 @@ export * from './album.controller';
 export * from './api-key.controller';
 export * from './app.controller';
 export * from './asset.controller';
-export * from './audit.controller';
 export * from './auth.controller';
 export * from './job.controller';
 export * from './oauth.controller';
