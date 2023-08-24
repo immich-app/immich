@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool isConfigFile
+    test('to test the property `isConfigFile`', () async {
+      // TODO
+    });
+
     // SystemConfigJobDto job
     test('to test the property `job`', () async {
       // TODO

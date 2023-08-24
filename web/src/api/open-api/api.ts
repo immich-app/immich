@@ -2574,6 +2574,12 @@ export interface SystemConfigDto {
     'ffmpeg': SystemConfigFFmpegDto;
     /**
      * 
+     * @type {boolean}
+     * @memberof SystemConfigDto
+     */
+    'isConfigFile': boolean;
+    /**
+     * 
      * @type {SystemConfigJobDto}
      * @memberof SystemConfigDto
      */
@@ -2602,12 +2608,6 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'thumbnail': SystemConfigThumbnailDto;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigDto
-     */
-    'isConfigFile': boolean;
 }
 /**
  * 
