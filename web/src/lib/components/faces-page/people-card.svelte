@@ -26,7 +26,6 @@
     showContextMenu = !showContextMenu;
   };
   const onMenuExit = () => {
-    showVerticalDots = false;
     showContextMenu = false;
   };
   const onMenuClick = (event: MenuItemEvent) => {
@@ -39,7 +38,7 @@
   id="people-card"
   class="relative"
   on:mouseenter={() => (showVerticalDots = true)}
-  on:mouseleave={() => (showVerticalDots = showContextMenu)}
+  on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
   <a href="/people/{person.id}" draggable="false">
@@ -55,7 +54,7 @@
     {/if}
   </a>
 
-  <button
+  <div
     class="absolute right-2 top-2 z-20"
     on:click|stopPropagation|preventDefault={showMenu}
     class:hidden={!showVerticalDots}
@@ -65,17 +64,16 @@
     <IconButton color="transparent-primary">
       <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
     </IconButton>
-  </button>
+  </div>
 </div>
 
-{#if showContextMenu}
-  <Portal target="body">
+<Portal target="body">
+  {#if showContextMenu}
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
       <MenuOption on:click={() => onMenuClick('hide-face')} text="Hide face" />
       <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
       <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
       <MenuOption on:click={() => onMenuClick('merge-faces')} text="Merge faces" />
     </ContextMenu>
-    <div class="heyo absolute left-0 top-0 z-10 h-screen w-screen bg-transparent" />
-  </Portal>
-{/if}
+  {/if}
+</Portal>
