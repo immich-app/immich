@@ -1,10 +1,14 @@
-import { AuditEntity, EntityType } from '@app/infra/entities';
-import { DeleteResult } from 'typeorm';
+import { AuditEntity, DatabaseAction, EntityType } from '@app/infra/entities';
 
 export const IAuditRepository = 'IAuditRepository';
 
+export interface AuditSearch {
+  action?: DatabaseAction;
+  entityType?: EntityType;
+  ownerId?: string;
+}
+
 export interface IAuditRepository {
-  getAfter(ownerId: string, since: Date, type: EntityType): Promise<AuditEntity[]>;
-  countBefore(ownerId: string, time: Date, type: EntityType): Promise<number>;
-  deleteBefore(before: Date): Promise<DeleteResult>;
+  getAfter(since: Date, options: AuditSearch): Promise<AuditEntity[]>;
+  removeBefore(before: Date): Promise<void>;
 }

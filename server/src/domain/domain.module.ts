@@ -24,6 +24,7 @@ const providers: Provider[] = [
   AlbumService,
   APIKeyService,
   AssetService,
+  AuditService,
   AuthService,
   FacialRecognitionService,
   JobService,
@@ -47,7 +48,6 @@ const providers: Provider[] = [
       return configService.getConfig();
     },
   },
-  AuditService,
 ];
 
 @Global()

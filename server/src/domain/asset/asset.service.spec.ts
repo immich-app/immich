@@ -1,4 +1,4 @@
-import { AssetType, EntityType } from '@app/infra/entities';
+import { AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   assetStub,
@@ -10,18 +10,15 @@ import {
   newJobRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
-import { auditStub } from '@test/fixtures/audit.stub';
-import { newAuditRepositoryMock } from '@test/repositories/audit.repository.mock';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
-import { IAuditRepository, IJobRepository, JobName } from '../index';
+import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
 import { mapAsset } from './response-dto';
-import { ChangedAssetsResponseDto } from './response-dto/changed-assets-response.dto';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -145,8 +142,6 @@ const uploadTests = [
   },
 ];
 
-const changesRequireSync: ChangedAssetsResponseDto = { deleted: [], upserted: [], needsFullSync: true };
-
 describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
@@ -154,7 +149,6 @@ describe(AssetService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let auditMock: jest.Mocked<IAuditRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -166,8 +160,7 @@ describe(AssetService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    auditMock = newAuditRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock, auditMock);
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
   });
 
   describe('canUpload', () => {
@@ -523,34 +516,6 @@ describe(AssetService.name, () => {
       assetMock.getStatistics.mockResolvedValue(stats);
       await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
       expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, {});
-    });
-  });
-
-  describe('getChanges', () => {
-    it('should require full sync if there are no older audit entries', async () => {
-      auditMock.countBefore.mockResolvedValue(0);
-      const date = new Date();
-      await expect(sut.getChanges(authStub.admin, { lastTime: date })).resolves.toEqual(changesRequireSync);
-      expect(auditMock.countBefore).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
-    });
-
-    it('should get any new or updated assets and deleted ids', async () => {
-      auditMock.countBefore.mockResolvedValue(1);
-      const date = new Date();
-      assetMock.getByIds.mockResolvedValue([assetStub.image, assetStub.image1]);
-      auditMock.getAfter.mockResolvedValue([
-        { ...auditStub.create, entityId: assetStub.image.id },
-        { ...auditStub.delete, entityId: 'asset-deleted' },
-        { ...auditStub.update, entityId: assetStub.image1.id },
-      ]);
-      await expect(sut.getChanges(authStub.admin, { lastTime: date })).resolves.toEqual({
-        deleted: ['asset-deleted'],
-        upserted: [mapAsset(assetStub.image), mapAsset(assetStub.image1)],
-        needsFullSync: false,
-      });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id, assetStub.image1.id]);
-      expect(auditMock.countBefore).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
-      expect(auditMock.getAfter).toHaveBeenCalledWith(authStub.admin.id, date, EntityType.ASSET);
     });
   });
 

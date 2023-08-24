@@ -9,16 +9,14 @@ import {
   AuthUserDto,
   DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
+  MemoryLaneResponseDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
 } from '@app/domain';
-import { ChangedAssetsDto } from '@app/domain/asset/dto/changed-assets.dto';
-import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
-import { ChangedAssetsResponseDto } from '@app/domain/asset/response-dto/changed-assets-response.dto';
-import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
@@ -79,11 +77,6 @@ export class AssetController {
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
     return this.service.getByTimeBucket(authUser, dto);
-  }
-
-  @Get('changes')
-  getChanges(@AuthUser() authUser: AuthUserDto, @Query() dto: ChangedAssetsDto): Promise<ChangedAssetsResponseDto> {
-    return this.service.getChanges(authUser, dto);
   }
 
   @Post('jobs')

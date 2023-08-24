@@ -8,6 +8,7 @@ export enum DatabaseAction {
 
 export enum EntityType {
   ASSET = 'ASSET',
+  ALBUM = 'ALBUM',
 }
 
 @Entity('audit')

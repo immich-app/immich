@@ -770,6 +770,15 @@
             }
           },
           {
+            "name": "updatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
             "name": "if-none-match",
             "in": "header",
             "description": "ETag of data already cached on the client",
@@ -915,57 +924,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetBulkUploadCheckResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/changes": {
-      "get": {
-        "operationId": "getChanges",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "lastTime",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangedAssetsResponseDto"
                 }
               }
             },
@@ -2122,12 +2080,29 @@
         ]
       }
     },
-    "/audit/records": {
+    "/audit/deletes": {
       "get": {
-        "operationId": "getAuditRecords",
+        "operationId": "getAuditDeletes",
         "parameters": [
           {
-            "name": "lastTime",
+            "name": "entityType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EntityType"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
             "required": true,
             "in": "query",
             "schema": {
@@ -2141,7 +2116,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/AuditDeletesResponseDto"
                 }
               }
             },
@@ -5332,6 +5307,24 @@
         ],
         "type": "string"
       },
+      "AuditDeletesResponseDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "needsFullSync",
+          "ids"
+        ],
+        "type": "object"
+      },
       "AuthDeviceResponseDto": {
         "properties": {
           "createdAt": {
@@ -5416,31 +5409,6 @@
         "required": [
           "password",
           "newPassword"
-        ],
-        "type": "object"
-      },
-      "ChangedAssetsResponseDto": {
-        "properties": {
-          "deleted": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "needsFullSync": {
-            "type": "boolean"
-          },
-          "upserted": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "upserted",
-          "deleted",
-          "needsFullSync"
         ],
         "type": "object"
       },
@@ -5818,6 +5786,13 @@
           "archives"
         ],
         "type": "object"
+      },
+      "EntityType": {
+        "enum": [
+          "ASSET",
+          "ALBUM"
+        ],
+        "type": "string"
       },
       "ExifResponseDto": {
         "properties": {

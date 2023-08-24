@@ -1,7 +1,10 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
+import { Duration } from 'luxon';
 import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
+
+export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 
 const [major, minor, patch] = pkg.version.split('.');
 

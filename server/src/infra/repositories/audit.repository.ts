@@ -1,27 +1,26 @@
-import { IAuditRepository } from '@app/domain/audit/audit.repository';
+import { AuditSearch, IAuditRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, LessThan, LessThanOrEqual, Repository } from 'typeorm';
-import { AuditEntity, EntityType } from '../entities/audit.entity';
+import { LessThan, MoreThan, Repository } from 'typeorm';
+import { AuditEntity } from '../entities';
 
 export class AuditRepository implements IAuditRepository {
   constructor(@InjectRepository(AuditEntity) private repository: Repository<AuditEntity>) {}
 
-  getAfter(ownerId: string, since: Date, type: EntityType): Promise<AuditEntity[]> {
+  getAfter(since: Date, options: AuditSearch): Promise<AuditEntity[]> {
     return this.repository
       .createQueryBuilder('audit')
-      .where('"ownerId" = :ownerId', { ownerId })
-      .andWhere('"time" >= :since', { since })
-      .andWhere('"entityType" = :type', { type })
+      .where({
+        createdAt: MoreThan(since),
+        action: options.action,
+        entityType: options.entityType,
+        ownerId: options.ownerId,
+      })
       .distinctOn(['audit.entityId', 'audit.entityType'])
-      .orderBy('audit.entityId, audit.entityType, audit.time', 'DESC')
+      .orderBy('audit.entityId, audit.entityType, audit.createdAt', 'DESC')
       .getMany();
   }
 
-  countBefore(ownerId: string, time: Date, type: EntityType): Promise<number> {
-    return this.repository.countBy({ entityType: type, ownerId: ownerId, createdAt: LessThanOrEqual(time) });
-  }
-
-  deleteBefore(before: Date): Promise<DeleteResult> {
-    return this.repository.delete({ createdAt: LessThan(before) });
+  async removeBefore(before: Date): Promise<void> {
+    await this.repository.delete({ createdAt: LessThan(before) });
   }
 }
