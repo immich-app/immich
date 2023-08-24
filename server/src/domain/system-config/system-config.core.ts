@@ -109,6 +109,10 @@ export class SystemConfigCore {
   }
 
   public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
+    if (config.isConfigFile) {
+      throw new BadRequestException("Couldn't update config the settings are currently configured by a config file.");
+    }
+
     try {
       for (const validator of this.validators) {
         await validator(config);
