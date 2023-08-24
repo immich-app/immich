@@ -770,6 +770,15 @@
             }
           },
           {
+            "name": "updatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
             "name": "if-none-match",
             "in": "header",
             "description": "ETag of data already cached on the client",
@@ -2068,6 +2077,65 @@
         ],
         "tags": [
           "Asset"
+        ]
+      }
+    },
+    "/audit/deletes": {
+      "get": {
+        "operationId": "getAuditDeletes",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EntityType"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditDeletesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
         ]
       }
     },
@@ -5239,6 +5307,24 @@
         ],
         "type": "string"
       },
+      "AuditDeletesResponseDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "needsFullSync",
+          "ids"
+        ],
+        "type": "object"
+      },
       "AuthDeviceResponseDto": {
         "properties": {
           "createdAt": {
@@ -5700,6 +5786,13 @@
           "archives"
         ],
         "type": "object"
+      },
+      "EntityType": {
+        "enum": [
+          "ASSET",
+          "ALBUM"
+        ],
+        "type": "string"
       },
       "ExifResponseDto": {
         "properties": {

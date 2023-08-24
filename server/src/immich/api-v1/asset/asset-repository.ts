@@ -1,7 +1,7 @@
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not } from 'typeorm';
+import { IsNull, MoreThan, Not } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
@@ -131,6 +131,7 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,
+        updatedAt: dto.updatedAfter ? MoreThan(dto.updatedAfter) : undefined,
       },
       relations: {
         exifInfo: true,

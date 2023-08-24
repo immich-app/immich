@@ -380,7 +380,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch)
 
 
 
@@ -410,10 +410,11 @@ final isFavorite = true; // bool |
 final isArchived = true; // bool | 
 final withoutThumbs = true; // bool | Include assets without thumbnails
 final skip = 8.14; // num | 
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch);
+    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -429,6 +430,7 @@ Name | Type | Description  | Notes
  **isArchived** | **bool**|  | [optional] 
  **withoutThumbs** | **bool**| Include assets without thumbnails | [optional] 
  **skip** | **num**|  | [optional] 
+ **updatedAfter** | **DateTime**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type

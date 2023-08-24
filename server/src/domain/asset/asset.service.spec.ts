@@ -13,7 +13,7 @@ import {
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../index';
+import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';

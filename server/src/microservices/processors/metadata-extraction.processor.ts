@@ -408,7 +408,11 @@ export class MetadataExtractionProcessor {
     }
 
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined });
+    await this.assetRepository.save({
+      id: asset.id,
+      fileCreatedAt: fileCreatedAt || undefined,
+      updatedAt: new Date(),
+    });
 
     return true;
   }
