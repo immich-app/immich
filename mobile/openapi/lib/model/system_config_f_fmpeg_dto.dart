@@ -19,6 +19,7 @@ class SystemConfigFFmpegDto {
     required this.crf,
     required this.gopSize,
     required this.maxBitrate,
+    required this.npl,
     required this.preset,
     required this.refs,
     required this.targetAudioCodec,
@@ -41,6 +42,8 @@ class SystemConfigFFmpegDto {
   int gopSize;
 
   String maxBitrate;
+
+  int npl;
 
   String preset;
 
@@ -68,6 +71,7 @@ class SystemConfigFFmpegDto {
      other.crf == crf &&
      other.gopSize == gopSize &&
      other.maxBitrate == maxBitrate &&
+     other.npl == npl &&
      other.preset == preset &&
      other.refs == refs &&
      other.targetAudioCodec == targetAudioCodec &&
@@ -87,6 +91,7 @@ class SystemConfigFFmpegDto {
     (crf.hashCode) +
     (gopSize.hashCode) +
     (maxBitrate.hashCode) +
+    (npl.hashCode) +
     (preset.hashCode) +
     (refs.hashCode) +
     (targetAudioCodec.hashCode) +
@@ -98,7 +103,7 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,6 +113,7 @@ class SystemConfigFFmpegDto {
       json[r'crf'] = this.crf;
       json[r'gopSize'] = this.gopSize;
       json[r'maxBitrate'] = this.maxBitrate;
+      json[r'npl'] = this.npl;
       json[r'preset'] = this.preset;
       json[r'refs'] = this.refs;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
@@ -134,6 +140,7 @@ class SystemConfigFFmpegDto {
         crf: mapValueOfType<int>(json, r'crf')!,
         gopSize: mapValueOfType<int>(json, r'gopSize')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
+        npl: mapValueOfType<int>(json, r'npl')!,
         preset: mapValueOfType<String>(json, r'preset')!,
         refs: mapValueOfType<int>(json, r'refs')!,
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
@@ -196,6 +203,7 @@ class SystemConfigFFmpegDto {
     'crf',
     'gopSize',
     'maxBitrate',
+    'npl',
     'preset',
     'refs',
     'targetAudioCodec',

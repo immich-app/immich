@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **crf** | **int** |  | 
 **gopSize** | **int** |  | 
 **maxBitrate** | **String** |  | 
+**npl** | **int** |  | 
 **preset** | **String** |  | 
 **refs** | **int** |  | 
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 

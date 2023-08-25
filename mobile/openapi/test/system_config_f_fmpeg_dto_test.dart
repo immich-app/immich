@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // int npl
+    test('to test the property `npl`', () async {
+      // TODO
+    });
+
     // String preset
     test('to test the property `preset`', () async {
       // TODO

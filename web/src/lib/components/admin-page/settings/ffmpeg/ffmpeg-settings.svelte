@@ -288,14 +288,6 @@
             subtitle="You shouldn't need to change these settings unless you have a specific reason"
           >
             <div class="ml-4 mt-4 flex flex-col gap-4">
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label="B-FRAMES"
-                desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
-                bind:value={ffmpegConfig.bframes}
-                isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
-              />
-
               <SettingSelect
                 label="CONSTANT QUALITY MODE"
                 desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will prefer the specified mode when using quality-based encoding. Ignored by NVENC as it does not support ICQ."
@@ -306,6 +298,14 @@
                   { value: CQMode.Cqp, text: 'CQP' },
                 ]}
                 isEdited={ffmpegConfig.cqMode !== savedConfig.cqMode}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="B-FRAMES"
+                desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+                bind:value={ffmpegConfig.bframes}
+                isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
               />
 
               <SettingInputField
@@ -322,6 +322,14 @@
                 desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
                 bind:value={ffmpegConfig.gopSize}
                 isEdited={ffmpegConfig.gopSize !== savedConfig.gopSize}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="TONE-MAPPING NPL"
+                desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
+                bind:value={ffmpegConfig.npl}
+                isEdited={ffmpegConfig.npl !== savedConfig.npl}
               />
             </div>
           </SettingAccordion>

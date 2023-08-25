@@ -34,6 +34,7 @@ export const defaults = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
+    npl: 0,
     cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,

@@ -176,14 +176,20 @@ class BaseConfig implements VideoCodecSWConfig {
     };
   }
 
+  getNPL() {
+    if (this.config.npl <= 0) {
+      // since hable already outputs a darker image, we use a lower npl value for it
+      return this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
+    } else {
+      return this.config.npl;
+    }
+  }
+
   getToneMapping() {
     const colors = this.getColors();
-    // npl stands for nominal peak luminance
-    // lower npl values result in brighter output (compensating for dimmer screens)
-    // since hable already outputs a darker image, we use a lower npl value for it
-    const npl = this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
+
     return [
-      `zscale=t=linear:npl=${npl}`,
+      `zscale=t=linear:npl=${this.getNPL()}`,
       `tonemap=${this.config.tonemap}:desat=0`,
       `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
     ];
@@ -539,7 +545,7 @@ export class VAAPIConfig extends BaseHWConfig {
         '-rc_mode 3',
       ); // variable bitrate
     } else if (this.useCQP()) {
-      options.push(`-global_quality ${this.config.crf}`, `-qp ${this.config.crf}`, '-rc_mode 1');
+      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1');
     } else {
       options.push(`-global_quality ${this.config.crf}`, '-rc_mode 4');
     }
