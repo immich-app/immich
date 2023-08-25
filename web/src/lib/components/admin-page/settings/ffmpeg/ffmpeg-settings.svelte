@@ -302,8 +302,8 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
-                label="B-FRAMES"
-                desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+                label="MAX B-FRAMES"
+                desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
                 bind:value={ffmpegConfig.bframes}
                 isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
               />
