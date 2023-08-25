@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool isConfigFile
+    test('to test the property `isConfigFile`', () async {
+      // TODO
+    });
+
     // bool oauth
     test('to test the property `oauth`', () async {
       // TODO

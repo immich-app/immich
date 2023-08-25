@@ -141,5 +141,4 @@ export interface SystemConfig {
     webpSize: number;
     jpegSize: number;
   };
-  isConfigFile: boolean;
 }

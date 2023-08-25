@@ -15,6 +15,7 @@ class ServerFeaturesDto {
   ServerFeaturesDto({
     required this.clipEncode,
     required this.facialRecognition,
+    required this.isConfigFile,
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
@@ -26,6 +27,8 @@ class ServerFeaturesDto {
   bool clipEncode;
 
   bool facialRecognition;
+
+  bool isConfigFile;
 
   bool oauth;
 
@@ -43,6 +46,7 @@ class ServerFeaturesDto {
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
      other.clipEncode == clipEncode &&
      other.facialRecognition == facialRecognition &&
+     other.isConfigFile == isConfigFile &&
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
@@ -55,6 +59,7 @@ class ServerFeaturesDto {
     // ignore: unnecessary_parenthesis
     (clipEncode.hashCode) +
     (facialRecognition.hashCode) +
+    (isConfigFile.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
@@ -63,12 +68,13 @@ class ServerFeaturesDto {
     (tagImage.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, facialRecognition=$facialRecognition, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, facialRecognition=$facialRecognition, isConfigFile=$isConfigFile, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'clipEncode'] = this.clipEncode;
       json[r'facialRecognition'] = this.facialRecognition;
+      json[r'isConfigFile'] = this.isConfigFile;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
@@ -88,6 +94,7 @@ class ServerFeaturesDto {
       return ServerFeaturesDto(
         clipEncode: mapValueOfType<bool>(json, r'clipEncode')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
+        isConfigFile: mapValueOfType<bool>(json, r'isConfigFile')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
@@ -143,6 +150,7 @@ class ServerFeaturesDto {
   static const requiredKeys = <String>{
     'clipEncode',
     'facialRecognition',
+    'isConfigFile',
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',

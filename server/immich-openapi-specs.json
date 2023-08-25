@@ -6481,6 +6481,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "isConfigFile": {
+            "type": "boolean"
+          },
           "oauth": {
             "type": "boolean"
           },
@@ -6501,6 +6504,7 @@
           }
         },
         "required": [
+          "isConfigFile",
           "clipEncode",
           "facialRecognition",
           "sidecar",
@@ -6834,9 +6838,6 @@
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
-          "isConfigFile": {
-            "type": "boolean"
-          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -6863,8 +6864,7 @@
           "passwordLogin",
           "storageTemplate",
           "job",
-          "thumbnail",
-          "isConfigFile"
+          "thumbnail"
         ],
         "type": "object"
       },

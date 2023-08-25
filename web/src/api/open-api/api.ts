@@ -2184,6 +2184,12 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
+    'isConfigFile': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
     'oauth': boolean;
     /**
      * 
@@ -2610,12 +2616,6 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'ffmpeg': SystemConfigFFmpegDto;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigDto
-     */
-    'isConfigFile': boolean;
     /**
      * 
      * @type {SystemConfigJobDto}

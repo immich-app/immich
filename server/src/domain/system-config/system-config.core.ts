@@ -76,8 +76,6 @@ export const defaults = Object.freeze<SystemConfig>({
     webpSize: 250,
     jpegSize: 1440,
   },
-
-  isConfigFile: false,
 });
 
 export enum FeatureFlag {
@@ -89,6 +87,7 @@ export enum FeatureFlag {
   OAUTH = 'oauth',
   OAUTH_AUTO_LAUNCH = 'oauthAutoLaunch',
   PASSWORD_LOGIN = 'passwordLogin',
+  CONFIG_FILE = 'isConfigFile',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -122,6 +121,8 @@ export class SystemConfigCore {
           throw new BadRequestException('OAuth is not enabled');
         case FeatureFlag.PASSWORD_LOGIN:
           throw new BadRequestException('Password login is not enabled');
+        case FeatureFlag.CONFIG_FILE:
+          throw new BadRequestException('Config file is not set');
         default:
           throw new ForbiddenException(`Missing required feature: ${feature}`);
       }
@@ -148,6 +149,7 @@ export class SystemConfigCore {
       [FeatureFlag.OAUTH]: config.oauth.enabled,
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
+      [FeatureFlag.CONFIG_FILE]: !!process.env.CONFIG_FILE,
     };
   }
 
@@ -163,7 +165,6 @@ export class SystemConfigCore {
     let config: DeepPartial<SystemConfig> = {};
     if (process.env.CONFIG_FILE) {
       config = await this.repository.readConfigFile();
-      config.isConfigFile = true;
     } else {
       const overrides = await this.repository.load();
       for (const { key, value } of overrides) {
@@ -176,7 +177,7 @@ export class SystemConfigCore {
   }
 
   public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
-    if (config.isConfigFile) {
+    if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException("Couldn't update config the settings are currently configured by a config file.");
     }
 

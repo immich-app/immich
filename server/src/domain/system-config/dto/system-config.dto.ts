@@ -1,8 +1,7 @@
-import { toBoolean } from '@app/domain';
 import { SystemConfigThumbnailDto } from '@app/domain/system-config';
 import { SystemConfig } from '@app/infra/entities';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsObject, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsObject, ValidateNested } from 'class-validator';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigMachineLearningDto } from './system-config-machine-learning.dto';
@@ -45,10 +44,6 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   thumbnail!: SystemConfigThumbnailDto;
-
-  @IsBoolean()
-  @Transform(toBoolean)
-  isConfigFile!: boolean;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

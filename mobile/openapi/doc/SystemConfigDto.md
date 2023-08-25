@@ -9,7 +9,6 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ffmpeg** | [**SystemConfigFFmpegDto**](SystemConfigFFmpegDto.md) |  | 
-**isConfigFile** | **bool** |  | 
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 

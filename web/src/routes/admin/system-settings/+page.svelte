@@ -14,6 +14,7 @@
   import { api } from '@api';
   import type { PageData } from './$types';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
 
   export let data: PageData;
 
@@ -27,7 +28,7 @@
   {#await getConfig()}
     <LoadingSpinner />
   {:then configs}
-    {#if configs.isConfigFile}
+    {#if $featureFlags.isConfigFile}
       <div class="flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
         <Alert class="text-yellow-400" size={18} />
         <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
@@ -50,14 +51,14 @@
       </div>
     {/if}
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
-      <ThumbnailSettings disabled={configs.isConfigFile} thumbnailConfig={configs.thumbnail} />
+      <ThumbnailSettings disabled={$featureFlags.isConfigFile} thumbnailConfig={configs.thumbnail} />
     </SettingAccordion>
 
     <SettingAccordion
       title="FFmpeg Settings"
       subtitle="Manage the resolution and encoding information of the video files"
     >
-      <FFmpegSettings disabled={configs.isConfigFile} ffmpegConfig={configs.ffmpeg} />
+      <FFmpegSettings disabled={$featureFlags.isConfigFile} ffmpegConfig={configs.ffmpeg} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -65,19 +66,19 @@
       subtitle="Manage job concurrency"
       isOpen={$page.url.searchParams.get('open') === 'job-settings'}
     >
-      <JobSettings disabled={configs.isConfigFile} jobConfig={configs.job} />
+      <JobSettings disabled={$featureFlags.isConfigFile} jobConfig={configs.job} />
     </SettingAccordion>
 
     <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
-      <PasswordLoginSettings disabled={configs.isConfigFile} passwordLoginConfig={configs.passwordLogin} />
+      <PasswordLoginSettings disabled={$featureFlags.isConfigFile} passwordLoginConfig={configs.passwordLogin} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
-      <OAuthSettings disabled={configs.isConfigFile} oauthConfig={configs.oauth} />
+      <OAuthSettings disabled={$featureFlags.isConfigFile} oauthConfig={configs.oauth} />
     </SettingAccordion>
 
     <SettingAccordion title="Machine Learning" subtitle="Manage machine learning settings">
-      <MachineLearningSettings />
+      <MachineLearningSettings disabled={$featureFlags.isConfigFile} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -86,7 +87,7 @@
       isOpen={$page.url.searchParams.get('open') === 'storage-template'}
     >
       <StorageTemplateSettings
-        disabled={configs.isConfigFile}
+        disabled={$featureFlags.isConfigFile}
         storageConfig={configs.storageTemplate}
         user={data.user}
       />

@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **clipEncode** | **bool** |  | 
 **facialRecognition** | **bool** |  | 
+**isConfigFile** | **bool** |  | 
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 

@@ -14,7 +14,6 @@ class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
     required this.ffmpeg,
-    required this.isConfigFile,
     required this.job,
     required this.machineLearning,
     required this.oauth,
@@ -24,8 +23,6 @@ class SystemConfigDto {
   });
 
   SystemConfigFFmpegDto ffmpeg;
-
-  bool isConfigFile;
 
   SystemConfigJobDto job;
 
@@ -42,7 +39,6 @@ class SystemConfigDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
-     other.isConfigFile == isConfigFile &&
      other.job == job &&
      other.machineLearning == machineLearning &&
      other.oauth == oauth &&
@@ -54,7 +50,6 @@ class SystemConfigDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ffmpeg.hashCode) +
-    (isConfigFile.hashCode) +
     (job.hashCode) +
     (machineLearning.hashCode) +
     (oauth.hashCode) +
@@ -63,12 +58,11 @@ class SystemConfigDto {
     (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, isConfigFile=$isConfigFile, job=$job, machineLearning=$machineLearning, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ffmpeg'] = this.ffmpeg;
-      json[r'isConfigFile'] = this.isConfigFile;
       json[r'job'] = this.job;
       json[r'machineLearning'] = this.machineLearning;
       json[r'oauth'] = this.oauth;
@@ -87,7 +81,6 @@ class SystemConfigDto {
 
       return SystemConfigDto(
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
-        isConfigFile: mapValueOfType<bool>(json, r'isConfigFile')!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
@@ -142,7 +135,6 @@ class SystemConfigDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'ffmpeg',
-    'isConfigFile',
     'job',
     'machineLearning',
     'oauth',
