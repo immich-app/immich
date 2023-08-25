@@ -6478,10 +6478,10 @@
           "clipEncode": {
             "type": "boolean"
           },
-          "facialRecognition": {
+          "configFile": {
             "type": "boolean"
           },
-          "isConfigFile": {
+          "facialRecognition": {
             "type": "boolean"
           },
           "oauth": {
@@ -6504,7 +6504,7 @@
           }
         },
         "required": [
-          "isConfigFile",
+          "configFile",
           "clipEncode",
           "facialRecognition",
           "sidecar",

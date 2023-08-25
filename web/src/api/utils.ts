@@ -1,8 +1,22 @@
 import type { AxiosError, AxiosPromise } from 'axios';
+import {
+  notificationController,
+  NotificationType,
+} from '../lib/components/shared-components/notification/notification';
+import { handleError } from '../lib/utils/handle-error';
 import { api } from './api';
 import type { UserResponseDto } from './open-api';
 
 export type ApiError = AxiosError<{ message: string }>;
+
+export const copyToClipboard = async (secret: string) => {
+  try {
+    await navigator.clipboard.writeText(secret);
+    notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
+  } catch (error) {
+    handleError(error, 'Unable to copy to clipboard');
+  }
+};
 
 export const oauth = {
   isCallback: (location: Location) => {

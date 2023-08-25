@@ -1,11 +1,10 @@
-import { SystemConfig, SystemConfigEntity } from '@app/infra/entities';
-import { DeepPartial } from 'typeorm/common/DeepPartial.js';
+import { SystemConfigEntity } from '@app/infra/entities';
 
 export const ISystemConfigRepository = 'ISystemConfigRepository';
 
 export interface ISystemConfigRepository {
   load(): Promise<SystemConfigEntity[]>;
-  readConfigFile(): Promise<DeepPartial<SystemConfig>>;
+  readFile(filename: string): Promise<Buffer>;
   saveAll(items: SystemConfigEntity[]): Promise<SystemConfigEntity[]>;
   deleteKeys(keys: string[]): Promise<void>;
 }

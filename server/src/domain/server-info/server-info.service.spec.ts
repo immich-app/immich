@@ -155,6 +155,7 @@ describe(ServerInfoService.name, () => {
           search: true,
           sidecar: true,
           tagImage: true,
+          configFile: false,
         });
         expect(configMock.load).toHaveBeenCalled();
       });
