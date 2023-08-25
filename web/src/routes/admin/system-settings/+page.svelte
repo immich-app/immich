@@ -36,29 +36,27 @@
   };
 </script>
 
+{#if $featureFlags.configFile}
+  <div class="mb-8 flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
+    <Alert class="text-yellow-400" size={18} />
+    <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
+  </div>
+{/if}
+
 <section class="">
   {#await getConfig()}
     <LoadingSpinner />
   {:then configs}
-    {#if $featureFlags.configFile}
-      <div class="flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
-        <Alert class="text-yellow-400" size={18} />
-        <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-          Config is currently set by a config file
-        </h2>
-      </div>
-    {:else}
-      <div class="flex justify-end gap-2">
-        <Button size="sm" on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
-          <ContentCopy size="18" />
-          <span class="pl-2">Copy to Clipboard</span>
-        </Button>
-        <Button size="sm" on:click={() => downloadConfig(configs)}>
-          <Download size="18" />
-          <span class="pl-2">Export as JSON</span>
-        </Button>
-      </div>
-    {/if}
+    <div class="flex justify-end gap-2">
+      <Button size="sm" on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
+        <ContentCopy size="18" />
+        <span class="pl-2">Copy to Clipboard</span>
+      </Button>
+      <Button size="sm" on:click={() => downloadConfig(configs)}>
+        <Download size="18" />
+        <span class="pl-2">Export as JSON</span>
+      </Button>
+    </div>
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
       <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
     </SettingAccordion>
