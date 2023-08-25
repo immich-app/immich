@@ -14,7 +14,7 @@ export const copyToClipboard = async (secret: string) => {
     await navigator.clipboard.writeText(secret);
     notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
   } catch (error) {
-    handleError(error, 'Unable to copy to clipboard');
+    handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
   }
 };
 
