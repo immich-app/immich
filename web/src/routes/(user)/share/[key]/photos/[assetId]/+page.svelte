@@ -8,7 +8,6 @@
 {#if data.asset && data.key}
   <AssetViewer
     asset={data.asset}
-    publicSharedKey={data.key}
     showNavigation={false}
     on:previous={() => null}
     on:next={() => null}

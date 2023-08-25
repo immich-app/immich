@@ -17,10 +17,15 @@
   import { loadFeatureFlags } from '$lib/stores/feature-flags.store';
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { api } from '@api';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
   let albumId: string | undefined;
+
+  if ($page.route.id?.startsWith('/(user)/share/[key]')) {
+    api.setKey($page.params.key);
+  }
 
   beforeNavigate(() => {
     showNavigationLoadingBar = true;

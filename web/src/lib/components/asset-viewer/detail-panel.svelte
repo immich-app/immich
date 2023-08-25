@@ -9,21 +9,20 @@
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat, SharedLinkResponseDto } from '@api';
+  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getAssetFilename } from '$lib/utils/asset-utils';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
 
   $: {
     // Get latest description from server
-    if (asset.id && !sharedLink) {
+    if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
@@ -91,13 +90,15 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
-  <section class="mx-4 mt-10">
+  <section
+    class="mx-4 mt-10"
+    style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
+  >
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
       placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
-      style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
       on:focusin={handleFocusIn}
       on:focusout={handleFocusOut}
       on:input={autoGrowHeight}
@@ -106,7 +107,7 @@
     />
   </section>
 
-  {#if people.length > 0}
+  {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <h2>PEOPLE</h2>
 

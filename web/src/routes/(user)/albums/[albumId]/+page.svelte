@@ -174,7 +174,7 @@
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id, '');
+    await openFileUploadDialog(album.id);
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };

@@ -21,7 +21,6 @@
   export let isSelectionMode = false;
   export let viewport: Viewport;
   export let singleSelect = false;
-  export let publicSharedKey: string | undefined = undefined;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -96,7 +95,7 @@
       return;
     }
 
-    assetViewingStore.setAssetId(asset.id, publicSharedKey);
+    assetViewingStore.setAssetId(asset.id);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
@@ -189,7 +188,6 @@
               disabled={$assetStore.albumAssets.has(asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}
-              {publicSharedKey}
             />
           </div>
         {/each}
