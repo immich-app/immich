@@ -1,7 +1,7 @@
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, MoreThan, Not } from 'typeorm';
+import { MoreThan } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
@@ -127,7 +127,6 @@ export class AssetRepository implements IAssetRepository {
     return this.assetRepository.find({
       where: {
         ownerId,
-        resizePath: dto.withoutThumbs ? undefined : Not(IsNull()),
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,

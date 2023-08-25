@@ -32,9 +32,9 @@
     <input class="disabled::cursor-not-allowed h-0 w-0 opacity-0" type="checkbox" bind:checked on:click {disabled} />
 
     {#if disabled}
-      <span class="slider-disable" />
+      <span class="slider-disable cursor-not-allowed" />
     {:else}
-      <span class="slider" />
+      <span class="slider cursor-pointer" />
     {/if}
   </label>
 </div>
@@ -43,7 +43,6 @@
   .slider,
   .slider-disable {
     position: absolute;
-    cursor: pointer;
     top: 0;
     left: 0;
     right: 0;

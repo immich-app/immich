@@ -4,6 +4,7 @@ from typing import Any
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
@@ -42,15 +43,31 @@ class FaceRecognizer(InferenceModel):
             rec_file = next(self.cache_dir.glob("w600k_*.onnx"))
         except StopIteration:
             raise FileNotFoundError("Facial recognition models not found in cache directory")
-        self.det_model = RetinaFace(det_file.as_posix())
-        self.rec_model = ArcFaceONNX(rec_file.as_posix())
+
+        self.det_model = RetinaFace(
+            session=ort.InferenceSession(
+                det_file.as_posix(),
+                sess_options=self.sess_options,
+                providers=self.providers,
+                provider_options=self.provider_options,
+            ),
+        )
+        self.rec_model = ArcFaceONNX(
+            rec_file.as_posix(),
+            session=ort.InferenceSession(
+                rec_file.as_posix(),
+                sess_options=self.sess_options,
+                providers=self.providers,
+                provider_options=self.provider_options,
+            ),
+        )
 
         self.det_model.prepare(
-            ctx_id=-1,
+            ctx_id=0,
             det_thresh=self.min_score,
             input_size=(640, 640),
         )
-        self.rec_model.prepare(ctx_id=-1)
+        self.rec_model.prepare(ctx_id=0)
 
     def _predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
         bboxes, kpss = self.det_model.detect(image)

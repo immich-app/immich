@@ -9,6 +9,7 @@ import {
   newPersonRepositoryMock,
   newSearchRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -18,6 +19,7 @@ import { IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
 
@@ -94,6 +96,7 @@ const faceSearch = {
 describe(FacialRecognitionService.name, () => {
   let sut: FacialRecognitionService;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineLearningMock: jest.Mocked<IMachineLearningRepository>;
@@ -104,6 +107,7 @@ describe(FacialRecognitionService.name, () => {
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     faceMock = newFaceRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
@@ -116,6 +120,7 @@ describe(FacialRecognitionService.name, () => {
 
     sut = new FacialRecognitionService(
       assetMock,
+      configMock,
       faceMock,
       jobMock,
       machineLearningMock,
@@ -174,7 +179,7 @@ describe(FacialRecognitionService.name, () => {
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
-      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith({
+      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
         imagePath: assetStub.image.resizePath,
       });
       expect(faceMock.create).not.toHaveBeenCalled();

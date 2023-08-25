@@ -1,18 +1,17 @@
 import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { mapAlbumWithAssets } from '../album';
 import { IAlbumRepository } from '../album/album.repository';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { AssetFaceId, IFaceRepository } from '../facial-recognition';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
+import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { SearchDto } from './dto';
-import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
+import { SearchResponseDto } from './response-dto';
 import {
   ISearchRepository,
   OwnedFaceEntity,
@@ -30,8 +29,9 @@ interface SyncQueue {
 @Injectable()
 export class SearchService {
   private logger = new Logger(SearchService.name);
-  private enabled: boolean;
+  private enabled = false;
   private timer: NodeJS.Timer | null = null;
+  private configCore: SystemConfigCore;
 
   private albumQueue: SyncQueue = {
     upsert: new Set(),
@@ -51,16 +51,13 @@ export class SearchService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    configService: ConfigService,
   ) {
-    this.enabled = configService.get('TYPESENSE_ENABLED') !== 'false';
-    if (this.enabled) {
-      this.timer = setInterval(() => this.flush(), 5_000);
-    }
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   teardown() {
@@ -70,17 +67,8 @@ export class SearchService {
     }
   }
 
-  isEnabled() {
-    return this.enabled;
-  }
-
-  getConfig(): SearchConfigResponseDto {
-    return {
-      enabled: this.enabled,
-    };
-  }
-
   async init() {
+    this.enabled = await this.configCore.hasFeature(FeatureFlag.SEARCH);
     if (!this.enabled) {
       return;
     }
@@ -101,10 +89,13 @@ export class SearchService {
       this.logger.debug('Queueing job to re-index all faces');
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
     }
+
+    this.timer = setInterval(() => this.flush(), 5_000);
   }
 
   async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
-    this.assertEnabled();
+    await this.configCore.requireFeature(FeatureFlag.SEARCH);
+
     const results = await this.searchRepository.explore(authUser.id);
     const lookup = await this.getLookupMap(
       results.reduce(
@@ -126,16 +117,18 @@ export class SearchService {
   }
 
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
-    this.assertEnabled();
+    const { machineLearning } = await this.configCore.getConfig();
+    await this.configCore.requireFeature(FeatureFlag.SEARCH);
 
     const query = dto.q || dto.query || '*';
-    const strategy = dto.clip && MACHINE_LEARNING_ENABLED ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+    const hasClip = machineLearning.enabled && machineLearning.clipEncodeEnabled;
+    const strategy = dto.clip && hasClip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
     const filters = { userId: authUser.id, ...dto };
 
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {
       case SearchStrategy.CLIP:
-        const clip = await this.machineLearning.encodeText(query);
+        const clip = await this.machineLearning.encodeText(machineLearning.url, query);
         assets = await this.searchRepository.vectorSearch(clip, filters);
         break;
       case SearchStrategy.TEXT:
@@ -330,12 +323,6 @@ export class SearchService {
       this.logger.debug(`Flushing ${ids.length} face deletes`);
       await this.searchRepository.deleteFaces(ids);
       this.faceQueue.delete.clear();
-    }
-  }
-
-  private assertEnabled() {
-    if (!this.enabled) {
-      throw new BadRequestException('Search is disabled');
     }
   }
 

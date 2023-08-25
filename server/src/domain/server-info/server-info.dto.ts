@@ -1,4 +1,4 @@
-import { IServerVersion } from '@app/domain';
+import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 
 export class ServerPingResponse {
@@ -79,10 +79,14 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
-export class ServerFeaturesDto {
-  machineLearning!: boolean;
+export class ServerFeaturesDto implements FeatureFlags {
+  clipEncode!: boolean;
+  facialRecognition!: boolean;
+  sidecar!: boolean;
   search!: boolean;
+  tagImage!: boolean;
 
+  // TODO: use these instead of `POST oauth/config`
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;

@@ -7,7 +7,6 @@
   import { handleError } from '../../utils/handle-error';
 
   export let assetId: string;
-  export let publicSharedKey: string | undefined = undefined;
 
   let isVideoLoading = true;
   const dispatch = createEventDispatcher<{ onVideoEnded: void }>();
@@ -37,7 +36,7 @@
     bind:volume={$videoViewerVolume}
     poster={api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
   >
-    <source src={api.getAssetFileUrl(assetId, false, true, publicSharedKey)} type="video/mp4" />
+    <source src={api.getAssetFileUrl(assetId, false, true)} type="video/mp4" />
     <track kind="captions" />
   </video>
 

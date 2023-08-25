@@ -2069,19 +2069,6 @@ export interface SearchAssetResponseDto {
 /**
  * 
  * @export
- * @interface SearchConfigResponseDto
- */
-export interface SearchConfigResponseDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SearchConfigResponseDto
-     */
-    'enabled': boolean;
-}
-/**
- * 
- * @export
  * @interface SearchExploreItem
  */
 export interface SearchExploreItem {
@@ -2185,7 +2172,13 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
-    'machineLearning': boolean;
+    'clipEncode': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
+    'facialRecognition': boolean;
     /**
      * 
      * @type {boolean}
@@ -2210,6 +2203,18 @@ export interface ServerFeaturesDto {
      * @memberof ServerFeaturesDto
      */
     'search': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
+    'sidecar': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
+    'tagImage': boolean;
 }
 /**
  * 
@@ -2619,6 +2624,12 @@ export interface SystemConfigDto {
     'job': SystemConfigJobDto;
     /**
      * 
+     * @type {SystemConfigMachineLearningDto}
+     * @memberof SystemConfigDto
+     */
+    'machineLearning': SystemConfigMachineLearningDto;
+    /**
+     * 
      * @type {SystemConfigOAuthDto}
      * @memberof SystemConfigDto
      */
@@ -2783,6 +2794,43 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'videoConversion': JobSettingsDto;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigMachineLearningDto
+ */
+export interface SystemConfigMachineLearningDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'clipEncodeEnabled': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'facialRecognitionEnabled': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'tagImageEnabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'url': string;
 }
 /**
  * 
@@ -5157,14 +5205,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
-         * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
          * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5196,10 +5243,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isArchived !== undefined) {
                 localVarQueryParameter['isArchived'] = isArchived;
-            }
-
-            if (withoutThumbs !== undefined) {
-                localVarQueryParameter['withoutThumbs'] = withoutThumbs;
             }
 
             if (skip !== undefined) {
@@ -6318,15 +6361,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
-         * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
          * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, updatedAfter, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6623,7 +6665,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -6927,13 +6969,6 @@ export interface AssetApiGetAllAssetsRequest {
      * @memberof AssetApiGetAllAssets
      */
     readonly isArchived?: boolean
-
-    /**
-     * Include assets without thumbnails
-     * @type {boolean}
-     * @memberof AssetApiGetAllAssets
-     */
-    readonly withoutThumbs?: boolean
 
     /**
      * 
@@ -7514,7 +7549,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10136,44 +10171,6 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSearchConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/search/config`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} [q] 
          * @param {string} [query] 
          * @param {boolean} [clip] 
@@ -10311,15 +10308,6 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getSearchConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchConfigResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchConfig(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {string} [q] 
          * @param {string} [query] 
          * @param {boolean} [clip] 
@@ -10360,14 +10348,6 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          */
         getExploreData(options?: AxiosRequestConfig): AxiosPromise<Array<SearchExploreResponseDto>> {
             return localVarFp.getExploreData(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSearchConfig(options?: AxiosRequestConfig): AxiosPromise<SearchConfigResponseDto> {
-            return localVarFp.getSearchConfig(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10515,16 +10495,6 @@ export class SearchApi extends BaseAPI {
      */
     public getExploreData(options?: AxiosRequestConfig) {
         return SearchApiFp(this.configuration).getExploreData(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SearchApi
-     */
-    public getSearchConfig(options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).getSearchConfig(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
