@@ -6,6 +6,7 @@
   import {
     api,
     AudioCodec,
+    CQMode,
     SystemConfigFFmpegDto,
     ToneMapping,
     TranscodeHWAccel,
@@ -113,7 +114,7 @@
             desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger files."
             bind:value={ffmpegConfig.crf}
             required={true}
-            isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
+            isEdited={ffmpegConfig.crf !== savedConfig.crf}
           />
 
           <SettingSelect
@@ -133,7 +134,7 @@
               { value: 'slower', text: 'slower' },
               { value: 'veryslow', text: 'veryslow' },
             ]}
-            isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
+            isEdited={ffmpegConfig.preset !== savedConfig.preset}
           />
 
           <SettingSelect
@@ -147,7 +148,7 @@
               { value: AudioCodec.Opus, text: 'opus' },
             ]}
             name="acodec"
-            isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
+            isEdited={ffmpegConfig.targetAudioCodec !== savedConfig.targetAudioCodec}
           />
 
           <SettingSelect
@@ -161,7 +162,7 @@
               { value: VideoCodec.Vp9, text: 'vp9' },
             ]}
             name="vcodec"
-            isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
+            isEdited={ffmpegConfig.targetVideoCodec !== savedConfig.targetVideoCodec}
           />
 
           <SettingSelect
@@ -178,7 +179,7 @@
               { value: 'original', text: 'original' },
             ]}
             name="resolution"
-            isEdited={!(ffmpegConfig.targetResolution == savedConfig.targetResolution)}
+            isEdited={ffmpegConfig.targetResolution !== savedConfig.targetResolution}
           />
 
           <SettingInputField
@@ -187,7 +188,7 @@
             label="MAX BITRATE"
             desc="Setting a max bitrate can make file sizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
             bind:value={ffmpegConfig.maxBitrate}
-            isEdited={!(ffmpegConfig.maxBitrate == savedConfig.maxBitrate)}
+            isEdited={ffmpegConfig.maxBitrate !== savedConfig.maxBitrate}
           />
 
           <SettingInputField
@@ -196,7 +197,7 @@
             label="THREADS"
             desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0."
             bind:value={ffmpegConfig.threads}
-            isEdited={!(ffmpegConfig.threads == savedConfig.threads)}
+            isEdited={ffmpegConfig.threads !== savedConfig.threads}
           />
 
           <SettingSelect
@@ -220,7 +221,7 @@
                 text: "Don't transcode any videos, may break playback on some clients",
               },
             ]}
-            isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
+            isEdited={ffmpegConfig.transcode !== savedConfig.transcode}
           />
 
           <SettingSelect
@@ -244,7 +245,7 @@
                 text: 'Disabled',
               },
             ]}
-            isEdited={!(ffmpegConfig.accel == savedConfig.accel)}
+            isEdited={ffmpegConfig.accel !== savedConfig.accel}
           />
 
           <SettingSelect
@@ -271,7 +272,7 @@
                 text: 'Disabled',
               },
             ]}
-            isEdited={!(ffmpegConfig.tonemap == savedConfig.tonemap)}
+            isEdited={ffmpegConfig.tonemap !== savedConfig.tonemap}
           />
 
           <SettingSwitch
@@ -279,7 +280,7 @@
             {disabled}
             subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
             bind:checked={ffmpegConfig.twoPass}
-            isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
+            isEdited={ffmpegConfig.twoPass !== savedConfig.twoPass}
           />
 
           <SettingAccordion
@@ -292,23 +293,27 @@
                 label="B-FRAMES"
                 desc="The max number of B-frames to use. Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
                 bind:value={ffmpegConfig.bframes}
-                isEdited={!(ffmpegConfig.bframes == savedConfig.bframes)}
+                isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
               />
 
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label="Constant Quality Mode"
+              <SettingSelect
+                label="CONSTANT QUALITY MODE"
                 desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will force the specified mode. Ignored by NVENC as it does not support ICQ."
                 bind:value={ffmpegConfig.cqMode}
-                isEdited={!(ffmpegConfig.cqMode == savedConfig.cqMode)}
+                options={[
+                  { value: CQMode.Auto, text: 'Auto' },
+                  { value: CQMode.Icq, text: 'ICQ' },
+                  { value: CQMode.Cqp, text: 'CQP' },
+                ]}
+                isEdited={ffmpegConfig.cqMode !== savedConfig.cqMode}
               />
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label="REFERENCE FRAMES"
-                desc="The number of frames to reference when compresing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
+                desc="The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
                 bind:value={ffmpegConfig.refs}
-                isEdited={!(ffmpegConfig.refs == savedConfig.refs)}
+                isEdited={ffmpegConfig.refs !== savedConfig.refs}
               />
 
               <SettingInputField
@@ -316,7 +321,7 @@
                 label="MAX KEYFRAME INTERVAL"
                 desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
                 bind:value={ffmpegConfig.gopSize}
-                isEdited={!(ffmpegConfig.gopSize == savedConfig.gopSize)}
+                isEdited={ffmpegConfig.gopSize !== savedConfig.gopSize}
               />
             </div>
           </SettingAccordion>
