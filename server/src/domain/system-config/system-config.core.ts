@@ -123,7 +123,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) { }
+  constructor(private repository: ISystemConfigRepository) {}
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
