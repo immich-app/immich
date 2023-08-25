@@ -13,7 +13,6 @@ torch = [
     {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.0.1", source = "pytorch-cpu"}
 ]
 transformers = "^4.29.2"
-sentence-transformers = "^2.2.2"
 onnxruntime = "^1.15.0"
 insightface = "^0.7.3"
 opencv-python-headless = "^4.7.0.72"
@@ -22,6 +21,15 @@ fastapi = "^0.95.2"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 pydantic = "^1.10.8"
 aiocache = "^0.12.1"
+optimum = "^1.9.1"
+torchvision = [
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=0.15.2", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=0.15.2", source = "pytorch-cpu"}
+]
+rich = "^13.4.2"
+ftfy = "^6.1.1"
+setuptools = "^68.0.0"
+open-clip-torch = "^2.20.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"
@@ -62,13 +70,20 @@ warn_untyped_fields = true
 [[tool.mypy.overrides]]
 module = [
     "huggingface_hub",
-    "transformers.pipelines",
+    "transformers",
     "cv2",
     "insightface.model_zoo",
     "insightface.utils.face_align",
     "insightface.utils.storage",
-    "sentence_transformers",
-    "sentence_transformers.util",
+    "onnxruntime",
+    "optimum",
+    "optimum.pipelines",
+    "optimum.onnxruntime",
+    "clip_server.model.clip",
+    "clip_server.model.clip_onnx",
+    "clip_server.model.pretrained_models",
+    "clip_server.model.tokenization",
+    "torchvision.transforms",
     "aiocache.backends.memory",
     "aiocache.lock",
     "aiocache.plugins"

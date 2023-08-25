@@ -147,11 +147,14 @@ describe(ServerInfoService.name, () => {
     describe('getFeatures', () => {
       it('should respond the server features', async () => {
         await expect(sut.getFeatures()).resolves.toEqual({
-          machineLearning: true,
+          clipEncode: true,
+          facialRecognition: true,
           oauth: false,
           oauthAutoLaunch: false,
           passwordLogin: true,
           search: true,
+          sidecar: true,
+          tagImage: true,
         });
         expect(configMock.load).toHaveBeenCalled();
       });

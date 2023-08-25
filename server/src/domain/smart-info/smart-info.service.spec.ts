@@ -5,9 +5,11 @@ import {
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newSmartInfoRepositoryMock,
+  newSystemConfigRepositoryMock,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
+import { ISystemConfigRepository } from '../system-config';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 import { SmartInfoService } from './smart-info.service';
@@ -20,16 +22,18 @@ const asset = {
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     smartMock = newSmartInfoRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(assetMock, jobMock, smartMock, machineMock);
+    sut = new SmartInfoService(assetMock, configMock, jobMock, smartMock, machineMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });
@@ -80,7 +84,9 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleClassifyImage({ id: asset.id });
 
-      expect(machineMock.classifyImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
+        imagePath: 'path/to/resize.ext',
+      });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -139,7 +145,9 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleEncodeClip({ id: asset.id });
 
-      expect(machineMock.encodeImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
+      expect(machineMock.encodeImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
+        imagePath: 'path/to/resize.ext',
+      });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],

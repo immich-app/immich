@@ -9,14 +9,14 @@ import {
   AuthUserDto,
   DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
+  MemoryLaneResponseDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
 } from '@app/domain';
-import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
-import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';

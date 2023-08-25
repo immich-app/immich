@@ -1,23 +1,31 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 
 @Injectable()
 export class SmartInfoService {
-  private logger = new Logger(SmartInfoService.name);
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   async handleQueueObjectTagging({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.tagImageEnabled) {
+      return true;
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -34,19 +42,28 @@ export class SmartInfoService {
   }
 
   async handleClassifyImage({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.tagImageEnabled) {
+      return true;
+    }
 
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset.resizePath) {
       return false;
     }
 
-    const tags = await this.machineLearning.classifyImage({ imagePath: asset.resizePath });
+    const tags = await this.machineLearning.classifyImage(machineLearning.url, { imagePath: asset.resizePath });
     await this.repository.upsert({ assetId: asset.id, tags });
 
     return true;
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clipEncodeEnabled) {
+      return true;
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -63,13 +80,17 @@ export class SmartInfoService {
   }
 
   async handleEncodeClip({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clipEncodeEnabled) {
+      return true;
+    }
 
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset.resizePath) {
       return false;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage({ imagePath: asset.resizePath });
+    const clipEmbedding = await this.machineLearning.encodeImage(machineLearning.url, { imagePath: asset.resizePath });
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 
     return true;

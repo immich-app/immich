@@ -1,7 +1,6 @@
 import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
@@ -9,14 +8,17 @@ import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { AssetFaceId, IFaceRepository } from './face.repository';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
   private storageCore = new StorageCore();
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -24,9 +26,16 @@ export class FacialRecognitionService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+      return true;
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination, { order: 'DESC' })
@@ -49,12 +58,17 @@ export class FacialRecognitionService {
   }
 
   async handleRecognizeFaces({ id }: IEntityJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+      return true;
+    }
+
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+    if (!asset || !asset.resizePath) {
       return false;
     }
 
-    const faces = await this.machineLearning.detectFaces({ imagePath: asset.resizePath });
+    const faces = await this.machineLearning.detectFaces(machineLearning.url, { imagePath: asset.resizePath });
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
@@ -100,6 +114,11 @@ export class FacialRecognitionService {
   }
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+      return true;
+    }
+
     const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
 
     const [asset] = await this.assetRepository.getByIds([assetId]);

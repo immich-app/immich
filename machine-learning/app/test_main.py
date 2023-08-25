@@ -1,17 +1,20 @@
+import pickle
 from io import BytesIO
 from typing import TypeAlias
 from unittest import mock
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
 
 from .config import settings
+from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
-from .models.clip import CLIPSTEncoder
+from .models.clip import CLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
@@ -72,45 +75,47 @@ class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
 
     def test_eager_init(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "download")
-        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
-        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
+        mocker.patch.object(CLIPEncoder, "download")
+        mock_load = mocker.patch.object(CLIPEncoder, "load")
+        clip_model = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", eager=True, test_arg="test_arg")
 
-        assert clip_model.model_name == "test_model_name"
+        assert clip_model.model_name == "ViT-B-32::openai"
         mock_load.assert_called_once_with(test_arg="test_arg")
 
     def test_lazy_init(self, mocker: MockerFixture) -> None:
-        mock_download = mocker.patch.object(CLIPSTEncoder, "download")
-        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
-        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
+        mock_download = mocker.patch.object(CLIPEncoder, "download")
+        mock_load = mocker.patch.object(CLIPEncoder, "load")
+        clip_model = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", eager=False, test_arg="test_arg")
 
-        assert clip_model.model_name == "test_model_name"
+        assert clip_model.model_name == "ViT-B-32::openai"
         mock_download.assert_called_once_with(test_arg="test_arg")
         mock_load.assert_not_called()
 
     def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "load")
-        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.model = mock.Mock()
-        clip_encoder.model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
+        assert clip_encoder.mode == "vision"
         embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.model.encode.assert_called_once()
+        clip_encoder.vision_model.run.assert_called_once()
 
     def test_basic_text(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "load")
-        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.model = mock.Mock()
-        clip_encoder.model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
+        assert clip_encoder.mode == "text"
         embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.model.encode.assert_called_once()
+        clip_encoder.text_model.run.assert_called_once()
 
 
 class TestFaceRecognition:
@@ -254,3 +259,13 @@ class TestEndpoints:
             headers=headers,
         )
         assert response.status_code == 200
+
+
+def test_sess_options() -> None:
+    sess_options = PicklableSessionOptions()
+    sess_options.intra_op_num_threads = 1
+    sess_options.inter_op_num_threads = 1
+    pickled = pickle.dumps(sess_options)
+    unpickled = pickle.loads(pickled)
+    assert unpickled.intra_op_num_threads == 1
+    assert unpickled.inter_op_num_threads == 1

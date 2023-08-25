@@ -23,7 +23,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
-  export let publicSharedKey: string | undefined = undefined;
+
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
@@ -97,7 +97,7 @@
   const handlePrevious = async () => {
     const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
     if (previousAsset) {
-      assetViewingStore.setAssetId(previousAsset, publicSharedKey);
+      assetViewingStore.setAssetId(previousAsset);
     }
 
     return !!previousAsset;
@@ -106,7 +106,7 @@
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
-      assetViewingStore.setAssetId(nextAsset, publicSharedKey);
+      assetViewingStore.setAssetId(nextAsset);
     }
 
     return !!nextAsset;
@@ -349,7 +349,6 @@
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}
                 {viewport}
-                {publicSharedKey}
               />
             {/if}
           </div>
@@ -371,7 +370,6 @@
       on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
       on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
       on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
-      {publicSharedKey}
     />
   {/if}
 </Portal>
