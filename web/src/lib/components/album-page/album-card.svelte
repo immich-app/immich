@@ -12,6 +12,7 @@
   export let user: UserResponseDto;
   export let showItemCount = true;
   export let showContextMenu = true;
+  let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
     ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
@@ -63,6 +64,8 @@
   class="group relative mt-4 rounded-3xl border-[3px] border-transparent p-5 hover:cursor-pointer hover:border-immich-primary/75 dark:hover:border-immich-dark-primary/75"
   on:click={() => dispatchClick('click', album)}
   on:keydown={() => dispatchClick('click', album)}
+  on:mouseenter={() => (showVerticalDots = true)}
+  on:mouseleave={() => (showVerticalDots = false)}
   data-testid="album-card"
 >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -71,9 +74,10 @@
       id={`icon-${album.id}`}
       class="absolute right-6 top-6 z-10"
       on:click|stopPropagation|preventDefault={showAlbumContextMenu}
+      class:hidden={!showVerticalDots}
       data-testid="context-button-parent"
     >
-      <IconButton color="overlay-primary">
+      <IconButton color="transparent-primary">
         <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
       </IconButton>
     </div>

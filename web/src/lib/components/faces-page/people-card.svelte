@@ -10,16 +10,37 @@
 
   export let person: PersonResponseDto;
 
-  let showContextMenu = false;
+  type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-faces' | 'hide-face';
   let dispatch = createEventDispatcher<{
     'change-name': void;
     'set-birth-date': void;
     'merge-faces': void;
     'hide-face': void;
   }>();
+
+  let showVerticalDots = false;
+  let showContextMenu = false;
+  let contextMenuPosition = { x: 0, y: 0 };
+  const showMenu = ({ x, y }: MouseEvent) => {
+    contextMenuPosition = { x, y };
+    showContextMenu = !showContextMenu;
+  };
+  const onMenuExit = () => {
+    showContextMenu = false;
+  };
+  const onMenuClick = (event: MenuItemEvent) => {
+    onMenuExit();
+    dispatch(event);
+  };
 </script>
 
-<div id="people-card" class="relative">
+<div
+  id="people-card"
+  class="relative"
+  on:mouseenter={() => (showVerticalDots = true)}
+  on:mouseleave={() => (showVerticalDots = false)}
+  role="group"
+>
   <a href="/people/{person.id}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
@@ -35,29 +56,24 @@
 
   <button
     class="absolute right-2 top-2 z-20"
-    on:click|stopPropagation|preventDefault={() => {
-      showContextMenu = !showContextMenu;
-    }}
+    on:click|stopPropagation|preventDefault={showMenu}
+    class:hidden={!showVerticalDots}
     data-testid="context-button-parent"
     id={`icon-${person.id}`}
   >
     <IconButton color="transparent-primary">
       <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
     </IconButton>
-
-    {#if showContextMenu}
-      <ContextMenu on:outclick={() => (showContextMenu = false)}>
-        <MenuOption on:click={() => dispatch('hide-face')} text="Hide face" />
-        <MenuOption on:click={() => dispatch('change-name')} text="Change name" />
-        <MenuOption on:click={() => dispatch('set-birth-date')} text="Set date of birth" />
-        <MenuOption on:click={() => dispatch('merge-faces')} text="Merge faces" />
-      </ContextMenu>
-    {/if}
   </button>
 </div>
 
 {#if showContextMenu}
   <Portal target="body">
-    <div class="heyo absolute left-0 top-0 z-10 h-screen w-screen bg-transparent" />
+    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+      <MenuOption on:click={() => onMenuClick('hide-face')} text="Hide face" />
+      <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
+      <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
+      <MenuOption on:click={() => onMenuClick('merge-faces')} text="Merge faces" />
+    </ContextMenu>
   </Portal>
 {/if}
