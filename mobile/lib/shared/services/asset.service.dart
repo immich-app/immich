@@ -69,7 +69,6 @@ class AssetService {
           await _apiService.assetApi.getAllAssetsWithETag(
         eTag: etag,
         userId: user.id,
-        withoutThumbs: true,
       );
       if (assets == null) {
         return null;
