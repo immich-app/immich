@@ -35,9 +35,12 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [lat, lng] as LatLngTuple;
+      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
     }
   })();
+
+  $: lat = latlng ? latlng[0] : undefined;
+  $: lng = latlng ? latlng[1] : undefined;
 
   $: people = asset.people || [];
 
@@ -259,7 +262,14 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}
         />
-        <Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+        <Marker {latlng}>
+          <p>
+            {lat}, {lng}
+          </p>
+          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+            Open in OpenStreetMap
+          </a>
+        </Marker>
       </Map>
     {/await}
   </div>
