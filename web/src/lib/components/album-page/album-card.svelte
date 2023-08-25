@@ -100,7 +100,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full truncate text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
+      class="w-full truncate text-lg font-semibold text-immich-primary dark:text-immich-dark-primary"
       data-testid="album-name"
       title={album.albumName}
     >
