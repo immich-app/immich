@@ -25,6 +25,7 @@
 
   export let data: PageData;
   let assetCount = 1;
+  let isAssetLoading = true;
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
@@ -35,6 +36,7 @@
   onMount(async () => {
     const { data: stats } = await api.assetApi.getAssetStats({ isArchived: false });
     assetCount = stats.total;
+    isAssetLoading = false;
   });
 </script>
 
@@ -60,11 +62,24 @@
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if assetCount}
-      <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
-        {#if data.user.memoriesEnabled}
-          <MemoryLane />
-        {/if}
-      </AssetGrid>
+      {#if isAssetLoading}
+        <div class="mt-5 ml-[14px] ">
+          <div class="block h-[28px]"> 
+            <span class="block mt-[1px] w-[160px] h-[13px] mb-[0px] rounded-lg animate-pulse bg-immich-primary/20 dark:bg-immich-dark-primary/20 " />
+          </div>
+          <div class="flex w-[120%] flex-wrap">
+            {#each Array(100) as _}
+              <div class="m-[1px] h-[10em] w-[16em] animate-pulse bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+            {/each}
+          </div>
+        </div>
+      {:else}
+        <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
+          {#if data.user.memoriesEnabled}
+            <MemoryLane />
+          {/if}
+        </AssetGrid>
+      {/if}
     {:else}
       <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={() => openFileUploadDialog()} />
     {/if}
