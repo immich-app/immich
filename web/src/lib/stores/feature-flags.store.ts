@@ -12,6 +12,7 @@ export const featureFlags = writable<FeatureFlags>({
   oauth: true,
   oauthAutoLaunch: true,
   passwordLogin: true,
+  configFile: false,
 });
 
 export const loadFeatureFlags = async () => {
