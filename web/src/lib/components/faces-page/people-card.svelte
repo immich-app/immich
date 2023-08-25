@@ -67,13 +67,13 @@
   </button>
 </div>
 
-<Portal target="body">
-  {#if showContextMenu}
+{#if showContextMenu}
+  <Portal target="body">
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
       <MenuOption on:click={() => onMenuClick('hide-face')} text="Hide face" />
       <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
       <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
       <MenuOption on:click={() => onMenuClick('merge-faces')} text="Merge faces" />
     </ContextMenu>
-  {/if}
-</Portal>
+  </Portal>
+{/if}
