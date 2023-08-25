@@ -15,7 +15,6 @@
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
-
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '../../utils/handle-error';
 
@@ -35,23 +34,23 @@
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) }, sharedLink.key);
+    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) });
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
     try {
       let results: (string | undefined)[] = [];
       if (!files || files.length === 0 || !Array.isArray(files)) {
-        results = await openFileUploadDialog(undefined, sharedLink.key);
+        results = await openFileUploadDialog(undefined);
       } else {
-        results = await fileUploadHandler(files, undefined, sharedLink.key);
+        results = await fileUploadHandler(files, undefined);
       }
       const { data } = await api.sharedLinkApi.addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: sharedLink.key,
+        key: api.getKey(),
       });
 
       const added = data.filter((item) => item.success).length;
@@ -75,7 +74,7 @@
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
       <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
       {#if sharedLink?.allowDownload}
-        <DownloadAction filename="immich-shared.zip" sharedLinkKey={sharedLink.key} />
+        <DownloadAction filename="immich-shared.zip" />
       {/if}
       {#if isOwned}
         <RemoveFromSharedLink bind:sharedLink />
@@ -106,6 +105,6 @@
     </ControlAppBar>
   {/if}
   <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <GalleryViewer {assets} {sharedLink} bind:selectedAssets />
+    <GalleryViewer {assets} bind:selectedAssets />
   </section>
 </section>
