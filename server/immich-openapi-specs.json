@@ -3243,38 +3243,6 @@
         ]
       }
     },
-    "/search/config": {
-      "get": {
-        "operationId": "getSearchConfig",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SearchConfigResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Search"
-        ]
-      }
-    },
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
@@ -6424,17 +6392,6 @@
         ],
         "type": "object"
       },
-      "SearchConfigResponseDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
       "SearchExploreItem": {
         "properties": {
           "data": {
@@ -6518,7 +6475,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
-          "machineLearning": {
+          "clipEncode": {
+            "type": "boolean"
+          },
+          "facialRecognition": {
             "type": "boolean"
           },
           "oauth": {
@@ -6532,11 +6492,20 @@
           },
           "search": {
             "type": "boolean"
+          },
+          "sidecar": {
+            "type": "boolean"
+          },
+          "tagImage": {
+            "type": "boolean"
           }
         },
         "required": [
-          "machineLearning",
+          "clipEncode",
+          "facialRecognition",
+          "sidecar",
           "search",
+          "tagImage",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin"
@@ -6868,6 +6837,9 @@
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
+          "machineLearning": {
+            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -6883,6 +6855,7 @@
         },
         "required": [
           "ffmpeg",
+          "machineLearning",
           "oauth",
           "passwordLogin",
           "storageTemplate",
@@ -6986,6 +6959,33 @@
           "search",
           "recognizeFaces",
           "sidecar"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMachineLearningDto": {
+        "properties": {
+          "clipEncodeEnabled": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "facialRecognitionEnabled": {
+            "type": "boolean"
+          },
+          "tagImageEnabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "url",
+          "clipEncodeEnabled",
+          "facialRecognitionEnabled",
+          "tagImageEnabled"
         ],
         "type": "object"
       },

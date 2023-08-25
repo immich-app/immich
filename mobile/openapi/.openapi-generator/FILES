@@ -84,7 +84,6 @@ doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
 doc/SearchAssetDto.md
 doc/SearchAssetResponseDto.md
-doc/SearchConfigResponseDto.md
 doc/SearchExploreItem.md
 doc/SearchExploreResponseDto.md
 doc/SearchFacetCountResponseDto.md
@@ -108,6 +107,7 @@ doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
+doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
 doc/SystemConfigStorageTemplateDto.md
@@ -228,7 +228,6 @@ lib/model/queue_status_dto.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
-lib/model/search_config_response_dto.dart
 lib/model/search_explore_item.dart
 lib/model/search_explore_response_dto.dart
 lib/model/search_facet_count_response_dto.dart
@@ -249,6 +248,7 @@ lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
+lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
 lib/model/system_config_storage_template_dto.dart
@@ -353,7 +353,6 @@ test/search_album_response_dto_test.dart
 test/search_api_test.dart
 test/search_asset_dto_test.dart
 test/search_asset_response_dto_test.dart
-test/search_config_response_dto_test.dart
 test/search_explore_item_test.dart
 test/search_explore_response_dto_test.dart
 test/search_facet_count_response_dto_test.dart
@@ -377,6 +376,7 @@ test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
+test/system_config_machine_learning_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart
 test/system_config_storage_template_dto_test.dart

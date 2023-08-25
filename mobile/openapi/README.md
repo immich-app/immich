@@ -140,7 +140,6 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
-*SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
@@ -253,7 +252,6 @@ Class | Method | HTTP request | Description
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
- - [SearchConfigResponseDto](doc//SearchConfigResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
  - [SearchExploreResponseDto](doc//SearchExploreResponseDto.md)
  - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
@@ -274,6 +272,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
+ - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
