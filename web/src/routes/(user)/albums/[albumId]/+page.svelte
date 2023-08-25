@@ -219,7 +219,7 @@
       await api.albumApi.deleteAlbum({ id: album.id });
       goto(backUrl);
     } catch (error) {
-      handleError(error, 'Unable to remove album');
+      handleError(error, 'Unable to delete album');
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -322,7 +322,7 @@
               logo={ShareVariantOutline}
             />
             <CircleIconButton
-              title="Remove album"
+              title="Delete album"
               on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
               logo={DeleteOutline}
             />
@@ -524,7 +524,7 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
-    title="Delete Album"
+    title="Delete album"
     confirmText="Delete"
     on:confirm={handleRemoveAlbum}
     on:cancel={() => (viewMode = ViewMode.VIEW)}
