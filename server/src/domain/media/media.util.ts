@@ -525,29 +525,23 @@ export class VAAPIConfig extends BaseHWConfig {
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     const options = [];
+
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
-      // seems to be needed for VP9 outputs to look correct when using b-frames
       options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
     }
 
-    const useVBR = bitrates.max > 0;
-
     // VAAPI doesn't allow setting both quality and max bitrate
-    if (useVBR) {
+    if (bitrates.max > 0) {
       options.push(
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
         '-rc_mode 3',
       ); // variable bitrate
+    } else if (this.useCQP()) {
+      options.push(`-global_quality ${this.config.crf}`, `-qp ${this.config.crf}`, '-rc_mode 1');
     } else {
-      options.push(`-global_quality ${this.config.crf}`); // constant quality
-    }
-
-    if (this.useCQP()) {
-      options.push(`-qp ${this.config.crf}`, '-rc_mode 1');
-    } else {
-      options.push('-rc_mode 4');
+      options.push(`-global_quality ${this.config.crf}`, '-rc_mode 4');
     }
 
     return options;
