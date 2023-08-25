@@ -239,6 +239,8 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CLIPMode':
           return CLIPModeTypeTransformer().decode(value);
+        case 'CQMode':
+          return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':

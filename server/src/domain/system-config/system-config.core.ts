@@ -1,5 +1,6 @@
 import {
   AudioCodec,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -33,6 +34,7 @@ export const defaults = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
+    cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
@@ -121,7 +123,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);

@@ -1,5 +1,6 @@
 import {
   AudioCodec,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -44,6 +45,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
+    cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,

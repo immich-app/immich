@@ -1,4 +1,4 @@
-import { ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
@@ -88,12 +88,12 @@ class BaseConfig implements VideoCodecSWConfig {
     } else if (bitrates.max > 0) {
       // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
       return [
-        `-crf ${this.config.crf}`,
+        `-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
         `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
       ];
     } else {
-      return [`-crf ${this.config.crf}`];
+      return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`];
     }
   }
 
@@ -207,6 +207,10 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getGopSize() {
     return this.config.gopSize;
+  }
+
+  useCQP() {
+    return this.config.cqMode === CQMode.CQP;
   }
 }
 
@@ -328,7 +332,7 @@ export class VP9Config extends BaseConfig {
       ];
     }
 
-    return [`-crf ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
+    return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
   }
 
   getThreadOptions() {
@@ -458,11 +462,7 @@ export class QSVConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const options = [];
-    if (this.config.targetVideoCodec !== VideoCodec.VP9) {
-      options.push(`-global_quality ${this.config.crf}`);
-    } else {
-      options.push(`-q:v ${this.config.crf}`);
-    }
+    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
@@ -484,6 +484,10 @@ export class QSVConfig extends BaseHWConfig {
       return 5;
     }
     return this.config.refs;
+  }
+
+  useCQP() {
+    return this.config.cqMode === CQMode.CQP || this.config.targetVideoCodec === VideoCodec.VP9;
   }
 }
 
@@ -521,13 +525,15 @@ export class VAAPIConfig extends BaseHWConfig {
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     const options = [];
-    if (this.getBFrames() > 0 && this.config.targetVideoCodec === VideoCodec.VP9) {
+    if (this.config.targetVideoCodec === VideoCodec.VP9) {
       // seems to be needed for VP9 outputs to look correct when using b-frames
       options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
     }
 
+    const useVBR = bitrates.max > 0;
+
     // VAAPI doesn't allow setting both quality and max bitrate
-    if (bitrates.max > 0) {
+    if (useVBR) {
       options.push(
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
@@ -535,9 +541,19 @@ export class VAAPIConfig extends BaseHWConfig {
         '-rc_mode 3',
       ); // variable bitrate
     } else {
-      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1'); // constant quality
+      options.push(`-global_quality ${this.config.crf}`); // constant quality
+    }
+
+    if (this.useCQP()) {
+      options.push(`-qp ${this.config.crf}`, '-rc_mode 1');
+    } else {
+      options.push('-rc_mode 4');
     }
 
     return options;
+  }
+
+  useCQP() {
+    return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
   }
 }

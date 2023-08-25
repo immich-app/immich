@@ -297,6 +297,14 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
+                label="Constant Quality Mode"
+                desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will force the specified mode. Ignored by NVENC as it does not support ICQ."
+                bind:value={ffmpegConfig.cqMode}
+                isEdited={!(ffmpegConfig.cqMode == savedConfig.cqMode)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
                 label="REFERENCE FRAMES"
                 desc="The number of frames to reference when compresing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
                 bind:value={ffmpegConfig.refs}

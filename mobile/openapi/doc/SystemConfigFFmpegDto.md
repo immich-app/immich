@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
 **bframes** | **int** |  | 
+**cqMode** | [**CQMode**](CQMode.md) |  | 
 **crf** | **int** |  | 
 **gopSize** | **int** |  | 
 **maxBitrate** | **String** |  | 

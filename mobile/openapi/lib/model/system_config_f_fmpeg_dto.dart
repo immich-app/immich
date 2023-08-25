@@ -15,6 +15,7 @@ class SystemConfigFFmpegDto {
   SystemConfigFFmpegDto({
     required this.accel,
     required this.bframes,
+    required this.cqMode,
     required this.crf,
     required this.gopSize,
     required this.maxBitrate,
@@ -32,6 +33,8 @@ class SystemConfigFFmpegDto {
   TranscodeHWAccel accel;
 
   int bframes;
+
+  CQMode cqMode;
 
   int crf;
 
@@ -61,6 +64,7 @@ class SystemConfigFFmpegDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
      other.accel == accel &&
      other.bframes == bframes &&
+     other.cqMode == cqMode &&
      other.crf == crf &&
      other.gopSize == gopSize &&
      other.maxBitrate == maxBitrate &&
@@ -79,6 +83,7 @@ class SystemConfigFFmpegDto {
     // ignore: unnecessary_parenthesis
     (accel.hashCode) +
     (bframes.hashCode) +
+    (cqMode.hashCode) +
     (crf.hashCode) +
     (gopSize.hashCode) +
     (maxBitrate.hashCode) +
@@ -93,12 +98,13 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accel'] = this.accel;
       json[r'bframes'] = this.bframes;
+      json[r'cqMode'] = this.cqMode;
       json[r'crf'] = this.crf;
       json[r'gopSize'] = this.gopSize;
       json[r'maxBitrate'] = this.maxBitrate;
@@ -124,6 +130,7 @@ class SystemConfigFFmpegDto {
       return SystemConfigFFmpegDto(
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
         bframes: mapValueOfType<int>(json, r'bframes')!,
+        cqMode: CQMode.fromJson(json[r'cqMode'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
         gopSize: mapValueOfType<int>(json, r'gopSize')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
@@ -185,6 +192,7 @@ class SystemConfigFFmpegDto {
   static const requiredKeys = <String>{
     'accel',
     'bframes',
+    'cqMode',
     'crf',
     'gopSize',
     'maxBitrate',

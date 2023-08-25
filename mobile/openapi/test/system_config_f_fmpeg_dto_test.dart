@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // CQMode cqMode
+    test('to test the property `cqMode`', () async {
+      // TODO
+    });
+
     // int crf
     test('to test the property `crf`', () async {
       // TODO

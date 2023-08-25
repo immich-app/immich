@@ -211,6 +211,7 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CLIPMode](doc//CLIPMode.md)
+ - [CQMode](doc//CQMode.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)

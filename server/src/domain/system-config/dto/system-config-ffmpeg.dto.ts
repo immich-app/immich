@@ -1,6 +1,7 @@
-import { AudioCodec, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { toBoolean } from '@app/domain';
+import { AudioCodec, CQMode, ToneMapping, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
 
 export class SystemConfigFFmpegDto {
@@ -54,7 +55,12 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ type: 'integer' })
   gopSize!: number;
 
+  @IsEnum(CQMode)
+  @ApiProperty({ enumName: 'CQMode', enum: CQMode })
+  cqMode!: CQMode;
+
   @IsBoolean()
+  @Transform(toBoolean)
   twoPass!: boolean;
 
   @IsEnum(TranscodePolicy)
