@@ -298,7 +298,7 @@
 
               <SettingSelect
                 label="CONSTANT QUALITY MODE"
-                desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will force the specified mode. Ignored by NVENC as it does not support ICQ."
+                desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will prefer the specified mode when using quality-based encoding. Ignored by NVENC as it does not support ICQ."
                 bind:value={ffmpegConfig.cqMode}
                 options={[
                   { value: CQMode.Auto, text: 'Auto' },
