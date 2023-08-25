@@ -2178,13 +2178,13 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
-    'facialRecognition': boolean;
+    'configFile': boolean;
     /**
      * 
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
-    'isConfigFile': boolean;
+    'facialRecognition': boolean;
     /**
      * 
      * @type {boolean}

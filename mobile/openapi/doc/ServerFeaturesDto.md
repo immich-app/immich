@@ -9,8 +9,8 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **clipEncode** | **bool** |  | 
+**configFile** | **bool** |  | 
 **facialRecognition** | **bool** |  | 
-**isConfigFile** | **bool** |  | 
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 
