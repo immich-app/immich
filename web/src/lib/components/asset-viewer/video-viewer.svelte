@@ -9,7 +9,7 @@
   export let assetId: string;
 
   let isVideoLoading = true;
-  const dispatch = createEventDispatcher<{ onVideoEnded: void }>();
+  const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
   const handleCanPlay = async (event: Event) => {
     try {
@@ -17,6 +17,7 @@
       video.muted = true;
       await video.play();
       video.muted = false;
+      dispatch('onVideoStarted');
     } catch (error) {
       handleError(error, 'Unable to play video');
     } finally {
