@@ -20,7 +20,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>)
       return results;
     });
 
-const downloadBlob = (data: Blob, filename: string) => {
+export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
 
   const anchor = document.createElement('a');

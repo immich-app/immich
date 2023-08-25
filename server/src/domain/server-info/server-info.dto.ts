@@ -80,6 +80,7 @@ export class ServerMediaTypesResponseDto {
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
+  configFile!: boolean;
   clipEncode!: boolean;
   facialRecognition!: boolean;
   sidecar!: boolean;

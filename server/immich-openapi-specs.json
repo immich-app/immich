@@ -6478,6 +6478,9 @@
           "clipEncode": {
             "type": "boolean"
           },
+          "configFile": {
+            "type": "boolean"
+          },
           "facialRecognition": {
             "type": "boolean"
           },
@@ -6501,6 +6504,7 @@
           }
         },
         "required": [
+          "configFile",
           "clipEncode",
           "facialRecognition",
           "sidecar",

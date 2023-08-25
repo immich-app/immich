@@ -14,6 +14,7 @@ class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
     required this.clipEncode,
+    required this.configFile,
     required this.facialRecognition,
     required this.oauth,
     required this.oauthAutoLaunch,
@@ -24,6 +25,8 @@ class ServerFeaturesDto {
   });
 
   bool clipEncode;
+
+  bool configFile;
 
   bool facialRecognition;
 
@@ -42,6 +45,7 @@ class ServerFeaturesDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
      other.clipEncode == clipEncode &&
+     other.configFile == configFile &&
      other.facialRecognition == facialRecognition &&
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
@@ -54,6 +58,7 @@ class ServerFeaturesDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (clipEncode.hashCode) +
+    (configFile.hashCode) +
     (facialRecognition.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
@@ -63,11 +68,12 @@ class ServerFeaturesDto {
     (tagImage.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, facialRecognition=$facialRecognition, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'clipEncode'] = this.clipEncode;
+      json[r'configFile'] = this.configFile;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
@@ -87,6 +93,7 @@ class ServerFeaturesDto {
 
       return ServerFeaturesDto(
         clipEncode: mapValueOfType<bool>(json, r'clipEncode')!,
+        configFile: mapValueOfType<bool>(json, r'configFile')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
@@ -142,6 +149,7 @@ class ServerFeaturesDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'clipEncode',
+    'configFile',
     'facialRecognition',
     'oauth',
     'oauthAutoLaunch',

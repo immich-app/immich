@@ -1,3 +1,7 @@
+---
+sidebar_position: 90
+---
+
 # Environment Variables
 
 ## Docker Compose
@@ -22,6 +26,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
 | `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
 | `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
+| `IMMICH_CONFIG_FILE`        | Path to config file                          |              | server                                       |
 
 :::tip
 

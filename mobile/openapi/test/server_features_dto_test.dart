@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool configFile
+    test('to test the property `configFile`', () async {
+      // TODO
+    });
+
     // bool facialRecognition
     test('to test the property `facialRecognition`', () async {
       // TODO

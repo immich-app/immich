@@ -11,6 +11,8 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
 
+  export let disabled = false;
+
   let config: SystemConfigDto;
   let defaultConfig: SystemConfigDto;
 
@@ -56,6 +58,7 @@
         <SettingSwitch
           title="Enabled"
           subtitle="Use machine learning features"
+          {disabled}
           bind:checked={config.machineLearning.enabled}
         />
 
@@ -67,7 +70,7 @@
           desc="URL of machine learning server"
           bind:value={config.machineLearning.url}
           required={true}
-          disabled={!config.machineLearning.enabled}
+          disabled={disabled || !config.machineLearning.enabled}
           isEdited={!(config.machineLearning.url === config.machineLearning.url)}
         />
 
@@ -75,20 +78,20 @@
           title="SMART SEARCH"
           subtitle="Extract CLIP embeddings for smart search"
           bind:checked={config.machineLearning.clipEncodeEnabled}
-          disabled={!config.machineLearning.enabled}
+          disabled={disabled || !config.machineLearning.enabled}
         />
 
         <SettingSwitch
           title="FACIAL RECOGNITION"
           subtitle="Recognize and group faces in photos"
-          disabled={!config.machineLearning.enabled}
+          disabled={disabled || !config.machineLearning.enabled}
           bind:checked={config.machineLearning.facialRecognitionEnabled}
         />
 
         <SettingSwitch
           title="IMAGE TAGGING"
           subtitle="Tag and classify images"
-          disabled={!config.machineLearning.enabled}
+          disabled={disabled || !config.machineLearning.enabled}
           bind:checked={config.machineLearning.tagImageEnabled}
         />
 
@@ -97,6 +100,7 @@
           on:save={saveSetting}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(config, defaultConfig)}
+          {disabled}
         />
       </form>
     </div>

@@ -5,6 +5,7 @@
   const dispatch = createEventDispatcher();
 
   export let showResetToDefault = true;
+  export let disabled = false;
 </script>
 
 <div class="mt-8 flex justify-between gap-2">
@@ -20,7 +21,7 @@
   </div>
 
   <div class="right">
-    <Button size="sm" color="gray" on:click={() => dispatch('reset')}>Reset</Button>
-    <Button size="sm" on:click={() => dispatch('save')}>Save</Button>
+    <Button {disabled} size="sm" color="gray" on:click={() => dispatch('reset')}>Reset</Button>
+    <Button {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
   </div>
 </div>
