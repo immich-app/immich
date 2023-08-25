@@ -54,19 +54,6 @@
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
 
-  function checkIsLastAsset() {
-    const currentIndex = assetStore?.assets.findIndex((a) => a.id === asset.id);
-    if (currentIndex === undefined) {
-      return true;
-    }
-
-    if (assetStore?.assets.length === currentIndex + 1) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
@@ -143,12 +130,25 @@
 
   const closeViewer = () => dispatch('close');
 
-  const navigateAssetForward = (e?: Event) => {
+  const navigateAssetForward = async (e?: Event) => {
+    if (isSlideshowMode && assetStore && progressBar) {
+      const hasNext = await assetStore.getNextAssetId(asset.id);
+      if (hasNext) {
+        progressBar.restart(true);
+      } else {
+        handleStopSlideshow();
+      }
+    }
+
     e?.stopPropagation();
     dispatch('next');
   };
 
   const navigateAssetBackward = (e?: Event) => {
+    if (isSlideshowMode && progressBar) {
+      progressBar.restart(true);
+    }
+
     e?.stopPropagation();
     dispatch('previous');
   };
@@ -293,61 +293,34 @@
 
   const handleVideoStarted = () => {
     if (isSlideshowMode) {
-      pauseSlideshow();
+      progressBar.restart(false);
     }
   };
 
-  const handleVideoEnded = () => {
+  const handleVideoEnded = async () => {
     if (isSlideshowMode) {
-      navigateAssetForward();
-      progressBar.restart(true);
+      await navigateAssetForward();
     }
   };
 
-  const playSlideshow = async () => {
-    // Enter fullscreen mode
-    await assetViewerHtmlElement.requestFullscreen();
-
-    // Disable navigation button
-    showNavigation = false;
-
-    // Show slideshow controller
-    isSlideshowMode = true;
-
-    if ($isShowDetail) {
-      $isShowDetail = false;
+  const handlePlaySlideshow = async () => {
+    try {
+      await assetViewerHtmlElement.requestFullscreen();
+    } catch (error) {
+      console.error('Error entering fullscreen', error);
+    } finally {
+      isSlideshowMode = true;
     }
   };
 
-  const stopSlideshow = async () => {
-    // Exit fullscreen mode
-    await document.exitFullscreen().catch((e) => {
-      console.error('Error exiting fullscreen', e);
-    });
-
-    // Show navigation buttons
-    showNavigation = true;
-    // Hide slide show controller
-    isSlideshowMode = false;
-    // Stop play timer
-    progressBar.restart(false);
-  };
-
-  const pauseSlideshow = () => {
-    progressBar.pause();
-  };
-
-  const resumeSlideshow = () => {
-    progressBar.play();
-  };
-
-  const handleSlideShowTransition = () => {
-    navigateAssetForward();
-
-    if (checkIsLastAsset()) {
-      stopSlideshow();
-    } else {
-      progressBar.restart(true);
+  const handleStopSlideshow = async () => {
+    try {
+      await document.exitFullscreen();
+    } catch (error) {
+      console.error('Error exiting fullscreen', error);
+    } finally {
+      isSlideshowMode = false;
+      progressBar.restart(false);
     }
   };
 </script>
@@ -362,19 +335,21 @@
       <!-- SlideShowController -->
       <div class="flex">
         <div class="m-4 flex gap-2">
-          <CircleIconButton logo={Close} on:click={stopSlideshow} title="Exit Slideshow" />
+          <CircleIconButton logo={Close} on:click={handleStopSlideshow} title="Exit Slideshow" />
           <CircleIconButton
             logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
-            on:click={progressBarStatus === ProgressBarStatus.Paused ? resumeSlideshow : pauseSlideshow}
+            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
             title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
           />
+          <CircleIconButton logo={ChevronLeft} on:click={navigateAssetBackward} title="Previous" />
+          <CircleIconButton logo={ChevronRight} on:click={navigateAssetForward} title="Next" />
         </div>
         <ProgressBar
           autoplay
           bind:this={progressBar}
           bind:status={progressBarStatus}
-          on:done={handleSlideShowTransition}
-          duration={2000}
+          on:done={navigateAssetForward}
+          duration={5000}
         />
       </div>
     {:else}
@@ -385,6 +360,7 @@
         showZoomButton={asset.type === AssetTypeEnum.Image}
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
+        showSlideshow={!!assetStore}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -397,12 +373,12 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={playSlideshow}
+        on:playSlideShow={handlePlaySlideshow}
       />
     {/if}
   </div>
 
-  {#if showNavigation}
+  {#if !isSlideshowMode && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
@@ -443,13 +419,13 @@
     {/key}
   </div>
 
-  {#if showNavigation}
+  {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
 
-  {#if $isShowDetail}
+  {#if !isSlideshowMode && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
