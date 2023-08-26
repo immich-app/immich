@@ -1,3 +1,4 @@
+import { AssetType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   albumStub,
@@ -15,6 +16,7 @@ import _ from 'lodash';
 import { BulkIdErrorReason, IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
+import * as albumResponse from './album-response.dto';
 import { IAlbumRepository } from './album.repository';
 import { AlbumService } from './album.service';
 
@@ -153,44 +155,71 @@ describe(AlbumService.name, () => {
   describe('create', () => {
     it('creates album', async () => {
       albumMock.create.mockResolvedValue(albumStub.empty);
-
-      await expect(sut.create(authStub.admin, { albumName: 'Empty album' })).resolves.toEqual({
+      userMock.get.mockResolvedValue(userStub.user1);
+      const expectedResult = {
         albumName: 'Empty album',
         description: '',
         albumThumbnailAssetId: null,
         assetCount: 0,
-        assets: [],
-        createdAt: expect.anything(),
+        assets: [
+          {
+            id: '123',
+            checksum: '',
+            deviceAssetId: '',
+            deviceId: '',
+            duration: '',
+            fileCreatedAt: new Date('1970-01-01'),
+            fileModifiedAt: new Date('1970-01-01'),
+            isArchived: false,
+            isFavorite: false,
+            originalFileName: '',
+            originalPath: '',
+            ownerId: '',
+            resized: false,
+            thumbhash: '',
+            type: AssetType.IMAGE,
+            updatedAt: new Date('1970-01-01'),
+          },
+        ],
+        createdAt: new Date('1970-01-01'),
         id: 'album-1',
-        owner: {
-          email: 'admin@test.com',
-          firstName: 'admin_first_name',
-          id: 'admin_id',
-          isAdmin: true,
-          lastName: 'admin_last_name',
-          oauthId: '',
-          profileImagePath: '',
-          shouldChangePassword: false,
-          storageLabel: 'admin',
-          createdAt: new Date('2021-01-01'),
-          deletedAt: null,
-          updatedAt: new Date('2021-01-01'),
-          externalPath: null,
-          memoriesEnabled: true,
-        },
+        owner: userStub.admin,
         ownerId: 'admin_id',
         shared: false,
-        sharedUsers: [],
+        sharedUsers: [userStub.user1],
         startDate: undefined,
         endDate: undefined,
         hasSharedLink: false,
-        updatedAt: expect.anything(),
-      });
+        updatedAt: new Date('1970-01-01'),
+      };
+      const mapAlbumWithAssetsSpy = jest.spyOn(albumResponse, 'mapAlbumWithAssets').mockReturnValue(expectedResult);
+
+      await expect(
+        sut.create(authStub.admin, {
+          albumName: 'Empty album',
+          sharedWithUserIds: ['user-id'],
+          description: '',
+          assetIds: ['123'],
+        }),
+      ).resolves.toEqual(expectedResult);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ALBUM,
         data: { ids: [albumStub.empty.id] },
       });
+
+      expect(albumMock.create).toHaveBeenCalledWith({
+        ownerId: authStub.admin.id,
+        albumName: albumStub.empty.albumName,
+        description: albumStub.empty.description,
+        sharedUsers: [{ id: 'user-id' }],
+        assets: [{ id: '123' }],
+        albumThumbnailAssetId: '123',
+      });
+
+      expect(mapAlbumWithAssetsSpy).toHaveBeenCalledWith(albumStub.empty);
+
+      expect(userMock.get).toHaveBeenCalledWith('user-id');
     });
 
     it('should require valid userIds', async () => {
