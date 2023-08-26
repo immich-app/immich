@@ -97,7 +97,7 @@
             />
 
             <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
+              inputType={SettingInputFieldType.TEXT}
               label="IMAGE CLASSIFICATION THRESHOLD"
               bind:value={machineLearningConfig.classification.minScore}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.classification.enabled}
@@ -106,7 +106,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="SMART SEARCH" subtitle="Search for images semantically using CLIP embeddings">
+        <SettingAccordion title="Smart Search" subtitle="Search for images semantically using CLIP embeddings">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title="Enabled"
@@ -126,7 +126,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="FACIAL RECOGNITION" subtitle="Recognize and group faces in images">
+        <SettingAccordion title="Facial Recognition" subtitle="Detect, recognize and group faces in images">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title="Enabled"
@@ -145,11 +145,22 @@
             />
 
             <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label="FACE DETECTION THRESHOLD"
+              inputType={SettingInputFieldType.TEXT}
+              label="MIN DETECTION SCORE"
+              desc="Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives."
               bind:value={machineLearningConfig.facialRecognition.minScore}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}
               isEdited={machineLearningConfig.facialRecognition.minScore !== savedConfig.facialRecognition.minScore}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label="MAX RECOGNITION DISTANCE"
+              desc="Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent it from labeling two people as the same person. Raising this can prevent it from labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible."
+              bind:value={machineLearningConfig.facialRecognition.maxDistance}
+              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}
+              isEdited={machineLearningConfig.facialRecognition.maxDistance !==
+                savedConfig.facialRecognition.maxDistance}
             />
           </div>
         </SettingAccordion>

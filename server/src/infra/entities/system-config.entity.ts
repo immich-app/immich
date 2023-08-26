@@ -51,6 +51,7 @@ export enum SystemConfigKey {
   MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED = 'machineLearning.facialRecognition.enabled',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL_NAME = 'machineLearning.facialRecognition.modelName',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE = 'machineLearning.facialRecognition.minScore',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MAX_DISTANCE = 'machineLearning.facialRecognition.maxDistance',
 
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
@@ -127,7 +128,7 @@ export interface SystemConfig {
       enabled: boolean;
       modelName: string;
       modelType: ModelType;
-      minScore?: number;
+      minScore: number;
     };
     clip: {
       enabled: boolean;
@@ -138,7 +139,8 @@ export interface SystemConfig {
       enabled: boolean;
       modelName: string;
       modelType: ModelType;
-      minScore?: number;
+      minScore: number;
+      maxDistance: number;
     };
   };
   oauth: {

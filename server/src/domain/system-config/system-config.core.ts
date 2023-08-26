@@ -60,7 +60,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'clip-ViT-B-32',
+      modelName: 'ViT-B-32::openai',
       modelType: ModelType.CLIP,
     },
     facialRecognition: {
@@ -68,6 +68,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       modelType: ModelType.FACIAL_RECOGNITION,
       minScore: 0.7,
+      maxDistance: 0.6,
     },
   },
   oauth: {

@@ -19,15 +19,37 @@ export class ModelConfig {
   @IsEnum(ModelType)
   @ApiProperty({ type: 'string', enum: ModelType, enumName: 'ModelType' })
   modelType!: ModelType;
+}
 
+export class ClassificationConfig extends ModelConfig {
   @IsNumber()
   @Min(0)
   @Max(1)
   @Type(() => Number)
   @IsOptional()
   @ApiProperty({ type: 'integer' })
-  minScore?: number;
+  minScore!: number;
 }
+
+
+export class RecognitionConfig extends ModelConfig {
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
+  @IsOptional()
+  @ApiProperty({ type: 'integer' })
+  minScore!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(2)
+  @Type(() => Number)
+  @IsOptional()
+  @ApiProperty({ type: 'integer' })
+  maxDistance!: number;
+}
+
 
 export class SystemConfigMachineLearningDto {
   @IsBoolean()
@@ -37,12 +59,12 @@ export class SystemConfigMachineLearningDto {
   @ValidateIf((dto) => dto.enabled)
   url!: string;
 
-  @ApiProperty({ type: ModelConfig })
-  classification!: ModelConfig;
+  @ApiProperty({ type: ClassificationConfig })
+  classification!: ClassificationConfig;
 
   @ApiProperty({ type: ModelConfig })
   clip!: ModelConfig;
 
-  @ApiProperty({ type: ModelConfig })
-  facialRecognition!: ModelConfig;
+  @ApiProperty({ type: RecognitionConfig })
+  facialRecognition!: RecognitionConfig;
 }

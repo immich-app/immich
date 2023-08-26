@@ -55,12 +55,12 @@ async def prediction(
     image: UploadFile | None = None,
 ) -> Any:
     model: InferenceModel = await app.state.model_cache.get(model_name, model_type)
-    kwargs = orjson.loads(options) if options is not None else {}
-
+    if options is not None:
+        model.configure(**orjson.loads(options))
     if image is not None:
-        outputs = model.predict(await image.read(), **kwargs)
+        outputs = await predict(model, await image.read())
     elif text is not None:
-        outputs = model.predict(text, **kwargs)
+        outputs = await predict(model, text)
     else:
         raise HTTPException(400, "Either image or text must be provided")
 

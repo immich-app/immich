@@ -155,7 +155,7 @@ describe(SmartInfoService.name, () => {
         {
           imagePath: 'path/to/resize.ext',
         },
-        { enabled: true, modelName: 'clip-ViT-B-32', modelType: ModelType.CLIP },
+        { enabled: true, modelName: 'ViT-B-32::openai', modelType: ModelType.CLIP },
       );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',

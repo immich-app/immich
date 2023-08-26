@@ -9,9 +9,10 @@ const client = axios.create();
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
+  private async post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
     const formData = this.getFormData(input, config);
-    return client.post<T>('/predict', formData, { headers: formData.getHeaders() }).then((res) => res.data);
+    const res = await client.post<T>(`${url}/predict`, formData, { headers: formData.getHeaders() });
+    return res.data;
   }
 
   classifyImage(url: string, input: VisionModelInput, config: ModelConfig): Promise<string[]> {
@@ -37,7 +38,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     formData.append('modelName', modelName);
     formData.append('modelType', modelType);
     if (options) {
-      formData.append('options', options);
+      formData.append('options', JSON.stringify(options));
     }
     if ('imagePath' in input) {
       const fileStream = createReadStream(input.imagePath);

@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 
 from huggingface_hub import snapshot_download
@@ -14,7 +15,13 @@ from .base import InferenceModel
 class ImageClassifier(InferenceModel):
     _model_type = ModelType.IMAGE_CLASSIFICATION
 
-    def load(self, min_score: float = 0.9, **model_kwargs: Any) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        min_score: float = 0.9,
+        cache_dir: Path | str | None = None,
+        **model_kwargs: Any,
+    ) -> None:
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
 
