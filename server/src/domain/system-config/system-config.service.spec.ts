@@ -56,12 +56,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelType: ModelType.IMAGE_CLASSIFICATION,
       minScore: 0.9,
     },
-    clipVision: {
-      enabled: true,
-      modelName: 'clip-ViT-B-32',
-      modelType: ModelType.CLIP,
-    },
-    clipText: {
+    clip: {
       enabled: true,
       modelName: 'clip-ViT-B-32',
       modelType: ModelType.CLIP,

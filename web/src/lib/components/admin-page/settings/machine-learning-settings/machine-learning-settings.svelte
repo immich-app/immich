@@ -111,26 +111,17 @@
             <SettingSwitch
               title="Enabled"
               subtitle="If disabled, images will not be encoded for smart search"
-              bind:checked={machineLearningConfig.clipVision.enabled}
+              bind:checked={machineLearningConfig.clip.enabled}
               disabled={disabled || !machineLearningConfig.enabled}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="CLIP VISION MODEL"
-              bind:value={machineLearningConfig.clipVision.modelName}
+              label="CLIP MODEL"
+              bind:value={machineLearningConfig.clip.modelName}
               required={true}
-              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.clipVision.enabled}
-              isEdited={machineLearningConfig.clipVision.modelName !== savedConfig.clipVision.modelName}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label="CLIP TEXT MODEL"
-              bind:value={machineLearningConfig.clipText.modelName}
-              required={true}
-              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.clipVision.enabled}
-              isEdited={machineLearningConfig.clipText.modelName !== savedConfig.clipText.modelName}
+              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.clip.enabled}
+              isEdited={machineLearningConfig.clip.modelName !== savedConfig.clip.modelName}
             />
           </div>
         </SettingAccordion>

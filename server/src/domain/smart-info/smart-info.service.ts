@@ -67,7 +67,7 @@ export class SmartInfoService {
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clipVision.enabled) {
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return true;
     }
 
@@ -88,7 +88,7 @@ export class SmartInfoService {
 
   async handleEncodeClip({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clipVision.enabled) {
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return true;
     }
 
@@ -98,12 +98,12 @@ export class SmartInfoService {
     }
 
     const {
-      machineLearning: { clipVision },
+      machineLearning: { clip },
     } = await this.configCore.getConfig();
     const clipEmbedding = await this.machineLearning.encodeImage(
       machineLearning.url,
       { imagePath: asset.resizePath },
-      clipVision,
+      clip,
     );
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 

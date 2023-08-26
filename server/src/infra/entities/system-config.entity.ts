@@ -129,12 +129,7 @@ export interface SystemConfig {
       modelType: ModelType;
       minScore?: number;
     };
-    clipVision: {
-      enabled: boolean;
-      modelName: string;
-      modelType: ModelType;
-    };
-    clipText: {
+    clip: {
       enabled: boolean;
       modelName: string;
       modelType: ModelType;

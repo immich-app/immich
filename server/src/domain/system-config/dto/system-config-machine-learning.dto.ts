@@ -41,10 +41,7 @@ export class SystemConfigMachineLearningDto {
   classification!: ModelConfig;
 
   @ApiProperty({ type: ModelConfig })
-  clipVision!: ModelConfig;
-
-  @ApiProperty({ type: ModelConfig })
-  clipText!: ModelConfig;
+  clip!: ModelConfig;
 
   @ApiProperty({ type: ModelConfig })
   facialRecognition!: ModelConfig;

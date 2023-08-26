@@ -58,12 +58,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelType: ModelType.IMAGE_CLASSIFICATION,
       minScore: 0.9,
     },
-    clipVision: {
-      enabled: true,
-      modelName: 'clip-ViT-B-32',
-      modelType: ModelType.CLIP,
-    },
-    clipText: {
+    clip: {
       enabled: true,
       modelName: 'clip-ViT-B-32',
       modelType: ModelType.CLIP,
@@ -126,7 +121,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
@@ -164,7 +159,7 @@ export class SystemConfigCore {
     const mlEnabled = config.machineLearning.enabled;
 
     return {
-      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clipVision.enabled,
+      [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.SIDECAR]: true,
