@@ -11,8 +11,8 @@
 
   const dispatch = createEventDispatcher();
 
-  function onToggle() {
-    dispatch('toggle', checked);
+  function onToggle(event: Event) {
+    dispatch('toggle', (event.target as HTMLInputElement).checked);
   }
 </script>
 
@@ -32,7 +32,7 @@
       {/if}
     </div>
 
-    <p class="dark:text-immich-dark-fg text-sm">{subtitle}</p>
+    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">
