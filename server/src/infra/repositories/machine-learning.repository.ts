@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
-import { ModelConfig } from '../../domain/system-config/dto/system-config-machine-learning.dto';
+import { CLIPConfig, CLIPMode, ClassificationConfig, ModelConfig, RecognitionConfig } from '../../domain/system-config/dto/system-config-machine-learning.dto';
 
 const client = axios.create();
 
@@ -15,20 +15,20 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.data;
   }
 
-  classifyImage(url: string, input: VisionModelInput, config: ModelConfig): Promise<string[]> {
+  classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
     return this.post<string[]>(url, input, config);
   }
 
-  detectFaces(url: string, input: VisionModelInput, config: ModelConfig): Promise<DetectFaceResult[]> {
+  detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
     return this.post<DetectFaceResult[]>(url, input, config);
   }
 
-  encodeImage(url: string, input: VisionModelInput, config: ModelConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, config);
+  encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
+    return this.post<number[]>(url, input, { ...config, mode: CLIPMode.VISION } as CLIPConfig);
   }
 
-  encodeText(url: string, input: TextModelInput, config: ModelConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, config);
+  encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
+    return this.post<number[]>(url, input, { ...config, mode: CLIPMode.TEXT } as CLIPConfig);
   }
 
   getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): FormData {

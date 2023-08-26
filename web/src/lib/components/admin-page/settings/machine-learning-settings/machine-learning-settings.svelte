@@ -11,6 +11,7 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingAccordion from '../setting-accordion.svelte';
+  import SettingSelect from '../setting-select.svelte';
 
   export let machineLearningConfig: SystemConfigMachineLearningDto; // this is the config that is being edited
   export let disabled = false;
@@ -90,6 +91,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="IMAGE CLASSIFICATION MODEL"
+              desc="Note that you must re-run the 'Tag Objects' job for all images upon changing a model."
               bind:value={machineLearningConfig.classification.modelName}
               required={true}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.classification.enabled}
@@ -118,6 +120,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="CLIP MODEL"
+              desc="Note that you must re-run the 'Encode CLIP' job for all images upon changing a model."
               bind:value={machineLearningConfig.clip.modelName}
               required={true}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.clip.enabled}
@@ -135,11 +138,16 @@
               disabled={disabled || !machineLearningConfig.enabled}
             />
 
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
+            <SettingSelect
               label="FACIAL RECOGNITION MODEL"
+              desc="Smaller models are faster, but perform worse. Note that you must re-run the 'Recognize Faces' job for all images upon changing a model."
+              name="facial-recognition-model"
               bind:value={machineLearningConfig.facialRecognition.modelName}
-              required={true}
+              options={[
+                { value: 'buffalo_l', text: 'buffalo_l' },
+                { value: 'buffalo_s', text: 'buffalo_s' },
+                { value: 'buffalo_sc', text: 'buffalo_sc' },
+              ]}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}
               isEdited={machineLearningConfig.facialRecognition.modelName !== savedConfig.facialRecognition.modelName}
             />

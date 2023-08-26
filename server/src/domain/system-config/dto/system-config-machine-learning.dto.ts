@@ -1,11 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUrl, Max, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsObject, IsOptional, IsString, IsUrl, Max, Min, ValidateIf, ValidateNested } from 'class-validator';
 
 export enum ModelType {
   IMAGE_CLASSIFICATION = 'image-classification',
   FACIAL_RECOGNITION = 'facial-recognition',
   CLIP = 'clip',
+}
+
+export enum CLIPMode {
+  VISION = 'vision',
+  TEXT = 'text',
 }
 
 export class ModelConfig {
@@ -26,9 +31,15 @@ export class ClassificationConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @IsOptional()
   @ApiProperty({ type: 'integer' })
   minScore!: number;
+}
+
+export class CLIPConfig extends ModelConfig {
+  @IsEnum(CLIPMode)
+  @IsOptional()
+  @ApiProperty({ enumName: 'CLIPMode', enum: CLIPMode })
+  mode?: CLIPMode;
 }
 
 
@@ -37,7 +48,6 @@ export class RecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @IsOptional()
   @ApiProperty({ type: 'integer' })
   minScore!: number;
 
@@ -45,7 +55,6 @@ export class RecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(2)
   @Type(() => Number)
-  @IsOptional()
   @ApiProperty({ type: 'integer' })
   maxDistance!: number;
 }
@@ -59,12 +68,18 @@ export class SystemConfigMachineLearningDto {
   @ValidateIf((dto) => dto.enabled)
   url!: string;
 
-  @ApiProperty({ type: ClassificationConfig })
+  @Type(() => ClassificationConfig)
+  @ValidateNested()
+  @IsObject()
   classification!: ClassificationConfig;
 
-  @ApiProperty({ type: ModelConfig })
-  clip!: ModelConfig;
+  @Type(() => CLIPConfig)
+  @ValidateNested()
+  @IsObject()
+  clip!: CLIPConfig;
 
-  @ApiProperty({ type: RecognitionConfig })
+  @Type(() => RecognitionConfig)
+  @ValidateNested()
+  @IsObject()
   facialRecognition!: RecognitionConfig;
 }
