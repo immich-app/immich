@@ -16,8 +16,10 @@ Name | Type | Description | Notes
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **isArchived** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | 
+**isOffline** | **bool** |  | [optional] [default to false]
 **isReadOnly** | **bool** |  | [optional] [default to true]
 **isVisible** | **bool** |  | [optional] 
+**libraryId** | **String** |  | 
 **sidecarPath** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

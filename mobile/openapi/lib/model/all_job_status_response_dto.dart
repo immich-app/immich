@@ -15,6 +15,7 @@ class AllJobStatusResponseDto {
   AllJobStatusResponseDto({
     required this.backgroundTask,
     required this.clipEncoding,
+    required this.library_,
     required this.metadataExtraction,
     required this.objectTagging,
     required this.recognizeFaces,
@@ -28,6 +29,8 @@ class AllJobStatusResponseDto {
   JobStatusDto backgroundTask;
 
   JobStatusDto clipEncoding;
+
+  JobStatusDto library_;
 
   JobStatusDto metadataExtraction;
 
@@ -49,6 +52,7 @@ class AllJobStatusResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
      other.backgroundTask == backgroundTask &&
      other.clipEncoding == clipEncoding &&
+     other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
@@ -63,6 +67,7 @@ class AllJobStatusResponseDto {
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
     (clipEncoding.hashCode) +
+    (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
@@ -73,12 +78,13 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'clipEncoding'] = this.clipEncoding;
+      json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
@@ -100,6 +106,7 @@ class AllJobStatusResponseDto {
       return AllJobStatusResponseDto(
         backgroundTask: JobStatusDto.fromJson(json[r'backgroundTask'])!,
         clipEncoding: JobStatusDto.fromJson(json[r'clipEncoding'])!,
+        library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         objectTagging: JobStatusDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
@@ -157,6 +164,7 @@ class AllJobStatusResponseDto {
   static const requiredKeys = <String>{
     'backgroundTask',
     'clipEncoding',
+    'library',
     'metadataExtraction',
     'objectTagging',
     'recognizeFaces',

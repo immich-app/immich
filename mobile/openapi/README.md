@@ -124,6 +124,14 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
+*LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
+*LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
+*LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
+*LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
+*LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
+*LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/statistics/{id} | 
+*LibraryApi* | [**refreshLibrary**](doc//LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
+*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
@@ -214,6 +222,7 @@ Class | Method | HTTP request | Description
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
+ - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
@@ -234,6 +243,9 @@ Class | Method | HTTP request | Description
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
+ - [LibraryResponseDto](doc//LibraryResponseDto.md)
+ - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
+ - [LibraryType](doc//LibraryType.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
@@ -249,6 +261,7 @@ Class | Method | HTTP request | Description
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
@@ -288,6 +301,7 @@ Class | Method | HTTP request | Description
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

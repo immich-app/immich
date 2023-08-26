@@ -21,8 +21,10 @@ class ImportAssetDto {
     required this.fileModifiedAt,
     this.isArchived,
     required this.isFavorite,
+    this.isOffline = false,
     this.isReadOnly = true,
     this.isVisible,
+    required this.libraryId,
     this.sidecarPath,
   });
 
@@ -54,6 +56,8 @@ class ImportAssetDto {
 
   bool isFavorite;
 
+  bool isOffline;
+
   bool isReadOnly;
 
   ///
@@ -63,6 +67,8 @@ class ImportAssetDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isVisible;
+
+  String libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -82,8 +88,10 @@ class ImportAssetDto {
      other.fileModifiedAt == fileModifiedAt &&
      other.isArchived == isArchived &&
      other.isFavorite == isFavorite &&
+     other.isOffline == isOffline &&
      other.isReadOnly == isReadOnly &&
      other.isVisible == isVisible &&
+     other.libraryId == libraryId &&
      other.sidecarPath == sidecarPath;
 
   @override
@@ -97,12 +105,14 @@ class ImportAssetDto {
     (fileModifiedAt.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite.hashCode) +
+    (isOffline.hashCode) +
     (isReadOnly.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
+    (libraryId.hashCode) +
     (sidecarPath == null ? 0 : sidecarPath!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isFavorite=$isFavorite, isReadOnly=$isReadOnly, isVisible=$isVisible, sidecarPath=$sidecarPath]';
+  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, libraryId=$libraryId, sidecarPath=$sidecarPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -122,12 +132,14 @@ class ImportAssetDto {
     //  json[r'isArchived'] = null;
     }
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isOffline'] = this.isOffline;
       json[r'isReadOnly'] = this.isReadOnly;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
     }
+      json[r'libraryId'] = this.libraryId;
     if (this.sidecarPath != null) {
       json[r'sidecarPath'] = this.sidecarPath;
     } else {
@@ -152,8 +164,10 @@ class ImportAssetDto {
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isOffline: mapValueOfType<bool>(json, r'isOffline') ?? false,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        libraryId: mapValueOfType<String>(json, r'libraryId')!,
         sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
       );
     }
@@ -208,6 +222,7 @@ class ImportAssetDto {
     'fileCreatedAt',
     'fileModifiedAt',
     'isFavorite',
+    'libraryId',
   };
 }
 

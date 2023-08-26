@@ -67,6 +67,11 @@ void main() {
       // TODO
     });
 
+    // String libraryId
+    test('to test the property `libraryId`', () async {
+      // TODO
+    });
+
     // String livePhotoVideoId
     test('to test the property `livePhotoVideoId`', () async {
       // TODO

@@ -13,7 +13,7 @@ part of openapi.api;
 class AssetResponseDto {
   /// Returns a new [AssetResponseDto] instance.
   AssetResponseDto({
-    required this.checksum,
+    this.checksum,
     required this.deviceAssetId,
     required this.deviceId,
     required this.duration,
@@ -23,6 +23,7 @@ class AssetResponseDto {
     required this.id,
     required this.isArchived,
     required this.isFavorite,
+    required this.libraryId,
     this.livePhotoVideoId,
     required this.originalFileName,
     required this.originalPath,
@@ -37,7 +38,7 @@ class AssetResponseDto {
   });
 
   /// base64 encoded sha1 hash
-  String checksum;
+  String? checksum;
 
   String deviceAssetId;
 
@@ -62,6 +63,8 @@ class AssetResponseDto {
   bool isArchived;
 
   bool isFavorite;
+
+  String libraryId;
 
   String? livePhotoVideoId;
 
@@ -104,6 +107,7 @@ class AssetResponseDto {
      other.id == id &&
      other.isArchived == isArchived &&
      other.isFavorite == isFavorite &&
+     other.libraryId == libraryId &&
      other.livePhotoVideoId == livePhotoVideoId &&
      other.originalFileName == originalFileName &&
      other.originalPath == originalPath &&
@@ -119,7 +123,7 @@ class AssetResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (checksum.hashCode) +
+    (checksum == null ? 0 : checksum!.hashCode) +
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
     (duration.hashCode) +
@@ -129,6 +133,7 @@ class AssetResponseDto {
     (id.hashCode) +
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
+    (libraryId.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (originalFileName.hashCode) +
     (originalPath.hashCode) +
@@ -142,11 +147,15 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.checksum != null) {
       json[r'checksum'] = this.checksum;
+    } else {
+    //  json[r'checksum'] = null;
+    }
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
       json[r'duration'] = this.duration;
@@ -160,6 +169,7 @@ class AssetResponseDto {
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'libraryId'] = this.libraryId;
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
@@ -194,7 +204,7 @@ class AssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetResponseDto(
-        checksum: mapValueOfType<String>(json, r'checksum')!,
+        checksum: mapValueOfType<String>(json, r'checksum'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duration: mapValueOfType<String>(json, r'duration')!,
@@ -204,6 +214,7 @@ class AssetResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
@@ -262,7 +273,6 @@ class AssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'checksum',
     'deviceAssetId',
     'deviceId',
     'duration',
@@ -271,6 +281,7 @@ class AssetResponseDto {
     'id',
     'isArchived',
     'isFavorite',
+    'libraryId',
     'originalFileName',
     'originalPath',
     'ownerId',
