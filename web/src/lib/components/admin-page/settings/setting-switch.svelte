@@ -9,7 +9,7 @@
   export let disabled = false;
   export let isEdited = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ toggle: boolean }>();
 
   function onToggle(event: Event) {
     dispatch('toggle', (event.target as HTMLInputElement).checked);
