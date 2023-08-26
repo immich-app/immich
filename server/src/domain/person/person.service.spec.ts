@@ -206,6 +206,15 @@ describe(PersonService.name, () => {
         },
       });
     });
+
+    it("should throw an error when the person's thumbnail should be updated but the face feature assetId is invalid", async () => {
+      personMock.getById.mockResolvedValue(personStub.withName);
+
+      await expect(sut.update(authStub.admin, 'person-1', { featureFaceAssetId: '-1' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(personMock.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateAll', () => {
