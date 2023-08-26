@@ -4,7 +4,7 @@ import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
-import { Writable } from 'typeorm/platform/PlatformTools.js';
+import { Writable } from 'stream';
 import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);

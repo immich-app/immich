@@ -96,8 +96,8 @@ const faceSearch = {
 
 describe(FacialRecognitionService.name, () => {
   let sut: FacialRecognitionService;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineLearningMock: jest.Mocked<IMachineLearningRepository>;

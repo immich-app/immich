@@ -10,10 +10,7 @@
   export let isEdited = false;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
-
-  function onToggle(event: Event) {
-    dispatch('toggle', (event.target as HTMLInputElement).checked);
-  }
+  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
 </script>
 
 <div class="flex place-items-center justify-between">

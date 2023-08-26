@@ -18,7 +18,7 @@ export class FacialRecognitionService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -27,7 +27,7 @@ export class FacialRecognitionService {
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(systemConfig);
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {

@@ -20,9 +20,9 @@ export class MediaService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
-    this.configCore = new SystemConfigCore(systemConfig);
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   async handleQueueGenerateThumbnails(job: IBaseJob) {
