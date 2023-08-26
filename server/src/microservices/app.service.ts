@@ -97,5 +97,6 @@ export class AppService {
     });
 
     await this.metadataProcessor.init();
+    await this.searchService.init();
   }
 }

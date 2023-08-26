@@ -20,22 +20,22 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final user = Store.get(StoreKey.currentUser);
+    final user = Store.tryGet(StoreKey.currentUser);
 
     buildUserProfileImage() {
-      var userImage = UserCircleAvatar(
-        radius: 35,
-        size: 66,
-        user: user,
-      );
-
-      if (authState.profileImagePath.isEmpty) {
+      if (authState.profileImagePath.isEmpty || user == null) {
         return const CircleAvatar(
           radius: 35,
           backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
           backgroundColor: Colors.transparent,
         );
       }
+
+      var userImage = UserCircleAvatar(
+        radius: 35,
+        size: 66,
+        user: user,
+      );
 
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
         if (authState.profileImagePath.isNotEmpty) {
