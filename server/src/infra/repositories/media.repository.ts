@@ -30,7 +30,7 @@ export class MediaRepository implements IMediaRepository {
       try {
         const { space } = await sharp(input).metadata();
         // if the image is already in srgb, keep it that way
-        if (space === Colorspace.SRGB) {
+        if (space === "srgb") {
           colorProfile = Colorspace.SRGB;
         }
       } catch (err) {

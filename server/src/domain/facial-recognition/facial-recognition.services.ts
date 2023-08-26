@@ -18,6 +18,7 @@ export class FacialRecognitionService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
     @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -25,7 +26,6 @@ export class FacialRecognitionService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
   ) {
     this.configCore = new SystemConfigCore(systemConfig);
   }

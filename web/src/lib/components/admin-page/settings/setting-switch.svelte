@@ -1,19 +1,19 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
 
   export let title: string;
   export let subtitle = '';
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
-  export let onToggle: (checked: boolean) => void = () => {
-    return;
-  };
-  export const handler = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    onToggle(target.checked);
-  };
+
+  const dispatch = createEventDispatcher();
+
+  function onToggle() {
+    dispatch('toggle', checked);
+  }
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -32,7 +32,7 @@
       {/if}
     </div>
 
-    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    <p class="dark:text-immich-dark-fg text-sm">{subtitle}</p>
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">
@@ -40,7 +40,7 @@
       class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
       type="checkbox"
       bind:checked
-      on:click={handler}
+      on:click={onToggle}
       {disabled}
     />
 

@@ -96,6 +96,7 @@ const faceSearch = {
 
 describe(FacialRecognitionService.name, () => {
   let sut: FacialRecognitionService;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -104,10 +105,10 @@ describe(FacialRecognitionService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     faceMock = newFaceRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
@@ -115,12 +116,12 @@ describe(FacialRecognitionService.name, () => {
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
 
     mediaMock.crop.mockResolvedValue(croppedFace);
 
     sut = new FacialRecognitionService(
       assetMock,
+      configMock,
       faceMock,
       jobMock,
       machineLearningMock,
@@ -128,7 +129,6 @@ describe(FacialRecognitionService.name, () => {
       personMock,
       searchMock,
       storageMock,
-      configMock,
     );
   });
 
