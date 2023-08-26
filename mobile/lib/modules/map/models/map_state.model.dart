@@ -1,7 +1,7 @@
 class MapState {
   final bool isDarkTheme;
   final bool showFavoriteOnly;
-  final int? relativeTime;
+  final int relativeTime;
 
   MapState({
     this.isDarkTheme = false,

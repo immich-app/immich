@@ -21,14 +21,28 @@ class MapStateNotifier extends StateNotifier<MapState> {
   bool get isDarkTheme => state.isDarkTheme;
 
   void switchTheme(bool isDarkTheme) {
+    appSettingsProvider.setSetting(
+      AppSettingsEnum.mapThemeMode,
+      isDarkTheme,
+    );
     state = state.copyWith(isDarkTheme: isDarkTheme);
   }
 
-  void switchFavoriteOnly(bool isFavoriteOnly) =>
-      state = state.copyWith(showFavoriteOnly: isFavoriteOnly);
+  void switchFavoriteOnly(bool isFavoriteOnly) {
+    appSettingsProvider.setSetting(
+      AppSettingsEnum.mapShowFavoriteOnly,
+      appSettingsProvider,
+    );
+    state = state.copyWith(showFavoriteOnly: isFavoriteOnly);
+  }
 
-  void setRelativeTime(int relativeTime) =>
-      state = state.copyWith(relativeTime: relativeTime);
+  void setRelativeTime(int relativeTime) {
+    appSettingsProvider.setSetting(
+      AppSettingsEnum.mapRelativeDate,
+      relativeTime,
+    );
+    state = state.copyWith(relativeTime: relativeTime);
+  }
 }
 
 final mapStateNotifier =

@@ -257,17 +257,11 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
                 surfaceTintColor: Colors.transparent,
                 elevation: 18.0,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
                 margin: const EdgeInsets.all(0),
                 child: Column(
                   children: [
                     buildDragHandle(scrollController),
-                    if (assetsInBound.value.isNotEmpty && isSheetExpanded.value)
+                    if (isSheetExpanded.value && assetsInBound.value.isNotEmpty)
                       ref
                           .watch(
                             renderListProvider(
@@ -299,7 +293,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                             },
                             loading: () => const SizedBox.shrink(),
                           ),
-                    if (assetsInBound.value.isEmpty)
+                    if (isSheetExpanded.value && assetsInBound.value.isEmpty)
                       Expanded(
                         child: SingleChildScrollView(
                           child: buildNoPhotosWidget(),

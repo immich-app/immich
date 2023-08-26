@@ -155,7 +155,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   top: 0,
                 ),
-                const SizedBox(height: 16.0),
+                const SizedBox(height: 10.0),
                 buildPlaces(),
                 const SizedBox(height: 24.0),
                 Padding(

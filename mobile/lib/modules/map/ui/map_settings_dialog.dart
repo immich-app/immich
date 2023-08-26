@@ -3,35 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class MapSettingsDialog extends HookConsumerWidget {
   const MapSettingsDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appSettingsStore = ref.read(appSettingsServiceProvider);
-    final mapSettings = ref.read(mapStateNotifier.notifier);
-    final isDarkMode = useState(AppSettingsEnum.mapThemeMode.defaultValue);
-    final showFavoriteOnly =
-        useState(AppSettingsEnum.mapShowFavoriteOnly.defaultValue);
-    final showRelativeDate =
-        useState(AppSettingsEnum.mapRelativeDate.defaultValue);
+    final mapSettingsNotifier = ref.read(mapStateNotifier.notifier);
+    final mapSettings = ref.read(mapStateNotifier);
+    final isDarkMode = useState(mapSettings.isDarkTheme);
+    final showFavoriteOnly = useState(mapSettings.showFavoriteOnly);
+    final showRelativeDate = useState(mapSettings.relativeTime);
     final ThemeData theme = Theme.of(context);
-
-    useEffect(
-      () {
-        isDarkMode.value =
-            appSettingsStore.getSetting(AppSettingsEnum.mapThemeMode);
-        showFavoriteOnly.value =
-            appSettingsStore.getSetting(AppSettingsEnum.mapShowFavoriteOnly);
-        showRelativeDate.value =
-            appSettingsStore.getSetting(AppSettingsEnum.mapRelativeDate);
-        return null;
-      },
-      [],
-    );
 
     Widget buildMapThemeSetting() {
       return SwitchListTile.adaptive(
@@ -141,23 +124,9 @@ class MapSettingsDialog extends HookConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            // Save App settings
-            appSettingsStore.setSetting(
-              AppSettingsEnum.mapThemeMode,
-              isDarkMode.value,
-            );
-            appSettingsStore.setSetting(
-              AppSettingsEnum.mapShowFavoriteOnly,
-              showFavoriteOnly.value,
-            );
-            appSettingsStore.setSetting(
-              AppSettingsEnum.mapRelativeDate,
-              showRelativeDate.value,
-            );
-            // Notify listeners
-            mapSettings.switchTheme(isDarkMode.value);
-            mapSettings.switchFavoriteOnly(showFavoriteOnly.value);
-            mapSettings.setRelativeTime(showRelativeDate.value);
+            mapSettingsNotifier.switchTheme(isDarkMode.value);
+            mapSettingsNotifier.switchFavoriteOnly(showFavoriteOnly.value);
+            mapSettingsNotifier.setRelativeTime(showRelativeDate.value);
             Navigator.of(context).pop();
           },
           style: TextButton.styleFrom(

@@ -11,10 +11,9 @@ final mapMarkersProvider =
   DateTime? fileCreatedAfter;
   bool? isFavorite;
 
-  int? relativeTime = mapState.relativeTime;
-  if (relativeTime != null && relativeTime != 0) {
+  if (mapState.relativeTime != 0) {
     fileCreatedAfter =
-        DateTime.now().subtract(Duration(days: mapState.relativeTime!));
+        DateTime.now().subtract(Duration(days: mapState.relativeTime));
   }
 
   if (mapState.showFavoriteOnly) {

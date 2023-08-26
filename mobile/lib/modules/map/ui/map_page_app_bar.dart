@@ -134,6 +134,5 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
   }
 
   @override
-  @override
   Size get preferredSize => const Size.fromHeight(100);
 }
