@@ -2,7 +2,6 @@
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
   import { AllJobStatusResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import type { PageData } from './$types';
 
   let timer: NodeJS.Timer;
 
