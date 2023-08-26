@@ -6,6 +6,7 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
+  ILibraryRepository,
   IStorageRepository,
   JobName,
   mapAsset,
@@ -14,7 +15,7 @@ import {
   Permission,
   UploadFile,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -66,6 +67,7 @@ export class AssetService {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
@@ -94,6 +96,16 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
+      if (!dto.libraryId) {
+        // No library given, fall back to default upload library
+        const defaultUploadLibrary = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+
+        if (!defaultUploadLibrary) {
+          throw new InternalServerErrorException('Cannot find default upload library for user ' + authUser.id);
+        }
+        dto.libraryId = defaultUploadLibrary.id;
+      }
+
       const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
@@ -105,7 +117,10 @@ export class AssetService {
       });
 
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).constraint === 'UQ_assets_uploaded_owner_library_checksum'
+      ) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
@@ -117,6 +132,10 @@ export class AssetService {
   }
 
   public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
+      throw new BadRequestException("File does not exist within user's external path");
+    }
+
     dto = {
       ...dto,
       assetPath: path.resolve(dto.assetPath),
@@ -142,10 +161,6 @@ export class AssetService {
       }
     }
 
-    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
-      throw new BadRequestException("File does not exist within user's external path");
-    }
-
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
       originalPath: dto.assetPath,
@@ -157,12 +172,15 @@ export class AssetService {
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).constraint === 'UQ_assets_uploaded_owner_library_checksum'
+      ) {
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
       }
 
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_originalpath') {
         const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
         if (duplicate) {
           if (duplicate.ownerId === authUser.id) {
@@ -270,7 +288,8 @@ export class AssetService {
       }
 
       const asset = await this._assetRepository.get(id);
-      if (!asset) {
+      if (!asset || asset.library.type === LibraryType.EXTERNAL) {
+        // We don't allow deletions of imported library assets
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
@@ -303,7 +322,7 @@ export class AssetService {
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
           ids.push(asset.livePhotoVideoId);
         }
-      } catch {
+      } catch (error) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }
@@ -419,7 +438,9 @@ export class AssetService {
     const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = id;
+      if (checksum) {
+        checksumMap[checksum.toString('hex')] = id;
+      }
     }
 
     return {

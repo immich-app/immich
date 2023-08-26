@@ -4,6 +4,7 @@ import {
   IDeleteFilesJob,
   JobName,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
   PersonService,
@@ -14,6 +15,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+
 import { Injectable, Logger } from '@nestjs/common';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
@@ -37,6 +39,7 @@ export class AppService {
     private systemConfigService: SystemConfigService,
     private userService: UserService,
     private auditService: AuditService,
+    private libraryService: LibraryService,
   ) {}
 
   async init() {
@@ -77,6 +80,10 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
+      [JobName.REFRESH_LIBRARY_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
+      [JobName.OFFLINE_LIBRARY_ASSET]: (data) => this.libraryService.handleOfflineAsset(data),
+      [JobName.REFRESH_LIBRARY]: (data) => this.libraryService.handleLibraryRefresh(data),
+      [JobName.DELETE_LIBRARY]: (data) => this.libraryService.handleDeleteLibrary(data),
     });
 
     process.on('uncaughtException', (error: Error | any) => {

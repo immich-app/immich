@@ -31,6 +31,12 @@ const truncateMap: Record<TimeBucketSize, string> = {
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
 
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity> {
+    return this.repository.save(asset);
+  }
+
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
 
@@ -78,6 +84,7 @@ export class AssetRepository implements IAssetRepository {
       },
     });
   }
+
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -106,6 +113,39 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
       },
     });
+  }
+
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { library: { id: In(libraryIds) } },
+    });
+  }
+
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { library: { id: libraryId }, originalPath: originalPath },
+    });
+  }
+
+  getById(assetId: string): Promise<AssetEntity> {
+    return this.repository.findOneOrFail({
+      where: {
+        id: assetId,
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        faces: {
+          person: true,
+        },
+      },
+    });
+  }
+
+  remove(asset: AssetEntity): Promise<AssetEntity> {
+    return this.repository.remove(asset);
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {

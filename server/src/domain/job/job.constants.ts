@@ -9,6 +9,7 @@ export enum QueueName {
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  LIBRARY = 'library',
 }
 
 export enum JobCommand {
@@ -52,6 +53,12 @@ export enum JobName {
   RECOGNIZE_FACES = 'recognize-faces',
   GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
   PERSON_CLEANUP = 'person-cleanup',
+
+  // library managment
+  OFFLINE_LIBRARY_ASSET = 'offline-library-asset',
+  REFRESH_LIBRARY_ASSET = 'refresh-library-asset',
+  REFRESH_LIBRARY = 'refresh-library',
+  DELETE_LIBRARY = 'delete-library',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -140,4 +147,10 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+
+  // Library managment
+  [JobName.REFRESH_LIBRARY_ASSET]: QueueName.LIBRARY,
+  [JobName.OFFLINE_LIBRARY_ASSET]: QueueName.LIBRARY,
+  [JobName.REFRESH_LIBRARY]: QueueName.LIBRARY,
+  [JobName.DELETE_LIBRARY]: QueueName.LIBRARY,
 };

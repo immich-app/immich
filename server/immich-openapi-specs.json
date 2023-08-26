@@ -2477,6 +2477,325 @@
         ]
       }
     },
+    "/library": {
+      "get": {
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "post": {
+        "operationId": "createLibrary",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "put": {
+        "operationId": "updateLibrary",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/count": {
+      "get": {
+        "operationId": "getLibraryCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/refresh/{id}": {
+      "post": {
+        "operationId": "refreshLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/statistics/{id}": {
+      "get": {
+        "operationId": "getLibraryStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}": {
+      "delete": {
+        "operationId": "deleteLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "get": {
+        "operationId": "getLibraryInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -4918,6 +5237,9 @@
           "clipEncoding": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -4953,7 +5275,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "object"
       },
@@ -5135,6 +5458,7 @@
         "properties": {
           "checksum": {
             "description": "base64 encoded sha1 hash",
+            "nullable": true,
             "type": "string"
           },
           "deviceAssetId": {
@@ -5165,6 +5489,9 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "libraryId": {
+            "type": "string"
           },
           "livePhotoVideoId": {
             "nullable": true,
@@ -5216,6 +5543,7 @@
           "deviceAssetId",
           "ownerId",
           "deviceId",
+          "libraryId",
           "originalPath",
           "originalFileName",
           "resized",
@@ -5225,8 +5553,7 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
-          "duration",
-          "checksum"
+          "duration"
         ],
         "type": "object"
       },
@@ -5489,12 +5816,20 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isOffline": {
+            "default": false,
+            "type": "boolean"
+          },
           "isReadOnly": {
             "default": false,
             "type": "boolean"
           },
           "isVisible": {
             "type": "boolean"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
           },
           "livePhotoData": {
             "format": "binary",
@@ -5512,6 +5847,38 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite"
+        ],
+        "type": "object"
+      },
+      "CreateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "importPaths",
+          "exclusionPatterns"
         ],
         "type": "object"
       },
@@ -5894,6 +6261,10 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isOffline": {
+            "default": false,
+            "type": "boolean"
+          },
           "isReadOnly": {
             "default": true,
             "type": "boolean"
@@ -5901,11 +6272,16 @@
           "isVisible": {
             "type": "boolean"
           },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "sidecarPath": {
             "type": "string"
           }
         },
         "required": [
+          "libraryId",
           "assetPath",
           "deviceAssetId",
           "deviceId",
@@ -5981,7 +6357,8 @@
           "backgroundTask",
           "storageTemplateMigration",
           "search",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "string"
       },
@@ -6010,6 +6387,97 @@
           "queueStatus"
         ],
         "type": "object"
+      },
+      "LibraryResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "refreshedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "assetCount",
+          "id",
+          "ownerId",
+          "name",
+          "importPaths",
+          "exclusionPatterns",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "LibraryStatsResponseDto": {
+        "properties": {
+          "photos": {
+            "default": 0,
+            "type": "integer"
+          },
+          "total": {
+            "default": 0,
+            "type": "integer"
+          },
+          "usage": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "videos": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "photos",
+          "videos",
+          "total",
+          "usage"
+        ],
+        "type": "object"
+      },
+      "LibraryType": {
+        "enum": [
+          "UPLOAD",
+          "EXTERNAL"
+        ],
+        "type": "string"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -6321,6 +6789,23 @@
           "isActive",
           "isPaused"
         ],
+        "type": "object"
+      },
+      "ScanLibraryDto": {
+        "properties": {
+          "emptyTrash": {
+            "default": false,
+            "type": "boolean"
+          },
+          "refreshAllFiles": {
+            "default": false,
+            "type": "boolean"
+          },
+          "refreshModifiedFiles": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "SearchAlbumResponseDto": {
@@ -6927,6 +7412,9 @@
           "clipEncoding": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -6962,7 +7450,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "object"
       },
@@ -7263,6 +7752,39 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "UpdateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "importPaths",
+          "exclusionPatterns"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

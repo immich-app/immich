@@ -196,18 +196,31 @@ class BackupVerificationService {
           .ownerIdEqualTo(ownerId)
           .anyOf(
             assets,
-            (q, Asset a) => q
-                .fileNameEqualTo(a.fileName)
-                .and()
-                .durationInSecondsEqualTo(a.durationInSeconds)
-                .and()
-                .fileCreatedAtBetween(
-                  a.fileCreatedAt.subtract(const Duration(hours: 12)),
-                  a.fileCreatedAt.add(const Duration(hours: 12)),
-                )
-                .and()
-                .not()
-                .checksumEqualTo(a.checksum),
+            (q, Asset a) {
+              if (a.checksum == null) {
+                return q
+                    .fileNameEqualTo(a.fileName)
+                    .and()
+                    .durationInSecondsEqualTo(a.durationInSeconds)
+                    .and()
+                    .fileCreatedAtBetween(
+                      a.fileCreatedAt.subtract(const Duration(hours: 12)),
+                      a.fileCreatedAt.add(const Duration(hours: 12)),
+                    );
+              }
+              return q
+                  .fileNameEqualTo(a.fileName)
+                  .and()
+                  .durationInSecondsEqualTo(a.durationInSeconds)
+                  .and()
+                  .fileCreatedAtBetween(
+                    a.fileCreatedAt.subtract(const Duration(hours: 12)),
+                    a.fileCreatedAt.add(const Duration(hours: 12)),
+                  )
+                  .and()
+                  .not()
+                  .checksumEqualTo(a.checksum!);
+            },
           )
           .sortByFileName()
           .thenByFileCreatedAt()

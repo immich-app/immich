@@ -21,6 +21,9 @@ export enum Permission {
 
   ARCHIVE_READ = 'archive.read',
 
+  LIBRARY_CREATE = 'library.create',
+  LIBRARY_UPDATE = 'library.update',
+  LIBRARY_DELETE = 'library.delete',
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
@@ -162,10 +165,20 @@ export class AccessCore {
         return authUser.id === id;
 
       case Permission.LIBRARY_READ:
-        return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
+        return (
+          authUser.id === id ||
+          this.repository.library.hasOwnerAccess(authUser.id, id) ||
+          this.repository.library.hasPartnerAccess(authUser.id, id)
+        );
+
+      case Permission.LIBRARY_UPDATE:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_DOWNLOAD:
-        return authUser.id === id;
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
+
+      case Permission.LIBRARY_DELETE:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       default:
         return false;

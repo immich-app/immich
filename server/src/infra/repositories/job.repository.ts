@@ -78,7 +78,7 @@ export class JobRepository implements IJobRepository {
     }
   }
 
-  private getQueue(queue: QueueName) {
+  private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
   }
 }

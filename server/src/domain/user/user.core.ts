@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { LibraryType, UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -11,12 +11,17 @@ import fs from 'fs/promises';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
+import { ILibraryRepository } from '../library/library.repository';
 import { IUserRepository, UserListFilter } from './user.repository';
 
 const SALT_ROUNDS = 10;
 
 export class UserCore {
-  constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private libraryRepository: ILibraryRepository,
+    private cryptoRepository: ICryptoRepository,
+  ) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {
@@ -88,7 +93,19 @@ export class UserCore {
       if (payload.storageLabel) {
         payload.storageLabel = sanitize(payload.storageLabel);
       }
-      return this.userRepository.create(payload);
+
+      const userEntity = await this.userRepository.create(payload);
+      await this.libraryRepository.create({
+        owner: { id: userEntity.id } as UserEntity,
+        name: 'Default Library',
+        assets: [],
+        type: LibraryType.UPLOAD,
+        importPaths: [],
+        exclusionPatterns: [],
+        isVisible: true,
+      });
+
+      return userEntity;
     } catch (e) {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');

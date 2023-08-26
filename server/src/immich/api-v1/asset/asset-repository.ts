@@ -13,7 +13,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 
 export interface AssetCheck {
   id: string;
-  checksum: Buffer;
+  checksum: Buffer | null;
 }
 
 export interface AssetOwnerCheck extends AssetCheck {
@@ -23,7 +23,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
   ): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
@@ -150,6 +150,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        library: true,
       },
     });
   }

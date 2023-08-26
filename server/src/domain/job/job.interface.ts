@@ -22,6 +22,33 @@ export interface IEntityJob extends IBaseJob {
   source?: 'upload';
 }
 
+export interface IOfflineLibraryFileJob extends IBaseJob {
+  libraryId: string;
+  assetId: string;
+  assetPath: string;
+  emptyTrash: boolean;
+}
+
+export interface ILibraryFileJob extends IBaseJob {
+  libraryId: string;
+  ownerId: string;
+  assetPath: string;
+  forceRefresh: boolean;
+  emptyTrash: boolean;
+}
+
+export interface ILibraryRefreshJob extends IBaseJob {
+  libraryId: string;
+  ownerId: string;
+  refreshModifiedFiles: boolean;
+  refreshAllFiles: boolean;
+  emptyTrash: boolean;
+}
+
+export interface ILibraryJob extends IBaseJob {
+  libraryId: string;
+}
+
 export interface IBulkEntityJob extends IBaseJob {
   ids: string[];
 }

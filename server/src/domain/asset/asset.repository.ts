@@ -69,6 +69,9 @@ export interface TimeBucketItem {
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
@@ -77,6 +80,8 @@ export interface IAssetRepository {
   getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
@@ -86,4 +91,6 @@ export interface IAssetRepository {
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  remove(asset: AssetEntity): Promise<AssetEntity>;
+  getById(assetId: string): Promise<AssetEntity>;
 }

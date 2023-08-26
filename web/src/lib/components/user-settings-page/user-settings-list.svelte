@@ -10,6 +10,7 @@
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import { onMount } from 'svelte';
+  import LibraryList from './library-list.svelte';
 
   export let user: UserResponseDto;
 
@@ -33,6 +34,10 @@
 
 <SettingAccordion title="Account" subtitle="Manage your account">
   <UserProfileSettings {user} />
+</SettingAccordion>
+
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">

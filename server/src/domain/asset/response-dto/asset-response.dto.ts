@@ -10,6 +10,7 @@ export class AssetResponseDto {
   deviceAssetId!: string;
   ownerId!: string;
   deviceId!: string;
+  libraryId!: string;
 
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
@@ -30,7 +31,7 @@ export class AssetResponseDto {
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
-  checksum!: string;
+  checksum?: string | null;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -39,6 +40,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     deviceId: entity.deviceId,
+    libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
@@ -55,7 +57,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
-    checksum: entity.checksum.toString('base64'),
+    checksum: entity.checksum?.toString('base64') ?? null,
   };
 }
 
@@ -65,6 +67,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     deviceId: entity.deviceId,
+    libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
@@ -81,7 +84,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
-    checksum: entity.checksum.toString('base64'),
+    checksum: entity.checksum?.toString('base64') ?? null,
   };
 }
 

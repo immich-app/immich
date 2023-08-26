@@ -13,7 +13,7 @@ import {
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
+import { IJobRepository } from '../job';
 import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
@@ -245,6 +245,9 @@ describe(AssetService.name, () => {
       );
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
     });
+    cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
+    sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
   });
 
   describe('getMapMarkers', () => {
@@ -434,6 +437,7 @@ describe(AssetService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -447,6 +451,8 @@ describe(AssetService.name, () => {
     });
 
     it('should split archives by size', async () => {
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
+
       assetMock.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },

@@ -7,6 +7,7 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IEntityJob, IJobRepository, JobName } from '../job';
+import { ILibraryRepository } from '../library/library.repository';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
@@ -30,13 +31,13 @@ export class UserService {
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
   async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {

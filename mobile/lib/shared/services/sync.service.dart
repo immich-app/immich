@@ -114,8 +114,15 @@ class SyncService {
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
-    final Asset? inDb =
-        await _db.assets.getByChecksumOwnerId(a.checksum, a.ownerId);
+    Asset? inDb;
+    if (a.checksum != null) {
+      inDb = await _db.assets.getByChecksumOwnerIdOriginalPath(
+        a.checksum!,
+        a.ownerId,
+        a.originalPath,
+      );
+    }
+
     if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
@@ -572,9 +579,11 @@ class SyncService {
   ) async {
     if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
 
-    final List<Asset?> inDb = await _db.assets.getAllByChecksumOwnerId(
-      assets.map((a) => a.checksum).toList(growable: false),
+    final List<Asset?> inDb =
+        await _db.assets.getAllByChecksumOwnerIdOriginalPath(
+      assets.map((a) => a.checksum!).toList(growable: false),
       assets.map((a) => a.ownerId).toInt64List(),
+      assets.map((a) => a.originalPath).toList(growable: false),
     );
     assert(inDb.length == assets.length);
     final List<Asset> existing = [], toUpsert = [];
@@ -616,10 +625,12 @@ class SyncService {
         "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
       );
       // give details on the errors
+      assets = assets.where((e) => e.checksum != null).toList();
       assets.sort(Asset.compareByOwnerChecksum);
-      final inDb = await _db.assets.getAllByChecksumOwnerId(
-        assets.map((e) => e.checksum).toList(growable: false),
+      final inDb = await _db.assets.getAllByChecksumOwnerIdOriginalPath(
+        assets.map((e) => e.checksum!).toList(growable: false),
         assets.map((e) => e.ownerId).toInt64List(),
+        assets.map((e) => e.originalPath).toList(growable: false),
       );
       for (int i = 0; i < assets.length; i++) {
         final Asset a = assets[i];
