@@ -38,12 +38,16 @@
   let imageElement: HTMLImageElement;
   let imageWrapper: HTMLDivElement;
   let cropElement: HTMLDivElement;
+  let assetDragHandle: HTMLDivElement;
 
   let currentAngle = 0;
   let currentAngleOffset = 0;
   let currentAspectRatio: string | aspectRatio = 'original';
   let currentFlipY = false;
   let currentFlipX = false;
+
+  let currentTranslateDirection: 'x' | 'y' | '' = '';
+  let currentTranslate = { x: 0, y: 0 };
 
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
@@ -118,6 +122,7 @@
       case 'crop':
         await setAspectRatio('original', false);
         initAngleSlider();
+        //initAssetDrag();
         break;
       case 'adjust':
         break;
@@ -208,6 +213,8 @@
       // stop moving when mouse button is released:
       document.onmouseup = null;
       document.onmousemove = null;
+      document.ontouchend = null;
+      document.ontouchmove = null;
     };
 
     const elementDrag = async (e: MouseEvent) => {
@@ -231,6 +238,29 @@
       rotate(angle, currentAngleOffset);
     };
 
+    const elementDragTouch = async (e: TouchEvent) => {
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos2 - e.touches[0].clientX;
+      pos2 = e.touches[0].clientX;
+      // set the element's new position:
+      let a = angleSlider.offsetLeft - pos1;
+
+      console.log('a', a);
+      if (a < 0) {
+        a = Math.max(a, (-125 / 49) * 45);
+      } else {
+        a = Math.min(a, (125 / 49) * 45);
+      }
+
+      console.log('a', a);
+
+      let angle = Math.round((a / 125) * 49);
+      angle = angle * -1;
+
+      rotate(angle, currentAngleOffset);
+    };
+
     const dragMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       // get the mouse cursor position at startup:
@@ -239,7 +269,93 @@
       // call a function whenever the cursor moves:
       document.onmousemove = elementDrag;
     };
+
+    const dragTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      console.log('dragTouchStart');
+      // get the mouse cursor position at startup:
+      pos2 = e.touches[0].clientX;
+      document.ontouchend = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.ontouchmove = elementDragTouch;
+    };
     angleSliderHandle.onmousedown = dragMouseDown;
+    angleSliderHandle.ontouchstart = dragTouchStart;
+  };
+
+  const initAssetDrag = async () => {
+    console.log('initAssetDrag');
+    let pos1 = 0,
+      pos2 = 0,
+      pos3 = 0,
+      pos4 = 0;
+    const closeDragElement = () => {
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+    };
+
+    const elementDrag = async (e: MouseEvent) => {
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos2 - e.clientX;
+      pos2 = e.clientX;
+      pos3 = pos4 - e.clientY;
+      pos4 = e.clientY;
+
+      //Calc max translation possible
+      let translationAbs = Math.sqrt(currentTranslate.x ** 2 + currentTranslate.y ** 2);
+      console.log('translationAbs', translationAbs);
+
+      let cropElementDiag = Math.sqrt(cropElement.offsetWidth ** 2 + cropElement.offsetHeight ** 2);
+      let imageElementHeight = imageElement.offsetHeight;
+
+      let h = Math.sin((currentAngle * Math.PI) / 180) * cropElement.offsetWidth;
+      console.log('h', h);
+
+      let h2 = Math.cos((currentAngle * Math.PI) / 180) * cropElement.offsetHeight;
+      console.log('h2', h2);
+
+      let maxTranslation = (imageElementHeight - h2 - h) / 2;
+      console.log('maxTranslation', maxTranslation);
+
+      console.log(currentTranslate.x - pos1);
+
+      // Calc max x translation
+      let maxXTranslation = Math.tan((currentAngle * Math.PI) / 180) * maxTranslation;
+      let maxYTranslation = maxTranslation / Math.cos((currentAngle * Math.PI) / 180);
+
+      if (currentTranslate.x - pos1 > currentTranslate.y - pos3) {
+        if (currentTranslate.x - pos1 > maxXTranslation) {
+          currentTranslate.x = currentTranslate.x - maxXTranslation;
+        } else {
+          currentTranslate.x = currentTranslate.x - pos1;
+        }
+        currentTranslate.y = maxXTranslation / Math.cos((currentAngle * Math.PI) / 180);
+      }
+
+      // // set the element's new position:
+      // currentTranslate = {
+      //   x: currentTranslate.x - pos1,
+      //   y: currentTranslate.y - pos3,
+      // };
+
+      console.log('currentTranslate', currentTranslate);
+      setImageWrapperTransform();
+    };
+
+    const dragMouseDown = (e: MouseEvent) => {
+      console.log('dragMouseDown');
+
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos2 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    };
+    assetDragHandle.onmousedown = dragMouseDown;
   };
 
   const calcImageElement = (angle: number) => {
@@ -262,17 +378,29 @@
       if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
         imageWrapper.style.height = `${x1 + x2}px`;
         imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
+        console.log('Translation in Y possible');
+        currentTranslateDirection = 'y';
+      } else if ((x1 + x2) / (y1 + y2) < 1 / originalAspect) {
+        currentTranslateDirection = 'x';
+        console.log('Translation in X possible');
       } else {
         imageWrapper.style.width = `${y1 + y2}px`;
         imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
+        currentTranslateDirection = '';
       }
     } else {
       if ((x1 + x2) / (y1 + y2) > originalAspect) {
         imageWrapper.style.width = `${x1 + x2}px`;
         imageWrapper.style.height = `${(x1 + x2) / originalAspect}px`;
+        console.log('Translation in Y possible');
+        currentTranslateDirection = 'y';
+      } else if ((x1 + x2) / (y1 + y2) > originalAspect) {
+        console.log('Translation in X possible');
+        currentTranslateDirection = 'x';
       } else {
         imageWrapper.style.height = `${y1 + y2}px`;
         imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
+        currentTranslateDirection = '';
       }
     }
   };
@@ -331,15 +459,10 @@
     currentAngle = angle;
     currentAngleOffset = angleOffset;
 
-    if (currentFlipX && currentFlipY) {
-      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleX(-1) scaleY(-1)`;
-    } else if (currentFlipY) {
-      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleY(-1)`;
-    } else if (currentFlipX) {
-      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg) scaleX(-1)`;
-    } else {
-      imageWrapper.style.transform = `rotate(${angle - angleOffset}deg)`;
-    }
+    currentTranslate = { x: 0, y: 0 };
+
+    setImageWrapperTransform();
+
     calcImageElement(angle);
     let a = -1 * angle * (125 / 49);
     let b = a + 'px';
@@ -355,6 +478,22 @@
     a.href = URL.createObjectURL(blob);
     a.download = 'test.png';
     a.click();
+  };
+
+  const setImageWrapperTransform = () => {
+    let transformString = '';
+    transformString += `rotate(${currentAngle - currentAngleOffset}deg)`;
+    if (currentFlipX) {
+      transformString += ' scaleX(-1)';
+    }
+    if (currentFlipY) {
+      transformString += ' scaleY(-1)';
+    }
+    if (currentTranslate.x || currentTranslate.y) {
+      transformString += ` translate(${currentTranslate.x}px, ${currentTranslate.y}px)`;
+    }
+
+    imageWrapper.style.transform = transformString;
   };
 </script>
 
@@ -379,7 +518,8 @@
     </button>
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
-    <div class="flex h-full w-full justify-center">
+    <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
+    <div class="flex h-full w-full justify-center" bind:this={assetDragHandle}>
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
         <div class="relative flex h-full w-full items-center justify-center">
@@ -389,7 +529,7 @@
             </div>
             <div
               bind:this={cropElement}
-              class="absolute left-1/2 top-1/2 mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
+              class="absolute left-1/2 top-1/2 z-[1000] z-[1000] mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
             >
               <div class="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white" />
               <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-white" />
@@ -513,6 +653,7 @@
       </div>
     {/if}
   </div>
+  <!-- <div class="absolute h-full w-full" /> -->
   <div
     class="bg-immich-dark-gray z-[1000] col-span-1 col-start-4 row-span-1 row-start-1 flex justify-evenly pb-[16px] transition-transform"
   >
