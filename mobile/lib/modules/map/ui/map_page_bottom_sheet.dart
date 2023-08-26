@@ -14,12 +14,14 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MapPageBottomSheet extends StatefulHookConsumerWidget {
   final Stream mapPageEventStream;
   final StreamController bottomSheetEventSC;
   final bool selectionEnabled;
   final ImmichAssetGridSelectionListener selectionlistener;
+  final bool isDarkTheme;
 
   const MapPageBottomSheet({
     super.key,
@@ -27,6 +29,7 @@ class MapPageBottomSheet extends StatefulHookConsumerWidget {
     required this.bottomSheetEventSC,
     required this.selectionEnabled,
     required this.selectionlistener,
+    this.isDarkTheme = false,
   });
 
   @override
@@ -35,10 +38,6 @@ class MapPageBottomSheet extends StatefulHookConsumerWidget {
 }
 
 class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
-  // State variables
-  bool isSheetExpanded = false;
-  bool isSheetScrolled = false;
-  List<Asset> assetsInBound = [];
   // Non-State variables
   bool userTappedOnMap = false;
   RenderList? _cachedRenderList;
@@ -55,67 +54,29 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     );
   }
 
-  void handleMapPageEvents(dynamic event) {
-    if (event is MapPageAssetsInBoundUpdated) {
-      if (mounted) {
-        setState(() {
-          assetsInBound = event.assets;
-        });
-      }
-    } else if (event is MapPageOnTapEvent) {
-      userTappedOnMap = true;
-      lastAssetOffsetInSheet = -1;
-      bottomSheetController.animateTo(
-        0.1,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.linearToEaseOut,
-      );
-      if (mounted && isSheetScrolled) {
-        setState(() {
-          isSheetScrolled = false;
-        });
-      }
-    }
-  }
-
-  void _visibleItemsListener(ItemPosition start, ItemPosition end) {
-    final renderElement = _cachedRenderList?.elements[start.index];
-    if (renderElement == null) {
-      return;
-    }
-    final rowOffset = renderElement.offset;
-    if ((-start.itemLeadingEdge) != 0) {
-      var columnOffset = -start.itemLeadingEdge ~/ 0.05;
-      columnOffset = columnOffset < renderElement.totalCount
-          ? columnOffset
-          : renderElement.totalCount - 1;
-      lastAssetOffsetInSheet = rowOffset + columnOffset;
-      final asset = _cachedRenderList?.allAssets?[lastAssetOffsetInSheet];
-      userTappedOnMap = false;
-      if (!userTappedOnMap && isSheetExpanded) {
-        widget.bottomSheetEventSC.add(
-          MapPageBottomSheetScrolled(asset),
-        );
-      }
-      if (mounted && !isSheetScrolled && isSheetExpanded) {
-        setState(() {
-          isSheetScrolled = true;
-        });
-      }
-    }
-  }
-
-  void visibleItemsListener(ItemPosition start, ItemPosition end) {
-    if (_cachedRenderList == null) {
-      debounce.dispose();
-      return;
-    }
-    debounce.call(() => _visibleItemsListener(start, end));
-  }
-
   @override
   Widget build(BuildContext context) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    double maxHeight = MediaQuery.of(context).size.height;
+    final isSheetScrolled = useState(false);
+    final isSheetExpanded = useState(false);
+    final assetsInBound = useState(<Asset>[]);
+    final currentExtend = useState(0.1);
+
+    void handleMapPageEvents(dynamic event) {
+      if (event is MapPageAssetsInBoundUpdated) {
+        assetsInBound.value = event.assets;
+      } else if (event is MapPageOnTapEvent) {
+        userTappedOnMap = true;
+        lastAssetOffsetInSheet = -1;
+        bottomSheetController.animateTo(
+          0.1,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.linearToEaseOut,
+        );
+        isSheetScrolled.value = false;
+      }
+    }
 
     useEffect(
       () {
@@ -126,12 +87,45 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
       [widget.mapPageEventStream],
     );
 
+    void handleVisibleItems(ItemPosition start, ItemPosition end) {
+      final renderElement = _cachedRenderList?.elements[start.index];
+      if (renderElement == null) {
+        return;
+      }
+      final rowOffset = renderElement.offset;
+      if ((-start.itemLeadingEdge) != 0) {
+        var columnOffset = -start.itemLeadingEdge ~/ 0.05;
+        columnOffset = columnOffset < renderElement.totalCount
+            ? columnOffset
+            : renderElement.totalCount - 1;
+        lastAssetOffsetInSheet = rowOffset + columnOffset;
+        final asset = _cachedRenderList?.allAssets?[lastAssetOffsetInSheet];
+        userTappedOnMap = false;
+        if (!userTappedOnMap && isSheetExpanded.value) {
+          widget.bottomSheetEventSC.add(
+            MapPageBottomSheetScrolled(asset),
+          );
+        }
+        if (isSheetExpanded.value) {
+          isSheetScrolled.value = true;
+        }
+      }
+    }
+
+    void visibleItemsListener(ItemPosition start, ItemPosition end) {
+      if (_cachedRenderList == null) {
+        debounce.dispose();
+        return;
+      }
+      debounce.call(() => handleVisibleItems(start, end));
+    }
+
     Widget buildNoPhotosWidget() {
       const image = Image(
         image: AssetImage('assets/lighthouse.png'),
       );
 
-      return isSheetExpanded
+      return isSheetExpanded.value
           ? Column(
               children: [
                 const SizedBox(
@@ -178,8 +172,8 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     }
 
     Widget buildDragHandle(ScrollController scrollController) {
-      final textToDisplay = assetsInBound.isNotEmpty
-          ? "${assetsInBound.length} photo${assetsInBound.length > 1 ? "s" : ""}"
+      final textToDisplay = assetsInBound.value.isNotEmpty
+          ? "${assetsInBound.value.length} photo${assetsInBound.value.length > 1 ? "s" : ""}"
           : "map_no_assets_in_bounds".tr();
       final dragHandle = Container(
         height: 75,
@@ -210,7 +204,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 ),
               ],
             ),
-            if (isSheetExpanded && isSheetScrolled)
+            if (isSheetExpanded.value && isSheetScrolled.value)
               Positioned(
                 top: 5,
                 right: 10,
@@ -236,92 +230,129 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (DraggableScrollableNotification notification) {
         final sheetExtended = notification.extent > 0.2;
+        isSheetExpanded.value = sheetExtended;
+        currentExtend.value = notification.extent;
         if (!sheetExtended) {
           // reset state
           userTappedOnMap = false;
           lastAssetOffsetInSheet = -1;
-        }
-        if (mounted && isSheetExpanded != sheetExtended) {
-          setState(() {
-            isSheetExpanded = sheetExtended;
-            if (!sheetExtended && isSheetScrolled) {
-              isSheetScrolled = false;
-            }
-          });
+          isSheetScrolled.value = false;
         }
 
         return true;
       },
-      child: DraggableScrollableSheet(
-        controller: bottomSheetController,
-        initialChildSize: 0.1,
-        minChildSize: 0.1,
-        maxChildSize: 0.55,
-        snap: true,
-        builder: (
-          BuildContext context,
-          ScrollController scrollController,
-        ) {
-          return Card(
-            color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-            surfaceTintColor: Colors.transparent,
-            elevation: 18.0,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-            ),
-            margin: const EdgeInsets.all(0),
-            child: Column(
-              children: [
-                buildDragHandle(scrollController),
-                if (assetsInBound.isNotEmpty)
-                  ref
-                      .watch(
-                        renderListProvider(
-                          assetsInBound,
-                        ),
-                      )
-                      .when(
-                        data: (renderList) {
-                          _cachedRenderList = renderList;
-                          final assetGrid = ImmichAssetGrid(
-                            shrinkWrap: true,
-                            renderList: renderList,
-                            showDragScroll: false,
-                            selectionActive: widget.selectionEnabled,
-                            showMultiSelectIndicator: false,
-                            listener: widget.selectionlistener,
-                            visibleItemsListener: visibleItemsListener,
-                          );
+      child: Stack(
+        children: [
+          DraggableScrollableSheet(
+            controller: bottomSheetController,
+            initialChildSize: 0.1,
+            minChildSize: 0.1,
+            maxChildSize: 0.55,
+            snap: true,
+            builder: (
+              BuildContext context,
+              ScrollController scrollController,
+            ) {
+              return Card(
+                color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+                surfaceTintColor: Colors.transparent,
+                elevation: 18.0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+                margin: const EdgeInsets.all(0),
+                child: Column(
+                  children: [
+                    buildDragHandle(scrollController),
+                    if (assetsInBound.value.isNotEmpty && isSheetExpanded.value)
+                      ref
+                          .watch(
+                            renderListProvider(
+                              assetsInBound.value,
+                            ),
+                          )
+                          .when(
+                            data: (renderList) {
+                              _cachedRenderList = renderList;
+                              final assetGrid = ImmichAssetGrid(
+                                shrinkWrap: true,
+                                renderList: renderList,
+                                showDragScroll: false,
+                                selectionActive: widget.selectionEnabled,
+                                showMultiSelectIndicator: false,
+                                listener: widget.selectionlistener,
+                                visibleItemsListener: visibleItemsListener,
+                              );
 
-                          return Expanded(
-                            child: isSheetExpanded
-                                ? assetGrid
-                                : const SizedBox.shrink(),
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          log.warning(
-                            "Cannot get assets in the current map bounds ${error.toString()}",
-                            error,
-                            stackTrace,
-                          );
-                          return const SizedBox.shrink();
-                        },
-                        loading: () => const SizedBox.shrink(),
+                              return Expanded(child: assetGrid);
+                            },
+                            error: (error, stackTrace) {
+                              log.warning(
+                                "Cannot get assets in the current map bounds ${error.toString()}",
+                                error,
+                                stackTrace,
+                              );
+                              return const SizedBox.shrink();
+                            },
+                            loading: () => const SizedBox.shrink(),
+                          ),
+                    if (assetsInBound.value.isEmpty)
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: buildNoPhotosWidget(),
+                        ),
                       ),
-                if (assetsInBound.isEmpty)
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: buildNoPhotosWidget(),
+                  ],
+                ),
+              );
+            },
+          ),
+          Positioned(
+            bottom: maxHeight * currentExtend.value,
+            left: 0,
+            child: GestureDetector(
+              onTap: () => launchUrl(
+                Uri.parse('https://openstreetmap.org/copyright'),
+              ),
+              child: ColoredBox(
+                color:
+                    (widget.isDarkTheme ? Colors.grey[900] : Colors.grey[100])!,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Text(
+                    '© OpenStreetMap contributors',
+                    style: TextStyle(
+                      fontSize: 6,
+                      color: !widget.isDarkTheme
+                          ? Colors.grey[900]
+                          : Colors.grey[100],
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
-          );
-        },
+          ),
+          Positioned(
+            bottom: maxHeight * (0.14 + (currentExtend.value - 0.1)),
+            right: 15,
+            child: ElevatedButton(
+              onPressed: () =>
+                  widget.bottomSheetEventSC.add(const MapPageZoomToLocation()),
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(12),
+              ),
+              child: const Icon(
+                Icons.my_location,
+                size: 22,
+                fill: 1,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

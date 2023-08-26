@@ -2,21 +2,26 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/ui/asset_marker_icon.dart';
+import 'package:immich_mobile/modules/map/ui/location_dialog.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/flutter_map_extensions.dart';
@@ -69,15 +74,18 @@ class MapPageState extends ConsumerState<MapPage> {
     super.dispose();
   }
 
-  void reloadAssetsInBound(Set<AssetMarkerData>? assetMarkers,
-      {bool forceReload = false}) {
+  void reloadAssetsInBound(
+    Set<AssetMarkerData>? assetMarkers, {
+    bool forceReload = false,
+  }) {
     final bounds = mapController.bounds;
     if (bounds != null) {
       final oldAssetsInBounds = assetsInBounds.toSet();
       assetsInBounds =
           assetMarkers?.where((e) => bounds.contains(e.point)).toSet() ?? {};
       final shouldReload = forceReload ||
-          assetsInBounds.difference(oldAssetsInBounds).isNotEmpty;
+          assetsInBounds.difference(oldAssetsInBounds).isNotEmpty ||
+          assetsInBounds.length != oldAssetsInBounds.length;
       if (shouldReload) {
         mapPageEventSC.add(
           MapPageAssetsInBoundUpdated(
@@ -110,7 +118,6 @@ class MapPageState extends ConsumerState<MapPage> {
     final selectionEnabledHook = useState(false);
     final selectedAssets = useState(<Asset>{});
     final showLoadingIndicator = useState(false);
-
     final refetchMarkers = useState(true);
 
     if (refetchMarkers.value) {
@@ -172,6 +179,71 @@ class MapPageState extends ConsumerState<MapPage> {
       }
     }
 
+    void onZoomToLocation() async {
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          showDialog(
+            context: context,
+            builder: (context) => Theme(
+              data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+              child: LocationServiceDisabledDialog(),
+            ),
+          );
+          return;
+        }
+
+        LocationPermission permission = await Geolocator.checkPermission();
+        bool shouldRequestPermission = false;
+
+        if (permission == LocationPermission.denied) {
+          shouldRequestPermission = await showDialog(
+            context: context,
+            builder: (context) => Theme(
+              data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+              child: LocationPermissionDisabledDialog(),
+            ),
+          );
+          if (shouldRequestPermission) {
+            permission = await Geolocator.requestPermission();
+          }
+        }
+
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          // Open app settings only if you did not request for permission before
+          if (permission == LocationPermission.deniedForever &&
+              !shouldRequestPermission) {
+            await Geolocator.openAppSettings();
+          }
+          return;
+        }
+
+        Position currentUserLocation = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 5),
+        );
+
+        forceAssetUpdate = true;
+        mapController.move(
+          LatLng(currentUserLocation.latitude, currentUserLocation.longitude),
+          12,
+        );
+      } catch (error) {
+        log.severe(
+          "Cannot get user's current location due to ${error.toString()}",
+        );
+        if (context.mounted) {
+          ImmichToast.show(
+            context: context,
+            gravity: ToastGravity.BOTTOM,
+            toastType: ToastType.error,
+            msg: "map_cannot_get_user_location".tr(),
+          );
+        }
+      }
+    }
+
     void handleBottomSheetEvents(dynamic event) {
       if (event is MapPageBottomSheetScrolled) {
         final assetInBottomSheet = event.asset;
@@ -194,6 +266,8 @@ class MapPageState extends ConsumerState<MapPage> {
         }
       } else if (event is MapPageZoomToAsset) {
         onZoomToAssetEvent(event.asset);
+      } else if (event is MapPageZoomToLocation) {
+        onZoomToLocation();
       }
     }
 
@@ -238,7 +312,10 @@ class MapPageState extends ConsumerState<MapPage> {
             if (selectionEnabledHook.value) {
               selectionEnabledHook.value = false;
             }
-            reloadAssetsInBound(mapMarkerData.value);
+            reloadAssetsInBound(
+              mapMarkerData.value,
+              forceReload: forceAssetUpdate,
+            );
             forceAssetUpdate = false;
           });
         }
@@ -391,6 +468,7 @@ class MapPageState extends ConsumerState<MapPage> {
                 bottomSheetEventSC: bottomSheetEventSC,
                 selectionEnabled: selectionEnabledHook.value,
                 selectionlistener: selectionListener,
+                isDarkTheme: isDarkTheme,
               ),
               if (showLoadingIndicator.value)
                 Positioned(

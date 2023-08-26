@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/disable_multi_select_button.dart';
 import 'package:immich_mobile/modules/map/ui/map_settings_dialog.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MapAppBar extends HookWidget implements PreferredSizeWidget {
   final ValueNotifier<bool> selectionEnabled;
@@ -122,37 +121,15 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 25),
-          child: ColoredBox(
-            color: (isDarkTheme ? Colors.grey[900] : Colors.grey[100])!,
-            child: Padding(
-              padding: const EdgeInsets.all(3),
-              child: GestureDetector(
-                onTap: () =>
-                    launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
-                child: Text(
-                  'flutter_map | © OpenStreetMap contributors',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: !isDarkTheme ? Colors.grey[900] : Colors.grey[100],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (!selectionEnabled.value) ...buildNonSelectionWidgets(context),
-            if (selectionEnabled.value) ...buildSelectionWidgets(),
-          ],
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (!selectionEnabled.value) ...buildNonSelectionWidgets(context),
+          if (selectionEnabled.value) ...buildSelectionWidgets(),
+        ],
+      ),
     );
   }
 
