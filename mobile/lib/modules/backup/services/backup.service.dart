@@ -218,7 +218,14 @@ class BackupService {
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
-    for (var entity in assetList) {
+    // Upload images before video assets
+    // AssetType::audio is greater than image / video
+    // But since we do not support them, it shouldn't be an issue
+    List<AssetEntity> sortedAssets = assetList.sorted(
+      (a, b) => a.typeInt - b.typeInt,
+    );
+
+    for (var entity in sortedAssets) {
       try {
         if (entity.type == AssetType.video) {
           file = await entity.originFile;
@@ -248,7 +255,8 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['fileCreatedAt'] = entity.createDateTime.toUtc().toIso8601String();
+          req.fields['fileCreatedAt'] =
+              entity.createDateTime.toUtc().toIso8601String();
           req.fields['fileModifiedAt'] =
               entity.modifiedDateTime.toUtc().toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
