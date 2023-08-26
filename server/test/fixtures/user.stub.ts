@@ -18,6 +18,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    searchAlbumsEnabled: true,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -35,6 +36,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    searchAlbumsEnabled: true,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
@@ -52,6 +54,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    searchAlbumsEnabled: true,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -69,5 +72,6 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    searchAlbumsEnabled: true,
   }),
 };

@@ -163,6 +163,25 @@ describe(`${UserController.name}`, () => {
     });
   });
 
+  it('should create a user without search albums enabled', async () => {
+    const { status, body } = await request(server)
+      .post(`/user`)
+      .send({
+        email: 'no-search-albums@immich.app',
+        password: 'Password123',
+        firstName: 'No Memories',
+        lastName: 'User',
+        searchAlbumsEnabled: false,
+      })
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(body).toMatchObject({
+      email: 'no-search-albums@immich.app',
+      searchAlbumsEnabled: false,
+    });
+    expect(status).toBe(201);
+  });
+});
+
   describe('PUT /user', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).put(`/user`);
@@ -236,6 +255,21 @@ describe(`${UserController.name}`, () => {
         ...before,
         updatedAt: expect.anything(),
         memoriesEnabled: false,
+      });
+      expect(before.updatedAt).not.toEqual(after.updatedAt);
+    });
+
+    it('should update search albums enabled', async () => {
+      const before = await api.userApi.get(server, accessToken, loginResponse.userId);
+      const after = await api.userApi.update(server, accessToken, {
+        id: before.id,
+        searchAlbumsEnabled: false,
+      });
+
+      expect(after).toMatchObject({
+        ...before,
+        updatedAt: expect.anything(),
+        searchAlbumsEnabled: false,
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });
