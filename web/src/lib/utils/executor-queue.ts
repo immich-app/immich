@@ -5,12 +5,31 @@ interface Options {
 type Runnable = () => Promise<unknown>;
 
 export class ExecutorQueue {
-  private readonly options: Options;
+
   private queue: Array<Runnable> = [];
   private running = 0;
+  private concurrency: number;
 
-  constructor(options: Options) {
-    this.options = options;
+  constructor(options?: Options) {
+    this.concurrency = options?.concurrency || 2;
+  }
+
+  getConcurrency() {
+    console.log("Get concurrency")
+    return this.concurrency
+  }
+
+  setConcurrency(concurrency: number) {
+    if (concurrency < 1) {
+      return
+    }
+
+    this.concurrency = concurrency;
+
+    const v = concurrency - this.running;
+    if (v > 0) {
+      [...new Array(this.concurrency)].forEach(() => this.tryRun())
+    }
   }
 
   addTask<TaskResult>(task: () => PromiseLike<TaskResult>): Promise<TaskResult> {
@@ -38,7 +57,7 @@ export class ExecutorQueue {
   }
 
   private tryRun() {
-    if (this.running >= this.options.concurrency) {
+    if (this.running >= this.concurrency) {
       return;
     }
 

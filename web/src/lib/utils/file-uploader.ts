@@ -1,17 +1,17 @@
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { api, AssetFileUploadResponseDto } from '@api';
-import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
-import { UploadState } from '$lib/models/upload-asset';
-import { ExecutorQueue } from '$lib/utils/executor-queue';
+import {uploadAssetsStore} from '$lib/stores/upload';
+import {addAssetsToAlbum} from '$lib/utils/asset-utils';
+import {api, AssetFileUploadResponseDto} from '@api';
+import {notificationController, NotificationType} from './../components/shared-components/notification/notification';
+import {UploadState} from '$lib/models/upload-asset';
+import {ExecutorQueue} from '$lib/utils/executor-queue';
 
 let _extensions: string[];
 
-const executionQueue = new ExecutorQueue({ concurrency: 2 });
+export const uploadExecutionQueue = new ExecutorQueue({concurrency: 2});
 
 const getExtensions = async () => {
   if (!_extensions) {
-    const { data } = await api.serverInfoApi.getSupportedMediaTypes();
+    const {data} = await api.serverInfoApi.getSupportedMediaTypes();
     _extensions = [...data.image, ...data.video];
   }
   return _extensions;
@@ -56,7 +56,7 @@ export const fileUploadHandler = async (files: File[], albumId: string | undefin
       file: file,
       albumId: albumId,
     });
-    executionQueue.addTask(() => fileUploader(file, albumId));
+    uploadExecutionQueue.addTask(() => fileUploader(file, albumId));
   });
 
   return [];
@@ -85,7 +85,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           key: api.getKey()
         },
         {
-          onUploadProgress: ({ loaded, total }) => {
+          onUploadProgress: ({loaded, total}) => {
             uploadAssetsStore.updateProgress(deviceAssetId, loaded, total);
           },
         },
@@ -100,9 +100,9 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
         }
 
         if (albumId && res.id) {
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+          uploadAssetsStore.updateAsset(deviceAssetId, {message: 'Adding to album...'});
           await addAssetsToAlbum(albumId, [res.id]);
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+          uploadAssetsStore.updateAsset(deviceAssetId, {message: 'Added to album'});
         }
 
         uploadAssetsStore.updateAsset(deviceAssetId, {
@@ -119,7 +119,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
     })
     .catch((reason) => {
       console.log('error uploading file ', reason);
-      uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
+      uploadAssetsStore.updateAsset(deviceAssetId, {state: UploadState.ERROR, error: reason});
       handleUploadError(asset, JSON.stringify(reason));
       return undefined;
     });
