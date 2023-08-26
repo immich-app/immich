@@ -4,7 +4,6 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
   return {
     get: jest.fn(),
     getCountForUser: jest.fn(),
-    getById: jest.fn(),
     getAllByUserId: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),

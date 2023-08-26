@@ -1,14 +1,13 @@
 import {
   AuthUserDto,
-  CreateLibraryDto,
-  GetLibrariesDto,
-  LibraryResponseDto,
+  CreateLibraryDto as CreateDto,
+  LibraryResponseDto as ResponseDto,
   LibraryService,
   LibraryStatsResponseDto,
   ScanLibraryDto as RefreshLibraryDto,
-  UpdateLibraryDto,
+  UpdateLibraryDto as UpdateDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -19,37 +18,37 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class LibraryController {
-  constructor(private libraryService: LibraryService) {}
-
-  @Post()
-  createLibrary(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() createLibraryDto: CreateLibraryDto,
-  ): Promise<LibraryResponseDto> {
-    return this.libraryService.create(authUser, createLibraryDto);
-  }
-
-  @Put()
-  updateLibrary(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() updateLibraryDto: UpdateLibraryDto,
-  ): Promise<LibraryResponseDto> {
-    return this.libraryService.update(authUser, updateLibraryDto);
-  }
+  constructor(private service: LibraryService) {}
 
   @Get()
-  getAllLibraries(@AuthUser() authUser: AuthUserDto, @Query() dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
-    return this.libraryService.getAll(authUser, dto);
+  getAllLibraries(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
+    return this.service.getAll(authUser);
+  }
+
+  @Post()
+  createLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<ResponseDto> {
+    return this.service.create(authUser, dto);
+  }
+
+  // TODO: change to `@Put(':id')
+  @Put()
+  updateLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
+    return this.service.update(authUser, dto);
   }
 
   @Get('count')
   getLibraryCount(@AuthUser() authUser: AuthUserDto): Promise<number> {
-    return this.libraryService.getCount(authUser);
+    return this.service.getCount(authUser);
   }
 
   @Get(':id')
-  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
-    return this.libraryService.get(authUser, id);
+  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+    return this.service.get(authUser, id);
+  }
+
+  @Delete(':id')
+  deleteLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.delete(authUser, id);
   }
 
   @Get('statistics/:id')
@@ -57,16 +56,11 @@ export class LibraryController {
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
   ): Promise<LibraryStatsResponseDto> {
-    return this.libraryService.getStatistics(authUser, id);
-  }
-
-  @Delete(':id')
-  deleteLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.libraryService.delete(authUser, id);
+    return this.service.getStatistics(authUser, id);
   }
 
   @Post('refresh/:id')
   refreshLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: RefreshLibraryDto) {
-    return this.libraryService.refresh(authUser, id, dto);
+    return this.service.refresh(authUser, id, dto);
   }
 }

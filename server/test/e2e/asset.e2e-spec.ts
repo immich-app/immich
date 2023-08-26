@@ -57,7 +57,7 @@ describe.skip('Asset', () => {
         type: LibraryType.EXTERNAL,
         name: 'Library',
         importPaths: ['e2e/assets/nature'],
-        excludePatterns: [],
+        exclusionPatterns: [],
       });
 
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder

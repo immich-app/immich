@@ -8,7 +8,7 @@ import {
   IEntityJob,
   IFaceThumbnailJob,
   ILibraryFileJob,
-  ILibraryJob,
+  ILibraryRefreshJob,
   IOfflineLibraryFileJob,
 } from './job.interface';
 
@@ -81,8 +81,8 @@ export type JobItem =
   // Library Managment
   | { name: JobName.REFRESH_LIBRARY_ASSET; data: ILibraryFileJob }
   | { name: JobName.OFFLINE_LIBRARY_ASSET; data: IOfflineLibraryFileJob }
-  | { name: JobName.REFRESH_LIBRARY; data: ILibraryJob }
-  | { name: JobName.DELETE_LIBRARY; data: ILibraryJob }
+  | { name: JobName.REFRESH_LIBRARY; data: ILibraryRefreshJob }
+  | { name: JobName.DELETE_LIBRARY; data: IEntityJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

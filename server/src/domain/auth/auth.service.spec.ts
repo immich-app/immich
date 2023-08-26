@@ -12,6 +12,8 @@ import {
   newUserTokenRepositoryMock,
   sharedLinkStub,
   systemConfigStub,
+  userStub,
+  userTokenStub,
 } from '@test';
 import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { IncomingHttpHeaders } from 'http';

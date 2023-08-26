@@ -33,15 +33,6 @@
     }
   };
 
-  const getLibraryCount = async () => {
-    try {
-      const { data: libraryCount } = await api.libraryApi.getLibraryCount();
-      return libraryCount;
-    } catch {
-      return { owned: 0, shared: 0, notShared: 0 };
-    }
-  };
-
   const isFavoritesSelected = $page.route.id === '/(user)/favorites';
   const isPhotosSelected = $page.route.id === '/(user)/photos';
   const isSharingSelected = $page.route.id === '/(user)/sharing';

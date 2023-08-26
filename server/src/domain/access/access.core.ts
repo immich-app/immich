@@ -22,9 +22,9 @@ export enum Permission {
   ARCHIVE_READ = 'archive.read',
 
   LIBRARY_CREATE = 'library.create',
+  LIBRARY_READ = 'library.read',
   LIBRARY_UPDATE = 'library.update',
   LIBRARY_DELETE = 'library.delete',
-  LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
 
@@ -166,16 +166,18 @@ export class AccessCore {
 
       case Permission.LIBRARY_READ:
         return (
+          // TODO: library permissions are used for partner sharing and library CRUD
+          // id might be a userId (for partner sharing) or a libraryId
           authUser.id === id ||
-          this.repository.library.hasOwnerAccess(authUser.id, id) ||
-          this.repository.library.hasPartnerAccess(authUser.id, id)
+          (await this.repository.library.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.library.hasPartnerAccess(authUser.id, id))
         );
 
       case Permission.LIBRARY_UPDATE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_DOWNLOAD:
-        return this.repository.library.hasOwnerAccess(authUser.id, id);
+        return authUser.id === id || (await this.repository.library.hasOwnerAccess(authUser.id, id));
 
       case Permission.LIBRARY_DELETE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);

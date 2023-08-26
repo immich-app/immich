@@ -2480,17 +2480,7 @@
     "/library": {
       "get": {
         "operationId": "getAllLibraries",
-        "parameters": [
-          {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {

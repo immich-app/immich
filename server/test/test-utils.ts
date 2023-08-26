@@ -4,6 +4,7 @@ import {
   AuthDeviceResponseDto,
   AuthUserDto,
   CreateUserDto,
+  LibraryResponseDto,
   LoginCredentialDto,
   LoginResponseDto,
   SharedLinkCreateDto,
@@ -91,6 +92,14 @@ export const api = {
       const res = await request(server).post('/album').set('Authorization', `Bearer ${accessToken}`).send(dto);
       expect(res.status).toEqual(201);
       return res.body as AlbumResponseDto;
+    },
+  },
+  libraryApi: {
+    getAll: async (server: any, accessToken: string) => {
+      const res = await request(server).get('/library').set('Authorization', `Bearer ${accessToken}`);
+      expect(res.status).toEqual(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      return res.body as LibraryResponseDto[];
     },
   },
   sharedLinkApi: {

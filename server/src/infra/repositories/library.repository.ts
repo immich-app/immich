@@ -6,25 +6,24 @@ import { LibraryEntity, LibraryType } from '../entities';
 
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
-  constructor(@InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>) {}
+  constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
 
-  get(id: string): Promise<LibraryEntity | null> {
-    return this.libraryRepository.findOne({
-      where: { id },
-      relations: {
-        owner: true,
+  get(id: string, withDeleted = false): Promise<LibraryEntity | null> {
+    return this.repository.findOneOrFail({
+      where: {
+        id,
       },
+      relations: { owner: true },
+      withDeleted: withDeleted,
     });
   }
 
   getCountForUser(ownerId: string): Promise<number> {
-    return this.libraryRepository.countBy({
-      ownerId: ownerId,
-    });
+    return this.repository.countBy({ ownerId });
   }
 
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
-    return this.libraryRepository.findOneOrFail({
+    return this.repository.findOne({
       where: {
         ownerId: ownerId,
         type: LibraryType.UPLOAD,
@@ -36,7 +35,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   getUploadLibraryCount(ownerId: string): Promise<number> {
-    return this.libraryRepository.count({
+    return this.repository.count({
       where: {
         ownerId: ownerId,
         type: LibraryType.UPLOAD,
@@ -44,17 +43,8 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  getById(libraryId: string, withDeleted = false): Promise<LibraryEntity> {
-    return this.libraryRepository.findOneOrFail({
-      where: {
-        id: libraryId,
-      },
-      withDeleted: withDeleted,
-    });
-  }
-
   getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
-    return this.libraryRepository.find({
+    return this.repository.find({
       where: {
         ownerId,
         isVisible: true,
@@ -69,15 +59,15 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity> {
-    return this.libraryRepository.save(library);
+    return this.repository.save(library);
   }
 
   async delete(id: string): Promise<void> {
-    await this.libraryRepository.delete({ id });
+    await this.repository.delete({ id });
   }
 
   async softDelete(id: string): Promise<void> {
-    await this.libraryRepository.softDelete({ id });
+    await this.repository.softDelete({ id });
   }
 
   async update(library: Partial<LibraryEntity>): Promise<LibraryEntity> {
@@ -85,7 +75,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    const stats = await this.libraryRepository
+    const stats = await this.repository
       .createQueryBuilder('libraries')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
@@ -106,7 +96,7 @@ export class LibraryRepository implements ILibraryRepository {
 
   async getAssetPaths(libraryId: string): Promise<string[]> {
     // Return all asset paths for a given library
-    const rawResults = await this.libraryRepository
+    const rawResults = await this.repository
       .createQueryBuilder('library')
       .innerJoinAndSelect('library.assets', 'assets')
       .where('library.id = :id', { id: libraryId })
@@ -123,7 +113,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    let query = await this.libraryRepository
+    let query = await this.repository
       .createQueryBuilder('library')
       .innerJoinAndSelect('library.assets', 'assets')
       .where('library.id = :id', { id: libraryId })
@@ -146,9 +136,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   private async save(library: Partial<LibraryEntity>) {
-    const { id } = await this.libraryRepository.save(library);
-    return this.libraryRepository.findOneOrFail({
-      where: { id },
-    });
+    const { id } = await this.repository.save(library);
+    return this.repository.findOneByOrFail({ id });
   }
 }

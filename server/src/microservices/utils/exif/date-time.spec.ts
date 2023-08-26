@@ -1,4 +1,3 @@
-import { describe, expect, it } from '@jest/globals';
 import { ExifDateTime } from 'exiftool-vendored';
 import { exifTimeZone, exifToDate } from './date-time';
 

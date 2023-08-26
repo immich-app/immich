@@ -53,11 +53,6 @@ export class CrawlOptionsDto {
   exclusionPatterns?: string[];
 }
 
-export class GetLibrariesDto {
-  @ValidateUUID({ optional: true })
-  assetId?: string;
-}
-
 export class LibrarySearchDto {
   @ValidateUUID({ optional: true })
   userId?: string;

@@ -69,9 +69,7 @@ export interface TimeBucketItem {
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity>;
+  create(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;

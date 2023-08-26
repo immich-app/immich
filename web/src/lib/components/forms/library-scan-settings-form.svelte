@@ -118,61 +118,58 @@
   />
 {/if}
 
-<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
-  <div class="flex w-full gap-4">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-    <Button type="submit" fullwidth>Save</Button>
-  </div>
-
-  <div class="mt-4 flex w-full gap-4">
-    <table class="w-full text-left">
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-        {#each exclusionPatterns as exclusionPattern, listIndex}
-          <tr
-            class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-              listIndex % 2 == 0
-                ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-            }`}
-          >
-            <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
-            <td class="w-1/4 text-ellipsis px-4 text-sm">
-              <button
-                type="button"
-                on:click={() => {
-                  editExclusionPattern = listIndex;
-                  editedExclusionPattern = exclusionPattern;
-                }}
-                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-              >
-                <PencilOutline size="16" />
-              </button>
-            </td>
-          </tr>
-        {/each}
+<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
+  <table class="w-full text-left">
+    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+      {#each exclusionPatterns as exclusionPattern, listIndex}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            exclusionPatterns.length % 2 == 0
+            listIndex % 2 == 0
               ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
               : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
-          <td class="w-3/4 text-ellipsis px-4 text-sm">
-            {#if exclusionPatterns.length === 0}
-              No pattern added
-            {/if}
-          </td>
-          <td class="w-1/4 text-ellipsis px-4 text-sm"
-            ><Button
-              size="sm"
+          <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
+          <td class="w-1/4 text-ellipsis px-4 text-sm">
+            <button
+              type="button"
               on:click={() => {
-                addExclusionPattern = true;
-              }}>Add Exclusion Pattern</Button
-            ></td
-          ></tr
-        >
-      </tbody>
-    </table>
+                editExclusionPattern = listIndex;
+                editedExclusionPattern = exclusionPattern;
+              }}
+              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+            >
+              <PencilOutline size="16" />
+            </button>
+          </td>
+        </tr>
+      {/each}
+      <tr
+        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+          exclusionPatterns.length % 2 == 0
+            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+        }`}
+      >
+        <td class="w-3/4 text-ellipsis px-4 text-sm">
+          {#if exclusionPatterns.length === 0}
+            No pattern added
+          {/if}
+        </td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm"
+          ><Button
+            size="sm"
+            on:click={() => {
+              addExclusionPattern = true;
+            }}>Add Exclusion Pattern</Button
+          ></td
+        ></tr
+      >
+    </tbody>
+  </table>
+
+  <div class="flex w-full justify-end gap-4">
+    <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
+    <Button size="sm" type="submit">Save</Button>
   </div>
-  <div class="flex justify-end" />
 </form>

@@ -85,7 +85,6 @@
     "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
-    "@jest/globals": "^29.6.2",
     "@nestjs/cli": "^9.1.8",
     "@nestjs/schematics": "^9.0.4",
     "@nestjs/testing": "^9.2.1",
@@ -109,13 +108,11 @@
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
-    "cross-env": "^7.0.3",
     "dotenv": "^14.2.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.2.5",
-    "jest-extended": "^4.0.0",
     "jest-when": "^3.5.2",
     "mock-fs": "^5.2.0",
     "prettier": "^2.3.2",
@@ -157,8 +154,7 @@
       }
     },
     "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.ts",
-      "jest-extended/all"
+      "<rootDir>/test/setup.ts"
     ],
     "testEnvironment": "node",
     "moduleNameMapper": {

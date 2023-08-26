@@ -1,8 +1,9 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
   authStub,
+  IAccessRepositoryMock,
   libraryStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
@@ -14,57 +15,24 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { IAccessRepository } from '../access';
-import { IAssetRepository } from '../asset';
 import { ICryptoRepository } from '../crypto';
+import { IAssetRepository } from '../index';
 import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
-import { ILibraryRepository, LibraryService } from './index';
-
-const mockRequirePermission = jest.fn().mockResolvedValue(true);
-const mockIsImage = jest.fn();
-const mockIsVideo = jest.fn();
-const mockIsAsset = jest.fn();
-
-jest.mock('../access', () => {
-  return {
-    AccessCore: jest.fn().mockImplementation(() => {
-      return {
-        requirePermission: mockRequirePermission,
-      };
-    }),
-    Permission: jest.requireActual('../access'),
-  };
-});
-
-jest.doMock('../domain.constant', () => ({
-  mimeTypes: {
-    isImage: mockIsImage,
-    isVideo: mockIsVideo,
-    isAsset: mockIsAsset,
-  },
-}));
+import { ILibraryRepository } from './library.repository';
+import { LibraryService } from './library.service';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 
-  let accessMock: jest.Mocked<IAccessRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
+  let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-
-  const createLibraryService = () => {
-    // We can't import library service the normal way due to some mocking load order issues
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { LibraryService } = require('./library.service');
-
-    sut = new LibraryService(accessMock, userMock, libraryMock, assetMock, jobMock, cryptoMock, storageMock);
-  };
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -81,20 +49,12 @@ describe(LibraryService.name, () => {
       ctime: new Date('2023-01-01'),
     } as Stats);
 
-    mockIsImage.mockReturnValue(true);
-    mockIsVideo.mockReturnValue(false);
-    mockIsAsset.mockReturnValue(true);
+    accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
-    mockRequirePermission.mockResolvedValue(true);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    sut = new LibraryService(accessMock, assetMock, cryptoMock, jobMock, libraryMock, storageMock, userMock);
   });
 
   it('should work', () => {
-    createLibraryService();
-
     expect(sut).toBeDefined();
   });
 
@@ -102,59 +62,39 @@ describe(LibraryService.name, () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
-      jest.resetModules();
-
       mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
     });
 
     it('should reject an unknown file extension', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         forceRefresh: false,
         emptyTrash: false,
       };
-
-      mockIsImage.mockReturnValue(false);
-      mockIsVideo.mockReturnValue(false);
-      mockIsAsset.mockReturnValue(false);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
 
-      await expect(async () => {
-        await sut.handleAssetRefresh(mockLibraryJob);
-      }).rejects.toThrowError('Unsupported file type /data/user1/file.xyz');
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should reject an unknown file type', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      mockIsImage.mockReturnValue(false);
-      mockIsVideo.mockReturnValue(false);
-      mockIsAsset.mockReturnValue(true);
-
-      await expect(async () => {
-        await sut.handleAssetRefresh(mockLibraryJob);
-      }).rejects.toThrowError('Unknown error when checking file type of /data/user1/file.xyz');
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should add a new image', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -183,19 +123,13 @@ describe(LibraryService.name, () => {
     });
 
     it('should add a new video', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
         forceRefresh: false,
         emptyTrash: false,
       };
-
-      mockIsImage.mockReturnValue(false);
-      mockIsVideo.mockReturnValue(true);
-      mockIsAsset.mockReturnValue(true);
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
@@ -219,10 +153,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should not import an asset when mtime matches db asset', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -243,10 +175,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should import an asset when mtime differs from db asset', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -274,90 +204,70 @@ describe(LibraryService.name, () => {
       });
     });
 
-    it('should reject an asset if the user cannot be found', async () => {
-      createLibraryService();
-
+    it('should skip an asset if the user cannot be found', async () => {
       userMock.get.mockResolvedValue(null);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
-        new BadRequestException("User has no external path set, can't import asset"),
-      );
+      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
-    it('should reject an asset if external path is not set', async () => {
-      createLibraryService();
-
+    it('should skip an asset if external path is not set', async () => {
       mockUser = userStub.admin;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
-        new BadRequestException("User has no external path set, can't import asset"),
-      );
+      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
-    it("should reject an asset if it isn't in the external path", async () => {
-      createLibraryService();
-
+    it("should skip an asset if it isn't in the external path", async () => {
       mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
-        new BadRequestException("Asset must be within the user's external path"),
-      );
+      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
-    it('should reject an asset if directory traversal is attempted', async () => {
-      createLibraryService();
-
+    it('should skip an asset if directory traversal is attempted', async () => {
       mockUser = userStub.externalPath;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/../../etc/rootpassword.jpg',
         forceRefresh: false,
         emptyTrash: false,
       };
 
-      expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toThrow(
-        new BadRequestException("Asset must be within the user's external path"),
-      );
+      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
-    it('should offline a missing asset', async () => {
-      storageMock.stat.mockImplementation(() => {
-        throw new Error();
-      });
-
-      createLibraryService();
+    it('should set a missing asset to offline', async () => {
+      storageMock.stat.mockRejectedValue(new Error());
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: assetStub.image.libraryId,
+        id: assetStub.image.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -370,15 +280,12 @@ describe(LibraryService.name, () => {
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
-
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should online a previously-offline asset', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: assetStub.offlineImage.libraryId,
+        id: assetStub.offlineImage.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -409,10 +316,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should do nothing when mtime matches existing asset', async () => {
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: assetStub.image.libraryId,
+        id: assetStub.image.id,
         ownerId: assetStub.image.ownerId,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -431,10 +336,8 @@ describe(LibraryService.name, () => {
       const filemtime = new Date();
       filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
 
-      createLibraryService();
-
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -447,7 +350,7 @@ describe(LibraryService.name, () => {
         ctime: new Date('2023-01-01'),
       } as Stats);
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
@@ -459,14 +362,10 @@ describe(LibraryService.name, () => {
     });
 
     it('should error when asset does not exist', async () => {
-      storageMock.stat.mockImplementation(() => {
-        throw new Error("ENOENT, no such file or directory '/data/user1/photo.jpg'");
-      });
-
-      createLibraryService();
+      storageMock.stat.mockRejectedValue(new Error("ENOENT, no such file or directory '/data/user1/photo.jpg'"));
 
       const mockLibraryJob: ILibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
@@ -476,22 +375,14 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
-      await expect(async () => {
-        await sut.handleAssetRefresh(mockLibraryJob);
-      }).rejects.toThrowError("ENOENT, no such file or directory '/data/user1/photo.jpg'");
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
   describe('handleOfflineAsset', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('should mark an asset as offline', async () => {
-      createLibraryService();
-
       const offlineJob: IOfflineLibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
         assetId: assetStub.image.id,
         emptyTrash: false,
@@ -508,10 +399,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should delete a missing asset when emptying trash', async () => {
-      createLibraryService();
-
       const offlineJob: IOfflineLibraryFileJob = {
-        libraryId: libraryStub.externalLibrary1.id,
+        id: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
         assetId: assetStub.image.id,
         emptyTrash: true,
@@ -527,58 +416,44 @@ describe(LibraryService.name, () => {
   });
 
   describe('delete', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('should delete a library', async () => {
-      createLibraryService();
-
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      libraryMock.softDelete.mockImplementation(() => Promise.resolve());
       libraryMock.getUploadLibraryCount.mockResolvedValue(2);
-      libraryMock.getById.mockResolvedValue(libraryStub.externalLibrary1);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
       await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_LIBRARY,
-        data: { libraryId: libraryStub.externalLibrary1.id },
+        data: { id: libraryStub.externalLibrary1.id },
       });
 
       expect(libraryMock.softDelete).toHaveBeenCalledWith(libraryStub.externalLibrary1.id);
     });
 
     it('should throw error if the last upload library is deleted', async () => {
-      createLibraryService();
-
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      libraryMock.softDelete.mockImplementation(() => Promise.resolve());
       libraryMock.getUploadLibraryCount.mockResolvedValue(1);
-      libraryMock.getById.mockResolvedValue(libraryStub.uploadLibrary);
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary);
 
-      await expect(sut.delete(authStub.admin, libraryStub.uploadLibrary.id)).rejects.toThrowError(
-        new BadRequestException('There must remain at least one upload library'),
+      await expect(sut.delete(authStub.admin, libraryStub.uploadLibrary.id)).rejects.toBeInstanceOf(
+        BadRequestException,
       );
 
       expect(jobMock.queue).not.toHaveBeenCalled();
-
       expect(libraryMock.softDelete).not.toHaveBeenCalled();
     });
 
     it('should allow an external library to be deleted', async () => {
-      createLibraryService();
-
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      libraryMock.softDelete.mockImplementation(() => Promise.resolve());
       libraryMock.getUploadLibraryCount.mockResolvedValue(1);
-      libraryMock.getById.mockResolvedValue(libraryStub.externalLibrary1);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
       await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_LIBRARY,
-        data: { libraryId: libraryStub.externalLibrary1.id },
+        data: { id: libraryStub.externalLibrary1.id },
       });
 
       expect(libraryMock.softDelete).toHaveBeenCalledWith(libraryStub.externalLibrary1.id);
@@ -586,13 +461,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('getCount', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('should call the repository', async () => {
-      createLibraryService();
-
       libraryMock.getCountForUser.mockResolvedValue(17);
 
       await expect(sut.getCount(authStub.admin)).resolves.toBe(17);
@@ -602,13 +471,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('get', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('can return a library', async () => {
-      createLibraryService();
-
       libraryMock.get.mockResolvedValue(libraryStub.library1);
       await expect(sut.get(authStub.admin, libraryStub.library1.id)).resolves.toEqual(
         expect.objectContaining({
@@ -621,26 +484,15 @@ describe(LibraryService.name, () => {
       expect(libraryMock.get).toHaveBeenCalledWith(libraryStub.library1.id);
     });
 
-    it('can error when library is not found', async () => {
-      createLibraryService();
-
+    it('should throw an error when a library is not found', async () => {
       libraryMock.get.mockResolvedValue(null);
-      await expect(sut.get(authStub.admin, libraryStub.library1.id)).rejects.toThrowError(
-        new NotFoundException('Library Not Found'),
-      );
-
+      await expect(sut.get(authStub.admin, libraryStub.library1.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(libraryMock.get).toHaveBeenCalledWith(libraryStub.library1.id);
     });
   });
 
   describe('getStatistics', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('can return library statistics', async () => {
-      createLibraryService();
-
       libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
       await expect(sut.getStatistics(authStub.admin, libraryStub.library1.id)).resolves.toEqual({
         photos: 10,
@@ -654,13 +506,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('create', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
     it('can create a library', async () => {
-      createLibraryService();
-
       libraryMock.create.mockResolvedValue(libraryStub.externalLibrary1);
       await expect(
         sut.create(authStub.admin, {
@@ -690,8 +536,6 @@ describe(LibraryService.name, () => {
     });
 
     it('can create a library with non-default parameters', async () => {
-      createLibraryService();
-
       const mockImportPaths = ['/data/user1', '/data/user2'];
       const mockExclusionPatterns = ['*.tmp', '*.bak'];
 

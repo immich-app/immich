@@ -118,7 +118,7 @@ export class JobService {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
-          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+          this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         }
       });
     }

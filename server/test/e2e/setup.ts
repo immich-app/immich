@@ -9,15 +9,12 @@ export default async () => {
     .withDatabase('immich')
     .withUsername('postgres')
     .withPassword('postgres')
+    .withReuse()
     .start();
 
-  process.env.DB_PORT = String(pg.getMappedPort(5432));
-  process.env.DB_HOSTNAME = pg.getHost();
-  process.env.DB_USERNAME = pg.getUsername();
-  process.env.DB_PASSWORD = pg.getPassword();
-  process.env.DB_DATABASE_NAME = pg.getDatabase();
+  process.env.DB_URL = pg.getConnectionUri();
 
-  const redis = await new GenericContainer('redis').withExposedPorts(6379).start();
+  const redis = await new GenericContainer('redis').withExposedPorts(6379).withReuse().start();
 
   process.env.REDIS_PORT = String(redis.getMappedPort(6379));
   process.env.REDIS_HOSTNAME = redis.getHost();

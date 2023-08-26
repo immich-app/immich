@@ -1,25 +1,16 @@
 import { CrawlOptionsDto } from '@app/domain';
-import matchers from 'jest-extended';
 import mockfs from 'mock-fs';
-import { FilesystemProvider } from './index';
-
-expect.extend(matchers);
+import { FilesystemProvider } from './filesystem.provider';
 
 describe(FilesystemProvider.name, () => {
   const sut: FilesystemProvider = new FilesystemProvider();
 
   describe('crawl', () => {
-    beforeAll(() => {
-      // Write a dummy output before mock-fs to prevent some annoying errors
-      console.log();
-      process.env.NODE_ENV = 'development';
-    });
-
     it('should return empty wnen crawling an empty path list', async () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = [];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toBeEmpty();
+      expect(paths).toHaveLength(0);
     });
 
     it('should crawl a single path', async () => {
@@ -30,7 +21,7 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg'].sort());
     });
 
     it('should exclude by file extension', async () => {
@@ -43,7 +34,7 @@ describe(FilesystemProvider.name, () => {
       options.pathsToCrawl = ['/photos/'];
       options.exclusionPatterns = ['**/*.tif'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg'].sort());
     });
 
     it('should exclude by file extension without case sensitivity', async () => {
@@ -56,7 +47,7 @@ describe(FilesystemProvider.name, () => {
       options.pathsToCrawl = ['/photos/'];
       options.exclusionPatterns = ['**/*.TIF'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg'].sort());
     });
 
     it('should exclude by folder', async () => {
@@ -72,7 +63,7 @@ describe(FilesystemProvider.name, () => {
       options.pathsToCrawl = ['/photos/'];
       options.exclusionPatterns = ['**/raw/**'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg'].sort());
     });
 
     it('should crawl multiple paths', async () => {
@@ -84,7 +75,7 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/', '/images/', '/albums/'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg'].sort());
     });
 
     it('should support globbing paths', async () => {
@@ -96,7 +87,7 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos*'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos1/image1.jpg', '/photos2/image2.jpg']);
+      expect(paths.sort()).toEqual(['/photos1/image1.jpg', '/photos2/image2.jpg'].sort());
     });
 
     it('should crawl a single path without trailing slash', async () => {
@@ -106,7 +97,7 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg'].sort());
     });
 
     // TODO: test for hidden paths (not yet implemented)
@@ -121,11 +112,9 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/subfolder/image1.jpg',
-        '/photos/subfolder/image2.jpg',
-      ]);
+      expect(paths.sort()).toEqual(
+        ['/photos/image.jpg', '/photos/subfolder/image1.jpg', '/photos/subfolder/image2.jpg'].sort(),
+      );
     });
 
     it('should filter file extensions', async () => {
@@ -137,7 +126,7 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+      expect(paths.sort()).toEqual(['/photos/image.jpg'].sort());
     });
 
     it('should include photo and video extensions', async () => {
@@ -162,22 +151,24 @@ describe(FilesystemProvider.name, () => {
       options.pathsToCrawl = ['/photos/', '/videos/'];
       const paths: string[] = await sut.crawl(options);
 
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/image.jpeg',
-        '/photos/image.heic',
-        '/photos/image.heif',
-        '/photos/image.png',
-        '/photos/image.gif',
-        '/photos/image.tif',
-        '/photos/image.tiff',
-        '/photos/image.webp',
-        '/photos/image.dng',
-        '/photos/image.nef',
-        '/videos/video.mp4',
-        '/videos/video.mov',
-        '/videos/video.webm',
-      ]);
+      expect(paths.sort()).toEqual(
+        [
+          '/photos/image.jpg',
+          '/photos/image.jpeg',
+          '/photos/image.heic',
+          '/photos/image.heif',
+          '/photos/image.png',
+          '/photos/image.gif',
+          '/photos/image.tif',
+          '/photos/image.tiff',
+          '/photos/image.webp',
+          '/photos/image.dng',
+          '/photos/image.nef',
+          '/videos/video.mp4',
+          '/videos/video.mov',
+          '/videos/video.webm',
+        ].sort(),
+      );
     });
 
     it('should check file extensions without case sensitivity', async () => {
@@ -196,17 +187,19 @@ describe(FilesystemProvider.name, () => {
       const options = new CrawlOptionsDto();
       options.pathsToCrawl = ['/photos/'];
       const paths: string[] = await sut.crawl(options);
-      expect(paths).toIncludeSameMembers([
-        '/photos/image.jpg',
-        '/photos/image.Jpg',
-        '/photos/image.jpG',
-        '/photos/image.JPG',
-        '/photos/image.jpEg',
-        '/photos/image.TIFF',
-        '/photos/image.tif',
-        '/photos/image.dng',
-        '/photos/image.NEF',
-      ]);
+      expect(paths.sort()).toEqual(
+        [
+          '/photos/image.jpg',
+          '/photos/image.Jpg',
+          '/photos/image.jpG',
+          '/photos/image.JPG',
+          '/photos/image.jpEg',
+          '/photos/image.TIFF',
+          '/photos/image.tif',
+          '/photos/image.dng',
+          '/photos/image.NEF',
+        ].sort(),
+      );
     });
 
     afterEach(() => {

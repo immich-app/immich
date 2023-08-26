@@ -36,16 +36,16 @@
   <UserProfileSettings {user} />
 </SettingAccordion>
 
-<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
-  <LibraryList />
-</SettingAccordion>
-
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
   <UserAPIKeyList bind:keys />
 </SettingAccordion>
 
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
   <DeviceList bind:devices />
+</SettingAccordion>
+
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
