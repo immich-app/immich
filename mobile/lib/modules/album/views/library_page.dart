@@ -63,11 +63,13 @@ class LibraryPage extends HookConsumerWidget {
       if (selectedAlbumSortOrder.value == 2) {
         return albums
             .where((a) => a.isRemote)
-            .sorted((a, b) => a.lastModifiedAssetTimestamp != null &&
-                    b.lastModifiedAssetTimestamp != null
-                ? a.lastModifiedAssetTimestamp!
-                    .compareTo(b.lastModifiedAssetTimestamp!)
-                : a.modifiedAt.compareTo(b.modifiedAt))
+            .sorted(
+              (a, b) => a.lastModifiedAssetTimestamp != null &&
+                      b.lastModifiedAssetTimestamp != null
+                  ? a.lastModifiedAssetTimestamp!
+                      .compareTo(b.lastModifiedAssetTimestamp!)
+                  : a.modifiedAt.compareTo(b.modifiedAt),
+            )
             .reversed
             .toList();
       }
