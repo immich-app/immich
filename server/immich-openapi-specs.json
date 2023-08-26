@@ -753,20 +753,20 @@
             }
           },
           {
-            "name": "withoutThumbs",
-            "required": false,
-            "in": "query",
-            "description": "Include assets without thumbnails",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "skip",
             "required": false,
             "in": "query",
             "schema": {
               "type": "number"
+            }
+          },
+          {
+            "name": "updatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -2071,6 +2071,65 @@
         ]
       }
     },
+    "/audit/deletes": {
+      "get": {
+        "operationId": "getAuditDeletes",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EntityType"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditDeletesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
@@ -3162,38 +3221,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SearchResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Search"
-        ]
-      }
-    },
-    "/search/config": {
-      "get": {
-        "operationId": "getSearchConfig",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SearchConfigResponseDto"
                 }
               }
             },
@@ -4653,7 +4680,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.74.0",
+    "version": "1.75.0",
     "contact": {}
   },
   "tags": [],
@@ -5239,6 +5266,24 @@
         ],
         "type": "string"
       },
+      "AuditDeletesResponseDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "needsFullSync",
+          "ids"
+        ],
+        "type": "object"
+      },
       "AuthDeviceResponseDto": {
         "properties": {
           "createdAt": {
@@ -5700,6 +5745,13 @@
           "archives"
         ],
         "type": "object"
+      },
+      "EntityType": {
+        "enum": [
+          "ASSET",
+          "ALBUM"
+        ],
+        "type": "string"
       },
       "ExifResponseDto": {
         "properties": {
@@ -6340,17 +6392,6 @@
         ],
         "type": "object"
       },
-      "SearchConfigResponseDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
       "SearchExploreItem": {
         "properties": {
           "data": {
@@ -6434,7 +6475,13 @@
       },
       "ServerFeaturesDto": {
         "properties": {
-          "machineLearning": {
+          "clipEncode": {
+            "type": "boolean"
+          },
+          "configFile": {
+            "type": "boolean"
+          },
+          "facialRecognition": {
             "type": "boolean"
           },
           "oauth": {
@@ -6448,11 +6495,21 @@
           },
           "search": {
             "type": "boolean"
+          },
+          "sidecar": {
+            "type": "boolean"
+          },
+          "tagImage": {
+            "type": "boolean"
           }
         },
         "required": [
-          "machineLearning",
+          "configFile",
+          "clipEncode",
+          "facialRecognition",
+          "sidecar",
           "search",
+          "tagImage",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin"
@@ -6784,6 +6841,9 @@
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
+          "machineLearning": {
+            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -6799,6 +6859,7 @@
         },
         "required": [
           "ffmpeg",
+          "machineLearning",
           "oauth",
           "passwordLogin",
           "storageTemplate",
@@ -6902,6 +6963,33 @@
           "search",
           "recognizeFaces",
           "sidecar"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMachineLearningDto": {
+        "properties": {
+          "clipEncodeEnabled": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "facialRecognitionEnabled": {
+            "type": "boolean"
+          },
+          "tagImageEnabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "url",
+          "clipEncodeEnabled",
+          "facialRecognitionEnabled",
+          "tagImageEnabled"
         ],
         "type": "object"
       },

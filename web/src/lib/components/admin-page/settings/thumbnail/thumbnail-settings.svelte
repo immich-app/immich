@@ -10,6 +10,7 @@
   } from '$lib/components/shared-components/notification/notification';
 
   export let thumbnailConfig: SystemConfigThumbnailDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigThumbnailDto;
   let defaultConfig: SystemConfigThumbnailDto;
@@ -91,6 +92,7 @@
             ]}
             name="resolution"
             isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
+            {disabled}
           />
 
           <SettingSelect
@@ -104,6 +106,7 @@
             ]}
             name="resolution"
             isEdited={!(thumbnailConfig.jpegSize === savedConfig.jpegSize)}
+            {disabled}
           />
         </div>
 
@@ -113,6 +116,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </div>
       </form>

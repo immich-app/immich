@@ -4,11 +4,15 @@ import { writable } from 'svelte/store';
 export type FeatureFlags = ServerFeaturesDto;
 
 export const featureFlags = writable<FeatureFlags>({
-  machineLearning: true,
+  clipEncode: true,
+  facialRecognition: true,
+  sidecar: true,
+  tagImage: true,
   search: true,
   oauth: true,
   oauthAutoLaunch: true,
   passwordLogin: true,
+  configFile: false,
 });
 
 export const loadFeatureFlags = async () => {

@@ -20,6 +20,7 @@
   import { fade } from 'svelte/transition';
 
   export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigFFmpegDto;
   let defaultConfig: SystemConfigFFmpegDto;
@@ -90,6 +91,7 @@
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
+            {disabled}
             label="CONSTANT RATE FACTOR (-crf)"
             desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger files."
             bind:value={ffmpegConfig.crf}
@@ -99,6 +101,7 @@
 
           <SettingSelect
             label="PRESET (-preset)"
+            {disabled}
             desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
             bind:value={ffmpegConfig.preset}
             name="preset"
@@ -118,6 +121,7 @@
 
           <SettingSelect
             label="AUDIO CODEC"
+            {disabled}
             desc="Opus is the highest quality option, but has lower compatibility with old devices or software."
             bind:value={ffmpegConfig.targetAudioCodec}
             options={[
@@ -131,6 +135,7 @@
 
           <SettingSelect
             label="VIDEO CODEC"
+            {disabled}
             desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files."
             bind:value={ffmpegConfig.targetVideoCodec}
             options={[
@@ -144,6 +149,7 @@
 
           <SettingSelect
             label="TARGET RESOLUTION"
+            {disabled}
             desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
             bind:value={ffmpegConfig.targetResolution}
             options={[
@@ -160,6 +166,7 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
+            {disabled}
             label="MAX BITRATE"
             desc="Setting a max bitrate can make file sizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
             bind:value={ffmpegConfig.maxBitrate}
@@ -168,6 +175,7 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
+            {disabled}
             label="THREADS"
             desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0."
             bind:value={ffmpegConfig.threads}
@@ -176,6 +184,7 @@
 
           <SettingSelect
             label="TRANSCODE POLICY"
+            {disabled}
             desc="Policy for when a video should be transcoded."
             bind:value={ffmpegConfig.transcode}
             name="transcode"
@@ -199,6 +208,7 @@
 
           <SettingSelect
             label="HARDWARE ACCELERATION"
+            {disabled}
             desc="Experimental. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
             bind:value={ffmpegConfig.accel}
             name="accel"
@@ -222,6 +232,7 @@
 
           <SettingSelect
             label="TONE-MAPPING"
+            {disabled}
             desc="Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness."
             bind:value={ffmpegConfig.tonemap}
             name="tonemap"
@@ -248,6 +259,7 @@
 
           <SettingSwitch
             title="TWO-PASS ENCODING"
+            {disabled}
             subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
             bind:checked={ffmpegConfig.twoPass}
             isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
@@ -260,6 +272,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </div>
       </form>

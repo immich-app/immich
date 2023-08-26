@@ -1,3 +1,7 @@
+---
+sidebar_position: 90
+---
+
 # Environment Variables
 
 ## Docker Compose
@@ -22,6 +26,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
 | `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
 | `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
+| `IMMICH_CONFIG_FILE`        | Path to config file                          |              | server                                       |
 
 :::tip
 
@@ -50,13 +55,14 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## URLs
 
-| Variable                      | Description                                              |                Default                | Services              |
-| :---------------------------- | :------------------------------------------------------- | :-----------------------------------: | :-------------------- |
-| `IMMICH_WEB_URL`              | Immich Web URL                                           |       `http://immich-web:3000`        | proxy                 |
-| `IMMICH_SERVER_URL`           | Immich Server URL                                        |      `http://immich-server:3001`      | web, proxy            |
-| `IMMICH_MACHINE_LEARNING_URL` | Immich Machine Learning URL, set `"false"` to disable ML | `http://immich-machine-learning:3003` | server, microservices |
-| `PUBLIC_IMMICH_SERVER_URL`    | Public Immich URL                                        |      `http://immich-server:3001`      | web                   |
-| `IMMICH_API_URL_EXTERNAL`     | Immich API URL External                                  |                `/api`                 | web                   |
+| Variable                          | Description                  |                Default                | Services              |
+| :-------------------------------- | :--------------------------- | :-----------------------------------: | :-------------------- |
+| `IMMICH_WEB_URL`                  | Immich Web URL               |       `http://immich-web:3000`        | proxy                 |
+| `IMMICH_SERVER_URL`               | Immich Server URL            |      `http://immich-server:3001`      | web, proxy            |
+| `IMMICH_MACHINE_LEARNING_ENABLED` | Enabled machine learning     |                `true`                 | server, microservices |
+| `IMMICH_MACHINE_LEARNING_URL`     | Immich Machine Learning URL, | `http://immich-machine-learning:3003` | server, microservices |
+| `PUBLIC_IMMICH_SERVER_URL`        | Public Immich URL            |      `http://immich-server:3001`      | web                   |
+| `IMMICH_API_URL_EXTERNAL`         | Immich API URL External      |                `/api`                 | web                   |
 
 :::info
 

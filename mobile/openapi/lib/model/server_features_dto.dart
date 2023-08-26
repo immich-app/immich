@@ -13,14 +13,22 @@ part of openapi.api;
 class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
-    required this.machineLearning,
+    required this.clipEncode,
+    required this.configFile,
+    required this.facialRecognition,
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
     required this.search,
+    required this.sidecar,
+    required this.tagImage,
   });
 
-  bool machineLearning;
+  bool clipEncode;
+
+  bool configFile;
+
+  bool facialRecognition;
 
   bool oauth;
 
@@ -30,33 +38,49 @@ class ServerFeaturesDto {
 
   bool search;
 
+  bool sidecar;
+
+  bool tagImage;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
-     other.machineLearning == machineLearning &&
+     other.clipEncode == clipEncode &&
+     other.configFile == configFile &&
+     other.facialRecognition == facialRecognition &&
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
-     other.search == search;
+     other.search == search &&
+     other.sidecar == sidecar &&
+     other.tagImage == tagImage;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (machineLearning.hashCode) +
+    (clipEncode.hashCode) +
+    (configFile.hashCode) +
+    (facialRecognition.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
-    (search.hashCode);
+    (search.hashCode) +
+    (sidecar.hashCode) +
+    (tagImage.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[machineLearning=$machineLearning, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'machineLearning'] = this.machineLearning;
+      json[r'clipEncode'] = this.clipEncode;
+      json[r'configFile'] = this.configFile;
+      json[r'facialRecognition'] = this.facialRecognition;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'search'] = this.search;
+      json[r'sidecar'] = this.sidecar;
+      json[r'tagImage'] = this.tagImage;
     return json;
   }
 
@@ -68,11 +92,15 @@ class ServerFeaturesDto {
       final json = value.cast<String, dynamic>();
 
       return ServerFeaturesDto(
-        machineLearning: mapValueOfType<bool>(json, r'machineLearning')!,
+        clipEncode: mapValueOfType<bool>(json, r'clipEncode')!,
+        configFile: mapValueOfType<bool>(json, r'configFile')!,
+        facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
         search: mapValueOfType<bool>(json, r'search')!,
+        sidecar: mapValueOfType<bool>(json, r'sidecar')!,
+        tagImage: mapValueOfType<bool>(json, r'tagImage')!,
       );
     }
     return null;
@@ -120,11 +148,15 @@ class ServerFeaturesDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'machineLearning',
+    'clipEncode',
+    'configFile',
+    'facialRecognition',
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',
     'search',
+    'sidecar',
+    'tagImage',
   };
 }
 

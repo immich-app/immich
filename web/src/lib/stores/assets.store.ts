@@ -58,7 +58,10 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
+    const { data: buckets } = await api.assetApi.getTimeBuckets({
+      ...this.options,
+      key: api.getKey(),
+    });
 
     this.buckets = buckets.map((bucket) => {
       const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
@@ -107,7 +110,11 @@ export class AssetStore {
       bucket.cancelToken = new AbortController();
 
       const { data: assets } = await api.assetApi.getByTimeBucket(
-        { ...this.options, timeBucket: bucketDate },
+        {
+          ...this.options,
+          timeBucket: bucketDate,
+          key: api.getKey(),
+        },
         { signal: bucket.cancelToken.signal },
       );
 
@@ -117,7 +124,7 @@ export class AssetStore {
             albumId: this.albumId,
             timeBucket: bucketDate,
             size: this.options.size,
-            key: this.options.key,
+            key: api.getKey(),
           },
           { signal: bucket.cancelToken.signal },
         );

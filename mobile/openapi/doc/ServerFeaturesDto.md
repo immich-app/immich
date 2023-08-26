@@ -8,11 +8,15 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**machineLearning** | **bool** |  | 
+**clipEncode** | **bool** |  | 
+**configFile** | **bool** |  | 
+**facialRecognition** | **bool** |  | 
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 
 **search** | **bool** |  | 
+**sidecar** | **bool** |  | 
+**tagImage** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

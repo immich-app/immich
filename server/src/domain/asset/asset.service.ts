@@ -16,18 +16,23 @@ import {
   AssetIdsDto,
   AssetJobName,
   AssetJobsDto,
+  AssetStatsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
+  mapStats,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
 } from './dto';
-import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
-import { MapMarkerDto } from './dto/map-marker.dto';
-import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
-import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
-import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
+import {
+  AssetResponseDto,
+  mapAsset,
+  MapMarkerResponseDto,
+  MemoryLaneResponseDto,
+  TimeBucketResponseDto,
+} from './response-dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',

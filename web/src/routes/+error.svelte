@@ -1,15 +1,11 @@
 <script>
   import { page } from '$app/stores';
-  import Message from 'svelte-material-icons/Message.svelte';
-  import PartyPopper from 'svelte-material-icons/PartyPopper.svelte';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import CodeTags from 'svelte-material-icons/CodeTags.svelte';
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import Message from 'svelte-material-icons/Message.svelte';
+  import PartyPopper from 'svelte-material-icons/PartyPopper.svelte';
+  import { copyToClipboard } from '../api/utils';
 
   const handleCopy = async () => {
     //
@@ -18,15 +14,7 @@
       return;
     }
 
-    try {
-      await navigator.clipboard.writeText(`${error.message} - ${error.code}\n${error.stack}`);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Copied error to clipboard',
-      });
-    } catch (error) {
-      handleError(error, 'Unable to copy to clipboard');
-    }
+    await copyToClipboard(`${error.message} - ${error.code}\n${error.stack}`);
   };
 </script>
 

@@ -17,10 +17,7 @@ const getExtensions = async () => {
   return _extensions;
 };
 
-export const openFileUploadDialog = async (
-  albumId: string | undefined = undefined,
-  sharedKey: string | undefined = undefined,
-) => {
+export const openFileUploadDialog = async (albumId: string | undefined = undefined) => {
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
@@ -37,7 +34,7 @@ export const openFileUploadDialog = async (
         }
         const files = Array.from(target.files);
 
-        resolve(fileUploadHandler(files, albumId, sharedKey));
+        resolve(fileUploadHandler(files, albumId));
       };
 
       fileSelector.click();
@@ -48,11 +45,7 @@ export const openFileUploadDialog = async (
   });
 };
 
-export const fileUploadHandler = async (
-  files: File[],
-  albumId: string | undefined = undefined,
-  sharedKey: string | undefined = undefined,
-) => {
+export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined) => {
   const extensions = await getExtensions();
   const filesToUpload = files.filter((file) => extensions.some((ext) => file.name.toLowerCase().endsWith(ext)));
 
@@ -61,10 +54,9 @@ export const fileUploadHandler = async (
     uploadAssetsStore.addNewUploadAsset({
       id: getDeviceAssetId(file),
       file: file,
-      sharedKey: sharedKey,
       albumId: albumId,
     });
-    executionQueue.addTask(() => fileUploader(file, albumId, sharedKey));
+    executionQueue.addTask(() => fileUploader(file, albumId));
   });
 
   return [];
@@ -75,11 +67,7 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(
-  asset: File,
-  albumId: string | undefined = undefined,
-  sharedKey: string | undefined = undefined,
-): Promise<string | undefined> {
+async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(asset);
 
@@ -94,7 +82,7 @@ async function fileUploader(
           isFavorite: false,
           duration: '0:00:00.000000',
           assetData: new File([asset], asset.name),
-          key: sharedKey,
+          key: api.getKey()
         },
         {
           onUploadProgress: ({ loaded, total }) => {
@@ -113,7 +101,7 @@ async function fileUploader(
 
         if (albumId && res.id) {
           uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-          await addAssetsToAlbum(albumId, [res.id], sharedKey);
+          await addAssetsToAlbum(albumId, [res.id]);
           uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
         }
 

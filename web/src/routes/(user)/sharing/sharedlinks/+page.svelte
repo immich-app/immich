@@ -1,7 +1,7 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import { api, SharedLinkResponseDto } from '@api';
+  import { api, copyToClipboard, SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import {
@@ -49,12 +49,7 @@
   };
 
   const handleCopyLink = async (key: string) => {
-    const link = `${window.location.origin}/share/${key}`;
-    await navigator.clipboard.writeText(link);
-    notificationController.show({
-      message: 'Link copied to clipboard',
-      type: NotificationType.Info,
-    });
+    await copyToClipboard(`${window.location.origin}/share/${key}`);
   };
 </script>
 

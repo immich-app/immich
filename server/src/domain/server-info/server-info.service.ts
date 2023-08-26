@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MACHINE_LEARNING_ENABLED, mimeTypes, SEARCH_ENABLED, serverVersion } from '../domain.constant';
+import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
 import {
   ServerFeaturesDto,
@@ -52,18 +51,8 @@ export class ServerInfoService {
     return serverVersion;
   }
 
-  async getFeatures(): Promise<ServerFeaturesDto> {
-    const config = await this.configCore.getConfig();
-
-    return {
-      machineLearning: MACHINE_LEARNING_ENABLED,
-      search: SEARCH_ENABLED,
-
-      // TODO: use these instead of `POST oauth/config`
-      oauth: config.oauth.enabled,
-      oauthAutoLaunch: config.oauth.autoLaunch,
-      passwordLogin: config.passwordLogin.enabled,
-    };
+  getFeatures(): Promise<ServerFeaturesDto> {
+    return this.configCore.getFeatures();
   }
 
   async getStats(): Promise<ServerStatsResponseDto> {

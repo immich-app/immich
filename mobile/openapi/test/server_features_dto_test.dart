@@ -16,8 +16,18 @@ void main() {
   // final instance = ServerFeaturesDto();
 
   group('test ServerFeaturesDto', () {
-    // bool machineLearning
-    test('to test the property `machineLearning`', () async {
+    // bool clipEncode
+    test('to test the property `clipEncode`', () async {
+      // TODO
+    });
+
+    // bool configFile
+    test('to test the property `configFile`', () async {
+      // TODO
+    });
+
+    // bool facialRecognition
+    test('to test the property `facialRecognition`', () async {
       // TODO
     });
 
@@ -38,6 +48,16 @@ void main() {
 
     // bool search
     test('to test the property `search`', () async {
+      // TODO
+    });
+
+    // bool sidecar
+    test('to test the property `sidecar`', () async {
+      // TODO
+    });
+
+    // bool tagImage
+    test('to test the property `tagImage`', () async {
       // TODO
     });
 
