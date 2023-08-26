@@ -95,7 +95,6 @@
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
   };
-
 </script>
 
 <section>
@@ -133,7 +132,13 @@
           <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
             {#each albums as album (album.id)}
               <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-                <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
+                <AlbumCard
+                  {album}
+                  user={data.user}
+                  isSharingView={false}
+                  showItemCount={false}
+                  showContextMenu={false}
+                />
               </a>
             {/each}
           </div>

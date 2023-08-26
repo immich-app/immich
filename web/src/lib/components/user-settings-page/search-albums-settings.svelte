@@ -34,11 +34,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
-          <SettingSwitch
-            title="Albums shown in search page"
-            subtitle=""
-            bind:checked={user.searchAlbumsEnabled}
-          />
+          <SettingSwitch title="Albums shown in search page" subtitle="" bind:checked={user.searchAlbumsEnabled} />
         </div>
         <div class="flex justify-end">
           <Button type="submit" size="sm" on:click={() => handleSave()}>Save</Button>
