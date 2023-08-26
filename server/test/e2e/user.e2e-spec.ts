@@ -302,4 +302,3 @@ describe(`${UserController.name}`, () => {
       expect(body).toEqual({ userCount: 6 });
     });
   });
-});

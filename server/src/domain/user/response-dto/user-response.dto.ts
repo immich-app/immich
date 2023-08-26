@@ -1,5 +1,4 @@
 import { UserEntity } from '@app/infra/entities';
-import { IsBoolean, IsOptional } from 'class-validator';
 
 export class UserResponseDto {
   id!: string;
