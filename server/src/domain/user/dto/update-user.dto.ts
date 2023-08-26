@@ -49,4 +49,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  searchAlbumsEnabled?: boolean;
 }

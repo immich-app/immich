@@ -1066,6 +1066,12 @@ export interface CreateUserDto {
     'password': string;
     /**
      * 
+     * @type {boolean}
+     * @memberof CreateUserDto
+     */
+    'searchAlbumsEnabled'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CreateUserDto
      */
@@ -3270,6 +3276,12 @@ export interface UpdateUserDto {
      * @type {boolean}
      * @memberof UpdateUserDto
      */
+    'searchAlbumsEnabled'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateUserDto
+     */
     'shouldChangePassword'?: boolean;
     /**
      * 
@@ -3406,6 +3418,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'profileImagePath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserResponseDto
+     */
+    'searchAlbumsEnabled'?: boolean;
     /**
      * 
      * @type {boolean}

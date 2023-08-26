@@ -9,6 +9,8 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import SearchAlbumsSettings from './search-albums-settings.svelte';
+
   import { onMount } from 'svelte';
 
   export let user: UserResponseDto;
@@ -45,6 +47,10 @@
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
   <MemoriesSettings {user} />
+</SettingAccordion>
+
+<SettingAccordion title="Search albums" subtitle="Manage if you see albums in search pages">
+  <SearchAlbumsSettings {user} />
 </SettingAccordion>
 
 {#if oauthEnabled}

@@ -1,4 +1,5 @@
 import { UserEntity } from '@app/infra/entities';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class UserResponseDto {
   id!: string;
@@ -15,6 +16,7 @@ export class UserResponseDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
+  searchAlbumsEnabled?: boolean;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -33,5 +35,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
     memoriesEnabled: entity.memoriesEnabled,
+    searchAlbumsEnabled: entity.searchAlbumsEnabled,
   };
 }

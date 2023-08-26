@@ -57,6 +57,9 @@ export class UserEntity {
   @Column({ default: true })
   memoriesEnabled!: boolean;
 
+  @Column({ default: true })
+  searchAlbumsEnabled!: boolean;
+
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 

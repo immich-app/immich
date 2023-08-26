@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // bool searchAlbumsEnabled
+    test('to test the property `searchAlbumsEnabled`', () async {
+      // TODO
+    });
+
     // String storageLabel
     test('to test the property `storageLabel`', () async {
       // TODO

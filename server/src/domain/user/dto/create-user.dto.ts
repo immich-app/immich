@@ -31,6 +31,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  searchAlbumsEnabled?: boolean;
 }
 
 export class CreateAdminDto {

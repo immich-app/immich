@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **memoriesEnabled** | **bool** |  | [optional] 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
+**searchAlbumsEnabled** | **bool** |  | [optional] 
 **shouldChangePassword** | **bool** |  | 
 **storageLabel** | **String** |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 

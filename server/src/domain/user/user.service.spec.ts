@@ -56,6 +56,7 @@ const adminUser: UserEntity = Object.freeze({
   storageLabel: 'admin',
   externalPath: null,
   memoriesEnabled: true,
+  searchAlbumsEnabled: true,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -76,6 +77,7 @@ const immichUser: UserEntity = Object.freeze({
   storageLabel: null,
   externalPath: null,
   memoriesEnabled: true,
+  searchAlbumsEnabled: true,
 });
 
 const updatedImmichUser = Object.freeze<UserEntity>({
@@ -96,6 +98,7 @@ const updatedImmichUser = Object.freeze<UserEntity>({
   storageLabel: null,
   externalPath: null,
   memoriesEnabled: true,
+  searchAlbumsEnabled: true,
 });
 
 const adminUserResponse = Object.freeze<UserResponseDto>({
@@ -164,6 +167,7 @@ describe(UserService.name, () => {
           storageLabel: 'admin',
           externalPath: null,
           memoriesEnabled: true,
+          searchAlbumsEnabled: true,
         },
       ]);
     });

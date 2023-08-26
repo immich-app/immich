@@ -19,6 +19,7 @@ class CreateUserDto {
     required this.lastName,
     this.memoriesEnabled,
     required this.password,
+    this.searchAlbumsEnabled,
     this.storageLabel,
   });
 
@@ -40,6 +41,14 @@ class CreateUserDto {
 
   String password;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? searchAlbumsEnabled;
+
   String? storageLabel;
 
   @override
@@ -50,6 +59,7 @@ class CreateUserDto {
      other.lastName == lastName &&
      other.memoriesEnabled == memoriesEnabled &&
      other.password == password &&
+     other.searchAlbumsEnabled == searchAlbumsEnabled &&
      other.storageLabel == storageLabel;
 
   @override
@@ -61,10 +71,11 @@ class CreateUserDto {
     (lastName.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (password.hashCode) +
+    (searchAlbumsEnabled == null ? 0 : searchAlbumsEnabled!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, searchAlbumsEnabled=$searchAlbumsEnabled, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -82,6 +93,11 @@ class CreateUserDto {
     //  json[r'memoriesEnabled'] = null;
     }
       json[r'password'] = this.password;
+    if (this.searchAlbumsEnabled != null) {
+      json[r'searchAlbumsEnabled'] = this.searchAlbumsEnabled;
+    } else {
+    //  json[r'searchAlbumsEnabled'] = null;
+    }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -104,6 +120,7 @@ class CreateUserDto {
         lastName: mapValueOfType<String>(json, r'lastName')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         password: mapValueOfType<String>(json, r'password')!,
+        searchAlbumsEnabled: mapValueOfType<bool>(json, r'searchAlbumsEnabled'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
     }

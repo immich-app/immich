@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **lastName** | **String** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **password** | **String** |  | [optional] 
+**searchAlbumsEnabled** | **bool** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 

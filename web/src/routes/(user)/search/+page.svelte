@@ -95,6 +95,7 @@
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
   };
+
 </script>
 
 <section>
@@ -125,19 +126,21 @@
 
 <section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums.length}
-      <section>
-        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
-          {#each albums as album (album.id)}
-            <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
-            </a>
-          {/each}
-        </div>
+    {#if !data.user.searchAlbumsEnabled}
+      {#if albums.length}
+        <section>
+          <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+            {#each albums as album (album.id)}
+              <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
+                <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
+              </a>
+            {/each}
+          </div>
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
-      </section>
+          <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
+        </section>
+      {/if}
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if data.results?.assets?.items.length > 0}

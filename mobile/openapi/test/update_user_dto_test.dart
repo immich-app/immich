@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // bool searchAlbumsEnabled
+    test('to test the property `searchAlbumsEnabled`', () async {
+      // TODO
+    });
+
     // bool shouldChangePassword
     test('to test the property `shouldChangePassword`', () async {
       // TODO

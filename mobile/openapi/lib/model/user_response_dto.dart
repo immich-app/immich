@@ -24,6 +24,7 @@ class UserResponseDto {
     this.memoriesEnabled,
     required this.oauthId,
     required this.profileImagePath,
+    this.searchAlbumsEnabled,
     required this.shouldChangePassword,
     required this.storageLabel,
     required this.updatedAt,
@@ -57,6 +58,14 @@ class UserResponseDto {
 
   String profileImagePath;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? searchAlbumsEnabled;
+
   bool shouldChangePassword;
 
   String? storageLabel;
@@ -76,6 +85,7 @@ class UserResponseDto {
      other.memoriesEnabled == memoriesEnabled &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
+     other.searchAlbumsEnabled == searchAlbumsEnabled &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel &&
      other.updatedAt == updatedAt;
@@ -94,12 +104,13 @@ class UserResponseDto {
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
+    (searchAlbumsEnabled == null ? 0 : searchAlbumsEnabled!.hashCode) +
     (shouldChangePassword.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, searchAlbumsEnabled=$searchAlbumsEnabled, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -126,6 +137,11 @@ class UserResponseDto {
     }
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
+    if (this.searchAlbumsEnabled != null) {
+      json[r'searchAlbumsEnabled'] = this.searchAlbumsEnabled;
+    } else {
+    //  json[r'searchAlbumsEnabled'] = null;
+    }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
@@ -155,6 +171,7 @@ class UserResponseDto {
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        searchAlbumsEnabled: mapValueOfType<bool>(json, r'searchAlbumsEnabled'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,

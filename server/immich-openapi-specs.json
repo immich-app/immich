@@ -5578,6 +5578,9 @@
           "password": {
             "type": "string"
           },
+          "searchAlbumsEnabled": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -7300,6 +7303,9 @@
           "password": {
             "type": "string"
           },
+          "searchAlbumsEnabled": {
+            "type": "boolean"
+          },
           "shouldChangePassword": {
             "type": "boolean"
           },
@@ -7393,6 +7399,9 @@
           },
           "profileImagePath": {
             "type": "string"
+          },
+          "searchAlbumsEnabled": {
+            "type": "boolean"
           },
           "shouldChangePassword": {
             "type": "boolean"
