@@ -28,7 +28,9 @@ final mapMarkersProvider =
   final assetMarkerData = await Future.wait(
     markers.map((e) async {
       final asset = await service.getAssetForMarkerId(e.id);
-      if (asset == null) return null;
+      bool hasInvalidCoords = e.lat < -90 || e.lat > 90;
+      hasInvalidCoords = hasInvalidCoords || (e.lon < -180 || e.lon > 180);
+      if (asset == null || hasInvalidCoords) return null;
       return AssetMarkerData(asset, LatLng(e.lat, e.lon));
     }),
   );
