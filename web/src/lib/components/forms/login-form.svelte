@@ -45,7 +45,7 @@
       }
     } catch (error) {
       authConfig.passwordLoginEnabled = true;
-      handleError(error, 'Unable to connect!');
+      await handleError(error, 'Unable to connect!');
     }
 
     oauthLoading = false;
