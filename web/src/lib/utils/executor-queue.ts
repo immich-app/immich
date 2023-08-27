@@ -8,27 +8,26 @@ export class ExecutorQueue {
 
   private queue: Array<Runnable> = [];
   private running = 0;
-  private concurrency: number;
+  private _concurrency: number;
 
   constructor(options?: Options) {
-    this.concurrency = options?.concurrency || 2;
+    this._concurrency = options?.concurrency || 2;
   }
 
-  getConcurrency() {
-    console.log("Get concurrency")
-    return this.concurrency
+  get concurrency() {
+    return this._concurrency
   }
 
-  setConcurrency(concurrency: number) {
+  set concurrency(concurrency: number) {
     if (concurrency < 1) {
       return
     }
 
-    this.concurrency = concurrency;
+    this._concurrency = concurrency;
 
     const v = concurrency - this.running;
     if (v > 0) {
-      [...new Array(this.concurrency)].forEach(() => this.tryRun())
+      [...new Array(this._concurrency)].forEach(() => this.tryRun())
     }
   }
 

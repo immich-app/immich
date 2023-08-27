@@ -19,6 +19,7 @@
   let successUploadCount = 0;
   let isUploading = false;
   let hasErrors = false;
+  let concurrency = uploadExecutionQueue.concurrency
 
   uploadAssetsStore.hasError.subscribe((value) => (hasErrors = value));
   uploadAssetsStore.remainingUploads.subscribe((value) => (remainingUploads = value));
@@ -106,10 +107,12 @@
             <div class="flex h-[26px] place-items-center gap-1">
               <label class="immich-form-label text-xs text-gray-500" for="upload-concurrency">Upload concurrency</label>
             </div>
-            <input class="rounded-sm immich-form-input w-full" aria-labelledby="Upload concurrency" id="upload-concurrency"
+            <input class="rounded-sm immich-form-input w-full" aria-labelledby="Upload concurrency"
+                   id="upload-concurrency"
                    name="Upload concurrency" type="number" min="1" max="50" step="1" required=""
-                   value={uploadExecutionQueue.getConcurrency()}
-                   on:change={(e) => uploadExecutionQueue.setConcurrency(e.target.value)}>
+                   bind:value={concurrency}
+                   on:change={() => uploadExecutionQueue.concurrency = concurrency}
+            />
           </div>
         {/if}
         <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
