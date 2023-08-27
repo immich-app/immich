@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {quartInOut} from 'svelte/easing';
-  import {fade, scale} from 'svelte/transition';
-  import {uploadAssetsStore} from '$lib/stores/upload';
+  import { quartInOut } from 'svelte/easing';
+  import { fade, scale } from 'svelte/transition';
+  import { uploadAssetsStore } from '$lib/stores/upload';
   import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
   import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
   import Cancel from 'svelte-material-icons/Cancel.svelte';
   import Cog from 'svelte-material-icons/Cog.svelte';
-  import {notificationController, NotificationType} from './notification/notification';
+  import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
-  import {uploadExecutionQueue} from "$lib/utils/file-uploader";
+  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
 
   let showDetail = false;
   let showOptions = false;
@@ -19,7 +19,7 @@
   let successUploadCount = 0;
   let isUploading = false;
   let hasErrors = false;
-  let concurrency = uploadExecutionQueue.concurrency
+  let concurrency = uploadExecutionQueue.concurrency;
 
   uploadAssetsStore.hasError.subscribe((value) => (hasErrors = value));
   uploadAssetsStore.remainingUploads.subscribe((value) => (remainingUploads = value));
@@ -71,7 +71,7 @@
       >
         <div class="place-item-center mb-4 flex justify-between">
           <p class="text-xs text-gray-500">
-            Remaining {remainingUploads} - Processed {successUploadCount + errorCount}/{totalUploadCount} <br/>
+            Remaining {remainingUploads} - Processed {successUploadCount + errorCount}/{totalUploadCount} <br />
             Uploaded <span class="text-immich-success">{successUploadCount}</span> - Error
             <span class="text-immich-error">{errorCount}</span>
             - Duplicates <span class="text-immich-warning">{duplicateCount}</span>
@@ -79,16 +79,16 @@
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
               <button
-                on:click={()=>showOptions=!showOptions}
+                on:click={() => (showOptions = !showOptions)}
                 class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
               >
-                <Cog/>
+                <Cog />
               </button>
               <button
                 on:click={() => (showDetail = false)}
                 class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
               >
-                <WindowMinimize/>
+                <WindowMinimize />
               </button>
             </div>
             {#if hasErrors}
@@ -97,7 +97,7 @@
                 title="Dismiss all errors"
                 class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
               >
-                <span class="text-immich-error"><Cancel/></span>
+                <span class="text-immich-error"><Cancel /></span>
               </button>
             {/if}
           </div>
@@ -107,18 +107,25 @@
             <div class="flex h-[26px] place-items-center gap-1">
               <label class="immich-form-label text-xs text-gray-500" for="upload-concurrency">Upload concurrency</label>
             </div>
-            <input class="rounded-sm immich-form-input w-full" aria-labelledby="Upload concurrency"
-                   id="upload-concurrency"
-                   name="Upload concurrency" type="number" min="1" max="50" step="1" required=""
-                   bind:value={concurrency}
-                   on:change={() => uploadExecutionQueue.concurrency = concurrency}
+            <input
+              class="immich-form-input w-full rounded-sm"
+              aria-labelledby="Upload concurrency"
+              id="upload-concurrency"
+              name="Upload concurrency"
+              type="number"
+              min="1"
+              max="50"
+              step="1"
+              required=""
+              bind:value={concurrency}
+              on:change={() => (uploadExecutionQueue.concurrency = concurrency)}
             />
           </div>
         {/if}
         <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
           {#each $uploadAssetsStore as uploadAsset}
             {#key uploadAsset.id}
-              <UploadAssetPreview {uploadAsset}/>
+              <UploadAssetPreview {uploadAsset} />
             {/key}
           {/each}
         </div>
@@ -147,7 +154,7 @@
           class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-300 p-5 text-sm shadow-lg"
         >
           <div class="animate-pulse">
-            <CloudUploadOutline size="30" color="#4250af"/>
+            <CloudUploadOutline size="30" color="#4250af" />
           </div>
         </button>
       </div>

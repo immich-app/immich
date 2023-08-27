@@ -5,7 +5,6 @@ interface Options {
 type Runnable = () => Promise<unknown>;
 
 export class ExecutorQueue {
-
   private queue: Array<Runnable> = [];
   private running = 0;
   private _concurrency: number;
@@ -15,19 +14,19 @@ export class ExecutorQueue {
   }
 
   get concurrency() {
-    return this._concurrency
+    return this._concurrency;
   }
 
   set concurrency(concurrency: number) {
     if (concurrency < 1) {
-      return
+      return;
     }
 
     this._concurrency = concurrency;
 
     const v = concurrency - this.running;
     if (v > 0) {
-      [...new Array(this._concurrency)].forEach(() => this.tryRun())
+      [...new Array(this._concurrency)].forEach(() => this.tryRun());
     }
   }
 
