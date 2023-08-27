@@ -47,7 +47,7 @@ export class LibraryEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;
 
   @Column({ type: 'timestamptz', nullable: true })

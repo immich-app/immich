@@ -24,12 +24,10 @@ import { UserEntity } from './user.entity';
 
 @Entity('assets')
 // For uploaded assets, each checksum must be unique per user and library
-@Index('UQ_assets_uploaded_owner_library_checksum', ['owner', 'library', 'checksum'], {
+@Index('UQ_assets_owner_library_checksum', ['owner', 'library', 'checksum'], {
   unique: true,
-  where: '"isReadOnly" IS false',
 })
 // For all assets, each originalpath must be unique per user and library
-@Unique('UQ_owner_library_originalpath', ['owner', 'library', 'originalPath'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -94,9 +92,9 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isOffline!: boolean;
 
-  @Column({ type: 'bytea', nullable: true })
+  @Column({ type: 'bytea', nullable: false })
   @Index()
-  checksum!: Buffer | null; // sha1 checksum
+  checksum!: Buffer; // sha1 checksum
 
   @Column({ type: 'varchar', nullable: true })
   duration!: string | null;

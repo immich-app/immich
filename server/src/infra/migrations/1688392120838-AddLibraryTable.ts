@@ -12,10 +12,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_4ed4f8052685ff5b1e7ca1058ba"`);
     await queryRunner.query(
-      `ALTER TABLE "assets" ADD CONSTRAINT "UQ_owner_library_originalpath" UNIQUE ("ownerId", "libraryId", "originalPath")`,
-    );
-    await queryRunner.query(
-      `CREATE UNIQUE INDEX "UQ_assets_uploaded_owner_library_checksum" on "assets" ("ownerId", "libraryId", checksum) WHERE ("isReadOnly" IS FALSE)`,
+      `CREATE UNIQUE INDEX "UQ_assets_owner_library_checksum" on "assets" ("ownerId", "libraryId", checksum)`,
     );
     await queryRunner.query(
       `ALTER TABLE "libraries" ADD CONSTRAINT "FK_0f6fc2fb195f24d19b0fb0d57c1" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
