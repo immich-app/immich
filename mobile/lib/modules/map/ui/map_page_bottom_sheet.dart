@@ -184,6 +184,8 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
         child: Stack(
           children: [
             Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 12),
                 const CustomDraggingHandle(),
@@ -193,6 +195,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                   style: TextStyle(
                     fontSize: 16,
                     color: Theme.of(context).textTheme.displayLarge?.color,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Divider(
