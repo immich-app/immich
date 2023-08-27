@@ -26,4 +26,10 @@ export class UserTokenEntity {
 
   @Column({ default: '' })
   deviceOS!: string;
+
+  @ManyToOne(() => UserEntity, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  authParent!: UserEntity | null;
+
+  @Column({ default: null })
+  authParentId!: string | null;
 }

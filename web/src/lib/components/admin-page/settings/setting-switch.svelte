@@ -86,4 +86,10 @@
     transform: translateX(18px);
     background-color: #4250af;
   }
+
+  .slider-disable:before {
+    -webkit-transform: translateX(18px);
+    -ms-transform: translateX(18px);
+    transform: translateX(18px);
+  }
 </style>

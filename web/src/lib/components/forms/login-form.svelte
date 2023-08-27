@@ -63,7 +63,7 @@
         },
       });
 
-      if (!data.isAdmin && data.shouldChangePassword) {
+      if (!data.isAdmin && data.interactiveLoginEnabled && data.shouldChangePassword) {
         dispatch('first-login');
         return;
       }

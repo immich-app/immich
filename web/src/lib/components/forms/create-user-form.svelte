@@ -4,6 +4,7 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
+  import SettingSwitch from "$lib/components/admin-page/settings/setting-switch.svelte";
 
   let error: string;
   let success: string;
@@ -14,6 +15,7 @@
   let canCreateUser = false;
 
   let isCreatingUser = false;
+  let isInteractiveLoginEnabled = true;
 
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
@@ -37,14 +39,16 @@
       const form = new FormData(formElement);
 
       const email = form.get('email');
-      const password = form.get('password');
+      const isInteractiveLoginEnabled = form.get('isInteractiveLoginEnabled');
       const firstName = form.get('firstName');
       const lastName = form.get('lastName');
+      const password = form.get('password') || '';
 
       try {
         const { status } = await api.userApi.createUser({
           createUserDto: {
             email: String(email),
+            isInteractiveLoginEnabled: Boolean(isInteractiveLoginEnabled),
             password: String(password),
             firstName: String(firstName),
             lastName: String(lastName),
@@ -84,7 +88,11 @@
     <ImmichLogo class="text-center" height="100" width="100" />
     <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Create new user</h1>
     <p class="rounded-md border p-4 font-mono text-sm text-gray-600 dark:border-immich-dark-bg dark:text-gray-300">
-      Please provide your user with the password, they will have to change it on their first sign in.
+      {#if isInteractiveLoginEnabled}
+        Please provide your user with the password, they will have to change it on their first sign in.
+      {:else}
+        Please don't forget to connect later a parent account with interactive login enabled to this account.
+      {/if}
     </p>
   </div>
 
@@ -95,21 +103,31 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
-      <input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
-    </div>
-
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-      <input
-        class="immich-form-input"
-        id="confirmPassword"
-        name="password"
-        type="password"
-        required
-        bind:value={confirmPassowrd}
+      <SettingSwitch
+        bind:checked={isInteractiveLoginEnabled}
+        title="Account type"
+        subtitle="Enable interactive login on the account"
       />
     </div>
+
+    {#if isInteractiveLoginEnabled}
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="password">Password</label>
+        <input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+      </div>
+
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
+        <input
+          class="immich-form-input"
+          id="confirmPassword"
+          name="password"
+          type="password"
+          required
+          bind:value={confirmPassowrd}
+        />
+      </div>
+    {/if}
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="firstName">First Name</label>

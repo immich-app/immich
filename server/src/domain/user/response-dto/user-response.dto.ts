@@ -15,6 +15,8 @@ export class UserResponseDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
+  interactiveLoginEnabled?: boolean;
+  sharedAccountId?: string;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -33,5 +35,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
     memoriesEnabled: entity.memoriesEnabled,
+    interactiveLoginEnabled: entity.interactiveLoginEnabled,
+    sharedAccountId: entity.sharedAccountId,
   };
 }

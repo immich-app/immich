@@ -4,11 +4,13 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { TagEntity } from './tag.entity';
+import { UserTokenEntity } from "./user-token.entity";
 
 @Entity('users')
 export class UserEntity {
@@ -57,9 +59,18 @@ export class UserEntity {
   @Column({ default: true })
   memoriesEnabled!: boolean;
 
+  @Column({ default: false })
+  interactiveLoginEnabled!: boolean;
+
+  @Column({ default: null })
+  sharedAccountId!: string;
+
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
+
+  @OneToMany(() => UserTokenEntity, (token) => token.authParent)
+  userTokens!: UserTokenEntity[];
 }

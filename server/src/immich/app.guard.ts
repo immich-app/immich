@@ -69,6 +69,7 @@ export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext
     isSecure: req.secure,
     deviceType: userAgent.browser.name || userAgent.device.type || (req.headers.devicemodel as string) || '',
     deviceOS: userAgent.os.name || (req.headers.devicetype as string) || '',
+    authParent: null
   };
 });
 

@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import type { AuthDeviceResponseDto } from '@api';
+  import type {AuthDeviceResponseDto, UserResponseDto} from '@api';
   import { DateTime, ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import Android from 'svelte-material-icons/Android.svelte';
@@ -11,8 +12,11 @@
   import Linux from 'svelte-material-icons/Linux.svelte';
   import MicrosoftWindows from 'svelte-material-icons/MicrosoftWindows.svelte';
   import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import {api} from "@api";
+  import {handleError} from "$lib/utils/handle-error";
 
   export let device: AuthDeviceResponseDto;
+  export let authUser: UserResponseDto;
 
   const dispatcher = createEventDispatcher();
 
@@ -20,6 +24,20 @@
     unit: 'days',
     locale: $locale,
   };
+
+  onMount(async () => {
+    try {
+      if (!device.parentAuthId) {
+        return;
+      }
+
+      const { data } = await api.userApi.getUserById({id: device.parentAuthId});
+
+      authUser = data;
+    } catch (e) {
+      handleError(e, 'Unable to refresh user');
+    }
+  });
 </script>
 
 <div class="flex w-full flex-row">
@@ -53,6 +71,9 @@
       <div class="text-sm">
         <span class="">Last seen</span>
         <span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
+        {#if authUser}
+          <span>on behalf of <a style="text-decoration: underline" href="mailto:{authUser.email}">{authUser.firstName} {authUser.lastName}</a></span>
+        {/if}
       </div>
     </div>
     {#if !device.current}

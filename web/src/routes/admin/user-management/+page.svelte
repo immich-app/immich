@@ -172,6 +172,7 @@
         <th class="w-2/12 text-center text-sm font-medium">First name</th>
         <th class="w-2/12 text-center text-sm font-medium">Last name</th>
         <th class="w-2/12 text-center text-sm font-medium">Can import</th>
+        <th class="w-2/12 text-center text-sm font-medium">Interactive Login</th>
         <th class="w-2/12 text-center text-sm font-medium">Action</th>
       </tr>
     </thead>
@@ -193,6 +194,15 @@
             <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
               <div class="container mx-auto flex flex-wrap justify-center">
                 {#if user.externalPath}
+                  <Check size="16" />
+                {:else}
+                  <Close size="16" />
+                {/if}
+              </div>
+            </td>
+            <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
+              <div class="container mx-auto flex flex-wrap justify-center">
+                {#if user.interactiveLoginEnabled}
                   <Check size="16" />
                 {:else}
                   <Close size="16" />

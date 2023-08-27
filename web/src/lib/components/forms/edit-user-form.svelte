@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
+  import {api, TranscodeHWAccel, UserResponseDto} from '@api';
+  import { createEventDispatcher, onMount } from 'svelte';
   import AccountEditOutline from 'svelte-material-icons/AccountEditOutline.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
+  import SettingSwitch from "$lib/components/admin-page/settings/setting-switch.svelte";
+  import SettingSelect from "$lib/components/admin-page/settings/setting-select.svelte";
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -14,16 +16,35 @@
   let success: string;
 
   let isShowResetPasswordConfirmation = false;
+  let dropdownNonInteractiveOptions: UserResponseDto[] = [];
 
   const dispatch = createEventDispatcher();
 
+  onMount(async () => {
+    const { data } = await api.userApi.getAllUsers({ isAll: false });
+    const filteredUsers = data
+      .filter(u => u.id !== user.id
+        && u.deletedAt == null
+        && !u.isAdmin
+        && !u.interactiveLoginEnabled
+      )
+      .map(u => ({ text: `${u.firstName} ${u.lastName} - ${u.email}`, value: u.id }));
+
+    dropdownNonInteractiveOptions = [
+      { text: 'Choose shared account...', value: null },
+      ...filteredUsers
+    ];
+  });
+
   const editUser = async () => {
     try {
-      const { id, email, firstName, lastName, storageLabel, externalPath } = user;
+      const { id, email, interactiveLoginEnabled, sharedAccountId, firstName, lastName, storageLabel, externalPath } = user;
       const { status } = await api.userApi.updateUser({
         updateUserDto: {
           id,
           email,
+          interactiveLoginEnabled,
+          sharedAccountId: sharedAccountId || null,
           firstName,
           lastName,
           storageLabel: storageLabel || '',
@@ -81,6 +102,27 @@
       <label class="immich-form-label" for="email">Email</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <SettingSwitch
+        disabled={user.isAdmin}
+        bind:checked={user.interactiveLoginEnabled}
+        title="Account type"
+        subtitle="Enable interactive login on the account"
+      />
+    </div>
+
+    {#if user.interactiveLoginEnabled && ! user.isAdmin }
+      <div class="m-4 flex flex-col gap-2">
+        <SettingSelect
+          label="Shared Login"
+          desc="Please set a shared account with non-interactive login here (optional)"
+          name="sharedAccountId"
+          options={dropdownNonInteractiveOptions}
+          bind:value={user.sharedAccountId}
+        />
+      </div>
+    {/if}
 
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="firstName">First Name</label>
@@ -142,7 +184,7 @@
     {/if}
     <div class="mt-8 flex w-full gap-4 px-4">
       {#if canResetPassword}
-        <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
+        <Button disabled="{ ! user.interactiveLoginEnabled}" color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
           >Reset password</Button
         >
       {/if}

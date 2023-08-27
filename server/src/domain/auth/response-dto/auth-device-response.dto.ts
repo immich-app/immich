@@ -7,6 +7,7 @@ export class AuthDeviceResponseDto {
   current!: boolean;
   deviceType!: string;
   deviceOS!: string;
+  parentAuthId!: string | null;
 }
 
 export const mapUserToken = (entity: UserTokenEntity, currentId?: string): AuthDeviceResponseDto => ({
@@ -16,4 +17,5 @@ export const mapUserToken = (entity: UserTokenEntity, currentId?: string): AuthD
   current: currentId === entity.id,
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,
+  parentAuthId: entity.authParentId,
 });

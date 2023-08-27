@@ -36,6 +36,7 @@ export interface LoginDetails {
   clientIp: string;
   deviceType: string;
   deviceOS: string;
+  authParent: string | null;
 }
 
 interface LoginResponse {
@@ -86,7 +87,27 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    return this.createLoginResponse(user, AuthType.PASSWORD, details);
+    if (!user.interactiveLoginEnabled) {
+      this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}. Interactive login with password is disabled.`);
+      throw new UnauthorizedException('Incorrect email or password'); // Do not disclose the real reason to the World, meanwhile we can check it in logs.
+    }
+
+    if (!user.sharedAccountId) {
+      return this.createLoginResponse(user, AuthType.PASSWORD, details);
+    } else {
+      const sharedUser = await this.userCore.get(user.sharedAccountId);
+      if (!sharedUser) {
+        throw new BadRequestException('Shared account does not exist');
+      }
+
+      if (sharedUser.interactiveLoginEnabled) {
+        throw new BadRequestException('Shared account cannot have interactive login enabled');
+      }
+
+      details['authParent'] = user.id;
+
+      return this.createLoginResponse(sharedUser, AuthType.PASSWORD, details);
+    }
   }
 
   async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -244,7 +265,27 @@ export class AuthService {
       });
     }
 
-    return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
+    if (!user.interactiveLoginEnabled) {
+      this.logger.warn(`Failed login attempt for user ${user.email} from ip address ${loginDetails.clientIp}. Interactive login with OpenID is disabled.`);
+      throw new UnauthorizedException('Failed login'); // Do not disclose the real reason to the World, meanwhile we can check it in logs.
+    }
+
+    if (!user.sharedAccountId) {
+      return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
+    } else {
+      const sharedUser = await this.userCore.get(user.sharedAccountId);
+      if (!sharedUser) {
+        throw new BadRequestException('Shared account does not exist');
+      }
+
+      if (sharedUser.interactiveLoginEnabled) {
+        throw new BadRequestException('Shared account cannot have interactive login enabled');
+      }
+
+      loginDetails['authParent'] = user.id;
+
+      return this.createLoginResponse(sharedUser, AuthType.OAUTH, loginDetails);
+    }
   }
 
   async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
@@ -409,11 +450,16 @@ export class AuthService {
     const key = this.cryptoRepository.randomBytes(32).toString('base64').replace(/\W/g, '');
     const token = this.cryptoRepository.hashSha256(key);
 
+    const authParent = loginDetails.authParent
+      ? await this.userCore.get(loginDetails.authParent)
+      : null;
+
     await this.userTokenRepository.create({
       token,
       user,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      authParent: authParent,
     });
 
     const response = mapLoginResponse(user, key);

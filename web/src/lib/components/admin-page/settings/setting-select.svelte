@@ -49,7 +49,7 @@
     on:change={handleChange}
   >
     {#each options as option}
-      <option value={option.value}>{option.text}</option>
+      <option value={option.value} disabled={option.disabled}>{option.text}</option>
     {/each}
   </select>
 </div>

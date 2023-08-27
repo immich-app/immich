@@ -5301,6 +5301,10 @@
           "id": {
             "type": "string"
           },
+          "parentAuthId": {
+            "nullable": true,
+            "type": "string"
+          },
           "updatedAt": {
             "type": "string"
           }
@@ -5311,7 +5315,8 @@
           "updatedAt",
           "current",
           "deviceType",
-          "deviceOS"
+          "deviceOS",
+          "parentAuthId"
         ],
         "type": "object"
       },
@@ -5568,6 +5573,9 @@
           },
           "firstName": {
             "type": "string"
+          },
+          "interactiveLoginEnabled": {
+            "type": "boolean"
           },
           "lastName": {
             "type": "string"
@@ -7288,6 +7296,9 @@
             "format": "uuid",
             "type": "string"
           },
+          "interactiveLoginEnabled": {
+            "type": "boolean"
+          },
           "isAdmin": {
             "type": "boolean"
           },
@@ -7298,6 +7309,9 @@
             "type": "boolean"
           },
           "password": {
+            "type": "string"
+          },
+          "sharedAccountId": {
             "type": "string"
           },
           "shouldChangePassword": {
@@ -7379,6 +7393,9 @@
           "id": {
             "type": "string"
           },
+          "interactiveLoginEnabled": {
+            "type": "boolean"
+          },
           "isAdmin": {
             "type": "boolean"
           },
@@ -7392,6 +7409,9 @@
             "type": "string"
           },
           "profileImagePath": {
+            "type": "string"
+          },
+          "sharedAccountId": {
             "type": "string"
           },
           "shouldChangePassword": {

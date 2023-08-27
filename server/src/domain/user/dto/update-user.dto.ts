@@ -49,4 +49,12 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  interactiveLoginEnabled?: boolean;
+
+  @IsOptional()
+  @IsUUID('4')
+  sharedAccountId?: string;
 }

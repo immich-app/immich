@@ -16,5 +16,6 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   deletedAt: null,
   updatedAt: Sync.each(() => faker.date.past().toISOString()),
   memoriesEnabled: true,
+  interactiveLoginEnabled: true,
   oauthId: '',
 });

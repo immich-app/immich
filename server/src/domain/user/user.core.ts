@@ -47,6 +47,21 @@ export class UserCore {
       }
     }
 
+    if (dto.sharedAccountId) {
+      const sharedUser = await this.userRepository.get(dto.sharedAccountId);
+      if (!sharedUser) {
+        throw new BadRequestException('Shared account does not exist');
+      }
+
+      if (sharedUser.sharedAccountId === dto.id) {
+        throw new BadRequestException('Shared account cannot be the same as the user');
+      }
+
+      if (sharedUser.interactiveLoginEnabled) {
+        throw new BadRequestException('Shared account cannot have interactive login enabled');
+      }
+    }
+
     try {
       if (dto.password) {
         dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
