@@ -15,7 +15,7 @@ const urlOrParts = url
 export const databaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
   entities: [__dirname + '/entities/*.entity.{js,ts}'],
-  synchronize: true,
+  synchronize: false,
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: true,
