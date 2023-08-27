@@ -25,10 +25,9 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/ui/share_dialog.dart';
+import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -88,17 +87,7 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onShareAssets() {
-        showDialog(
-          context: context,
-          builder: (BuildContext buildContext) {
-            ref
-                .watch(shareServiceProvider)
-                .shareAssets(selection.value.toList())
-                .then((_) => Navigator.of(buildContext).pop());
-            return const ShareDialog();
-          },
-          barrierDismissible: false,
-        );
+        handleShareAssets(ref, context, selection.value.toList());
 
         selectionEnabledHook.value = false;
       }
@@ -126,16 +115,7 @@ class HomePage extends HookConsumerWidget {
             localErrorMessage: 'home_page_favorite_err_local'.tr(),
           );
           if (remoteAssets.isNotEmpty) {
-            await ref
-                .watch(assetProvider.notifier)
-                .toggleFavorite(remoteAssets, true);
-
-            final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
-            ImmichToast.show(
-              context: context,
-              msg: 'Added ${remoteAssets.length} $assetOrAssets to favorites',
-              gravity: ToastGravity.BOTTOM,
-            );
+            await handleFavoriteAssets(ref, context, remoteAssets);
           }
         } finally {
           processing.value = false;
@@ -149,18 +129,7 @@ class HomePage extends HookConsumerWidget {
           final remoteAssets = remoteOnlySelection(
             localErrorMessage: 'home_page_archive_err_local'.tr(),
           );
-          if (remoteAssets.isNotEmpty) {
-            await ref
-                .read(assetProvider.notifier)
-                .toggleArchive(remoteAssets, true);
-
-            final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
-            ImmichToast.show(
-              context: context,
-              msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
-              gravity: ToastGravity.CENTER,
-            );
-          }
+          await handleArchiveAssets(ref, context, remoteAssets);
         } finally {
           processing.value = false;
           selectionEnabledHook.value = false;

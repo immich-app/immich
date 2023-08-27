@@ -26,6 +26,8 @@ dependencies:
   badges: ^2.0.2
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   flutter_map: ^4.0.0
+  flutter_map_heatmap: ^0.0.4
+  geolocator: ^10.0.0 # used to move to current location in map view
   flutter_udid: ^2.0.0
   package_info_plus: ^4.1.0
   url_launcher: ^6.1.3

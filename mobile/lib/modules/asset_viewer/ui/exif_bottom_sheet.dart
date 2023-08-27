@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
+import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
@@ -41,7 +42,10 @@ class ExifBottomSheet extends HookConsumerWidget {
       Uri uri = Uri(
         scheme: 'geo',
         host: '$latitude,$longitude',
-        queryParameters: {'z': '$zoomLevel', 'q': formattedDateTime},
+        queryParameters: {
+          'z': '$zoomLevel',
+          'q': '$latitude,$longitude($formattedDateTime)',
+        },
       );
       if (await canLaunchUrl(uri)) {
         return uri;
@@ -77,65 +81,35 @@ class ExifBottomSheet extends HookConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return Container(
-              height: 150,
-              width: constraints.maxWidth,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
+            return MapThumbnail(
+              coords: LatLng(
+                exifInfo?.latitude ?? 0,
+                exifInfo?.longitude ?? 0,
               ),
-              child: FlutterMap(
-                options: MapOptions(
-                  interactiveFlags: InteractiveFlag.none,
-                  center: LatLng(
+              height: 150,
+              zoom: 16.0,
+              markers: [
+                Marker(
+                  anchorPos: AnchorPos.align(AnchorAlign.top),
+                  point: LatLng(
                     exifInfo?.latitude ?? 0,
                     exifInfo?.longitude ?? 0,
                   ),
-                  zoom: 16.0,
-                  onTap: (tapPosition, latLong) async {
-                    Uri? uri = await _createCoordinatesUri();
-
-                    if (uri == null) {
-                      return;
-                    }
-
-                    debugPrint('Opening Map Uri: $uri');
-                    launchUrl(uri);
-                  },
+                  builder: (ctx) => const Image(
+                    image: AssetImage('assets/location-pin.png'),
+                  ),
                 ),
-                nonRotatedChildren: [
-                  RichAttributionWidget(
-                    attributions: [
-                      TextSourceAttribution(
-                        'OpenStreetMap contributors',
-                        onTap: () => launchUrl(
-                          Uri.parse('https://openstreetmap.org/copyright'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: const ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        anchorPos: AnchorPos.align(AnchorAlign.top),
-                        point: LatLng(
-                          exifInfo?.latitude ?? 0,
-                          exifInfo?.longitude ?? 0,
-                        ),
-                        builder: (ctx) => const Image(
-                          image: AssetImage('assets/location-pin.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
+              onTap: (tapPosition, latLong) async {
+                Uri? uri = await _createCoordinatesUri();
+
+                if (uri == null) {
+                  return;
+                }
+
+                debugPrint('Opening Map Uri: $uri');
+                launchUrl(uri);
+              },
             );
           },
         ),
