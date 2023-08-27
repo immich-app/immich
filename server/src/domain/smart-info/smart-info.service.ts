@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { ISearchRepository } from '../search/search.repository';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
@@ -16,6 +17,7 @@ export class SmartInfoService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
+    @Inject(IMachineLearningRepository) private searchRepository: ISearchRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
   }
@@ -105,6 +107,7 @@ export class SmartInfoService {
       { imagePath: asset.resizePath },
       clip,
     );
+
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 
     return true;

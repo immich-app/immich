@@ -2,13 +2,12 @@ import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
-from app.models.base import InferenceModel
 
 import orjson
 import uvicorn
-from starlette.formparsers import MultiPartParser
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
+from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
 

@@ -186,7 +186,13 @@ describe(FacialRecognitionService.name, () => {
         {
           imagePath: assetStub.image.resizePath,
         },
-        { enabled: true, minScore: 0.7, modelName: 'buffalo_l', modelType: ModelType.FACIAL_RECOGNITION },
+        {
+          enabled: true,
+          maxDistance: 0.6,
+          minScore: 0.7,
+          modelName: 'buffalo_l',
+          modelType: ModelType.FACIAL_RECOGNITION,
+        },
       );
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();

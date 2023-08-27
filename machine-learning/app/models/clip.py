@@ -1,5 +1,6 @@
 import os
 import zipfile
+from io import BytesIO
 from typing import Any, Literal
 
 import onnxruntime as ort
@@ -10,7 +11,7 @@ from clip_server.model.pretrained_models import _VISUAL_MODEL_IMAGE_SIZE
 from clip_server.model.tokenization import Tokenizer
 from PIL import Image
 from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTensor
-from io import BytesIO
+
 from ..schemas import ModelType
 from .base import InferenceModel
 

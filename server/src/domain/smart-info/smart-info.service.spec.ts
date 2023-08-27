@@ -4,11 +4,13 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
+  newSearchRepositoryMock,
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
+import { ISearchRepository } from '../search/search.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 import { IMachineLearningRepository } from './machine-learning.interface';
@@ -27,6 +29,7 @@ describe(SmartInfoService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
+  let searchMock: jest.Mocked<ISearchRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -34,7 +37,8 @@ describe(SmartInfoService.name, () => {
     smartMock = newSmartInfoRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(assetMock, configMock, jobMock, smartMock, machineMock);
+    searchMock = newSearchRepositoryMock();
+    sut = new SmartInfoService(assetMock, configMock, jobMock, smartMock, machineMock, searchMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });
@@ -146,6 +150,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned objects', async () => {
+      smartMock.upsert.mockResolvedValue();
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
       await sut.handleEncodeClip({ id: asset.id });
