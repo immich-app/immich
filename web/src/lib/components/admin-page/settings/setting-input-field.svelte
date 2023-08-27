@@ -13,6 +13,9 @@
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
+  export let min = Number.MIN_VALUE.toString();
+  export let max = Number.MAX_VALUE.toString();
+  export let step = '1';
   export let label = '';
   export let desc = '';
   export let required = false;
@@ -57,6 +60,9 @@
     id={label}
     name={label}
     type={inputType}
+    {min}
+    {max}
+    {step}
     {required}
     {value}
     on:input={handleInput}
