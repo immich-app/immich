@@ -37,14 +37,14 @@
       await api.sharedLinkApi.removeSharedLink({ id: deleteLinkId });
       notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
       deleteLinkId = null;
-      refresh();
+      await refresh();
     } catch (error) {
-      handleError(error, 'Unable to delete shared link');
+      await handleError(error, 'Unable to delete shared link');
     }
   };
 
   const handleEditDone = async () => {
-    refresh();
+    await refresh();
     editSharedLink = null;
   };
 

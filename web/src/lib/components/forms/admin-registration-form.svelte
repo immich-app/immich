@@ -40,7 +40,7 @@
       });
 
       if (status === 201) {
-        goto(AppRoute.AUTH_LOGIN);
+        await goto(AppRoute.AUTH_LOGIN);
         return;
       } else {
         error = 'Error create admin account';

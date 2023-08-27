@@ -26,7 +26,7 @@ class ConfirmDialog extends ConsumerWidget {
       content: Text(content).tr(),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(false),
           child: Text(
             cancel,
             style: TextStyle(
@@ -38,7 +38,7 @@ class ConfirmDialog extends ConsumerWidget {
         TextButton(
           onPressed: () {
             onOk();
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(true);
           },
           child: Text(
             ok,

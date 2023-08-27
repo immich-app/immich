@@ -4,7 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import { videoViewerVolume } from '$lib/stores/preferences.store';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { handleError } from '../../utils/handle-error';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let assetId: string;
 
@@ -19,7 +19,7 @@
       video.muted = false;
       dispatch('onVideoStarted');
     } catch (error) {
-      handleError(error, 'Unable to play video');
+      await handleError(error, 'Unable to play video');
     } finally {
       isVideoLoading = false;
     }

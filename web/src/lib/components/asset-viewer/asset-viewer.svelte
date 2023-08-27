@@ -58,7 +58,7 @@
     document.addEventListener('keydown', onKeyboardPress);
 
     if (!sharedLink) {
-      getAllAlbums();
+      await getAllAlbums();
     }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -136,7 +136,7 @@
       if (hasNext) {
         progressBar.restart(true);
       } else {
-        handleStopSlideshow();
+        await handleStopSlideshow();
       }
     }
 
@@ -165,7 +165,7 @@
         },
       });
 
-      navigateAssetForward();
+      await navigateAssetForward();
 
       for (const asset of deletedAssets) {
         if (asset.status == 'SUCCESS') {
@@ -201,7 +201,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -258,7 +258,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -278,7 +278,7 @@
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
     } catch (error) {
-      handleError(error, `Unable to submit job`);
+      await handleError(error, `Unable to submit job`);
     }
   };
 

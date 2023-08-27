@@ -83,8 +83,6 @@
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>We need to access the camera to let you take beautiful video using this app</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Enable location setting to show position of assets on map</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Enable location setting to show position of assets on map</string>
     <key>NSMicrophoneUsageDescription</key>

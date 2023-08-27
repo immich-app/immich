@@ -16,7 +16,7 @@
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { handleError } from '../../utils/handle-error';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
@@ -60,7 +60,7 @@
         type: NotificationType.Info,
       });
     } catch (e) {
-      handleError(e, 'Unable to add assets to shared link');
+      await handleError(e, 'Unable to add assets to shared link');
     }
   };
 
