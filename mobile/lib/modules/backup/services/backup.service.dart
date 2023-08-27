@@ -219,10 +219,14 @@ class BackupService {
     final List<String> duplicatedAssetIds = [];
 
     // Upload images before video assets
-    // AssetType::audio is greater than image / video
-    // But since we do not support them, it shouldn't be an issue
+    // these are further sorted by using their creation date so the upload goes as follows
+    // older images -> latest images -> older videos -> latest videos
     List<AssetEntity> sortedAssets = assetList.sorted(
-      (a, b) => a.typeInt - b.typeInt,
+      (a, b) {
+        final cmp = a.typeInt - b.typeInt;
+        if (cmp != 0) return cmp;
+        return a.createDateTime.compareTo(b.createDateTime);
+      },
     );
 
     for (var entity in sortedAssets) {
