@@ -46,27 +46,26 @@ def ping() -> str:
 
 
 @app.post("/predict")
-async def prediction(
+async def predict(
     model_name: str = Form(alias="modelName"),
     model_type: ModelType = Form(alias="modelType"),
-    options: str | None = Form(default=None),
+    options: str = Form(default="{}"),
     text: str | None = Form(default=None),
     image: UploadFile | None = None,
 ) -> Any:
-    model: InferenceModel = await app.state.model_cache.get(model_name, model_type)
-    if options is not None:
-        model.configure(**orjson.loads(options))
     if image is not None:
-        outputs = await predict(model, await image.read())
+        inputs: str | bytes = await image.read()
     elif text is not None:
-        outputs = await predict(model, text)
+        inputs = text
     else:
         raise HTTPException(400, "Either image or text must be provided")
-
+    
+    model: InferenceModel = await app.state.model_cache.get(model_name, model_type, **orjson.loads(options))
+    outputs = await run(model, inputs)
     return ORJSONResponse(outputs)
 
 
-async def predict(model: InferenceModel, inputs: Any) -> Any:
+async def run(model: InferenceModel, inputs: Any) -> Any:
     return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict, inputs)
 
 
