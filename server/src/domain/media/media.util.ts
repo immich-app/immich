@@ -176,7 +176,10 @@ class BaseConfig implements VideoCodecSWConfig {
 export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   protected devices: string[];
 
-  constructor(protected config: SystemConfigFFmpegDto, devices: string[] = []) {
+  constructor(
+    protected config: SystemConfigFFmpegDto,
+    devices: string[] = [],
+  ) {
     super(config);
     this.devices = this.validateDevices(devices);
   }

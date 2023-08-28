@@ -87,6 +87,7 @@
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
     "@openapitools/openapi-generator-cli": "2.7.0",
+    "@testcontainers/postgresql": "^10.2.1",
     "@types/archiver": "^5.3.2",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",

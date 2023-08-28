@@ -80,7 +80,10 @@ export interface AuthRequest extends Request {
 export class AppGuard implements CanActivate {
   private logger = new Logger(AppGuard.name);
 
-  constructor(private reflector: Reflector, private authService: AuthService) {}
+  constructor(
+    private reflector: Reflector,
+    private authService: AuthService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler(), context.getClass()];
