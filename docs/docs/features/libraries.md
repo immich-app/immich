@@ -52,7 +52,7 @@ Some basic examples:
 Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:
 
 - `/home/user/old-pics`: a folder contining childhood photos.
-- `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/media/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
+- `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
 - `/mnt/media/videos`: Videos from the same christmas trip.
 
 First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
