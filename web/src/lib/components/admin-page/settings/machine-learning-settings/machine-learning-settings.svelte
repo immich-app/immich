@@ -84,7 +84,7 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title="ENABLED"
-              subtitle="If disabled, images will not be tagged."
+              subtitle="If disabled, images will not be tagged. This affects the Things section in the Explore page as well as 'm:' searches."
               bind:checked={machineLearningConfig.classification.enabled}
               disabled={disabled || !machineLearningConfig.enabled}
             />
@@ -94,17 +94,22 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="IMAGE CLASSIFICATION MODEL"
-              desc="The name of a Hugging Face image classification model (https://huggingface.co/models?pipeline_tag=image-classification&sort=trending). It must be tagged with the 'Image Classification' task, and must support ONNX conversion."
               bind:value={machineLearningConfig.classification.modelName}
               required={true}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.classification.enabled}
               isEdited={machineLearningConfig.classification.modelName !== savedConfig.classification.modelName}
-            />
+            >
+              <p slot="desc" class="immich-form-label pb-2 text-sm">
+                The name of an image classification model listed <a
+                  href="https://huggingface.co/models?pipeline_tag=image-classification&sort=trending"><u>here</u></a
+                >. It must be tagged with the 'Image Classification' task and must support ONNX conversion.
+              </p>
+            </SettingInputField>
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label="IMAGE CLASSIFICATION THRESHOLD"
-              desc="Minimum confidence score to add a particular object tag. Lower values will add more tags to images, but may result in more false positives. Will not have any effect until the 'Tag Objects' job is re-run."
+              desc="Minimum confidence score to add a particular object tag. Lower values will add more tags to images, but may result in more false positives. Will not have any effect until the Tag Objects job is re-run."
               bind:value={machineLearningConfig.classification.minScore}
               step="0.1"
               min="0"
@@ -129,12 +134,17 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="CLIP MODEL"
-              desc="The name of a CLIP model listed in https://clip-as-service.jina.ai/user-guides/benchmark/#size-and-efficiency. Note that you must re-run the 'Encode CLIP' job for all images upon changing a model."
               bind:value={machineLearningConfig.clip.modelName}
               required={true}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.clip.enabled}
               isEdited={machineLearningConfig.clip.modelName !== savedConfig.clip.modelName}
-            />
+            >
+              <p slot="desc" class="immich-form-label pb-2 text-sm">
+                The name of a CLIP model listed <a
+                  href="https://clip-as-service.jina.ai/user-guides/benchmark/#size-and-efficiency"><u>here</u></a
+                >. Note that you must re-run the 'Encode CLIP' job for all images upon changing a model.
+              </p>
+            </SettingInputField>
           </div>
         </SettingAccordion>
 
@@ -142,7 +152,7 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title="ENABLED"
-              subtitle="If disabled, images will not be encoded for facial recognition."
+              subtitle="If disabled, images will not be encoded for facial recognition and will not populate the People section in the Explore page."
               bind:checked={machineLearningConfig.facialRecognition.enabled}
               disabled={disabled || !machineLearningConfig.enabled}
             />
@@ -151,7 +161,7 @@
 
             <SettingSelect
               label="FACIAL RECOGNITION MODEL"
-              desc="Smaller models are faster, but perform worse. Note that you must re-run the 'Recognize Faces' job for all images upon changing a model."
+              desc="Smaller models are faster and use less memory, but perform worse. Note that you must re-run the Recognize Faces job for all images upon changing a model."
               name="facial-recognition-model"
               bind:value={machineLearningConfig.facialRecognition.modelName}
               options={[
@@ -177,7 +187,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label="MAX RECOGNITION DISTANCE"
-              desc="Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person. Raising this can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible."
+              desc="Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible."
               bind:value={machineLearningConfig.facialRecognition.maxDistance}
               step="0.1"
               min="0"

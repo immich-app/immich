@@ -51,6 +51,8 @@
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
       {desc}
     </p>
+  {:else}
+    <slot name="desc" />
   {/if}
 
   <input
