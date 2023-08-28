@@ -8,5 +8,6 @@ export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
     hashBcrypt: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
     hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
     hashFile: jest.fn().mockImplementation((input) => `${input} (file-hashed)`),
+    hashSha1: jest.fn().mockImplementation((input) => `${input} (hashed)`),
   };
 };

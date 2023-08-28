@@ -10,7 +10,6 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
@@ -23,7 +22,7 @@ import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('assets')
-// For uploaded assets, each checksum must be unique per user and library
+// Checksums must be unique per user and library
 @Index('UQ_assets_owner_library_checksum', ['owner', 'library', 'checksum'], {
   unique: true,
 })
