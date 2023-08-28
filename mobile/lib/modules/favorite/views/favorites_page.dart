@@ -2,13 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class FavoritesPage extends HookConsumerWidget {
   const FavoritesPage({Key? key}) : super(key: key);
@@ -44,16 +42,11 @@ class FavoritesPage extends HookConsumerWidget {
     void unfavorite() async {
       try {
         if (selection.value.isNotEmpty) {
-          await ref.watch(assetProvider.notifier).toggleFavorite(
-                selection.value.toList(),
-                false,
-              );
-          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
-          ImmichToast.show(
-            context: context,
-            msg:
-                'Removed ${selection.value.length} $assetOrAssets from favorites',
-            gravity: ToastGravity.CENTER,
+          await handleFavoriteAssets(
+            ref,
+            context,
+            selection.value.toList(),
+            shouldFavorite: false,
           );
         }
       } finally {
