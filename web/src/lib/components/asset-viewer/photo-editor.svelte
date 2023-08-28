@@ -132,16 +132,16 @@
     }
   };
 
-  const setAspectRatio = async (aspectRatio: string | aspectRatio, rotate?: boolean) => {
+  const setAspectRatio = async (aspectRatio: string | aspectRatio, isRotate?: boolean) => {
     const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
 
-    if (rotate) {
+    if (isRotate) {
       if (!['free', 'square', 'original'].includes(aspectRatio)) {
         const strings = aspectRatio.split('_');
         aspectRatio = strings[1] + '_' + strings[0];
       }
       if (currentAngleOffset % 180 !== 0) {
-        rotate = false;
+        isRotate = false;
       }
     }
     currentAspectRatio = aspectRatio;
@@ -156,7 +156,7 @@
         break;
       case 'original':
         aspectRatioNum = originalAspect;
-        if (rotate) {
+        if (isRotate) {
           aspectRatioNum = 1 / originalAspect;
         }
         break;
@@ -200,7 +200,9 @@
       //cropElement.style.maxWidth = '100%';
     }
 
+    currentTranslate = { x: 0, y: 0 };
     calcImageElement(currentAngle);
+    setImageWrapperTransform();
   };
 
   //function for dragging the angle selection slider
@@ -470,26 +472,19 @@
   };
 
   const rotate = async (angle: number, angleOffset: number, isRotate?: boolean) => {
-    console.log('rotate', angleOffset);
-    setAspectRatio(currentAspectRatio, isRotate ? true : false);
-
     if (angleOffset > 360) {
       angleOffset = angleOffset - 360;
     }
 
-    // Save angle to  global variable
-    currentAngle = angle;
-    currentAngleOffset = angleOffset;
+    setAspectRatio(currentAspectRatio, isRotate ? true : false);
 
-    currentTranslate = { x: 0, y: 0 };
-
-    setImageWrapperTransform();
-
-    calcImageElement(angle);
     let a = -1 * angle * (125 / 49);
     let b = a + 'px';
     angleSliderHandle.style.left = b;
     angleSlider.style.left = b;
+
+    currentAngle = angle;
+    currentAngleOffset = angleOffset;
   };
 
   // Temporary function
