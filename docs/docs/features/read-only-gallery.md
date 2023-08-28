@@ -16,8 +16,6 @@ The current limitations of this feature are:
 - Only new files that are added to the gallery will be detected.
 - Deleted and moved files will not be detected.
 
-:::
-
 ## Usage
 
 :::tip Example scenario
