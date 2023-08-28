@@ -63,11 +63,15 @@ Future<void> initApp() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    log.severe(details.toString(), details, details.stack);
+    log.severe(
+      'Catch all error: ${details.toString()} - ${details.exception} - ${details.library} - ${details.context} - ${details.stack}',
+      details,
+      details.stack,
+    );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    log.severe(error.toString(), error, stack);
+    log.severe('Catch all error: ${error.toString()} - $error', error, stack);
     return true;
   };
 }
@@ -138,6 +142,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
+        break;
+      case AppLifecycleState.hidden:
+        debugPrint("[APP STATE] hidden");
+        ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }
   }

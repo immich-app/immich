@@ -149,16 +149,30 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   }
 
   Future<bool> _startUpload(Iterable<Asset> allManualUploads) async {
+    bool hasErrors = false;
     try {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.manualInProgress);
 
       if (ref.read(galleryPermissionNotifier.notifier).hasPermission) {
         await PhotoManager.clearFileCache();
 
-        Set<AssetEntity> allUploadAssets = allManualUploads
-            .where((e) => e.isLocal && e.local != null)
-            .map((e) => e.local!)
-            .toSet();
+        // We do not have 1:1 mapping of all AssetEntity fields to Asset. This results in cases
+        // where platform specific fields such as `subtype` used to detect platform specific assets such as
+        // LivePhoto in iOS is lost when we directly fetch the local asset from Asset using Asset.local
+        List<AssetEntity?> allAssetsFromDevice = await Future.wait(
+          allManualUploads
+              // Filter local only assets
+              .where((e) => e.isLocal && !e.isRemote)
+              .map((e) => e.local!.obtainForNewProperties()),
+        );
+
+        if (allAssetsFromDevice.length != allManualUploads.length) {
+          _log.warning(
+            '[_startUpload] Refreshed upload list -> ${allManualUploads.length - allAssetsFromDevice.length} asset will not be uploaded',
+          );
+        }
+
+        Set<AssetEntity> allUploadAssets = allAssetsFromDevice.nonNulls.toSet();
 
         if (allUploadAssets.isEmpty) {
           debugPrint("[_startUpload] No Assets to upload - Abort Process");
@@ -213,7 +227,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           '[_startUpload] Manual Upload Completed - success: ${state.successfulUploads},'
           ' failed: ${state.totalAssetsToUpload - state.successfulUploads}',
         );
-        bool hasErrors = false;
+
         // User cancelled upload
         if (!ok && state.cancelToken.isCancelled) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
@@ -237,32 +251,29 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             presentBanner: true,
           );
         }
-
-        _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
-        _handleAppInActivity();
-        await _backupProvider.notifyBackgroundServiceCanRun();
-        return !hasErrors;
       } else {
         openAppSettings();
         debugPrint("[_startUpload] Do not have permission to the gallery");
       }
     } catch (e) {
       debugPrint("ERROR _startUpload: ${e.toString()}");
+      hasErrors = true;
+    } finally {
+      _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
+      _handleAppInActivity();
+      await _localNotificationService.closeNotification(
+        LocalNotificationService.manualUploadDetailedNotificationID,
+      );
+      await _backupProvider.notifyBackgroundServiceCanRun();
     }
-    _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
-    _handleAppInActivity();
-    await _localNotificationService.closeNotification(
-      LocalNotificationService.manualUploadDetailedNotificationID,
-    );
-    await _backupProvider.notifyBackgroundServiceCanRun();
-    return false;
+    return !hasErrors;
   }
 
   void _handleAppInActivity() {
     final appState = ref.read(appStateProvider.notifier).getAppState();
     // The app is currently in background. Perform the necessary cleanups which
     // are on-hold for upload completion
-    if (appState != AppStateEnum.active || appState != AppStateEnum.resumed) {
+    if (appState != AppStateEnum.active && appState != AppStateEnum.resumed) {
       ref.read(appStateProvider.notifier).handleAppInactivity();
     }
   }

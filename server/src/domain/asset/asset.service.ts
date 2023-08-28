@@ -8,22 +8,31 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
+import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobName,
+  AssetJobsDto,
+  AssetStatsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
+  mapStats,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
 } from './dto';
-import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
-import { MapMarkerDto } from './dto/map-marker.dto';
-import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
-import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
-import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
+import {
+  AssetResponseDto,
+  mapAsset,
+  MapMarkerResponseDto,
+  MemoryLaneResponseDto,
+  TimeBucketResponseDto,
+} from './response-dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -53,6 +62,7 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
@@ -267,5 +277,31 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+    const { ids, ...options } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.assetRepository.updateAll(ids, options);
+  }
+
+  async run(authUser: AuthUserDto, dto: AssetJobsDto) {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, dto.assetIds);
+
+    for (const id of dto.assetIds) {
+      switch (dto.name) {
+        case AssetJobName.REFRESH_METADATA:
+          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          break;
+
+        case AssetJobName.REGENERATE_THUMBNAIL:
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          break;
+
+        case AssetJobName.TRANSCODE_VIDEO:
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          break;
+      }
+    }
   }
 }

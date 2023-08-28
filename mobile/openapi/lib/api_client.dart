@@ -199,6 +199,8 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkUpdateDto':
+          return AssetBulkUpdateDto.fromJson(value);
         case 'AssetBulkUploadCheckDto':
           return AssetBulkUploadCheckDto.fromJson(value);
         case 'AssetBulkUploadCheckItem':
@@ -213,6 +215,10 @@ class ApiClient {
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
           return AssetIdsResponseDto.fromJson(value);
+        case 'AssetJobName':
+          return AssetJobNameTypeTransformer().decode(value);
+        case 'AssetJobsDto':
+          return AssetJobsDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
@@ -221,6 +227,8 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
+        case 'AuditDeletesResponseDto':
+          return AuditDeletesResponseDto.fromJson(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
@@ -261,6 +269,8 @@ class ApiClient {
           return DownloadInfoDto.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
+        case 'EntityType':
+          return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'ImportAssetDto':
@@ -313,8 +323,6 @@ class ApiClient {
           return SearchAssetDto.fromJson(value);
         case 'SearchAssetResponseDto':
           return SearchAssetResponseDto.fromJson(value);
-        case 'SearchConfigResponseDto':
-          return SearchConfigResponseDto.fromJson(value);
         case 'SearchExploreItem':
           return SearchExploreItem.fromJson(value);
         case 'SearchExploreResponseDto':
@@ -325,6 +333,8 @@ class ApiClient {
           return SearchFacetResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
+        case 'ServerFeaturesDto':
+          return ServerFeaturesDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
@@ -333,8 +343,8 @@ class ApiClient {
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
-        case 'ServerVersionReponseDto':
-          return ServerVersionReponseDto.fromJson(value);
+        case 'ServerVersionResponseDto':
+          return ServerVersionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -353,6 +363,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
+        case 'SystemConfigMachineLearningDto':
+          return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':

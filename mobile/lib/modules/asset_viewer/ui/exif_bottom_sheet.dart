@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
+import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
@@ -16,16 +17,35 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
 
-  bool get showMap =>
+  bool get hasCoordinates =>
       asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
 
-  Future<Uri> _createCoordinatesUri(double latitude, double longitude) async {
-    const zoomLevel = 5;
+  String get formattedDateTime {
+    final fileCreatedAt = asset.fileCreatedAt.toLocal();
+    final date = DateFormat.yMMMEd().format(fileCreatedAt);
+    final time = DateFormat.jm().format(fileCreatedAt);
+
+    return '$date • $time';
+  }
+
+  Future<Uri?> _createCoordinatesUri() async {
+    if (!hasCoordinates) {
+      return null;
+    }
+
+    double latitude = asset.exifInfo!.latitude!;
+    double longitude = asset.exifInfo!.longitude!;
+
+    const zoomLevel = 16;
+
     if (Platform.isAndroid) {
       Uri uri = Uri(
         scheme: 'geo',
         host: '$latitude,$longitude',
-        queryParameters: {'z': '$zoomLevel', 'q': '$latitude,$longitude'},
+        queryParameters: {
+          'z': '$zoomLevel',
+          'q': '$latitude,$longitude($formattedDateTime)',
+        },
       );
       if (await canLaunchUrl(uri)) {
         return uri;
@@ -33,16 +53,20 @@ class ExifBottomSheet extends HookConsumerWidget {
     } else if (Platform.isIOS) {
       var params = {
         'll': '$latitude,$longitude',
-        'q': '$latitude, $longitude',
+        'q': formattedDateTime,
+        'z': '$zoomLevel',
       };
       Uri uri = Uri.https('maps.apple.com', '/', params);
-      if (!await canLaunchUrl(uri)) {
+      if (await canLaunchUrl(uri)) {
         return uri;
       }
     }
-    return Uri.https(
-      'www.google.com',
-      '/maps/place/$latitude,$longitude/@$latitude,$longitude,${zoomLevel}z',
+
+    return Uri(
+      scheme: 'https',
+      host: 'openstreetmap.org',
+      queryParameters: {'mlat': '$latitude', 'mlon': '$longitude'},
+      fragment: 'map=$zoomLevel/$latitude/$longitude',
     );
   }
 
@@ -57,67 +81,35 @@ class ExifBottomSheet extends HookConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return Container(
-              height: 150,
-              width: constraints.maxWidth,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
+            return MapThumbnail(
+              coords: LatLng(
+                exifInfo?.latitude ?? 0,
+                exifInfo?.longitude ?? 0,
               ),
-              child: FlutterMap(
-                options: MapOptions(
-                  interactiveFlags: InteractiveFlag.none,
-                  center: LatLng(
+              height: 150,
+              zoom: 16.0,
+              markers: [
+                Marker(
+                  anchorPos: AnchorPos.align(AnchorAlign.top),
+                  point: LatLng(
                     exifInfo?.latitude ?? 0,
                     exifInfo?.longitude ?? 0,
                   ),
-                  zoom: 16.0,
-                  onTap: (tapPosition, latLong) async {
-                    if (exifInfo != null &&
-                        exifInfo.latitude != null &&
-                        exifInfo.longitude != null) {
-                      launchUrl(
-                        await _createCoordinatesUri(
-                          exifInfo.latitude!,
-                          exifInfo.longitude!,
-                        ),
-                      );
-                    }
-                  },
+                  builder: (ctx) => const Image(
+                    image: AssetImage('assets/location-pin.png'),
+                  ),
                 ),
-                nonRotatedChildren: [
-                  RichAttributionWidget(
-                    attributions: [
-                      TextSourceAttribution(
-                        'OpenStreetMap contributors',
-                        onTap: () => launchUrl(
-                          Uri.parse('https://openstreetmap.org/copyright'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: const ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        anchorPos: AnchorPos.align(AnchorAlign.top),
-                        point: LatLng(
-                          exifInfo?.latitude ?? 0,
-                          exifInfo?.longitude ?? 0,
-                        ),
-                        builder: (ctx) => const Image(
-                          image: AssetImage('assets/location-pin.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
+              onTap: (tapPosition, latLong) async {
+                Uri? uri = await _createCoordinatesUri();
+
+                if (uri == null) {
+                  return;
+                }
+
+                debugPrint('Opening Map Uri: $uri');
+                launchUrl(uri);
+              },
             );
           },
         ),
@@ -151,7 +143,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     buildLocation() {
       // Guard no lat/lng
-      if (!showMap) {
+      if (!hasCoordinates) {
         return Container();
       }
 
@@ -199,7 +191,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               Text(
                 "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
                 style: const TextStyle(fontSize: 12),
-              )
+              ),
             ],
           ),
         ],
@@ -207,12 +199,8 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDate() {
-      final fileCreatedAt = asset.fileCreatedAt.toLocal();
-      final date = DateFormat.yMMMEd().format(fileCreatedAt);
-      final time = DateFormat.jm().format(fileCreatedAt);
-
       return Text(
-        '$date • $time',
+        formattedDateTime,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -306,7 +294,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
-                              flex: showMap ? 5 : 0,
+                              flex: hasCoordinates ? 5 : 0,
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: buildLocation(),
@@ -336,7 +324,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                     if (asset.isRemote) DescriptionInput(asset: asset),
                     const SizedBox(height: 8.0),
                     buildLocation(),
-                    SizedBox(height: showMap ? 16.0 : 0.0),
+                    SizedBox(height: hasCoordinates ? 16.0 : 0.0),
                     buildDetail(),
                     const SizedBox(height: 50),
                   ],

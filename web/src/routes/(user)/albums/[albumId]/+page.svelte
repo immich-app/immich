@@ -6,6 +6,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -43,6 +44,7 @@
   import Plus from 'svelte-material-icons/Plus.svelte';
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export let data: PageData;
 
@@ -165,13 +167,14 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
-    viewMode = ViewMode.ALBUM_OPTIONS;
+  const handleOpenAlbumOptions = ({ x }: MouseEvent) => {
+    const navigationBarHeight = 75;
+    contextMenuPosition = { x: x, y: navigationBarHeight };
+    viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id, '');
+    await openFileUploadDialog(album.id);
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };
@@ -216,7 +219,7 @@
       await api.albumApi.deleteAlbum({ id: album.id });
       goto(backUrl);
     } catch (error) {
-      handleError(error, 'Unable to remove album');
+      handleError(error, 'Unable to delete album');
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -292,6 +295,7 @@
         {#if isAllUserOwned}
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         {/if}
+        <ArchiveAction menuItem />
         <DownloadAction menuItem filename="{album.albumName}.zip" />
         {#if isOwned || isAllUserOwned}
           <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
@@ -318,7 +322,7 @@
               logo={ShareVariantOutline}
             />
             <CircleIconButton
-              title="Remove album"
+              title="Delete album"
               on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
               logo={DeleteOutline}
             />
@@ -328,13 +332,15 @@
             <CircleIconButton title="Download" on:click={handleDownloadAlbum} logo={FolderDownloadOutline} />
 
             {#if isOwned}
-              <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} logo={DotsVertical}>
-                {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                  <ContextMenu {...contextMenuPosition} on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                    <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                  </ContextMenu>
-                {/if}
-              </CircleIconButton>
+              <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
+                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} logo={DotsVertical}>
+                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
+                    <ContextMenu {...contextMenuPosition}>
+                      <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                    </ContextMenu>
+                  {/if}
+                </CircleIconButton>
+              </div>
             {/if}
           {/if}
 
@@ -518,7 +524,7 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
-    title="Delete Album"
+    title="Delete album"
     confirmText="Delete"
     on:confirm={handleRemoveAlbum}
     on:cancel={() => (viewMode = ViewMode.VIEW)}

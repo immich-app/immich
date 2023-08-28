@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Link from 'svelte-material-icons/Link.svelte';
   import BaseModal from '../base-modal.svelte';
@@ -80,12 +80,7 @@
       return;
     }
 
-    try {
-      await navigator.clipboard.writeText(sharedLink);
-      notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
-    } catch (e) {
-      handleError(e, 'Cannot copy to clipboard, make sure you are accessing the page through https');
-    }
+    await copyToClipboard(sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {

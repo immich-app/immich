@@ -17,6 +17,7 @@
   export let jobConfig: SystemConfigJobDto; // this is the config that is being edited
   export let jobDefault: SystemConfigJobDto;
   export let savedConfig: SystemConfigJobDto;
+  export let disabled = false;
 
   const ignoredJobs = [JobName.BackgroundTask, JobName.Search] as JobName[];
   const jobNames = Object.values(JobName).filter((jobName) => !ignoredJobs.includes(jobName as JobName));
@@ -47,6 +48,7 @@
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
+            {disabled}
             label="{api.getJobName(jobName)} Concurrency"
             desc=""
             bind:value={jobConfig[jobName].concurrency}

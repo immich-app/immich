@@ -2,14 +2,13 @@
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
+  import { AssetResponseDto, ThumbnailFormat } from '@api';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import { flip } from 'svelte/animate';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let assets: AssetResponseDto[];
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
@@ -90,7 +89,6 @@
           {asset}
           {thumbnailSize}
           readonly={disableAssetSelect}
-          publicSharedKey={sharedLink?.key}
           format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
           on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
           on:select={selectAssetHandler}
@@ -106,8 +104,6 @@
 {#if $showAssetViewer}
   <AssetViewer
     asset={selectedAsset}
-    publicSharedKey={sharedLink?.key}
-    {sharedLink}
     on:previous={navigateAssetBackward}
     on:next={navigateAssetForward}
     on:close={closeViewer}

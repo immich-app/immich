@@ -19,6 +19,7 @@
   export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
   export let passwordLoginDefault: SystemConfigPasswordLoginDto;
   export let savedConfig: SystemConfigPasswordLoginDto;
+  export let disabled = false;
 
   let isConfirmOpen = false;
   let handleConfirm: (value: boolean) => void;
@@ -77,6 +78,7 @@
         <div class="ml-4">
           <SettingSwitch
             title="ENABLED"
+            {disabled}
             subtitle="Login with email and password"
             isEdited={!(passwordLoginConfig.enabled == savedConfig.enabled)}
             bind:checked={passwordLoginConfig.enabled}
@@ -87,6 +89,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(passwordLoginConfig, passwordLoginDefault)}
+            {disabled}
           />
         </div>
       </div>

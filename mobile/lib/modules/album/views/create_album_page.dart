@@ -30,7 +30,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets = useState<Set<Asset>>(initialAssets != null ? Set.from(initialAssets!) : const {});
+    final selectedAssets = useState<Set<Asset>>(
+        initialAssets != null ? Set.from(initialAssets!) : const {},);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() async {
@@ -248,8 +249,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                   : null,
               child: Text(
                 'create_shared_album_page_create'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),

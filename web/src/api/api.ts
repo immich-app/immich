@@ -3,6 +3,7 @@ import {
   APIKeyApi,
   AssetApi,
   AssetApiFp,
+  AssetJobName,
   AuthenticationApi,
   Configuration,
   ConfigurationParameters,
@@ -38,6 +39,11 @@ export class ImmichApi {
   public userApi: UserApi;
 
   private config: Configuration;
+  private key?: string;
+
+  get isSharedLink() {
+    return !!this.key;
+  }
 
   constructor(params: ConfigurationParameters) {
     this.config = new Configuration(params);
@@ -72,6 +78,14 @@ export class ImmichApi {
     return (this.config.basePath || BASE_PATH) + toPathString(url);
   }
 
+  public setKey(key: string) {
+    this.key = key;
+  }
+
+  public getKey(): string | undefined {
+    return this.key;
+  }
+
   public setAccessToken(accessToken: string) {
     this.config.accessToken = accessToken;
   }
@@ -84,14 +98,14 @@ export class ImmichApi {
     this.config.basePath = baseUrl;
   }
 
-  public getAssetFileUrl(...[assetId, isThumb, isWeb, key]: ApiParams<typeof AssetApiFp, 'serveFile'>) {
+  public getAssetFileUrl(...[assetId, isThumb, isWeb]: ApiParams<typeof AssetApiFp, 'serveFile'>) {
     const path = `/asset/file/${assetId}`;
-    return this.createUrl(path, { isThumb, isWeb, key });
+    return this.createUrl(path, { isThumb, isWeb, key: this.getKey() });
   }
 
-  public getAssetThumbnailUrl(...[assetId, format, key]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>) {
+  public getAssetThumbnailUrl(...[assetId, format]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>) {
     const path = `/asset/thumbnail/${assetId}`;
-    return this.createUrl(path, { format, key });
+    return this.createUrl(path, { format, key: this.getKey() });
   }
 
   public getProfileImageUrl(...[userId]: ApiParams<typeof UserApiFp, 'getProfileImage'>) {
@@ -119,6 +133,26 @@ export class ImmichApi {
     };
 
     return names[jobName];
+  }
+
+  public getAssetJobName(job: AssetJobName) {
+    const names: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: 'Refresh metadata',
+      [AssetJobName.RegenerateThumbnail]: 'Refresh thumbnails',
+      [AssetJobName.TranscodeVideo]: 'Refresh encoded videos',
+    };
+
+    return names[job];
+  }
+
+  public getAssetJobMessage(job: AssetJobName) {
+    const messages: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: 'Refreshing metadata',
+      [AssetJobName.RegenerateThumbnail]: `Regenerating thumbnails`,
+      [AssetJobName.TranscodeVideo]: `Refreshing encoded video`,
+    };
+
+    return messages[job];
   }
 }
 

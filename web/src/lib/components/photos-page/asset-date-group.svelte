@@ -26,7 +26,6 @@
   export let assetInteractionStore: AssetInteractionStore;
 
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
-
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
     selectAssets: AssetResponseDto;

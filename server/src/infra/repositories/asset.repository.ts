@@ -129,6 +129,10 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
+    await this.repository.update({ id: In(ids) }, options);
+  }
+
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
     const { id } = await this.repository.save(asset);
     return this.repository.findOneOrFail({

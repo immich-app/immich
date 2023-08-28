@@ -29,9 +29,11 @@ Method | HTTP request | Description
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
+[**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
+[**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -378,7 +380,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch)
 
 
 
@@ -406,12 +408,12 @@ final api_instance = AssetApi();
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final isFavorite = true; // bool | 
 final isArchived = true; // bool | 
-final withoutThumbs = true; // bool | Include assets without thumbnails
 final skip = 8.14; // num | 
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch);
+    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -425,8 +427,8 @@ Name | Type | Description  | Notes
  **userId** | **String**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
- **withoutThumbs** | **bool**| Include assets without thumbnails | [optional] 
  **skip** | **num**|  | [optional] 
+ **updatedAfter** | **DateTime**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type
@@ -1191,6 +1193,60 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **runAssetJobs**
+> runAssetJobs(assetJobsDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetJobsDto = AssetJobsDto(); // AssetJobsDto | 
+
+try {
+    api_instance.runAssetJobs(assetJobsDto);
+} catch (e) {
+    print('Exception when calling AssetApi->runAssetJobs: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetJobsDto** | [**AssetJobsDto**](AssetJobsDto.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **searchAsset**
 > List<AssetResponseDto> searchAsset(searchAssetDto)
 
@@ -1363,6 +1419,60 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: application/json
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateAssets**
+> updateAssets(assetBulkUpdateDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetBulkUpdateDto = AssetBulkUpdateDto(); // AssetBulkUpdateDto | 
+
+try {
+    api_instance.updateAssets(assetBulkUpdateDto);
+} catch (e) {
+    print('Exception when calling AssetApi->updateAssets: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetBulkUpdateDto** | [**AssetBulkUpdateDto**](AssetBulkUpdateDto.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

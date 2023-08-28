@@ -16,6 +16,12 @@ void main() {
   // final instance = PeopleUpdateItem();
 
   group('test PeopleUpdateItem', () {
+    // Person date of birth.
+    // DateTime birthDate
+    test('to test the property `birthDate`', () async {
+      // TODO
+    });
+
     // Asset is used to get the feature face thumbnail.
     // String featureFaceAssetId
     test('to test the property `featureFaceAssetId`', () async {

@@ -1,9 +1,9 @@
-import { DetectFaceResult, IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
+import { DetectFaceResult, IMachineLearningRepository, MachineLearningInput } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { createReadStream } from 'fs';
 
-const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
+const client = axios.create();
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
@@ -11,19 +11,19 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return client.post<T>(endpoint, createReadStream(input.imagePath)).then((res) => res.data);
   }
 
-  classifyImage(input: MachineLearningInput): Promise<string[]> {
-    return this.post<string[]>(input, '/image-classifier/tag-image');
+  classifyImage(url: string, input: MachineLearningInput): Promise<string[]> {
+    return this.post<string[]>(input, `${url}/image-classifier/tag-image`);
   }
 
-  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]> {
-    return this.post<DetectFaceResult[]>(input, '/facial-recognition/detect-faces');
+  detectFaces(url: string, input: MachineLearningInput): Promise<DetectFaceResult[]> {
+    return this.post<DetectFaceResult[]>(input, `${url}/facial-recognition/detect-faces`);
   }
 
-  encodeImage(input: MachineLearningInput): Promise<number[]> {
-    return this.post<number[]>(input, '/sentence-transformer/encode-image');
+  encodeImage(url: string, input: MachineLearningInput): Promise<number[]> {
+    return this.post<number[]>(input, `${url}/sentence-transformer/encode-image`);
   }
 
-  encodeText(input: string): Promise<number[]> {
-    return client.post<number[]>('/sentence-transformer/encode-text', { text: input }).then((res) => res.data);
+  encodeText(url: string, input: string): Promise<number[]> {
+    return client.post<number[]>(`${url}/sentence-transformer/encode-text`, { text: input }).then((res) => res.data);
   }
 }

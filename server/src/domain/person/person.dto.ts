@@ -1,7 +1,16 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 import { toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -11,6 +20,16 @@ export class PersonUpdateDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  /**
+   * Person date of birth.
+   */
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  @ValidateIf((value) => value !== null)
+  @ApiProperty({ format: 'date' })
+  birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.
@@ -50,6 +69,15 @@ export class PeopleUpdateItem {
   name?: string;
 
   /**
+   * Person date of birth.
+   */
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  @ApiProperty({ format: 'date' })
+  birthDate?: Date | null;
+
+  /**
    * Asset is used to get the feature face thumbnail.
    */
   @IsOptional()
@@ -78,6 +106,8 @@ export class PersonSearchDto {
 export class PersonResponseDto {
   id!: string;
   name!: string;
+  @ApiProperty({ format: 'date' })
+  birthDate!: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
 }
@@ -96,6 +126,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
+    birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
   };

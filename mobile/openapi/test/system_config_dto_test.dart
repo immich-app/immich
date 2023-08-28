@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigMachineLearningDto machineLearning
+    test('to test the property `machineLearning`', () async {
+      // TODO
+    });
+
     // SystemConfigOAuthDto oauth
     test('to test the property `oauth`', () async {
       // TODO

@@ -38,7 +38,7 @@
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onAssetFavorite={(asset) => assetStore.removeAsset(asset.id)} />
+    <FavoriteAction removeFavorite onFavorite={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={Plus} title="Add">

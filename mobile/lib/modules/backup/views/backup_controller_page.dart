@@ -26,7 +26,7 @@ import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -114,7 +114,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
           return;
         }
-        Wakelock.enable();
+        WakelockPlus.enable();
         const limit = 100;
         final toDelete = await ref
             .read(backupVerificationServiceProvider)
@@ -140,7 +140,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
         }
       } finally {
-        Wakelock.disable();
+        WakelockPlus.disable();
         checkInProgress.value = false;
       }
     }
@@ -202,7 +202,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 child: const Text('backup_controller_page_storage_format').tr(
                   args: [
                     backupState.serverInfo.diskUse,
-                    backupState.serverInfo.diskSize
+                    backupState.serverInfo.diskSize,
                   ],
                 ),
               ),
@@ -256,7 +256,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -624,7 +624,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   style: TextStyle(fontSize: 12),
                 ).tr(),
                 buildSelectedAlbumName(),
-                buildExcludedAlbumName()
+                buildExcludedAlbumName(),
               ],
             ),
           ),
@@ -776,7 +776,7 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             const CurrentUploadingAssetInfoBox(),
             if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
-            buildBackupButton()
+            buildBackupButton(),
           ],
         ),
       ),

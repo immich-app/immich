@@ -1,23 +1,27 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../../utils/handle-error';
+  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;
   const { getAssets, clearSelect } = getAssetControlContext();
 
   let isShowConfirmation = false;
+  let loading = false;
 
   const handleDelete = async () => {
+    loading = true;
+
     try {
       let count = 0;
 
@@ -44,14 +48,21 @@
       handleError(e, 'Error deleting assets');
     } finally {
       isShowConfirmation = false;
+      loading = false;
     }
   };
 </script>
 
 {#if menuItem}
   <MenuOption text="Delete" on:click={() => (isShowConfirmation = true)} />
-{:else}
-  <CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+{/if}
+
+{#if !menuItem}
+  {#if loading}
+    <CircleIconButton title="Loading" logo={TimerSand} />
+  {:else}
+    <CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+  {/if}
 {/if}
 
 {#if isShowConfirmation}

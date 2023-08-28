@@ -17,6 +17,7 @@
   export let thumbnailConfig: SystemConfigThumbnailDto; // this is the config that is being edited
   export let thumbnailDefault: SystemConfigThumbnailDto;
   export let savedConfig: SystemConfigThumbnailDto;
+  export let disabled = false;
 
   async function reset() {
     thumbnailConfig = { ...savedConfig };
@@ -54,6 +55,7 @@
           ]}
           name="resolution"
           isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
+          {disabled}
         />
 
         <SettingSelect
@@ -67,6 +69,7 @@
           ]}
           name="resolution"
           isEdited={!(thumbnailConfig.jpegSize === savedConfig.jpegSize)}
+          {disabled}
         />
       </div>
 
@@ -76,6 +79,7 @@
           on:save={() => dispatch('save', thumbnailConfig)}
           on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(thumbnailConfig, thumbnailDefault)}
+          {disabled}
         />
       </div>
     </form>

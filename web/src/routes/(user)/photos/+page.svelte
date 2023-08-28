@@ -2,6 +2,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -51,7 +52,8 @@
         <AssetSelectContextMenu icon={DotsVertical} title="Menu">
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
           <DownloadAction menuItem />
-          <ArchiveAction menuItem onAssetArchive={(asset) => assetStore.removeAsset(asset.id)} />
+          <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+          <AssetJobActions />
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
     {/if}

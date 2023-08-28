@@ -18,6 +18,7 @@ import { PersonService } from './person.service';
 const responseDto: PersonResponseDto = {
   id: 'person-1',
   name: 'Person 1',
+  birthDate: null,
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
 };
@@ -68,6 +69,7 @@ describe(PersonService.name, () => {
           {
             id: 'person-1',
             name: '',
+            birthDate: null,
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
           },
@@ -140,6 +142,24 @@ describe(PersonService.name, () => {
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetStub.image.id] },
       });
+    });
+
+    it("should update a person's date of birth", async () => {
+      personMock.getById.mockResolvedValue(personStub.noBirthDate);
+      personMock.update.mockResolvedValue(personStub.withBirthDate);
+      personMock.getAssets.mockResolvedValue([assetStub.image]);
+
+      await expect(sut.update(authStub.admin, 'person-1', { birthDate: new Date('1976-06-30') })).resolves.toEqual({
+        id: 'person-1',
+        name: 'Person 1',
+        birthDate: new Date('1976-06-30'),
+        thumbnailPath: '/path/to/thumbnail.jpg',
+        isHidden: false,
+      });
+
+      expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should update a person visibility', async () => {

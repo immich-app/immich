@@ -16,12 +16,13 @@
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+
   let textarea: HTMLTextAreaElement;
   let description: string;
 
   $: {
     // Get latest description from server
-    if (asset.id) {
+    if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
@@ -34,9 +35,12 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [lat, lng] as LatLngTuple;
+      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
     }
   })();
+
+  $: lat = latlng ? latlng[0] : undefined;
+  $: lng = latlng ? latlng[1] : undefined;
 
   $: people = asset.people || [];
 
@@ -89,13 +93,15 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
-  <section class="mx-4 mt-10">
+  <section
+    class="mx-4 mt-10"
+    style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
+  >
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
       placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
-      style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
       on:focusin={handleFocusIn}
       on:focusout={handleFocusOut}
       on:input={autoGrowHeight}
@@ -104,7 +110,7 @@
     />
   </section>
 
-  {#if people.length > 0}
+  {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <h2>PEOPLE</h2>
 
@@ -121,6 +127,13 @@
               thumbhash={null}
             />
             <p class="mt-1 truncate font-medium">{person.name}</p>
+            <p class="font-light">
+              {#if person.birthDate}
+                Age {Math.floor(
+                  DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
+                )}
+              {/if}
+            </p>
           </a>
         {/each}
       </div>
@@ -249,7 +262,14 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}
         />
-        <Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+        <Marker {latlng}>
+          <p>
+            {lat}, {lng}
+          </p>
+          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+            Open in OpenStreetMap
+          </a>
+        </Marker>
       </Map>
     {/await}
   </div>

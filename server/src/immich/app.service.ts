@@ -1,4 +1,4 @@
-import { JobService, MACHINE_LEARNING_ENABLED, SearchService, StorageService } from '@app/domain';
+import { JobService, SearchService, ServerInfoService, StorageService } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -10,6 +10,7 @@ export class AppService {
     private jobService: JobService,
     private searchService: SearchService,
     private storageService: StorageService,
+    private serverService: ServerInfoService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -20,8 +21,6 @@ export class AppService {
   async init() {
     this.storageService.init();
     await this.searchService.init();
-
-    this.logger.log(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
-    this.logger.log(`Search is ${this.searchService.isEnabled() ? 'enabled' : 'disabled'}`);
+    this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
 }

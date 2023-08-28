@@ -100,8 +100,8 @@ services:
     environment:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
       - TYPESENSE_DATA_DIR=/data
-    logging:
-      driver: none
+      # remove this to get debug messages
+      - GLOG_minloglevel=1
     volumes:
       - tsdata:/data
 

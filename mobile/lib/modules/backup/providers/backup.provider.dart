@@ -511,7 +511,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
-          deviceAssetId
+          deviceAssetId,
         },
         allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
       );

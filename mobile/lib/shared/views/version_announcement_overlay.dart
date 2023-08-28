@@ -99,7 +99,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       text:
                                           "version_announcement_overlay_text_3"
                                               .tr(),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -126,7 +126,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                   ),
                                 ).tr(),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),

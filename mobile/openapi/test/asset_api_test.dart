@@ -55,7 +55,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, num skip, DateTime updatedAfter, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -129,6 +129,11 @@ void main() {
       // TODO
     });
 
+    //Future runAssetJobs(AssetJobsDto assetJobsDto) async
+    test('test runAssetJobs', () async {
+      // TODO
+    });
+
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
@@ -143,6 +148,11 @@ void main() {
     //
     //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
+      // TODO
+    });
+
+    //Future updateAssets(AssetBulkUpdateDto assetBulkUpdateDto) async
+    test('test updateAssets', () async {
       // TODO
     });
 
