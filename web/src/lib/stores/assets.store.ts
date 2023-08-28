@@ -171,19 +171,14 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
-
-
   private debounceAddToBucket = lodash.debounce(() => this._addToBucket(), 2000);
 
   addToBucket(asset: AssetResponseDto) {
     this.newAssets.push(asset);
-    console.log("add to bucket, calling debounce", this.newAssets.length);
     this.debounceAddToBucket();
   }
 
   private _addToBucket(): void {
-    console.log("Debounce runs", this.newAssets.length)
-
     try {
       for (const asset of this.newAssets) {
         const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
@@ -202,14 +197,10 @@ export class AssetStore {
       }
 
       this.newAssets = [];
-      console.log("Debounce complete", this.newAssets.length)
-
-
       this.emit(true);
     } catch (e) {
       console.error(e);
     }
-
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
