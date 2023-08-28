@@ -145,7 +145,7 @@
     >
       <!-- Date group title -->
       <p
-        class="text-immich-fg dark:text-immich-dark-fg mb-2 flex h-6 place-items-center text-xs font-medium md:text-sm"
+        class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
         {#if !singleSelect && ((hoveredDateGroup == groupTitle && isMouseOverGroup) || $selectedGroup.has(groupTitle))}
