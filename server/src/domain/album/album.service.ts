@@ -99,8 +99,8 @@ export class AlbumService {
       ownerId: authUser.id,
       albumName: dto.albumName,
       description: dto.description,
-      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
-      assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
+      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value }) as UserEntity) ?? [],
+      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
     });
 
