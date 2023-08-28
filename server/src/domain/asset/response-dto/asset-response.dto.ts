@@ -31,7 +31,7 @@ export class AssetResponseDto {
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
-  checksum?: string | null;
+  checksum!: string;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -57,7 +57,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
-    checksum: entity.checksum?.toString('base64') ?? null,
+    checksum: entity.checksum.toString('base64'),
   };
 }
 
@@ -84,7 +84,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
-    checksum: entity.checksum?.toString('base64') ?? null,
+    checksum: entity.checksum.toString('base64'),
   };
 }
 

@@ -11,8 +11,6 @@ void main() {
 
     DateTime date = DateTime(2022, month, day);
 
-    String originalPath = date.toString();
-
     testAssets.add(
       Asset(
         checksum: "",
@@ -21,7 +19,6 @@ void main() {
         fileCreatedAt: date,
         fileModifiedAt: date,
         updatedAt: date,
-        originalPath: originalPath,
         durationInSeconds: 0,
         type: AssetType.image,
         fileName: '',

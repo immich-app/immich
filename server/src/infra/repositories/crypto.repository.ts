@@ -16,6 +16,10 @@ export class CryptoRepository implements ICryptoRepository {
     return createHash('sha256').update(value).digest('base64');
   }
 
+  hashSha1(value: string) {
+    return createHash('sha1').update(value).digest();
+  }
+
   hashFile(filepath: string): Promise<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
       const hash = createHash('sha1');

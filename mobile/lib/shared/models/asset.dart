@@ -19,7 +19,6 @@ class Asset {
         checksum = remote.checksum,
         fileCreatedAt = remote.fileCreatedAt,
         fileModifiedAt = remote.fileModifiedAt,
-        originalPath = remote.originalPath,
         updatedAt = remote.updatedAt,
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
@@ -61,7 +60,6 @@ class Asset {
     this.id = Isar.autoIncrement,
     required this.checksum,
     this.remoteId,
-    required this.originalPath,
     required this.localId,
     required this.ownerId,
     required this.fileCreatedAt,
@@ -106,9 +104,9 @@ class Asset {
     unique: true,
     replace: false,
     type: IndexType.hash,
-    composite: [CompositeIndex("ownerId"), CompositeIndex("originalPath")],
+    composite: [CompositeIndex("ownerId")],
   )
-  String? checksum;
+  String checksum;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
@@ -117,8 +115,6 @@ class Asset {
   String? localId;
 
   int ownerId;
-
-  String? originalPath;
 
   DateTime fileCreatedAt;
 
@@ -187,7 +183,6 @@ class Asset {
         remoteId == other.remoteId &&
         localId == other.localId &&
         ownerId == other.ownerId &&
-        originalPath == other.originalPath &&
         fileCreatedAt.isAtSameMomentAs(other.fileCreatedAt) &&
         fileModifiedAt.isAtSameMomentAs(other.fileModifiedAt) &&
         updatedAt.isAtSameMomentAs(other.updatedAt) &&
@@ -210,7 +205,6 @@ class Asset {
       remoteId.hashCode ^
       localId.hashCode ^
       ownerId.hashCode ^
-      originalPath.hashCode ^
       fileCreatedAt.hashCode ^
       fileModifiedAt.hashCode ^
       updatedAt.hashCode ^
@@ -275,7 +269,6 @@ class Asset {
         // values from remote take precedence
         return _copyWith(
           remoteId: a.remoteId,
-          originalpath: a.originalPath,
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
@@ -302,7 +295,6 @@ class Asset {
     String? remoteId,
     String? localId,
     int? ownerId,
-    String? originalpath,
     DateTime? fileCreatedAt,
     DateTime? fileModifiedAt,
     DateTime? updatedAt,
@@ -322,7 +314,6 @@ class Asset {
         remoteId: remoteId ?? this.remoteId,
         localId: localId ?? this.localId,
         ownerId: ownerId ?? this.ownerId,
-        originalPath: originalPath ?? originalPath,
         fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
         fileModifiedAt: fileModifiedAt ?? this.fileModifiedAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -347,13 +338,8 @@ class Asset {
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
 
-  static int compareByChecksum(Asset a, Asset b) {
-    if (a.checksum == null || b.checksum == null) {
-      return -1;
-    } else {
-      return a.checksum!.compareTo(b.checksum!);
-    }
-  }
+  static int compareByChecksum(Asset a, Asset b) =>
+      a.checksum.compareTo(b.checksum);
 
   static int compareByOwnerChecksum(Asset a, Asset b) {
     final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
@@ -380,7 +366,6 @@ class Asset {
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
   "ownerId": $ownerId, 
-  "originalPath": $originalPath, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt", 

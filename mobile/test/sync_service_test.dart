@@ -19,7 +19,6 @@ void main() {
     String? remoteId,
     int deviceId = 1,
     int ownerId = 590700560494856554, // hash of "1"
-    String? originalPath,
   }) {
     final DateTime date = DateTime(2000);
     return Asset(
@@ -27,7 +26,6 @@ void main() {
       localId: localId,
       remoteId: remoteId,
       ownerId: ownerId,
-      originalPath: originalPath,
       fileCreatedAt: date,
       fileModifiedAt: date,
       updatedAt: date,

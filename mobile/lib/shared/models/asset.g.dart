@@ -67,34 +67,29 @@ const AssetSchema = CollectionSchema(
       name: r'localId',
       type: IsarType.string,
     ),
-    r'originalPath': PropertySchema(
-      id: 10,
-      name: r'originalPath',
-      type: IsarType.string,
-    ),
     r'ownerId': PropertySchema(
-      id: 11,
+      id: 10,
       name: r'ownerId',
       type: IsarType.long,
     ),
     r'remoteId': PropertySchema(
-      id: 12,
+      id: 11,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 13,
+      id: 12,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 14,
+      id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 15,
+      id: 14,
       name: r'width',
       type: IsarType.int,
     )
@@ -105,9 +100,9 @@ const AssetSchema = CollectionSchema(
   deserializeProp: _assetDeserializeProp,
   idName: r'id',
   indexes: {
-    r'checksum_ownerId_originalPath': IndexSchema(
-      id: -2791649802326362662,
-      name: r'checksum_ownerId_originalPath',
+    r'checksum_ownerId': IndexSchema(
+      id: 5611361749756160119,
+      name: r'checksum_ownerId',
       unique: true,
       replace: false,
       properties: [
@@ -120,11 +115,6 @@ const AssetSchema = CollectionSchema(
           name: r'ownerId',
           type: IndexType.value,
           caseSensitive: false,
-        ),
-        IndexPropertySchema(
-          name: r'originalPath',
-          type: IndexType.hash,
-          caseSensitive: true,
         )
       ],
     ),
@@ -169,12 +159,7 @@ int _assetEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.checksum;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.checksum.length * 3;
   bytesCount += 3 + object.fileName.length * 3;
   {
     final value = object.livePhotoVideoId;
@@ -184,12 +169,6 @@ int _assetEstimateSize(
   }
   {
     final value = object.localId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
-    final value = object.originalPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -219,12 +198,11 @@ void _assetSerialize(
   writer.writeBool(offsets[7], object.isFavorite);
   writer.writeString(offsets[8], object.livePhotoVideoId);
   writer.writeString(offsets[9], object.localId);
-  writer.writeString(offsets[10], object.originalPath);
-  writer.writeLong(offsets[11], object.ownerId);
-  writer.writeString(offsets[12], object.remoteId);
-  writer.writeByte(offsets[13], object.type.index);
-  writer.writeDateTime(offsets[14], object.updatedAt);
-  writer.writeInt(offsets[15], object.width);
+  writer.writeLong(offsets[10], object.ownerId);
+  writer.writeString(offsets[11], object.remoteId);
+  writer.writeByte(offsets[12], object.type.index);
+  writer.writeDateTime(offsets[13], object.updatedAt);
+  writer.writeInt(offsets[14], object.width);
 }
 
 Asset _assetDeserialize(
@@ -234,7 +212,7 @@ Asset _assetDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Asset(
-    checksum: reader.readStringOrNull(offsets[0]),
+    checksum: reader.readString(offsets[0]),
     durationInSeconds: reader.readLong(offsets[1]),
     fileCreatedAt: reader.readDateTime(offsets[2]),
     fileModifiedAt: reader.readDateTime(offsets[3]),
@@ -245,13 +223,12 @@ Asset _assetDeserialize(
     isFavorite: reader.readBool(offsets[7]),
     livePhotoVideoId: reader.readStringOrNull(offsets[8]),
     localId: reader.readStringOrNull(offsets[9]),
-    originalPath: reader.readStringOrNull(offsets[10]),
-    ownerId: reader.readLong(offsets[11]),
-    remoteId: reader.readStringOrNull(offsets[12]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[13])] ??
+    ownerId: reader.readLong(offsets[10]),
+    remoteId: reader.readStringOrNull(offsets[11]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[12])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[14]),
-    width: reader.readIntOrNull(offsets[15]),
+    updatedAt: reader.readDateTime(offsets[13]),
+    width: reader.readIntOrNull(offsets[14]),
   );
   return object;
 }
@@ -264,7 +241,7 @@ P _assetDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
@@ -284,17 +261,15 @@ P _assetDeserializeProp<P>(
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
-      return (reader.readStringOrNull(offset)) as P;
-    case 11:
       return (reader.readLong(offset)) as P;
-    case 12:
+    case 11:
       return (reader.readStringOrNull(offset)) as P;
-    case 13:
+    case 12:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 14:
+    case 13:
       return (reader.readDateTime(offset)) as P;
-    case 15:
+    case 14:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -327,105 +302,89 @@ void _assetAttach(IsarCollection<dynamic> col, Id id, Asset object) {
 }
 
 extension AssetByIndex on IsarCollection<Asset> {
-  Future<Asset?> getByChecksumOwnerIdOriginalPath(
-      String? checksum, int ownerId, String? originalPath) {
-    return getByIndex(
-        r'checksum_ownerId_originalPath', [checksum, ownerId, originalPath]);
+  Future<Asset?> getByChecksumOwnerId(String checksum, int ownerId) {
+    return getByIndex(r'checksum_ownerId', [checksum, ownerId]);
   }
 
-  Asset? getByChecksumOwnerIdOriginalPathSync(
-      String? checksum, int ownerId, String? originalPath) {
-    return getByIndexSync(
-        r'checksum_ownerId_originalPath', [checksum, ownerId, originalPath]);
+  Asset? getByChecksumOwnerIdSync(String checksum, int ownerId) {
+    return getByIndexSync(r'checksum_ownerId', [checksum, ownerId]);
   }
 
-  Future<bool> deleteByChecksumOwnerIdOriginalPath(
-      String? checksum, int ownerId, String? originalPath) {
-    return deleteByIndex(
-        r'checksum_ownerId_originalPath', [checksum, ownerId, originalPath]);
+  Future<bool> deleteByChecksumOwnerId(String checksum, int ownerId) {
+    return deleteByIndex(r'checksum_ownerId', [checksum, ownerId]);
   }
 
-  bool deleteByChecksumOwnerIdOriginalPathSync(
-      String? checksum, int ownerId, String? originalPath) {
-    return deleteByIndexSync(
-        r'checksum_ownerId_originalPath', [checksum, ownerId, originalPath]);
+  bool deleteByChecksumOwnerIdSync(String checksum, int ownerId) {
+    return deleteByIndexSync(r'checksum_ownerId', [checksum, ownerId]);
   }
 
-  Future<List<Asset?>> getAllByChecksumOwnerIdOriginalPath(
-      List<String?> checksumValues,
-      List<int> ownerIdValues,
-      List<String?> originalPathValues) {
+  Future<List<Asset?>> getAllByChecksumOwnerId(
+      List<String> checksumValues, List<int> ownerIdValues) {
     final len = checksumValues.length;
-    assert(ownerIdValues.length == len && originalPathValues.length == len,
+    assert(ownerIdValues.length == len,
         'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([checksumValues[i], ownerIdValues[i], originalPathValues[i]]);
+      values.add([checksumValues[i], ownerIdValues[i]]);
     }
 
-    return getAllByIndex(r'checksum_ownerId_originalPath', values);
+    return getAllByIndex(r'checksum_ownerId', values);
   }
 
-  List<Asset?> getAllByChecksumOwnerIdOriginalPathSync(
-      List<String?> checksumValues,
-      List<int> ownerIdValues,
-      List<String?> originalPathValues) {
+  List<Asset?> getAllByChecksumOwnerIdSync(
+      List<String> checksumValues, List<int> ownerIdValues) {
     final len = checksumValues.length;
-    assert(ownerIdValues.length == len && originalPathValues.length == len,
+    assert(ownerIdValues.length == len,
         'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([checksumValues[i], ownerIdValues[i], originalPathValues[i]]);
+      values.add([checksumValues[i], ownerIdValues[i]]);
     }
 
-    return getAllByIndexSync(r'checksum_ownerId_originalPath', values);
+    return getAllByIndexSync(r'checksum_ownerId', values);
   }
 
-  Future<int> deleteAllByChecksumOwnerIdOriginalPath(
-      List<String?> checksumValues,
-      List<int> ownerIdValues,
-      List<String?> originalPathValues) {
+  Future<int> deleteAllByChecksumOwnerId(
+      List<String> checksumValues, List<int> ownerIdValues) {
     final len = checksumValues.length;
-    assert(ownerIdValues.length == len && originalPathValues.length == len,
+    assert(ownerIdValues.length == len,
         'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([checksumValues[i], ownerIdValues[i], originalPathValues[i]]);
+      values.add([checksumValues[i], ownerIdValues[i]]);
     }
 
-    return deleteAllByIndex(r'checksum_ownerId_originalPath', values);
+    return deleteAllByIndex(r'checksum_ownerId', values);
   }
 
-  int deleteAllByChecksumOwnerIdOriginalPathSync(List<String?> checksumValues,
-      List<int> ownerIdValues, List<String?> originalPathValues) {
+  int deleteAllByChecksumOwnerIdSync(
+      List<String> checksumValues, List<int> ownerIdValues) {
     final len = checksumValues.length;
-    assert(ownerIdValues.length == len && originalPathValues.length == len,
+    assert(ownerIdValues.length == len,
         'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([checksumValues[i], ownerIdValues[i], originalPathValues[i]]);
+      values.add([checksumValues[i], ownerIdValues[i]]);
     }
 
-    return deleteAllByIndexSync(r'checksum_ownerId_originalPath', values);
+    return deleteAllByIndexSync(r'checksum_ownerId', values);
   }
 
-  Future<Id> putByChecksumOwnerIdOriginalPath(Asset object) {
-    return putByIndex(r'checksum_ownerId_originalPath', object);
+  Future<Id> putByChecksumOwnerId(Asset object) {
+    return putByIndex(r'checksum_ownerId', object);
   }
 
-  Id putByChecksumOwnerIdOriginalPathSync(Asset object,
+  Id putByChecksumOwnerIdSync(Asset object, {bool saveLinks = true}) {
+    return putByIndexSync(r'checksum_ownerId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByChecksumOwnerId(List<Asset> objects) {
+    return putAllByIndex(r'checksum_ownerId', objects);
+  }
+
+  List<Id> putAllByChecksumOwnerIdSync(List<Asset> objects,
       {bool saveLinks = true}) {
-    return putByIndexSync(r'checksum_ownerId_originalPath', object,
-        saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByChecksumOwnerIdOriginalPath(List<Asset> objects) {
-    return putAllByIndex(r'checksum_ownerId_originalPath', objects);
-  }
-
-  List<Id> putAllByChecksumOwnerIdOriginalPathSync(List<Asset> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'checksum_ownerId_originalPath', objects,
+    return putAllByIndexSync(r'checksum_ownerId', objects,
         saveLinks: saveLinks);
   }
 }
@@ -504,51 +463,29 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumIsNullAnyOwnerIdOriginalPath() {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToAnyOwnerId(
+      String checksum) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum_ownerId_originalPath',
-        value: [null],
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumIsNotNullAnyOwnerIdOriginalPath() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'checksum_ownerId_originalPath',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumEqualToAnyOwnerIdOriginalPath(String? checksum) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum_ownerId_originalPath',
+        indexName: r'checksum_ownerId',
         value: [checksum],
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumNotEqualToAnyOwnerIdOriginalPath(String? checksum) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumNotEqualToAnyOwnerId(
+      String checksum) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [],
               upper: [checksum],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               includeLower: false,
               upper: [],
@@ -556,13 +493,13 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [],
               upper: [checksum],
               includeUpper: false,
@@ -571,30 +508,29 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumOwnerIdEqualToAnyOriginalPath(String? checksum, int ownerId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumOwnerIdEqualTo(
+      String checksum, int ownerId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum_ownerId_originalPath',
+        indexName: r'checksum_ownerId',
         value: [checksum, ownerId],
       ));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumEqualToOwnerIdNotEqualToAnyOriginalPath(
-          String? checksum, int ownerId) {
+      checksumEqualToOwnerIdNotEqualTo(String checksum, int ownerId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               upper: [checksum, ownerId],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum, ownerId],
               includeLower: false,
               upper: [checksum],
@@ -602,13 +538,13 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum, ownerId],
               includeLower: false,
               upper: [checksum],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               upper: [checksum, ownerId],
               includeUpper: false,
@@ -618,14 +554,14 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
   }
 
   QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumEqualToOwnerIdGreaterThanAnyOriginalPath(
-    String? checksum,
+      checksumEqualToOwnerIdGreaterThan(
+    String checksum,
     int ownerId, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'checksum_ownerId_originalPath',
+        indexName: r'checksum_ownerId',
         lower: [checksum, ownerId],
         includeLower: include,
         upper: [checksum],
@@ -633,15 +569,14 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumEqualToOwnerIdLessThanAnyOriginalPath(
-    String? checksum,
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToOwnerIdLessThan(
+    String checksum,
     int ownerId, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'checksum_ownerId_originalPath',
+        indexName: r'checksum_ownerId',
         lower: [checksum],
         upper: [checksum, ownerId],
         includeUpper: include,
@@ -649,9 +584,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumEqualToOwnerIdBetweenAnyOriginalPath(
-    String? checksum,
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToOwnerIdBetween(
+    String checksum,
     int lowerOwnerId,
     int upperOwnerId, {
     bool includeLower = true,
@@ -659,85 +593,12 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'checksum_ownerId_originalPath',
+        indexName: r'checksum_ownerId',
         lower: [checksum, lowerOwnerId],
         includeLower: includeLower,
         upper: [checksum, upperOwnerId],
         includeUpper: includeUpper,
       ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumOwnerIdEqualToOriginalPathIsNull(String? checksum, int ownerId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum_ownerId_originalPath',
-        value: [checksum, ownerId, null],
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumOwnerIdEqualToOriginalPathIsNotNull(
-          String? checksum, int ownerId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'checksum_ownerId_originalPath',
-        lower: [checksum, ownerId, null],
-        includeLower: false,
-        upper: [
-          checksum,
-          ownerId,
-        ],
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumOwnerIdOriginalPathEqualTo(
-          String? checksum, int ownerId, String? originalPath) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum_ownerId_originalPath',
-        value: [checksum, ownerId, originalPath],
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-      checksumOwnerIdEqualToOriginalPathNotEqualTo(
-          String? checksum, int ownerId, String? originalPath) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
-              lower: [checksum, ownerId],
-              upper: [checksum, ownerId, originalPath],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
-              lower: [checksum, ownerId, originalPath],
-              includeLower: false,
-              upper: [checksum, ownerId],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
-              lower: [checksum, ownerId, originalPath],
-              includeLower: false,
-              upper: [checksum, ownerId],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum_ownerId_originalPath',
-              lower: [checksum, ownerId],
-              upper: [checksum, ownerId, originalPath],
-              includeUpper: false,
-            ));
-      }
     });
   }
 
@@ -873,24 +734,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
 }
 
 extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'checksum',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'checksum',
-      ));
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -903,7 +748,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -918,7 +763,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -933,8 +778,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1743,152 +1588,6 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'originalPath',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'originalPath',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'originalPath',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'originalPath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'originalPath',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'originalPath',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> originalPathIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'originalPath',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -2387,18 +2086,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByOriginalPath() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'originalPath', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByOriginalPathDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'originalPath', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerId', Sort.asc);
@@ -2593,18 +2280,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByOriginalPath() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'originalPath', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByOriginalPathDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'originalPath', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerId', Sort.asc);
@@ -2732,13 +2407,6 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByOriginalPath(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'originalPath', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QDistinct> distinctByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ownerId');
@@ -2778,7 +2446,7 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, String?, QQueryOperations> checksumProperty() {
+  QueryBuilder<Asset, String, QQueryOperations> checksumProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'checksum');
     });
@@ -2835,12 +2503,6 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String?, QQueryOperations> localIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'localId');
-    });
-  }
-
-  QueryBuilder<Asset, String?, QQueryOperations> originalPathProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'originalPath');
     });
   }
 

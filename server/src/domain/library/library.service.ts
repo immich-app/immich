@@ -200,6 +200,8 @@ export class LibraryService {
 
     const deviceAssetId = `${basename(assetPath)}`.replace(/\s+/g, '');
 
+    const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
+
     // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
 
     let assetId;
@@ -207,7 +209,7 @@ export class LibraryService {
       const addedAsset = await this.assetRepository.create({
         ownerId: job.ownerId,
         libraryId: job.id,
-        checksum: null,
+        checksum: pathHash,
         originalPath: assetPath,
         deviceAssetId: deviceAssetId,
         deviceId: 'Library Import',

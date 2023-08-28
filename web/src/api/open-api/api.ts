@@ -578,7 +578,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'checksum'?: string | null;
+    'checksum': string;
     /**
      * 
      * @type {string}
