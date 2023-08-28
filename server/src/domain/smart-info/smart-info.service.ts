@@ -17,7 +17,6 @@ export class SmartInfoService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(IMachineLearningRepository) private searchRepository: ISearchRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
   }

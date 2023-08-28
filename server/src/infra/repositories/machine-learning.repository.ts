@@ -3,18 +3,14 @@ import {
   ClassificationConfig, CLIPConfig, CLIPMode, ModelConfig, RecognitionConfig, ModelType
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
-import FormData from 'form-data';
-import { createReadStream } from 'fs';
-
-const client = axios.create();
+import { readFile } from 'fs/promises';
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
-    const formData = this.getFormData(input, config);
-    const res = await client.post<T>(`${url}/predict`, formData, { headers: formData.getHeaders() });
-    return res.data;
+    const formData = await this.getFormData(input, config);
+    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData });
+    return res.json();
   }
 
   classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
@@ -33,18 +29,19 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return this.post<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.TEXT } as CLIPConfig);
   }
 
-  getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): FormData {
+  async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
     const formData = new FormData();
     const { modelName, modelType, ...options } = config;
 
     formData.append('modelName', modelName);
-    formData.append('modelType', modelType);
+    if (modelType) {
+      formData.append('modelType', modelType);
+    }
     if (options) {
       formData.append('options', JSON.stringify(options));
     }
     if ('imagePath' in input) {
-      const fileStream = createReadStream(input.imagePath);
-      formData.append('image', fileStream);
+      formData.append('image', new Blob([await readFile(input.imagePath)]));
     } else if ('text' in input) {
       formData.append('text', input.text);
     } else {

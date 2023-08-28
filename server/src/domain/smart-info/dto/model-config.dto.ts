@@ -13,6 +13,7 @@ export class ModelConfig {
 
   @IsEnum(ModelType)
   @IsOptional()
+  @ApiProperty({ enumName: 'ModelType', enum: ModelType })
   modelType?: ModelType;
 }
 
