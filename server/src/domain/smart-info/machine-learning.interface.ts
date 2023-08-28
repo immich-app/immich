@@ -1,4 +1,8 @@
-import { CLIPConfig, ClassificationConfig, ModelConfig, RecognitionConfig } from '../system-config/dto/system-config-machine-learning.dto';
+import {
+  ClassificationConfig,
+  CLIPConfig,
+  RecognitionConfig,
+} from '../system-config/dto/system-config-machine-learning.dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
