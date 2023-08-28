@@ -17,7 +17,7 @@ import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { SystemConfigDto } from './dto';
-import { ModelType } from './dto/system-config-machine-learning.dto';
+import { ModelType } from '../smart-info';
 import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;

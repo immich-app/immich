@@ -1,8 +1,4 @@
-import {
-  ClassificationConfig,
-  CLIPConfig,
-  RecognitionConfig,
-} from '../system-config/dto/system-config-machine-learning.dto';
+import { ClassificationConfig, CLIPConfig, RecognitionConfig } from './dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
@@ -27,6 +23,17 @@ export interface DetectFaceResult {
   boundingBox: BoundingBox;
   score: number;
   embedding: number[];
+}
+
+export enum ModelType {
+  IMAGE_CLASSIFICATION = 'image-classification',
+  FACIAL_RECOGNITION = 'facial-recognition',
+  CLIP = 'clip',
+}
+
+export enum CLIPMode {
+  VISION = 'vision',
+  TEXT = 'text',
 }
 
 export interface IMachineLearningRepository {

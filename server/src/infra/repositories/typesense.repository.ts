@@ -372,7 +372,7 @@ export class TypesenseRepository implements ISearchRepository {
           result.document.smartInfo.clipEmbedding = '<truncated>';
         }
       } catch (err: any) {
-        this.logger.error(`Error while updating CLIP field: ${err.message}`);
+        this.logger.error(`Error while updating CLIP field: ${err.message, err.stack}`);
       }
     }
 

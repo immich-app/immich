@@ -1,9 +1,11 @@
-import { DetectFaceResult, IMachineLearningRepository, TextModelInput, VisionModelInput } from '@app/domain';
+import {
+  DetectFaceResult, IMachineLearningRepository, TextModelInput, VisionModelInput,
+  ClassificationConfig, CLIPConfig, CLIPMode, ModelConfig, RecognitionConfig
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
-import { CLIPConfig, CLIPMode, ClassificationConfig, ModelConfig, RecognitionConfig } from '../../domain/system-config/dto/system-config-machine-learning.dto';
 
 const client = axios.create();
 

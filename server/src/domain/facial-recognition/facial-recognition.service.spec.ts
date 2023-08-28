@@ -17,10 +17,9 @@ import { IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
 import { IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
+import { IMachineLearningRepository, ModelType } from '../smart-info';
 import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
-import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
 

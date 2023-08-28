@@ -12,7 +12,7 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { ISearchRepository } from '../search/search.repository';
 import { ISystemConfigRepository } from '../system-config';
-import { ModelType } from '../system-config/dto/system-config-machine-learning.dto';
+import { ModelType } from '..';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 import { SmartInfoService } from './smart-info.service';
