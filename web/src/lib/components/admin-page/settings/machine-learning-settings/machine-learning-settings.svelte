@@ -104,6 +104,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label="IMAGE CLASSIFICATION THRESHOLD"
+              desc="Minimum confidence score to add a particular object tag. Lower values will add more tags to images, but may result in more false positives. Will not have any effect until the 'Tag Objects' job is re-run."
               bind:value={machineLearningConfig.classification.minScore}
               step="0.1"
               min="0"
