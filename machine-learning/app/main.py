@@ -59,7 +59,7 @@ async def predict(
         inputs = text
     else:
         raise HTTPException(400, "Either image or text must be provided")
-    
+
     model: InferenceModel = await app.state.model_cache.get(model_name, model_type, **orjson.loads(options))
     outputs = await run(model, inputs)
     return ORJSONResponse(outputs)

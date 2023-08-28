@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { ISearchRepository } from '../search/search.repository';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
@@ -53,13 +52,10 @@ export class SmartInfoService {
       return false;
     }
 
-    const {
-      machineLearning: { classification },
-    } = await this.configCore.getConfig();
     const tags = await this.machineLearning.classifyImage(
       machineLearning.url,
       { imagePath: asset.resizePath },
-      classification,
+      machineLearning.classification,
     );
     await this.repository.upsert({ assetId: asset.id, tags });
 
@@ -98,13 +94,10 @@ export class SmartInfoService {
       return false;
     }
 
-    const {
-      machineLearning: { clip },
-    } = await this.configCore.getConfig();
     const clipEmbedding = await this.machineLearning.encodeImage(
       machineLearning.url,
       { imagePath: asset.resizePath },
-      clip,
+      machineLearning.clip,
     );
 
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });

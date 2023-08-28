@@ -68,13 +68,10 @@ export class FacialRecognitionService {
       return false;
     }
 
-    const {
-      machineLearning: { facialRecognition },
-    } = await this.configCore.getConfig();
     const faces = await this.machineLearning.detectFaces(
       machineLearning.url,
       { imagePath: asset.resizePath },
-      facialRecognition,
+      machineLearning.facialRecognition,
     );
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
@@ -87,7 +84,7 @@ export class FacialRecognitionService {
 
       // try to find a matching face and link to the associated person
       // The closer to 0, the better the match. Range is from 0 to 2
-      if (faceSearchResult.total && faceSearchResult.distances[0] <= facialRecognition.maxDistance) {
+      if (faceSearchResult.total && faceSearchResult.distances[0] <= machineLearning.facialRecognition.maxDistance) {
         this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
         personId = faceSearchResult.items[0].personId;
       }

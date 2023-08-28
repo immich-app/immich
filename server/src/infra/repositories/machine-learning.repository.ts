@@ -1,6 +1,14 @@
 import {
-  DetectFaceResult, IMachineLearningRepository, TextModelInput, VisionModelInput,
-  ClassificationConfig, CLIPConfig, CLIPMode, ModelConfig, RecognitionConfig, ModelType
+  ClassificationConfig,
+  CLIPConfig,
+  CLIPMode,
+  DetectFaceResult,
+  IMachineLearningRepository,
+  ModelConfig,
+  ModelType,
+  RecognitionConfig,
+  TextModelInput,
+  VisionModelInput,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'fs/promises';
@@ -22,7 +30,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.VISION } as CLIPConfig);
+    return this.post<number[]>(url, input, {
+      ...config,
+      modelType: ModelType.CLIP,
+      mode: CLIPMode.VISION,
+    } as CLIPConfig);
   }
 
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {

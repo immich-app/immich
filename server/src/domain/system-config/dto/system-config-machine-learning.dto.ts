@@ -1,4 +1,4 @@
-import { CLIPConfig, ClassificationConfig, RecognitionConfig } from '@app/domain';
+import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '@app/domain';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
 
