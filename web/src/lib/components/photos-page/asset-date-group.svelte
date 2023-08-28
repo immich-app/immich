@@ -14,6 +14,7 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { flip } from 'svelte/animate';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -144,7 +145,7 @@
     >
       <!-- Date group title -->
       <p
-        class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+        class="text-immich-fg dark:text-immich-dark-fg mb-2 flex h-6 place-items-center text-xs font-medium md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
         {#if !singleSelect && ((hoveredDateGroup == groupTitle && isMouseOverGroup) || $selectedGroup.has(groupTitle))}
@@ -177,6 +178,7 @@
           <div
             class="absolute"
             style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+            animate:flip={{ duration: 350 }}
           >
             <Thumbnail
               {asset}

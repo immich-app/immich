@@ -1,6 +1,7 @@
 import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
+import { DateTime } from 'luxon';
 
 export enum BucketPosition {
   Above = 'above',
@@ -166,6 +167,24 @@ export class AssetStore {
     this.emit(false);
 
     return scrollTimeline ? delta : 0;
+  }
+
+  addToBucket(asset: AssetResponseDto) {
+    const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+    const bucket = this.getBucketByDate(timeBucket);
+
+    if (!bucket) {
+      return;
+    }
+
+    bucket.assets.push(asset);
+    bucket.assets.sort((a, b) => {
+      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
+      return bDate.diff(aDate).milliseconds;
+    });
+
+    this.emit(true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
