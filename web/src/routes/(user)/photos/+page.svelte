@@ -48,8 +48,19 @@
       return;
     }
   };
+  let firstCall = false;
   const wsPageUnsubscriber = websocketStore.onUploadSuccess.subscribe((asset) => {
-    if (!asset) return;
+    /**
+     * By design, Writable stores will emit their current value to new subscribers.
+     * This means by navigating to a different page and back, we will receive the last emitted value,
+     * and this will cause duplicate asset in the bucket, the app will throw an error.
+     *
+     * firstCall is used to prevent this from happening.
+     */
+    if (!asset || !firstCall) {
+      firstCall = true;
+      return;
+    }
 
     assetStore.addToBucket(asset);
   });

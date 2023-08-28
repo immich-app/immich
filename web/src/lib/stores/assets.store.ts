@@ -2,6 +2,7 @@ import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { DateTime } from 'luxon';
+import lodash from 'lodash-es';
 
 export enum BucketPosition {
   Above = 'above',
@@ -40,6 +41,7 @@ const THUMBNAIL_HEIGHT = 235;
 export class AssetStore {
   private store$ = writable(this);
   private assetToBucket: Record<string, AssetLookup> = {};
+  private newAssets: AssetResponseDto[] = [];
 
   initialized = false;
   timelineHeight = 0;
@@ -169,22 +171,45 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
-  addToBucket(asset: AssetResponseDto) {
-    const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
-    const bucket = this.getBucketByDate(timeBucket);
 
-    if (!bucket) {
-      return;
+
+  private debounceAddToBucket = lodash.debounce(() => this._addToBucket(), 2000);
+
+  addToBucket(asset: AssetResponseDto) {
+    this.newAssets.push(asset);
+    console.log("add to bucket, calling debounce", this.newAssets.length);
+    this.debounceAddToBucket();
+  }
+
+  private _addToBucket(): void {
+    console.log("Debounce runs", this.newAssets.length)
+
+    try {
+      for (const asset of this.newAssets) {
+        const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+        const bucket = this.getBucketByDate(timeBucket);
+
+        if (!bucket) {
+          continue;
+        }
+
+        bucket.assets.push(asset);
+        bucket.assets.sort((a, b) => {
+          const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+          const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
+          return bDate.diff(aDate).milliseconds;
+        });
+      }
+
+      this.newAssets = [];
+      console.log("Debounce complete", this.newAssets.length)
+
+
+      this.emit(true);
+    } catch (e) {
+      console.error(e);
     }
 
-    bucket.assets.push(asset);
-    bucket.assets.sort((a, b) => {
-      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-      return bDate.diff(aDate).milliseconds;
-    });
-
-    this.emit(true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
