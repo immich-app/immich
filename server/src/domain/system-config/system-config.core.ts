@@ -17,7 +17,6 @@ import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { SystemConfigDto } from './dto';
-import { ModelType } from '../smart-info';
 import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
@@ -55,18 +54,15 @@ export const defaults = Object.freeze<SystemConfig>({
     classification: {
       enabled: true,
       modelName: 'microsoft/resnet-50',
-      modelType: ModelType.IMAGE_CLASSIFICATION,
       minScore: 0.9,
     },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32::openai',
-      modelType: ModelType.CLIP,
     },
     facialRecognition: {
       enabled: true,
       modelName: 'buffalo_l',
-      modelType: ModelType.FACIAL_RECOGNITION,
       minScore: 0.7,
       maxDistance: 0.6,
     },
@@ -247,7 +243,7 @@ export class SystemConfigCore {
       _.set(config, key, value);
     }
 
-    return _.defaultsDeep(config, defaults) as SystemConfig;
+    return plainToClass(SystemConfigDto, _.defaultsDeep(config, defaults));
   }
 
   private async loadFromFile(filepath: string, force = false) {

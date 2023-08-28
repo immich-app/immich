@@ -1,5 +1,4 @@
-import { QueueName } from '@app/domain/job/job.constants';
-import { ModelType } from '@app/domain/system-config/dto/system-config-machine-learning.dto';
+import { QueueName } from '@app/domain';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
@@ -127,18 +126,15 @@ export interface SystemConfig {
     classification: {
       enabled: boolean;
       modelName: string;
-      modelType: ModelType;
       minScore: number;
     };
     clip: {
       enabled: boolean;
       modelName: string;
-      modelType: ModelType;
     };
     facialRecognition: {
       enabled: boolean;
       modelName: string;
-      modelType: ModelType;
       minScore: number;
       maxDistance: number;
     };

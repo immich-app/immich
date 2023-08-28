@@ -12,7 +12,6 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { ISearchRepository } from '../search/search.repository';
 import { ISystemConfigRepository } from '../system-config';
-import { ModelType } from '..';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 import { SmartInfoService } from './smart-info.service';
@@ -94,7 +93,7 @@ describe(SmartInfoService.name, () => {
         {
           imagePath: 'path/to/resize.ext',
         },
-        { enabled: true, minScore: 0.9, modelName: 'microsoft/resnet-50', modelType: ModelType.IMAGE_CLASSIFICATION },
+        { enabled: true, minScore: 0.9, modelName: 'microsoft/resnet-50' },
       );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
@@ -157,10 +156,8 @@ describe(SmartInfoService.name, () => {
 
       expect(machineMock.encodeImage).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
-        {
-          imagePath: 'path/to/resize.ext',
-        },
-        { enabled: true, modelName: 'ViT-B-32::openai', modelType: ModelType.CLIP },
+        { imagePath: 'path/to/resize.ext' },
+        { enabled: true, modelName: 'ViT-B-32::openai' },
       );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',

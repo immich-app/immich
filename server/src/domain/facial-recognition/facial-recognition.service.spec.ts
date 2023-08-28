@@ -17,7 +17,7 @@ import { IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
 import { IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
-import { IMachineLearningRepository, ModelType } from '../smart-info';
+import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IFaceRepository } from './face.repository';
@@ -190,7 +190,6 @@ describe(FacialRecognitionService.name, () => {
           maxDistance: 0.6,
           minScore: 0.7,
           modelName: 'buffalo_l',
-          modelType: ModelType.FACIAL_RECOGNITION,
         },
       );
       expect(faceMock.create).not.toHaveBeenCalled();

@@ -12,12 +12,11 @@ export class ModelConfig {
   modelName!: string;
 
   @IsEnum(ModelType)
-  modelType!: ModelType;
+  @IsOptional()
+  modelType?: ModelType;
 }
 
 export class ClassificationConfig extends ModelConfig {
-  readonly modelType = ModelType.IMAGE_CLASSIFICATION;
-
   @IsNumber()
   @Min(0)
   @Max(1)
@@ -27,8 +26,6 @@ export class ClassificationConfig extends ModelConfig {
 }
 
 export class CLIPConfig extends ModelConfig {
-  readonly modelType = ModelType.CLIP;
-
   @IsEnum(CLIPMode)
   @IsOptional()
   @ApiProperty({ enumName: 'CLIPMode', enum: CLIPMode })
@@ -36,8 +33,6 @@ export class CLIPConfig extends ModelConfig {
 }
 
 export class RecognitionConfig extends ModelConfig {
-  readonly modelType = ModelType.FACIAL_RECOGNITION;
-
   @IsNumber()
   @Min(0)
   @Max(1)
