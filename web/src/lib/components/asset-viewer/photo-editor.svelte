@@ -122,7 +122,7 @@
       case 'crop':
         await setAspectRatio('original', false);
         initAngleSlider();
-        //initAssetDrag();
+        initAssetDrag();
         break;
       case 'adjust':
         break;
@@ -211,10 +211,10 @@
 
     const closeDragElement = () => {
       // stop moving when mouse button is released:
-      document.onmouseup = null;
-      document.onmousemove = null;
-      document.ontouchend = null;
-      document.ontouchmove = null;
+      angleSliderHandle.onmouseup = null;
+      angleSliderHandle.onmousemove = null;
+      angleSliderHandle.ontouchend = null;
+      angleSliderHandle.ontouchmove = null;
     };
 
     const elementDrag = async (e: MouseEvent) => {
@@ -265,9 +265,9 @@
       e.preventDefault();
       // get the mouse cursor position at startup:
       pos2 = e.clientX;
-      document.onmouseup = closeDragElement;
+      angleSliderHandle.onmouseup = closeDragElement;
       // call a function whenever the cursor moves:
-      document.onmousemove = elementDrag;
+      angleSliderHandle.onmousemove = elementDrag;
     };
 
     const dragTouchStart = (e: TouchEvent) => {
@@ -275,9 +275,9 @@
       console.log('dragTouchStart');
       // get the mouse cursor position at startup:
       pos2 = e.touches[0].clientX;
-      document.ontouchend = closeDragElement;
+      angleSliderHandle.ontouchend = closeDragElement;
       // call a function whenever the cursor moves:
-      document.ontouchmove = elementDragTouch;
+      angleSliderHandle.ontouchmove = elementDragTouch;
     };
     angleSliderHandle.onmousedown = dragMouseDown;
     angleSliderHandle.ontouchstart = dragTouchStart;
@@ -291,54 +291,66 @@
       pos4 = 0;
     const closeDragElement = () => {
       // stop moving when mouse button is released:
-      document.onmouseup = null;
-      document.onmousemove = null;
+      assetDragHandle.onmouseup = null;
+      assetDragHandle.onmousemove = null;
     };
 
     const elementDrag = async (e: MouseEvent) => {
       e.preventDefault();
       // calculate the new cursor position:
-      pos1 = pos2 - e.clientX;
-      pos2 = e.clientX;
-      pos3 = pos4 - e.clientY;
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
       pos4 = e.clientY;
 
-      //Calc max translation possible
-      let translationAbs = Math.sqrt(currentTranslate.x ** 2 + currentTranslate.y ** 2);
-      console.log('translationAbs', translationAbs);
+      let x = 0;
+      let y = 0;
 
-      let cropElementDiag = Math.sqrt(cropElement.offsetWidth ** 2 + cropElement.offsetHeight ** 2);
-      let imageElementHeight = imageElement.offsetHeight;
-
-      let h = Math.sin((currentAngle * Math.PI) / 180) * cropElement.offsetWidth;
-      console.log('h', h);
-
-      let h2 = Math.cos((currentAngle * Math.PI) / 180) * cropElement.offsetHeight;
-      console.log('h2', h2);
-
-      let maxTranslation = (imageElementHeight - h2 - h) / 2;
-      console.log('maxTranslation', maxTranslation);
-
-      console.log(currentTranslate.x - pos1);
+      //Calc max y translation
+      const h1 = cropElement.offsetHeight;
+      const w1 = cropElement.offsetWidth;
+      const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
+      const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
+      const maxY = (imageWrapper.offsetHeight - d) / 2;
 
       // Calc max x translation
-      let maxXTranslation = Math.tan((currentAngle * Math.PI) / 180) * maxTranslation;
-      let maxYTranslation = maxTranslation / Math.cos((currentAngle * Math.PI) / 180);
+      const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
+      const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
+      const maxX = (imageWrapper.offsetWidth - h3 - h4) / 2;
 
-      if (currentTranslate.x - pos1 > currentTranslate.y - pos3) {
-        if (currentTranslate.x - pos1 > maxXTranslation) {
-          currentTranslate.x = currentTranslate.x - maxXTranslation;
-        } else {
-          currentTranslate.x = currentTranslate.x - pos1;
-        }
-        currentTranslate.y = maxXTranslation / Math.cos((currentAngle * Math.PI) / 180);
+      if (currentTranslate.x - pos1 > maxX) {
+        x = maxX;
+      } else if (currentTranslate.x - pos1 < -maxX) {
+        x = -maxX;
+      } else {
+        x = currentTranslate.x - pos1;
       }
 
-      // // set the element's new position:
-      // currentTranslate = {
-      //   x: currentTranslate.x - pos1,
-      //   y: currentTranslate.y - pos3,
-      // };
+      if (currentTranslate.y - pos2 > maxY) {
+        y = maxY;
+      } else if (currentTranslate.y - pos2 < -maxY) {
+        y = -maxY;
+      } else {
+        y = currentTranslate.y - pos2;
+      }
+
+      // Decide which direction to translate
+      if (currentTranslateDirection === 'y') {
+        currentTranslate = {
+          x: 0,
+          y: y,
+        };
+      } else if (currentTranslateDirection === 'x') {
+        currentTranslate = {
+          x: x,
+          y: 0,
+        };
+      } else {
+        currentTranslate = {
+          x: 0,
+          y: 0,
+        };
+      }
 
       console.log('currentTranslate', currentTranslate);
       setImageWrapperTransform();
@@ -349,11 +361,11 @@
 
       e.preventDefault();
       // get the mouse cursor position at startup:
-      pos2 = e.clientX;
+      pos3 = e.clientX;
       pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
+      assetDragHandle.onmouseup = closeDragElement;
       // call a function whenever the cursor moves:
-      document.onmousemove = elementDrag;
+      assetDragHandle.onmousemove = elementDrag;
     };
     assetDragHandle.onmousedown = dragMouseDown;
   };
@@ -379,28 +391,38 @@
         imageWrapper.style.height = `${x1 + x2}px`;
         imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
         console.log('Translation in Y possible');
+        console.log('case1');
         currentTranslateDirection = 'y';
       } else if ((x1 + x2) / (y1 + y2) < 1 / originalAspect) {
+        imageWrapper.style.height = `${y1 + y2}px`;
+        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
         currentTranslateDirection = 'x';
         console.log('Translation in X possible');
+        console.log('case2');
       } else {
         imageWrapper.style.width = `${y1 + y2}px`;
         imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
         currentTranslateDirection = '';
+        console.log('case3');
       }
     } else {
       if ((x1 + x2) / (y1 + y2) > originalAspect) {
         imageWrapper.style.width = `${x1 + x2}px`;
         imageWrapper.style.height = `${(x1 + x2) / originalAspect}px`;
         console.log('Translation in Y possible');
+        console.log('case4');
         currentTranslateDirection = 'y';
-      } else if ((x1 + x2) / (y1 + y2) > originalAspect) {
+      } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
+        imageWrapper.style.height = `${y1 + y2}px`;
+        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
         console.log('Translation in X possible');
         currentTranslateDirection = 'x';
+        console.log('case5');
       } else {
         imageWrapper.style.height = `${y1 + y2}px`;
         imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
         currentTranslateDirection = '';
+        console.log('case6');
       }
     }
   };
