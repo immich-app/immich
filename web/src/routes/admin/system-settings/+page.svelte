@@ -59,24 +59,6 @@
     downloadBlob(blob, downloadKey);
     setTimeout(() => downloadManager.clear(downloadKey), 5_000);
   };
-
-  const downloadConfig = (configs: SystemConfigDto) => {
-    const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
-    const downloadKey = 'immich-config.json';
-    downloadManager.add(downloadKey, blob.size);
-    downloadManager.update(downloadKey, blob.size);
-    downloadBlob(blob, downloadKey);
-    setTimeout(() => downloadManager.clear(downloadKey), 5_000);
-  };
-
-  const downloadConfig = (configs: SystemConfigDto) => {
-    const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
-    const downloadKey = 'immich-config.json';
-    downloadManager.add(downloadKey, blob.size);
-    downloadManager.update(downloadKey, blob.size);
-    downloadBlob(blob, downloadKey);
-    setTimeout(() => downloadManager.clear(downloadKey), 5_000);
-  };
 </script>
 
 {#if $featureFlags.configFile}
