@@ -30,7 +30,7 @@ interface SyncQueue {
 export class SearchService {
   private logger = new Logger(SearchService.name);
   private enabled = false;
-  private timer: NodeJS.Timer | null = null;
+  private timer: NodeJS.Timeout | null = null;
   private configCore: SystemConfigCore;
 
   private albumQueue: SyncQueue = {

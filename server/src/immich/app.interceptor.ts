@@ -60,7 +60,10 @@ export class FileUploadInterceptor implements NestInterceptor {
   };
   private defaultStorage: StorageEngine;
 
-  constructor(private reflect: Reflector, private assetService: AssetService) {
+  constructor(
+    private reflect: Reflector,
+    private assetService: AssetService,
+  ) {
     this.defaultStorage = diskStorage({
       filename: this.filename.bind(this),
       destination: this.destination.bind(this),
