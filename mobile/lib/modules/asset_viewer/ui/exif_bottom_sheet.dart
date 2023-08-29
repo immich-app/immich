@@ -255,7 +255,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 ),
               ),
               subtitle: Text(
-                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
+                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
               ),
             ),
         ],
