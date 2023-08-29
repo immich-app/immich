@@ -33,6 +33,11 @@ export class CreateAssetBase {
   @IsOptional()
   @IsBoolean()
   @Transform(toBoolean)
+  isExternal?: boolean = false;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean)
   isOffline?: boolean = false;
 }
 

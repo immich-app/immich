@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **isArchived** | **bool** |  | [optional] 
+**isExternal** | **bool** |  | [optional] [default to false]
 **isFavorite** | **bool** |  | 
 **isOffline** | **bool** |  | [optional] [default to false]
 **isReadOnly** | **bool** |  | [optional] [default to true]

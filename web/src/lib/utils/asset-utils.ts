@@ -83,6 +83,13 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 };
 
 export const downloadFile = async (asset: AssetResponseDto) => {
+  if (asset.isOffline) {
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Asset ${asset.originalFileName} is offline`,
+    });
+    return;
+  }
   const assets = [
     {
       filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,

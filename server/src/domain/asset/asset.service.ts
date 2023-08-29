@@ -186,6 +186,10 @@ export class AssetService {
       throw new BadRequestException('Asset not found');
     }
 
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
+    }
+
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
   }
 

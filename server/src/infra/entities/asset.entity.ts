@@ -86,6 +86,9 @@ export class AssetEntity {
   isArchived!: boolean;
 
   @Column({ type: 'boolean', default: false })
+  isExternal!: boolean;
+
+  @Column({ type: 'boolean', default: false })
   isReadOnly!: boolean;
 
   @Column({ type: 'boolean', default: false })

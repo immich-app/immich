@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/**/*.{html,js,svelte,ts}'],
+  content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -16,6 +16,19 @@ module.exports = {
         'immich-dark-bg': 'black',
         'immich-dark-fg': '#e5e7eb',
         'immich-dark-gray': '#212121',
+        // flowbite-svelte
+        primary: {
+          50: '#FFF5F2',
+          100: '#FFF1EE',
+          200: '#FFE4DE',
+          300: '#FFD5CC',
+          400: '#FFBCAD',
+          500: '#FE795D',
+          600: '#EF562F',
+          700: '#EB4F27',
+          800: '#CC4522',
+          900: '#A5371B',
+        },
       },
       fontFamily: {
         'immich-title': ['Snowburst One', 'cursive'],
@@ -25,5 +38,6 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require('flowbite/plugin')],
+
 };

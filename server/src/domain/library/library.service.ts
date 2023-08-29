@@ -222,6 +222,7 @@ export class LibraryService {
         originalFileName: parse(assetPath).name,
         sidecarPath,
         isReadOnly: true,
+        isExternal: true,
       });
       assetId = addedAsset.id;
     } else if (doRefresh) {

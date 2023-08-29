@@ -20,6 +20,7 @@ class ImportAssetDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     this.isArchived,
+    this.isExternal = false,
     required this.isFavorite,
     this.isOffline = false,
     this.isReadOnly = true,
@@ -54,6 +55,8 @@ class ImportAssetDto {
   ///
   bool? isArchived;
 
+  bool isExternal;
+
   bool isFavorite;
 
   bool isOffline;
@@ -87,6 +90,7 @@ class ImportAssetDto {
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.isArchived == isArchived &&
+     other.isExternal == isExternal &&
      other.isFavorite == isFavorite &&
      other.isOffline == isOffline &&
      other.isReadOnly == isReadOnly &&
@@ -104,6 +108,7 @@ class ImportAssetDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
+    (isExternal.hashCode) +
     (isFavorite.hashCode) +
     (isOffline.hashCode) +
     (isReadOnly.hashCode) +
@@ -112,7 +117,7 @@ class ImportAssetDto {
     (sidecarPath == null ? 0 : sidecarPath!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, libraryId=$libraryId, sidecarPath=$sidecarPath]';
+  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, libraryId=$libraryId, sidecarPath=$sidecarPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -131,6 +136,7 @@ class ImportAssetDto {
     } else {
     //  json[r'isArchived'] = null;
     }
+      json[r'isExternal'] = this.isExternal;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isOffline'] = this.isOffline;
       json[r'isReadOnly'] = this.isReadOnly;
@@ -163,6 +169,7 @@ class ImportAssetDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        isExternal: mapValueOfType<bool>(json, r'isExternal') ?? false,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isOffline: mapValueOfType<bool>(json, r'isOffline') ?? false,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,

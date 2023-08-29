@@ -1477,7 +1477,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData)
+> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isExternal, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData)
 
 
 
@@ -1509,6 +1509,7 @@ final isFavorite = true; // bool |
 final key = key_example; // String | 
 final duration = duration_example; // String | 
 final isArchived = true; // bool | 
+final isExternal = true; // bool | 
 final isOffline = true; // bool | 
 final isReadOnly = true; // bool | 
 final isVisible = true; // bool | 
@@ -1517,7 +1518,7 @@ final livePhotoData = BINARY_DATA_HERE; // MultipartFile |
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData);
+    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isExternal, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1537,6 +1538,7 @@ Name | Type | Description  | Notes
  **key** | **String**|  | [optional] 
  **duration** | **String**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
+ **isExternal** | **bool**|  | [optional] [default to false]
  **isOffline** | **bool**|  | [optional] [default to false]
  **isReadOnly** | **bool**|  | [optional] [default to false]
  **isVisible** | **bool**|  | [optional] 

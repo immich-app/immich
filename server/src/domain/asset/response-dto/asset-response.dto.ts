@@ -24,6 +24,9 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
+  isOffline!: boolean;
+  isExternal!: boolean;
+  isReadOnly!: boolean;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -58,6 +61,9 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
+    isExternal: entity.isExternal,
+    isOffline: entity.isOffline,
+    isReadOnly: entity.isReadOnly,
   };
 }
 
@@ -85,6 +91,9 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
     checksum: entity.checksum.toString('base64'),
+    isExternal: entity.isExternal,
+    isOffline: entity.isOffline,
+    isReadOnly: entity.isReadOnly,
   };
 }
 

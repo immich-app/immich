@@ -51,6 +51,11 @@ void main() {
       // TODO
     });
 
+    // bool isExternal (default value: false)
+    test('to test the property `isExternal`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO

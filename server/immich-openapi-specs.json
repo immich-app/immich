@@ -5511,7 +5511,16 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isExternal": {
+            "type": "boolean"
+          },
           "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
             "type": "boolean"
           },
           "libraryId": {
@@ -5577,6 +5586,9 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "isOffline",
+          "isExternal",
+          "isReadOnly",
           "duration",
           "checksum"
         ],
@@ -5836,6 +5848,10 @@
             "type": "string"
           },
           "isArchived": {
+            "type": "boolean"
+          },
+          "isExternal": {
+            "default": false,
             "type": "boolean"
           },
           "isFavorite": {
@@ -6281,6 +6297,10 @@
             "type": "string"
           },
           "isArchived": {
+            "type": "boolean"
+          },
+          "isExternal": {
+            "default": false,
             "type": "boolean"
           },
           "isFavorite": {

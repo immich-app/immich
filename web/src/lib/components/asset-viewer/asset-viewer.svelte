@@ -4,6 +4,8 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+  import AlertOutline from 'svelte-material-icons/AlertOutline.svelte';
+
   import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
@@ -49,7 +51,7 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let canCopyImagesToClipboard: boolean;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
