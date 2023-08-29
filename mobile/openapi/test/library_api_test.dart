@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future emptyLibraryTrash(String id) async
+    test('test emptyLibraryTrash', () async {
+      // TODO
+    });
+
     //Future<List<LibraryResponseDto>> getAllLibraries() async
     test('test getAllLibraries', () async {
       // TODO

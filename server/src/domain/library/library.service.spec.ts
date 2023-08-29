@@ -72,7 +72,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -86,7 +85,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
@@ -98,7 +96,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -128,7 +125,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -158,7 +154,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       storageMock.stat.mockResolvedValue({
@@ -180,7 +175,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -212,7 +206,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -227,7 +220,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -242,7 +234,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -257,7 +248,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/../../etc/rootpassword.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -271,7 +261,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -289,7 +278,6 @@ describe(LibraryService.name, () => {
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
@@ -321,7 +309,6 @@ describe(LibraryService.name, () => {
         ownerId: assetStub.image.ownerId,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -341,7 +328,6 @@ describe(LibraryService.name, () => {
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       storageMock.stat.mockResolvedValue({
@@ -369,7 +355,6 @@ describe(LibraryService.name, () => {
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -385,7 +370,6 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
         assetId: assetStub.image.id,
-        emptyTrash: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -396,22 +380,6 @@ describe(LibraryService.name, () => {
         id: assetStub.image.id,
         isOffline: true,
       });
-    });
-
-    it('should delete a missing asset when emptying trash', async () => {
-      const offlineJob: IOfflineLibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        assetPath: '/data/user1/photo.jpg',
-        assetId: assetStub.image.id,
-        emptyTrash: true,
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      assetMock.getById.mockResolvedValue(assetStub.image);
-
-      await expect(sut.handleOfflineAsset(offlineJob)).resolves.toBe(true);
-
-      expect(assetMock.save).not.toHaveBeenCalled();
     });
   });
 

@@ -167,7 +167,7 @@
 
   const handleEmptyTrash = async (libraryId: string) => {
     try {
-      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { emptyTrash: true } });
+      await api.libraryApi.emptyLibraryTrash({ id: libraryId });
       notificationController.show({
         message: `Emptying library trash`,
         type: NotificationType.Info,

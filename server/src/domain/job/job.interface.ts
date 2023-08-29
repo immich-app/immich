@@ -25,21 +25,18 @@ export interface IEntityJob extends IBaseJob {
 export interface IOfflineLibraryFileJob extends IEntityJob {
   assetId: string;
   assetPath: string;
-  emptyTrash: boolean;
 }
 
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
   forceRefresh: boolean;
-  emptyTrash: boolean;
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
   ownerId: string;
   refreshModifiedFiles: boolean;
   refreshAllFiles: boolean;
-  emptyTrash: boolean;
 }
 
 export interface IBulkEntityJob extends IBaseJob {

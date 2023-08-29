@@ -82,6 +82,7 @@ export type JobItem =
   | { name: JobName.REFRESH_LIBRARY_ASSET; data: ILibraryFileJob }
   | { name: JobName.OFFLINE_LIBRARY_ASSET; data: IOfflineLibraryFileJob }
   | { name: JobName.REFRESH_LIBRARY; data: ILibraryRefreshJob }
+  | { name: JobName.EMPTY_TRASH; data: IEntityJob }
   | { name: JobName.DELETE_LIBRARY; data: IEntityJob }
 
   // Search

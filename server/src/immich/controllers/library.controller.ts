@@ -61,6 +61,11 @@ export class LibraryController {
 
   @Post('refresh/:id')
   refreshLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: RefreshLibraryDto) {
-    return this.service.refresh(authUser, id, dto);
+    return this.service.queueRefresh(authUser, id, dto);
+  }
+
+  @Post('trash/:id')
+  emptyLibraryTrash(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.service.emptyTrash(authUser, id);
   }
 }

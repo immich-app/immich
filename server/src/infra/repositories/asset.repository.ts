@@ -300,12 +300,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity> {
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
       case WithProperty.SIDECAR:
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
+        break;
+      case WithProperty.IS_OFFLINE:
+        if (!libraryId) {
+          throw new Error('Library id is required when finding offline assets');
+        }
+        where = [{ isOffline: true, libraryId: libraryId }];
         break;
 
       default:

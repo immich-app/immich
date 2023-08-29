@@ -5,8 +5,10 @@ import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
-import { IAssetRepository } from '../asset';
+import { IAssetRepository, WithProperty } from '../asset';
 import { AuthUserDto } from '../auth';
+import { usePagination } from '../domain.util';
+
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import {
@@ -16,6 +18,7 @@ import {
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
   JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
 } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
@@ -245,8 +248,9 @@ export class LibraryService {
     return true;
   }
 
-  async refresh(authUser: AuthUserDto, id: string, dto: RefreshLibraryDto) {
+  async queueRefresh(authUser: AuthUserDto, id: string, dto: RefreshLibraryDto) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+
     await this.jobRepository.queue({
       name: JobName.REFRESH_LIBRARY,
       data: {
@@ -254,7 +258,6 @@ export class LibraryService {
         ownerId: authUser.id,
         refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
         refreshAllFiles: dto.refreshAllFiles ?? false,
-        emptyTrash: dto.emptyTrash ?? false,
       },
     });
 
@@ -262,7 +265,39 @@ export class LibraryService {
     await this.repository.update({ id, refreshedAt: new Date() });
   }
 
-  async handleLibraryRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+  async emptyTrash(authUser: AuthUserDto, id: string) {
+    this.logger.verbose(`Emptying trash for library: ${id}`);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+
+    await this.jobRepository.queue({
+      name: JobName.EMPTY_TRASH,
+      data: {
+        id,
+      },
+    });
+  }
+
+  async handleEmptyTrash(job: IEntityJob): Promise<boolean> {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
+    });
+
+    const assetIds: string[] = [];
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        assetIds.push(asset.id);
+      }
+    }
+
+    this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
+
+    await this.deleteAssets(assetIds);
+
+    return true;
+  }
+
+  async queueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
       return false;
@@ -286,13 +321,12 @@ export class LibraryService {
         id: job.id,
         assetPath: offlineAsset.originalPath,
         assetId: offlineAsset.id,
-        emptyTrash: job.emptyTrash ?? false,
       };
 
       await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_ASSET, data: offlineJobData });
     }
 
-    if (!job.emptyTrash && crawledAssetPaths.length > 0) {
+    if (crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
@@ -310,7 +344,6 @@ export class LibraryService {
           assetPath: path.normalize(assetPath),
           ownerId: job.ownerId,
           forceRefresh: job.refreshAllFiles ?? false,
-          emptyTrash: job.emptyTrash ?? false,
         };
 
         await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_ASSET, data: libraryJobData });
@@ -323,10 +356,7 @@ export class LibraryService {
   async handleOfflineAsset(job: IOfflineLibraryFileJob): Promise<boolean> {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, job.assetPath);
 
-    if (job.emptyTrash && existingAssetEntity) {
-      this.logger.verbose(`Removing offline asset: ${job.assetPath}`);
-      await this.deleteAssets([job.assetId]);
-    } else if (existingAssetEntity) {
+    if (existingAssetEntity) {
       this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
       await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
     }

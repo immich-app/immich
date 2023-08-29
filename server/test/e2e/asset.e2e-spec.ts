@@ -62,7 +62,7 @@ describe.skip('Asset', () => {
 
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
 
-      await libraryService.refresh(adminUser, library.id, {});
+      await libraryService.queueRefresh(adminUser, library.id, {});
 
       let isFinished = false;
       // TODO: this shouldn't be a while loop

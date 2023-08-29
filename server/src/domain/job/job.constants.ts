@@ -55,9 +55,10 @@ export enum JobName {
   PERSON_CLEANUP = 'person-cleanup',
 
   // library managment
-  OFFLINE_LIBRARY_ASSET = 'offline-library-asset',
-  REFRESH_LIBRARY_ASSET = 'refresh-library-asset',
   REFRESH_LIBRARY = 'refresh-library',
+  REFRESH_LIBRARY_ASSET = 'refresh-library-asset',
+  EMPTY_TRASH = 'queue-empty-trash',
+  OFFLINE_LIBRARY_ASSET = 'offline-library-asset',
   DELETE_LIBRARY = 'delete-library',
 
   // cleanup
@@ -153,4 +154,5 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.OFFLINE_LIBRARY_ASSET]: QueueName.LIBRARY,
   [JobName.REFRESH_LIBRARY]: QueueName.LIBRARY,
   [JobName.DELETE_LIBRARY]: QueueName.LIBRARY,
+  [JobName.EMPTY_TRASH]: QueueName.LIBRARY,
 };

@@ -103,6 +103,46 @@ class LibraryApi {
     }
   }
 
+  /// Performs an HTTP 'POST /library/trash/{id}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> emptyLibraryTrashWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/library/trash/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> emptyLibraryTrash(String id,) async {
+    final response = await emptyLibraryTrashWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
   Future<Response> getAllLibrariesWithHttpInfo() async {
     // ignore: prefer_const_declarations
