@@ -207,7 +207,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo.make || asset.exifInfo.model || asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
         <div><CameraIris size="24" /></div>
 
