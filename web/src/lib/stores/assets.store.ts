@@ -171,6 +171,17 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
+  createBucket(bucketDate: string): AssetBucket {
+    const bucket = new AssetBucket();
+
+    bucket.bucketDate = bucketDate;
+    bucket.bucketHeight = THUMBNAIL_HEIGHT;
+    bucket.assets = [];
+    bucket.cancelToken = new AbortController();
+    bucket.position = BucketPosition.Unknown;
+
+    return bucket;
+  }
   private debounceAddToBucket = lodash.debounce(() => this._addToBucket(), 2000);
 
   addToBucket(asset: AssetResponseDto) {
