@@ -218,18 +218,7 @@ class BackupService {
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
-    // Upload images before video assets
-    // these are further sorted by using their creation date so the upload goes as follows
-    // older images -> latest images -> older videos -> latest videos
-    List<AssetEntity> sortedAssets = assetList.sorted(
-      (a, b) {
-        final cmp = a.typeInt - b.typeInt;
-        if (cmp != 0) return cmp;
-        return a.createDateTime.compareTo(b.createDateTime);
-      },
-    );
-
-    for (var entity in sortedAssets) {
+    for (var entity in assetList) {
       try {
         if (entity.type == AssetType.video) {
           file = await entity.originFile;
@@ -259,8 +248,7 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['fileCreatedAt'] =
-              entity.createDateTime.toUtc().toIso8601String();
+          req.fields['fileCreatedAt'] = entity.createDateTime.toUtc().toIso8601String();
           req.fields['fileModifiedAt'] =
               entity.modifiedDateTime.toUtc().toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
