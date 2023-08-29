@@ -9,7 +9,6 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `CREATE TABLE "libraries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL DEFAULT '', "ownerId" uuid NOT NULL, "type" character varying NOT NULL, "importPaths" text array NOT NULL, "exclusionPatterns" text array NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP WITH TIME ZONE, "refreshedAt" TIMESTAMP WITH TIME ZONE, "isVisible" boolean NOT NULL DEFAULT true, CONSTRAINT "UQ_owner_name" UNIQUE ("ownerId", "name"), CONSTRAINT "PK_505fedfcad00a09b3734b4223de" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(`ALTER TABLE "assets" ADD "isOffline" boolean NOT NULL DEFAULT false`);
-    await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" SET NOT NULL`);
     await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_4ed4f8052685ff5b1e7ca1058ba"`);
     await queryRunner.query(`ALTER TABLE "assets" ADD "isExternal" boolean NOT NULL DEFAULT false`);
@@ -36,6 +35,8 @@ export class AddLibraries1688392120838 implements MigrationInterface {
         `UPDATE "assets" SET "libraryId" = (SELECT id FROM "libraries" WHERE "ownerId" = '${userId}' LIMIT 1) WHERE "ownerId" = '${userId}'`,
       );
     }
+
+    await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

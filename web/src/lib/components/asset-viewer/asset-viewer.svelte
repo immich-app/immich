@@ -4,8 +4,6 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-  import AlertOutline from 'svelte-material-icons/AlertOutline.svelte';
-
   import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';

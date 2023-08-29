@@ -254,7 +254,7 @@
                         }}>Edit Import Paths</DropdownItem
                       >
                       <DropdownItem class="flex items-center justify-between">
-                        Manage<Icon name="chevron-right-solid" class="text-primary-700 ml-2 h-3 w-3 dark:text-white" />
+                        Manage<Icon name="chevron-right-solid" class="ml-2 h-3 w-3 text-primary-700 dark:text-white" />
                       </DropdownItem>
                       <Dropdown slot="footer" class="w-60" placement="right-start">
                         <DropdownItem
