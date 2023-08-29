@@ -62,7 +62,7 @@
     </SettingAccordion>
 
     <SettingAccordion
-      title="FFmpeg Settings"
+      title="Video Transcoding Settings"
       subtitle="Manage the resolution and encoding information of the video files"
     >
       <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
