@@ -154,7 +154,21 @@
   />
 </SettingAccordion>
 <SettingAccordion title="Machine Learning" subtitle="Manage machine learning settings">
-  <MachineLearningSettings disabled={$featureFlags.configFile} />
+  <MachineLearningSettings
+    bind:savedConfig={currentConfig.machineLearning}
+    bind:machineLearningConfig={config.machineLearning}
+    machineLearningDefault={defaultConfig.machineLearning}
+    disabled={$featureFlags.configFile}
+    on:save={({ detail: machineLearning }) => {
+      handleSave(
+        {
+          ...currentConfig,
+          machineLearning,
+        },
+        'Machine Learning',
+      );
+    }}
+  />
 </SettingAccordion>
 <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
   <OAuthSettings
