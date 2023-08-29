@@ -1041,7 +1041,7 @@ export interface CreateLibraryDto {
      * @type {string}
      * @memberof CreateLibraryDto
      */
-    'name': string;
+    'name'?: string;
     /**
      * 
      * @type {LibraryType}

@@ -10,8 +10,8 @@ export class CreateLibraryDto {
   type!: LibraryType;
 
   @IsString()
-  @IsNotEmpty()
-  name!: string;
+  @IsOptional()
+  name?: string;
 
   @IsOptional()
   @IsBoolean()

@@ -16,7 +16,7 @@ class CreateLibraryDto {
     this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
-    required this.name,
+    this.name,
     required this.type,
   });
 
@@ -32,7 +32,13 @@ class CreateLibraryDto {
   ///
   bool? isVisible;
 
-  String name;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? name;
 
   LibraryType type;
 
@@ -50,7 +56,7 @@ class CreateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (type.hashCode);
 
   @override
@@ -65,7 +71,11 @@ class CreateLibraryDto {
     } else {
     //  json[r'isVisible'] = null;
     }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
+    }
       json[r'type'] = this.type;
     return json;
   }
@@ -85,7 +95,7 @@ class CreateLibraryDto {
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         type: LibraryType.fromJson(json[r'type'])!,
       );
     }
@@ -136,7 +146,6 @@ class CreateLibraryDto {
   static const requiredKeys = <String>{
     'exclusionPatterns',
     'importPaths',
-    'name',
     'type',
   };
 }

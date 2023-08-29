@@ -5917,7 +5917,6 @@
         },
         "required": [
           "type",
-          "name",
           "importPaths",
           "exclusionPatterns"
         ],

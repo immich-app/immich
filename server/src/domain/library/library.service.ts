@@ -70,6 +70,32 @@ export class LibraryService {
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    if (!dto.name) {
+      // No library name was supplied, create a default one
+      if (dto.type === LibraryType.EXTERNAL) {
+        dto.name = `New External Library`;
+      } else {
+        dto.name = `New Upload Library`;
+      }
+      const defaultNameExists = await this.repository.existsByName(dto.name, true);
+
+      if (defaultNameExists) {
+        let foundName = false;
+
+        let nameCounter = 1;
+        while (!foundName) {
+          const exists = await this.repository.existsByName(`${dto.name} (${nameCounter})`, true);
+          if (!exists) {
+            dto.name = `${dto.name} (${nameCounter})`;
+            foundName = true;
+          } else if (nameCounter > 100) {
+            throw new BadRequestException('Could not find a unique name for the library');
+          }
+          nameCounter++;
+        }
+      }
+    }
+
     const library = await this.repository.create({
       ownerId: authUser.id,
       name: dto.name,
@@ -209,6 +235,11 @@ export class LibraryService {
 
     let assetId;
     if (doImport) {
+      const library = await this.repository.get(job.id, true);
+      if (library?.deletedAt) {
+        throw new BadRequestException('Cannot import asset into deleted library');
+      }
+
       const addedAsset = await this.assetRepository.create({
         ownerId: job.ownerId,
         libraryId: job.id,

@@ -27,11 +27,14 @@
   let diskUsage: number[] = [];
   let diskUsageUnit: string[] = [];
 
+  let confirmDeleteLibrary: LibraryResponseDto | null = null;
   let deleteLibrary: LibraryResponseDto | null = null;
 
   let editImportPaths: number | null;
   let editScanSettings: number | null;
   let renameLibrary: number | null;
+
+  let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
 
@@ -72,17 +75,8 @@
 
   const handleCreate = async (libraryType: LibraryType) => {
     try {
-      let newLibraryName;
-      switch (libraryType) {
-        case LibraryType.External:
-          newLibraryName = 'New External Library';
-          break;
-        case LibraryType.Upload:
-          newLibraryName = 'New Upload Library';
-          break;
-      }
       const { data } = await api.libraryApi.createLibrary({
-        createLibraryDto: { type: libraryType, name: newLibraryName, importPaths: [], exclusionPatterns: [] },
+        createLibraryDto: { type: libraryType, importPaths: [], exclusionPatterns: [] },
       });
 
       const createdLibrary = data;
@@ -111,6 +105,10 @@
   };
 
   const handleDelete = async () => {
+    if (confirmDeleteLibrary) {
+      deleteLibrary = confirmDeleteLibrary;
+    }
+
     if (!deleteLibrary) {
       return;
     }
@@ -124,6 +122,7 @@
     } catch (error) {
       handleError(error, 'Unable to remove library');
     } finally {
+      confirmDeleteLibrary = null;
       deleteLibrary = null;
       await readLibraryList();
     }
@@ -178,12 +177,12 @@
   };
 </script>
 
-{#if deleteLibrary}
+{#if confirmDeleteLibrary}
   <ConfirmDialogue
     title="Warning!"
-    prompt="Are you sure you want to delete this library? This will DELETE any and all contained assets and cannot be undone."
+    prompt="Are you sure you want to delete this library? This will DELETE all {deleteAssetCount} contained assets and cannot be undone."
     on:confirm={handleDelete}
-    on:cancel={() => (deleteLibrary = null)}
+    on:cancel={() => (confirmDeleteLibrary = null)}
   />
 {/if}
 
@@ -291,7 +290,15 @@
                         <DropdownItem
                           on:click={function () {
                             closeAll();
-                            deleteLibrary = library;
+                            refreshStats(index);
+
+                            if (totalCount[index] > 0) {
+                              deleteAssetCount = totalCount[index];
+                              confirmDeleteLibrary = library;
+                            } else {
+                              deleteLibrary = library;
+                              handleDelete();
+                            }
                           }}>Delete Library</DropdownItem
                         >
                       </Dropdown>

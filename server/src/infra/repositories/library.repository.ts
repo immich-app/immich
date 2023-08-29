@@ -18,6 +18,15 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  existsByName(name: string, withDeleted = false): Promise<boolean> {
+    return this.repository.exist({
+      where: {
+        name,
+      },
+      withDeleted: withDeleted,
+    });
+  }
+
   getCountForUser(ownerId: string): Promise<number> {
     return this.repository.countBy({ ownerId });
   }

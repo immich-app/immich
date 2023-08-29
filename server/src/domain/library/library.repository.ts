@@ -16,4 +16,5 @@ export interface ILibraryRepository {
   getStatistics(id: string): Promise<LibraryStatsResponseDto>;
   getAssetPaths(id: string): Promise<string[]>;
   getAssetIds(id: string, withDeleted?: boolean): Promise<string[]>;
+  existsByName(name: string, withDeleted?: boolean): Promise<boolean>;
 }
