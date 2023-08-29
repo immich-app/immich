@@ -242,12 +242,16 @@
 
         <div>
           <p>{asset.exifInfo.city}</p>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.state}</p>
-          </div>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.country}</p>
-          </div>
+          {#if asset.exifInfo?.state}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.state}</p>
+            </div>
+          {/if}
+          {#if asset.exifInfo?.country}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.country}</p>
+            </div>
+          {/if}
         </div>
       </div>
     {/if}
