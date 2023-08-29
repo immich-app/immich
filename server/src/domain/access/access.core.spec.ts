@@ -26,7 +26,7 @@ describe(AccessCore.name, () => {
   });
 
   it('should be defined', () => {
-    expect(sut).toBeDefined;
+    expect(sut).toBeDefined();
   });
 
   describe('hasPermission:hasSharedLinksAccess', () => {
@@ -95,12 +95,6 @@ describe(AccessCore.name, () => {
       Permission.ASSET_SHARE,
       Permission.ASSET_VIEW,
       Permission.ASSET_DOWNLOAD,
-      // Permission.ALBUM_READ,
-      // Permission.ALBUM_UPDATE,
-      // Permission.ALBUM_DELETE,
-      // Permission.ALBUM_SHARE,
-      // Permission.ALBUM_DOWNLOAD,
-      // Permission.ALBUM_REMOVE_ASSET,
     ])('should return true if user has owner access and tries to do anything with assets', async (permission) => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
