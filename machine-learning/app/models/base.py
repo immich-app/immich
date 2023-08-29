@@ -60,15 +60,20 @@ class InferenceModel(ABC):
         self._load(**model_kwargs)
         self._loaded = True
 
-    def predict(self, inputs: Any) -> Any:
+    def predict(self, inputs: Any, **model_kwargs: Any) -> Any:
         if not self._loaded:
             print(f"Loading {self.model_type.value.replace('_', ' ')} model...")
             self.load()
+        if model_kwargs:
+            self.configure(**model_kwargs)
         return self._predict(inputs)
 
     @abstractmethod
     def _predict(self, inputs: Any) -> Any:
         ...
+
+    def configure(self, **model_kwargs: Any) -> None:
+        pass
 
     @abstractmethod
     def _download(self, **model_kwargs: Any) -> None:

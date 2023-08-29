@@ -121,15 +121,18 @@ export class SearchService {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
 
     const query = dto.q || dto.query || '*';
-    const hasClip = machineLearning.enabled && machineLearning.clipEncodeEnabled;
+    const hasClip = machineLearning.enabled && machineLearning.clip.enabled;
     const strategy = dto.clip && hasClip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
     const filters = { userId: authUser.id, ...dto };
 
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {
       case SearchStrategy.CLIP:
-        const clip = await this.machineLearning.encodeText(machineLearning.url, query);
-        assets = await this.searchRepository.vectorSearch(clip, filters);
+        const {
+          machineLearning: { clip },
+        } = await this.configCore.getConfig();
+        const embedding = await this.machineLearning.encodeText(machineLearning.url, { text: query }, clip);
+        assets = await this.searchRepository.vectorSearch(embedding, filters);
         break;
       case SearchStrategy.TEXT:
       default:
