@@ -92,7 +92,7 @@ const sidecar: Record<string, string[]> = {
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
 const lookup = (filename: string) =>
-  ({ ...image, ...video, ...sidecar }[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream');
+  ({ ...image, ...video, ...sidecar })[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 
 export const mimeTypes = {
   image,
