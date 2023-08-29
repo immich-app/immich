@@ -14,5 +14,6 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     getUploadLibraryCount: jest.fn(),
     getAssetPaths: jest.fn(),
     getAssetIds: jest.fn(),
+    existsByName: jest.fn(),
   };
 };
