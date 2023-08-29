@@ -5354,6 +5354,34 @@
         ],
         "type": "object"
       },
+      "CLIPConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/CLIPMode"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "modelType": {
+            "$ref": "#/components/schemas/ModelType"
+          }
+        },
+        "required": [
+          "enabled",
+          "modelName"
+        ],
+        "type": "object"
+      },
+      "CLIPMode": {
+        "enum": [
+          "vision",
+          "text"
+        ],
+        "type": "string"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -5429,6 +5457,28 @@
         },
         "required": [
           "existingIds"
+        ],
+        "type": "object"
+      },
+      "ClassificationConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "minScore": {
+            "type": "integer"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "modelType": {
+            "$ref": "#/components/schemas/ModelType"
+          }
+        },
+        "required": [
+          "minScore",
+          "enabled",
+          "modelName"
         ],
         "type": "object"
       },
@@ -6144,6 +6194,14 @@
         ],
         "type": "object"
       },
+      "ModelType": {
+        "enum": [
+          "image-classification",
+          "facial-recognition",
+          "clip"
+        ],
+        "type": "string"
+      },
       "OAuthCallbackDto": {
         "properties": {
           "url": {
@@ -6320,6 +6378,32 @@
         "required": [
           "isActive",
           "isPaused"
+        ],
+        "type": "object"
+      },
+      "RecognitionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "type": "integer"
+          },
+          "minScore": {
+            "type": "integer"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "modelType": {
+            "$ref": "#/components/schemas/ModelType"
+          }
+        },
+        "required": [
+          "minScore",
+          "maxDistance",
+          "enabled",
+          "modelName"
         ],
         "type": "object"
       },
@@ -6968,17 +7052,17 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
-          "clipEncodeEnabled": {
-            "type": "boolean"
+          "classification": {
+            "$ref": "#/components/schemas/ClassificationConfig"
+          },
+          "clip": {
+            "$ref": "#/components/schemas/CLIPConfig"
           },
           "enabled": {
             "type": "boolean"
           },
-          "facialRecognitionEnabled": {
-            "type": "boolean"
-          },
-          "tagImageEnabled": {
-            "type": "boolean"
+          "facialRecognition": {
+            "$ref": "#/components/schemas/RecognitionConfig"
           },
           "url": {
             "type": "string"
@@ -6987,9 +7071,9 @@
         "required": [
           "enabled",
           "url",
-          "clipEncodeEnabled",
-          "facialRecognitionEnabled",
-          "tagImageEnabled"
+          "classification",
+          "clip",
+          "facialRecognition"
         ],
         "type": "object"
       },

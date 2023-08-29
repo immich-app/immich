@@ -84,9 +84,13 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleClassifyImage({ id: asset.id });
 
-      expect(machineMock.classifyImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: 'path/to/resize.ext',
-      });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: 'path/to/resize.ext',
+        },
+        { enabled: true, minScore: 0.9, modelName: 'microsoft/resnet-50' },
+      );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -141,13 +145,16 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned objects', async () => {
+      smartMock.upsert.mockResolvedValue();
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
       await sut.handleEncodeClip({ id: asset.id });
 
-      expect(machineMock.encodeImage).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: 'path/to/resize.ext',
-      });
+      expect(machineMock.encodeImage).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        { imagePath: 'path/to/resize.ext' },
+        { enabled: true, modelName: 'ViT-B-32::openai' },
+      );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],

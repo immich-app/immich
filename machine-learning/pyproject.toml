@@ -30,6 +30,9 @@ rich = "^13.4.2"
 ftfy = "^6.1.1"
 setuptools = "^68.0.0"
 open-clip-torch = "^2.20.0"
+python-multipart = "^0.0.6"
+orjson = "^3.9.5"
+safetensors = "0.3.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"

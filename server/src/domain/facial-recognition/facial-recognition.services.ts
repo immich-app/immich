@@ -32,7 +32,7 @@ export class FacialRecognitionService {
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
@@ -59,7 +59,7 @@ export class FacialRecognitionService {
 
   async handleRecognizeFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
@@ -68,7 +68,11 @@ export class FacialRecognitionService {
       return false;
     }
 
-    const faces = await this.machineLearning.detectFaces(machineLearning.url, { imagePath: asset.resizePath });
+    const faces = await this.machineLearning.detectFaces(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      machineLearning.facialRecognition,
+    );
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
@@ -80,7 +84,7 @@ export class FacialRecognitionService {
 
       // try to find a matching face and link to the associated person
       // The closer to 0, the better the match. Range is from 0 to 2
-      if (faceSearchResult.total && faceSearchResult.distances[0] < 0.6) {
+      if (faceSearchResult.total && faceSearchResult.distances[0] <= machineLearning.facialRecognition.maxDistance) {
         this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
         personId = faceSearchResult.items[0].personId;
       }
@@ -115,7 +119,7 @@ export class FacialRecognitionService {
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognitionEnabled) {
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 

@@ -9,7 +9,6 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
 
-from ..config import settings
 from ..schemas import ModelType
 from .base import InferenceModel
 
@@ -20,7 +19,7 @@ class FaceRecognizer(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        min_score: float = settings.min_face_score,
+        min_score: float = 0.7,
         cache_dir: Path | str | None = None,
         **model_kwargs: Any,
     ) -> None:
@@ -69,11 +68,13 @@ class FaceRecognizer(InferenceModel):
         )
         self.rec_model.prepare(ctx_id=0)
 
-    def _predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
+    def _predict(self, image: np.ndarray[int, np.dtype[Any]] | bytes) -> list[dict[str, Any]]:
+        if isinstance(image, bytes):
+            image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
         bboxes, kpss = self.det_model.detect(image)
         if bboxes.size == 0:
             return []
-        assert isinstance(kpss, np.ndarray)
+        assert isinstance(image, np.ndarray) and isinstance(kpss, np.ndarray)
 
         scores = bboxes[:, 4].tolist()
         bboxes = bboxes[:, :4].round().tolist()
@@ -102,3 +103,6 @@ class FaceRecognizer(InferenceModel):
     @property
     def cached(self) -> bool:
         return self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx"))
+
+    def configure(self, **model_kwargs: Any) -> None:
+        self.det_model.det_thresh = model_kwargs.get("min_score", self.det_model.det_thresh)

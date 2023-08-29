@@ -865,6 +865,53 @@ export interface BulkIdsDto {
 /**
  * 
  * @export
+ * @interface CLIPConfig
+ */
+export interface CLIPConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CLIPConfig
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {CLIPMode}
+     * @memberof CLIPConfig
+     */
+    'mode'?: CLIPMode;
+    /**
+     * 
+     * @type {string}
+     * @memberof CLIPConfig
+     */
+    'modelName': string;
+    /**
+     * 
+     * @type {ModelType}
+     * @memberof CLIPConfig
+     */
+    'modelType'?: ModelType;
+}
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const CLIPMode = {
+    Vision: 'vision',
+    Text: 'text'
+} as const;
+
+export type CLIPMode = typeof CLIPMode[keyof typeof CLIPMode];
+
+
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -951,6 +998,39 @@ export interface CheckExistingAssetsResponseDto {
      */
     'existingIds': Array<string>;
 }
+/**
+ * 
+ * @export
+ * @interface ClassificationConfig
+ */
+export interface ClassificationConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ClassificationConfig
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClassificationConfig
+     */
+    'minScore': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClassificationConfig
+     */
+    'modelName': string;
+    /**
+     * 
+     * @type {ModelType}
+     * @memberof ClassificationConfig
+     */
+    'modelType'?: ModelType;
+}
+
+
 /**
  * 
  * @export
@@ -1769,6 +1849,21 @@ export interface MergePersonDto {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const ModelType = {
+    ImageClassification: 'image-classification',
+    FacialRecognition: 'facial-recognition',
+    Clip: 'clip'
+} as const;
+
+export type ModelType = typeof ModelType[keyof typeof ModelType];
+
+
+/**
+ * 
+ * @export
  * @interface OAuthCallbackDto
  */
 export interface OAuthCallbackDto {
@@ -1991,6 +2086,45 @@ export interface QueueStatusDto {
      */
     'isPaused': boolean;
 }
+/**
+ * 
+ * @export
+ * @interface RecognitionConfig
+ */
+export interface RecognitionConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof RecognitionConfig
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof RecognitionConfig
+     */
+    'maxDistance': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RecognitionConfig
+     */
+    'minScore': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof RecognitionConfig
+     */
+    'modelName': string;
+    /**
+     * 
+     * @type {ModelType}
+     * @memberof RecognitionConfig
+     */
+    'modelType'?: ModelType;
+}
+
+
 /**
  * 
  * @export
@@ -2803,10 +2937,16 @@ export interface SystemConfigJobDto {
 export interface SystemConfigMachineLearningDto {
     /**
      * 
-     * @type {boolean}
+     * @type {ClassificationConfig}
      * @memberof SystemConfigMachineLearningDto
      */
-    'clipEncodeEnabled': boolean;
+    'classification': ClassificationConfig;
+    /**
+     * 
+     * @type {CLIPConfig}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'clip': CLIPConfig;
     /**
      * 
      * @type {boolean}
@@ -2815,16 +2955,10 @@ export interface SystemConfigMachineLearningDto {
     'enabled': boolean;
     /**
      * 
-     * @type {boolean}
+     * @type {RecognitionConfig}
      * @memberof SystemConfigMachineLearningDto
      */
-    'facialRecognitionEnabled': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigMachineLearningDto
-     */
-    'tagImageEnabled': boolean;
+    'facialRecognition': RecognitionConfig;
     /**
      * 
      * @type {string}
