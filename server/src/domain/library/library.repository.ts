@@ -14,7 +14,7 @@ export interface ILibraryRepository {
   getUploadLibraryCount(ownerId: string): Promise<number>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   getStatistics(id: string): Promise<LibraryStatsResponseDto>;
-  getAssetPaths(id: string): Promise<string[]>;
+  getOnlineAssetPaths(id: string): Promise<string[]>;
   getAssetIds(id: string, withDeleted?: boolean): Promise<string[]>;
   existsByName(name: string, withDeleted?: boolean): Promise<boolean>;
 }

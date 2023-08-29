@@ -346,7 +346,7 @@ export class LibraryService {
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
     const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
-    this.logger.debug(`Found ${offlineAssets.length} offline assets in library ${job.id}`);
+    this.logger.debug(`${offlineAssets.length} assets in library are not present on disk and will be marked offline`);
 
     for (const offlineAsset of offlineAssets) {
       const offlineJobData: IOfflineLibraryFileJob = {
@@ -363,7 +363,7 @@ export class LibraryService {
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const existingPaths = await this.repository.getAssetPaths(job.id);
+        const existingPaths = await this.repository.getOnlineAssetPaths(job.id);
         this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${job.id}`);
 
         filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.includes(assetPath));
