@@ -2,7 +2,7 @@ import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
 import { writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { DateTime } from 'luxon';
-import lodash from 'lodash-es';
+import { debounce } from 'lodash-es';
 
 export enum BucketPosition {
   Above = 'above',
@@ -177,12 +177,12 @@ export class AssetStore {
     bucket.bucketDate = bucketDate;
     bucket.bucketHeight = THUMBNAIL_HEIGHT;
     bucket.assets = [];
-    bucket.cancelToken = new AbortController();
+    bucket.cancelToken = null;
     bucket.position = BucketPosition.Unknown;
 
     return bucket;
   }
-  private debounceAddToBucket = lodash.debounce(() => this._addToBucket(), 2000);
+  private debounceAddToBucket = debounce(() => this._addToBucket(), 2000);
 
   addToBucket(asset: AssetResponseDto) {
     this.newAssets.push(asset);
