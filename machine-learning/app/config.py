@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -23,11 +24,30 @@ class Settings(BaseSettings):
         case_sensitive = False
 
 
+class LogSettings(BaseSettings):
+    log_level: str = "info"
+    no_color: bool = False
+
+    class Config:
+        case_sensitive = False
+
+
 _clean_name = str.maketrans(":\\/", "___", ".")
 
 
 def get_cache_dir(model_name: str, model_type: ModelType) -> Path:
     return Path(settings.cache_folder) / model_type.value / model_name.translate(_clean_name)
 
+LOG_LEVELS: dict[str, int] = {
+    "critical": logging.ERROR,
+    "error": logging.ERROR,
+    "warning": logging.WARNING,
+    "warn": logging.WARNING,
+    "info": logging.INFO,
+    "log": logging.INFO,
+    "debug": logging.DEBUG,
+    "verbose": logging.DEBUG
+}
 
 settings = Settings()
+log_settings = LogSettings()

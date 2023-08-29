@@ -1,23 +1,28 @@
 import asyncio
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import orjson
 import uvicorn
+from uvicorn.logging import ColourizedFormatter
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
 from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
 
-from .config import settings
+from .config import LOG_LEVELS, log_settings, settings
 from .models.cache import ModelCache
 from .schemas import (
     MessageResponse,
     ModelType,
     TextResponse,
 )
+log = logging.getLogger()
+log.setLevel(LOG_LEVELS.get(log_settings.log_level, logging.INFO))
+
 
 MultiPartParser.max_file_size = 2**24  # spools to disk if payload is 16 MiB or larger
 
@@ -32,6 +37,14 @@ def init_state() -> None:
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColourizedFormatter(
+        "{asctime} {levelprefix:>8} {message}",
+        datefmt='%Y/%m/%d, %I:%M:%S %p',
+        style="{", 
+        use_colors=not log_settings.no_color
+    ))
+    log.addHandler(handler)
     init_state()
 
 
@@ -77,4 +90,5 @@ if __name__ == "__main__":
         port=settings.port,
         reload=is_dev,
         workers=settings.workers,
+        log_config=None,
     )
