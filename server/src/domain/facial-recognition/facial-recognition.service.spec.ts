@@ -1,3 +1,4 @@
+import { SystemConfig } from '@app/infra/entities';
 import {
   assetStub,
   faceStub,
@@ -19,7 +20,7 @@ import { IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
 
@@ -136,6 +137,24 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleQueueRecognizeFaces', () => {
+    it('should return if machine learning is disabled', async () => {
+      const configCoreSpy = jest.spyOn(SystemConfigCore.prototype, 'getConfig').mockResolvedValue({
+        machineLearning: {
+          enabled: false,
+          clipEncodeEnabled: false,
+          facialRecognitionEnabled: false,
+          tagImageEnabled: false,
+          url: '',
+        },
+      } as SystemConfig);
+
+      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(true);
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(configCoreSpy).toHaveBeenCalled();
+
+      configCoreSpy.mockRestore();
+    });
+
     it('should queue missing assets', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
@@ -169,6 +188,24 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleRecognizeFaces', () => {
+    it('should return if machine learning is disabled', async () => {
+      const configCoreSpy = jest.spyOn(SystemConfigCore.prototype, 'getConfig').mockResolvedValue({
+        machineLearning: {
+          enabled: false,
+          clipEncodeEnabled: false,
+          facialRecognitionEnabled: false,
+          tagImageEnabled: false,
+          url: '',
+        },
+      } as SystemConfig);
+
+      await expect(sut.handleRecognizeFaces({ id: 'foo' })).resolves.toBe(true);
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(configCoreSpy).toHaveBeenCalled();
+
+      configCoreSpy.mockRestore();
+    });
+
     it('should skip when no resize path', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
@@ -250,6 +287,24 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleGenerateFaceThumbnail', () => {
+    it('should return if machine learning is disabled', async () => {
+      const configCoreSpy = jest.spyOn(SystemConfigCore.prototype, 'getConfig').mockResolvedValue({
+        machineLearning: {
+          enabled: false,
+          clipEncodeEnabled: false,
+          facialRecognitionEnabled: false,
+          tagImageEnabled: false,
+          url: '',
+        },
+      } as SystemConfig);
+
+      await expect(sut.handleGenerateFaceThumbnail(face.middle)).resolves.toBe(true);
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(configCoreSpy).toHaveBeenCalled();
+
+      configCoreSpy.mockRestore();
+    });
+
     it('should skip an asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
 
