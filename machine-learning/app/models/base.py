@@ -128,7 +128,7 @@ class InferenceModel(ABC):
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             log.warn(
-                (f"Attempted to clear cache for model '{self.model_name}'" "but cache directory does not exist."),
+                f"Attempted to clear cache for model '{self.model_name}' but cache directory does not exist.",
             )
             return
         if not rmtree.avoids_symlink_attacks:
