@@ -13,49 +13,49 @@ part of openapi.api;
 class SystemConfigMachineLearningDto {
   /// Returns a new [SystemConfigMachineLearningDto] instance.
   SystemConfigMachineLearningDto({
-    required this.clipEncodeEnabled,
+    required this.classification,
+    required this.clip,
     required this.enabled,
-    required this.facialRecognitionEnabled,
-    required this.tagImageEnabled,
+    required this.facialRecognition,
     required this.url,
   });
 
-  bool clipEncodeEnabled;
+  ClassificationConfig classification;
+
+  CLIPConfig clip;
 
   bool enabled;
 
-  bool facialRecognitionEnabled;
-
-  bool tagImageEnabled;
+  RecognitionConfig facialRecognition;
 
   String url;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
-     other.clipEncodeEnabled == clipEncodeEnabled &&
+     other.classification == classification &&
+     other.clip == clip &&
      other.enabled == enabled &&
-     other.facialRecognitionEnabled == facialRecognitionEnabled &&
-     other.tagImageEnabled == tagImageEnabled &&
+     other.facialRecognition == facialRecognition &&
      other.url == url;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (clipEncodeEnabled.hashCode) +
+    (classification.hashCode) +
+    (clip.hashCode) +
     (enabled.hashCode) +
-    (facialRecognitionEnabled.hashCode) +
-    (tagImageEnabled.hashCode) +
+    (facialRecognition.hashCode) +
     (url.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[clipEncodeEnabled=$clipEncodeEnabled, enabled=$enabled, facialRecognitionEnabled=$facialRecognitionEnabled, tagImageEnabled=$tagImageEnabled, url=$url]';
+  String toString() => 'SystemConfigMachineLearningDto[classification=$classification, clip=$clip, enabled=$enabled, facialRecognition=$facialRecognition, url=$url]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'clipEncodeEnabled'] = this.clipEncodeEnabled;
+      json[r'classification'] = this.classification;
+      json[r'clip'] = this.clip;
       json[r'enabled'] = this.enabled;
-      json[r'facialRecognitionEnabled'] = this.facialRecognitionEnabled;
-      json[r'tagImageEnabled'] = this.tagImageEnabled;
+      json[r'facialRecognition'] = this.facialRecognition;
       json[r'url'] = this.url;
     return json;
   }
@@ -68,10 +68,10 @@ class SystemConfigMachineLearningDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigMachineLearningDto(
-        clipEncodeEnabled: mapValueOfType<bool>(json, r'clipEncodeEnabled')!,
+        classification: ClassificationConfig.fromJson(json[r'classification'])!,
+        clip: CLIPConfig.fromJson(json[r'clip'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        facialRecognitionEnabled: mapValueOfType<bool>(json, r'facialRecognitionEnabled')!,
-        tagImageEnabled: mapValueOfType<bool>(json, r'tagImageEnabled')!,
+        facialRecognition: RecognitionConfig.fromJson(json[r'facialRecognition'])!,
         url: mapValueOfType<String>(json, r'url')!,
       );
     }
@@ -120,10 +120,10 @@ class SystemConfigMachineLearningDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'clipEncodeEnabled',
+    'classification',
+    'clip',
     'enabled',
-    'facialRecognitionEnabled',
-    'tagImageEnabled',
+    'facialRecognition',
     'url',
   };
 }

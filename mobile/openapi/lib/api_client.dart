@@ -235,6 +235,10 @@ class ApiClient {
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
           return BulkIdsDto.fromJson(value);
+        case 'CLIPConfig':
+          return CLIPConfig.fromJson(value);
+        case 'CLIPMode':
+          return CLIPModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
@@ -245,6 +249,8 @@ class ApiClient {
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
           return CheckExistingAssetsResponseDto.fromJson(value);
+        case 'ClassificationConfig':
+          return ClassificationConfig.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateLibraryDto':
@@ -307,6 +313,8 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'ModelType':
+          return ModelTypeTypeTransformer().decode(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
@@ -325,6 +333,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RecognitionConfig':
+          return RecognitionConfig.fromJson(value);
         case 'ScanLibraryDto':
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':

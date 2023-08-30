@@ -16,6 +16,7 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import HelpCircleOutline from 'svelte-material-icons/HelpCircleOutline.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
 
@@ -89,6 +90,21 @@
     <div in:fade={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
+          <p class="text-sm dark:text-immich-dark-fg">
+            <HelpCircleOutline class="inline" size="15" />
+            To learn more about the terminology used here, refer to FFmpeg documentation for
+            <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
+              >H.264 codec</a
+            >,
+            <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer"
+              >HEVC codec</a
+            >
+            and
+            <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer"
+              >VP9 codec</a
+            >.
+          </p>
+
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             {disabled}

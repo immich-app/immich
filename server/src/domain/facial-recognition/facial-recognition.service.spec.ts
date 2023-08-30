@@ -115,6 +115,7 @@ describe(FacialRecognitionService.name, () => {
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
 
     mediaMock.crop.mockResolvedValue(croppedFace);
 
@@ -179,9 +180,18 @@ describe(FacialRecognitionService.name, () => {
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
-      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith('http://immich-machine-learning:3003', {
-        imagePath: assetStub.image.resizePath,
-      });
+      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: assetStub.image.resizePath,
+        },
+        {
+          enabled: true,
+          maxDistance: 0.6,
+          minScore: 0.7,
+          modelName: 'buffalo_l',
+        },
+      );
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
