@@ -10,7 +10,7 @@ import {
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  constructor(protected config: SystemConfigFFmpegDto) {}
+  constructor(protected config: SystemConfigFFmpegDto) { }
 
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
@@ -503,10 +503,6 @@ export class VAAPIConfig extends BaseHWConfig {
       throw Error('No VAAPI device found');
     }
     return [`-init_hw_device vaapi=accel:/dev/dri/${this.devices[0]}`, '-filter_hw_device accel'];
-  }
-
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
-    return [`-vcodec ${this.config.targetVideoCodec}_vaapi`, ...super.getBaseOutputOptions(videoStream, audioStream)];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
