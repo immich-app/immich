@@ -45,7 +45,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     const formData = new FormData();
     const { enabled, modelName, modelType, ...options } = config;
     if (!enabled) {
-      throw new Error('Model not enabled');
+      throw new Error(`${modelType} is not enabled`);
     }
 
     formData.append('modelName', modelName);
