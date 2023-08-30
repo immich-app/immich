@@ -44,6 +44,9 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
     const formData = new FormData();
     const { enabled, modelName, modelType, ...options } = config;
+    if (!enabled) {
+      throw new Error('Model not enabled');
+    }
 
     formData.append('modelName', modelName);
     if (modelType) {
