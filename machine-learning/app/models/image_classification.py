@@ -8,6 +8,7 @@ from optimum.pipelines import pipeline
 from PIL import Image
 from transformers import AutoImageProcessor
 
+from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
 
@@ -35,19 +36,25 @@ class ImageClassifier(InferenceModel):
         )
 
     def _load(self, **model_kwargs: Any) -> None:
-        processor = AutoImageProcessor.from_pretrained(self.cache_dir)
+        processor = AutoImageProcessor.from_pretrained(self.cache_dir, cache_dir=self.cache_dir)
+        model_path = self.cache_dir / "model.onnx"
         model_kwargs |= {
             "cache_dir": self.cache_dir,
             "provider": self.providers[0],
             "provider_options": self.provider_options[0],
             "session_options": self.sess_options,
         }
-        model_path = self.cache_dir / "model.onnx"
 
         if model_path.exists():
             model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
             self.model = pipeline(self.model_type.value, model, feature_extractor=processor)
         else:
+            log.info(
+                (
+                    f"ONNX model not found in cache directory for '{self.model_name}'."
+                    "Exporting optimized model for future use."
+                ),
+            )
             self.sess_options.optimized_model_filepath = model_path.as_posix()
             self.model = pipeline(
                 self.model_type.value,

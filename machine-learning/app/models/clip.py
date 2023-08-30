@@ -12,6 +12,7 @@ from clip_server.model.tokenization import Tokenizer
 from PIL import Image
 from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTensor
 
+from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
 
@@ -105,9 +106,11 @@ class CLIPEncoder(InferenceModel):
         if model_name in _MODELS:
             return model_name
         elif model_name in _ST_TO_JINA_MODEL_NAME:
-            print(
-                (f"Warning: Sentence-Transformer model names such as '{model_name}' are no longer supported."),
-                (f"Using '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the best match for '{model_name}'."),
+            log.warn(
+                (
+                    f"Sentence-Transformer models like '{model_name}' are not supported."
+                    f"Using '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the best match for '{model_name}'."
+                ),
             )
             return _ST_TO_JINA_MODEL_NAME[model_name]
         else:
