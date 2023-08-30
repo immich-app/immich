@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-
+import starlette
 from pydantic import BaseSettings
 from rich.console import Console
 from rich.logging import RichHandler
@@ -58,7 +58,9 @@ log_settings = LogSettings()
 console = Console(color_system="standard", no_color=log_settings.no_color)
 logging.basicConfig(
     format="%(message)s",
-    handlers=[RichHandler(show_path=False, omit_repeated_times=False, console=console)],
+    handlers=[
+        RichHandler(show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[starlette])
+    ],
 )
 log = logging.getLogger("uvicorn")
 log.setLevel(LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO))

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
@@ -20,15 +21,16 @@ from .schemas import (
 )
 
 MultiPartParser.max_file_size = 2**24  # spools to disk if payload is 16 MiB or larger
-
 app = FastAPI()
 
 
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
     log.info(
-        ("Created in-memory cache with unloading "
-        f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}.")
+        (
+            "Created in-memory cache with unloading "
+            f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}."
+        )
     )
     # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
     app.state.thread_pool = ThreadPoolExecutor(settings.request_threads)
@@ -83,4 +85,5 @@ if __name__ == "__main__":
         reload=is_dev,
         workers=settings.workers,
         log_config=None,
+        access_log=log.isEnabledFor(logging.DEBUG),
     )

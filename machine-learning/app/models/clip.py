@@ -107,8 +107,10 @@ class CLIPEncoder(InferenceModel):
             return model_name
         elif model_name in _ST_TO_JINA_MODEL_NAME:
             log.warn(
-                (f"[{self.model_type.upper()}] Sentence-Transformer models like '{model_name}' are no longer supported."
-                f"Using '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the best match for '{model_name}'."),
+                (
+                    f"Sentence-Transformer models like '{model_name}' are not supported."
+                    f"Using '{_ST_TO_JINA_MODEL_NAME[model_name]}' instead as it is the best match for '{model_name}'."
+                ),
             )
             return _ST_TO_JINA_MODEL_NAME[model_name]
         else:
