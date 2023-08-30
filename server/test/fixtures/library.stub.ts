@@ -34,7 +34,7 @@ export const libraryStub = {
     id: 'library-id',
     name: 'test_library',
     assets: [],
-    owner: userStub.user1,
+    owner: userStub.externalPath1,
     ownerId: 'user-id',
     type: LibraryType.EXTERNAL,
     importPaths: [],

@@ -57,11 +57,22 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueAssetRefresh', () => {
-    let mockUser: UserEntity;
+    it("should not queue assets outside of user's external path", async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
 
-    beforeEach(() => {
-      mockUser = userStub.externalPath;
-      userMock.get.mockResolvedValue(mockUser);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue(['/data/user2/photo.jpg']);
+      assetMock.getByLibraryId.mockResolvedValue([]);
+      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPath1);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queue.mock.calls).toEqual([]);
     });
 
     it('should queue new assets', async () => {
@@ -72,9 +83,10 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg', '/data/user1/video.mp4']);
+      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
       assetMock.getByLibraryId.mockResolvedValue([]);
       libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPath1);
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -90,14 +102,31 @@ describe(LibraryService.name, () => {
             },
           },
         ],
+      ]);
+    });
+
+    it("should mark assets outside of the user's external path as offline", async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      assetMock.getByLibraryId.mockResolvedValue([assetStub.external]);
+      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPath2);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_REFRESH_ASSET,
+            name: JobName.LIBRARY_MARK_ASSET_OFFLINE,
             data: {
               id: libraryStub.externalLibrary1.id,
-              ownerId: libraryStub.externalLibrary1.owner.id,
-              assetPath: '/data/user1/video.mp4',
-              forceRefresh: false,
+              assetPath: '/data/user1/photo.jpg',
             },
           },
         ],
@@ -109,7 +138,7 @@ describe(LibraryService.name, () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
-      mockUser = userStub.externalPath;
+      mockUser = userStub.externalPath1;
       userMock.get.mockResolvedValue(mockUser);
     });
 
@@ -273,7 +302,7 @@ describe(LibraryService.name, () => {
     });
 
     it("should skip an asset if it isn't in the external path", async () => {
-      mockUser = userStub.externalPath;
+      mockUser = userStub.externalPath1;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -287,7 +316,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should skip an asset if directory traversal is attempted', async () => {
-      mockUser = userStub.externalPath;
+      mockUser = userStub.externalPath1;
       userMock.get.mockResolvedValue(mockUser);
 
       const mockLibraryJob: ILibraryFileJob = {
@@ -321,23 +350,23 @@ describe(LibraryService.name, () => {
 
     it('should online a previously-offline asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.offlineImage.id,
+        id: assetStub.offline.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         forceRefresh: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offlineImage);
-      assetMock.create.mockResolvedValue(assetStub.offlineImage);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offline);
+      assetMock.create.mockResolvedValue(assetStub.offline);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
-      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offlineImage.id, isOffline: false });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.offline.id, isOffline: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
         data: {
-          id: assetStub.offlineImage.id,
+          id: assetStub.offline.id,
           source: 'upload',
         },
       });
@@ -345,7 +374,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: {
-          id: assetStub.offlineImage.id,
+          id: assetStub.offline.id,
         },
       });
     });

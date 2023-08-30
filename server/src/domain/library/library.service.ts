@@ -349,6 +349,13 @@ export class LibraryService {
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
+      this.logger.warn('Can only refresh external libraries');
+      return false;
+    }
+
+    const user = await this.userRepository.get(library.ownerId);
+    if (!user?.externalPath) {
+      this.logger.warn('User has no external path set, cannot refresh library');
       return false;
     }
 
@@ -358,7 +365,10 @@ export class LibraryService {
         pathsToCrawl: library.importPaths,
         exclusionPatterns: library.exclusionPatterns,
       })
-    ).map(path.normalize);
+    ).map(path.normalize).filter((assetPath) =>
+      // Filter out paths that are not within the user's external path
+      assetPath.match(new RegExp(`^${user.externalPath}`)),
+    );
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
