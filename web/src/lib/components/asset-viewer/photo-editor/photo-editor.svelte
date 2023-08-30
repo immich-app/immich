@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ImageEditor from 'tui-image-editor?client';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { api, AssetResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import Button from '../elements/buttons/button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import AutoFix from 'svelte-material-icons/AutoFix.svelte';
   import ImageFilterHdr from 'svelte-material-icons/ImageFilterHdr.svelte';
   import WeatherSunny from 'svelte-material-icons/WeatherSunny.svelte';
@@ -25,10 +24,10 @@
   import FormatRotate90 from 'svelte-material-icons/FormatRotate90.svelte';
   import TriangleSmallUp from 'svelte-material-icons/TriangleSmallUp.svelte';
 
-  import SuggestionsButton from './photo-editor/SuggestionsButton.svelte';
-  import AspectRatioButton from './photo-editor/aspect-ratio-button.svelte';
-  import AdjustElement from './photo-editor/adjust-element.svelte';
-  import FilterCard from './photo-editor/filter-card.svelte';
+  import SuggestionsButton from './suggestions-button.svelte';
+  import AspectRatioButton from './aspect-ratio-button.svelte';
+  import AdjustElement from './adjust-element.svelte';
+  import FilterCard from './filter-card.svelte';
 
   import { createEventDispatcher } from 'svelte';
 
@@ -38,6 +37,7 @@
   let imageElement: HTMLImageElement;
   let imageWrapper: HTMLDivElement;
   let cropElement: HTMLDivElement;
+  let cropElementWrapper: HTMLDivElement;
   let assetDragHandle: HTMLDivElement;
 
   let currentAngle = 0;
@@ -75,21 +75,14 @@
   export let asset: AssetResponseDto;
   let assetData: string;
   let publicSharedKey = '';
-  let imageEditor: ImageEditor;
 
   onMount(async () => {
-    let maxWidth: string = String(window.innerWidth);
-    let maxHeight: string = String(window.innerHeight);
-    console.log(maxWidth, maxHeight);
-    imageEditor = new ImageEditor(editorElement, {});
-    console.log(imageEditor.getCanvasSize() as any);
     try {
       await loadAssetData();
     } catch (error) {
       // Throw error
       handleError(error, 'Failed to load asset data');
     }
-    const result = await imageEditor.loadImageFromURL(assetData, 'test');
     imageElement.src = assetData;
   });
 
@@ -190,13 +183,39 @@
     }
 
     cropElement.style.aspectRatio = '' + aspectRatioNum;
-    if (aspectRatioNum > 1) {
-      cropElement.style.width = '100%';
-      cropElement.style.height = 'auto';
-      //cropElement.style.maxHeight = '100%';
-    } else {
+    const cropElementWrapperAspectRatio = cropElementWrapper.offsetWidth / cropElementWrapper.offsetHeight;
+
+    console.log('aspectRatioNum', aspectRatioNum);
+    console.log('cropElementWrapperAspectRatio', cropElementWrapperAspectRatio);
+
+    if (aspectRatioNum >= 1 && cropElementWrapperAspectRatio >= 1 && aspectRatioNum < cropElementWrapperAspectRatio) {
       cropElement.style.width = 'auto';
       cropElement.style.height = '100%';
+      //cropElement.style.maxHeight = '100%';
+    } else if (
+      aspectRatioNum >= 1 &&
+      cropElementWrapperAspectRatio >= 1 &&
+      aspectRatioNum > cropElementWrapperAspectRatio
+    ) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (
+      aspectRatioNum < 1 &&
+      cropElementWrapperAspectRatio < 1 &&
+      aspectRatioNum < cropElementWrapperAspectRatio
+    ) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (aspectRatioNum < 1 && cropElementWrapperAspectRatio >= 1) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+      //cropElement.style.maxHeight = '100%';
+    } else if (aspectRatioNum >= 1 && cropElementWrapperAspectRatio < 1) {
+      cropElement.style.width = '100%';
+      cropElement.style.height = 'auto';
+    } else {
+      cropElement.style.width = '100%';
+      cropElement.style.height = 'auto';
       //cropElement.style.maxWidth = '100%';
     }
 
@@ -489,12 +508,7 @@
 
   // Temporary function
   const save = async () => {
-    const data = await imageEditor.toDataURL();
-    const blob = await fetch(data).then((res) => res.blob());
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'test.png';
-    a.click();
+    // TBD
   };
 
   const setImageWrapperTransform = () => {
@@ -539,7 +553,7 @@
     <div class="flex h-full w-full justify-center" bind:this={assetDragHandle}>
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
-        <div class="relative flex h-full w-full items-center justify-center">
+        <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
           <div>
             <div bind:this={imageWrapper} class="">
               <img class="h-full w-full" bind:this={imageElement} src="" alt="" />
