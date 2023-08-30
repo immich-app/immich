@@ -85,5 +85,5 @@ if __name__ == "__main__":
         reload=is_dev,
         workers=settings.workers,
         log_config=None,
-        access_log=log.isEnabledFor(logging.DEBUG),
+        access_log=log.isEnabledFor(logging.INFO),
     )
