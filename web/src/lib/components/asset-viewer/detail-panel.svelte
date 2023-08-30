@@ -122,18 +122,19 @@
               shadow
               url={api.getPeopleThumbnailUrl(person.id)}
               altText={person.name}
+              title={person.name}
               widthStyle="90px"
               heightStyle="90px"
               thumbhash={null}
             />
-            <p class="mt-1 truncate font-medium">{person.name}</p>
-            <p class="font-light">
-              {#if person.birthDate}
-                Age {Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
-                )}
-              {/if}
+            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+            {#if person.birthDate}
+            <p class="font-light" title="TODO formatted birth date">
+              Age {Math.floor(
+                DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
+              )}
             </p>
+            {/if}
           </a>
         {/each}
       </div>
