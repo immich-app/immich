@@ -1,28 +1,23 @@
 import asyncio
-import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import orjson
 import uvicorn
-from uvicorn.logging import ColourizedFormatter
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
 from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
 
-from .config import LOG_LEVELS, log_settings, settings
+from .config import log, settings
 from .models.cache import ModelCache
 from .schemas import (
     MessageResponse,
     ModelType,
     TextResponse,
 )
-log = logging.getLogger()
-log.setLevel(LOG_LEVELS.get(log_settings.log_level, logging.INFO))
-
 
 MultiPartParser.max_file_size = 2**24  # spools to disk if payload is 16 MiB or larger
 
@@ -31,20 +26,17 @@ app = FastAPI()
 
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
+    log.info(
+        ("Created in-memory cache with unloading "
+        f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}.")
+    )
     # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
     app.state.thread_pool = ThreadPoolExecutor(settings.request_threads)
+    log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    handler = logging.StreamHandler()
-    handler.setFormatter(ColourizedFormatter(
-        "{asctime} {levelprefix:>8} {message}",
-        datefmt='%Y/%m/%d, %I:%M:%S %p',
-        style="{", 
-        use_colors=not log_settings.no_color
-    ))
-    log.addHandler(handler)
     init_state()
 
 
