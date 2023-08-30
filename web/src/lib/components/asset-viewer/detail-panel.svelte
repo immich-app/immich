@@ -129,11 +129,20 @@
             />
             <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
             {#if person.birthDate}
-            <p class="font-light" title="TODO formatted birth date">
-              Age {Math.floor(
-                DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
-              )}
-            </p>
+              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+              <p
+                class="font-light"
+                title={personBirthDate.toLocaleString(
+                  {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  },
+                  { locale: $locale },
+                )}
+              >
+                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+              </p>
             {/if}
           </a>
         {/each}
