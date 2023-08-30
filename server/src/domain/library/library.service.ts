@@ -288,9 +288,6 @@ export class LibraryService {
         refreshAllFiles: dto.refreshAllFiles ?? false,
       },
     });
-
-    // TODO: update this once the job has started?
-    await this.repository.update({ id, refreshedAt: new Date() });
   }
 
   async emptyTrash(authUser: AuthUserDto, id: string) {
@@ -365,10 +362,12 @@ export class LibraryService {
         pathsToCrawl: library.importPaths,
         exclusionPatterns: library.exclusionPatterns,
       })
-    ).map(path.normalize).filter((assetPath) =>
-      // Filter out paths that are not within the user's external path
-      assetPath.match(new RegExp(`^${user.externalPath}`)),
-    );
+    )
+      .map(path.normalize)
+      .filter((assetPath) =>
+        // Filter out paths that are not within the user's external path
+        assetPath.match(new RegExp(`^${user.externalPath}`)),
+      );
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
@@ -408,6 +407,8 @@ export class LibraryService {
       }
     }
 
+    await this.repository.update({ id: job.id, refreshedAt: new Date() });
+
     return true;
   }
 
@@ -431,6 +432,7 @@ export class LibraryService {
   }
 
   private async deleteAssets(assetIds: string[]) {
+    // TODO: this should be refactored to a centralized asset deletion service
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.getById(assetId);
       this.logger.debug(`Removing asset from library: ${asset.originalPath}`);

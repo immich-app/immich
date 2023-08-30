@@ -132,6 +132,32 @@ describe(LibraryService.name, () => {
         ],
       ]);
     });
+
+    it('should not scan libraries owned by user without external path', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      userMock.get.mockResolvedValue(userStub.user1);
+
+      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+    });
+
+    it('should not scan upload libraries', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary);
+
+      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+    });
   });
 
   describe('handleAssetRefresh', () => {
