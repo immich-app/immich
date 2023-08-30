@@ -185,7 +185,7 @@ export class AssetService {
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }

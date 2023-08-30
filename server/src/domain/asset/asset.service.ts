@@ -161,7 +161,7 @@ export class AssetService {
       if (dto.isArchived !== false) {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
-      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
     }
