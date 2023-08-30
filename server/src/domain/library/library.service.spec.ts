@@ -15,7 +15,7 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
+import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
 
 import { ILibraryRepository } from './library.repository';
 import { LibraryService } from './library.service';
@@ -56,7 +56,56 @@ describe(LibraryService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('handleRefreshAsset', () => {
+  describe('handleQueueAssetRefresh', () => {
+    let mockUser: UserEntity;
+
+    beforeEach(() => {
+      mockUser = userStub.externalPath;
+      userMock.get.mockResolvedValue(mockUser);
+    });
+
+    it('should queue new assets', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg', '/data/user1/video.mp4']);
+      assetMock.getByLibraryId.mockResolvedValue([]);
+      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_REFRESH_ASSET,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              ownerId: libraryStub.externalLibrary1.owner.id,
+              assetPath: '/data/user1/photo.jpg',
+              forceRefresh: false,
+            },
+          },
+        ],
+        [
+          {
+            name: JobName.LIBRARY_REFRESH_ASSET,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              ownerId: libraryStub.externalLibrary1.owner.id,
+              assetPath: '/data/user1/video.mp4',
+              forceRefresh: false,
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('handleAssetRefresh', () => {
     let mockUser: UserEntity;
 
     beforeEach(() => {
@@ -367,7 +416,6 @@ describe(LibraryService.name, () => {
       const offlineJob: IOfflineLibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         assetPath: '/data/user1/photo.jpg',
-        assetId: assetStub.image.id,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -390,7 +438,7 @@ describe(LibraryService.name, () => {
       await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_LIBRARY,
+        name: JobName.LIBRARY_DELETE,
         data: { id: libraryStub.externalLibrary1.id },
       });
 
@@ -418,7 +466,7 @@ describe(LibraryService.name, () => {
       await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_LIBRARY,
+        name: JobName.LIBRARY_DELETE,
         data: { id: libraryStub.externalLibrary1.id },
       });
 

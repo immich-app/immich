@@ -68,9 +68,9 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
   });
 
-  describe('PUT /library', () => {
+  describe('PUT /library/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).put('/library').send({});
+      const { status, body } = await request(server).put(`/library/${uuidStub.notFound}`).send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });

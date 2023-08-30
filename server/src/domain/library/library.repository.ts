@@ -6,6 +6,8 @@ export const ILibraryRepository = 'ILibraryRepository';
 export interface ILibraryRepository {
   getCountForUser(ownerId: string): Promise<number>;
   getAllByUserId(userId: string): Promise<LibraryEntity[]>;
+  getAll(withDeleted?: boolean): Promise<LibraryEntity[]>;
+  getAllDeleted(): Promise<LibraryEntity[]>;
   get(id: string, withDeleted?: boolean): Promise<LibraryEntity | null>;
   create(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   delete(id: string): Promise<void>;

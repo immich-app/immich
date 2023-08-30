@@ -1,9 +1,10 @@
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ValidateUUID } from '../domain.util';
 
 export class CreateLibraryDto {
+  @IsEnum(LibraryType)
   @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
   type!: LibraryType;
 

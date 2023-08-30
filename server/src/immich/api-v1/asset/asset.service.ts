@@ -15,7 +15,7 @@ import {
   Permission,
   UploadFile,
 } from '@app/domain';
-import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -117,7 +117,7 @@ export class AssetService {
       });
 
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_assets_owner_library_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
@@ -169,7 +169,7 @@ export class AssetService {
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_assets_owner_library_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
       }

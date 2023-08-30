@@ -15,5 +15,7 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     getOnlineAssetPaths: jest.fn(),
     getAssetIds: jest.fn(),
     existsByName: jest.fn(),
+    getAllDeleted: jest.fn(),
+    getAll: jest.fn(),
   };
 };

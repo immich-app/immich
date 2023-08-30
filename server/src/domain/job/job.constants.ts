@@ -55,11 +55,13 @@ export enum JobName {
   PERSON_CLEANUP = 'person-cleanup',
 
   // library managment
-  REFRESH_LIBRARY = 'refresh-library',
-  REFRESH_LIBRARY_ASSET = 'refresh-library-asset',
-  EMPTY_TRASH = 'queue-empty-trash',
-  OFFLINE_LIBRARY_ASSET = 'offline-library-asset',
-  DELETE_LIBRARY = 'delete-library',
+  LIBRARY_REFRESH = 'library-refresh',
+  LIBRARY_REFRESH_ASSET = 'library-refresh-asset',
+  LIBRARY_EMPTY_TRASH = 'library-empty-trash',
+  LIBRARY_MARK_ASSET_OFFLINE = 'library-mark-asset-offline',
+  LIBRARY_DELETE = 'library-delete',
+  LIBRARY_QUEUE_ALL_REFRESH = 'library-queue-all-refresh',
+  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -150,9 +152,11 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
 
   // Library managment
-  [JobName.REFRESH_LIBRARY_ASSET]: QueueName.LIBRARY,
-  [JobName.OFFLINE_LIBRARY_ASSET]: QueueName.LIBRARY,
-  [JobName.REFRESH_LIBRARY]: QueueName.LIBRARY,
-  [JobName.DELETE_LIBRARY]: QueueName.LIBRARY,
-  [JobName.EMPTY_TRASH]: QueueName.LIBRARY,
+  [JobName.LIBRARY_REFRESH_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_MARK_ASSET_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_REFRESH]: QueueName.LIBRARY,
+  [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_EMPTY_TRASH]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_ALL_REFRESH]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 };

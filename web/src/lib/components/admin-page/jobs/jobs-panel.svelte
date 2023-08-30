@@ -69,6 +69,8 @@
       icon: LibraryShelves,
       title: api.getJobName(JobName.Library),
       subtitle: 'Perform library tasks',
+      allText: 'ALL',
+      missingText: 'REFRESH',
     },
     [JobName.Sidecar]: {
       title: api.getJobName(JobName.Sidecar),

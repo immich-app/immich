@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { LibraryEntity, LibraryType } from '../entities';
+import { IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
@@ -64,6 +65,34 @@ export class LibraryRepository implements ILibraryRepository {
       order: {
         createdAt: 'ASC',
       },
+    });
+  }
+
+  getAll(withDeleted = false): Promise<LibraryEntity[]> {
+    return this.repository.find({
+      relations: {
+        owner: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+      withDeleted,
+    });
+  }
+
+  getAllDeleted(): Promise<LibraryEntity[]> {
+    return this.repository.find({
+      where: {
+        isVisible: true,
+        deletedAt: Not(IsNull()),
+      },
+      relations: {
+        owner: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+      withDeleted: true,
     });
   }
 

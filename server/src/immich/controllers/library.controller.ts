@@ -27,6 +27,7 @@ export class LibraryController {
 
   @Post()
   createLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<ResponseDto> {
+    console.log('createLibrary', dto);
     return this.service.create(authUser, dto);
   }
 

@@ -128,6 +128,22 @@
     }
   };
 
+
+
+  const handleScanAll = async () => {
+    try {
+      for(const library of libraries) {
+        await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: {} });
+      }
+      notificationController.show({
+        message: `Refreshing all libraries`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to scan libraries');
+    }
+  };
+
   const handleScan = async (libraryId: string) => {
     try {
       await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: {} });
@@ -331,6 +347,7 @@
       </table>
     {/if}
     <div class="my-2 flex justify-end">
+      <Button size="sm" on:click={() => handleScanAll()}>Scan All Libraries</Button>
       <Button size="sm" on:click={() => handleCreate(LibraryType.External)}>Create External Library</Button>
     </div>
   </div>

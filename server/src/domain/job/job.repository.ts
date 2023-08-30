@@ -79,11 +79,13 @@ export type JobItem =
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
 
   // Library Managment
-  | { name: JobName.REFRESH_LIBRARY_ASSET; data: ILibraryFileJob }
-  | { name: JobName.OFFLINE_LIBRARY_ASSET; data: IOfflineLibraryFileJob }
-  | { name: JobName.REFRESH_LIBRARY; data: ILibraryRefreshJob }
-  | { name: JobName.EMPTY_TRASH; data: IEntityJob }
-  | { name: JobName.DELETE_LIBRARY; data: IEntityJob }
+  | { name: JobName.LIBRARY_REFRESH_ASSET; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_MARK_ASSET_OFFLINE; data: IOfflineLibraryFileJob }
+  | { name: JobName.LIBRARY_REFRESH; data: ILibraryRefreshJob }
+  | { name: JobName.LIBRARY_EMPTY_TRASH; data: IEntityJob }
+  | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_ALL_REFRESH; data: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

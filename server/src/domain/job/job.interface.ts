@@ -23,7 +23,6 @@ export interface IEntityJob extends IBaseJob {
 }
 
 export interface IOfflineLibraryFileJob extends IEntityJob {
-  assetId: string;
   assetPath: string;
 }
 
@@ -34,7 +33,6 @@ export interface ILibraryFileJob extends IEntityJob {
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
-  ownerId: string;
   refreshModifiedFiles: boolean;
   refreshAllFiles: boolean;
 }

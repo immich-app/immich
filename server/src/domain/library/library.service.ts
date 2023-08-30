@@ -12,6 +12,7 @@ import { usePagination } from '../domain.util';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import {
+  IBaseJob,
   IEntityJob,
   IJobRepository,
   ILibraryFileJob,
@@ -69,6 +70,15 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
+  async handleQueueCleanup(): Promise<boolean> {
+    this.logger.debug('Cleaning up any pending library deletions');
+    const pendingDeletion = await this.repository.getAllDeleted();
+    for (const libraryToDelete of pendingDeletion) {
+      await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } });
+    }
+    return true;
+  }
+
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     if (!dto.name) {
       // No library name was supplied, create a default one
@@ -111,7 +121,7 @@ export class LibraryService {
     }
 
     await this.repository.softDelete(id);
-    await this.jobRepository.queue({ name: JobName.DELETE_LIBRARY, data: { id } });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
   }
 
   async handleDeleteLibrary(job: IEntityJob): Promise<boolean> {
@@ -271,10 +281,9 @@ export class LibraryService {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
-      name: JobName.REFRESH_LIBRARY,
+      name: JobName.LIBRARY_REFRESH,
       data: {
         id,
-        ownerId: authUser.id,
         refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
         refreshAllFiles: dto.refreshAllFiles ?? false,
       },
@@ -289,11 +298,32 @@ export class LibraryService {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
-      name: JobName.EMPTY_TRASH,
+      name: JobName.LIBRARY_EMPTY_TRASH,
       data: {
         id,
       },
     });
+  }
+
+  async handleQueueAllRefresh(job: IBaseJob): Promise<boolean> {
+    this.logger.debug(`Refreshing all libraries: force=${job.force}`);
+
+    // Queue cleanup
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
+
+    // Queue all library refresh
+    const libraries = await this.repository.getAll(true);
+    for (const library of libraries) {
+      await this.jobRepository.queue({
+        name: JobName.LIBRARY_REFRESH,
+        data: {
+          id: library.id,
+          refreshModifiedFiles: !job.force,
+          refreshAllFiles: job.force ?? false,
+        },
+      });
+    }
+    return true;
   }
 
   async handleEmptyTrash(job: IEntityJob): Promise<boolean> {
@@ -339,10 +369,9 @@ export class LibraryService {
       const offlineJobData: IOfflineLibraryFileJob = {
         id: job.id,
         assetPath: offlineAsset.originalPath,
-        assetId: offlineAsset.id,
       };
 
-      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_ASSET, data: offlineJobData });
+      await this.jobRepository.queue({ name: JobName.LIBRARY_MARK_ASSET_OFFLINE, data: offlineJobData });
     }
 
     if (crawledAssetPaths.length > 0) {
@@ -361,11 +390,11 @@ export class LibraryService {
         const libraryJobData: ILibraryFileJob = {
           id: job.id,
           assetPath: path.normalize(assetPath),
-          ownerId: job.ownerId,
+          ownerId: library.ownerId,
           forceRefresh: job.refreshAllFiles ?? false,
         };
 
-        await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_ASSET, data: libraryJobData });
+        await this.jobRepository.queue({ name: JobName.LIBRARY_REFRESH_ASSET, data: libraryJobData });
       }
     }
 

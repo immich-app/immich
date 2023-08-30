@@ -1,5 +1,5 @@
 import { ICryptoRepository, IJobRepository, ILibraryRepository, IStorageRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -155,7 +155,7 @@ describe('AssetService', () => {
       };
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_assets_owner_library_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
@@ -172,7 +172,7 @@ describe('AssetService', () => {
     it('should handle a live photo', async () => {
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_assets_owner_library_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
@@ -383,7 +383,7 @@ describe('AssetService', () => {
 
     it('should handle a duplicate if originalPath already exists', async () => {
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_assets_owner_library_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetStub.image]);

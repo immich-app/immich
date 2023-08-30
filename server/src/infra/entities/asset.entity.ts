@@ -21,9 +21,11 @@ import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 
+export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
+
 @Entity('assets')
 // Checksums must be unique per user and library
-@Index('UQ_assets_owner_library_checksum', ['owner', 'library', 'checksum'], {
+@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'library', 'checksum'], {
   unique: true,
 })
 // For all assets, each originalpath must be unique per user and library

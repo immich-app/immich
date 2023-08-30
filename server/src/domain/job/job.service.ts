@@ -98,6 +98,9 @@ export class JobService {
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
 
+      case QueueName.LIBRARY:
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_ALL_REFRESH, data: { force } });
+
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }
@@ -138,6 +141,7 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_ALL_REFRESH, data: { force: false } });
   }
 
   /**

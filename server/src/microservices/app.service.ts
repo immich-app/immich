@@ -80,11 +80,13 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
-      [JobName.REFRESH_LIBRARY_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
-      [JobName.OFFLINE_LIBRARY_ASSET]: (data) => this.libraryService.handleOfflineAsset(data),
-      [JobName.REFRESH_LIBRARY]: (data) => this.libraryService.handleQueueAssetRefresh(data),
-      [JobName.DELETE_LIBRARY]: (data) => this.libraryService.handleDeleteLibrary(data),
-      [JobName.EMPTY_TRASH]: (data) => this.libraryService.handleEmptyTrash(data),
+      [JobName.LIBRARY_REFRESH_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
+      [JobName.LIBRARY_MARK_ASSET_OFFLINE]: (data) => this.libraryService.handleOfflineAsset(data),
+      [JobName.LIBRARY_REFRESH]: (data) => this.libraryService.handleQueueAssetRefresh(data),
+      [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
+      [JobName.LIBRARY_EMPTY_TRASH]: (data) => this.libraryService.handleEmptyTrash(data),
+      [JobName.LIBRARY_QUEUE_ALL_REFRESH]: (data) => this.libraryService.handleQueueAllRefresh(data),
+      [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
     process.on('uncaughtException', (error: Error | any) => {
