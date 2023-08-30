@@ -105,4 +105,4 @@ class FaceRecognizer(InferenceModel):
         return self.cache_dir.is_dir() and any(self.cache_dir.glob("*.onnx"))
 
     def configure(self, **model_kwargs: Any) -> None:
-        self.det_model.det_thresh = model_kwargs.get("min_score", self.det_model.det_thresh)
+        self.det_model.det_thresh = model_kwargs.pop("minScore", self.det_model.det_thresh)

@@ -65,4 +65,4 @@ class ImageClassifier(InferenceModel):
         return tags
 
     def configure(self, **model_kwargs: Any) -> None:
-        self.min_score = model_kwargs.get("min_score", self.min_score)
+        self.min_score = model_kwargs.pop("minScore", self.min_score)
