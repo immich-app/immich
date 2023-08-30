@@ -245,9 +245,6 @@ describe(AssetService.name, () => {
       );
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
     });
-    cryptoMock = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
   });
 
   describe('getMapMarkers', () => {

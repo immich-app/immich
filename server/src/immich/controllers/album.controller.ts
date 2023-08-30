@@ -9,8 +9,8 @@ import {
   BulkIdsDto,
   GetAlbumsDto,
   UpdateAlbumDto as UpdateDto,
+  CreateAlbumDto as CreateDto,
 } from '@app/domain';
-import { CreateAlbumDto } from '@app/domain/album/dto/create-album.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
@@ -36,7 +36,7 @@ export class AlbumController {
   }
 
   @Post()
-  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumDto) {
+  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto) {
     return this.service.create(authUser, dto);
   }
 

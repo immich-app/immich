@@ -69,7 +69,6 @@
       icon: LibraryShelves,
       title: api.getJobName(JobName.Library),
       subtitle: 'Perform library tasks',
-      handleCommand: handleFaceCommand,
     },
     [JobName.Sidecar]: {
       title: api.getJobName(JobName.Sidecar),

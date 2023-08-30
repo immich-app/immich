@@ -95,7 +95,7 @@
   const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
     try {
       const dto = event.detail;
-      await api.libraryApi.updateLibrary({ updateLibraryDto: dto });
+      await api.libraryApi.updateLibrary({ id: dto.id, updateLibraryDto: dto });
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {

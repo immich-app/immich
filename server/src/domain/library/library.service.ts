@@ -77,23 +77,6 @@ export class LibraryService {
       } else {
         dto.name = `New Upload Library`;
       }
-      const defaultNameExists = await this.repository.existsByName(dto.name, true);
-
-      if (defaultNameExists) {
-        let foundName = false;
-
-        let nameCounter = 1;
-        while (!foundName) {
-          const exists = await this.repository.existsByName(`${dto.name} (${nameCounter})`, true);
-          if (!exists) {
-            dto.name = `${dto.name} (${nameCounter})`;
-            foundName = true;
-          } else if (nameCounter > 100) {
-            throw new BadRequestException('Could not find a unique name for the library');
-          }
-          nameCounter++;
-        }
-      }
     }
 
     const library = await this.repository.create({
@@ -108,8 +91,12 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
-  async update(authUser: AuthUserDto, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.id);
+  async update(authUser: AuthUserDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    if (id !== dto.id) {
+      throw new BadRequestException('Library id mismatch');
+    }
+
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update(dto);
     return mapLibrary(library);
   }
@@ -329,7 +316,7 @@ export class LibraryService {
     return true;
   }
 
-  async queueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+  async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
       return false;

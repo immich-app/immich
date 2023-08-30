@@ -20,7 +20,7 @@ class LibraryResponseDto {
     this.importPaths = const [],
     required this.name,
     required this.ownerId,
-    this.refreshedAt,
+    required this.refreshedAt,
     required this.type,
     required this.updatedAt,
   });
@@ -170,6 +170,7 @@ class LibraryResponseDto {
     'importPaths',
     'name',
     'ownerId',
+    'refreshedAt',
     'type',
     'updatedAt',
   };

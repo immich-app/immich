@@ -7,19 +7,17 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('libraries')
-@Unique('UQ_owner_name', ['owner', 'name'])
 export class LibraryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ default: '' })
+  @Column()
   name!: string;
 
   @OneToMany(() => AssetEntity, (asset) => asset.library)
@@ -51,7 +49,7 @@ export class LibraryEntity {
   deletedAt?: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  refreshedAt?: Date | null;
+  refreshedAt!: Date | null;
 
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;

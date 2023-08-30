@@ -26,7 +26,7 @@ void main() {
       // TODO
     });
 
-    // bool refreshModifiedFiles (default value: false)
+    // bool refreshModifiedFiles
     test('to test the property `refreshModifiedFiles`', () async {
       // TODO
     });

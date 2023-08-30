@@ -14,7 +14,7 @@ export class LibraryRepository implements ILibraryRepository {
         id,
       },
       relations: { owner: true },
-      withDeleted: withDeleted,
+      withDeleted,
     });
   }
 
@@ -23,7 +23,7 @@ export class LibraryRepository implements ILibraryRepository {
       where: {
         name,
       },
-      withDeleted: withDeleted,
+      withDeleted,
     });
   }
 

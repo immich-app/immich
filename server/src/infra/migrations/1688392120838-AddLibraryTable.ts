@@ -6,7 +6,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_userid_checksum"`);
     await queryRunner.query(
-      `CREATE TABLE "libraries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL DEFAULT '', "ownerId" uuid NOT NULL, "type" character varying NOT NULL, "importPaths" text array NOT NULL, "exclusionPatterns" text array NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP WITH TIME ZONE, "refreshedAt" TIMESTAMP WITH TIME ZONE, "isVisible" boolean NOT NULL DEFAULT true, CONSTRAINT "UQ_owner_name" UNIQUE ("ownerId", "name"), CONSTRAINT "PK_505fedfcad00a09b3734b4223de" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "libraries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "ownerId" uuid NOT NULL, "type" character varying NOT NULL, "importPaths" text array NOT NULL, "exclusionPatterns" text array NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP WITH TIME ZONE, "refreshedAt" TIMESTAMP WITH TIME ZONE, "isVisible" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_505fedfcad00a09b3734b4223de" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(`ALTER TABLE "assets" ADD "isOffline" boolean NOT NULL DEFAULT false`);
     await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
@@ -43,7 +43,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" DROP NOT NULL`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c"`);
     await queryRunner.query(`ALTER TABLE "libraries" DROP CONSTRAINT "FK_0f6fc2fb195f24d19b0fb0d57c1"`);
-    await queryRunner.query(`DROP INDEX "UQ_assets_uploaded_owner_library_checksum"`);
+    await queryRunner.query(`DROP INDEX "UQ_assets_owner_library_checksum"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_owner_library_originalpath"`);
     await queryRunner.query(
       `ALTER TABLE "assets" ADD CONSTRAINT "UQ_4ed4f8052685ff5b1e7ca1058ba" UNIQUE ("originalPath")`,

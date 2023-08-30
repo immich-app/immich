@@ -82,7 +82,7 @@ export class AppService {
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
       [JobName.REFRESH_LIBRARY_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
       [JobName.OFFLINE_LIBRARY_ASSET]: (data) => this.libraryService.handleOfflineAsset(data),
-      [JobName.REFRESH_LIBRARY]: (data) => this.libraryService.queueAssetRefresh(data),
+      [JobName.REFRESH_LIBRARY]: (data) => this.libraryService.handleQueueAssetRefresh(data),
       [JobName.DELETE_LIBRARY]: (data) => this.libraryService.handleDeleteLibrary(data),
       [JobName.EMPTY_TRASH]: (data) => this.libraryService.handleEmptyTrash(data),
     });

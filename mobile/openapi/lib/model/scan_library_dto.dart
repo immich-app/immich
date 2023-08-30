@@ -15,14 +15,20 @@ class ScanLibraryDto {
   ScanLibraryDto({
     this.emptyTrash = false,
     this.refreshAllFiles = false,
-    this.refreshModifiedFiles = false,
+    this.refreshModifiedFiles,
   });
 
   bool emptyTrash;
 
   bool refreshAllFiles;
 
-  bool refreshModifiedFiles;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? refreshModifiedFiles;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
@@ -35,7 +41,7 @@ class ScanLibraryDto {
     // ignore: unnecessary_parenthesis
     (emptyTrash.hashCode) +
     (refreshAllFiles.hashCode) +
-    (refreshModifiedFiles.hashCode);
+    (refreshModifiedFiles == null ? 0 : refreshModifiedFiles!.hashCode);
 
   @override
   String toString() => 'ScanLibraryDto[emptyTrash=$emptyTrash, refreshAllFiles=$refreshAllFiles, refreshModifiedFiles=$refreshModifiedFiles]';
@@ -44,7 +50,11 @@ class ScanLibraryDto {
     final json = <String, dynamic>{};
       json[r'emptyTrash'] = this.emptyTrash;
       json[r'refreshAllFiles'] = this.refreshAllFiles;
+    if (this.refreshModifiedFiles != null) {
       json[r'refreshModifiedFiles'] = this.refreshModifiedFiles;
+    } else {
+    //  json[r'refreshModifiedFiles'] = null;
+    }
     return json;
   }
 
@@ -58,7 +68,7 @@ class ScanLibraryDto {
       return ScanLibraryDto(
         emptyTrash: mapValueOfType<bool>(json, r'emptyTrash') ?? false,
         refreshAllFiles: mapValueOfType<bool>(json, r'refreshAllFiles') ?? false,
-        refreshModifiedFiles: mapValueOfType<bool>(json, r'refreshModifiedFiles') ?? false,
+        refreshModifiedFiles: mapValueOfType<bool>(json, r'refreshModifiedFiles'),
       );
     }
     return null;

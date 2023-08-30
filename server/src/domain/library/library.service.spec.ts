@@ -15,13 +15,11 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { ICryptoRepository } from '../crypto';
-import { IAssetRepository } from '../index';
 import { IJobRepository, ILibraryFileJob, IOfflineLibraryFileJob, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+
 import { ILibraryRepository } from './library.repository';
 import { LibraryService } from './library.service';
+import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;

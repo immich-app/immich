@@ -12,7 +12,7 @@ import {
   UpdateUserDto,
   UserResponseDto,
 } from '@app/domain';
-import { CreateAlbumDto } from '@app/domain/album/dto/create-album.dto';
+import { CreateAlbumDto } from '@app/domain/album/dto/album-create.dto';
 import { dataSource } from '@app/infra';
 import request from 'supertest';
 import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';

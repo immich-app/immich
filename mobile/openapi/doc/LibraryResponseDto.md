@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **importPaths** | **List<String>** |  | [default to const []]
 **name** | **String** |  | 
 **ownerId** | **String** |  | 
-**refreshedAt** | [**DateTime**](DateTime.md) |  | [optional] 
+**refreshedAt** | [**DateTime**](DateTime.md) |  | 
 **type** | [**LibraryType**](LibraryType.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

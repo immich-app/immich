@@ -6,6 +6,7 @@ import {
   loginResponseStub,
   newCryptoRepositoryMock,
   newKeyRepositoryMock,
+  newLibraryRepositoryMock,
   newSharedLinkRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -15,7 +16,6 @@ import {
   userStub,
   userTokenStub,
 } from '@test';
-import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';

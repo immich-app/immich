@@ -103,13 +103,13 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'POST /library/trash/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /library/{id}/trash' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> emptyLibraryTrashWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/trash/{id}'
+    final path = r'/library/{id}/trash'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -276,13 +276,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /library/statistics/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /library/{id}/statistics' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getLibraryStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/statistics/{id}'
+    final path = r'/library/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -324,7 +324,7 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/refresh/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /library/{id}/refresh' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -332,7 +332,7 @@ class LibraryApi {
   /// * [ScanLibraryDto] scanLibraryDto (required):
   Future<Response> refreshLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/refresh/{id}'
+    final path = r'/library/{id}/refresh'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -368,13 +368,16 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /library' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /library/{id}' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [String] id (required):
+  ///
   /// * [UpdateLibraryDto] updateLibraryDto (required):
-  Future<Response> updateLibraryWithHttpInfo(UpdateLibraryDto updateLibraryDto,) async {
+  Future<Response> updateLibraryWithHttpInfo(String id, UpdateLibraryDto updateLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library';
+    final path = r'/library/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = updateLibraryDto;
@@ -399,9 +402,11 @@ class LibraryApi {
 
   /// Parameters:
   ///
+  /// * [String] id (required):
+  ///
   /// * [UpdateLibraryDto] updateLibraryDto (required):
-  Future<LibraryResponseDto?> updateLibrary(UpdateLibraryDto updateLibraryDto,) async {
-    final response = await updateLibraryWithHttpInfo(updateLibraryDto,);
+  Future<LibraryResponseDto?> updateLibrary(String id, UpdateLibraryDto updateLibraryDto,) async {
+    final response = await updateLibraryWithHttpInfo(id, updateLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

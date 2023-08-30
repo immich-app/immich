@@ -7,7 +7,7 @@ import {
   mimeTypes,
 } from '@app/domain';
 import archiver from 'archiver';
-import { constants, createReadStream, existsSync, mkdirSync, Stats } from 'fs';
+import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { readdir } from 'fs/promises';
 import { glob } from 'glob';
 import mv from 'mv';
@@ -60,9 +60,7 @@ export class FilesystemProvider implements IStorageRepository {
     await fs.unlink(file);
   }
 
-  async stat(filepath: string): Promise<Stats> {
-    return await fs.stat(filepath);
-  }
+  stat = fs.stat;
 
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
     await fs.rm(folder, options);

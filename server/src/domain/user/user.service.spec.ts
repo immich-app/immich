@@ -5,10 +5,10 @@ import {
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newLibraryRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
-import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { when } from 'jest-when';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository } from '../asset';

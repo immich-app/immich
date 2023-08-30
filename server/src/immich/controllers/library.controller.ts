@@ -30,10 +30,13 @@ export class LibraryController {
     return this.service.create(authUser, dto);
   }
 
-  // TODO: change to `@Put(':id')
-  @Put()
-  updateLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
-    return this.service.update(authUser, dto);
+  @Put(':id')
+  updateLibrary(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateDto,
+  ): Promise<ResponseDto> {
+    return this.service.update(authUser, id, dto);
   }
 
   @Get('count')
@@ -51,7 +54,7 @@ export class LibraryController {
     return this.service.delete(authUser, id);
   }
 
-  @Get('statistics/:id')
+  @Get(':id/statistics')
   getLibraryStatistics(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -59,12 +62,12 @@ export class LibraryController {
     return this.service.getStatistics(authUser, id);
   }
 
-  @Post('refresh/:id')
+  @Post(':id/refresh')
   refreshLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: RefreshLibraryDto) {
     return this.service.queueRefresh(authUser, id, dto);
   }
 
-  @Post('trash/:id')
+  @Post(':id/trash')
   emptyLibraryTrash(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.emptyTrash(authUser, id);
   }

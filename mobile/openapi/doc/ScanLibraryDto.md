@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **emptyTrash** | **bool** |  | [optional] [default to false]
 **refreshAllFiles** | **bool** |  | [optional] [default to false]
-**refreshModifiedFiles** | **bool** |  | [optional] [default to false]
+**refreshModifiedFiles** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

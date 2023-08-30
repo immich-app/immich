@@ -1,7 +1,7 @@
-import { toBoolean, toSanitized, UploadFieldName } from '@app/domain';
+import { toBoolean, toSanitized, UploadFieldName, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAssetBase {
   @IsNotEmpty()
@@ -32,12 +32,10 @@ export class CreateAssetBase {
 
   @IsOptional()
   @IsBoolean()
-  @Transform(toBoolean)
   isExternal?: boolean = false;
 
   @IsOptional()
   @IsBoolean()
-  @Transform(toBoolean)
   isOffline?: boolean = false;
 }
 
@@ -47,9 +45,7 @@ export class CreateAssetDto extends CreateAssetBase {
   @Transform(toBoolean)
   isReadOnly?: boolean = false;
 
-  @IsOptional()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID({ optional: true })
   libraryId?: string;
 
   // The properties below are added to correctly generate the API docs
@@ -69,8 +65,7 @@ export class ImportAssetDto extends CreateAssetBase {
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
 
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID()
   libraryId!: string;
 
   @IsString()

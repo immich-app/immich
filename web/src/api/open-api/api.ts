@@ -1757,7 +1757,7 @@ export interface LibraryResponseDto {
      * @type {string}
      * @memberof LibraryResponseDto
      */
-    'refreshedAt'?: string | null;
+    'refreshedAt': string | null;
     /**
      * 
      * @type {LibraryType}
@@ -9160,7 +9160,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         emptyLibraryTrash: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('emptyLibraryTrash', 'id', id)
-            const localVarPath = `/library/trash/{id}`
+            const localVarPath = `/library/{id}/trash`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9320,7 +9320,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         getLibraryStatistics: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getLibraryStatistics', 'id', id)
-            const localVarPath = `/library/statistics/{id}`
+            const localVarPath = `/library/{id}/statistics`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9365,7 +9365,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('refreshLibrary', 'id', id)
             // verify required parameter 'scanLibraryDto' is not null or undefined
             assertParamExists('refreshLibrary', 'scanLibraryDto', scanLibraryDto)
-            const localVarPath = `/library/refresh/{id}`
+            const localVarPath = `/library/{id}/refresh`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9403,14 +9403,18 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {string} id 
          * @param {UpdateLibraryDto} updateLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateLibrary: async (updateLibraryDto: UpdateLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateLibrary: async (id: string, updateLibraryDto: UpdateLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('updateLibrary', 'id', id)
             // verify required parameter 'updateLibraryDto' is not null or undefined
             assertParamExists('updateLibrary', 'updateLibraryDto', updateLibraryDto)
-            const localVarPath = `/library`;
+            const localVarPath = `/library/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -9536,12 +9540,13 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} id 
          * @param {UpdateLibraryDto} updateLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateLibrary(updateLibraryDto: UpdateLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateLibrary(updateLibraryDto, options);
+        async updateLibrary(id: string, updateLibraryDto: UpdateLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateLibrary(id, updateLibraryDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -9631,7 +9636,7 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: AxiosRequestConfig): AxiosPromise<LibraryResponseDto> {
-            return localVarFp.updateLibrary(requestParameters.updateLibraryDto, options).then((request) => request(axios, basePath));
+            return localVarFp.updateLibrary(requestParameters.id, requestParameters.updateLibraryDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -9733,6 +9738,13 @@ export interface LibraryApiRefreshLibraryRequest {
  * @interface LibraryApiUpdateLibraryRequest
  */
 export interface LibraryApiUpdateLibraryRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryApiUpdateLibrary
+     */
+    readonly id: string
+
     /**
      * 
      * @type {UpdateLibraryDto}
@@ -9842,7 +9854,7 @@ export class LibraryApi extends BaseAPI {
      * @memberof LibraryApi
      */
     public updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).updateLibrary(requestParameters.updateLibraryDto, options).then((request) => request(this.axios, this.basePath));
+        return LibraryApiFp(this.configuration).updateLibrary(requestParameters.id, requestParameters.updateLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

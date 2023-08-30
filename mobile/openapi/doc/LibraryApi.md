@@ -11,13 +11,13 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createLibrary**](LibraryApi.md#createlibrary) | **POST** /library | 
 [**deleteLibrary**](LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-[**emptyLibraryTrash**](LibraryApi.md#emptylibrarytrash) | **POST** /library/trash/{id} | 
+[**emptyLibraryTrash**](LibraryApi.md#emptylibrarytrash) | **POST** /library/{id}/trash | 
 [**getAllLibraries**](LibraryApi.md#getalllibraries) | **GET** /library | 
 [**getLibraryCount**](LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 [**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
-[**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/statistics/{id} | 
-[**refreshLibrary**](LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
-[**updateLibrary**](LibraryApi.md#updatelibrary) | **PUT** /library | 
+[**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
+[**refreshLibrary**](LibraryApi.md#refreshlibrary) | **POST** /library/{id}/refresh | 
+[**updateLibrary**](LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 
 
 # **createLibrary**
@@ -452,7 +452,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateLibrary**
-> LibraryResponseDto updateLibrary(updateLibraryDto)
+> LibraryResponseDto updateLibrary(id, updateLibraryDto)
 
 
 
@@ -475,10 +475,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = LibraryApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final updateLibraryDto = UpdateLibraryDto(); // UpdateLibraryDto | 
 
 try {
-    final result = api_instance.updateLibrary(updateLibraryDto);
+    final result = api_instance.updateLibrary(id, updateLibraryDto);
     print(result);
 } catch (e) {
     print('Exception when calling LibraryApi->updateLibrary: $e\n');
@@ -489,6 +490,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
  **updateLibraryDto** | [**UpdateLibraryDto**](UpdateLibraryDto.md)|  | 
 
 ### Return type
