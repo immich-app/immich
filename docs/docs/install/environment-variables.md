@@ -51,7 +51,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `PORT`                  | Web Port              | `3000`  | web              |
 | `SERVER_PORT`           | Server Port           | `3001`  | server           |
 | `MICROSERVICES_PORT`    | Microservices Port    | `3002`  | microservices    |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port | `3003`  | machine learning |
 
 ## URLs
 
@@ -59,8 +58,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | :-------------------------------- | :--------------------------- | :-----------------------------------: | :-------------------- |
 | `IMMICH_WEB_URL`                  | Immich Web URL               |       `http://immich-web:3000`        | proxy                 |
 | `IMMICH_SERVER_URL`               | Immich Server URL            |      `http://immich-server:3001`      | web, proxy            |
-| `IMMICH_MACHINE_LEARNING_ENABLED` | Enabled machine learning     |                `true`                 | server, microservices |
-| `IMMICH_MACHINE_LEARNING_URL`     | Immich Machine Learning URL, | `http://immich-machine-learning:3003` | server, microservices |
 | `PUBLIC_IMMICH_SERVER_URL`        | Public Immich URL            |      `http://immich-server:3001`      | web                   |
 | `IMMICH_API_URL_EXTERNAL`         | Immich API URL External      |                `/api`                 | web                   |
 
@@ -180,16 +177,15 @@ Typesense URL example JSON before encoding:
 
 | Variable                                    | Description                    |        Default        | Services         |
 | :------------------------------------------ | :----------------------------- | :-------------------: | :--------------- |
-| `MACHINE_LEARNING_MIN_FACE_SCORE`           | Minimum Face Score             |         `0.7`         | machine learning |
 | `MACHINE_LEARNING_MODEL_TTL`                | Model TTL                      |         `300`         | machine learning |
-| `MACHINE_LEARNING_EAGER_STARTUP`            | Eager Startup                  |        `true`         | machine learning |
-| `MACHINE_LEARNING_MIN_TAG_SCORE`            | Minimum Tag Score              |         `0.9`         | machine learning |
-| `MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL` | Facial Recognition Model       |      `buffalo_l`      | machine learning |
-| `MACHINE_LEARNING_CLIP_TEXT_MODEL`          | Clip Text Model                |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLIP_IMAGE_MODEL`         | Clip Image Model               |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLASSIFICATION_MODEL`     | Classification Model           | `microsoft/resnet-50` | machine learning |
 | `MACHINE_LEARNING_CACHE_FOLDER`             | ML Cache Location              |       `/cache`        | machine learning |
 | `TRANSFORMERS_CACHE`                        | ML Transformers Cache Location |       `/cache`        | machine learning |
+
+:::info
+
+Other machine learning parameters can be tuned from the admin UI.
+
+:::
 
 ## Docker Secrets
 
