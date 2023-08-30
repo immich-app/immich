@@ -43,7 +43,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
 
   async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
     const formData = new FormData();
-    const { modelName, modelType, ...options } = config;
+    const { enabled, modelName, modelType, ...options } = config;
 
     formData.append('modelName', modelName);
     if (modelType) {
