@@ -22,7 +22,7 @@ class ImageClassifier(InferenceModel):
         cache_dir: Path | str | None = None,
         **model_kwargs: Any,
     ) -> None:
-        self.min_score = min_score
+        self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(model_name, cache_dir, **model_kwargs)
 
     def _download(self, **model_kwargs: Any) -> None:
@@ -65,4 +65,4 @@ class ImageClassifier(InferenceModel):
         return tags
 
     def configure(self, **model_kwargs: Any) -> None:
-        self.min_score = model_kwargs.get("min_score", self.min_score)
+        self.min_score = model_kwargs.pop("minScore", self.min_score)
