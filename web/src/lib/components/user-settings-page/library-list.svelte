@@ -128,11 +128,9 @@
     }
   };
 
-
-
   const handleScanAll = async () => {
     try {
-      for(const library of libraries) {
+      for (const library of libraries) {
         await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
