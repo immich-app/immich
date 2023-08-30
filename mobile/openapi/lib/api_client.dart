@@ -307,6 +307,8 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
+        case 'OAuthAuthorizeResponseDto':
+          return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':

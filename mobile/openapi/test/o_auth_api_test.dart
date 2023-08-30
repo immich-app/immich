@@ -17,11 +17,18 @@ void main() {
   // final instance = OAuthApi();
 
   group('tests for OAuthApi', () {
+    //Future<OAuthAuthorizeResponseDto> authorizeOAuth(OAuthConfigDto oAuthConfigDto) async
+    test('test authorizeOAuth', () async {
+      // TODO
+    });
+
     //Future<LoginResponseDto> callback(OAuthCallbackDto oAuthCallbackDto) async
     test('test callback', () async {
       // TODO
     });
 
+    // @deprecated use feature flags and /oauth/authorize
+    //
     //Future<OAuthConfigResponseDto> generateConfig(OAuthConfigDto oAuthConfigDto) async
     test('test generateConfig', () async {
       // TODO
