@@ -271,7 +271,7 @@ export class AssetService {
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
     }
 
