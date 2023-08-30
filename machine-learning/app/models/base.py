@@ -57,13 +57,20 @@ class InferenceModel(ABC):
         try:
             loader(**model_kwargs)
         except (OSError, InvalidProtobuf, BadZipFile):
-            log.warn(f"Failed to load {self.model_type.replace('_', ' ')} model '{self.model_name}'. Clearing cache and retrying.")
+            log.warn(
+                (
+                    f"Failed to load {self.model_type.replace('_', ' ')} model '{self.model_name}'."
+                    "Clearing cache and retrying."
+                )
+            )
             self.clear_cache()
             loader(**model_kwargs)
 
     def download(self, **model_kwargs: Any) -> None:
         if not self.cached:
-            log.info(f"Downloading {self.model_type.replace('_', ' ')} model '{self.model_name}'. This may take a while.")
+            log.info(
+                (f"Downloading {self.model_type.replace('_', ' ')} model '{self.model_name}'." "This may take a while.")
+            )
             self._download(**model_kwargs)
 
     def load(self, **model_kwargs: Any) -> None:
@@ -121,10 +128,7 @@ class InferenceModel(ABC):
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             log.warn(
-                (
-                    f"Attempted to clear cache for model '{self.model_name}'"
-                    "but cache directory does not exist."
-                ),
+                (f"Attempted to clear cache for model '{self.model_name}'" "but cache directory does not exist."),
             )
             return
         if not rmtree.avoids_symlink_attacks:
