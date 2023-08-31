@@ -207,14 +207,16 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
         <div><CameraIris size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
-            <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+            {#if asset.exifInfo?.fNumber}
+              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+            {/if}
 
             {#if asset.exifInfo.exposureTime}
               <p>{`${asset.exifInfo.exposureTime}`}</p>
@@ -226,7 +228,7 @@
 
             {#if asset.exifInfo.iso}
               <p>
-                {`ISO${asset.exifInfo.iso}`}
+                {`ISO ${asset.exifInfo.iso}`}
               </p>
             {/if}
           </div>
@@ -240,12 +242,16 @@
 
         <div>
           <p>{asset.exifInfo.city}</p>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.state}</p>
-          </div>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.country}</p>
-          </div>
+          {#if asset.exifInfo?.state}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.state}</p>
+            </div>
+          {/if}
+          {#if asset.exifInfo?.country}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.country}</p>
+            </div>
+          {/if}
         </div>
       </div>
     {/if}

@@ -22,7 +22,7 @@ export class SmartInfoService {
 
   async handleQueueObjectTagging({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.tagImageEnabled) {
+    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
       return true;
     }
 
@@ -43,7 +43,7 @@ export class SmartInfoService {
 
   async handleClassifyImage({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.tagImageEnabled) {
+    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
       return true;
     }
 
@@ -52,7 +52,11 @@ export class SmartInfoService {
       return false;
     }
 
-    const tags = await this.machineLearning.classifyImage(machineLearning.url, { imagePath: asset.resizePath });
+    const tags = await this.machineLearning.classifyImage(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      machineLearning.classification,
+    );
     await this.repository.upsert({ assetId: asset.id, tags });
 
     return true;
@@ -60,7 +64,7 @@ export class SmartInfoService {
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clipEncodeEnabled) {
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return true;
     }
 
@@ -81,7 +85,7 @@ export class SmartInfoService {
 
   async handleEncodeClip({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clipEncodeEnabled) {
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
       return true;
     }
 
@@ -90,7 +94,12 @@ export class SmartInfoService {
       return false;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage(machineLearning.url, { imagePath: asset.resizePath });
+    const clipEmbedding = await this.machineLearning.encodeImage(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      machineLearning.clip,
+    );
+
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 
     return true;

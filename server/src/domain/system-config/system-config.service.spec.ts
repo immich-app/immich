@@ -49,9 +49,21 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
-    facialRecognitionEnabled: true,
-    tagImageEnabled: true,
-    clipEncodeEnabled: true,
+    classification: {
+      enabled: true,
+      modelName: 'microsoft/resnet-50',
+      minScore: 0.9,
+    },
+    clip: {
+      enabled: true,
+      modelName: 'ViT-B-32::openai',
+    },
+    facialRecognition: {
+      enabled: true,
+      modelName: 'buffalo_l',
+      minScore: 0.7,
+      maxDistance: 0.6,
+    },
   },
   oauth: {
     autoLaunch: true,

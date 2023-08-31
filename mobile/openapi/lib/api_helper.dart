@@ -64,6 +64,9 @@ String parameterToString(dynamic value) {
   if (value is AudioCodec) {
     return AudioCodecTypeTransformer().encode(value).toString();
   }
+  if (value is CLIPMode) {
+    return CLIPModeTypeTransformer().encode(value).toString();
+  }
   if (value is DeleteAssetStatus) {
     return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
@@ -75,6 +78,9 @@ String parameterToString(dynamic value) {
   }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
+  }
+  if (value is ModelType) {
+    return ModelTypeTypeTransformer().encode(value).toString();
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
