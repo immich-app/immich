@@ -5,11 +5,16 @@
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
   import { getFilenameExtension } from '../../utils/asset-utils';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let uploadAsset: UploadAsset;
-
-  let showFallbackImage = false;
-  const previewURL = URL.createObjectURL(uploadAsset.file);
+  async function createPreview() {
+    const bmp = await createImageBitmap(uploadAsset.file, { resizeHeight: 70, resizeWidth: 70 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('bitmaprenderer');
+    context?.transferFromImageBitmap(bmp);
+    return canvas.toDataURL();
+  }
 </script>
 
 <div
@@ -18,26 +23,26 @@
   class="mt-3 grid h-[70px] grid-cols-[70px_auto] gap-2 rounded-lg bg-immich-bg text-xs"
 >
   <div class="relative">
-    {#if showFallbackImage}
-      <div in:fade={{ duration: 250 }}>
-        <ImmichLogo class="h-[70px] w-[70px] rounded-bl-lg rounded-tl-lg object-cover" />
+    {#await createPreview()}
+      <div class="flex h-[45px] w-[70px] items-center justify-center rounded-bl-lg rounded-tl-lg bg-immich-bg">
+        <LoadingSpinner />
       </div>
-    {:else}
+    {:then previewURL}
       <img
         in:fade={{ duration: 250 }}
         on:load={() => {
           URL.revokeObjectURL(previewURL);
-        }}
-        on:error={() => {
-          URL.revokeObjectURL(previewURL);
-          showFallbackImage = true;
         }}
         src={previewURL}
         alt="Preview of asset"
         class="h-[70px] w-[70px] rounded-bl-lg rounded-tl-lg object-cover"
         draggable="false"
       />
-    {/if}
+    {:catch _}
+      <div in:fade={{ duration: 250 }}>
+        <ImmichLogo class="h-[70px] w-[70px] rounded-bl-lg rounded-tl-lg object-cover" />
+      </div>
+    {/await}
 
     <div class="absolute bottom-0 left-0 h-[25px] w-full bg-immich-primary/30">
       <p
