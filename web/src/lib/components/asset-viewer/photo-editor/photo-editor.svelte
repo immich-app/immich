@@ -350,14 +350,14 @@
       if (currentAngleOffset === 90) {
         const temp = pos1;
         pos1 = -pos2;
-        pos2 = -temp;
+        pos2 = temp;
       } else if (currentAngleOffset === 180) {
         pos1 = -pos1;
         pos2 = -pos2;
       } else if (currentAngleOffset === 270) {
         const temp = pos1;
         pos1 = pos2;
-        pos2 = temp;
+        pos2 = -temp;
       }
 
       let x = 0;
