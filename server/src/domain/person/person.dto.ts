@@ -6,12 +6,11 @@ import {
   IsBoolean,
   IsDate,
   IsNotEmpty,
-  IsOptional,
   IsString,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { toBoolean, ValidateUUID } from '../domain.util';
+import { IsOptional, toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
   /**

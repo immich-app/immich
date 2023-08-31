@@ -1,7 +1,7 @@
-import { toBoolean } from '@app/domain';
+import { IsOptional, toBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
 export class AssetSearchDto {
   @IsOptional()

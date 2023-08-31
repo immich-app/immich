@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { CLIPMode, ModelType } from '../machine-learning.interface';
+import { IsOptional } from '../../domain.util';
 
 export class ModelConfig {
   @IsBoolean()

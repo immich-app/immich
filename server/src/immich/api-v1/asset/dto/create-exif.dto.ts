@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsOptional } from '@app/domain';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateExifDto {
   @IsNotEmpty()

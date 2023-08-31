@@ -1,5 +1,6 @@
+import { IsOptional } from '../../domain.util';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean } from 'class-validator';
 
 export class UserCountDto {
   @IsBoolean()

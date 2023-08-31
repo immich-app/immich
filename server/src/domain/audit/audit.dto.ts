@@ -1,7 +1,8 @@
 import { EntityType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsDate, IsEnum, IsUUID } from 'class-validator';
+import { IsOptional } from '../domain.util';
 
 export class AuditDeletesDto {
   @IsDate()

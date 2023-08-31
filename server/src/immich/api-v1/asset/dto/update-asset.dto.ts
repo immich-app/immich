@@ -1,5 +1,6 @@
+import { IsOptional } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateAssetDto {
   @IsOptional()

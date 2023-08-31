@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
-import { toBoolean } from '../../domain.util';
+import { IsBoolean } from 'class-validator';
+import { toBoolean, IsOptional } from '../../domain.util';
 
 export class AlbumInfoDto {
   @IsOptional()

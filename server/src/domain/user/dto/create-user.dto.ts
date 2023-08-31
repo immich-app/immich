@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toEmail, toSanitized } from '../../domain.util';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { toEmail, toSanitized, IsOptional } from '../../domain.util';
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })

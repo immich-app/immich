@@ -1,8 +1,8 @@
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
-import { toBoolean } from '../../domain.util';
+import { IsBoolean } from 'class-validator';
+import { toBoolean, IsOptional } from '../../domain.util';
 import { AssetStats } from '../asset.repository';
 
 export class AssetStatsDto {

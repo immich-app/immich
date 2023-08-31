@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toBoolean } from '../../domain.util';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { toBoolean, IsOptional } from '../../domain.util';
 
 export class SearchDto {
   @IsString()
