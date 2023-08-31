@@ -42,6 +42,7 @@ export class MediaRepository implements IMediaRepository {
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
         .map((stream) => ({
+          index: stream.index,
           height: stream.height || 0,
           width: stream.width || 0,
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
@@ -53,8 +54,10 @@ export class MediaRepository implements IMediaRepository {
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
         .map((stream) => ({
+          index: stream.index,
           codecType: stream.codec_type,
           codecName: stream.codec_name,
+          frameCount: Number.parseInt(stream.nb_frames ?? '0'),
         })),
     };
   }

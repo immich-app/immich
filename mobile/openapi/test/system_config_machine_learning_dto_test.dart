@@ -16,8 +16,13 @@ void main() {
   // final instance = SystemConfigMachineLearningDto();
 
   group('test SystemConfigMachineLearningDto', () {
-    // bool clipEncodeEnabled
-    test('to test the property `clipEncodeEnabled`', () async {
+    // ClassificationConfig classification
+    test('to test the property `classification`', () async {
+      // TODO
+    });
+
+    // CLIPConfig clip
+    test('to test the property `clip`', () async {
       // TODO
     });
 
@@ -26,13 +31,8 @@ void main() {
       // TODO
     });
 
-    // bool facialRecognitionEnabled
-    test('to test the property `facialRecognitionEnabled`', () async {
-      // TODO
-    });
-
-    // bool tagImageEnabled
-    test('to test the property `tagImageEnabled`', () async {
+    // RecognitionConfig facialRecognition
+    test('to test the property `facialRecognition`', () async {
       // TODO
     });
 

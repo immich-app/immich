@@ -62,10 +62,14 @@
     </SettingAccordion>
 
     <SettingAccordion
-      title="FFmpeg Settings"
+      title="Video Transcoding Settings"
       subtitle="Manage the resolution and encoding information of the video files"
     >
       <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Machine Learning Settings" subtitle="Manage model settings">
+      <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -82,10 +86,6 @@
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
       <OAuthSettings disabled={$featureFlags.configFile} oauthConfig={configs.oauth} />
-    </SettingAccordion>
-
-    <SettingAccordion title="Machine Learning" subtitle="Manage machine learning settings">
-      <MachineLearningSettings disabled={$featureFlags.configFile} />
     </SettingAccordion>
 
     <SettingAccordion

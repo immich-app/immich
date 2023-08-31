@@ -1,4 +1,6 @@
-import { IsBoolean, IsUrl, ValidateIf } from 'class-validator';
+import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '@app/domain';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
 
 export class SystemConfigMachineLearningDto {
   @IsBoolean()
@@ -8,12 +10,18 @@ export class SystemConfigMachineLearningDto {
   @ValidateIf((dto) => dto.enabled)
   url!: string;
 
-  @IsBoolean()
-  clipEncodeEnabled!: boolean;
+  @Type(() => ClassificationConfig)
+  @ValidateNested()
+  @IsObject()
+  classification!: ClassificationConfig;
 
-  @IsBoolean()
-  facialRecognitionEnabled!: boolean;
+  @Type(() => CLIPConfig)
+  @ValidateNested()
+  @IsObject()
+  clip!: CLIPConfig;
 
-  @IsBoolean()
-  tagImageEnabled!: boolean;
+  @Type(() => RecognitionConfig)
+  @ValidateNested()
+  @IsObject()
+  facialRecognition!: RecognitionConfig;
 }
