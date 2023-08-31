@@ -31,6 +31,17 @@ export class AccessRepository implements IAccessRepository {
     },
   };
 
+  timeline = {
+    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
+      return this.partnerRepository.exist({
+        where: {
+          sharedWithId: userId,
+          sharedById: partnerId,
+        },
+      });
+    },
+  };
+
   asset = {
     hasAlbumAccess: (userId: string, assetId: string): Promise<boolean> => {
       return this.albumRepository.exist({

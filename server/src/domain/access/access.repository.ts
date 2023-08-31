@@ -18,4 +18,8 @@ export interface IAccessRepository {
     hasOwnerAccess(userId: string, libraryId: string): Promise<boolean>;
     hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
   };
+
+  timeline: {
+    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+  };
 }

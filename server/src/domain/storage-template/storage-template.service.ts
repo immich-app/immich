@@ -91,8 +91,9 @@ export class StorageTemplateService {
 
   // TODO: use asset core (once in domain)
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly) {
-      this.logger.debug(`Not moving read-only asset: ${asset.originalPath}`);
+    if (asset.isReadOnly || asset.isExternal) {
+      // External assets are not affected by storage template
+      // TODO: shouldn't this only apply to external assets?
       return;
     }
 

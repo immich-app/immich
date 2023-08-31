@@ -5911,18 +5911,15 @@
             "type": "boolean"
           },
           "isExternal": {
-            "default": false,
             "type": "boolean"
           },
           "isFavorite": {
             "type": "boolean"
           },
           "isOffline": {
-            "default": false,
             "type": "boolean"
           },
           "isReadOnly": {
-            "default": false,
             "type": "boolean"
           },
           "isVisible": {
@@ -6357,14 +6354,12 @@
             "type": "boolean"
           },
           "isExternal": {
-            "default": false,
             "type": "boolean"
           },
           "isFavorite": {
             "type": "boolean"
           },
           "isOffline": {
-            "default": false,
             "type": "boolean"
           },
           "isReadOnly": {
@@ -6383,7 +6378,6 @@
           }
         },
         "required": [
-          "libraryId",
           "assetPath",
           "deviceAssetId",
           "deviceId",

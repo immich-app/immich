@@ -21,17 +21,6 @@ import { ILibraryRepository } from './library.repository';
 import { LibraryService } from './library.service';
 import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
 
-jest.mock('../access', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('../access'),
-
-    AccessCore: jest.fn().mockImplementation(() => ({
-      requirePermission: jest.fn().mockResolvedValue(true),
-    })),
-  };
-});
-
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 

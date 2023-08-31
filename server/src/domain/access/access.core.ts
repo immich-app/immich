@@ -168,7 +168,7 @@ export class AccessCore {
         return authUser.id === id;
 
       case Permission.TIMELINE_READ:
-        return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
+        return authUser.id === id || (await this.repository.timeline.hasPartnerAccess(authUser.id, id));
 
       case Permission.TIMELINE_DOWNLOAD:
         return authUser.id === id;

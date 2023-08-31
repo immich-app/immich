@@ -1641,7 +1641,7 @@ export interface ImportAssetDto {
      * @type {string}
      * @memberof ImportAssetDto
      */
-    'libraryId': string;
+    'libraryId'?: string;
     /**
      * 
      * @type {string}

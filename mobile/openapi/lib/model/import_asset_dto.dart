@@ -20,12 +20,12 @@ class ImportAssetDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     this.isArchived,
-    this.isExternal = false,
+    this.isExternal,
     required this.isFavorite,
-    this.isOffline = false,
+    this.isOffline,
     this.isReadOnly = true,
     this.isVisible,
-    required this.libraryId,
+    this.libraryId,
     this.sidecarPath,
   });
 
@@ -55,11 +55,23 @@ class ImportAssetDto {
   ///
   bool? isArchived;
 
-  bool isExternal;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isExternal;
 
   bool isFavorite;
 
-  bool isOffline;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isOffline;
 
   bool isReadOnly;
 
@@ -71,7 +83,13 @@ class ImportAssetDto {
   ///
   bool? isVisible;
 
-  String libraryId;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -108,12 +126,12 @@ class ImportAssetDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isExternal.hashCode) +
+    (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite.hashCode) +
-    (isOffline.hashCode) +
+    (isOffline == null ? 0 : isOffline!.hashCode) +
     (isReadOnly.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (libraryId.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (sidecarPath == null ? 0 : sidecarPath!.hashCode);
 
   @override
@@ -136,16 +154,28 @@ class ImportAssetDto {
     } else {
     //  json[r'isArchived'] = null;
     }
+    if (this.isExternal != null) {
       json[r'isExternal'] = this.isExternal;
+    } else {
+    //  json[r'isExternal'] = null;
+    }
       json[r'isFavorite'] = this.isFavorite;
+    if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
+    } else {
+    //  json[r'isOffline'] = null;
+    }
       json[r'isReadOnly'] = this.isReadOnly;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
     }
+    if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
+    } else {
+    //  json[r'libraryId'] = null;
+    }
     if (this.sidecarPath != null) {
       json[r'sidecarPath'] = this.sidecarPath;
     } else {
@@ -169,12 +199,12 @@ class ImportAssetDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
-        isExternal: mapValueOfType<bool>(json, r'isExternal') ?? false,
+        isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        isOffline: mapValueOfType<bool>(json, r'isOffline') ?? false,
+        isOffline: mapValueOfType<bool>(json, r'isOffline'),
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        libraryId: mapValueOfType<String>(json, r'libraryId')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId'),
         sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
       );
     }
@@ -229,7 +259,6 @@ class ImportAssetDto {
     'fileCreatedAt',
     'fileModifiedAt',
     'isFavorite',
-    'libraryId',
   };
 }
 

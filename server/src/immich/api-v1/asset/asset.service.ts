@@ -272,7 +272,7 @@ export class AssetService {
 
       const asset = await this._assetRepository.get(id);
       if (!asset || !asset.library || asset.library.type === LibraryType.EXTERNAL) {
-        // We don't allow deletions of imported library assets
+        // We don't allow deletions assets belong to an external library
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }

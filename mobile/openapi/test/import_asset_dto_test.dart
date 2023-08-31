@@ -51,7 +51,7 @@ void main() {
       // TODO
     });
 
-    // bool isExternal (default value: false)
+    // bool isExternal
     test('to test the property `isExternal`', () async {
       // TODO
     });
@@ -61,7 +61,7 @@ void main() {
       // TODO
     });
 
-    // bool isOffline (default value: false)
+    // bool isOffline
     test('to test the property `isOffline`', () async {
       // TODO
     });

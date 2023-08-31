@@ -32,18 +32,18 @@ export class CreateAssetBase {
 
   @IsOptional()
   @IsBoolean()
-  isExternal?: boolean = false;
+  isExternal?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  isOffline?: boolean = false;
+  isOffline?: boolean;
 }
 
 export class CreateAssetDto extends CreateAssetBase {
   @IsOptional()
   @IsBoolean()
   @Transform(toBoolean)
-  isReadOnly?: boolean = false;
+  isReadOnly?: boolean;
 
   @ValidateUUID({ optional: true })
   libraryId?: string;
@@ -66,7 +66,7 @@ export class ImportAssetDto extends CreateAssetBase {
   isReadOnly?: boolean = true;
 
   @ValidateUUID()
-  libraryId!: string;
+  libraryId?: string;
 
   @IsString()
   @IsNotEmpty()
