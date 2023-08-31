@@ -53,6 +53,7 @@ class InferenceModel(ABC):
         log.debug(f"Setting intra_op_num_threads to {intra_op_num_threads}")
         self.sess_options.inter_op_num_threads = inter_op_num_threads
         self.sess_options.intra_op_num_threads = intra_op_num_threads
+        self.sess_options.enable_cpu_mem_arena = False
 
         try:
             loader(**model_kwargs)

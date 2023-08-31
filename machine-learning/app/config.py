@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 
+import gunicorn
 import starlette
 from pydantic import BaseSettings
 from rich.console import Console
@@ -56,12 +57,14 @@ LOG_LEVELS: dict[str, int] = {
 settings = Settings()
 log_settings = LogSettings()
 
-console = Console(color_system="standard", no_color=log_settings.no_color)
-logging.basicConfig(
-    format="%(message)s",
-    handlers=[
-        RichHandler(show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[starlette])
-    ],
-)
-log = logging.getLogger("uvicorn")
+
+class CustomRichHandler(RichHandler):
+    def __init__(self) -> None:
+        console = Console(color_system="standard", no_color=log_settings.no_color)
+        super().__init__(
+            show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[gunicorn, starlette]
+        )
+
+
+log = logging.getLogger("gunicorn.access")
 log.setLevel(LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO))
