@@ -239,15 +239,15 @@ export class LibraryService {
 
     const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
 
-    // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
-
     let assetId;
     if (doImport) {
       const library = await this.repository.get(job.id, true);
       if (library?.deletedAt) {
-        throw new BadRequestException('Cannot import asset into deleted library');
+        this.logger.error('Cannot import asset into deleted library');
+        return false;
       }
 
+      // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
       const addedAsset = await this.assetRepository.create({
         ownerId: job.ownerId,
         libraryId: job.id,
@@ -266,7 +266,8 @@ export class LibraryService {
       assetId = addedAsset.id;
     } else if (doRefresh) {
       if (!existingAssetEntity) {
-        throw new BadRequestException("Can't refresh asset not in database");
+        this.logger.error("Can't refresh asset not in database");
+        return false;
       }
       assetId = existingAssetEntity.id;
       await this.assetRepository.updateAll([existingAssetEntity.id], {

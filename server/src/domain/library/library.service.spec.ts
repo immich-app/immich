@@ -1,4 +1,4 @@
-import { LibraryType, UserEntity } from '@app/infra/entities';
+import { AssetType, LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -205,20 +205,84 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.METADATA_EXTRACTION,
-        data: {
-          id: assetStub.image.id,
-          source: 'upload',
-        },
-      });
+      expect(assetMock.create.mock.calls).toEqual([
+        [
+          {
+            ownerId: mockUser.id,
+            libraryId: libraryStub.externalLibrary1.id,
+            checksum: expect.any(String),
+            originalPath: '/data/user1/photo.jpg',
+            deviceAssetId: expect.any(String),
+            deviceId: 'Library Import',
+            fileCreatedAt: expect.any(Date),
+            fileModifiedAt: expect.any(Date),
+            type: AssetType.IMAGE,
+            originalFileName: 'photo',
+            sidecarPath: null,
+            isReadOnly: true,
+            isExternal: true,
+          },
+        ],
+      ]);
 
-      expect(jobMock.queue).not.toHaveBeenCalledWith({
-        name: JobName.VIDEO_CONVERSION,
-        data: {
-          id: assetStub.image.id,
-        },
-      });
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.METADATA_EXTRACTION,
+            data: {
+              id: assetStub.image.id,
+              source: 'upload',
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('should add a new image with sidecar', async () => {
+      const mockLibraryJob: ILibraryFileJob = {
+        id: libraryStub.externalLibrary1.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        forceRefresh: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetStub.image);
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
+
+      expect(assetMock.create.mock.calls).toEqual([
+        [
+          {
+            ownerId: mockUser.id,
+            libraryId: libraryStub.externalLibrary1.id,
+            checksum: expect.any(String),
+            originalPath: '/data/user1/photo.jpg',
+            deviceAssetId: expect.any(String),
+            deviceId: 'Library Import',
+            fileCreatedAt: expect.any(Date),
+            fileModifiedAt: expect.any(Date),
+            type: AssetType.IMAGE,
+            originalFileName: 'photo',
+            sidecarPath: '/data/user1/photo.jpg.xmp',
+            isReadOnly: true,
+            isExternal: true,
+          },
+        ],
+      ]);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.METADATA_EXTRACTION,
+            data: {
+              id: assetStub.image.id,
+              source: 'upload',
+            },
+          },
+        ],
+      ]);
     });
 
     it('should add a new video', async () => {
@@ -234,20 +298,62 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.METADATA_EXTRACTION,
-        data: {
-          id: assetStub.video.id,
-          source: 'upload',
-        },
-      });
+      expect(assetMock.create.mock.calls).toEqual([
+        [
+          {
+            ownerId: mockUser.id,
+            libraryId: libraryStub.externalLibrary1.id,
+            checksum: expect.any(String),
+            originalPath: '/data/user1/video.mp4',
+            deviceAssetId: expect.any(String),
+            deviceId: 'Library Import',
+            fileCreatedAt: expect.any(Date),
+            fileModifiedAt: expect.any(Date),
+            type: AssetType.VIDEO,
+            originalFileName: 'video',
+            sidecarPath: null,
+            isReadOnly: true,
+            isExternal: true,
+          },
+        ],
+      ]);
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.VIDEO_CONVERSION,
-        data: {
-          id: assetStub.video.id,
-        },
-      });
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.METADATA_EXTRACTION,
+            data: {
+              id: assetStub.image.id,
+              source: 'upload',
+            },
+          },
+        ],
+        [
+          {
+            name: JobName.VIDEO_CONVERSION,
+            data: {
+              id: assetStub.video.id,
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('should not add an image to a soft deleted library', async () => {
+      const mockLibraryJob: ILibraryFileJob = {
+        id: libraryStub.externalLibrary1.id,
+        ownerId: mockUser.id,
+        assetPath: '/data/user1/photo.jpg',
+        forceRefresh: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetStub.image);
+      libraryMock.get.mockResolvedValue({ ...libraryStub.externalLibrary1, deletedAt: new Date() });
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+
+      expect(assetMock.create.mock.calls).toEqual([]);
     });
 
     it('should not import an asset when mtime matches db asset', async () => {
@@ -886,12 +992,27 @@ describe(LibraryService.name, () => {
     it('can update library with default arguments', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
       await expect(sut.update(authStub.admin, authStub.admin.id, { id: authStub.admin.id })).resolves.toBeTruthy();
+      expect(libraryMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: authStub.admin.id,
+        }),
+      );
     });
 
     it('can reject library update if id does not match', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
       await expect(sut.update(authStub.admin, authStub.user1.id, { id: authStub.admin.id })).rejects.toBeInstanceOf(
         BadRequestException,
+      );
+    });
+
+    it('can infer library id', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
+      await expect(sut.update(authStub.admin, authStub.admin.id, {})).resolves.toBeTruthy();
+      expect(libraryMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: authStub.admin.id,
+        }),
       );
     });
   });

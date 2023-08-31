@@ -95,6 +95,10 @@
   const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
     try {
       const dto = event.detail;
+      if(!dto.id) {
+        throw new Error('Library ID is missing');
+      }
+
       await api.libraryApi.updateLibrary({ id: dto.id, updateLibraryDto: dto });
     } catch (error) {
       handleError(error, 'Unable to update library');

@@ -19,7 +19,7 @@ export const errorStub = {
     statusCode: 400,
     message: expect.any(Array),
   },
-  badRequestMessage: (message: String) => ({
+  badRequestMessage: (message: string) => ({
     error: 'Bad Request',
     statusCode: 400,
     message: [message],
