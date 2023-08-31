@@ -151,10 +151,15 @@
         const strings = aspectRatio.split('_');
         aspectRatio = strings[1] + '_' + strings[0];
       }
-      if (currentAngleOffset % 180 !== 0) {
+      if (currentAngleOffset % 180 == 0) {
+        console.log('currentAngleOffset', currentAngleOffset);
+        console.log('isRotate', isRotate);
         isRotate = false;
       }
     }
+
+    console.log('isRotate', isRotate);
+
     currentAspectRatio = aspectRatio;
 
     switch (aspectRatio) {
@@ -167,7 +172,7 @@
         break;
       case 'original':
         aspectRatioNum = originalAspect;
-        if (isRotate) {
+        if (currentAngleOffset % 180 !== 0) {
           aspectRatioNum = 1 / originalAspect;
         }
         break;
@@ -342,12 +347,32 @@
       pos3 = e.clientX;
       pos4 = e.clientY;
 
+      if (currentAngleOffset === 90) {
+        const temp = pos1;
+        pos1 = -pos2;
+        pos2 = -temp;
+      } else if (currentAngleOffset === 180) {
+        pos1 = -pos1;
+        pos2 = -pos2;
+      } else if (currentAngleOffset === 270) {
+        const temp = pos1;
+        pos1 = pos2;
+        pos2 = temp;
+      }
+
       let x = 0;
       let y = 0;
 
       //Calc max y translation
-      const h1 = cropElement.offsetHeight;
-      const w1 = cropElement.offsetWidth;
+      let h1 = cropElement.offsetHeight;
+      let w1 = cropElement.offsetWidth;
+
+      if (currentAngleOffset === 90 || currentAngleOffset === 270) {
+        const temp = h1;
+        h1 = w1;
+        w1 = temp;
+      }
+
       const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
       const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
       const maxY = (imageWrapper.offsetHeight - d) / 2;
@@ -390,6 +415,7 @@
           y: 0,
         };
       }
+      console.log('currentTranslateBefore', currentTranslate);
 
       console.log('currentTranslate', currentTranslate);
       setImageWrapperTransform();
@@ -411,9 +437,15 @@
 
   const calcImageElement = (angle: number) => {
     // Get image wrapper width and height
-    const imageWrapperWidth = imageWrapper.offsetWidth;
-    const imageWrapperHeight = imageWrapper.offsetHeight;
-    const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
+
+    let newHeight;
+    let newWidth;
+
+    let originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
+
+    if (currentAngleOffset === 90 || currentAngleOffset === 270) {
+      originalAspect = 1 / originalAspect;
+    }
 
     // Get crop element width and height
     const cropElementWidth = cropElement.offsetWidth;
@@ -425,44 +457,57 @@
     const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
     const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
 
+    // if (currentAngleOffset === 90 || currentAngleOffset === 270) {
+    //   if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
+    //     imageWrapper.style.height = `${x1 + x2}px`;
+    //     imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
+    //     console.log('Translation in Y possible');
+    //     console.log('case1');
+    //     currentTranslateDirection = 'y';
+    //   } else if ((x1 + x2) / (y1 + y2) < 1 / originalAspect) {
+    //     imageWrapper.style.height = `${y1 + y2}px`;
+    //     imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
+    //     currentTranslateDirection = 'x';
+    //     console.log('Translation in X possible');
+    //     console.log('case2');
+    //   } else {
+    //     imageWrapper.style.width = `${y1 + y2}px`;
+    //     imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
+    //     currentTranslateDirection = '';
+    //     console.log('case3');
+    //   }
+    // } else {
+    if ((x1 + x2) / (y1 + y2) > originalAspect) {
+      newWidth = `${x1 + x2}px`;
+      newHeight = `${(x1 + x2) / originalAspect}px`;
+      console.log('Translation in Y possible');
+      console.log('case4');
+      currentTranslateDirection = 'y';
+    } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
+      newHeight = `${y1 + y2}px`;
+      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+      console.log('Translation in X possible');
+      currentTranslateDirection = 'x';
+      console.log('case5');
+    } else {
+      newHeight = `${y1 + y2}px`;
+      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+      currentTranslateDirection = '';
+      console.log('case6');
+    }
+    // }
+
     if (currentAngleOffset === 90 || currentAngleOffset === 270) {
-      if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
-        imageWrapper.style.height = `${x1 + x2}px`;
-        imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
-        console.log('Translation in Y possible');
-        console.log('case1');
+      imageWrapper.style.height = newWidth;
+      imageWrapper.style.width = newHeight;
+      if (currentTranslateDirection === 'x') {
         currentTranslateDirection = 'y';
-      } else if ((x1 + x2) / (y1 + y2) < 1 / originalAspect) {
-        imageWrapper.style.height = `${y1 + y2}px`;
-        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
+      } else if (currentTranslateDirection === 'y') {
         currentTranslateDirection = 'x';
-        console.log('Translation in X possible');
-        console.log('case2');
-      } else {
-        imageWrapper.style.width = `${y1 + y2}px`;
-        imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
-        currentTranslateDirection = '';
-        console.log('case3');
       }
     } else {
-      if ((x1 + x2) / (y1 + y2) > originalAspect) {
-        imageWrapper.style.width = `${x1 + x2}px`;
-        imageWrapper.style.height = `${(x1 + x2) / originalAspect}px`;
-        console.log('Translation in Y possible');
-        console.log('case4');
-        currentTranslateDirection = 'y';
-      } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
-        imageWrapper.style.height = `${y1 + y2}px`;
-        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
-        console.log('Translation in X possible');
-        currentTranslateDirection = 'x';
-        console.log('case5');
-      } else {
-        imageWrapper.style.height = `${y1 + y2}px`;
-        imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
-        currentTranslateDirection = '';
-        console.log('case6');
-      }
+      imageWrapper.style.height = newHeight;
+      imageWrapper.style.width = newWidth;
     }
   };
 
@@ -512,6 +557,10 @@
     if (angleOffset > 360) {
       angleOffset = angleOffset - 360;
     }
+    console.log('isRotate', isRotate);
+
+    currentAngle = angle;
+    currentAngleOffset = angleOffset;
 
     setAspectRatio(currentAspectRatio, isRotate ? true : false);
 
@@ -519,9 +568,6 @@
     let b = a + 'px';
     angleSliderHandle.style.left = b;
     angleSlider.style.left = b;
-
-    currentAngle = angle;
-    currentAngleOffset = angleOffset;
   };
 
   // Temporary function
@@ -893,7 +939,7 @@
     bind:this={renderElement}
     {assetData}
     editedImage={renderedImage}
-    angle={currentAngle}
+    angle={currentAngle - currentAngleOffset}
     scale={1}
     translate={currentTranslate}
     aspectRatio={aspectRatioNum}
