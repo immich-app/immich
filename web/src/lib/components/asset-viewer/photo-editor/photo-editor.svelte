@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, SvelteComponent } from 'svelte';
   import { browser } from '$app/environment';
   import { api, AssetResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
@@ -38,7 +38,7 @@
   // Render
   let renderedImage: string;
 
-  let renderElement: HTMLDivElement;
+  let renderElement: SvelteComponent;
   let editorElement: HTMLDivElement;
   let imageElement: HTMLImageElement;
   let imageWrapper: HTMLDivElement;
