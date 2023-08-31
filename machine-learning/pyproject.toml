@@ -74,6 +74,7 @@ warn_untyped_fields = true
 module = [
     "huggingface_hub",
     "transformers",
+    "gunicorn",
     "cv2",
     "insightface.model_zoo",
     "insightface.utils.face_align",

@@ -6,6 +6,7 @@ import orjson
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
 from starlette.formparsers import MultiPartParser
+
 from app.models.base import InferenceModel
 
 from .config import log, settings

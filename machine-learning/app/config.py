@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-import starlette
 import gunicorn
+import starlette
 from pydantic import BaseSettings
 from rich.console import Console
 from rich.logging import RichHandler
@@ -61,7 +61,10 @@ log_settings = LogSettings()
 class CustomRichHandler(RichHandler):
     def __init__(self) -> None:
         console = Console(color_system="standard", no_color=log_settings.no_color)
-        super().__init__(show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[gunicorn, starlette])
+        super().__init__(
+            show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[gunicorn, starlette]
+        )
+
 
 log = logging.getLogger("gunicorn.access")
 log.setLevel(LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO))
