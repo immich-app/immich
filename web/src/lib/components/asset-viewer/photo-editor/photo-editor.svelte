@@ -29,10 +29,16 @@
   import AdjustElement from './adjust-element.svelte';
   import FilterCard from './filter-card.svelte';
 
+  import Render from './render.svelte';
+
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher();
 
+  // Render
+  let renderedImage: string;
+
+  let renderElement: HTMLDivElement;
   let editorElement: HTMLDivElement;
   let imageElement: HTMLImageElement;
   let imageWrapper: HTMLDivElement;
@@ -43,8 +49,11 @@
   let currentAngle = 0;
   let currentAngleOffset = 0;
   let currentAspectRatio: string | aspectRatio = 'original';
+  let currentCrop = { width: 0, height: 0 };
   let currentFlipY = false;
   let currentFlipX = false;
+
+  let currentRatio = 0;
 
   let currentTranslateDirection: 'x' | 'y' | '' = '';
   let currentTranslate = { x: 0, y: 0 };
@@ -75,6 +84,15 @@
   export let asset: AssetResponseDto;
   let assetData: string;
   let publicSharedKey = '';
+
+  $: currentCrop = cropElement
+    ? {
+        width: cropElement.offsetWidth,
+        height: cropElement.offsetHeight,
+      }
+    : { width: 0, height: 0 };
+
+  $: currentRatio = imageElement ? imageElement.naturalWidth / imageWrapper.offsetWidth : 0;
 
   onMount(async () => {
     try {
@@ -232,10 +250,10 @@
 
     const closeDragElement = () => {
       // stop moving when mouse button is released:
-      angleSliderHandle.onmouseup = null;
-      angleSliderHandle.onmousemove = null;
-      angleSliderHandle.ontouchend = null;
-      angleSliderHandle.ontouchmove = null;
+      document.onmouseup = null;
+      document.onmousemove = null;
+      document.ontouchend = null;
+      document.ontouchmove = null;
     };
 
     const elementDrag = async (e: MouseEvent) => {
@@ -286,9 +304,9 @@
       e.preventDefault();
       // get the mouse cursor position at startup:
       pos2 = e.clientX;
-      angleSliderHandle.onmouseup = closeDragElement;
+      document.onmouseup = closeDragElement;
       // call a function whenever the cursor moves:
-      angleSliderHandle.onmousemove = elementDrag;
+      document.onmousemove = elementDrag;
     };
 
     const dragTouchStart = (e: TouchEvent) => {
@@ -296,9 +314,9 @@
       console.log('dragTouchStart');
       // get the mouse cursor position at startup:
       pos2 = e.touches[0].clientX;
-      angleSliderHandle.ontouchend = closeDragElement;
+      document.ontouchend = closeDragElement;
       // call a function whenever the cursor moves:
-      angleSliderHandle.ontouchmove = elementDragTouch;
+      document.ontouchmove = elementDragTouch;
     };
     angleSliderHandle.onmousedown = dragMouseDown;
     angleSliderHandle.ontouchstart = dragTouchStart;
@@ -312,8 +330,8 @@
       pos4 = 0;
     const closeDragElement = () => {
       // stop moving when mouse button is released:
-      assetDragHandle.onmouseup = null;
-      assetDragHandle.onmousemove = null;
+      document.onmouseup = null;
+      document.onmousemove = null;
     };
 
     const elementDrag = async (e: MouseEvent) => {
@@ -384,9 +402,9 @@
       // get the mouse cursor position at startup:
       pos3 = e.clientX;
       pos4 = e.clientY;
-      assetDragHandle.onmouseup = closeDragElement;
+      document.onmouseup = closeDragElement;
       // call a function whenever the cursor moves:
-      assetDragHandle.onmousemove = elementDrag;
+      document.onmousemove = elementDrag;
     };
     assetDragHandle.onmousedown = dragMouseDown;
   };
@@ -509,6 +527,7 @@
   // Temporary function
   const save = async () => {
     // TBD
+    renderElement.start();
   };
 
   const setImageWrapperTransform = () => {
@@ -870,6 +889,17 @@
       </div>
     {/if}
   </div>
+  <Render
+    bind:this={renderElement}
+    {assetData}
+    editedImage={renderedImage}
+    angle={currentAngle}
+    scale={1}
+    translate={currentTranslate}
+    aspectRatio={aspectRatioNum}
+    crop={currentCrop}
+    ratio={currentRatio}
+  />
 </div>
 
 <style>
