@@ -1,4 +1,4 @@
-FROM python:3.11.4-bullseye@sha256:5b401676aff858495a5c9c726c60b8b73fe52833e9e16eccdb59e93d52741727 as builder
+FROM python:3.11-bookworm as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
@@ -14,9 +14,9 @@ COPY poetry.lock pyproject.toml requirements.txt ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 RUN pip install --no-deps -r requirements.txt
 
-FROM python:3.11.4-slim-bullseye@sha256:91d194f58f50594cda71dcd2e8fdefd90e7ecc57d07823813b67c8521e565dcd
+FROM python:3.11-slim-bookworm
 
-RUN apt-get update && apt-get install -y --no-install-recommends tini && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -27,6 +27,7 @@ ENV NODE_ENV=production \
   PYTHONPATH=/usr/src
 
 COPY --from=builder /opt/venv /opt/venv
+COPY start.sh log_conf.json ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
-CMD ["python", "-m", "app.main"]
+CMD ["./start.sh"]
