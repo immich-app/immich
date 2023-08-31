@@ -2479,7 +2479,7 @@
     },
     "/library": {
       "get": {
-        "operationId": "getAllLibraries",
+        "operationId": "getAllForUser",
         "parameters": [],
         "responses": {
           "200": {
@@ -5976,9 +5976,7 @@
           }
         },
         "required": [
-          "type",
-          "importPaths",
-          "exclusionPatterns"
+          "type"
         ],
         "type": "object"
       },

@@ -16,13 +16,15 @@ export class CreateLibraryDto {
   @IsBoolean()
   isVisible?: boolean;
 
+  @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  importPaths!: string[];
+  importPaths?: string[];
 
+  @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  exclusionPatterns!: string[];
+  exclusionPatterns?: string[];
 }
 
 export class UpdateLibraryDto {

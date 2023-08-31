@@ -12,7 +12,7 @@ Method | HTTP request | Description
 [**createLibrary**](LibraryApi.md#createlibrary) | **POST** /library | 
 [**deleteLibrary**](LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
 [**emptyLibraryTrash**](LibraryApi.md#emptylibrarytrash) | **POST** /library/{id}/trash | 
-[**getAllLibraries**](LibraryApi.md#getalllibraries) | **GET** /library | 
+[**getAllForUser**](LibraryApi.md#getallforuser) | **GET** /library | 
 [**getLibraryCount**](LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 [**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 [**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
@@ -183,8 +183,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAllLibraries**
-> List<LibraryResponseDto> getAllLibraries()
+# **getAllForUser**
+> List<LibraryResponseDto> getAllForUser()
 
 
 
@@ -209,10 +209,10 @@ import 'package:openapi/api.dart';
 final api_instance = LibraryApi();
 
 try {
-    final result = api_instance.getAllLibraries();
+    final result = api_instance.getAllForUser();
     print(result);
 } catch (e) {
-    print('Exception when calling LibraryApi->getAllLibraries: $e\n');
+    print('Exception when calling LibraryApi->getAllForUser: $e\n');
 }
 ```
 

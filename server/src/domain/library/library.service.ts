@@ -59,7 +59,7 @@ export class LibraryService {
     return this.repository.getCountForUser(authUser.id);
   }
 
-  async getAll(authUser: AuthUserDto): Promise<LibraryResponseDto[]> {
+  async getAllForUser(authUser: AuthUserDto): Promise<LibraryResponseDto[]> {
     const libraries = await this.repository.getAllByUserId(authUser.id);
     return libraries.map((library) => mapLibrary(library));
   }
@@ -80,21 +80,31 @@ export class LibraryService {
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    if (!dto.name) {
-      // No library name was supplied, create a default one
-      if (dto.type === LibraryType.EXTERNAL) {
-        dto.name = `New External Library`;
-      } else {
-        dto.name = `New Upload Library`;
-      }
+    switch (dto.type) {
+      case LibraryType.EXTERNAL:
+        if (!dto.name) {
+          dto.name = 'New External Library';
+        }
+        break;
+      case LibraryType.UPLOAD:
+        if (!dto.name) {
+          dto.name = 'New Upload Library';
+        }
+        if (dto.importPaths && dto.importPaths.length > 0) {
+          throw new BadRequestException('Upload libraries cannot have import paths');
+        }
+        if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
+          throw new BadRequestException('Upload libraries cannot have exclusion patterns');
+        }
+        break;
     }
 
     const library = await this.repository.create({
       ownerId: authUser.id,
       name: dto.name,
       type: dto.type,
-      importPaths: dto.importPaths,
-      exclusionPatterns: dto.exclusionPatterns,
+      importPaths: dto.importPaths ?? [],
+      exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
 
@@ -263,6 +273,7 @@ export class LibraryService {
         fileModifiedAt: stats.mtime,
       });
     } else {
+      // Not importing and not refreshing, do nothing
       return true;
     }
 

@@ -62,7 +62,7 @@
   };
 
   async function readLibraryList() {
-    const { data } = await api.libraryApi.getAllLibraries();
+    const { data } = await api.libraryApi.getAllForUser();
     libraries = data;
 
     dropdownOpen.length = libraries.length;
@@ -76,7 +76,7 @@
   const handleCreate = async (libraryType: LibraryType) => {
     try {
       const { data } = await api.libraryApi.createLibrary({
-        createLibraryDto: { type: libraryType, importPaths: [], exclusionPatterns: [] },
+        createLibraryDto: { type: libraryType },
       });
 
       const createdLibrary = data;

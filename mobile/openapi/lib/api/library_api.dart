@@ -144,7 +144,7 @@ class LibraryApi {
   }
 
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
-  Future<Response> getAllLibrariesWithHttpInfo() async {
+  Future<Response> getAllForUserWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/library';
 
@@ -169,8 +169,8 @@ class LibraryApi {
     );
   }
 
-  Future<List<LibraryResponseDto>?> getAllLibraries() async {
-    final response = await getAllLibrariesWithHttpInfo();
+  Future<List<LibraryResponseDto>?> getAllForUser() async {
+    final response = await getAllForUserWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

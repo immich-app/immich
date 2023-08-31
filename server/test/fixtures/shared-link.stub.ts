@@ -181,7 +181,7 @@ export const sharedLinkStub = {
           isReadOnly: false,
           isOffline: false,
           libraryId: 'library-id',
-          library: libraryStub.library1,
+          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],

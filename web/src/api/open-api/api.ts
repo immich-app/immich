@@ -1103,13 +1103,13 @@ export interface CreateLibraryDto {
      * @type {Array<string>}
      * @memberof CreateLibraryDto
      */
-    'exclusionPatterns': Array<string>;
+    'exclusionPatterns'?: Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof CreateLibraryDto
      */
-    'importPaths': Array<string>;
+    'importPaths'?: Array<string>;
     /**
      * 
      * @type {boolean}
@@ -9332,7 +9332,7 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllLibraries: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllForUser: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/library`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9628,8 +9628,8 @@ export const LibraryApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllLibraries(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllLibraries(options);
+        async getAllForUser(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllForUser(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -9725,8 +9725,8 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllLibraries(options?: AxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
-            return localVarFp.getAllLibraries(options).then((request) => request(axios, basePath));
+        getAllForUser(options?: AxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
+            return localVarFp.getAllForUser(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9933,8 +9933,8 @@ export class LibraryApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof LibraryApi
      */
-    public getAllLibraries(options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).getAllLibraries(options).then((request) => request(this.axios, this.basePath));
+    public getAllForUser(options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getAllForUser(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

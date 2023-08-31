@@ -127,7 +127,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
 *LibraryApi* | [**emptyLibraryTrash**](doc//LibraryApi.md#emptylibrarytrash) | **POST** /library/{id}/trash | 
-*LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
+*LibraryApi* | [**getAllForUser**](doc//LibraryApi.md#getallforuser) | **GET** /library | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 

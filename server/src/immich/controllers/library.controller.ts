@@ -21,13 +21,12 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getAllLibraries(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
-    return this.service.getAll(authUser);
+  getAllForUser(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
+    return this.service.getAllForUser(authUser);
   }
 
   @Post()
   createLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<ResponseDto> {
-    console.log('createLibrary', dto);
     return this.service.create(authUser, dto);
   }
 

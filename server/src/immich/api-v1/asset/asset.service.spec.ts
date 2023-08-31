@@ -225,7 +225,7 @@ describe('AssetService', () => {
     it('should return failed status a delete fails', async () => {
       assetRepositoryMock.get.mockResolvedValue({
         id: 'asset1',
-        library: libraryStub.uploadLibrary,
+        library: libraryStub.uploadLibrary1,
       } as AssetEntity);
       assetRepositoryMock.remove.mockRejectedValue('delete failed');
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
@@ -270,7 +270,7 @@ describe('AssetService', () => {
         originalPath: 'original-path-1',
         resizePath: 'resize-path-1',
         webpPath: 'web-path-1',
-        library: libraryStub.uploadLibrary,
+        library: libraryStub.uploadLibrary1,
       };
 
       const asset2 = {
@@ -279,7 +279,7 @@ describe('AssetService', () => {
         resizePath: 'resize-path-2',
         webpPath: 'web-path-2',
         encodedVideoPath: 'encoded-video-path-2',
-        library: libraryStub.uploadLibrary,
+        library: libraryStub.uploadLibrary1,
       };
 
       // Can't be deleted since it's external

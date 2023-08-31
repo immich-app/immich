@@ -66,6 +66,156 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
+
+    describe('external library', () => {
+      it('with default settings', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'New External Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('with name', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL, name: 'My Awesome Library' });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'My Awesome Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('with import paths', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL, importPaths: ['/path/to/import'] });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'New External Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: ['/path/to/import'],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('with exclusion patterns', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL, exclusionPatterns: ['**/Raw/**'] });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'New External Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: ['**/Raw/**'],
+        });
+      });
+    });
+
+    describe('upload library', () => {
+      it('with default settings', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.UPLOAD });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.UPLOAD,
+          name: 'New Upload Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('with name', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.UPLOAD, name: 'My Awesome Library' });
+        expect(status).toBe(201);
+
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.UPLOAD,
+          name: 'My Awesome Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('with import paths should fail', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.UPLOAD, importPaths: ['/path/to/import'] });
+        expect(status).toBe(400);
+
+        expect(body).toEqual(errorStub.badRequestString);
+      });
+
+      it('with exclusion patterns should fail', async () => {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.UPLOAD, exclusionPatterns: ['**/Raw/**'] });
+        expect(status).toBe(400);
+
+        expect(body).toEqual(errorStub.badRequestString);
+      });
+    });
   });
 
   describe('PUT /library/:id', () => {
