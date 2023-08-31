@@ -3576,19 +3576,19 @@ export interface UpdateLibraryDto {
      * @type {Array<string>}
      * @memberof UpdateLibraryDto
      */
-    'exclusionPatterns': Array<string>;
+    'exclusionPatterns'?: Array<string>;
     /**
      * 
      * @type {string}
      * @memberof UpdateLibraryDto
      */
-    'id': string;
+    'id'?: string;
     /**
      * 
      * @type {Array<string>}
      * @memberof UpdateLibraryDto
      */
-    'importPaths': Array<string>;
+    'importPaths'?: Array<string>;
     /**
      * 
      * @type {boolean}
@@ -3600,7 +3600,7 @@ export interface UpdateLibraryDto {
      * @type {string}
      * @memberof UpdateLibraryDto
      */
-    'name': string;
+    'name'?: string;
 }
 /**
  * 

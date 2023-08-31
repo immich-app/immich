@@ -69,6 +69,6 @@ export class LibraryController {
 
   @Post(':id/trash')
   emptyLibraryTrash(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.emptyTrash(authUser, id);
+    return this.service.queueEmptyTrash(authUser, id);
   }
 }

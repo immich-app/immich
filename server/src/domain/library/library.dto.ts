@@ -10,6 +10,7 @@ export class CreateLibraryDto {
 
   @IsString()
   @IsOptional()
+  @IsNotEmpty()
   name?: string;
 
   @IsOptional()
@@ -28,12 +29,14 @@ export class CreateLibraryDto {
 }
 
 export class UpdateLibraryDto {
+  @IsOptional()
   @ValidateUUID()
-  id!: string;
+  id?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  name?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -41,11 +44,13 @@ export class UpdateLibraryDto {
 
   @IsOptional()
   @IsString({ each: true })
-  importPaths!: string[];
+  @IsNotEmpty({ each: true })
+  importPaths?: string[];
 
   @IsOptional()
+  @IsNotEmpty({ each: true })
   @IsString({ each: true })
-  exclusionPatterns!: string[];
+  exclusionPatterns?: string[];
 }
 
 export class CrawlOptionsDto {

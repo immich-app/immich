@@ -421,6 +421,25 @@ describe(LibraryService.name, () => {
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
     });
 
+    it('should refresh an existing asset if forced', async () => {
+      const mockLibraryJob: ILibraryFileJob = {
+        id: assetStub.image.id,
+        ownerId: assetStub.image.ownerId,
+        assetPath: '/data/user1/photo.jpg',
+        forceRefresh: true,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      assetMock.create.mockResolvedValue(assetStub.image);
+
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], {
+        fileCreatedAt: new Date('2023-01-01'),
+        fileModifiedAt: new Date('2023-01-01'),
+      });
+    });
+
     it('should refresh an existing asset with modified mtime', async () => {
       const filemtime = new Date();
       filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
@@ -860,6 +879,50 @@ describe(LibraryService.name, () => {
         [{ name: JobName.LIBRARY_DELETE, data: { id: libraryStub.uploadLibrary1.id } }],
         [{ name: JobName.LIBRARY_DELETE, data: { id: libraryStub.externalLibrary1.id } }],
       ]);
+    });
+  });
+
+  describe('update', () => {
+    it('can update library with default arguments', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
+      await expect(sut.update(authStub.admin, authStub.admin.id, { id: authStub.admin.id })).resolves.toBeTruthy();
+    });
+
+    it('can reject library update if id does not match', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
+      await expect(sut.update(authStub.admin, authStub.user1.id, { id: authStub.admin.id })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('handleDeleteLibrary', () => {
+    it('can not delete a nonexistent library', async () => {
+      libraryMock.get.mockImplementation(async () => {
+        return null;
+      });
+      libraryMock.getAssetIds.mockResolvedValue([]);
+      libraryMock.delete.mockImplementation(async () => {});
+
+      await expect(sut.handleDeleteLibrary({ id: libraryStub.uploadLibrary1.id })).resolves.toBe(false);
+    });
+
+    it('can delete an empty library', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
+      libraryMock.getAssetIds.mockResolvedValue([]);
+      libraryMock.delete.mockImplementation(async () => {});
+
+      await expect(sut.handleDeleteLibrary({ id: libraryStub.uploadLibrary1.id })).resolves.toBe(true);
+    });
+
+    it('can delete a library with assets', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
+      libraryMock.getAssetIds.mockResolvedValue([assetStub.image1.id]);
+      libraryMock.delete.mockImplementation(async () => {});
+
+      assetMock.getById.mockResolvedValue(assetStub.image1);
+
+      await expect(sut.handleDeleteLibrary({ id: libraryStub.uploadLibrary1.id })).resolves.toBe(true);
     });
   });
 });

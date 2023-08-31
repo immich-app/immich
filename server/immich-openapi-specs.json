@@ -7909,12 +7909,6 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "importPaths",
-          "exclusionPatterns"
-        ],
         "type": "object"
       },
       "UpdateTagDto": {

@@ -224,6 +224,98 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
+
+    describe('external library', () => {
+      let libraryId: string;
+
+      beforeEach(async () => {
+        // Create an external library with default settings
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL });
+
+        expect(status).toBe(201);
+
+        libraryId = body.id;
+      });
+
+      it('should change the library name', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ name: 'New Library Name' });
+        expect(status).toBe(200);
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'New Library Name',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('should not set an empty name', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ name: '' });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequestMessage('name should not be empty'));
+      });
+
+      it('should change the import paths', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ importPaths: ['/path/to/import'] });
+        expect(status).toBe(200);
+        expect(body).toEqual({
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.EXTERNAL,
+          name: 'New External Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: ['/path/to/import'],
+          exclusionPatterns: [],
+        });
+      });
+
+      it('should not allow an empty import path', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ importPaths: [''] });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequestMessage('each value in importPaths should not be empty'));
+      });
+
+      it('should change the exclusion pattern', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ exclusionPatterns: [''] });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequestMessage('each value in exclusionPatterns should not be empty'));
+      });
+
+      it('should not allow an empty exclusion pattern', async () => {
+        const { status, body } = await request(server)
+          .put(`/library/${libraryId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ importPaths: [''] });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequestMessage('each value in importPaths should not be empty'));
+      });
+    });
   });
 
   describe('GET /library/:id', () => {

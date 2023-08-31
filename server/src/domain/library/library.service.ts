@@ -112,10 +112,11 @@ export class LibraryService {
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    if (id !== dto.id) {
+    if (!dto.id) {
+      dto.id = id;
+    } else if (id !== dto.id) {
       throw new BadRequestException('Library id mismatch');
     }
-
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update(dto);
     return mapLibrary(library);
@@ -301,7 +302,7 @@ export class LibraryService {
     });
   }
 
-  async emptyTrash(authUser: AuthUserDto, id: string) {
+  async queueEmptyTrash(authUser: AuthUserDto, id: string) {
     this.logger.verbose(`Emptying trash for library: ${id}`);
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
 
@@ -348,9 +349,7 @@ export class LibraryService {
     }
 
     this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
-
     await this.deleteAssets(assetIds);
-
     return true;
   }
 

@@ -14,15 +14,21 @@ class UpdateLibraryDto {
   /// Returns a new [UpdateLibraryDto] instance.
   UpdateLibraryDto({
     this.exclusionPatterns = const [],
-    required this.id,
+    this.id,
     this.importPaths = const [],
     this.isVisible,
-    required this.name,
+    this.name,
   });
 
   List<String> exclusionPatterns;
 
-  String id;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? id;
 
   List<String> importPaths;
 
@@ -34,7 +40,13 @@ class UpdateLibraryDto {
   ///
   bool? isVisible;
 
-  String name;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateLibraryDto &&
@@ -48,10 +60,10 @@ class UpdateLibraryDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (exclusionPatterns.hashCode) +
-    (id.hashCode) +
+    (id == null ? 0 : id!.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (name.hashCode);
+    (name == null ? 0 : name!.hashCode);
 
   @override
   String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, isVisible=$isVisible, name=$name]';
@@ -59,14 +71,22 @@ class UpdateLibraryDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'exclusionPatterns'] = this.exclusionPatterns;
+    if (this.id != null) {
       json[r'id'] = this.id;
+    } else {
+    //  json[r'id'] = null;
+    }
       json[r'importPaths'] = this.importPaths;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
     }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
+    }
     return json;
   }
 
@@ -81,12 +101,12 @@ class UpdateLibraryDto {
         exclusionPatterns: json[r'exclusionPatterns'] is List
             ? (json[r'exclusionPatterns'] as List).cast<String>()
             : const [],
-        id: mapValueOfType<String>(json, r'id')!,
+        id: mapValueOfType<String>(json, r'id'),
         importPaths: json[r'importPaths'] is List
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
       );
     }
     return null;
@@ -134,10 +154,6 @@ class UpdateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'exclusionPatterns',
-    'id',
-    'importPaths',
-    'name',
   };
 }
 
