@@ -11,7 +11,6 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-  import { onMount } from 'svelte';
   import LibraryList from './library-list.svelte';
 
   export let user: UserResponseDto;
