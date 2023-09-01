@@ -68,16 +68,16 @@ Be aware that as this runs inside a container, you need to mount the folder from
 
 ```bash title="Upload current directory"
 cd /DIRECTORY/WITH/IMAGES
-docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 ```bash title="Upload target directory"
-docker run -it --rm -v "/DIRECTORY/WITH/IMAGES:/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+docker run -it --rm -v "/DIRECTORY/WITH/IMAGES:/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 ```bash title="Create an alias"
 alias immich='docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest'
-immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+immich upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 :::tip Internal networking
@@ -88,7 +88,7 @@ If you are running the CLI container on the same machine as your Immich server, 
 3. Use `--server http://immich-server:3001` for the upload command instead of the external address.
 
 ```bash title="Upload to internal address"
-docker run --network immich_default -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://immich-server:3001
+docker run --network immich_default -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://immich-server:3001
 ```
 
 :::
