@@ -3,7 +3,7 @@ import { AppModule, PersonController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub, uuidStub, personStub } from '../fixtures';
+import { errorStub, uuidStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 describe(`${PersonController.name}`, () => {
