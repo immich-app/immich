@@ -16,12 +16,13 @@ import {
 } from '@test';
 import { plainToInstance } from 'class-transformer';
 import { IAlbumRepository } from '../album/album.repository';
+import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { IFaceRepository } from '../facial-recognition';
-import { FeatureFlag, ISystemConfigRepository, mapAsset, SystemConfigCore } from '../index';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
 import { IMachineLearningRepository } from '../smart-info';
+import { ISystemConfigRepository } from '../system-config';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
@@ -51,8 +52,16 @@ describe(SearchService.name, () => {
 
     searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false, faces: false });
 
+    delete process.env.TYPESENSE_ENABLED;
     await sut.init();
   });
+
+  const disableSearch = () => {
+    searchMock.setup.mockClear();
+    searchMock.checkMigrationStatus.mockClear();
+    jobMock.queue.mockClear();
+    process.env.TYPESENSE_ENABLED = 'false';
+  };
 
   afterEach(() => {
     sut.teardown();
@@ -86,17 +95,12 @@ describe(SearchService.name, () => {
 
   describe(`init`, () => {
     it('should skip when search is disabled', async () => {
-      // since there is no repository to mock, because the feature flag SEARCH is just evaluated by env, it is necessary to spy on config core
-      const configCoreSpy = jest.spyOn(SystemConfigCore.prototype, 'hasFeature').mockResolvedValue(false);
-
+      disableSearch();
       await sut.init();
 
-      expect(configCoreSpy).toHaveBeenCalledWith(FeatureFlag.SEARCH);
       expect(searchMock.setup).not.toHaveBeenCalled();
       expect(searchMock.checkMigrationStatus).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
-
-      configCoreSpy.mockRestore();
     });
 
     it('should skip schema migration if not needed', async () => {
@@ -120,14 +124,10 @@ describe(SearchService.name, () => {
   });
 
   describe('getExploreData', () => {
-    it('should throw bad request exception if feature flag SEARCH is not set', async () => {
-      const configCoreSpy = jest.spyOn(SystemConfigCore.prototype, 'hasFeature').mockResolvedValue(false);
-
-      await expect(sut.getExploreData).rejects.toBeInstanceOf(BadRequestException);
-      expect(configCoreSpy).toHaveBeenCalled();
+    it('should throw bad request exception if search is disabled', async () => {
+      disableSearch();
+      await expect(sut.getExploreData(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
       expect(searchMock.explore).not.toHaveBeenCalled();
-
-      configCoreSpy.mockRestore();
     });
 
     it('should return explore data if feature flag SEARCH is set', async () => {
