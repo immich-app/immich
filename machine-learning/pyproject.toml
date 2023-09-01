@@ -33,13 +33,13 @@ open-clip-torch = "^2.20.0"
 python-multipart = "^0.0.6"
 orjson = "^3.9.5"
 safetensors = "0.3.2"
+gunicorn = "^21.1.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"
 black = "^23.3.0"
 pytest = "^7.3.1"
 locust = "^2.15.1"
-gunicorn = "^20.1.0"
 httpx = "^0.24.1"
 pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.1.0"
@@ -74,6 +74,7 @@ warn_untyped_fields = true
 module = [
     "huggingface_hub",
     "transformers",
+    "gunicorn",
     "cv2",
     "insightface.model_zoo",
     "insightface.utils.face_align",
