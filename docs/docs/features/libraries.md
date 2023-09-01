@@ -24,7 +24,7 @@ In external libraries, the file path is used for duplicate detection. This means
 
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
 
-Finally, files can be deleted from Immich via the `Empty Trash` job. This will delete all assets that are marked as offline. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
+Finally, files can be deleted from Immich via the `Remove Offline Files` job. Any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich. Note that a library scan must be performed first to mark the assets as offline.
 
 ### Import Paths
 
