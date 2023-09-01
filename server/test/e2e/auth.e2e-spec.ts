@@ -9,7 +9,7 @@ import {
   loginResponseStub,
   loginStub,
   signupResponseStub,
-  signupStub,
+  adminSignupStub,
   uuidStub,
 } from '../fixtures';
 import { api, db } from '../test-utils';
@@ -73,7 +73,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should sign up the admin with a local domain', async () => {
       const { status, body } = await request(server)
         .post('/auth/admin-sign-up')
-        .send({ ...signupStub, email: 'admin@local' });
+        .send({ ...adminSignupStub, email: 'admin@local' });
       expect(status).toEqual(201);
       expect(body).toEqual({ ...signupResponseStub, email: 'admin@local' });
     });
@@ -81,7 +81,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should transform email to lower case', async () => {
       const { status, body } = await request(server)
         .post('/auth/admin-sign-up')
-        .send({ ...signupStub, email: 'aDmIn@IMMICH.app' });
+        .send({ ...adminSignupStub, email: 'aDmIn@IMMICH.app' });
       expect(status).toEqual(201);
       expect(body).toEqual(signupResponseStub);
     });
@@ -89,17 +89,17 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should not allow a second admin to sign up', async () => {
       await api.adminSignUp(server);
 
-      const { status, body } = await request(server).post('/auth/admin-sign-up').send(signupStub);
+      const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.alreadyHasAdmin);
     });
 
     it('should not allow null values', async () => {
-      for (const key of Object.keys(signupStub)) {
+      for (const key of Object.keys(adminSignupStub)) {
         const { status, body } = await request(server)
           .post('/auth/admin-sign-up')
-          .send({ ...signupStub, [key]: null });
+          .send({ ...adminSignupStub, [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
       }
