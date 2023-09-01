@@ -35,6 +35,7 @@ export const defaults = Object.freeze<SystemConfig>({
     refs: 0,
     gopSize: 0,
     npl: 0,
+    temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
@@ -124,7 +125,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  constructor(private repository: ISystemConfigRepository) { }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);

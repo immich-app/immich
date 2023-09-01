@@ -60,6 +60,9 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ type: 'integer' })
   npl!: number;
 
+  @IsBoolean()
+  temporalAQ!: boolean;
+
   @IsEnum(CQMode)
   @ApiProperty({ enumName: 'CQMode', enum: CQMode })
   cqMode!: CQMode;

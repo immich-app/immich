@@ -46,6 +46,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     refs: 0,
     gopSize: 0,
     npl: 0,
+    temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,

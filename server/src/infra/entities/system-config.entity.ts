@@ -24,6 +24,8 @@ export enum SystemConfigKey {
   FFMPEG_BFRAMES = 'ffmpeg.bframes',
   FFMPEG_REFS = 'ffmpeg.refs',
   FFMPEG_GOP_SIZE = 'ffmpeg.gopSize',
+  FFMPEG_NPL = 'ffmpeg.npl',
+  FFMPEG_TEMPORAL_AQ = 'ffmpeg.temporalAQ',
   FFMPEG_CQ_MODE = 'ffmpeg.cqMode',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
@@ -128,6 +130,7 @@ export interface SystemConfig {
     refs: number;
     gopSize: number;
     npl: number;
+    temporalAQ: boolean;
     cqMode: CQMode;
     twoPass: boolean;
     transcode: TranscodePolicy;
