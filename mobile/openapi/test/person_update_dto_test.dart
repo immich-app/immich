@@ -16,7 +16,7 @@ void main() {
   // final instance = PersonUpdateDto();
 
   group('test PersonUpdateDto', () {
-    // Person date of birth.
+    // Person date of birth. Note: the mobile app cannot currently set the birth date to null.
     // DateTime birthDate
     test('to test the property `birthDate`', () async {
       // TODO

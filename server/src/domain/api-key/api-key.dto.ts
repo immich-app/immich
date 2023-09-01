@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Optional } from '../domain.util';
 export class APIKeyCreateDto {
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   name?: string;
 }
 

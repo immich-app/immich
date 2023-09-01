@@ -1,35 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { toEmail, toSanitized } from '../../domain.util';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { toEmail, toSanitized, Optional } from '../../domain.util';
 
 export class UpdateUserDto {
-  @IsOptional()
+  @Optional()
   @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email?: string;
 
-  @IsOptional()
+  @Optional()
   @IsNotEmpty()
   @IsString()
   password?: string;
 
-  @IsOptional()
+  @Optional()
   @IsString()
   @IsNotEmpty()
   firstName?: string;
 
-  @IsOptional()
+  @Optional()
   @IsString()
   @IsNotEmpty()
   lastName?: string;
 
-  @IsOptional()
+  @Optional()
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string;
 
-  @IsOptional()
+  @Optional()
   @IsString()
   externalPath?: string;
 
@@ -38,15 +38,15 @@ export class UpdateUserDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isAdmin?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   shouldChangePassword?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
 }
