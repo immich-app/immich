@@ -1,3 +1,4 @@
+import { goto } from '$app/navigation';
 import type { AxiosError, AxiosPromise } from 'axios';
 import {
   notificationController,
@@ -32,9 +33,17 @@ export const oauth = {
     }
     return false;
   },
+  authorize: async (location: Location) => {
+    try {
+      const redirectUri = location.href.split('?')[0];
+      const { data } = await api.oauthApi.authorizeOAuth({ oAuthConfigDto: { redirectUri } });
+      goto(data.url);
+    } catch (error) {
+      handleError(error, 'Unable to login with OAuth');
+    }
+  },
   getConfig: (location: Location) => {
     const redirectUri = location.href.split('?')[0];
-    console.log(`OAuth Redirect URI: ${redirectUri}`);
     return api.oauthApi.generateConfig({ oAuthConfigDto: { redirectUri } });
   },
   login: (location: Location) => {

@@ -5,7 +5,7 @@
   export let showMessage = $$slots.message;
 </script>
 
-<section class="flex min-h-screen w-screen place-content-center place-items-center p-4">
+<section class="min-w-screen flex min-h-screen place-content-center place-items-center p-4">
   <div
     class="flex w-full max-w-lg flex-col gap-4 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >

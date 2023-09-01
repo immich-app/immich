@@ -73,6 +73,7 @@ doc/MemoryLaneResponseDto.md
 doc/MergePersonDto.md
 doc/ModelType.md
 doc/OAuthApi.md
+doc/OAuthAuthorizeResponseDto.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
@@ -225,6 +226,7 @@ lib/model/map_marker_response_dto.dart
 lib/model/memory_lane_response_dto.dart
 lib/model/merge_person_dto.dart
 lib/model/model_type.dart
+lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
@@ -352,6 +354,7 @@ test/memory_lane_response_dto_test.dart
 test/merge_person_dto_test.dart
 test/model_type_test.dart
 test/o_auth_api_test.dart
+test/o_auth_authorize_response_dto_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
