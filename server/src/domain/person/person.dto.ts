@@ -14,6 +14,7 @@ export class PersonUpdateDto {
 
   /**
    * Person date of birth.
+   * Note: the mobile app cannot currently set the birth date to null.
    */
   @Optional({ nullable: true })
   @IsDate()
@@ -43,43 +44,13 @@ export class PeopleUpdateDto {
   people!: PeopleUpdateItem[];
 }
 
-export class PeopleUpdateItem {
+export class PeopleUpdateItem extends PersonUpdateDto {
   /**
    * Person id.
    */
   @IsString()
   @IsNotEmpty()
   id!: string;
-
-  /**
-   * Person name.
-   */
-  @Optional()
-  @IsString()
-  name?: string;
-
-  /**
-   * Person date of birth.
-   */
-  @Optional({ nullable: true })
-  @IsDate()
-  @Type(() => Date)
-  @ApiProperty({ format: 'date' })
-  birthDate?: Date | null;
-
-  /**
-   * Asset is used to get the feature face thumbnail.
-   */
-  @Optional()
-  @IsString()
-  featureFaceAssetId?: string;
-
-  /**
-   * Person visibility
-   */
-  @Optional()
-  @IsBoolean()
-  isHidden?: boolean;
 }
 
 export class MergePersonDto {

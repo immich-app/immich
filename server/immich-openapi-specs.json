@@ -6287,7 +6287,7 @@
       "PeopleUpdateItem": {
         "properties": {
           "birthDate": {
-            "description": "Person date of birth.",
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
             "format": "date",
             "nullable": true,
             "type": "string"
@@ -6346,7 +6346,7 @@
       "PersonUpdateDto": {
         "properties": {
           "birthDate": {
-            "description": "Person date of birth.",
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
             "format": "date",
             "nullable": true,
             "type": "string"
