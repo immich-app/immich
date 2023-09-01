@@ -16,10 +16,8 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { websocketStore } from '$lib/stores/websocket';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { TimeBucketSize } from '@api';
-  import { onDestroy } from 'svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
@@ -48,24 +46,6 @@
       return;
     }
   };
-  let firstCall = false;
-  const wsPageUnsubscriber = websocketStore.onUploadSuccess.subscribe((asset) => {
-    /**
-     * By design, Writable stores will emit their current value to new subscribers.
-     * This means by navigating to a different page and back, we will receive the last emitted value,
-     * and this will cause duplicate asset in the bucket, the app will throw an error.
-     *
-     * firstCall is used to prevent this from happening.
-     */
-    if (!asset || !firstCall) {
-      firstCall = true;
-      return;
-    }
-
-    assetStore.addToBucket(asset);
-  });
-
-  onDestroy(() => wsPageUnsubscriber());
 </script>
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton>

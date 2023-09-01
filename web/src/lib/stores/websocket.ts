@@ -6,9 +6,11 @@ let websocket: Socket;
 
 function initWebsocketStore() {
   const onUploadSuccess = writable<AssetResponseDto>();
+  const onAssetDelete = writable<string>();
 
   return {
     onUploadSuccess,
+    onAssetDelete,
   };
 }
 
@@ -31,15 +33,9 @@ export const openWebsocketConnection = () => {
 };
 
 const listenToEvent = async (socket: Socket) => {
-  socket.on('on_upload_success', (payload) => {
-    const asset: AssetResponseDto = JSON.parse(payload);
-
-    websocketStore.onUploadSuccess.set(asset);
-  });
-
-  socket.on('error', (e) => {
-    console.log('Websocket Error', e);
-  });
+  socket.on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(JSON.parse(data) as AssetResponseDto));
+  socket.on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(JSON.parse(data) as string));
+  socket.on('error', (e) => console.log('Websocket Error', e));
 };
 
 export const closeWebsocketConnection = () => {

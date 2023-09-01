@@ -1,8 +1,9 @@
 import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
-import { writable } from 'svelte/store';
-import { handleError } from '../utils/handle-error';
-import { DateTime } from 'luxon';
 import { debounce } from 'lodash-es';
+import { DateTime } from 'luxon';
+import { Unsubscriber, writable } from 'svelte/store';
+import { handleError } from '../utils/handle-error';
+import { websocketStore } from './websocket';
 
 export enum BucketPosition {
   Above = 'above',
@@ -36,12 +37,28 @@ export class AssetBucket {
   position!: BucketPosition;
 }
 
+const isMismatched = (option: boolean | undefined, value: boolean): boolean =>
+  option === undefined ? false : option !== value;
+
 const THUMBNAIL_HEIGHT = 235;
+
+interface AddAsset {
+  type: 'add';
+  value: AssetResponseDto;
+}
+
+interface RemoveAsset {
+  type: 'remove';
+  value: string;
+}
+
+type PendingChange = AddAsset | RemoveAsset;
 
 export class AssetStore {
   private store$ = writable(this);
   private assetToBucket: Record<string, AssetLookup> = {};
-  private newAssets: AssetResponseDto[] = [];
+  private pendingChanges: PendingChange[] = [];
+  private unsubscribers: Unsubscriber[] = [];
 
   initialized = false;
   timelineHeight = 0;
@@ -54,6 +71,49 @@ export class AssetStore {
   }
 
   subscribe = this.store$.subscribe;
+
+  connect() {
+    this.unsubscribers.push(
+      websocketStore.onUploadSuccess.subscribe((value) => {
+        if (value) {
+          this.pendingChanges.push({ type: 'add', value });
+          this.debouncer();
+        }
+      }),
+      websocketStore.onAssetDelete.subscribe((value) => {
+        if (value) {
+          this.pendingChanges.push({ type: 'remove', value });
+          this.debouncer();
+        }
+      }),
+    );
+  }
+
+  disconnect() {
+    for (const unsubscribe of this.unsubscribers) {
+      unsubscribe();
+    }
+  }
+
+  debouncer = debounce(() => {
+    for (const { type, value } of this.pendingChanges) {
+      switch (type) {
+        case 'add':
+          this.addAsset(value);
+          break;
+        case 'remove':
+          this.removeAsset(value);
+          break;
+      }
+    }
+
+    this.pendingChanges = [];
+    this.emit(true);
+  }, 2000);
+
+  flush() {
+    this.debouncer.flush();
+  }
 
   async init(viewport: Viewport) {
     this.initialized = false;
@@ -171,47 +231,44 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
-  createBucket(bucketDate: string): AssetBucket {
-    const bucket = new AssetBucket();
-
-    bucket.bucketDate = bucketDate;
-    bucket.bucketHeight = THUMBNAIL_HEIGHT;
-    bucket.assets = [];
-    bucket.cancelToken = null;
-    bucket.position = BucketPosition.Unknown;
-
-    return bucket;
-  }
-  private debounceAddToBucket = debounce(() => this._addToBucket(), 2000);
-
-  addToBucket(asset: AssetResponseDto) {
-    this.newAssets.push(asset);
-    this.debounceAddToBucket();
-  }
-
-  private _addToBucket(): void {
-    try {
-      for (const asset of this.newAssets) {
-        const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
-        const bucket = this.getBucketByDate(timeBucket);
-
-        if (!bucket) {
-          continue;
-        }
-
-        bucket.assets.push(asset);
-        bucket.assets.sort((a, b) => {
-          const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-          const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-          return bDate.diff(aDate).milliseconds;
-        });
-      }
-
-      this.newAssets = [];
-      this.emit(true);
-    } catch (e) {
-      console.error(e);
+  private addAsset(asset: AssetResponseDto): void {
+    if (
+      this.assetToBucket[asset.id] ||
+      this.options.userId ||
+      this.options.personId ||
+      this.options.albumId ||
+      isMismatched(this.options.isArchived, asset.isArchived) ||
+      isMismatched(this.options.isFavorite, asset.isFavorite)
+    ) {
+      return;
     }
+
+    const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+    let bucket = this.getBucketByDate(timeBucket);
+
+    if (!bucket) {
+      bucket = {
+        bucketDate: timeBucket,
+        bucketHeight: THUMBNAIL_HEIGHT,
+        assets: [],
+        cancelToken: null,
+        position: BucketPosition.Unknown,
+      };
+
+      this.buckets.push(bucket);
+      this.buckets = this.buckets.sort((a, b) => {
+        const aDate = DateTime.fromISO(a.bucketDate).toUTC();
+        const bDate = DateTime.fromISO(b.bucketDate).toUTC();
+        return bDate.diff(aDate).milliseconds;
+      });
+    }
+
+    bucket.assets.push(asset);
+    bucket.assets.sort((a, b) => {
+      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
+      return bDate.diff(aDate).milliseconds;
+    });
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
