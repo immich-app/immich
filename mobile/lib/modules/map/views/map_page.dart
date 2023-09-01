@@ -166,14 +166,15 @@ class MapPageState extends ConsumerState<MapPage> {
         final mapMarker = mapMarkerData.value
             .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
         if (mapMarker != null) {
+          const zoomLevel = 16.0;
           LatLng? newCenter = mapController.centerBoundsWithPadding(
             mapMarker.point,
             const Offset(0, -120),
-            zoomLevel: 6,
+            zoomLevel: zoomLevel,
           );
           if (newCenter != null) {
             forceAssetUpdate = true;
-            mapController.move(newCenter, 6);
+            mapController.move(newCenter, zoomLevel);
           }
         }
       }
