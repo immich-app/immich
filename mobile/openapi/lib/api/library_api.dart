@@ -284,13 +284,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/{id}/scan/removeOffline' operation and returns the [Response].
+  /// Performs an HTTP 'POST /library/{id}/removeOffline' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> removeOfflineFilesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/scan/removeOffline'
+    final path = r'/library/{id}/removeOffline'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

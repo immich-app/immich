@@ -15,7 +15,7 @@ Method | HTTP request | Description
 [**getLibraryCount**](LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 [**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 [**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
-[**removeOfflineFiles**](LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/scan/removeOffline | 
+[**removeOfflineFiles**](LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 [**scanLibrary**](LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 [**updateLibrary**](LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 
