@@ -69,9 +69,17 @@ class SyncService {
   /// Returns `true` if there were any changes
   Future<bool> syncRemoteAssetsToDb(
     User user,
-    FutureOr<List<Asset>?> Function() loadAssets,
+    Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
+      User user,
+      DateTime since,
+    ) getChangedAssets,
+    FutureOr<List<Asset>?> Function(User user) loadAssets,
   ) =>
-      _lock.run(() => _syncRemoteAssetsToDb(user, loadAssets));
+      _lock.run(
+        () async =>
+            await _syncRemoteAssetChanges(user, getChangedAssets) ??
+            await _syncRemoteAssetsFull(user, loadAssets),
+      );
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
@@ -130,13 +138,46 @@ class SyncService {
     return true;
   }
 
-  /// Syncs remote assets to the databas
-  /// returns `true` if there were any changes
-  Future<bool> _syncRemoteAssetsToDb(
+  /// Efficiently syncs assets via changes. Returns `null` when a full sync is required.
+  Future<bool?> _syncRemoteAssetChanges(
     User user,
-    FutureOr<List<Asset>?> Function() loadAssets,
+    Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
+      User user,
+      DateTime since,
+    ) getChangedAssets,
   ) async {
-    final List<Asset>? remote = await loadAssets();
+    final DateTime? since = _db.eTags.getByIdSync(user.id)?.time?.toUtc();
+    if (since == null) return null;
+    final DateTime now = DateTime.now();
+    final (toUpsert, toDelete) = await getChangedAssets(user, since);
+    if (toUpsert == null || toDelete == null) return null;
+    try {
+      if (toDelete.isNotEmpty) {
+        await _db.writeTxn(() => _db.assets.deleteAllByRemoteId(toDelete));
+      }
+      if (toUpsert.isNotEmpty) {
+        final (_, updated) = await _linkWithExistingFromDb(toUpsert);
+        // assert(existing.isEmpty);
+        await upsertAssetsWithExif(updated);
+      }
+      if (toUpsert.isNotEmpty || toDelete.isNotEmpty) {
+        await _updateUserAssetsETag(user, now);
+        return true;
+      }
+      return false;
+    } on IsarError catch (e) {
+      _log.severe("Failed to sync remote assets to db: $e");
+    }
+    return null;
+  }
+
+  /// Syncs assets by loading and comparing all assets from the server.
+  Future<bool> _syncRemoteAssetsFull(
+    User user,
+    FutureOr<List<Asset>?> Function(User user) loadAssets,
+  ) async {
+    final DateTime now = DateTime.now();
+    final List<Asset>? remote = await loadAssets(user);
     if (remote == null) {
       return false;
     }
@@ -150,6 +191,7 @@ class SyncService {
     remote.sort(Asset.compareByChecksum);
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
+      await _updateUserAssetsETag(user, now);
       return false;
     }
     final idsToDelete = toRemove.map((e) => e.id).toList();
@@ -159,8 +201,12 @@ class SyncService {
     } on IsarError catch (e) {
       _log.severe("Failed to sync remote assets to db: $e");
     }
+    await _updateUserAssetsETag(user, now);
     return true;
   }
+
+  Future<void> _updateUserAssetsETag(User user, DateTime time) =>
+      _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, time: time)));
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
@@ -450,6 +496,14 @@ class SyncService {
       _log.fine(
         "Only excluded assets in local album ${ape.name} changed. Stopping sync.",
       );
+      if (assetCountOnDevice !=
+          _db.eTags.getByIdSync(ape.eTagKeyAssetCount)?.assetCount) {
+        await _db.writeTxn(
+          () => _db.eTags.put(
+            ETag(id: ape.eTagKeyAssetCount, assetCount: assetCountOnDevice),
+          ),
+        );
+      }
       return false;
     }
     _log.fine(
@@ -477,7 +531,7 @@ class SyncService {
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
         await _db.eTags.put(
-          ETag(id: ape.eTagKeyAssetCount, value: assetCountOnDevice.toString()),
+          ETag(id: ape.eTagKeyAssetCount, assetCount: assetCountOnDevice),
         );
       });
       _log.info("Synced changes of local album ${ape.name} to DB");
@@ -496,7 +550,7 @@ class SyncService {
     }
     final int totalOnDevice = await ape.assetCountAsync;
     final int lastKnownTotal =
-        (await _db.eTags.getById(ape.eTagKeyAssetCount))?.value?.toInt() ?? 0;
+        (await _db.eTags.getById(ape.eTagKeyAssetCount))?.assetCount ?? 0;
     final AssetPathEntity? modified = totalOnDevice > lastKnownTotal
         ? await ape.fetchPathProperties(
             filterOptionGroup: FilterOptionGroup(
@@ -523,9 +577,8 @@ class SyncService {
         await _db.assets.putAll(updated);
         await album.assets.update(link: existingInDb + updated);
         await _db.albums.put(album);
-        await _db.eTags.put(
-          ETag(id: ape.eTagKeyAssetCount, value: totalOnDevice.toString()),
-        );
+        await _db.eTags
+            .put(ETag(id: ape.eTagKeyAssetCount, assetCount: totalOnDevice));
       });
       _log.info("Fast synced local album ${ape.name} to DB");
     } on IsarError catch (e) {
@@ -667,7 +720,7 @@ class SyncService {
         a.lastModified == null ||
         !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
         await a.assetCountAsync !=
-            (await _db.eTags.getById(a.eTagKeyAssetCount))?.value?.toInt();
+            (await _db.eTags.getById(a.eTagKeyAssetCount))?.assetCount;
   }
 }
 
