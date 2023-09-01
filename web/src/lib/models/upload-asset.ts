@@ -9,7 +9,6 @@ export enum UploadState {
 export type UploadAsset = {
   id: string;
   file: File;
-  sharedKey?: string;
   albumId?: string;
   progress?: number;
   state?: UploadState;

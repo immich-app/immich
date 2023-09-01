@@ -45,21 +45,19 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
   });
 };
 
-export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined) => {
+export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
   const extensions = await getExtensions();
-  const filesToUpload = files.filter((file) => extensions.some((ext) => file.name.toLowerCase().endsWith(ext)));
+  const promises = [];
+  for (const file of files) {
+    const name = file.name.toLowerCase();
+    if (extensions.some((ext) => name.endsWith(ext))) {
+      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
+      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+    }
+  }
 
-  //Add to queue
-  filesToUpload.forEach((file) => {
-    uploadAssetsStore.addNewUploadAsset({
-      id: getDeviceAssetId(file),
-      file: file,
-      albumId: albumId,
-    });
-    uploadExecutionQueue.addTask(() => fileUploader(file, albumId));
-  });
-
-  return [];
+  const results = await Promise.all(promises);
+  return results.filter((result): result is string => !!result);
 };
 
 function getDeviceAssetId(asset: File) {

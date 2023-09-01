@@ -9,53 +9,47 @@
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   let showDetail = false;
   let showOptions = false;
-  let remainingUploads = 0;
-  let duplicateCount = 0;
-  let errorCount = 0;
-  let totalUploadCount = 0;
-  let successUploadCount = 0;
-  let isUploading = false;
-  let hasErrors = false;
   let concurrency = uploadExecutionQueue.concurrency;
 
-  uploadAssetsStore.hasError.subscribe((value) => (hasErrors = value));
-  uploadAssetsStore.remainingUploads.subscribe((value) => (remainingUploads = value));
-  uploadAssetsStore.successCounter.subscribe((value) => (successUploadCount = value));
-  uploadAssetsStore.totalUploadCounter.subscribe((value) => (totalUploadCount = value));
-  uploadAssetsStore.duplicateCounter.subscribe((value) => (duplicateCount = value));
-  uploadAssetsStore.errorCounter.subscribe((value) => (errorCount = value));
-  uploadAssetsStore.isUploading.subscribe((value) => {
-    isUploading = value;
-    if (!isUploading && showDetail) {
+  let { isUploading, hasError, remainingUploads, errorCounter, duplicateCounter, successCounter, totalUploadCounter } =
+    uploadAssetsStore;
+
+  const autoHide = () => {
+    if (!$isUploading && showDetail) {
       showDetail = false;
     }
 
-    if (isUploading && !showDetail) {
+    if ($isUploading && !showDetail) {
       showDetail = true;
     }
-  });
+  };
+
+  $: $isUploading && autoHide();
 </script>
 
-{#if hasErrors || remainingUploads}
+{#if $hasError || $isUploading}
   <div
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
       const errorInfo =
-        errorCount > 0 ? `Upload completed with ${errorCount} error${errorCount > 1 ? 's' : ''}` : 'Upload success';
-      const type = errorCount > 0 ? NotificationType.Warning : NotificationType.Info;
+        $errorCounter > 0
+          ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
+          : 'Upload success';
+      const type = $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info;
 
       notificationController.show({
         message: `${errorInfo}, refresh the page to see new upload assets`,
         type,
       });
 
-      if (duplicateCount > 0) {
+      if ($duplicateCounter > 0) {
         notificationController.show({
-          message: `Skipped ${duplicateCount} duplicate picture${duplicateCount > 1 ? 's' : ''}`,
+          message: `Skipped ${$duplicateCounter} duplicate picture${$duplicateCounter > 1 ? 's' : ''}`,
           type: NotificationType.Warning,
         });
       }
@@ -67,48 +61,54 @@
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-[300px] rounded-lg border bg-gray-200 p-4 text-sm shadow-sm"
+        class="w-[300px] rounded-lg border bg-gray-100 p-4 text-sm shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-white"
       >
         <div class="place-item-center mb-4 flex justify-between">
-          <p class="text-xs text-gray-500">
-            Remaining {remainingUploads} - Processed {successUploadCount + errorCount}/{totalUploadCount} <br />
-            Uploaded <span class="text-immich-success">{successUploadCount}</span> - Error
-            <span class="text-immich-error">{errorCount}</span>
-            - Duplicates <span class="text-immich-warning">{duplicateCount}</span>
-          </p>
+          <div class="flex flex-col gap-1">
+            <p class="immich-form-label text-xm">
+              Remaining {$remainingUploads} - Processed {$successCounter + $errorCounter}/{$totalUploadCounter}
+            </p>
+            <p class="immich-form-label text-xs">
+              Uploaded <span class="text-immich-success">{$successCounter}</span> - Error
+              <span class="text-immich-error">{$errorCounter}</span>
+              - Duplicates <span class="text-immich-warning">{$duplicateCounter}</span>
+            </p>
+          </div>
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
-              <button
+              <CircleIconButton
+                title="Toggle settings"
+                logo={Cog}
+                size="14"
+                padding="1"
                 on:click={() => (showOptions = !showOptions)}
-                class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
-              >
-                <Cog />
-              </button>
-              <button
+              />
+              <CircleIconButton
+                title="Minimize"
+                logo={WindowMinimize}
+                size="14"
+                padding="1"
                 on:click={() => (showDetail = false)}
-                class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
-              >
-                <WindowMinimize />
-              </button>
+              />
             </div>
-            {#if hasErrors}
-              <button
-                on:click={() => uploadAssetsStore.dismissErrors()}
+            {#if $hasError}
+              <CircleIconButton
                 title="Dismiss all errors"
-                class="flex h-[20px] w-[20px] place-content-center place-items-center rounded-full bg-gray-50 transition-colors hover:bg-gray-100"
-              >
-                <span class="text-immich-error"><Cancel /></span>
-              </button>
+                logo={Cancel}
+                size="14"
+                padding="1"
+                on:click={() => uploadAssetsStore.dismissErrors()}
+              />
             {/if}
           </div>
         </div>
         {#if showOptions}
-          <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
+          <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg pr-2">
             <div class="flex h-[26px] place-items-center gap-1">
-              <label class="immich-form-label text-xs text-gray-500" for="upload-concurrency">Upload concurrency</label>
+              <label class="immich-form-label" for="upload-concurrency">Upload concurrency</label>
             </div>
             <input
-              class="immich-form-input w-full rounded-sm"
+              class="immich-form-input w-full"
               aria-labelledby="Upload concurrency"
               id="upload-concurrency"
               name="Upload concurrency"
@@ -116,17 +116,14 @@
               min="1"
               max="50"
               step="1"
-              required=""
               bind:value={concurrency}
               on:change={() => (uploadExecutionQueue.concurrency = concurrency)}
             />
           </div>
         {/if}
-        <div class="immich-scrollbar max-h-[400px] overflow-y-auto rounded-lg pr-2">
-          {#each $uploadAssetsStore as uploadAsset}
-            {#key uploadAsset.id}
-              <UploadAssetPreview {uploadAsset} />
-            {/key}
+        <div class="immich-scrollbar flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg pr-2">
+          {#each $uploadAssetsStore as uploadAsset (uploadAsset.id)}
+            <UploadAssetPreview {uploadAsset} />
           {/each}
         </div>
       </div>
@@ -137,24 +134,24 @@
           on:click={() => (showDetail = true)}
           class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
-          {remainingUploads}
+          {$remainingUploads}
         </button>
-        {#if hasErrors}
+        {#if $hasError}
           <button
             in:scale={{ duration: 250, easing: quartInOut }}
             on:click={() => (showDetail = true)}
             class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
-            {errorCount}
+            {$errorCounter}
           </button>
         {/if}
         <button
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
-          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-300 p-5 text-sm shadow-lg"
+          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"
         >
           <div class="animate-pulse">
-            <CloudUploadOutline size="30" color="#4250af" />
+            <CloudUploadOutline size="30" />
           </div>
         </button>
       </div>

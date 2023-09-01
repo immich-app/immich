@@ -1,6 +1,5 @@
 import { derived, writable } from 'svelte/store';
-import type { UploadAsset } from '../models/upload-asset';
-import { UploadState } from '../models/upload-asset';
+import { UploadState, type UploadAsset } from '../models/upload-asset';
 
 function createUploadStore() {
   const uploadAssets = writable<Array<UploadAsset>>([]);
@@ -24,8 +23,8 @@ function createUploadStore() {
 
   const addNewUploadAsset = (newAsset: UploadAsset) => {
     totalUploadCounter.update((c) => c + 1);
-    uploadAssets.update((currentSet) => [
-      ...currentSet,
+    uploadAssets.update((assets) => [
+      ...assets,
       {
         ...newAsset,
         speed: 0,

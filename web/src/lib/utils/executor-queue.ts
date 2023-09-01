@@ -30,14 +30,14 @@ export class ExecutorQueue {
     }
   }
 
-  addTask<TaskResult>(task: () => PromiseLike<TaskResult>): Promise<TaskResult> {
+  addTask<T>(task: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       // Add a custom task that wrap the original one;
       this.queue.push(async () => {
         try {
           this.running++;
-          const operation = task();
-          resolve(await operation);
+          const result = task();
+          resolve(await result);
         } catch (e) {
           reject(e);
         } finally {
