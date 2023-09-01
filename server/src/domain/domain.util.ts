@@ -101,6 +101,10 @@ export async function* usePagination<T>(
   }
 }
 
+export interface OptionalOptions extends ValidationOptions {
+  nullable?: boolean;
+}
+
 /**
  * Checks if value is missing and if so, ignores all validators.
  *
@@ -110,7 +114,7 @@ export async function* usePagination<T>(
  * @see IsOptional exported from `class-validator.
  */
 // https://stackoverflow.com/a/71353929
-export function Optional(nullable = false, validationOptions?: ValidationOptions) {
+export function Optional({ nullable, ...validationOptions }: OptionalOptions = {}) {
   if (nullable === true) {
     return IsOptional(validationOptions);
   }

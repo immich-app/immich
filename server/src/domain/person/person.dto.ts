@@ -15,7 +15,7 @@ export class PersonUpdateDto {
   /**
    * Person date of birth.
    */
-  @Optional(true)
+  @Optional({ nullable: true })
   @IsDate()
   @Type(() => Date)
   @ApiProperty({ format: 'date' })
