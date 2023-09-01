@@ -104,6 +104,7 @@ export async function* usePagination<T>(
  *
  * @see IsOptional exported from `class-validator.
  */
+// https://stackoverflow.com/a/71353929
 export function IsOptional(
   nullable = false,
   validationOptions?: ValidationOptions,
