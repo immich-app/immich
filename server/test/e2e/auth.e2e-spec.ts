@@ -221,7 +221,8 @@ describe(`${AuthController.name} (e2e)`, () => {
       for (const key of Object.keys(changePasswordStub)) {
         const { status, body } = await request(server)
           .post('/auth/change-password')
-          .send({ ...changePasswordStub, [key]: null });
+          .send({ ...changePasswordStub, [key]: null })
+          .set('Authorization', `Bearer ${accessToken}`);
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
       }

@@ -43,12 +43,10 @@ describe(`${PersonController.name}`, () => {
     it('should not allow null values', async () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: loginResponse.userId });
-      for (const key of Object.keys(personStub.primaryPerson)) {
-        if (key === 'birthDate') {
-          continue;
-        }
+      for (const key of ['name', 'featureFaceAssetId', 'isHidden']) {
         const { status, body } = await request(server)
           .put(`/person/${person.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
           .send({ [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);

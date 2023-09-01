@@ -100,8 +100,7 @@ export interface OptionalOptions extends ValidationOptions {
 /**
  * Checks if value is missing and if so, ignores all validators.
  *
- * @param nullable If `true`, all other validators will be skipped even when the value is `null`. `false` by default.
- * @param validationOptions {@link ValidationOptions}
+ * @param validationOptions {@link OptionalOptions}
  *
  * @see IsOptional exported from `class-validator.
  */

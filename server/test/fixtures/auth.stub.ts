@@ -23,7 +23,7 @@ export const loginStub = {
 };
 
 export const changePasswordStub = {
-  currentPassword: 'Password123',
+  password: 'Password123',
   newPassword: 'Password1234',
 };
 
