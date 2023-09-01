@@ -3,7 +3,7 @@ import { AppModule, PersonController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub, uuidStub } from '../fixtures';
+import { errorStub, uuidStub, personStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 describe(`${PersonController.name}`, () => {
@@ -40,7 +40,22 @@ describe(`${PersonController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not accept invalid dates', async () => {
+    it('should not allow null values', async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const person = await personRepository.create({ ownerId: loginResponse.userId });
+      for (const key of Object.keys(personStub.primaryPerson)) {
+        if (key === 'birthDate') {
+          continue;
+        }
+        const { status, body } = await request(server)
+          .put(`/person/${person.id}`)
+          .send({ [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest);
+      }
+    });
+
+    it('should not accept invalid birth dates', async () => {
       for (const birthDate of [false, 'false', '123567', 123456]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)
@@ -50,6 +65,7 @@ describe(`${PersonController.name}`, () => {
         expect(body).toEqual(errorStub.badRequest);
       }
     });
+
     it('should update a date of birth', async () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: loginResponse.userId });

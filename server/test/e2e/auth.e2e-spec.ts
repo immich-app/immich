@@ -100,7 +100,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         const { status, body } = await request(server)
           .post('/auth/admin-sign-up')
           .send({ ...signupStub, [key]: null });
-        expect(status).toBe(401);
+        expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
       }
     });
@@ -118,7 +118,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         const { status, body } = await request(server)
           .post('/auth/login')
           .send({ ...loginStub.admin, [key]: null });
-        expect(status).toBe(401);
+        expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
       }
     });
@@ -222,7 +222,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         const { status, body } = await request(server)
           .post('/auth/change-password')
           .send({ ...changePasswordStub, [key]: null });
-        expect(status).toBe(401);
+        expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
       }
     });
