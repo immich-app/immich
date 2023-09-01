@@ -115,7 +115,5 @@ export function IsOptional(nullable = false, validationOptions?: ValidationOptio
     return IsOptionalValidator(validationOptions);
   }
 
-  return ValidateIf((obj: any, v: any) => {
-    return v !== undefined;
-  }, validationOptions);
+  return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
 }
