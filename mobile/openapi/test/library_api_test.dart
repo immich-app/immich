@@ -27,11 +27,6 @@ void main() {
       // TODO
     });
 
-    //Future emptyLibraryTrash(String id) async
-    test('test emptyLibraryTrash', () async {
-      // TODO
-    });
-
     //Future<List<LibraryResponseDto>> getAllForUser() async
     test('test getAllForUser', () async {
       // TODO
@@ -52,8 +47,13 @@ void main() {
       // TODO
     });
 
-    //Future refreshLibrary(String id, ScanLibraryDto scanLibraryDto) async
-    test('test refreshLibrary', () async {
+    //Future removeOfflineFiles(String id) async
+    test('test removeOfflineFiles', () async {
+      // TODO
+    });
+
+    //Future scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
+    test('test scanLibrary', () async {
       // TODO
     });
 

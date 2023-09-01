@@ -42,18 +42,38 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
 
     const invalid = [
-      { should: 'require an email address', data: { firstName, lastName, password } },
-      { should: 'require a password', data: { firstName, lastName, email } },
-      { should: 'require a first name ', data: { lastName, email, password } },
-      { should: 'require a last name ', data: { firstName, email, password } },
-      { should: 'require a valid email', data: { firstName, lastName, email: 'immich', password } },
+      {
+        should: 'require an email address',
+        data: { firstName, lastName, password },
+        response: ['email must be an email'],
+      },
+      {
+        should: 'require a password',
+        data: { firstName, lastName, email },
+        response: ['password should not be empty', 'password must be a string'],
+      },
+      {
+        should: 'require a first name ',
+        data: { lastName, email, password },
+        response: ['firstName should not be empty', 'firstName must be a string'],
+      },
+      {
+        should: 'require a last name ',
+        data: { firstName, email, password },
+        response: ['lastName should not be empty', 'lastName must be a string'],
+      },
+      {
+        should: 'require a valid email',
+        data: { firstName, lastName, email: 'immich', password },
+        response: ['email must be an email'],
+      },
     ];
 
-    for (const { should, data } of invalid) {
+    for (const { should, data, response } of invalid) {
       it(`should ${should}`, async () => {
         const { status, body } = await request(server).post('/auth/admin-sign-up').send(data);
         expect(status).toEqual(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest(response));
       });
     }
 

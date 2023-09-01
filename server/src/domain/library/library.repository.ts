@@ -1,12 +1,12 @@
-import { LibraryEntity } from '@app/infra/entities';
+import { LibraryEntity, LibraryType } from '@app/infra/entities';
 import { LibraryStatsResponseDto } from './library.dto';
 
 export const ILibraryRepository = 'ILibraryRepository';
 
 export interface ILibraryRepository {
   getCountForUser(ownerId: string): Promise<number>;
-  getAllByUserId(userId: string): Promise<LibraryEntity[]>;
-  getAll(withDeleted?: boolean): Promise<LibraryEntity[]>;
+  getAllByUserId(userId: string, type?: LibraryType): Promise<LibraryEntity[]>;
+  getAll(withDeleted?: boolean, type?: LibraryType): Promise<LibraryEntity[]>;
   getAllDeleted(): Promise<LibraryEntity[]>;
   get(id: string, withDeleted?: boolean): Promise<LibraryEntity | null>;
   create(library: Partial<LibraryEntity>): Promise<LibraryEntity>;

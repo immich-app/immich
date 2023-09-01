@@ -14,21 +14,12 @@ class UpdateLibraryDto {
   /// Returns a new [UpdateLibraryDto] instance.
   UpdateLibraryDto({
     this.exclusionPatterns = const [],
-    this.id,
     this.importPaths = const [],
     this.isVisible,
     this.name,
   });
 
   List<String> exclusionPatterns;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? id;
 
   List<String> importPaths;
 
@@ -51,7 +42,6 @@ class UpdateLibraryDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateLibraryDto &&
      other.exclusionPatterns == exclusionPatterns &&
-     other.id == id &&
      other.importPaths == importPaths &&
      other.isVisible == isVisible &&
      other.name == name;
@@ -60,22 +50,16 @@ class UpdateLibraryDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (exclusionPatterns.hashCode) +
-    (id == null ? 0 : id!.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, isVisible=$isVisible, name=$name]';
+  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'exclusionPatterns'] = this.exclusionPatterns;
-    if (this.id != null) {
-      json[r'id'] = this.id;
-    } else {
-    //  json[r'id'] = null;
-    }
       json[r'importPaths'] = this.importPaths;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
@@ -101,7 +85,6 @@ class UpdateLibraryDto {
         exclusionPatterns: json[r'exclusionPatterns'] is List
             ? (json[r'exclusionPatterns'] as List).cast<String>()
             : const [],
-        id: mapValueOfType<String>(json, r'id'),
         importPaths: json[r'importPaths'] is List
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],

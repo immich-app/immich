@@ -28,7 +28,7 @@ import {
   LibraryResponseDto,
   LibraryStatsResponseDto,
   mapLibrary,
-  ScanLibraryDto as RefreshLibraryDto,
+  ScanLibraryDto,
   UpdateLibraryDto,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
@@ -112,13 +112,8 @@ export class LibraryService {
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    if (!dto.id) {
-      dto.id = id;
-    } else if (id !== dto.id) {
-      throw new BadRequestException('Library id mismatch');
-    }
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
-    const library = await this.repository.update(dto);
+    const library = await this.repository.update({ id, ...dto });
     return mapLibrary(library);
   }
 
@@ -153,7 +148,6 @@ export class LibraryService {
 
   async handleAssetRefresh(job: ILibraryFileJob) {
     const assetPath = path.normalize(job.assetPath);
-    this.logger.verbose(`Refreshing library asset: ${assetPath}`);
 
     const user = await this.userRepository.get(job.ownerId);
     if (!user?.externalPath) {
@@ -162,7 +156,7 @@ export class LibraryService {
     }
 
     if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
-      this.logger.warn("Asset must be within the user's external path");
+      this.logger.error("Asset must be within the user's external path");
       return false;
     }
 
@@ -264,11 +258,7 @@ export class LibraryService {
         isExternal: true,
       });
       assetId = addedAsset.id;
-    } else if (doRefresh) {
-      if (!existingAssetEntity) {
-        this.logger.error("Can't refresh asset not in database");
-        return false;
-      }
+    } else if (doRefresh && existingAssetEntity) {
       assetId = existingAssetEntity.id;
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.ctime,
@@ -290,11 +280,11 @@ export class LibraryService {
     return true;
   }
 
-  async queueRefresh(authUser: AuthUserDto, id: string, dto: RefreshLibraryDto) {
+  async queueRefresh(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
-      name: JobName.LIBRARY_REFRESH,
+      name: JobName.LIBRARY_SCAN,
       data: {
         id,
         refreshModifiedFiles: dto.refreshModifiedFiles ?? false,
@@ -303,12 +293,12 @@ export class LibraryService {
     });
   }
 
-  async queueEmptyTrash(authUser: AuthUserDto, id: string) {
-    this.logger.verbose(`Emptying trash for library: ${id}`);
+  async queueRemoveOffline(authUser: AuthUserDto, id: string) {
+    this.logger.verbose(`Removing offline files from library: ${id}`);
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
-      name: JobName.LIBRARY_EMPTY_TRASH,
+      name: JobName.LIBRARY_REMOVE_OFFLINE,
       data: {
         id,
       },
@@ -316,16 +306,16 @@ export class LibraryService {
   }
 
   async handleQueueAllRefresh(job: IBaseJob): Promise<boolean> {
-    this.logger.debug(`Refreshing all libraries: force=${job.force}`);
+    this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
     // Queue cleanup
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
     // Queue all library refresh
-    const libraries = await this.repository.getAll(true);
+    const libraries = await this.repository.getAll(true, LibraryType.EXTERNAL);
     for (const library of libraries) {
       await this.jobRepository.queue({
-        name: JobName.LIBRARY_REFRESH,
+        name: JobName.LIBRARY_SCAN,
         data: {
           id: library.id,
           refreshModifiedFiles: !job.force,
@@ -336,7 +326,7 @@ export class LibraryService {
     return true;
   }
 
-  async handleEmptyTrash(job: IEntityJob): Promise<boolean> {
+  async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
     });
@@ -414,7 +404,7 @@ export class LibraryService {
           forceRefresh: job.refreshAllFiles ?? false,
         };
 
-        await this.jobRepository.queue({ name: JobName.LIBRARY_REFRESH_ASSET, data: libraryJobData });
+        await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
       }
     }
 

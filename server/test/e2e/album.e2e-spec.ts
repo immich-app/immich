@@ -98,7 +98,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .get('/album?shared=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['shared must be a boolean value']));
     });
 
     it('should reject an invalid assetId param', async () => {
@@ -106,7 +106,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .get('/album?assetId=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['assetId must be a UUID']));
     });
 
     it('should return the album collection including owned and shared', async () => {

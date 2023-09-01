@@ -1,5 +1,6 @@
 import { AssetType, LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
+
 import {
   assetStub,
   authStub,
@@ -93,7 +94,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_REFRESH_ASSET,
+            name: JobName.LIBRARY_SCAN_ASSET,
             data: {
               id: libraryStub.externalLibrary1.id,
               ownerId: libraryStub.externalLibrary1.owner.id,
@@ -989,24 +990,7 @@ describe(LibraryService.name, () => {
   });
 
   describe('update', () => {
-    it('can update library with default arguments', async () => {
-      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.admin.id, { id: authStub.admin.id })).resolves.toBeTruthy();
-      expect(libraryMock.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: authStub.admin.id,
-        }),
-      );
-    });
-
-    it('can reject library update if id does not match', async () => {
-      libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.user1.id, { id: authStub.admin.id })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-    });
-
-    it('can infer library id', async () => {
+    it('can update library ', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
       await expect(sut.update(authStub.admin, authStub.admin.id, {})).resolves.toBeTruthy();
       expect(libraryMock.update).toHaveBeenCalledWith(
@@ -1044,6 +1028,161 @@ describe(LibraryService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.image1);
 
       await expect(sut.handleDeleteLibrary({ id: libraryStub.uploadLibrary1.id })).resolves.toBe(true);
+    });
+  });
+
+  describe('queueRefresh', () => {
+    it('can queue a library refresh', async () => {
+      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, {});
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_SCAN,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              refreshModifiedFiles: false,
+              refreshAllFiles: false,
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('can queue a library all refresh', async () => {
+      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, { refreshModifiedFiles: true });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_SCAN,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              refreshModifiedFiles: true,
+              refreshAllFiles: false,
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('can queue a forced library refresh', async () => {
+      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, { refreshAllFiles: true });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_SCAN,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              refreshModifiedFiles: false,
+              refreshAllFiles: true,
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('queueEmptyTrash', () => {
+    it('can queue the trash job', async () => {
+      await sut.queueRemoveOffline(authStub.admin, libraryStub.externalLibrary1.id);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_REMOVE_OFFLINE,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('handleQueueAllRefresh', () => {
+    it('can queue the refresh job', async () => {
+      libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
+
+      await expect(sut.handleQueueAllRefresh({})).resolves.toBe(true);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_QUEUE_CLEANUP,
+            data: {},
+          },
+        ],
+        [
+          {
+            name: JobName.LIBRARY_SCAN,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              refreshModifiedFiles: true,
+              refreshAllFiles: false,
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('can queue the force refresh job', async () => {
+      libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
+
+      await expect(sut.handleQueueAllRefresh({ force: true })).resolves.toBe(true);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.LIBRARY_QUEUE_CLEANUP,
+            data: {},
+          },
+        ],
+        [
+          {
+            name: JobName.LIBRARY_SCAN,
+            data: {
+              id: libraryStub.externalLibrary1.id,
+              refreshModifiedFiles: false,
+              refreshAllFiles: true,
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('handleEmptyTrash', () => {
+    it('can queue trash deletion jobs', async () => {
+      assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
+      assetMock.getById.mockResolvedValue(assetStub.image1);
+
+      await expect(sut.handleOfflineRemoval({ id: libraryStub.externalLibrary1.id })).resolves.toBe(true);
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_REMOVE_ASSET,
+            data: {
+              ids: [assetStub.image1.id],
+            },
+          },
+        ],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.image1.webpPath,
+                assetStub.image1.resizePath,
+                assetStub.image1.encodedVideoPath,
+                assetStub.image1.sidecarPath,
+              ],
+            },
+          },
+        ],
+      ]);
     });
   });
 });

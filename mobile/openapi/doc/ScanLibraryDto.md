@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**emptyTrash** | **bool** |  | [optional] [default to false]
 **refreshAllFiles** | **bool** |  | [optional] [default to false]
 **refreshModifiedFiles** | **bool** |  | [optional] 
 

@@ -14,21 +14,11 @@ export const errorStub = {
     statusCode: 401,
     message: 'Invalid user token',
   },
-  badRequest: {
+  badRequest: (message: any) => ({
     error: 'Bad Request',
     statusCode: 400,
-    message: expect.any(Array),
-  },
-  badRequestMessage: (message: string) => ({
-    error: 'Bad Request',
-    statusCode: 400,
-    message: [message],
+    message: message,
   }),
-  badRequestString: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: expect.any(String),
-  },
   incorrectLogin: {
     error: 'Unauthorized',
     statusCode: 401,

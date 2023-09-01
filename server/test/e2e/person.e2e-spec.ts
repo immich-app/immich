@@ -41,15 +41,21 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should not accept invalid dates', async () => {
-      for (const birthDate of [false, 'false', '123567', 123456]) {
+      for (const { birthDate, response } of [
+        { birthDate: false, response: ['id must be a UUID'] },
+        { birthDate: 'false', response: ['birthDate must be a Date instance'] },
+        { birthDate: '123567', response: ['id must be a UUID'] },
+        { birthDate: 123456, response: ['id must be a UUID'] },
+      ]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ birthDate });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest(response));
       }
     });
+
     it('should update a date of birth', async () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: loginResponse.userId });

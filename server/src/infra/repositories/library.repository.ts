@@ -53,11 +53,12 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
+  getAllByUserId(ownerId: string, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
         ownerId,
         isVisible: true,
+        type,
       },
       relations: {
         owner: true,
@@ -68,8 +69,9 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  getAll(withDeleted = false): Promise<LibraryEntity[]> {
+  getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
+      where: { type },
       relations: {
         owner: true,
       },

@@ -2709,9 +2709,44 @@
         ]
       }
     },
-    "/library/{id}/refresh": {
+    "/library/{id}/removeOffline": {
       "post": {
-        "operationId": "refreshLibrary",
+        "operationId": "removeOfflineFiles",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/scan": {
+      "post": {
+        "operationId": "scanLibrary",
         "parameters": [
           {
             "name": "id",
@@ -2777,41 +2812,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Library"
-        ]
-      }
-    },
-    "/library/{id}/trash": {
-      "post": {
-        "operationId": "emptyLibraryTrash",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
             "description": ""
           }
         },
@@ -6924,10 +6924,6 @@
       },
       "ScanLibraryDto": {
         "properties": {
-          "emptyTrash": {
-            "default": false,
-            "type": "boolean"
-          },
           "refreshAllFiles": {
             "default": false,
             "type": "boolean"
@@ -7891,10 +7887,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
           },
           "importPaths": {
             "items": {

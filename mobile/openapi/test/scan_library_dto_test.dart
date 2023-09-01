@@ -16,11 +16,6 @@ void main() {
   // final instance = ScanLibraryDto();
 
   group('test ScanLibraryDto', () {
-    // bool emptyTrash (default value: false)
-    test('to test the property `emptyTrash`', () async {
-      // TODO
-    });
-
     // bool refreshAllFiles (default value: false)
     test('to test the property `refreshAllFiles`', () async {
       // TODO

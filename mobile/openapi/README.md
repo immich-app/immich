@@ -126,12 +126,12 @@ Class | Method | HTTP request | Description
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-*LibraryApi* | [**emptyLibraryTrash**](doc//LibraryApi.md#emptylibrarytrash) | **POST** /library/{id}/trash | 
 *LibraryApi* | [**getAllForUser**](doc//LibraryApi.md#getallforuser) | **GET** /library | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
-*LibraryApi* | [**refreshLibrary**](doc//LibraryApi.md#refreshlibrary) | **POST** /library/{id}/refresh | 
+*LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/scan/removeOffline | 
+*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 

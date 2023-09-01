@@ -203,7 +203,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .send({ type: LibraryType.UPLOAD, importPaths: ['/path/to/import'] });
         expect(status).toBe(400);
 
-        expect(body).toEqual(errorStub.badRequestString);
+        expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have import paths'));
       });
 
       it('with exclusion patterns should fail', async () => {
@@ -213,7 +213,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .send({ type: LibraryType.UPLOAD, exclusionPatterns: ['**/Raw/**'] });
         expect(status).toBe(400);
 
-        expect(body).toEqual(errorStub.badRequestString);
+        expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
       });
     });
   });
@@ -266,7 +266,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ name: '' });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequestMessage('name should not be empty'));
+        expect(body).toEqual(errorStub.badRequest(['name should not be empty']));
       });
 
       it('should change the import paths', async () => {
@@ -295,7 +295,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ importPaths: [''] });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequestMessage('each value in importPaths should not be empty'));
+        expect(body).toEqual(errorStub.badRequest(['each value in importPaths should not be empty']));
       });
 
       it('should change the exclusion pattern', async () => {
@@ -304,7 +304,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ exclusionPatterns: [''] });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequestMessage('each value in exclusionPatterns should not be empty'));
+        expect(body).toEqual(errorStub.badRequest(['each value in exclusionPatterns should not be empty']));
       });
 
       it('should not allow an empty exclusion pattern', async () => {
@@ -313,8 +313,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ importPaths: [''] });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequestMessage('each value in importPaths should not be empty'));
+        expect(body).toEqual(errorStub.badRequest(['each value in importPaths should not be empty']));
       });
+    });
+  });
+
+  describe('GET /library/count', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/library/count`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
   });
 
@@ -342,6 +350,30 @@ describe(`${LibraryController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.noDeleteUploadLibrary);
+    });
+  });
+
+  describe('GET /library/:id/statistics', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/library/${uuidStub.notFound}/statistics`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+  });
+
+  describe('POST /library/:id/scan', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post('/library/${uuidStub.notFound}/scan').send({});
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+  });
+
+  describe('POST /library/:id/removeOffline', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post('/library/${uuidStub.notFound}/removeOffline').send({});
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
   });
 });

@@ -9,7 +9,6 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **exclusionPatterns** | **List<String>** |  | [optional] [default to const []]
-**id** | **String** |  | [optional] 
 **importPaths** | **List<String>** |  | [optional] [default to const []]
 **isVisible** | **bool** |  | [optional] 
 **name** | **String** |  | [optional] 

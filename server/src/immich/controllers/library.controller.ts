@@ -4,7 +4,7 @@ import {
   LibraryResponseDto as ResponseDto,
   LibraryService,
   LibraryStatsResponseDto,
-  ScanLibraryDto as RefreshLibraryDto,
+  ScanLibraryDto,
   UpdateLibraryDto as UpdateDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
@@ -62,13 +62,13 @@ export class LibraryController {
     return this.service.getStatistics(authUser, id);
   }
 
-  @Post(':id/refresh')
-  refreshLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: RefreshLibraryDto) {
+  @Post(':id/scan')
+  scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
     return this.service.queueRefresh(authUser, id, dto);
   }
 
-  @Post(':id/trash')
-  emptyLibraryTrash(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.queueEmptyTrash(authUser, id);
+  @Post(':id/removeOffline')
+  removeOfflineFiles(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.service.queueRemoveOffline(authUser, id);
   }
 }

@@ -103,46 +103,6 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'POST /library/{id}/trash' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> emptyLibraryTrashWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/library/{id}/trash'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> emptyLibraryTrash(String id,) async {
-    final response = await emptyLibraryTrashWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
   Future<Response> getAllForUserWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -324,15 +284,55 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/{id}/refresh' operation and returns the [Response].
+  /// Performs an HTTP 'POST /library/{id}/scan/removeOffline' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> removeOfflineFilesWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/library/{id}/scan/removeOffline'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> removeOfflineFiles(String id,) async {
+    final response = await removeOfflineFilesWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'POST /library/{id}/scan' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
   /// * [ScanLibraryDto] scanLibraryDto (required):
-  Future<Response> refreshLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
+  Future<Response> scanLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/refresh'
+    final path = r'/library/{id}/scan'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -361,8 +361,8 @@ class LibraryApi {
   /// * [String] id (required):
   ///
   /// * [ScanLibraryDto] scanLibraryDto (required):
-  Future<void> refreshLibrary(String id, ScanLibraryDto scanLibraryDto,) async {
-    final response = await refreshLibraryWithHttpInfo(id, scanLibraryDto,);
+  Future<void> scanLibrary(String id, ScanLibraryDto scanLibraryDto,) async {
+    final response = await scanLibraryWithHttpInfo(id, scanLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

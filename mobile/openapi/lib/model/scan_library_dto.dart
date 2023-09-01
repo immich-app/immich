@@ -13,12 +13,9 @@ part of openapi.api;
 class ScanLibraryDto {
   /// Returns a new [ScanLibraryDto] instance.
   ScanLibraryDto({
-    this.emptyTrash = false,
     this.refreshAllFiles = false,
     this.refreshModifiedFiles,
   });
-
-  bool emptyTrash;
 
   bool refreshAllFiles;
 
@@ -32,23 +29,20 @@ class ScanLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
-     other.emptyTrash == emptyTrash &&
      other.refreshAllFiles == refreshAllFiles &&
      other.refreshModifiedFiles == refreshModifiedFiles;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (emptyTrash.hashCode) +
     (refreshAllFiles.hashCode) +
     (refreshModifiedFiles == null ? 0 : refreshModifiedFiles!.hashCode);
 
   @override
-  String toString() => 'ScanLibraryDto[emptyTrash=$emptyTrash, refreshAllFiles=$refreshAllFiles, refreshModifiedFiles=$refreshModifiedFiles]';
+  String toString() => 'ScanLibraryDto[refreshAllFiles=$refreshAllFiles, refreshModifiedFiles=$refreshModifiedFiles]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'emptyTrash'] = this.emptyTrash;
       json[r'refreshAllFiles'] = this.refreshAllFiles;
     if (this.refreshModifiedFiles != null) {
       json[r'refreshModifiedFiles'] = this.refreshModifiedFiles;
@@ -66,7 +60,6 @@ class ScanLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return ScanLibraryDto(
-        emptyTrash: mapValueOfType<bool>(json, r'emptyTrash') ?? false,
         refreshAllFiles: mapValueOfType<bool>(json, r'refreshAllFiles') ?? false,
         refreshModifiedFiles: mapValueOfType<bool>(json, r'refreshModifiedFiles'),
       );

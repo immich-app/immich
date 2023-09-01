@@ -34,6 +34,8 @@
   let editScanSettings: number | null;
   let renameLibrary: number | null;
 
+  let updateLibraryIndex: number | null;
+
   let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
@@ -46,6 +48,7 @@
     editImportPaths = null;
     editScanSettings = null;
     renameLibrary = null;
+    updateLibraryIndex = null;
 
     for (let i = 0; i < dropdownOpen.length; i++) {
       dropdownOpen[i] = false;
@@ -92,14 +95,16 @@
     }
   };
 
-  const handleEdit = async (event: CustomEvent<UpdateLibraryDto>) => {
+  const handleUpdate = async (event: CustomEvent<UpdateLibraryDto>) => {
+    if (!updateLibraryIndex) {
+      return;
+    }
+
     try {
       const dto = event.detail;
-      if(!dto.id) {
-        throw new Error('Library ID is missing');
-      }
+      const libraryId = libraries[updateLibraryIndex].id;
 
-      await api.libraryApi.updateLibrary({ id: dto.id, updateLibraryDto: dto });
+      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: dto });
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {
@@ -135,7 +140,7 @@
   const handleScanAll = async () => {
     try {
       for (const library of libraries) {
-        await api.libraryApi.refreshLibrary({ id: library.id, scanLibraryDto: {} });
+        await api.libraryApi.scanLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
         message: `Refreshing all libraries`,
@@ -148,7 +153,7 @@
 
   const handleScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: {} });
+      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
         message: `Scanning library for new files`,
         type: NotificationType.Info,
@@ -160,7 +165,7 @@
 
   const handleScanChanges = async (libraryId: string) => {
     try {
-      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
+      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
         message: `Scanning library for changed files`,
         type: NotificationType.Info,
@@ -172,7 +177,7 @@
 
   const handleForceScan = async (libraryId: string) => {
     try {
-      await api.libraryApi.refreshLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
+      await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
         message: `Forcing refresh of all library files`,
         type: NotificationType.Info,
@@ -182,15 +187,15 @@
     }
   };
 
-  const handleEmptyTrash = async (libraryId: string) => {
+  const handleRemoveOffline = async (libraryId: string) => {
     try {
-      await api.libraryApi.emptyLibraryTrash({ id: libraryId });
+      await api.libraryApi.removeOfflineFiles({ id: libraryId });
       notificationController.show({
-        message: `Emptying library trash`,
+        message: `Removing Offline Files`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to empty trash');
+      handleError(error, 'Unable to remove offline files');
     }
   };
 </script>
@@ -252,6 +257,7 @@
                       on:click={() => {
                         closeAll();
                         renameLibrary = index;
+                        updateLibraryIndex = index;
                       }}>Rename</DropdownItem
                     >
                     {#if library.type === LibraryType.External}
@@ -278,6 +284,7 @@
                           on:click={() => {
                             closeAll();
                             editScanSettings = index;
+                            updateLibraryIndex = index;
                           }}>Scan Settings</DropdownItem
                         >
                         <DropdownDivider />
@@ -300,10 +307,10 @@
                         <DropdownItem
                           on:click={function () {
                             closeAll();
-                            handleEmptyTrash(library.id);
+                            handleRemoveOffline(library.id);
                           }}
-                          >Empty Trash
-                          <Helper>Any missing file is deleted from Immich</Helper>
+                          >Remove Offline Files
+                          <Helper>Any offline files are removed from Immich</Helper>
                         </DropdownItem>
                         <DropdownItem
                           on:click={function () {
@@ -326,19 +333,23 @@
               </tr>
               {#if renameLibrary === index}
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm {library} on:submit={handleEdit} on:cancel={() => (renameLibrary = null)} />
+                  <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
                 </div>
               {/if}
               {#if editImportPaths === index}
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm {library} on:submit={handleEdit} on:cancel={() => (editImportPaths = null)} />
+                  <LibraryImportPathsForm
+                    {library}
+                    on:submit={handleUpdate}
+                    on:cancel={() => (editImportPaths = null)}
+                  />
                 </div>
               {/if}
               {#if editScanSettings === index}
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
-                    on:submit={handleEdit}
+                    on:submit={handleUpdate}
                     on:cancel={() => (editScanSettings = null)}
                   />
                 </div>

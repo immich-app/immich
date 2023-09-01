@@ -30,10 +30,6 @@ export class CreateLibraryDto {
 
 export class UpdateLibraryDto {
   @IsOptional()
-  @ValidateUUID()
-  id?: string;
-
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
   name?: string;
@@ -72,10 +68,6 @@ export class ScanLibraryDto {
   @IsBoolean()
   @IsOptional()
   refreshAllFiles?: boolean = false;
-
-  @IsBoolean()
-  @IsOptional()
-  emptyTrash?: boolean = false;
 }
 
 export class LibraryResponseDto {
