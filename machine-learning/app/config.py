@@ -13,7 +13,6 @@ from .schemas import ModelType
 
 class Settings(BaseSettings):
     cache_folder: str = "/cache"
-    eager_startup: bool = False
     model_ttl: int = 0
     host: str = "0.0.0.0"
     port: int = 3003
