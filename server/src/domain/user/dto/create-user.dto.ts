@@ -19,12 +19,12 @@ export class CreateUserDto {
   @IsString()
   lastName!: string;
 
-  @Optional()
+  @Optional({ nullable: true })
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @Optional()
+  @Optional({ nullable: true })
   @IsString()
   externalPath?: string | null;
 

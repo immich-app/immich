@@ -21,7 +21,7 @@ export class SharedLinkCreateDto {
 
   @IsDate()
   @Type(() => Date)
-  @Optional()
+  @Optional({ nullable: true })
   expiresAt?: Date | null = null;
 
   @Optional()
@@ -41,7 +41,7 @@ export class SharedLinkEditDto {
   @Optional()
   description?: string;
 
-  @Optional()
+  @Optional({ nullable: true })
   expiresAt?: Date | null;
 
   @Optional()
