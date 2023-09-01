@@ -1,10 +1,13 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { api, AssetFileUploadResponseDto } from '@api';
-import axios from 'axios';
 import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
+import { UploadState } from '$lib/models/upload-asset';
+import { ExecutorQueue } from '$lib/utils/executor-queue';
 
 let _extensions: string[];
+
+export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
 const getExtensions = async () => {
   if (!_extensions) {
@@ -42,93 +45,87 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
   });
 };
 
-export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined) => {
+export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
   const extensions = await getExtensions();
-  const iterable = {
-    files: files.filter((file) => extensions.some((ext) => file.name.toLowerCase().endsWith(ext)))[Symbol.iterator](),
-
-    async *[Symbol.asyncIterator]() {
-      for (const file of this.files) {
-        yield fileUploader(file, albumId);
-      }
-    },
-  };
-
-  const concurrency = 2;
-  // TODO: use Array.fromAsync instead when it's available universally.
-  return Promise.all([...Array(concurrency)].map(() => fromAsync(iterable))).then((res) => res.flat());
-};
-
-// polyfill for Array.fromAsync.
-//
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync
-const fromAsync = async function <T>(iterable: AsyncIterable<T>) {
-  const result = [];
-  for await (const value of iterable) {
-    result.push(value);
+  const promises = [];
+  for (const file of files) {
+    const name = file.name.toLowerCase();
+    if (extensions.some((ext) => name.endsWith(ext))) {
+      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
+      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+    }
   }
-  return result;
+
+  const results = await Promise.all(promises);
+  return results.filter((result): result is string => !!result);
 };
+
+function getDeviceAssetId(asset: File) {
+  return 'web' + '-' + asset.name + '-' + asset.lastModified;
+}
 
 // TODO: should probably use the @api SDK
 async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
-  const formData = new FormData();
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
-  const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
+  const deviceAssetId = getDeviceAssetId(asset);
 
-  try {
-    formData.append('deviceAssetId', deviceAssetId);
-    formData.append('deviceId', 'WEB');
-    formData.append('fileCreatedAt', fileCreatedAt);
-    formData.append('fileModifiedAt', new Date(asset.lastModified).toISOString());
-    formData.append('isFavorite', 'false');
-    formData.append('duration', '0:00:00.000000');
-    formData.append('assetData', new File([asset], asset.name));
+  return new Promise((resolve) => resolve(uploadAssetsStore.markStarted(deviceAssetId)))
+    .then(() =>
+      api.assetApi.uploadFile(
+        {
+          deviceAssetId,
+          deviceId: 'WEB',
+          fileCreatedAt,
+          fileModifiedAt: new Date(asset.lastModified).toISOString(),
+          isFavorite: false,
+          duration: '0:00:00.000000',
+          assetData: new File([asset], asset.name),
+          key: api.getKey(),
+        },
+        {
+          onUploadProgress: ({ loaded, total }) => {
+            uploadAssetsStore.updateProgress(deviceAssetId, loaded, total);
+          },
+        },
+      ),
+    )
+    .then(async (response) => {
+      if (response.status == 200 || response.status == 201) {
+        const res: AssetFileUploadResponseDto = response.data;
 
-    uploadAssetsStore.addNewUploadAsset({
-      id: deviceAssetId,
-      file: asset,
-      progress: 0,
-    });
+        if (res.duplicate) {
+          uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+        }
 
-    const response = await axios.post('/api/asset/upload', formData, {
-      params: { key: api.getKey() },
-      onUploadProgress: (event) => {
-        const percentComplete = Math.floor((event.loaded / event.total) * 100);
-        uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
-      },
-    });
+        if (albumId && res.id) {
+          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+          await addAssetsToAlbum(albumId, [res.id]);
+          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+        }
 
-    if (response.status == 200 || response.status == 201) {
-      const res: AssetFileUploadResponseDto = response.data;
+        uploadAssetsStore.updateAsset(deviceAssetId, {
+          state: res.duplicate ? UploadState.DUPLICATED : UploadState.DONE,
+        });
+        uploadAssetsStore.successCounter.update((c) => c + 1);
 
-      if (res.duplicate) {
-        uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+        setTimeout(() => {
+          uploadAssetsStore.removeUploadAsset(deviceAssetId);
+        }, 1000);
+
+        return res.id;
       }
-
-      if (albumId && res.id) {
-        await addAssetsToAlbum(albumId, [res.id]);
-      }
-
-      setTimeout(() => {
-        uploadAssetsStore.removeUploadAsset(deviceAssetId);
-      }, 1000);
-
-      return res.id;
-    }
-  } catch (e) {
-    console.log('error uploading file ', e);
-    handleUploadError(asset, JSON.stringify(e));
-    uploadAssetsStore.removeUploadAsset(deviceAssetId);
-  }
+    })
+    .catch((reason) => {
+      console.log('error uploading file ', reason);
+      uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
+      handleUploadError(asset, JSON.stringify(reason));
+      return undefined;
+    });
 }
 
 function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
-  uploadAssetsStore.errorCounter.update((count) => count + 1);
-
   try {
     const res = JSON.parse(respBody);
-
     const extraMsg = res ? ' ' + res?.message : '';
 
     notificationController.show({
