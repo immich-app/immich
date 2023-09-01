@@ -19,7 +19,7 @@ class PersonUpdateDto {
     this.name,
   });
 
-  /// Person date of birth.
+  /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
   DateTime? birthDate;
 
   /// Asset is used to get the feature face thumbnail.

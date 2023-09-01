@@ -14,10 +14,10 @@ export const errorStub = {
     statusCode: 401,
     message: 'Invalid user token',
   },
-  badRequest: (message: any) => ({
+  badRequest: (message: any = null) => ({
     error: 'Bad Request',
     statusCode: 400,
-    message: message,
+    message: message ?? expect.anything(),
   }),
   incorrectLogin: {
     error: 'Unauthorized',

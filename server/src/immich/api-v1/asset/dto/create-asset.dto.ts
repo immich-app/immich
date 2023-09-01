@@ -1,7 +1,7 @@
-import { toBoolean, toSanitized, UploadFieldName, ValidateUUID } from '@app/domain';
+import { Optional, toBoolean, toSanitized, UploadFieldName, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAssetBase {
   @IsNotEmpty()
@@ -19,28 +19,28 @@ export class CreateAssetBase {
   @IsNotEmpty()
   isFavorite!: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isArchived?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isVisible?: boolean;
 
-  @IsOptional()
+  @Optional()
   duration?: string;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isExternal?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isOffline?: boolean;
 }
 
 export class CreateAssetDto extends CreateAssetBase {
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isReadOnly?: boolean;
@@ -61,7 +61,7 @@ export class CreateAssetDto extends CreateAssetBase {
 }
 
 export class ImportAssetDto extends CreateAssetBase {
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
 
@@ -74,7 +74,7 @@ export class ImportAssetDto extends CreateAssetBase {
   assetPath!: string;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   @IsNotEmpty()
   @Transform(toSanitized)
   sidecarPath?: string;

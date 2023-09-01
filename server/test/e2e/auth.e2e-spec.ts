@@ -2,7 +2,16 @@ import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { deviceStub, errorStub, loginResponseStub, signupResponseStub, signupStub, uuidStub } from '../fixtures';
+import {
+  changePasswordStub,
+  deviceStub,
+  errorStub,
+  loginResponseStub,
+  loginStub,
+  signupResponseStub,
+  adminSignupStub,
+  uuidStub,
+} from '../fixtures';
 import { api, db } from '../test-utils';
 
 const firstName = 'Immich';
@@ -45,35 +54,30 @@ describe(`${AuthController.name} (e2e)`, () => {
       {
         should: 'require an email address',
         data: { firstName, lastName, password },
-        response: ['email must be an email'],
       },
       {
         should: 'require a password',
         data: { firstName, lastName, email },
-        response: ['password should not be empty', 'password must be a string'],
       },
       {
         should: 'require a first name ',
         data: { lastName, email, password },
-        response: ['firstName should not be empty', 'firstName must be a string'],
       },
       {
         should: 'require a last name ',
         data: { firstName, email, password },
-        response: ['lastName should not be empty', 'lastName must be a string'],
       },
       {
         should: 'require a valid email',
         data: { firstName, lastName, email: 'immich', password },
-        response: ['email must be an email'],
       },
     ];
 
-    for (const { should, data, response } of invalid) {
+    for (const { should, data } of invalid) {
       it(`should ${should}`, async () => {
         const { status, body } = await request(server).post('/auth/admin-sign-up').send(data);
         expect(status).toEqual(400);
-        expect(body).toEqual(errorStub.badRequest(response));
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -84,7 +88,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should sign up the admin with a local domain', async () => {
       const { status, body } = await request(server)
         .post('/auth/admin-sign-up')
-        .send({ ...signupStub, email: 'admin@local' });
+        .send({ ...adminSignupStub, email: 'admin@local' });
       expect(status).toEqual(201);
       expect(body).toEqual({ ...signupResponseStub, email: 'admin@local' });
     });
@@ -92,7 +96,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should transform email to lower case', async () => {
       const { status, body } = await request(server)
         .post('/auth/admin-sign-up')
-        .send({ ...signupStub, email: 'aDmIn@IMMICH.app' });
+        .send({ ...adminSignupStub, email: 'aDmIn@IMMICH.app' });
       expect(status).toEqual(201);
       expect(body).toEqual(signupResponseStub);
     });
@@ -100,11 +104,21 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should not allow a second admin to sign up', async () => {
       await api.adminSignUp(server);
 
-      const { status, body } = await request(server).post('/auth/admin-sign-up').send(signupStub);
+      const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.alreadyHasAdmin);
     });
+
+    for (const key of Object.keys(adminSignupStub)) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(server)
+          .post('/auth/admin-sign-up')
+          .send({ ...adminSignupStub, [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest());
+      });
+    }
   });
 
   describe(`POST /auth/login`, () => {
@@ -113,6 +127,16 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.incorrectLogin);
       expect(status).toBe(401);
     });
+
+    for (const key of Object.keys(loginStub.admin)) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(server)
+          .post('/auth/login')
+          .send({ ...loginStub.admin, [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest());
+      });
+    }
 
     it('should accept a correct password', async () => {
       const { status, body, headers } = await request(server).post('/auth/login').send({ email, password });
@@ -203,17 +227,26 @@ describe(`${AuthController.name} (e2e)`, () => {
 
   describe('POST /auth/change-password', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server)
-        .post(`/auth/change-password`)
-        .send({ password: 'Password123', newPassword: 'Password1234' });
+      const { status, body } = await request(server).post(`/auth/change-password`).send(changePasswordStub);
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    for (const key of Object.keys(changePasswordStub)) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(server)
+          .post('/auth/change-password')
+          .send({ ...changePasswordStub, [key]: null })
+          .set('Authorization', `Bearer ${accessToken}`);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest());
+      });
+    }
+
     it('should require the current password', async () => {
       const { status, body } = await request(server)
         .post(`/auth/change-password`)
-        .send({ password: 'wrong-password', newPassword: 'Password1234' })
+        .send({ ...changePasswordStub, password: 'wrong-password' })
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.wrongPassword);
@@ -222,7 +255,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should change the password', async () => {
       const { status } = await request(server)
         .post(`/auth/change-password`)
-        .send({ password: 'Password123', newPassword: 'Password1234' })
+        .send(changePasswordStub)
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
 

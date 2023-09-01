@@ -40,7 +40,24 @@ describe(`${PersonController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not accept invalid dates', async () => {
+    for (const { key, type } of [
+      { key: 'name', type: 'string' },
+      { key: 'featureFaceAssetId', type: 'string' },
+      { key: 'isHidden', type: 'boolean value' },
+    ]) {
+      it(`should not allow null ${key}`, async () => {
+        const personRepository = app.get<IPersonRepository>(IPersonRepository);
+        const person = await personRepository.create({ ownerId: loginResponse.userId });
+        const { status, body } = await request(server)
+          .put(`/person/${person.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest([`${key} must be a ${type}`]));
+      });
+    }
+
+    it('should not accept invalid birth dates', async () => {
       for (const { birthDate, response } of [
         { birthDate: false, response: ['id must be a UUID'] },
         { birthDate: 'false', response: ['birthDate must be a Date instance'] },

@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidationOptions, ValidateIf } from 'class-validator';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
@@ -13,7 +13,7 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
-    optional ? IsOptional() : IsNotEmpty(),
+    optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
 }
@@ -91,4 +91,24 @@ export async function* usePagination<T>(
     hasNextPage = result.hasNextPage;
     yield result.items;
   }
+}
+
+export interface OptionalOptions extends ValidationOptions {
+  nullable?: boolean;
+}
+
+/**
+ * Checks if value is missing and if so, ignores all validators.
+ *
+ * @param validationOptions {@link OptionalOptions}
+ *
+ * @see IsOptional exported from `class-validator.
+ */
+// https://stackoverflow.com/a/71353929
+export function Optional({ nullable, ...validationOptions }: OptionalOptions = {}) {
+  if (nullable === true) {
+    return IsOptional(validationOptions);
+  }
+
+  return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
 }

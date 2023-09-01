@@ -2184,7 +2184,7 @@ export interface PeopleUpdateDto {
  */
 export interface PeopleUpdateItem {
     /**
-     * Person date of birth.
+     * Person date of birth. Note: the mobile app cannot currently set the birth date to null.
      * @type {string}
      * @memberof PeopleUpdateItem
      */
@@ -2258,7 +2258,7 @@ export interface PersonResponseDto {
  */
 export interface PersonUpdateDto {
     /**
-     * Person date of birth.
+     * Person date of birth. Note: the mobile app cannot currently set the birth date to null.
      * @type {string}
      * @memberof PersonUpdateDto
      */
