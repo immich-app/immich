@@ -95,15 +95,15 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.alreadyHasAdmin);
     });
 
-    it('should not allow null values', async () => {
-      for (const key of Object.keys(adminSignupStub)) {
+    for (const key of Object.keys(adminSignupStub)) {
+      it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .post('/auth/admin-sign-up')
           .send({ ...adminSignupStub, [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
-      }
-    });
+      });
+    }
   });
 
   describe(`POST /auth/login`, () => {
@@ -113,15 +113,15 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(status).toBe(401);
     });
 
-    it('should not allow null values', async () => {
-      for (const key of Object.keys(loginStub.admin)) {
+    for (const key of Object.keys(loginStub.admin)) {
+      it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .post('/auth/login')
           .send({ ...loginStub.admin, [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
-      }
-    });
+      });
+    }
 
     it('should accept a correct password', async () => {
       const { status, body, headers } = await request(server).post('/auth/login').send({ email, password });
@@ -217,16 +217,16 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not allow null values', async () => {
-      for (const key of Object.keys(changePasswordStub)) {
+    for (const key of Object.keys(changePasswordStub)) {
+      it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .post('/auth/change-password')
           .send({ ...changePasswordStub, [key]: null })
           .set('Authorization', `Bearer ${accessToken}`);
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
-      }
-    });
+      });
+    }
 
     it('should require the current password', async () => {
       const { status, body } = await request(server)

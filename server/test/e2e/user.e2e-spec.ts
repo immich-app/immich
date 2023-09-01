@@ -123,16 +123,16 @@ describe(`${UserController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not allow null values', async () => {
-      for (const key of Object.keys(userSignupStub)) {
+    for (const key of Object.keys(userSignupStub)) {
+      it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .post(`/user`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userSignupStub, [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
-      }
-    });
+      });
+    }
 
     it('should ignore `isAdmin`', async () => {
       const { status, body } = await request(server)
@@ -179,16 +179,16 @@ describe(`${UserController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not allow null values', async () => {
-      for (const key of Object.keys(userStub.admin)) {
+    for (const key of Object.keys(userStub.admin)) {
+      it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .put(`/user`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userStub.admin, [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest);
-      }
-    });
+      });
+    }
 
     it('should not allow a non-admin to become an admin', async () => {
       const user = await api.userApi.create(server, accessToken, {
