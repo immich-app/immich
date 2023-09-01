@@ -1,8 +1,13 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray, IsNotEmpty, IsOptional as IsOptionalValidator, IsString, IsUUID, ValidationOptions,
-  ValidateIf
+  IsArray,
+  IsNotEmpty,
+  IsOptional as IsOptionalValidator,
+  IsString,
+  IsUUID,
+  ValidationOptions,
+  ValidateIf,
 } from 'class-validator';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
@@ -105,10 +110,7 @@ export async function* usePagination<T>(
  * @see IsOptional exported from `class-validator.
  */
 // https://stackoverflow.com/a/71353929
-export function IsOptional(
-  nullable = false,
-  validationOptions?: ValidationOptions,
-) {
+export function IsOptional(nullable = false, validationOptions?: ValidationOptions) {
   if (nullable) {
     return IsOptionalValidator(validationOptions);
   }

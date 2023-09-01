@@ -1,15 +1,7 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsBoolean,
-  IsDate,
-  IsNotEmpty,
-  IsString,
-  ValidateIf,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOptional, toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
