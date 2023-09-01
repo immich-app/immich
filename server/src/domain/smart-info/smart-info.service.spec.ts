@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -43,6 +43,15 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleQueueObjectTagging', () => {
+    it('should do nothing if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await sut.handleQueueObjectTagging({});
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+    });
+
     it('should queue the assets without tags', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
@@ -69,6 +78,18 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleTagImage', () => {
+    it('should do nothing if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await sut.handleClassifyImage({ id: '123' });
+      await sut.handleQueueEncodeClip({});
+      await sut.handleEncodeClip({ id: '123' });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+    });
+
     it('should skip assets without a resize path', async () => {
       const asset = { resizePath: '' } as AssetEntity;
       assetMock.getByIds.mockResolvedValue([asset]);
