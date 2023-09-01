@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { IsOptional, ValidateUUID } from '../../domain.util';
+import { Optional, ValidateUUID } from '../../domain.util';
 
 export class CreateAlbumDto {
   @IsNotEmpty()
@@ -9,7 +9,7 @@ export class CreateAlbumDto {
   albumName!: string;
 
   @IsString()
-  @IsOptional()
+  @Optional()
   description?: string;
 
   @ValidateUUID({ optional: true, each: true })

@@ -1,13 +1,13 @@
 import { IsBoolean } from 'class-validator';
 import { BulkIdsDto } from '../response-dto';
-import { IsOptional } from '../../domain.util';
+import { Optional } from '../../domain.util';
 
 export class AssetBulkUpdateDto extends BulkIdsDto {
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isFavorite?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isArchived?: boolean;
 }

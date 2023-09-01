@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { CLIPMode, ModelType } from '../machine-learning.interface';
-import { IsOptional } from '../../domain.util';
+import { Optional } from '../../domain.util';
 
 export class ModelConfig {
   @IsBoolean()
@@ -13,7 +13,7 @@ export class ModelConfig {
   modelName!: string;
 
   @IsEnum(ModelType)
-  @IsOptional()
+  @Optional()
   @ApiProperty({ enumName: 'ModelType', enum: ModelType })
   modelType?: ModelType;
 }
@@ -29,7 +29,7 @@ export class ClassificationConfig extends ModelConfig {
 
 export class CLIPConfig extends ModelConfig {
   @IsEnum(CLIPMode)
-  @IsOptional()
+  @Optional()
   @ApiProperty({ enumName: 'CLIPMode', enum: CLIPMode })
   mode?: CLIPMode;
 }

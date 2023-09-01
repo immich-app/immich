@@ -1,21 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate } from 'class-validator';
-import { toBoolean, IsOptional } from '../../domain.util';
+import { toBoolean, Optional } from '../../domain.util';
 
 export class MapMarkerDto {
   @ApiProperty()
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isFavorite?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsDate()
   @Type(() => Date)
   fileCreatedAfter?: Date;
 
-  @IsOptional()
+  @Optional()
   @IsDate()
   @Type(() => Date)
   fileCreatedBefore?: Date;

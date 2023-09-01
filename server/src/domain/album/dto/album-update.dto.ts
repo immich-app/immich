@@ -1,12 +1,12 @@
 import { IsString } from 'class-validator';
-import { ValidateUUID, IsOptional } from '../../domain.util';
+import { ValidateUUID, Optional } from '../../domain.util';
 
 export class UpdateAlbumDto {
-  @IsOptional()
+  @Optional()
   @IsString()
   albumName?: string;
 
-  @IsOptional()
+  @Optional()
   @IsString()
   description?: string;
 

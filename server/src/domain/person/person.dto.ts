@@ -1,38 +1,37 @@
 import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateIf, ValidateNested } from 'class-validator';
-import { IsOptional, toBoolean, ValidateUUID } from '../domain.util';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { Optional, toBoolean, ValidateUUID } from '../domain.util';
 
 export class PersonUpdateDto {
   /**
    * Person name.
    */
-  @IsOptional()
+  @Optional()
   @IsString()
   name?: string;
 
   /**
    * Person date of birth.
    */
-  @IsOptional()
+  @Optional(true)
   @IsDate()
   @Type(() => Date)
-  @ValidateIf((value) => value !== null)
   @ApiProperty({ format: 'date' })
   birthDate?: Date | null;
 
   /**
    * Asset is used to get the feature face thumbnail.
    */
-  @IsOptional()
+  @Optional()
   @IsString()
   featureFaceAssetId?: string;
 
   /**
    * Person visibility
    */
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isHidden?: boolean;
 }
@@ -55,14 +54,14 @@ export class PeopleUpdateItem {
   /**
    * Person name.
    */
-  @IsOptional()
+  @Optional()
   @IsString()
   name?: string;
 
   /**
    * Person date of birth.
    */
-  @IsOptional()
+  @Optional(true)
   @IsDate()
   @Type(() => Date)
   @ApiProperty({ format: 'date' })
@@ -71,14 +70,14 @@ export class PeopleUpdateItem {
   /**
    * Asset is used to get the feature face thumbnail.
    */
-  @IsOptional()
+  @Optional()
   @IsString()
   featureFaceAssetId?: string;
 
   /**
    * Person visibility
    */
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isHidden?: boolean;
 }

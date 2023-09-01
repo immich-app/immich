@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
-  IsOptional as IsOptionalValidator,
+  IsOptional,
   IsString,
   IsUUID,
   ValidationOptions,
@@ -21,7 +21,7 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
-    optional ? IsOptional() : IsNotEmpty(),
+    optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
 }
@@ -110,9 +110,9 @@ export async function* usePagination<T>(
  * @see IsOptional exported from `class-validator.
  */
 // https://stackoverflow.com/a/71353929
-export function IsOptional(nullable = false, validationOptions?: ValidationOptions) {
-  if (nullable) {
-    return IsOptionalValidator(validationOptions);
+export function Optional(nullable = false, validationOptions?: ValidationOptions) {
+  if (nullable === true) {
+    return IsOptional(validationOptions);
   }
 
   return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);

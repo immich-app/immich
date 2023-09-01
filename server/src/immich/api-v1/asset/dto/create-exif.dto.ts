@@ -1,46 +1,46 @@
-import { IsOptional } from '@app/domain';
+import { Optional } from '@app/domain';
 import { IsNotEmpty } from 'class-validator';
 
 export class CreateExifDto {
   @IsNotEmpty()
   assetId!: string;
 
-  @IsOptional()
+  @Optional()
   make?: string;
 
-  @IsOptional()
+  @Optional()
   model?: string;
 
-  @IsOptional()
+  @Optional()
   exifImageWidth?: number;
 
-  @IsOptional()
+  @Optional()
   exifImageHeight?: number;
 
-  @IsOptional()
+  @Optional()
   fileSizeInByte?: number;
 
-  @IsOptional()
+  @Optional()
   orientation?: string;
 
-  @IsOptional()
+  @Optional()
   dateTimeOriginal?: Date;
 
-  @IsOptional()
+  @Optional()
   modifiedDate?: Date;
 
-  @IsOptional()
+  @Optional()
   lensModel?: string;
 
-  @IsOptional()
+  @Optional()
   fNumber?: number;
 
-  @IsOptional()
+  @Optional()
   focalLenght?: number;
 
-  @IsOptional()
+  @Optional()
   iso?: number;
 
-  @IsOptional()
+  @Optional()
   exposureTime?: number;
 }
