@@ -2,7 +2,16 @@ import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { deviceStub, errorStub, loginResponseStub, signupResponseStub, signupStub, uuidStub } from '../fixtures';
+import {
+  changePasswordStub,
+  deviceStub,
+  errorStub,
+  loginResponseStub,
+  loginStub,
+  signupResponseStub,
+  signupStub,
+  uuidStub,
+} from '../fixtures';
 import { api, db } from '../test-utils';
 
 const firstName = 'Immich';
@@ -85,6 +94,16 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.alreadyHasAdmin);
     });
+
+    it('should not allow null values', async () => {
+      for (const key of Object.keys(signupStub)) {
+        const { status, body } = await request(server)
+          .post('/auth/admin-sign-up')
+          .send({ ...signupStub, [key]: null });
+        expect(status).toBe(401);
+        expect(body).toEqual(errorStub.badRequest);
+      }
+    });
   });
 
   describe(`POST /auth/login`, () => {
@@ -92,6 +111,16 @@ describe(`${AuthController.name} (e2e)`, () => {
       const { status, body } = await request(server).post('/auth/login').send({ email, password: 'incorrect' });
       expect(body).toEqual(errorStub.incorrectLogin);
       expect(status).toBe(401);
+    });
+
+    it('should not allow null values', async () => {
+      for (const key of Object.keys(loginStub.admin)) {
+        const { status, body } = await request(server)
+          .post('/auth/login')
+          .send({ ...loginStub.admin, [key]: null });
+        expect(status).toBe(401);
+        expect(body).toEqual(errorStub.badRequest);
+      }
     });
 
     it('should accept a correct password', async () => {
@@ -183,17 +212,25 @@ describe(`${AuthController.name} (e2e)`, () => {
 
   describe('POST /auth/change-password', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server)
-        .post(`/auth/change-password`)
-        .send({ password: 'Password123', newPassword: 'Password1234' });
+      const { status, body } = await request(server).post(`/auth/change-password`).send(changePasswordStub);
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should not allow null values', async () => {
+      for (const key of Object.keys(changePasswordStub)) {
+        const { status, body } = await request(server)
+          .post('/auth/change-password')
+          .send({ ...changePasswordStub, [key]: null });
+        expect(status).toBe(401);
+        expect(body).toEqual(errorStub.badRequest);
+      }
     });
 
     it('should require the current password', async () => {
       const { status, body } = await request(server)
         .post(`/auth/change-password`)
-        .send({ password: 'wrong-password', newPassword: 'Password1234' })
+        .send({ ...changePasswordStub, password: 'wrong-password' })
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.wrongPassword);
@@ -202,7 +239,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     it('should change the password', async () => {
       const { status } = await request(server)
         .post(`/auth/change-password`)
-        .send({ password: 'Password123', newPassword: 'Password1234' })
+        .send(changePasswordStub)
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
 
