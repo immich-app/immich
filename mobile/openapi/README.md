@@ -132,6 +132,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
+*OAuthApi* | [**authorizeOAuth**](doc//OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
@@ -256,6 +257,7 @@ Class | Method | HTTP request | Description
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [ModelType](doc//ModelType.md)
+ - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)

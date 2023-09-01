@@ -5,3 +5,7 @@ export class OAuthConfigResponseDto {
   buttonText?: string;
   autoLaunch?: boolean;
 }
+
+export class OAuthAuthorizeResponseDto {
+  url!: string;
+}

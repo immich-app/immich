@@ -2799,6 +2799,37 @@
         ]
       }
     },
+    "/oauth/authorize": {
+      "post": {
+        "operationId": "authorizeOAuth",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthConfigDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthAuthorizeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -2832,6 +2863,8 @@
     },
     "/oauth/config": {
       "post": {
+        "deprecated": true,
+        "description": "@deprecated use feature flags and /oauth/authorize",
         "operationId": "generateConfig",
         "parameters": [],
         "requestBody": {
@@ -6684,6 +6717,17 @@
           "clip"
         ],
         "type": "string"
+      },
+      "OAuthAuthorizeResponseDto": {
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
       },
       "OAuthCallbackDto": {
         "properties": {

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { page } from '$app/stores';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
   import { APIKeyResponseDto, AuthDeviceResponseDto, oauth, UserResponseDto } from '@api';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
@@ -18,18 +20,10 @@
   export let devices: AuthDeviceResponseDto[] = [];
   export let partners: UserResponseDto[] = [];
 
-  let oauthEnabled = false;
   let oauthOpen = false;
-
-  onMount(async () => {
+  if (browser) {
     oauthOpen = oauth.isCallback(window.location);
-    try {
-      const { data } = await oauth.getConfig(window.location);
-      oauthEnabled = data.enabled;
-    } catch {
-      // noop
-    }
-  });
+  }
 </script>
 
 <SettingAccordion title="Account" subtitle="Manage your account">
@@ -52,7 +46,7 @@
   <MemoriesSettings {user} />
 </SettingAccordion>
 
-{#if oauthEnabled}
+{#if $featureFlags.loaded && $featureFlags.oauth}
   <SettingAccordion
     title="OAuth"
     subtitle="Manage your OAuth connection"

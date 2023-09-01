@@ -1,5 +1,12 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
@@ -28,6 +35,7 @@ import {
   mapAdminSignupResponse,
   mapLoginResponse,
   mapUserToken,
+  OAuthAuthorizeResponseDto,
   OAuthConfigResponseDto,
 } from './response-dto';
 import { IUserTokenRepository } from './user-token.repository';
@@ -203,6 +211,22 @@ export class AuthService {
     return { ...response, buttonText, url, autoLaunch };
   }
 
+  async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+    const config = await this.configCore.getConfig();
+    if (!config.oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const client = await this.getOAuthClient(config);
+    const url = await client.authorizationUrl({
+      redirect_uri: this.normalize(config, dto.redirectUri),
+      scope: config.oauth.scope,
+      state: generators.state(),
+    });
+
+    return { url };
+  }
+
   async callback(
     dto: OAuthCallbackDto,
     loginDetails: LoginDetails,
@@ -282,8 +306,13 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      this.logger.error(`Unable to complete OAuth login: ${error}`, error?.stack);
+      throw new InternalServerErrorException(`Unable to complete OAuth login: ${error}`, { cause: error });
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {

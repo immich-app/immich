@@ -3,6 +3,7 @@ import {
   AuthUserDto,
   LoginDetails,
   LoginResponseDto,
+  OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   OAuthConfigResponseDto,
@@ -31,10 +32,17 @@ export class OAuthController {
     };
   }
 
+  /** @deprecated use feature flags and /oauth/authorize */
   @PublicRoute()
   @Post('config')
   generateConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.service.generateConfig(dto);
+  }
+
+  @PublicRoute()
+  @Post('authorize')
+  authorizeOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+    return this.service.authorize(dto);
   }
 
   @PublicRoute()
