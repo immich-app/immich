@@ -280,8 +280,13 @@ export class LibraryService {
     return true;
   }
 
-  async queueRefresh(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
+  async queueScan(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
     await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+
+    const library = await this.repository.get(id);
+    if (!library || library.type !== LibraryType.EXTERNAL) {
+      throw new BadRequestException('Can only refresh external libraries');
+    }
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_SCAN,
@@ -305,7 +310,7 @@ export class LibraryService {
     });
   }
 
-  async handleQueueAllRefresh(job: IBaseJob): Promise<boolean> {
+  async handleQueueAllScan(job: IBaseJob): Promise<boolean> {
     this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
     // Queue cleanup

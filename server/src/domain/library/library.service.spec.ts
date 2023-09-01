@@ -1031,9 +1031,11 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('queueRefresh', () => {
-    it('can queue a library refresh', async () => {
-      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, {});
+  describe('queueScan', () => {
+    it('can queue a library scan of external library', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      await sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, {});
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -1049,8 +1051,20 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('can queue a library all refresh', async () => {
-      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, { refreshModifiedFiles: true });
+    it('can not queue a library scan of upload library', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
+
+      await expect(sut.queueScan(authStub.admin, libraryStub.uploadLibrary1.id, {})).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(jobMock.queue).not.toBeCalled();
+    });
+
+    it('can queue a library scan of all modified assets', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      await sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, { refreshModifiedFiles: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -1066,8 +1080,10 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('can queue a forced library refresh', async () => {
-      await sut.queueRefresh(authStub.admin, libraryStub.externalLibrary1.id, { refreshAllFiles: true });
+    it('can queue a forced library scan', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      await sut.queueScan(authStub.admin, libraryStub.externalLibrary1.id, { refreshAllFiles: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -1101,11 +1117,11 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleQueueAllRefresh', () => {
+  describe('handleQueueAllScan', () => {
     it('can queue the refresh job', async () => {
       libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
 
-      await expect(sut.handleQueueAllRefresh({})).resolves.toBe(true);
+      await expect(sut.handleQueueAllScan({})).resolves.toBe(true);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -1130,7 +1146,7 @@ describe(LibraryService.name, () => {
     it('can queue the force refresh job', async () => {
       libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
 
-      await expect(sut.handleQueueAllRefresh({ force: true })).resolves.toBe(true);
+      await expect(sut.handleQueueAllScan({ force: true })).resolves.toBe(true);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [

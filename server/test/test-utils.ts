@@ -16,6 +16,7 @@ import { CreateAlbumDto } from '@app/domain/album/dto/album-create.dto';
 import { dataSource } from '@app/infra';
 import request from 'supertest';
 import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';
+import { UserEntity } from '@app/infra/entities';
 
 export const db = {
   reset: async () => {
@@ -65,6 +66,16 @@ export const api = {
     expect(status).toBe(201);
 
     return body as LoginResponseDto;
+  },
+  userCreate: async (server: any, accessToken: string, user: Partial<UserEntity>) => {
+    const { status, body } = await request(server)
+      .post('/user')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(user);
+
+    expect(status).toBe(201);
+
+    return body as UserResponseDto;
   },
   login: async (server: any, dto: LoginCredentialDto) => {
     const { status, body } = await request(server).post('/auth/login').send(dto);

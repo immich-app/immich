@@ -9313,44 +9313,6 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getLibraryCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/library/count`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9612,15 +9574,6 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getLibraryCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLibraryCount(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9706,14 +9659,6 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          */
         getAllForUser(options?: AxiosRequestConfig): AxiosPromise<Array<LibraryResponseDto>> {
             return localVarFp.getAllForUser(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getLibraryCount(options?: AxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.getLibraryCount(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9912,16 +9857,6 @@ export class LibraryApi extends BaseAPI {
      */
     public getAllForUser(options?: AxiosRequestConfig) {
         return LibraryApiFp(this.configuration).getAllForUser(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LibraryApi
-     */
-    public getLibraryCount(options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).getLibraryCount(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

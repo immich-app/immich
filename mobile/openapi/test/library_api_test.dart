@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<num> getLibraryCount() async
-    test('test getLibraryCount', () async {
-      // TODO
-    });
-
     //Future<LibraryResponseDto> getLibraryInfo(String id) async
     test('test getLibraryInfo', () async {
       // TODO

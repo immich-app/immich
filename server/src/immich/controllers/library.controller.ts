@@ -39,11 +39,6 @@ export class LibraryController {
     return this.service.update(authUser, id, dto);
   }
 
-  @Get('count')
-  getLibraryCount(@AuthUser() authUser: AuthUserDto): Promise<number> {
-    return this.service.getCount(authUser);
-  }
-
   @Get(':id')
   getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
     return this.service.get(authUser, id);
@@ -64,7 +59,7 @@ export class LibraryController {
 
   @Post(':id/scan')
   scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
-    return this.service.queueRefresh(authUser, id, dto);
+    return this.service.queueScan(authUser, id, dto);
   }
 
   @Post(':id/removeOffline')

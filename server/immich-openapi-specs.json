@@ -2552,38 +2552,6 @@
         ]
       }
     },
-    "/library/count": {
-      "get": {
-        "operationId": "getLibraryCount",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "number"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Library"
-        ]
-      }
-    },
     "/library/{id}": {
       "delete": {
         "operationId": "deleteLibrary",

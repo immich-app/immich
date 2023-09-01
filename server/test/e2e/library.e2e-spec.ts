@@ -4,7 +4,7 @@ import { LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub, uuidStub } from '../fixtures';
+import { errorStub, userStub, uuidStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
@@ -45,18 +45,20 @@ describe(`${LibraryController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/library').set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
-      expect(body[0]).toEqual({
-        id: expect.any(String),
-        ownerId: loginResponse.userId,
-        type: LibraryType.UPLOAD,
-        name: 'Default Library',
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        refreshedAt: null,
-        assetCount: 0,
-        importPaths: [],
-        exclusionPatterns: [],
-      });
+      expect(body).toEqual([
+        {
+          id: expect.any(String),
+          ownerId: loginResponse.userId,
+          type: LibraryType.UPLOAD,
+          name: 'Default Library',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          refreshedAt: null,
+          assetCount: 0,
+          importPaths: [],
+          exclusionPatterns: [],
+        },
+      ]);
     });
   });
 
@@ -216,6 +218,34 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
       });
     });
+
+    it('should allow a user to create a library', async () => {
+      await api.userCreate(server, accessToken, userStub.user1);
+
+      const loginResponse = await api.login(server, {
+        email: userStub.user1.email,
+        password: userStub.user1.password ?? '',
+      });
+
+      const { status, body } = await request(server)
+        .post('/library')
+        .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+        .send({ type: LibraryType.EXTERNAL });
+
+      expect(status).toBe(201);
+      expect(body).toEqual({
+        id: expect.any(String),
+        ownerId: loginResponse.userId,
+        type: LibraryType.EXTERNAL,
+        name: 'New External Library',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        refreshedAt: null,
+        assetCount: 0,
+        importPaths: [],
+        exclusionPatterns: [],
+      });
+    });
   });
 
   describe('PUT /library/:id', () => {
@@ -318,19 +348,66 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
   });
 
-  describe('GET /library/count', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(server).get(`/library/count`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
-    });
-  });
-
   describe('GET /library/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).get(`/library/${uuidStub.notFound}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should get library by id', async () => {
+      let libraryId: string;
+      {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL });
+        expect(status).toBe(201);
+        libraryId = body.id;
+      }
+      const { status, body } = await request(server)
+        .get(`/library/${libraryId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        id: expect.any(String),
+        ownerId: loginResponse.userId,
+        type: LibraryType.EXTERNAL,
+        name: 'New External Library',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        refreshedAt: null,
+        assetCount: 0,
+        importPaths: [],
+        exclusionPatterns: [],
+      });
+    });
+
+    it("should not allow getting another user's library", async () => {
+      await api.userCreate(server, accessToken, userStub.user1);
+
+      const loginResponse = await api.login(server, {
+        email: userStub.user1.email,
+        password: userStub.user1.password ?? '',
+      });
+
+      let libraryId: string;
+      {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL });
+        expect(status).toBe(201);
+        libraryId = body.id;
+      }
+
+      const { status, body } = await request(server)
+        .get(`/library/${libraryId}`)
+        .set('Authorization', `Bearer ${loginResponse.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no library.read access'));
     });
   });
 
@@ -363,15 +440,53 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   describe('POST /library/:id/scan', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).post('/library/${uuidStub.notFound}/scan').send({});
+      const { status, body } = await request(server).post(`/library/${uuidStub.notFound}/scan`).send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should scan external library', async () => {
+      let libraryId: string;
+      {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.EXTERNAL });
+        expect(status).toBe(201);
+        libraryId = body.id;
+      }
+
+      const { status, body } = await request(server)
+        .post(`/library/${libraryId}/scan`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(201);
+      expect(body).toEqual({});
+    });
+
+    it('should not scan an upload library', async () => {
+      let libraryId: string;
+      {
+        const { status, body } = await request(server)
+          .post('/library')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ type: LibraryType.UPLOAD });
+        expect(status).toBe(201);
+        libraryId = body.id;
+      }
+
+      const { status, body } = await request(server)
+        .post(`/library/${libraryId}/scan`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Can only refresh external libraries'));
     });
   });
 
   describe('POST /library/:id/removeOffline', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).post('/library/${uuidStub.notFound}/removeOffline').send({});
+      const { status, body } = await request(server).post(`/library/${uuidStub.notFound}/removeOffline`).send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
