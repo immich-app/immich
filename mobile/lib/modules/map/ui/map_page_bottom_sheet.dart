@@ -41,7 +41,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
   // Non-State variables
   bool userTappedOnMap = false;
   RenderList? _cachedRenderList;
-  int lastAssetOffsetInSheet = -1;
+  int assetOffsetInSheet = -1;
   late final DraggableScrollableController bottomSheetController;
   late final Debounce debounce;
 
@@ -68,7 +68,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
         assetsInBound.value = event.assets;
       } else if (event is MapPageOnTapEvent) {
         userTappedOnMap = true;
-        lastAssetOffsetInSheet = -1;
+        assetOffsetInSheet = -1;
         bottomSheetController.animateTo(
           0.1,
           duration: const Duration(milliseconds: 200),
@@ -98,8 +98,8 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
         columnOffset = columnOffset < renderElement.totalCount
             ? columnOffset
             : renderElement.totalCount - 1;
-        lastAssetOffsetInSheet = rowOffset + columnOffset;
-        final asset = _cachedRenderList?.allAssets?[lastAssetOffsetInSheet];
+        assetOffsetInSheet = rowOffset + columnOffset;
+        final asset = _cachedRenderList?.allAssets?[assetOffsetInSheet];
         userTappedOnMap = false;
         if (!userTappedOnMap && isSheetExpanded.value) {
           widget.bottomSheetEventSC.add(
@@ -162,10 +162,10 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     }
 
     void onTapMapButton() {
-      if (lastAssetOffsetInSheet != -1) {
+      if (assetOffsetInSheet != -1) {
         widget.bottomSheetEventSC.add(
           MapPageZoomToAsset(
-            _cachedRenderList?.allAssets?[lastAssetOffsetInSheet],
+            _cachedRenderList?.allAssets?[assetOffsetInSheet],
           ),
         );
       }
@@ -238,7 +238,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
         if (!sheetExtended) {
           // reset state
           userTappedOnMap = false;
-          lastAssetOffsetInSheet = -1;
+          assetOffsetInSheet = -1;
           isSheetScrolled.value = false;
         }
 
