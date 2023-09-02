@@ -23,4 +23,8 @@ export class AppService {
     await this.searchService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
+
+  async destroy() {
+    this.searchService.teardown();
+  }
 }
