@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -56,8 +57,10 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    double maxHeight = MediaQuery.of(context).size.height;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final bottomPadding =
+        Platform.isAndroid ? MediaQuery.of(context).padding.bottom - 10 : 0.0;
+    final maxHeight = MediaQuery.of(context).size.height - bottomPadding;
     final isSheetScrolled = useState(false);
     final isSheetExpanded = useState(false);
     final assetsInBound = useState(<Asset>[]);
@@ -244,112 +247,119 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
 
         return true;
       },
-      child: Stack(
-        children: [
-          DraggableScrollableSheet(
-            controller: bottomSheetController,
-            initialChildSize: 0.1,
-            minChildSize: 0.1,
-            maxChildSize: 0.55,
-            snap: true,
-            builder: (
-              BuildContext context,
-              ScrollController scrollController,
-            ) {
-              return Card(
-                color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-                surfaceTintColor: Colors.transparent,
-                elevation: 18.0,
-                margin: const EdgeInsets.all(0),
-                child: Column(
-                  children: [
-                    buildDragHandle(scrollController),
-                    if (isSheetExpanded.value && assetsInBound.value.isNotEmpty)
-                      ref
-                          .watch(
-                            renderListProvider(
-                              assetsInBound.value,
-                            ),
-                          )
-                          .when(
-                            data: (renderList) {
-                              _cachedRenderList = renderList;
-                              final assetGrid = ImmichAssetGrid(
-                                shrinkWrap: true,
-                                renderList: renderList,
-                                showDragScroll: false,
-                                selectionActive: widget.selectionEnabled,
-                                showMultiSelectIndicator: false,
-                                listener: widget.selectionlistener,
-                                visibleItemsListener: visibleItemsListener,
-                              );
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: bottomPadding,
+        ),
+        child: Stack(
+          children: [
+            DraggableScrollableSheet(
+              controller: bottomSheetController,
+              initialChildSize: 0.1,
+              minChildSize: 0.1,
+              maxChildSize: 0.55,
+              snap: true,
+              builder: (
+                BuildContext context,
+                ScrollController scrollController,
+              ) {
+                return Card(
+                  color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 18.0,
+                  margin: const EdgeInsets.all(0),
+                  child: Column(
+                    children: [
+                      buildDragHandle(scrollController),
+                      if (isSheetExpanded.value &&
+                          assetsInBound.value.isNotEmpty)
+                        ref
+                            .watch(
+                              renderListProvider(
+                                assetsInBound.value,
+                              ),
+                            )
+                            .when(
+                              data: (renderList) {
+                                _cachedRenderList = renderList;
+                                final assetGrid = ImmichAssetGrid(
+                                  shrinkWrap: true,
+                                  renderList: renderList,
+                                  showDragScroll: false,
+                                  selectionActive: widget.selectionEnabled,
+                                  showMultiSelectIndicator: false,
+                                  listener: widget.selectionlistener,
+                                  visibleItemsListener: visibleItemsListener,
+                                );
 
-                              return Expanded(child: assetGrid);
-                            },
-                            error: (error, stackTrace) {
-                              log.warning(
-                                "Cannot get assets in the current map bounds ${error.toString()}",
-                                error,
-                                stackTrace,
-                              );
-                              return const SizedBox.shrink();
-                            },
-                            loading: () => const SizedBox.shrink(),
+                                return Expanded(child: assetGrid);
+                              },
+                              error: (error, stackTrace) {
+                                log.warning(
+                                  "Cannot get assets in the current map bounds ${error.toString()}",
+                                  error,
+                                  stackTrace,
+                                );
+                                return const SizedBox.shrink();
+                              },
+                              loading: () => const SizedBox.shrink(),
+                            ),
+                      if (isSheetExpanded.value && assetsInBound.value.isEmpty)
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: buildNoPhotosWidget(),
                           ),
-                    if (isSheetExpanded.value && assetsInBound.value.isEmpty)
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: buildNoPhotosWidget(),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
+                );
+              },
+            ),
+            Positioned(
+              bottom: maxHeight * currentExtend.value,
+              left: 0,
+              child: GestureDetector(
+                onTap: () => launchUrl(
+                  Uri.parse('https://openstreetmap.org/copyright'),
                 ),
-              );
-            },
-          ),
-          Positioned(
-            bottom: maxHeight * currentExtend.value,
-            left: 0,
-            child: GestureDetector(
-              onTap: () => launchUrl(
-                Uri.parse('https://openstreetmap.org/copyright'),
-              ),
-              child: ColoredBox(
-                color:
-                    (widget.isDarkTheme ? Colors.grey[900] : Colors.grey[100])!,
-                child: Padding(
-                  padding: const EdgeInsets.all(3),
-                  child: Text(
-                    '© OpenStreetMap contributors',
-                    style: TextStyle(
-                      fontSize: 6,
-                      color: !widget.isDarkTheme
-                          ? Colors.grey[900]
-                          : Colors.grey[100],
+                child: ColoredBox(
+                  color: (widget.isDarkTheme
+                      ? Colors.grey[900]
+                      : Colors.grey[100])!,
+                  child: Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: Text(
+                      '© OpenStreetMap contributors',
+                      style: TextStyle(
+                        fontSize: 6,
+                        color: !widget.isDarkTheme
+                            ? Colors.grey[900]
+                            : Colors.grey[100],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: maxHeight * (0.14 + (currentExtend.value - 0.1)),
-            right: 15,
-            child: ElevatedButton(
-              onPressed: () =>
-                  widget.bottomSheetEventSC.add(const MapPageZoomToLocation()),
-              style: ElevatedButton.styleFrom(
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(12),
-              ),
-              child: const Icon(
-                Icons.my_location,
-                size: 22,
-                fill: 1,
+            Positioned(
+              bottom: maxHeight * (0.14 + (currentExtend.value - 0.1)),
+              right: 15,
+              child: ElevatedButton(
+                onPressed: () => widget.bottomSheetEventSC
+                    .add(const MapPageZoomToLocation()),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(12),
+                ),
+                child: const Icon(
+                  Icons.my_location,
+                  size: 22,
+                  fill: 1,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

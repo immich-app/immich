@@ -422,8 +422,15 @@ class MapPageState extends ConsumerState<MapPage> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: Colors.black.withOpacity(0.5),
-        statusBarIconBrightness: Brightness.light,
+        statusBarColor:
+            (isDarkTheme ? Colors.black : Colors.white).withOpacity(0.5),
+        statusBarIconBrightness:
+            isDarkTheme ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor:
+            isDarkTheme ? Colors.grey[900] : Colors.grey[100],
+        systemNavigationBarIconBrightness:
+            isDarkTheme ? Brightness.light : Brightness.dark,
+        systemNavigationBarDividerColor: Colors.transparent,
       ),
       child: Theme(
         // Override app theme based on map theme
