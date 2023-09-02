@@ -11,7 +11,7 @@ import {
 class BaseConfig implements VideoCodecSWConfig {
   constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
+  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
       outputOptions: this.getBaseOutputOptions(videoStream, audioStream).concat('-v verbose'),
@@ -32,15 +32,21 @@ class BaseConfig implements VideoCodecSWConfig {
     return [];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
-    return [
-      `-c:v:${videoStream.index} ${this.getVideoCodec()}`,
-      `-c:a:${audioStream.index} ${this.getAudioCodec()}`,
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = [
+      `-c:v ${this.getVideoCodec()}`,
+      `-c:a ${this.getAudioCodec()}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
       '-fps_mode passthrough',
+      // explicitly selects the video stream instead of leaving it up to FFmpeg
+      `-map 0:v:${videoStream.index}`,
     ];
+    if (audioStream) {
+      options.push(`-map 0:a:${audioStream.index}`);
+    }
+    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -311,7 +317,7 @@ export class NVENCConfig extends BaseHWConfig {
     return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     return [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
@@ -379,7 +385,7 @@ export class QSVConfig extends BaseHWConfig {
     return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
     const options = [
       '-g 256',

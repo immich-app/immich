@@ -32,7 +32,6 @@ export class MediaRepository implements IMediaRepository {
 
   async probe(input: string): Promise<VideoInfo> {
     const results = await probe(input);
-
     return {
       format: {
         formatName: results.format.format_name,
