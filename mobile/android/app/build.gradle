@@ -96,3 +96,8 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 }
+
+// This is uncommented in F-Droid build script
+//f configurations.all {
+//f     exclude group: 'com.google.android.gms'
+//f }
