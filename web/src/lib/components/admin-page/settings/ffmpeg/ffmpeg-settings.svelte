@@ -308,6 +308,14 @@
                 isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
               />
 
+              <SettingSwitch
+                title="TEMPORAL AQ"
+                {disabled}
+                subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
+                bind:checked={ffmpegConfig.temporalAQ}
+                isEdited={ffmpegConfig.temporalAQ !== savedConfig.temporalAQ}
+              />
+
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label="REFERENCE FRAMES"
