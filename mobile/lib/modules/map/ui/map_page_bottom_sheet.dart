@@ -229,6 +229,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
       );
       return SingleChildScrollView(
         controller: scrollController,
+        physics: const ClampingScrollPhysics(),
         child: dragHandle,
       );
     }
