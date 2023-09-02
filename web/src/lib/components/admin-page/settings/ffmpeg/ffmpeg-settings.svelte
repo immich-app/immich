@@ -92,7 +92,7 @@
     <div in:fade={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
-          <p class="text-sm dark:text-immich-dark-fg">
+          <p class="dark:text-immich-dark-fg text-sm">
             <HelpCircleOutline class="inline" size="15" />
             To learn more about the terminology used here, refer to FFmpeg documentation for
             <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
@@ -225,30 +225,6 @@
           />
 
           <SettingSelect
-            label="HARDWARE ACCELERATION"
-            {disabled}
-            desc="Experimental. Much faster, but will have lower quality at the same bitrate. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
-            bind:value={ffmpegConfig.accel}
-            name="accel"
-            options={[
-              { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
-              {
-                value: TranscodeHWAccel.Qsv,
-                text: 'Quick Sync (requires 7th gen Intel CPU or later)',
-              },
-              {
-                value: TranscodeHWAccel.Vaapi,
-                text: 'VAAPI',
-              },
-              {
-                value: TranscodeHWAccel.Disabled,
-                text: 'Disabled',
-              },
-            ]}
-            isEdited={ffmpegConfig.accel !== savedConfig.accel}
-          />
-
-          <SettingSelect
             label="TONE-MAPPING"
             {disabled}
             desc="Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness."
@@ -284,10 +260,34 @@
           />
 
           <SettingAccordion
-            title="Advanced"
-            subtitle="You shouldn't need to change these settings unless you have a specific reason"
+            title="Hardware Acceleration"
+            subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
           >
             <div class="ml-4 mt-4 flex flex-col gap-4">
+              <SettingSelect
+                label="ACCELERATION API"
+                {disabled}
+                desc="The API that will interact with your device to accelerate transcoding. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
+                bind:value={ffmpegConfig.accel}
+                name="accel"
+                options={[
+                  { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
+                  {
+                    value: TranscodeHWAccel.Qsv,
+                    text: 'Quick Sync (requires 7th gen Intel CPU or later)',
+                  },
+                  {
+                    value: TranscodeHWAccel.Vaapi,
+                    text: 'VAAPI',
+                  },
+                  {
+                    value: TranscodeHWAccel.Disabled,
+                    text: 'Disabled',
+                  },
+                ]}
+                isEdited={ffmpegConfig.accel !== savedConfig.accel}
+              />
+
               <SettingSelect
                 label="CONSTANT QUALITY MODE"
                 desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will prefer the specified mode when using quality-based encoding. Ignored by NVENC as it does not support ICQ."
@@ -300,20 +300,32 @@
                 isEdited={ffmpegConfig.cqMode !== savedConfig.cqMode}
               />
 
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label="MAX B-FRAMES"
-                desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
-                bind:value={ffmpegConfig.bframes}
-                isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
-              />
-
               <SettingSwitch
                 title="TEMPORAL AQ"
                 {disabled}
                 subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
                 bind:checked={ffmpegConfig.temporalAQ}
                 isEdited={ffmpegConfig.temporalAQ !== savedConfig.temporalAQ}
+              />
+            </div>
+          </SettingAccordion>
+
+          <SettingAccordion title="Advanced" subtitle="Options most users should not need to change">
+            <div class="ml-4 mt-4 flex flex-col gap-4">
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="TONE-MAPPING NPL"
+                desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
+                bind:value={ffmpegConfig.npl}
+                isEdited={ffmpegConfig.npl !== savedConfig.npl}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label="MAX B-FRAMES"
+                desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+                bind:value={ffmpegConfig.bframes}
+                isEdited={ffmpegConfig.bframes !== savedConfig.bframes}
               />
 
               <SettingInputField
@@ -330,14 +342,6 @@
                 desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
                 bind:value={ffmpegConfig.gopSize}
                 isEdited={ffmpegConfig.gopSize !== savedConfig.gopSize}
-              />
-
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label="TONE-MAPPING NPL"
-                desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
-                bind:value={ffmpegConfig.npl}
-                isEdited={ffmpegConfig.npl !== savedConfig.npl}
               />
             </div>
           </SettingAccordion>
