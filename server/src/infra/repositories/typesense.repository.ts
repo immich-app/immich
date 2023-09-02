@@ -52,6 +52,8 @@ export class TypesenseRepository implements ISearchRepository {
   private logger = new Logger(TypesenseRepository.name);
 
   private _client: Client | null = null;
+  private _updateCLIPLock = false;
+
   private get client(): Client {
     if (!this._client) {
       throw new Error('Typesense client not available (no apiKey was provided)');
@@ -141,7 +143,7 @@ export class TypesenseRepository implements ISearchRepository {
         await this.updateAlias(collection);
       }
     } catch (error: any) {
-      this.handleError(error);
+      await this.handleError(error);
     }
   }
 
@@ -219,6 +221,30 @@ export class TypesenseRepository implements ISearchRepository {
   async deleteAllFaces(): Promise<number> {
     const records = await this.client.collections(faceSchema.name).documents().delete({ filter_by: 'ownerId:!=null' });
     return records.num_deleted;
+  }
+
+  async deleteAllAssets(): Promise<number> {
+    const records = await this.client.collections(assetSchema.name).documents().delete({ filter_by: 'ownerId:!=null' });
+    return records.num_deleted;
+  }
+
+  async updateCLIPField(num_dim: number): Promise<void> {
+    const clipField = assetSchema.fields?.find((field) => field.name === 'smartInfo.clipEmbedding');
+    if (clipField && !this._updateCLIPLock) {
+      try {
+        this._updateCLIPLock = true;
+        clipField.num_dim = num_dim;
+        await this.deleteAllAssets();
+        await this.client
+          .collections(assetSchema.name)
+          .update({ fields: [{ name: 'smartInfo.clipEmbedding', drop: true } as any, clipField] });
+        this.logger.log(`Successfully updated CLIP dimensions to ${num_dim}`);
+      } catch (err: any) {
+        this.logger.error(`Error while updating CLIP field: ${err.message}`);
+      } finally {
+        this._updateCLIPLock = false;
+      }
+    }
   }
 
   async delete(collection: SearchCollection, ids: string[]): Promise<void> {
@@ -326,21 +352,34 @@ export class TypesenseRepository implements ISearchRepository {
     } as SearchResult<T>;
   }
 
-  private handleError(error: any) {
+  private async handleError(error: any) {
     this.logger.error('Unable to index documents');
     const results = error.importResults || [];
+    let dimsChanged = false;
     for (const result of results) {
       try {
         result.document = JSON.parse(result.document);
+        if (result.error.includes('Field `smartInfo.clipEmbedding` must have')) {
+          dimsChanged = true;
+          this.logger.warn(
+            `CLIP embedding dimensions have changed, now ${result.document.smartInfo.clipEmbedding.length} dims. Updating schema...`,
+          );
+          await this.updateCLIPField(result.document.smartInfo.clipEmbedding.length);
+          break;
+        }
+
         if (result.document?.smartInfo?.clipEmbedding) {
           result.document.smartInfo.clipEmbedding = '<truncated>';
         }
-      } catch {}
+      } catch (err: any) {
+        this.logger.error(`Error while updating CLIP field: ${(err.message, err.stack)}`);
+      }
     }
 
-    this.logger.verbose(JSON.stringify(results, null, 2));
+    if (!dimsChanged) {
+      this.logger.log(JSON.stringify(results, null, 2));
+    }
   }
-
   private async updateAlias(collection: SearchCollection) {
     const schema = schemaMap[collection];
     const alias = await this.client

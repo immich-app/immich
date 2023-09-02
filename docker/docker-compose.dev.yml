@@ -34,7 +34,7 @@ services:
     ports:
       - 3003:3003
     volumes:
-      - ../machine-learning/app:/usr/src/app
+      - ../machine-learning:/usr/src/app
       - model-cache:/cache
     env_file:
       - .env
@@ -100,8 +100,8 @@ services:
     environment:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
       - TYPESENSE_DATA_DIR=/data
-    logging:
-      driver: none
+      # remove this to get debug messages
+      - GLOG_minloglevel=1
     volumes:
       - tsdata:/data
 

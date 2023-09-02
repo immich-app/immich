@@ -17,6 +17,7 @@ import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './response-dto';
 import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
@@ -55,6 +56,7 @@ const adminUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: 'admin',
   externalPath: null,
+  memoriesEnabled: true,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -74,9 +76,10 @@ const immichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  memoriesEnabled: true,
 });
 
-const updatedImmichUser: UserEntity = Object.freeze({
+const updatedImmichUser = Object.freeze<UserEntity>({
   id: immichUserAuth.id,
   email: 'immich@test.com',
   password: 'immich_password',
@@ -93,9 +96,10 @@ const updatedImmichUser: UserEntity = Object.freeze({
   assets: [],
   storageLabel: null,
   externalPath: null,
+  memoriesEnabled: true,
 });
 
-const adminUserResponse = Object.freeze({
+const adminUserResponse = Object.freeze<UserResponseDto>({
   id: adminUserAuth.id,
   email: 'admin@test.com',
   firstName: 'admin_first_name',
@@ -109,6 +113,7 @@ const adminUserResponse = Object.freeze({
   updatedAt: new Date('2021-01-01'),
   storageLabel: 'admin',
   externalPath: null,
+  memoriesEnabled: true,
 });
 
 describe(UserService.name, () => {
@@ -160,6 +165,7 @@ describe(UserService.name, () => {
           updatedAt: new Date('2021-01-01'),
           storageLabel: 'admin',
           externalPath: null,
+          memoriesEnabled: true,
         },
       ]);
     });

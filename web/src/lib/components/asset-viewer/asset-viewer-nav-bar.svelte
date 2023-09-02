@@ -1,7 +1,8 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { clickOutside } from '$lib/utils/click-outside';
-  import type { AssetResponseDto } from '@api';
+  import { AssetJobName, AssetResponseDto, AssetTypeEnum, api } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
@@ -11,14 +12,13 @@
   import Heart from 'svelte-material-icons/Heart.svelte';
   import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
   import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-  import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
   import MagnifyMinusOutline from 'svelte-material-icons/MagnifyMinusOutline.svelte';
+  import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
   import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -26,10 +26,27 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
+  export let showSlideshow = false;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
-  const dispatch = createEventDispatcher();
+  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
+
+  const dispatch = createEventDispatcher<{
+    goBack: void;
+    stopMotionPhoto: void;
+    playMotionPhoto: void;
+    download: void;
+    showDetail: void;
+    favorite: void;
+    delete: void;
+    toggleArchive: void;
+    addToAlbum: void;
+    addToSharedAlbum: void;
+    asProfileImage: void;
+    runJob: AssetJobName;
+    playSlideShow: void;
+  }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
@@ -39,7 +56,12 @@
     isShowAssetOptions = !isShowAssetOptions;
   };
 
-  const onMenuClick = (eventName: string) => {
+  const onJobClick = (name: AssetJobName) => {
+    isShowAssetOptions = false;
+    dispatch('runJob', name);
+  };
+
+  const onMenuClick = (eventName: MenuItemEvent) => {
     isShowAssetOptions = false;
     dispatch(eventName);
   };
@@ -114,22 +136,38 @@
     {#if isOwner}
       <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
-        <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={showOptionsMenu} title="More">
-          {#if isShowAssetOptions}
-            <ContextMenu {...contextMenuPosition} direction="left">
-              <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
-              <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
+        <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={showOptionsMenu} title="More" />
+        {#if isShowAssetOptions}
+          <ContextMenu {...contextMenuPosition} direction="left">
+            {#if showSlideshow}
+              <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+            {/if}
+            <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
+            <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
 
-              {#if isOwner}
+            {#if isOwner}
+              <MenuOption
+                on:click={() => dispatch('toggleArchive')}
+                text={asset.isArchived ? 'Unarchive' : 'Archive'}
+              />
+              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+              <MenuOption
+                on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
+                text={api.getAssetJobName(AssetJobName.RefreshMetadata)}
+              />
+              <MenuOption
+                on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
+                text={api.getAssetJobName(AssetJobName.RegenerateThumbnail)}
+              />
+              {#if asset.type === AssetTypeEnum.Video}
                 <MenuOption
-                  on:click={() => dispatch('toggleArchive')}
-                  text={asset.isArchived ? 'Unarchive' : 'Archive'}
+                  on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
+                  text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
               {/if}
-              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
-            </ContextMenu>
-          {/if}
-        </CircleIconButton>
+            {/if}
+          </ContextMenu>
+        {/if}
       </div>
     {/if}
   </div>

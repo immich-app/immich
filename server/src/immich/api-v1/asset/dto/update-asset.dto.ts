@@ -1,16 +1,17 @@
+import { Optional } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateAssetDto {
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isFavorite?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   isArchived?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -26,7 +27,7 @@ export class UpdateAssetDto {
   })
   tagIds?: string[];
 
-  @IsOptional()
+  @Optional()
   @IsString()
   description?: string;
 }

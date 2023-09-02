@@ -51,6 +51,7 @@ describe(JobService.name, () => {
         [{ name: JobName.USER_DELETE_CHECK }],
         [{ name: JobName.PERSON_CLEANUP }],
         [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
+        [{ name: JobName.CLEAN_OLD_AUDIT_LOGS }],
       ]);
     });
   });
@@ -252,6 +253,10 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
+        jobs: [JobName.LINK_LIVE_PHOTOS],
+      },
+      {
+        item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
         jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, JobName.SEARCH_INDEX_ASSET],
       },
       {

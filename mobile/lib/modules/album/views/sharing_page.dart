@@ -160,7 +160,7 @@ class SharingPage extends HookConsumerWidget {
                   maxLines: 1,
                 ).tr(),
               ),
-            )
+            ),
           ],
         ),
       );

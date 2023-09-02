@@ -58,7 +58,7 @@
 
   {#if person.name}
     <span
-      class="w-100 absolute bottom-2 left-0 w-full text-ellipsis px-1 text-center font-medium text-white backdrop-blur-[1px] hover:cursor-pointer"
+      class="w-100 text-white-shadow absolute bottom-2 left-0 w-full text-ellipsis px-1 text-center font-medium text-white hover:cursor-pointer"
     >
       {person.name}
     </span>

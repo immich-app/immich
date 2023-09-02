@@ -60,7 +60,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget buildSortButton() {
       final options = [
         "library_page_sort_created".tr(),
-        "library_page_sort_title".tr()
+        "library_page_sort_title".tr(),
       ];
 
       return PopupMenuButton(
@@ -87,7 +87,7 @@ class LibraryPage extends HookConsumerWidget {
                       color: selected ? Theme.of(context).primaryColor : null,
                       fontSize: 12.0,
                     ),
-                  )
+                  ),
                 ],
               ),
             );

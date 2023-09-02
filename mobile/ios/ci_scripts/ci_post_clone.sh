@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # The default execution directory of this script is the ci_scripts directory.
 cd $CI_WORKSPACE/mobile

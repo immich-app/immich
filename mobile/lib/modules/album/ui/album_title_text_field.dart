@@ -69,6 +69,11 @@ class AlbumTitleTextField extends ConsumerWidget {
           borderRadius: BorderRadius.circular(10),
         ),
         hintText: 'share_add_title'.tr(),
+        hintStyle: TextStyle(
+          fontSize: 28,
+          color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+          fontWeight: FontWeight.bold,
+        ),
         focusColor: Colors.grey[300],
         fillColor: isDarkTheme
             ? const Color.fromARGB(255, 32, 33, 35)

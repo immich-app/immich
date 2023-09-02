@@ -176,10 +176,14 @@ describe(AlbumService.name, () => {
           deletedAt: null,
           updatedAt: new Date('2021-01-01'),
           externalPath: null,
+          memoriesEnabled: true,
         },
         ownerId: 'admin_id',
         shared: false,
         sharedUsers: [],
+        startDate: undefined,
+        endDate: undefined,
+        hasSharedLink: false,
         updatedAt: expect.anything(),
       });
 
@@ -360,6 +364,7 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         sharedUsers: [],
       });
+      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.sharedWithUser.id, { withAssets: false });
     });
 
     it('should prevent removing a shared user from a not-owned album (shared with auth user)', async () => {
@@ -426,9 +431,9 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.admin, albumStub.oneAsset.id);
+      await sut.get(authStub.admin, albumStub.oneAsset.id, {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id);
+      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: true });
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
     });
 
@@ -436,9 +441,9 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedLinkAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.adminSharedLink, 'album-123');
+      await sut.get(authStub.adminSharedLink, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123');
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
       expect(accessMock.album.hasSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLinkId,
         'album-123',
@@ -449,9 +454,9 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
 
-      await sut.get(authStub.user1, 'album-123');
+      await sut.get(authStub.user1, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123');
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
       expect(accessMock.album.hasSharedAlbumAccess).toHaveBeenCalledWith(authStub.user1.id, 'album-123');
     });
 
@@ -459,7 +464,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(false);
 
-      await expect(sut.get(authStub.admin, 'album-123')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.get(authStub.admin, 'album-123', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-123');
       expect(accessMock.album.hasSharedAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-123');

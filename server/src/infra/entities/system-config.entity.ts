@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain/job/job.constants';
+import { QueueName } from '@app/domain';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
@@ -36,6 +36,21 @@ export enum SystemConfigKey {
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
   JOB_SIDECAR_CONCURRENCY = 'job.sidecar.concurrency',
+
+  MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
+  MACHINE_LEARNING_URL = 'machineLearning.url',
+
+  MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
+  MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
+  MACHINE_LEARNING_CLASSIFICATION_MIN_SCORE = 'machineLearning.classification.minScore',
+
+  MACHINE_LEARNING_CLIP_ENABLED = 'machineLearning.clip.enabled',
+  MACHINE_LEARNING_CLIP_MODEL_NAME = 'machineLearning.clip.modelName',
+
+  MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED = 'machineLearning.facialRecognition.enabled',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL_NAME = 'machineLearning.facialRecognition.modelName',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE = 'machineLearning.facialRecognition.minScore',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MAX_DISTANCE = 'machineLearning.facialRecognition.maxDistance',
 
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
@@ -107,6 +122,25 @@ export interface SystemConfig {
     tonemap: ToneMapping;
   };
   job: Record<QueueName, { concurrency: number }>;
+  machineLearning: {
+    enabled: boolean;
+    url: string;
+    classification: {
+      enabled: boolean;
+      modelName: string;
+      minScore: number;
+    };
+    clip: {
+      enabled: boolean;
+      modelName: string;
+    };
+    facialRecognition: {
+      enabled: boolean;
+      modelName: string;
+      minScore: number;
+      maxDistance: number;
+    };
+  };
   oauth: {
     enabled: boolean;
     issuerUrl: string;

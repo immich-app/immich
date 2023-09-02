@@ -20,7 +20,7 @@
         assetIdsDto: {
           assetIds: Array.from(getAssets()).map((asset) => asset.id),
         },
-        key: sharedLink.key,
+        key: api.getKey(),
       });
 
       for (const result of results) {

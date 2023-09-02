@@ -1,14 +1,16 @@
 import {
   AddUsersDto,
   AlbumCountResponseDto,
+  AlbumInfoDto,
+  AlbumResponseDto,
   AlbumService,
   AuthUserDto,
   BulkIdResponseDto,
   BulkIdsDto,
   CreateAlbumDto as CreateDto,
+  GetAlbumsDto,
   UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
-import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
@@ -40,8 +42,8 @@ export class AlbumController {
 
   @SharedLinkRoute()
   @Get(':id')
-  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.get(authUser, id);
+  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Query() dto: AlbumInfoDto) {
+    return this.service.get(authUser, id, dto);
   }
 
   @Patch(':id')
@@ -74,7 +76,11 @@ export class AlbumController {
   }
 
   @Put(':id/users')
-  addUsersToAlbum(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
+  addUsersToAlbum(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AddUsersDto,
+  ): Promise<AlbumResponseDto> {
     return this.service.addUsers(authUser, id, dto);
   }
 

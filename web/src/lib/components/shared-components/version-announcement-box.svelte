@@ -4,11 +4,13 @@
   import { api, type ServerVersionReponseDto } from '@api';
   import Button from '../elements/buttons/button.svelte';
 
+  export let serverVersion: ServerVersionResponseDto;
+
   let showModal = false;
   let releaseVersion: string;
   let currentVersion: string;
 
-  function semverToName({ major, minor, patch }: ServerVersionReponseDto) {
+  function semverToName({ major, minor, patch }: ServerVersionResponseDto) {
     return `v${major}.${minor}.${patch}`;
   }
 

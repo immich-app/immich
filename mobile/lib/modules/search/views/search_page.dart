@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
-import 'package:immich_mobile/modules/search/ui/curated_row.dart';
+import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
 import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
@@ -69,7 +69,7 @@ class SearchPage extends HookConsumerWidget {
 
     buildPeople() {
       return SizedBox(
-        height: MediaQuery.of(context).size.width / 3,
+        height: imageSize,
         child: curatedPeople.when(
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
@@ -105,7 +105,7 @@ class SearchPage extends HookConsumerWidget {
         child: curatedLocation.when(
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (locations) => CuratedRow(
+          data: (locations) => CuratedPlacesRow(
             content: locations
                 .map(
                   (o) => CuratedContent(
@@ -155,6 +155,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   top: 0,
                 ),
+                const SizedBox(height: 10.0),
                 buildPlaces(),
                 const SizedBox(height: 24.0),
                 Padding(

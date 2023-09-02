@@ -1,16 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { oauth, OAuthConfigResponseDto, UserResponseDto } from '@api';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { oauth, UserResponseDto } from '@api';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import Button from '../elements/buttons/button.svelte';
 
   export let user: UserResponseDto;
 
-  let config: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: true };
   let loading = true;
 
   onMount(async () => {
@@ -30,13 +30,6 @@
       } finally {
         goto('?open=oauth');
       }
-    }
-
-    try {
-      const { data } = await oauth.getConfig(window.location);
-      config = data;
-    } catch (error) {
-      handleError(error, 'Unable to load OAuth config');
     }
 
     loading = false;
@@ -63,13 +56,11 @@
         <div class="flex place-content-center place-items-center">
           <LoadingSpinner />
         </div>
-      {:else if config.enabled}
+      {:else if $featureFlags.oauth}
         {#if user.oauthId}
           <Button size="sm" on:click={() => handleUnlink()}>Unlink Oauth</Button>
         {:else}
-          <a href={config.url}>
-            <Button size="sm" on:click={() => handleUnlink()}>Link to OAuth</Button>
-          </a>
+          <Button size="sm" on:click={() => oauth.authorize(window.location)}>Link to OAuth</Button>
         {/if}
       {/if}
     </div>

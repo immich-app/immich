@@ -1,13 +1,11 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-  import { api } from '@api';
+  import { AllJobStatusResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import type { PageData } from './$types';
 
-  export let data: PageData;
   let timer: NodeJS.Timer;
 
-  $: jobs = data.jobs;
+  let jobs: AllJobStatusResponseDto;
 
   const load = async () => {
     const { data } = await api.jobApi.getAllJobsStatus();
@@ -24,4 +22,6 @@
   });
 </script>
 
-<JobsPanel {jobs} />
+{#if jobs}
+  <JobsPanel {jobs} />
+{/if}

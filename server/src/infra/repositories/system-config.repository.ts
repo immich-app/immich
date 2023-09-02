@@ -1,6 +1,7 @@
 import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
+import { readFile } from 'fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 
@@ -17,6 +18,8 @@ export class SystemConfigRepository implements ISystemConfigRepository {
   load(): Promise<SystemConfigEntity[]> {
     return this.repository.find();
   }
+
+  readFile = readFile;
 
   saveAll(items: SystemConfigEntity[]): Promise<SystemConfigEntity[]> {
     return this.repository.save(items);

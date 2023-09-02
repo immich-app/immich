@@ -2,23 +2,29 @@ import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
 import {
+  ServerFeaturesDto,
   ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
   UsageByUserDto,
-} from './response-dto';
+} from './server-info.dto';
 
 @Injectable()
 export class ServerInfoService {
   private storageCore = new StorageCore();
+  private configCore: SystemConfigCore;
 
   constructor(
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
     const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
@@ -38,11 +44,15 @@ export class ServerInfoService {
   }
 
   ping(): ServerPingResponse {
-    return new ServerPingResponse('pong');
+    return { res: 'pong' };
   }
 
   getVersion() {
     return serverVersion;
+  }
+
+  getFeatures(): Promise<ServerFeaturesDto> {
+    return this.configCore.getFeatures();
   }
 
   async getStats(): Promise<ServerStatsResponseDto> {
@@ -69,9 +79,9 @@ export class ServerInfoService {
 
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return {
-      video: [...Object.keys(mimeTypes.video)],
-      image: [...Object.keys(mimeTypes.image)],
-      sidecar: [...Object.keys(mimeTypes.sidecar)],
+      video: Object.keys(mimeTypes.video),
+      image: Object.keys(mimeTypes.image),
+      sidecar: Object.keys(mimeTypes.sidecar),
     };
   }
 }

@@ -1,4 +1,5 @@
 import {
+  AuditService,
   FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
@@ -35,11 +36,13 @@ export class AppService {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
+    private auditService: AuditService,
   ) {}
 
   async init() {
     await this.jobService.registerHandlers({
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
+      [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
       [JobName.QUEUE_OBJECT_TAGGING]: (data) => this.smartInfoService.handleQueueObjectTagging(data),
@@ -66,6 +69,7 @@ export class AppService {
       [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
       [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleQueueMetadataExtraction(data),
       [JobName.METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleMetadataExtraction(data),
+      [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataProcessor.handleLivePhotoLinking(data),
       [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
       [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
       [JobName.GENERATE_FACE_THUMBNAIL]: (data) => this.facialRecognitionService.handleGenerateFaceThumbnail(data),
@@ -86,5 +90,6 @@ export class AppService {
     });
 
     await this.metadataProcessor.init();
+    await this.searchService.init();
   }
 }

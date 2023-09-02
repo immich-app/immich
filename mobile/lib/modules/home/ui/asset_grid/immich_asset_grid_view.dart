@@ -35,6 +35,8 @@ class ImmichAssetGridView extends StatefulWidget {
       visibleItemsListener;
   final Widget? topWidget;
   final int heroOffset;
+  final bool shrinkWrap;
+  final bool showDragScroll;
 
   const ImmichAssetGridView({
     super.key,
@@ -52,6 +54,8 @@ class ImmichAssetGridView extends StatefulWidget {
     this.visibleItemsListener,
     this.topWidget,
     this.heroOffset = 0,
+    this.shrinkWrap = false,
+    this.showDragScroll = true,
   });
 
   @override
@@ -225,7 +229,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
             color: Colors.grey,
-          )
+          ),
       ],
     );
   }
@@ -248,8 +252,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (section.offset == 0 && widget.topWidget != null)
-              widget.topWidget!,
             if (section.type == RenderAssetGridElementType.monthTitle)
               _buildMonthTitle(context, section.date),
             if (section.type == RenderAssetGridElementType.groupDividerTitle ||
@@ -289,12 +291,26 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _itemBuilder(BuildContext c, int position) {
-    final item = widget.renderList.elements[position];
+    int index = position;
+    if (widget.topWidget != null) {
+      if (index == 0) {
+        return widget.topWidget!;
+      }
+      index--;
+    }
+
+    final item = widget.renderList.elements[index];
     return _buildSection(c, item, _scrolling);
   }
 
   Text _labelBuilder(int pos) {
-    final date = widget.renderList.elements[pos].date;
+    final maxLength = widget.renderList.elements.length;
+    if (pos < 0 || pos >= maxLength) {
+      return const Text("");
+    }
+
+    final date = widget.renderList.elements[pos % maxLength].date;
+
     return Text(
       DateFormat.yMMMM().format(date),
       style: const TextStyle(
@@ -312,7 +328,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _buildAssetGrid() {
-    final useDragScrolling = widget.renderList.totalAssets >= 20;
+    final useDragScrolling =
+        widget.showDragScroll && widget.renderList.totalAssets >= 20;
 
     void dragScrolling(bool active) {
       if (active != _scrolling) {
@@ -329,8 +346,10 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: widget.renderList.elements.length,
+      itemCount: widget.renderList.elements.length +
+          (widget.topWidget != null ? 1 : 0),
       addRepaintBoundaries: true,
+      shrinkWrap: widget.shrinkWrap,
     );
 
     final child = useDragScrolling

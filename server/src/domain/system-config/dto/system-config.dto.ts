@@ -5,15 +5,21 @@ import { IsObject, ValidateNested } from 'class-validator';
 import { SystemConfigCheckAvailableVersionDto } from './system-config-check-available-version.dto';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
+import { SystemConfigMachineLearningDto } from './system-config-machine-learning.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
 
-export class SystemConfigDto {
+export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
   @IsObject()
   ffmpeg!: SystemConfigFFmpegDto;
+
+  @Type(() => SystemConfigMachineLearningDto)
+  @ValidateNested()
+  @IsObject()
+  machineLearning!: SystemConfigMachineLearningDto;
 
   @Type(() => SystemConfigOAuthDto)
   @ValidateNested()

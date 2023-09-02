@@ -15,6 +15,7 @@
 
   let infoPrimaryColor = '#4250AF';
   let errorPrimaryColor = '#E64132';
+  let warningPrimaryColor = '#D08613';
 
   $: icon = notificationInfo.type === NotificationType.Error ? CloseCircleOutline : InformationOutline;
 
@@ -26,6 +27,10 @@
     if (notificationInfo.type === NotificationType.Error) {
       return '#FBE8E6';
     }
+
+    if (notificationInfo.type === NotificationType.Warning) {
+      return '#FFF6DC';
+    }
   };
 
   $: borderStyle = () => {
@@ -36,6 +41,10 @@
     if (notificationInfo.type === NotificationType.Error) {
       return '1px solid #F0E8E7';
     }
+
+    if (notificationInfo.type === NotificationType.Warning) {
+      return '1px solid #FFE6A5';
+    }
   };
 
   $: primaryColor = () => {
@@ -45,6 +54,10 @@
 
     if (notificationInfo.type === NotificationType.Error) {
       return errorPrimaryColor;
+    }
+
+    if (notificationInfo.type === NotificationType.Warning) {
+      return warningPrimaryColor;
     }
   };
 

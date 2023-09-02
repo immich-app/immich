@@ -1,7 +1,7 @@
 import 'package:openapi/api.dart';
 
 class ServerInfoState {
-  final ServerVersionReponseDto serverVersion;
+  final ServerVersionResponseDto serverVersion;
   final bool isVersionMismatch;
   final String versionMismatchErrorMessage;
 
@@ -12,7 +12,7 @@ class ServerInfoState {
   });
 
   ServerInfoState copyWith({
-    ServerVersionReponseDto? serverVersion,
+    ServerVersionResponseDto? serverVersion,
     bool? isVersionMismatch,
     String? versionMismatchErrorMessage,
   }) {
