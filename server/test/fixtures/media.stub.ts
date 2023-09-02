@@ -20,7 +20,7 @@ const probeStubDefaultVideoStream: VideoStreamInfo[] = [
 ];
 
 const probeStubDefaultAudioStream: AudioStreamInfo[] = [
-  { index: 0, codecName: 'aac', codecType: 'audio', frameCount: 100 },
+  { index: 1, codecName: 'aac', codecType: 'audio', frameCount: 100 },
 ];
 
 const probeStubDefault: VideoInfo = {
@@ -119,7 +119,7 @@ export const probeStub = {
   }),
   audioStreamMp3: Object.freeze<VideoInfo>({
     ...probeStubDefault,
-    audioStreams: [{ index: 0, codecType: 'audio', codecName: 'aac', frameCount: 100 }],
+    audioStreams: [{ index: 1, codecType: 'audio', codecName: 'aac', frameCount: 100 }],
   }),
   matroskaContainer: Object.freeze<VideoInfo>({
     ...probeStubDefault,

@@ -41,10 +41,10 @@ class BaseConfig implements VideoCodecSWConfig {
       '-movflags faststart',
       '-fps_mode passthrough',
       // explicitly selects the video stream instead of leaving it up to FFmpeg
-      `-map 0:v:${videoStream.index}`,
+      `-map 0:${videoStream.index}`,
     ];
     if (audioStream) {
-      options.push(`-map 0:a:${audioStream.index}`);
+      options.push(`-map 0:${audioStream.index}`);
     }
     return options;
   }
