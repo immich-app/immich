@@ -18,6 +18,7 @@ import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { SystemConfigDto } from './dto';
 import { ISystemConfigRepository } from './system-config.repository';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 

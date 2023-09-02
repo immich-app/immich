@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import FullScreenModal from './full-screen-modal.svelte';
-  import { api, type ServerVersionReponseDto } from '@api';
+  import { api, ServerVersionResponseDto } from '@api';
   import Button from '../elements/buttons/button.svelte';
 
   export let serverVersion: ServerVersionResponseDto;

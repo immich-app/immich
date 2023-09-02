@@ -1,13 +1,12 @@
 import {
   ISystemConfigRepository,
   JobService,
-  MACHINE_LEARNING_ENABLED,
   SearchService,
-  StorageService,
-  SystemConfigService,
   ServerInfoService,
+  StorageService,
+  SystemConfigCore,
+  SystemConfigService,
 } from '@app/domain';
-import { SystemConfigCore } from '@app/domain/system-config/system-config.core';
 import { checkIntervalTime } from '@app/infra';
 import { SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -53,7 +52,6 @@ export class AppService {
     }
   }
 
-
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async onNightlyJob() {
     await this.jobService.handleNightlyJobs();
@@ -63,8 +61,6 @@ export class AppService {
     this.storageService.init();
     await this.searchService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
-    this.logger.log(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
-    this.logger.log(`Search is ${this.searchService.isEnabled() ? 'enabled' : 'disabled'}`);
 
     const config = await this.configCore.getConfig();
     if (config.checkAvailableVersion.enabled) {
@@ -76,7 +72,6 @@ export class AppService {
       this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
     }
   }
-
 
   async destroy() {
     this.searchService.teardown();
