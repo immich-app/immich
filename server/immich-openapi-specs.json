@@ -7042,6 +7042,9 @@
           "targetVideoCodec": {
             "$ref": "#/components/schemas/VideoCodec"
           },
+          "temporalAQ": {
+            "type": "boolean"
+          },
           "threads": {
             "type": "integer"
           },
@@ -7071,6 +7074,7 @@
           "preset",
           "targetResolution",
           "maxBitrate",
+          "temporalAQ",
           "twoPass"
         ],
         "type": "object"

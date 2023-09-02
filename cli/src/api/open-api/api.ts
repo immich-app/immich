@@ -2895,6 +2895,12 @@ export interface SystemConfigFFmpegDto {
     'targetVideoCodec': VideoCodec;
     /**
      * 
+     * @type {boolean}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'temporalAQ': boolean;
+    /**
+     * 
      * @type {number}
      * @memberof SystemConfigFFmpegDto
      */

@@ -76,6 +76,11 @@ void main() {
       // TODO
     });
 
+    // bool temporalAQ
+    test('to test the property `temporalAQ`', () async {
+      // TODO
+    });
+
     // int threads
     test('to test the property `threads`', () async {
       // TODO

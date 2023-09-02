@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **targetAudioCodec** | [**AudioCodec**](AudioCodec.md) |  | 
 **targetResolution** | **String** |  | 
 **targetVideoCodec** | [**VideoCodec**](VideoCodec.md) |  | 
+**temporalAQ** | **bool** |  | 
 **threads** | **int** |  | 
 **tonemap** | [**ToneMapping**](ToneMapping.md) |  | 
 **transcode** | [**TranscodePolicy**](TranscodePolicy.md) |  | 

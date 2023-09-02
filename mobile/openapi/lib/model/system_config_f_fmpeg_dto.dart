@@ -25,6 +25,7 @@ class SystemConfigFFmpegDto {
     required this.targetAudioCodec,
     required this.targetResolution,
     required this.targetVideoCodec,
+    required this.temporalAQ,
     required this.threads,
     required this.tonemap,
     required this.transcode,
@@ -55,6 +56,8 @@ class SystemConfigFFmpegDto {
 
   VideoCodec targetVideoCodec;
 
+  bool temporalAQ;
+
   int threads;
 
   ToneMapping tonemap;
@@ -77,6 +80,7 @@ class SystemConfigFFmpegDto {
      other.targetAudioCodec == targetAudioCodec &&
      other.targetResolution == targetResolution &&
      other.targetVideoCodec == targetVideoCodec &&
+     other.temporalAQ == temporalAQ &&
      other.threads == threads &&
      other.tonemap == tonemap &&
      other.transcode == transcode &&
@@ -97,13 +101,14 @@ class SystemConfigFFmpegDto {
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
     (targetVideoCodec.hashCode) +
+    (temporalAQ.hashCode) +
     (threads.hashCode) +
     (tonemap.hashCode) +
     (transcode.hashCode) +
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -119,6 +124,7 @@ class SystemConfigFFmpegDto {
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
       json[r'targetVideoCodec'] = this.targetVideoCodec;
+      json[r'temporalAQ'] = this.temporalAQ;
       json[r'threads'] = this.threads;
       json[r'tonemap'] = this.tonemap;
       json[r'transcode'] = this.transcode;
@@ -146,6 +152,7 @@ class SystemConfigFFmpegDto {
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
         targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
         targetVideoCodec: VideoCodec.fromJson(json[r'targetVideoCodec'])!,
+        temporalAQ: mapValueOfType<bool>(json, r'temporalAQ')!,
         threads: mapValueOfType<int>(json, r'threads')!,
         tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
         transcode: TranscodePolicy.fromJson(json[r'transcode'])!,
@@ -209,6 +216,7 @@ class SystemConfigFFmpegDto {
     'targetAudioCodec',
     'targetResolution',
     'targetVideoCodec',
+    'temporalAQ',
     'threads',
     'tonemap',
     'transcode',
