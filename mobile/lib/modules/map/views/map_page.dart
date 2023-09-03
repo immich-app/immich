@@ -386,6 +386,7 @@ class MapPageState extends ConsumerState<MapPage> {
             builder: (ctx) => GestureDetector(
               onTap: () => openAssetInViewer(closestAssetMarker.value!.asset),
               child: AssetMarkerIcon(
+                key: Key(closestAssetMarker.value!.asset.remoteId!),
                 isDarkTheme: isDarkTheme,
                 id: closestAssetMarker.value!.asset.remoteId!,
               ),
