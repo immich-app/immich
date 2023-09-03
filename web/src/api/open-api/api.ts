@@ -912,6 +912,21 @@ export type CLIPMode = typeof CLIPMode[keyof typeof CLIPMode];
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const CQMode = {
+    Auto: 'auto',
+    Cqp: 'cqp',
+    Icq: 'icq'
+} as const;
+
+export type CQMode = typeof CQMode[keyof typeof CQMode];
+
+
+/**
+ * 
+ * @export
  * @interface ChangePasswordDto
  */
 export interface ChangePasswordDto {
@@ -1029,6 +1044,20 @@ export interface ClassificationConfig {
      */
     'modelType'?: ModelType;
 }
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const Colorspace = {
+    Srgb: 'srgb',
+    P3: 'p3'
+} as const;
+
+export type Colorspace = typeof Colorspace[keyof typeof Colorspace];
 
 
 /**
@@ -2817,7 +2846,25 @@ export interface SystemConfigFFmpegDto {
      * @type {number}
      * @memberof SystemConfigFFmpegDto
      */
+    'bframes': number;
+    /**
+     * 
+     * @type {CQMode}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'cqMode': CQMode;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
     'crf': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'gopSize': number;
     /**
      * 
      * @type {string}
@@ -2826,10 +2873,22 @@ export interface SystemConfigFFmpegDto {
     'maxBitrate': string;
     /**
      * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'npl': number;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
     'preset': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'refs': number;
     /**
      * 
      * @type {AudioCodec}
@@ -2848,6 +2907,12 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'targetVideoCodec': VideoCodec;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'temporalAQ': boolean;
     /**
      * 
      * @type {number}
@@ -3135,6 +3200,12 @@ export interface SystemConfigTemplateStorageOptionDto {
 export interface SystemConfigThumbnailDto {
     /**
      * 
+     * @type {Colorspace}
+     * @memberof SystemConfigThumbnailDto
+     */
+    'colorspace': Colorspace;
+    /**
+     * 
      * @type {number}
      * @memberof SystemConfigThumbnailDto
      */
@@ -3144,8 +3215,16 @@ export interface SystemConfigThumbnailDto {
      * @type {number}
      * @memberof SystemConfigThumbnailDto
      */
+    'quality': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigThumbnailDto
+     */
     'webpSize': number;
 }
+
+
 /**
  * 
  * @export

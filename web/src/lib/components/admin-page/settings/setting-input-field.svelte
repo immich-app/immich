@@ -13,8 +13,8 @@
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
-  export let min = Number.MIN_VALUE.toString();
-  export let max = Number.MAX_VALUE.toString();
+  export let min = Number.MIN_SAFE_INTEGER.toString();
+  export let max = Number.MAX_SAFE_INTEGER.toString();
   export let step = '1';
   export let label = '';
   export let desc = '';
