@@ -76,6 +76,8 @@ export enum SystemConfigKey {
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
+  THUMBNAIL_QUALITY = 'thumbnail.quality',
+  THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
 }
 
 export enum TranscodePolicy {
@@ -115,6 +117,11 @@ export enum CQMode {
   AUTO = 'auto',
   CQP = 'cqp',
   ICQ = 'icq',
+}
+
+export enum Colorspace {
+  SRGB = 'srgb',
+  P3 = 'p3',
 }
 
 export interface SystemConfig {
@@ -179,5 +186,7 @@ export interface SystemConfig {
   thumbnail: {
     webpSize: number;
     jpegSize: number;
+    quality: number;
+    colorspace: Colorspace;
   };
 }

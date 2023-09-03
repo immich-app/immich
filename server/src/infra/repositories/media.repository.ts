@@ -1,8 +1,10 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { Colorspace } from '@app/infra/entities';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
+import { Writable } from 'stream';
 import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
@@ -11,7 +13,7 @@ sharp.concurrency(0);
 export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
 
-  crop(input: string, options: CropOptions): Promise<Buffer> {
+  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
       .extract({
         left: options.left,
@@ -23,10 +25,25 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
+    let colorProfile = options.colorspace;
+    if (options.colorspace !== Colorspace.SRGB) {
+      try {
+        const { space } = await sharp(input).metadata();
+        // if the image is already in srgb, keep it that way
+        if (space === 'srgb') {
+          colorProfile = Colorspace.SRGB;
+        }
+      } catch (err) {
+        this.logger.warn(`Could not determine colorspace of image, defaulting to ${colorProfile} profile`);
+      }
+    }
+    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+    sharp(input, { failOn: 'none' })
+      .pipelineColorspace('rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .toFormat(options.format)
+      .withMetadata({ icc: colorProfile })
+      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
       .toFile(output);
   }
 
@@ -61,7 +78,7 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
@@ -75,6 +92,10 @@ export class MediaRepository implements IMediaRepository {
           .on('end', resolve)
           .run();
       });
+    }
+
+    if (typeof output !== 'string') {
+      throw new Error('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice

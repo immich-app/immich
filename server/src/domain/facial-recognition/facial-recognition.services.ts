@@ -162,8 +162,15 @@ export class FacialRecognitionService {
       height: newHalfSize * 2,
     };
 
+    const { thumbnail } = await this.configCore.getConfig();
     const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
-    await this.mediaRepository.resize(croppedOutput, output, { size: FACE_THUMBNAIL_SIZE, format: 'jpeg' });
+    const thumbnailOptions = {
+      format: 'jpeg',
+      size: FACE_THUMBNAIL_SIZE,
+      colorspace: thumbnail.colorspace,
+      quality: thumbnail.quality,
+    } as const;
+    await this.mediaRepository.resize(croppedOutput, output, thumbnailOptions);
     await this.personRepository.update({ id: personId, thumbnailPath: output });
 
     return true;

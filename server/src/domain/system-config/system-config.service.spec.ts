@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  Colorspace,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -94,6 +95,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
+    quality: 80,
+    colorspace: Colorspace.P3,
   },
 });
 

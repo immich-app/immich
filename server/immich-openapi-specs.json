@@ -5523,6 +5523,13 @@
         ],
         "type": "object"
       },
+      "Colorspace": {
+        "enum": [
+          "srgb",
+          "p3"
+        ],
+        "type": "string"
+      },
       "CreateAlbumDto": {
         "properties": {
           "albumName": {
@@ -7284,7 +7291,13 @@
       },
       "SystemConfigThumbnailDto": {
         "properties": {
+          "colorspace": {
+            "$ref": "#/components/schemas/Colorspace"
+          },
           "jpegSize": {
+            "type": "integer"
+          },
+          "quality": {
             "type": "integer"
           },
           "webpSize": {
@@ -7293,7 +7306,9 @@
         },
         "required": [
           "webpSize",
-          "jpegSize"
+          "jpegSize",
+          "quality",
+          "colorspace"
         ],
         "type": "object"
       },

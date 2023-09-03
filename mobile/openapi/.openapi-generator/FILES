@@ -44,6 +44,7 @@ doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/ClassificationConfig.md
+doc/Colorspace.md
 doc/CreateAlbumDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
@@ -199,6 +200,7 @@ lib/model/check_existing_assets_response_dto.dart
 lib/model/classification_config.dart
 lib/model/clip_config.dart
 lib/model/clip_mode.dart
+lib/model/colorspace.dart
 lib/model/cq_mode.dart
 lib/model/create_album_dto.dart
 lib/model/create_profile_image_response_dto.dart
@@ -326,6 +328,7 @@ test/check_existing_assets_response_dto_test.dart
 test/classification_config_test.dart
 test/clip_config_test.dart
 test/clip_mode_test.dart
+test/colorspace_test.dart
 test/cq_mode_test.dart
 test/create_album_dto_test.dart
 test/create_profile_image_response_dto_test.dart

@@ -263,8 +263,11 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
+  getBaseInputOptions(): string[] {
+    return ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'];
+  }
   getBaseOutputOptions() {
-    return ['-ss 00:00:00.000', '-frames:v 1'];
+    return ['-frames:v 1'];
   }
 
   getPresetOptions() {
@@ -277,16 +280,16 @@ export class ThumbnailConfig extends BaseConfig {
 
   getScaling(videoStream: VideoStreamInfo) {
     let options = super.getScaling(videoStream);
+    options += ':flags=lanczos+accurate_rnd+bitexact+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=bt601:out_range=pc';
+      options += ':out_color_matrix=601:out_range=pc';
     }
     return options;
   }
 
   getColors() {
     return {
-      // jpeg and webp only support bt.601, so we need to convert to that directly when tone-mapping to avoid color shifts
-      primaries: 'bt470bg',
+      primaries: 'bt709',
       transfer: '601',
       matrix: 'bt470bg',
     };
