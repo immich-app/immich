@@ -1,5 +1,7 @@
 import {
   AudioCodec,
+  CQMode,
+  Colorspace,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -42,6 +44,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     maxBitrate: '0',
+    bframes: -1,
+    refs: 0,
+    gopSize: 0,
+    npl: 0,
+    temporalAQ: false,
+    cqMode: CQMode.AUTO,
     twoPass: false,
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
@@ -88,6 +96,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
+    quality: 80,
+    colorspace: Colorspace.P3,
   },
 });
 

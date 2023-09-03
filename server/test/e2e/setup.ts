@@ -2,7 +2,7 @@ import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { GenericContainer } from 'testcontainers';
 export default async () => {
   process.env.NODE_ENV = 'development';
-  process.env.TYPESENSE_API_KEY = 'abc123';
+  process.env.TYPESENSE_ENABLED = 'false';
 
   const pg = await new PostgreSqlContainer('postgres')
     .withExposedPorts(5432)

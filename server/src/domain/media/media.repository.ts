@@ -1,10 +1,13 @@
 import { VideoCodec } from '@app/infra/entities';
+import { Writable } from 'stream';
 
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
   size: number;
   format: 'webp' | 'jpeg';
+  colorspace: string;
+  quality: number;
 }
 
 export interface VideoStreamInfo {
@@ -73,5 +76,5 @@ export interface IMediaRepository {
 
   // video
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void>;
 }
