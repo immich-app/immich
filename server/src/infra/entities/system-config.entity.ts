@@ -21,6 +21,12 @@ export enum SystemConfigKey {
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
+  FFMPEG_BFRAMES = 'ffmpeg.bframes',
+  FFMPEG_REFS = 'ffmpeg.refs',
+  FFMPEG_GOP_SIZE = 'ffmpeg.gopSize',
+  FFMPEG_NPL = 'ffmpeg.npl',
+  FFMPEG_TEMPORAL_AQ = 'ffmpeg.temporalAQ',
+  FFMPEG_CQ_MODE = 'ffmpeg.cqMode',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   FFMPEG_ACCEL = 'ffmpeg.accel',
@@ -105,6 +111,12 @@ export enum ToneMapping {
   DISABLED = 'disabled',
 }
 
+export enum CQMode {
+  AUTO = 'auto',
+  CQP = 'cqp',
+  ICQ = 'icq',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -114,6 +126,12 @@ export interface SystemConfig {
     targetAudioCodec: AudioCodec;
     targetResolution: string;
     maxBitrate: string;
+    bframes: number;
+    refs: number;
+    gopSize: number;
+    npl: number;
+    temporalAQ: boolean;
+    cqMode: CQMode;
     twoPass: boolean;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;

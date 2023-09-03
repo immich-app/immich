@@ -5415,6 +5415,14 @@
         ],
         "type": "string"
       },
+      "CQMode": {
+        "enum": [
+          "auto",
+          "cqp",
+          "icq"
+        ],
+        "type": "string"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -7001,14 +7009,29 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "bframes": {
+            "type": "integer"
+          },
+          "cqMode": {
+            "$ref": "#/components/schemas/CQMode"
+          },
           "crf": {
+            "type": "integer"
+          },
+          "gopSize": {
             "type": "integer"
           },
           "maxBitrate": {
             "type": "string"
           },
+          "npl": {
+            "type": "integer"
+          },
           "preset": {
             "type": "string"
+          },
+          "refs": {
+            "type": "integer"
           },
           "targetAudioCodec": {
             "$ref": "#/components/schemas/AudioCodec"
@@ -7018,6 +7041,9 @@
           },
           "targetVideoCodec": {
             "$ref": "#/components/schemas/VideoCodec"
+          },
+          "temporalAQ": {
+            "type": "boolean"
           },
           "threads": {
             "type": "integer"
@@ -7037,12 +7063,18 @@
           "threads",
           "targetVideoCodec",
           "targetAudioCodec",
+          "bframes",
+          "refs",
+          "gopSize",
+          "npl",
+          "cqMode",
           "transcode",
           "accel",
           "tonemap",
           "preset",
           "targetResolution",
           "maxBitrate",
+          "temporalAQ",
           "twoPass"
         ],
         "type": "object"

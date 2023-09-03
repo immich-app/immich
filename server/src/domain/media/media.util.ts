@@ -1,4 +1,4 @@
-import { ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
 import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
@@ -9,9 +9,10 @@ import {
   VideoStreamInfo,
 } from './media.repository';
 class BaseConfig implements VideoCodecSWConfig {
+  presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
+  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(),
       outputOptions: this.getBaseOutputOptions(videoStream, audioStream).concat('-v verbose'),
@@ -32,15 +33,30 @@ class BaseConfig implements VideoCodecSWConfig {
     return [];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
-    return [
-      `-c:v:${videoStream.index} ${this.getVideoCodec()}`,
-      `-c:a:${audioStream.index} ${this.getAudioCodec()}`,
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = [
+      `-c:v ${this.getVideoCodec()}`,
+      `-c:a ${this.getAudioCodec()}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
       '-fps_mode passthrough',
+      // explicitly selects the video stream instead of leaving it up to FFmpeg
+      `-map 0:${videoStream.index}`,
     ];
+    if (audioStream) {
+      options.push(`-map 0:${audioStream.index}`);
+    }
+    if (this.getBFrames() > -1) {
+      options.push(`-bf ${this.getBFrames()}`);
+    }
+    if (this.getRefs() > 0) {
+      options.push(`-refs ${this.getRefs()}`);
+    }
+    if (this.getGopSize() > 0) {
+      options.push(`-g ${this.getGopSize()}`);
+    }
+    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -72,12 +88,12 @@ class BaseConfig implements VideoCodecSWConfig {
     } else if (bitrates.max > 0) {
       // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
       return [
-        `-crf ${this.config.crf}`,
+        `-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
         `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
       ];
     } else {
-      return [`-crf ${this.config.crf}`];
+      return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`];
     }
   }
 
@@ -149,8 +165,7 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getPresetIndex() {
-    const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-    return presets.indexOf(this.config.preset);
+    return this.presets.indexOf(this.config.preset);
   }
 
   getColors() {
@@ -161,14 +176,20 @@ class BaseConfig implements VideoCodecSWConfig {
     };
   }
 
+  getNPL() {
+    if (this.config.npl <= 0) {
+      // since hable already outputs a darker image, we use a lower npl value for it
+      return this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
+    } else {
+      return this.config.npl;
+    }
+  }
+
   getToneMapping() {
     const colors = this.getColors();
-    // npl stands for nominal peak luminance
-    // lower npl values result in brighter output (compensating for dimmer screens)
-    // since hable already outputs a darker image, we use a lower npl value for it
-    const npl = this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
+
     return [
-      `zscale=t=linear:npl=${npl}`,
+      `zscale=t=linear:npl=${this.getNPL()}`,
       `tonemap=${this.config.tonemap}:desat=0`,
       `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
     ];
@@ -180,6 +201,22 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getVideoCodec(): string {
     return this.config.targetVideoCodec;
+  }
+
+  getBFrames() {
+    return this.config.bframes;
+  }
+
+  getRefs() {
+    return this.config.refs;
+  }
+
+  getGopSize() {
+    return this.config.gopSize;
+  }
+
+  useCQP() {
+    return this.config.cqMode === CQMode.CQP;
   }
 }
 
@@ -215,6 +252,13 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
   getVideoCodec(): string {
     return `${this.config.targetVideoCodec}_${this.config.accel}`;
+  }
+
+  getGopSize() {
+    if (this.config.gopSize <= 0) {
+      return 256;
+    }
+    return this.config.gopSize;
   }
 }
 
@@ -294,7 +338,7 @@ export class VP9Config extends BaseConfig {
       ];
     }
 
-    return [`-crf ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
+    return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
   }
 
   getThreadOptions() {
@@ -311,20 +355,23 @@ export class NVENCConfig extends BaseHWConfig {
     return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
-    return [
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
       '-tune hq',
       '-qmin 0',
-      '-g 250',
-      '-bf 3',
-      '-b_ref_mode middle',
-      '-temporal-aq 1',
       '-rc-lookahead 20',
       '-i_qfactor 0.75',
-      '-b_qfactor 1.1',
       ...super.getBaseOutputOptions(videoStream, audioStream),
     ];
+    if (this.getBFrames() > 0) {
+      options.push('-b_ref_mode middle');
+      options.push('-b_qfactor 1.1');
+    }
+    if (this.config.temporalAQ) {
+      options.push('-temporal-aq 1');
+    }
+    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -369,6 +416,14 @@ export class NVENCConfig extends BaseHWConfig {
   getThreadOptions() {
     return [];
   }
+
+  getRefs() {
+    const bframes = this.getBFrames();
+    if (bframes > 0 && bframes < 3 && this.config.refs < 3) {
+      return 0;
+    }
+    return this.config.refs;
+  }
 }
 
 export class QSVConfig extends BaseHWConfig {
@@ -379,15 +434,8 @@ export class QSVConfig extends BaseHWConfig {
     return ['-init_hw_device qsv=hw', '-filter_hw_device hw'];
   }
 
-  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo) {
-    // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
-    const options = [
-      '-g 256',
-      '-extbrc 1',
-      '-refs 5',
-      '-bf 7',
-      ...super.getBaseOutputOptions(videoStream, audioStream),
-    ];
+  getBaseOutputOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const options = super.getBaseOutputOptions(videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
@@ -415,17 +463,32 @@ export class QSVConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const options = [];
-    if (this.config.targetVideoCodec !== VideoCodec.VP9) {
-      options.push(`-global_quality ${this.config.crf}`);
-    } else {
-      options.push(`-q:v ${this.config.crf}`);
-    }
+    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`);
       options.push(`-bufsize ${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
+  }
+
+  // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
+  getBFrames() {
+    if (this.config.bframes < 0) {
+      return 7;
+    }
+    return this.config.bframes;
+  }
+
+  getRefs() {
+    if (this.config.refs <= 0) {
+      return 5;
+    }
+    return this.config.refs;
+  }
+
+  useCQP() {
+    return this.config.cqMode === CQMode.CQP || this.config.targetVideoCodec === VideoCodec.VP9;
   }
 }
 
@@ -458,16 +521,30 @@ export class VAAPIConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
+    const options = [];
+
+    if (this.config.targetVideoCodec === VideoCodec.VP9) {
+      options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
+    }
+
     // VAAPI doesn't allow setting both quality and max bitrate
     if (bitrates.max > 0) {
-      return [
+      options.push(
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
         '-rc_mode 3',
-      ]; // variable bitrate
+      ); // variable bitrate
+    } else if (this.useCQP()) {
+      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1');
     } else {
-      return [`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1']; // constant quality
+      options.push(`-global_quality ${this.config.crf}`, '-rc_mode 4');
     }
+
+    return options;
+  }
+
+  useCQP() {
+    return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
   }
 }

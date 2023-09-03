@@ -73,6 +73,7 @@ part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';
 part 'model/clip_config.dart';
 part 'model/clip_mode.dart';
+part 'model/cq_mode.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';
