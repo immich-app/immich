@@ -274,6 +274,7 @@
                         on:click={() => {
                           closeAll();
                           editImportPaths = index;
+                          updateLibraryIndex = index;
                         }}>Edit Import Paths</DropdownItem
                       >
                       <DropdownItem class="flex items-center justify-between">

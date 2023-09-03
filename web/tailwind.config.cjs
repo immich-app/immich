@@ -22,7 +22,7 @@ module.exports = {
         'immich-dark-error': '#d32f2f',
         'immich-dark-success': '#388e3c',
         'immich-dark-warning': '#f57c00',
-        
+
         // flowbite-svelte
         primary: {
           50: '#FFF5F2',
