@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toEmail, toSanitized } from '../../domain.util';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { toEmail, toSanitized, Optional } from '../../domain.util';
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })
@@ -19,16 +19,16 @@ export class CreateUserDto {
   @IsString()
   lastName!: string;
 
-  @IsOptional()
+  @Optional({ nullable: true })
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @IsOptional()
+  @Optional({ nullable: true })
   @IsString()
   externalPath?: string | null;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
 }

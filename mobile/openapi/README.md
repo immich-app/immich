@@ -124,6 +124,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
+*OAuthApi* | [**authorizeOAuth**](doc//OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
@@ -210,12 +211,14 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CLIPMode](doc//CLIPMode.md)
+ - [CQMode](doc//CQMode.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [ClassificationConfig](doc//ClassificationConfig.md)
+ - [Colorspace](doc//Colorspace.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
@@ -244,6 +247,7 @@ Class | Method | HTTP request | Description
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [ModelType](doc//ModelType.md)
+ - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)

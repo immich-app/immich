@@ -14,25 +14,18 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { api, TimeBucketSize } from '@api';
-  import { onMount } from 'svelte';
+  import { TimeBucketSize } from '@api';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
-  let assetCount = 1;
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-
-  onMount(async () => {
-    const { data: stats } = await api.assetApi.getAssetStats({ isArchived: true });
-    assetCount = stats.total;
-  });
 </script>
 
 {#if $isMultiSelectState}
@@ -52,10 +45,12 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={!assetCount}>
-  {#if assetCount}
-    <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE} />
-  {:else}
-    <EmptyPlaceholder text="Archive photos and videos to hide them from your Photos view" alt="Empty archive" />
-  {/if}
+<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
+  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+    <EmptyPlaceholder
+      text="Archive photos and videos to hide them from your Photos view"
+      alt="Empty archive"
+      slot="empty"
+    />
+  </AssetGrid>
 </UserPageLayout>

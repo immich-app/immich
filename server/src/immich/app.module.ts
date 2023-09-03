@@ -1,7 +1,7 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
-import { Module } from '@nestjs/common';
+import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -66,4 +66,14 @@ import {
     FileUploadInterceptor,
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit, OnModuleDestroy {
+  constructor(private appService: AppService) {}
+
+  async onModuleInit() {
+    await this.appService.init();
+  }
+
+  onModuleDestroy() {
+    this.appService.destroy();
+  }
+}

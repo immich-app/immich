@@ -46,23 +46,22 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Ports
 
-| Variable                | Description           | Default | Services         |
-| :---------------------- | :-------------------- | :-----: | :--------------- |
-| `PORT`                  | Web Port              | `3000`  | web              |
-| `SERVER_PORT`           | Server Port           | `3001`  | server           |
-| `MICROSERVICES_PORT`    | Microservices Port    | `3002`  | microservices    |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port | `3003`  | machine learning |
+| Variable                | Description           |  Default  | Services         |
+| :---------------------- | :-------------------- | :-------: | :--------------- |
+| `PORT`                  | Web Port              |  `3000`   | web              |
+| `SERVER_PORT`           | Server Port           |  `3001`   | server           |
+| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices    |
+| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
+| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
 
 ## URLs
 
-| Variable                          | Description                  |                Default                | Services              |
-| :-------------------------------- | :--------------------------- | :-----------------------------------: | :-------------------- |
-| `IMMICH_WEB_URL`                  | Immich Web URL               |       `http://immich-web:3000`        | proxy                 |
-| `IMMICH_SERVER_URL`               | Immich Server URL            |      `http://immich-server:3001`      | web, proxy            |
-| `IMMICH_MACHINE_LEARNING_ENABLED` | Enabled machine learning     |                `true`                 | server, microservices |
-| `IMMICH_MACHINE_LEARNING_URL`     | Immich Machine Learning URL, | `http://immich-machine-learning:3003` | server, microservices |
-| `PUBLIC_IMMICH_SERVER_URL`        | Public Immich URL            |      `http://immich-server:3001`      | web                   |
-| `IMMICH_API_URL_EXTERNAL`         | Immich API URL External      |                `/api`                 | web                   |
+| Variable                   | Description             |           Default           | Services   |
+| :------------------------- | :---------------------- | :-------------------------: | :--------- |
+| `IMMICH_WEB_URL`           | Immich Web URL          |  `http://immich-web:3000`   | proxy      |
+| `IMMICH_SERVER_URL`        | Immich Server URL       | `http://immich-server:3001` | web, proxy |
+| `PUBLIC_IMMICH_SERVER_URL` | Public Immich URL       | `http://immich-server:3001` | web        |
+| `IMMICH_API_URL_EXTERNAL`  | Immich API URL External |           `/api`            | web        |
 
 :::info
 
@@ -178,18 +177,21 @@ Typesense URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                    | Description                    |        Default        | Services         |
-| :------------------------------------------ | :----------------------------- | :-------------------: | :--------------- |
-| `MACHINE_LEARNING_MIN_FACE_SCORE`           | Minimum Face Score             |         `0.7`         | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL`                | Model TTL                      |         `300`         | machine learning |
-| `MACHINE_LEARNING_EAGER_STARTUP`            | Eager Startup                  |        `true`         | machine learning |
-| `MACHINE_LEARNING_MIN_TAG_SCORE`            | Minimum Tag Score              |         `0.9`         | machine learning |
-| `MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL` | Facial Recognition Model       |      `buffalo_l`      | machine learning |
-| `MACHINE_LEARNING_CLIP_TEXT_MODEL`          | Clip Text Model                |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLIP_IMAGE_MODEL`         | Clip Image Model               |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLASSIFICATION_MODEL`     | Classification Model           | `microsoft/resnet-50` | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`             | ML Cache Location              |       `/cache`        | machine learning |
-| `TRANSFORMERS_CACHE`                        | ML Transformers Cache Location |       `/cache`        | machine learning |
+| Variable                                         | Description                                |       Default       | Services         |
+| :----------------------------------------------- | :----------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                     | Model TTL                                  |        `300`        | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | ML Cache Location                          |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Request thread pool size                   | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations        |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation |         `2`         | machine learning |
+
+\*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
+
+:::info
+
+Other machine learning parameters can be tuned from the admin UI.
+
+:::
 
 ## Docker Secrets
 

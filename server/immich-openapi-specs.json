@@ -2477,6 +2477,37 @@
         ]
       }
     },
+    "/oauth/authorize": {
+      "post": {
+        "operationId": "authorizeOAuth",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthConfigDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthAuthorizeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -2510,6 +2541,8 @@
     },
     "/oauth/config": {
       "post": {
+        "deprecated": true,
+        "description": "@deprecated use feature flags and /oauth/authorize",
         "operationId": "generateConfig",
         "parameters": [],
         "requestBody": {
@@ -5382,6 +5415,14 @@
         ],
         "type": "string"
       },
+      "CQMode": {
+        "enum": [
+          "auto",
+          "cqp",
+          "icq"
+        ],
+        "type": "string"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -5481,6 +5522,13 @@
           "modelName"
         ],
         "type": "object"
+      },
+      "Colorspace": {
+        "enum": [
+          "srgb",
+          "p3"
+        ],
+        "type": "string"
       },
       "CreateAlbumDto": {
         "properties": {
@@ -6202,6 +6250,17 @@
         ],
         "type": "string"
       },
+      "OAuthAuthorizeResponseDto": {
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
       "OAuthCallbackDto": {
         "properties": {
           "url": {
@@ -6287,7 +6346,7 @@
       "PeopleUpdateItem": {
         "properties": {
           "birthDate": {
-            "description": "Person date of birth.",
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
             "format": "date",
             "nullable": true,
             "type": "string"
@@ -6346,7 +6405,7 @@
       "PersonUpdateDto": {
         "properties": {
           "birthDate": {
-            "description": "Person date of birth.",
+            "description": "Person date of birth.\nNote: the mobile app cannot currently set the birth date to null.",
             "format": "date",
             "nullable": true,
             "type": "string"
@@ -6957,14 +7016,29 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "bframes": {
+            "type": "integer"
+          },
+          "cqMode": {
+            "$ref": "#/components/schemas/CQMode"
+          },
           "crf": {
+            "type": "integer"
+          },
+          "gopSize": {
             "type": "integer"
           },
           "maxBitrate": {
             "type": "string"
           },
+          "npl": {
+            "type": "integer"
+          },
           "preset": {
             "type": "string"
+          },
+          "refs": {
+            "type": "integer"
           },
           "targetAudioCodec": {
             "$ref": "#/components/schemas/AudioCodec"
@@ -6974,6 +7048,9 @@
           },
           "targetVideoCodec": {
             "$ref": "#/components/schemas/VideoCodec"
+          },
+          "temporalAQ": {
+            "type": "boolean"
           },
           "threads": {
             "type": "integer"
@@ -6993,12 +7070,18 @@
           "threads",
           "targetVideoCodec",
           "targetAudioCodec",
+          "bframes",
+          "refs",
+          "gopSize",
+          "npl",
+          "cqMode",
           "transcode",
           "accel",
           "tonemap",
           "preset",
           "targetResolution",
           "maxBitrate",
+          "temporalAQ",
           "twoPass"
         ],
         "type": "object"
@@ -7208,7 +7291,13 @@
       },
       "SystemConfigThumbnailDto": {
         "properties": {
+          "colorspace": {
+            "$ref": "#/components/schemas/Colorspace"
+          },
           "jpegSize": {
+            "type": "integer"
+          },
+          "quality": {
             "type": "integer"
           },
           "webpSize": {
@@ -7217,7 +7306,9 @@
         },
         "required": [
           "webpSize",
-          "jpegSize"
+          "jpegSize",
+          "quality",
+          "colorspace"
         ],
         "type": "object"
       },

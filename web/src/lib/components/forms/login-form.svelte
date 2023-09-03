@@ -2,8 +2,9 @@
   import { goto } from '$app/navigation';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { OAuthConfigResponseDto, api, oauth } from '@api';
+  import { api, oauth } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -11,14 +12,18 @@
   let errorMessage: string;
   let email = '';
   let password = '';
-  let oauthError: string;
-  export let authConfig: OAuthConfigResponseDto;
+  let oauthError = '';
   let loading = false;
   let oauthLoading = true;
 
   const dispatch = createEventDispatcher();
 
   onMount(async () => {
+    if (!$featureFlags.oauth) {
+      oauthLoading = false;
+      return;
+    }
+
     if (oauth.isCallback(window.location)) {
       try {
         await oauth.login(window.location);
@@ -26,25 +31,18 @@
         return;
       } catch (e) {
         console.error('Error [login-form] [oauth.callback]', e);
-        oauthError = 'Unable to complete OAuth login';
-      } finally {
+        oauthError = (await getServerErrorMessage(e)) || 'Unable to complete OAuth login';
         oauthLoading = false;
       }
     }
 
     try {
-      const { data } = await oauth.getConfig(window.location);
-      authConfig = data;
-
-      const { enabled, url, autoLaunch } = authConfig;
-
-      if (enabled && url && autoLaunch && !oauth.isAutoLaunchDisabled(window.location)) {
+      if ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(window.location)) {
         await goto(`${AppRoute.AUTH_LOGIN}?autoLaunch=0`, { replaceState: true });
-        await goto(url);
+        await oauth.authorize(window.location);
         return;
       }
     } catch (error) {
-      authConfig.passwordLoginEnabled = true;
       await handleError(error, 'Unable to connect!');
     }
 
@@ -76,9 +74,15 @@
       return;
     }
   };
+
+  const handleOAuthLogin = async () => {
+    oauthLoading = true;
+    oauthError = '';
+    await oauth.authorize(window.location);
+  };
 </script>
 
-{#if authConfig.passwordLoginEnabled}
+{#if !oauthLoading && $featureFlags.passwordLogin}
   <form on:submit|preventDefault={login} class="mt-5 flex flex-col gap-5">
     {#if errorMessage}
       <p class="text-red-400" transition:fade>
@@ -113,7 +117,7 @@
     </div>
 
     <div class="my-5 flex w-full">
-      <Button type="submit" size="lg" fullwidth disabled={loading || oauthLoading}>
+      <Button type="submit" size="lg" fullwidth disabled={loading}>
         {#if loading}
           <span class="h-6">
             <LoadingSpinner />
@@ -126,8 +130,8 @@
   </form>
 {/if}
 
-{#if authConfig.enabled}
-  {#if authConfig.passwordLoginEnabled}
+{#if $featureFlags.oauth}
+  {#if $featureFlags.passwordLogin}
     <div class="inline-flex w-full items-center justify-center">
       <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
       <span
@@ -139,28 +143,27 @@
   {/if}
   <div class="my-5 flex flex-col gap-5">
     {#if oauthError}
-      <p class="text-red-400" transition:fade>{oauthError}</p>
+      <p class="text-center text-red-400" transition:fade>{oauthError}</p>
     {/if}
-    <a href={authConfig.url} class="flex w-full">
-      <Button
-        type="button"
-        disabled={loading || oauthLoading}
-        size="lg"
-        fullwidth
-        color={authConfig.passwordLoginEnabled ? 'secondary' : 'primary'}
-      >
-        {#if oauthLoading}
-          <span class="h-6">
-            <LoadingSpinner />
-          </span>
-        {:else}
-          {authConfig.buttonText || 'Login with OAuth'}
-        {/if}
-      </Button>
-    </a>
+    <Button
+      type="button"
+      disabled={loading || oauthLoading}
+      size="lg"
+      fullwidth
+      color={$featureFlags.passwordLogin ? 'secondary' : 'primary'}
+      on:click={handleOAuthLogin}
+    >
+      {#if oauthLoading}
+        <span class="h-6">
+          <LoadingSpinner />
+        </span>
+      {:else}
+        {$featureFlags.passwordLogin ? 'Login with OAuth' : 'Login'}
+      {/if}
+    </Button>
   </div>
 {/if}
 
-{#if !authConfig.enabled && !authConfig.passwordLoginEnabled}
+{#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
   <p class="p-4 text-center dark:text-immich-dark-fg">Login has been disabled.</p>
 {/if}

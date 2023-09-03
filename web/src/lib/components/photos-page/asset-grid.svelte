@@ -324,6 +324,22 @@
 >
   {#if element}
     <slot />
+
+    <!-- skeleton -->
+    {#if !$assetStore.initialized}
+      <div class="ml-[14px] mt-5">
+        <div class="flex w-[120%] flex-wrap">
+          {#each Array(100) as _}
+            <div class="m-[1px] h-[10em] w-[16em] animate-pulse bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- (optional) empty placeholder -->
+    {#if $assetStore.initialized && $assetStore.buckets.length === 0}
+      <slot name="empty" />
+    {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
       {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver

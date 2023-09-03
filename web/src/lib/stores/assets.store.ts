@@ -40,6 +40,7 @@ export class AssetStore {
   private store$ = writable(this);
   private assetToBucket: Record<string, AssetLookup> = {};
 
+  initialized = false;
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
   assets: AssetResponseDto[] = [];
@@ -52,6 +53,7 @@ export class AssetStore {
   subscribe = this.store$.subscribe;
 
   async init(viewport: Viewport) {
+    this.initialized = false;
     this.timelineHeight = 0;
     this.buckets = [];
     this.assets = [];
@@ -62,6 +64,8 @@ export class AssetStore {
       ...this.options,
       key: api.getKey(),
     });
+
+    this.initialized = true;
 
     this.buckets = buckets.map((bucket) => {
       const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);

@@ -4,8 +4,9 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginCredentialDto {
   @IsEmail({ require_tld: false })
+  @Transform(({ value }) => value?.toLowerCase())
+  @IsNotEmpty()
   @ApiProperty({ example: 'testuser@email.com' })
-  @Transform(({ value }) => value.toLowerCase())
   email!: string;
 
   @IsString()

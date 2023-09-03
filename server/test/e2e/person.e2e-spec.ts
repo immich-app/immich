@@ -40,7 +40,20 @@ describe(`${PersonController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    it('should not accept invalid dates', async () => {
+    for (const key of ['name', 'featureFaceAssetId', 'isHidden']) {
+      it(`should not allow null ${key}`, async () => {
+        const personRepository = app.get<IPersonRepository>(IPersonRepository);
+        const person = await personRepository.create({ ownerId: loginResponse.userId });
+        const { status, body } = await request(server)
+          .put(`/person/${person.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest);
+      });
+    }
+
+    it('should not accept invalid birth dates', async () => {
       for (const birthDate of [false, 'false', '123567', 123456]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)
@@ -50,6 +63,7 @@ describe(`${PersonController.name}`, () => {
         expect(body).toEqual(errorStub.badRequest);
       }
     });
+
     it('should update a date of birth', async () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: loginResponse.userId });

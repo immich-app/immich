@@ -13,31 +13,43 @@ part of openapi.api;
 class SystemConfigThumbnailDto {
   /// Returns a new [SystemConfigThumbnailDto] instance.
   SystemConfigThumbnailDto({
+    required this.colorspace,
     required this.jpegSize,
+    required this.quality,
     required this.webpSize,
   });
 
+  Colorspace colorspace;
+
   int jpegSize;
+
+  int quality;
 
   int webpSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThumbnailDto &&
+     other.colorspace == colorspace &&
      other.jpegSize == jpegSize &&
+     other.quality == quality &&
      other.webpSize == webpSize;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (colorspace.hashCode) +
     (jpegSize.hashCode) +
+    (quality.hashCode) +
     (webpSize.hashCode);
 
   @override
-  String toString() => 'SystemConfigThumbnailDto[jpegSize=$jpegSize, webpSize=$webpSize]';
+  String toString() => 'SystemConfigThumbnailDto[colorspace=$colorspace, jpegSize=$jpegSize, quality=$quality, webpSize=$webpSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'colorspace'] = this.colorspace;
       json[r'jpegSize'] = this.jpegSize;
+      json[r'quality'] = this.quality;
       json[r'webpSize'] = this.webpSize;
     return json;
   }
@@ -50,7 +62,9 @@ class SystemConfigThumbnailDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigThumbnailDto(
+        colorspace: Colorspace.fromJson(json[r'colorspace'])!,
         jpegSize: mapValueOfType<int>(json, r'jpegSize')!,
+        quality: mapValueOfType<int>(json, r'quality')!,
         webpSize: mapValueOfType<int>(json, r'webpSize')!,
       );
     }
@@ -99,7 +113,9 @@ class SystemConfigThumbnailDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'colorspace',
     'jpegSize',
+    'quality',
     'webpSize',
   };
 }

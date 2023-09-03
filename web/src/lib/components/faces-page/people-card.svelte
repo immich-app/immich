@@ -43,11 +43,18 @@
 >
   <a href="/people/{person.id}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
-      <ImageThumbnail shadow url={api.getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" />
+      <ImageThumbnail
+        shadow
+        url={api.getPeopleThumbnailUrl(person.id)}
+        altText={person.name}
+        title={person.name}
+        widthStyle="100%"
+      />
     </div>
     {#if person.name}
       <span
         class="text-white-shadow absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white"
+        title={person.name}
       >
         {person.name}
       </span>

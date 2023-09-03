@@ -1,87 +1,87 @@
 import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toBoolean } from '../../domain.util';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { toBoolean, Optional } from '../../domain.util';
 
 export class SearchDto {
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   q?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   query?: string;
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   clip?: boolean;
 
   @IsEnum(AssetType)
-  @IsOptional()
+  @Optional()
   type?: AssetType;
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   isFavorite?: boolean;
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   isArchived?: boolean;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.city'?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.state'?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.country'?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.make'?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.model'?: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
+  @Optional()
   'exifInfo.projectionType'?: string;
 
   @IsString({ each: true })
   @IsArray()
-  @IsOptional()
+  @Optional()
   @Transform(({ value }) => value.split(','))
   'smartInfo.objects'?: string[];
 
   @IsString({ each: true })
   @IsArray()
-  @IsOptional()
+  @Optional()
   @Transform(({ value }) => value.split(','))
   'smartInfo.tags'?: string[];
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   recent?: boolean;
 
   @IsBoolean()
-  @IsOptional()
+  @Optional()
   @Transform(toBoolean)
   motion?: boolean;
 }

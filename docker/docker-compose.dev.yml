@@ -34,7 +34,7 @@ services:
     ports:
       - 3003:3003
     volumes:
-      - ../machine-learning/app:/usr/src/app
+      - ../machine-learning:/usr/src/app
       - model-cache:/cache
     env_file:
       - .env

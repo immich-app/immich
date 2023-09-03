@@ -239,6 +239,8 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CLIPMode':
           return CLIPModeTypeTransformer().decode(value);
+        case 'CQMode':
+          return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
@@ -251,6 +253,8 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'ClassificationConfig':
           return ClassificationConfig.fromJson(value);
+        case 'Colorspace':
+          return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
@@ -307,6 +311,8 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
+        case 'OAuthAuthorizeResponseDto':
+          return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':

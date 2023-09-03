@@ -17,25 +17,18 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeBucketSize, api } from '@api';
-  import { onMount } from 'svelte';
+  import { TimeBucketSize } from '@api';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
-  let assetCount = 1;
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-
-  onMount(async () => {
-    const { data: stats } = await api.assetApi.getAssetStats({ isArchived: false });
-    assetCount = stats.total;
-  });
 </script>
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton>
@@ -59,14 +52,15 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="content">
-    {#if assetCount}
-      <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
-        {#if data.user.memoriesEnabled}
-          <MemoryLane />
-        {/if}
-      </AssetGrid>
-    {:else}
-      <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" actionHandler={() => openFileUploadDialog()} />
-    {/if}
+    <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE}>
+      {#if data.user.memoriesEnabled}
+        <MemoryLane />
+      {/if}
+      <EmptyPlaceholder
+        text="CLICK TO UPLOAD YOUR FIRST PHOTO"
+        actionHandler={() => openFileUploadDialog()}
+        slot="empty"
+      />
+    </AssetGrid>
   </svelte:fragment>
 </UserPageLayout>

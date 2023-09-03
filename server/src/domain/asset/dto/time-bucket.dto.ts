@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toBoolean, ValidateUUID } from '../../domain.util';
+import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { toBoolean, ValidateUUID, Optional } from '../../domain.util';
 import { TimeBucketSize } from '../asset.repository';
 
 export class TimeBucketDto {
@@ -19,12 +19,12 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true })
   personId?: string;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isArchived?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
   isFavorite?: boolean;
