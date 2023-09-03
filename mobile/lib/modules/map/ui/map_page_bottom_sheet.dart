@@ -179,7 +179,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
           ? "${assetsInBound.value.length} photo${assetsInBound.value.length > 1 ? "s" : ""}"
           : "map_no_assets_in_bounds".tr();
       final dragHandle = Container(
-        height: 75,
+        height: 60,
         width: double.infinity,
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
@@ -190,9 +190,9 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 12),
+                const SizedBox(height: 5),
                 const CustomDraggingHandle(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
                 Text(
                   textToDisplay,
                   style: TextStyle(
@@ -202,6 +202,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                   ),
                 ),
                 Divider(
+                  height: 10,
                   color: Theme.of(context)
                       .textTheme
                       .displayLarge
