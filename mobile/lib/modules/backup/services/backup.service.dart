@@ -202,8 +202,9 @@ class BackupService {
     Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
-    Function(ErrorUploadAsset) errorCb,
-  ) async {
+    Function(ErrorUploadAsset) errorCb, {
+    bool oldestFirst = true,
+  }) async {
     if (Platform.isAndroid &&
         !(await Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
@@ -222,13 +223,14 @@ class BackupService {
     await PhotoManager.requestPermissionExtend();
 
     // Upload images before video assets
-    // these are further sorted by using their creation date so the upload goes as follows
-    // older images -> latest images -> older videos -> latest videos
+    // these are further sorted by using their creation date
     List<AssetEntity> sortedAssets = assetList.sorted(
       (a, b) {
         final cmp = a.typeInt - b.typeInt;
         if (cmp != 0) return cmp;
-        return a.createDateTime.compareTo(b.createDateTime);
+        return oldestFirst
+            ? a.createDateTime.compareTo(b.createDateTime)
+            : b.createDateTime.compareTo(a.createDateTime);
       },
     );
 

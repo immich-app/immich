@@ -464,6 +464,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onUploadProgress,
         _onSetCurrentBackupAsset,
         _onBackupError,
+        oldestFirst: false,
       );
       await notifyBackgroundServiceCanRun();
     } else {
