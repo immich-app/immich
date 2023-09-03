@@ -51,7 +51,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     super.initState();
     bottomSheetController = DraggableScrollableController();
     debounce = Debounce(
-      const Duration(milliseconds: 200),
+      const Duration(milliseconds: 100),
     );
   }
 
