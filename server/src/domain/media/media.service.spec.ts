@@ -9,12 +9,14 @@ import {
 } from '@app/infra/entities';
 import {
   assetStub,
+  faceStub,
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  personStub,
   probeStub,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -28,10 +30,10 @@ import { MediaService } from './media.service';
 describe(MediaService.name, () => {
   let sut: MediaService;
   let assetMock: jest.Mocked<IAssetRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
@@ -55,6 +57,8 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -64,6 +68,24 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          imageWidth: faceStub.face1.imageWidth,
+          imageHeight: faceStub.face1.imageHeight,
+          boundingBox: {
+            x1: faceStub.face1.boundingBoxX1,
+            x2: faceStub.face1.boundingBoxX2,
+            y1: faceStub.face1.boundingBoxY1,
+            y2: faceStub.face1.boundingBoxY2,
+          },
+          assetId: faceStub.face1.assetId,
+          personId: personStub.newThumbnail.id,
+        },
+      });
     });
 
     it('should queue all assets with missing resize path', async () => {
@@ -71,6 +93,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noResizePath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -87,6 +110,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noWebpPath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -103,6 +127,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noThumbhash],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -255,6 +280,7 @@ describe(MediaService.name, () => {
         items: [assetStub.video],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([]);
 
       await sut.handleQueueVideoConversion({ force: true });
 
