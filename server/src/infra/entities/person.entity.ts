@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetFaceEntity } from './asset-face.entity';
-import { UserEntity } from './user.entity';
 import { AssetEntity } from './asset.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('person')
 export class PersonEntity {
