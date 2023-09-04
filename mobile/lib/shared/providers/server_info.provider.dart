@@ -5,6 +5,7 @@ import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:version/version.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   ServerInfoNotifier(this._serverInfoService)
@@ -38,23 +39,15 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
     var packageInfo = await PackageInfo.fromPlatform();
 
-    Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
+    Version currentAppVersion = Version.parse(packageInfo.version);
+    Version currentServerVersion =
+        Version.parse(serverVersionReponseToString(serverVersion));
 
-    if (appVersion["major"]! > serverVersion.major) {
+    if (currentAppVersion > currentServerVersion) {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "Server is out of date in major version. Some functionalities might not work correctly. Download and rebuild server",
-      );
-
-      return;
-    }
-
-    if (appVersion["minor"]! > serverVersion.minor) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date in minor version. Some functionalities might not work correctly. Consider download and rebuild server",
+            "version_outdated_menu_msg".tr(),
       );
 
       return;
@@ -66,18 +59,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     );
   }
 
-  Map<String, int> _getDetailVersion(String version) {
-    List<String> detail = version.split(".");
-
-    var major = detail[0];
-    var minor = detail[1];
-    var patch = detail[2];
-
-    return {
-      "major": int.parse(major),
-      "minor": int.parse(minor),
-      "patch": int.parse(patch.replaceAll("-DEBUG", "")),
-    };
+  String serverVersionReponseToString(ServerVersionReponseDto dto) {
+    return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 }
 

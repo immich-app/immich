@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -26,7 +28,11 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
       valueListenable:
           VersionAnnouncementOverlayController.appLoader.loaderShowingNotifier,
       builder: (context, shouldShow, child) {
-        if (shouldShow) {
+
+        final User? currUser = Store.tryGet(StoreKey.currentUser);
+
+        // Only logged in admin user can see the new version announcement
+        if (shouldShow && currUser != null && currUser.isAdmin) {
           return Scaffold(
             backgroundColor: Colors.black38,
             body: Center(
@@ -130,6 +136,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
             ),
           );
         } else {
+          VersionAnnouncementOverlayController.appLoader.hide();
           return const SizedBox();
         }
       },

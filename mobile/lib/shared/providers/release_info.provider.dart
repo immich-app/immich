@@ -3,12 +3,30 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
+import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
+import 'package:version/version.dart';
 
-class ReleaseInfoNotifier extends StateNotifier<String> {
-  ReleaseInfoNotifier() : super("");
+class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
+  ReleaseInfoNotifier(this._serverInfoService)
+      : super(
+          ServerInfoState(
+            serverVersion: ServerVersionReponseDto(
+              major: 0,
+              patch_: 0,
+              minor: 0,
+            ),
+            isVersionMismatch: false,
+            versionMismatchErrorMessage: "",
+          ),
+        );
+  final ServerInfoService _serverInfoService;
+
   final log = Logger('ReleaseInfoNotifier');
   void checkGithubReleaseInfo() async {
     final Client client = Client();
@@ -23,18 +41,40 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
         headers: {"Accept": "application/vnd.github.v3+json"},
       );
 
+      ServerVersionReponseDto? serverVersion =
+          await _serverInfoService.getServerVersion();
+
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        String latestTagVersion = data["tag_name"];
-        state = latestTagVersion;
+        String latestTagVersion = data["tag_name"].replaceAll("v", "");
+        List<String> latestTagVersionSectioned = latestTagVersion.split(".");
+        state = state.copyWith(
+          serverVersion: ServerVersionReponseDto(
+            major: latestTagVersionSectioned[0].toInt(),
+            patch_: latestTagVersionSectioned[2].toInt(),
+            minor: latestTagVersionSectioned[1].toInt(),
+          ),
+        );
 
-        if (localReleaseVersion == null && latestTagVersion.isNotEmpty) {
-          VersionAnnouncementOverlayController.appLoader.show();
+        // If server is already updated, ignore the new version announcement
+        if (serverVersion != null &&
+            Version.parse(serverVersionReponseToString(serverVersion)) ==
+                Version.parse(latestTagVersion)) {
+          debugPrint("Server is already updated");
           return;
         }
 
+        if (localReleaseVersion == null && latestTagVersion.isNotEmpty) {
+          VersionAnnouncementOverlayController.appLoader.show();
+          debugPrint("Release accouncement has not been shown yet");
+          return;
+        }
+
+        // If local release version is not the same as the latest release version, show the new version announcement
         if (latestTagVersion.isNotEmpty &&
-            localReleaseVersion != latestTagVersion) {
+            (localReleaseVersion == null ||
+                Version.parse(localReleaseVersion.replaceAll("v", "")) <
+                    Version.parse(latestTagVersion))) {
           VersionAnnouncementOverlayController.appLoader.show();
           return;
         }
@@ -42,8 +82,20 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
     } catch (e) {
       debugPrint("Error gettting latest release version");
 
-      state = "";
+      state = ServerInfoState(
+        serverVersion: ServerVersionReponseDto(
+          major: 0,
+          patch_: 0,
+          minor: 0,
+        ),
+        isVersionMismatch: false,
+        versionMismatchErrorMessage: "",
+      );
     }
+  }
+
+  String serverVersionReponseToString(ServerVersionReponseDto dto) {
+    return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 
   void acknowledgeNewVersion() {
@@ -52,6 +104,7 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
   }
 }
 
-final releaseInfoProvider = StateNotifierProvider<ReleaseInfoNotifier, String>(
-  (ref) => ReleaseInfoNotifier(),
-);
+final releaseInfoProvider =
+    StateNotifierProvider<ReleaseInfoNotifier, ServerInfoState>((ref) {
+  return ReleaseInfoNotifier(ref.watch(serverInfoServiceProvider));
+});

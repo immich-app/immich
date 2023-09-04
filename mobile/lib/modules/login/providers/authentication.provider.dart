@@ -112,6 +112,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
+        Store.delete(StoreKey.githubReleaseInfo),
       ]);
 
       state = state.copyWith(isAuthenticated: false);
