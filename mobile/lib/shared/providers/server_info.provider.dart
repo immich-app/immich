@@ -59,7 +59,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     );
   }
 
-  String serverVersionReponseToString(ServerVersionReponseDto dto) {
+  String serverVersionReponseToString(ServerVersionResponseDto dto) {
     return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 }

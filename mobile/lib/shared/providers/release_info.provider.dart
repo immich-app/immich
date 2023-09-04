@@ -16,7 +16,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
   ReleaseInfoNotifier(this._serverInfoService)
       : super(
           ServerInfoState(
-            serverVersion: ServerVersionReponseDto(
+            serverVersion: ServerVersionResponseDto(
               major: 0,
               patch_: 0,
               minor: 0,
@@ -41,7 +41,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
         headers: {"Accept": "application/vnd.github.v3+json"},
       );
 
-      ServerVersionReponseDto? serverVersion =
+      ServerVersionResponseDto? serverVersion =
           await _serverInfoService.getServerVersion();
 
       if (res.statusCode == 200) {
@@ -49,7 +49,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
         String latestTagVersion = data["tag_name"].replaceAll("v", "");
         List<String> latestTagVersionSectioned = latestTagVersion.split(".");
         state = state.copyWith(
-          serverVersion: ServerVersionReponseDto(
+          serverVersion: ServerVersionResponseDto(
             major: latestTagVersionSectioned[0].toInt(),
             patch_: latestTagVersionSectioned[2].toInt(),
             minor: latestTagVersionSectioned[1].toInt(),
@@ -83,7 +83,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
       debugPrint("Error gettting latest release version");
 
       state = ServerInfoState(
-        serverVersion: ServerVersionReponseDto(
+        serverVersion: ServerVersionResponseDto(
           major: 0,
           patch_: 0,
           minor: 0,
@@ -94,7 +94,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
     }
   }
 
-  String serverVersionReponseToString(ServerVersionReponseDto dto) {
+  String serverVersionReponseToString(ServerVersionResponseDto dto) {
     return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 
