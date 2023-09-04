@@ -55,7 +55,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   getAllWithoutThumbnail(): Promise<PersonEntity[]> {
-    return this.personRepository.createQueryBuilder('person').where('LENGTH(person.thumbnailPath) = 0').getMany();
+    return this.personRepository.createQueryBuilder('person').where("person.thumbnailPath = ''").getMany();
   }
 
   getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
