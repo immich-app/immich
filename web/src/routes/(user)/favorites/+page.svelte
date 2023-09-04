@@ -14,31 +14,24 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { api, TimeBucketSize } from '@api';
-  import { onMount } from 'svelte';
+  import { TimeBucketSize } from '@api';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
-  let assetCount = 1;
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isFavorite: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-
-  onMount(async () => {
-    const { data: stats } = await api.assetApi.getAssetStats({ isFavorite: true });
-    assetCount = stats.total;
-  });
 </script>
 
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onAssetFavorite={(asset) => assetStore.removeAsset(asset.id)} />
+    <FavoriteAction removeFavorite onFavorite={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={Plus} title="Add">
@@ -53,10 +46,12 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={!assetCount}>
-  {#if assetCount}
-    <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE} />
-  {:else}
-    <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" alt="Empty favorites" />
-  {/if}
+<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
+  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
+    <EmptyPlaceholder
+      text="Add favorites to quickly find your best pictures and videos"
+      alt="Empty favorites"
+      slot="empty"
+    />
+  </AssetGrid>
 </UserPageLayout>

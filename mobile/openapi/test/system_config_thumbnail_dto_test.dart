@@ -16,8 +16,18 @@ void main() {
   // final instance = SystemConfigThumbnailDto();
 
   group('test SystemConfigThumbnailDto', () {
+    // Colorspace colorspace
+    test('to test the property `colorspace`', () async {
+      // TODO
+    });
+
     // int jpegSize
     test('to test the property `jpegSize`', () async {
+      // TODO
+    });
+
+    // int quality
+    test('to test the property `quality`', () async {
       // TODO
     });
 

@@ -1,12 +1,16 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
 
   export let title: string;
   export let subtitle = '';
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
+
+  const dispatch = createEventDispatcher<{ toggle: boolean }>();
+  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -29,12 +33,18 @@
   </div>
 
   <label class="relative inline-block h-[10px] w-[36px] flex-none">
-    <input class="disabled::cursor-not-allowed h-0 w-0 opacity-0" type="checkbox" bind:checked on:click {disabled} />
+    <input
+      class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
+      type="checkbox"
+      bind:checked
+      on:click={onToggle}
+      {disabled}
+    />
 
     {#if disabled}
-      <span class="slider-disable" />
+      <span class="slider-disable cursor-not-allowed" />
     {:else}
-      <span class="slider" />
+      <span class="slider cursor-pointer" />
     {/if}
   </label>
 </div>
@@ -43,7 +53,6 @@
   .slider,
   .slider-disable {
     position: absolute;
-    cursor: pointer;
     top: 0;
     left: 0;
     right: 0;

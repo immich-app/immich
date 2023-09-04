@@ -149,7 +149,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.10.5"
+          flutter-version: "3.13.0"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -171,6 +171,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --with dev
+          poetry run pip install --no-deps -r requirements.txt
       - name: Lint with ruff
         run: |
           poetry run ruff check --format=github app

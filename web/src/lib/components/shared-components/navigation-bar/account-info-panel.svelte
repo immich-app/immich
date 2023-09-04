@@ -22,7 +22,7 @@
   <div
     class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
-    <UserAvatar size="lg" {user} />
+    <UserAvatar size="xl" {user} />
 
     <div>
       <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">

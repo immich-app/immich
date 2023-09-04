@@ -1,8 +1,23 @@
+import { goto } from '$app/navigation';
 import type { AxiosError, AxiosPromise } from 'axios';
+import {
+  notificationController,
+  NotificationType,
+} from '../lib/components/shared-components/notification/notification';
+import { handleError } from '../lib/utils/handle-error';
 import { api } from './api';
 import type { UserResponseDto } from './open-api';
 
 export type ApiError = AxiosError<{ message: string }>;
+
+export const copyToClipboard = async (secret: string) => {
+  try {
+    await navigator.clipboard.writeText(secret);
+    notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
+  } catch (error) {
+    handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
+  }
+};
 
 export const oauth = {
   isCallback: (location: Location) => {
@@ -18,9 +33,17 @@ export const oauth = {
     }
     return false;
   },
+  authorize: async (location: Location) => {
+    try {
+      const redirectUri = location.href.split('?')[0];
+      const { data } = await api.oauthApi.authorizeOAuth({ oAuthConfigDto: { redirectUri } });
+      goto(data.url);
+    } catch (error) {
+      handleError(error, 'Unable to login with OAuth');
+    }
+  },
   getConfig: (location: Location) => {
     const redirectUri = location.href.split('?')[0];
-    console.log(`OAuth Redirect URI: ${redirectUri}`);
     return api.oauthApi.generateConfig({ oAuthConfigDto: { redirectUri } });
   },
   login: (location: Location) => {

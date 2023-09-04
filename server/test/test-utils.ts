@@ -14,7 +14,7 @@ import {
 } from '@app/domain';
 import { dataSource } from '@app/infra';
 import request from 'supertest';
-import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';
+import { loginResponseStub, loginStub, signupResponseStub, adminSignupStub } from './fixtures';
 
 export const db = {
   reset: async () => {
@@ -49,7 +49,7 @@ export function getAuthUser(): AuthUserDto {
 
 export const api = {
   adminSignUp: async (server: any) => {
-    const { status, body } = await request(server).post('/auth/admin-sign-up').send(signupStub);
+    const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
     expect(status).toBe(201);
     expect(body).toEqual(signupResponseStub);

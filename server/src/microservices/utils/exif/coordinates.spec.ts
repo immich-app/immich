@@ -23,6 +23,12 @@ describe('parsing latitude from string input', () => {
   });
 });
 
+describe('parsing latitude from null input', () => {
+  it('returns null for null input', () => {
+    expect(parseLatitude(null)).toBeNull();
+  });
+});
+
 describe('parsing longitude from string input', () => {
   it('returns null for invalid inputs', () => {
     expect(parseLongitude('')).toBeNull();
@@ -42,5 +48,11 @@ describe('parsing longitude from string input', () => {
     expect(parseLongitude(-179.9)).toBeCloseTo(-179.9);
     expect(parseLongitude('0')).toBeCloseTo(0);
     expect(parseLongitude('-0.0')).toBeCloseTo(-0.0);
+  });
+});
+
+describe('parsing longitude from null input', () => {
+  it('returns null for null input', () => {
+    expect(parseLongitude(null)).toBeNull();
   });
 });

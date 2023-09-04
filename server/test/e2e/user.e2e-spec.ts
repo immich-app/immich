@@ -3,7 +3,7 @@ import { AppModule, UserController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { errorStub } from '../fixtures';
+import { errorStub, userSignupStub, userStub } from '../fixtures';
 import { api, db } from '../test-utils';
 
 describe(`${UserController.name}`, () => {
@@ -118,12 +118,21 @@ describe(`${UserController.name}`, () => {
 
   describe('POST /user', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server)
-        .post(`/user`)
-        .send({ email: 'user1@immich.app', password: 'Password123', firstName: 'Immich', lastName: 'User' });
+      const { status, body } = await request(server).post(`/user`).send(userSignupStub);
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
+
+    for (const key of Object.keys(userSignupStub)) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(server)
+          .post(`/user`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ ...userSignupStub, [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest);
+      });
+    }
 
     it('should ignore `isAdmin`', async () => {
       const { status, body } = await request(server)
@@ -143,6 +152,24 @@ describe(`${UserController.name}`, () => {
       });
       expect(status).toBe(201);
     });
+
+    it('should create a user without memories enabled', async () => {
+      const { status, body } = await request(server)
+        .post(`/user`)
+        .send({
+          email: 'no-memories@immich.app',
+          password: 'Password123',
+          firstName: 'No Memories',
+          lastName: 'User',
+          memoriesEnabled: false,
+        })
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(body).toMatchObject({
+        email: 'no-memories@immich.app',
+        memoriesEnabled: false,
+      });
+      expect(status).toBe(201);
+    });
   });
 
   describe('PUT /user', () => {
@@ -151,6 +178,17 @@ describe(`${UserController.name}`, () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
+
+    for (const key of Object.keys(userStub.admin)) {
+      it(`should not allow null ${key}`, async () => {
+        const { status, body } = await request(server)
+          .put(`/user`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ ...userStub.admin, [key]: null });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest);
+      });
+    }
 
     it('should not allow a non-admin to become an admin', async () => {
       const user = await api.userApi.create(server, accessToken, {
@@ -203,6 +241,21 @@ describe(`${UserController.name}`, () => {
         updatedAt: expect.anything(),
         firstName: 'First Name',
         lastName: 'Last Name',
+      });
+      expect(before.updatedAt).not.toEqual(after.updatedAt);
+    });
+
+    it('should update memories enabled', async () => {
+      const before = await api.userApi.get(server, accessToken, loginResponse.userId);
+      const after = await api.userApi.update(server, accessToken, {
+        id: before.id,
+        memoriesEnabled: false,
+      });
+
+      expect(after).toMatchObject({
+        ...before,
+        updatedAt: expect.anything(),
+        memoriesEnabled: false,
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });

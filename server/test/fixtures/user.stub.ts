@@ -17,6 +17,7 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
+    memoriesEnabled: true,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -33,6 +34,7 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
+    memoriesEnabled: true,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
@@ -49,6 +51,7 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
+    memoriesEnabled: true,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -65,5 +68,6 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
+    memoriesEnabled: true,
   }),
 };

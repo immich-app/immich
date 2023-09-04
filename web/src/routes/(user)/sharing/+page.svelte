@@ -68,7 +68,7 @@
               href="/partners/{partner.id}"
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
-              <UserAvatar user={partner} size="md" autoColor />
+              <UserAvatar user={partner} size="lg" autoColor />
               <div class="text-left">
                 <p class="text-immich-fg dark:text-immich-dark-fg">
                   {partner.firstName}

@@ -148,7 +148,7 @@ class TabControllerPage extends HookConsumerWidget {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-          )
+          ),
         ],
       );
     }
@@ -159,7 +159,7 @@ class TabControllerPage extends HookConsumerWidget {
         const HomeRoute(),
         SearchRoute(),
         const SharingRoute(),
-        const LibraryRoute()
+        const LibraryRoute(),
       ],
       builder: (context, child, animation) {
         final tabsRouter = AutoTabsRouter.of(context);

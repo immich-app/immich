@@ -8,12 +8,10 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   export let asset: AssetResponseDto;
-  export let publicSharedKey = '';
   export let element: HTMLDivElement | undefined = undefined;
+
   let imgElement: HTMLDivElement;
-
   let assetData: string;
-
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
 
@@ -28,7 +26,7 @@
   const loadAssetData = async () => {
     try {
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: true, key: publicSharedKey },
+        { id: asset.id, isThumb: false, isWeb: true, key: api.getKey() },
         {
           responseType: 'blob',
         },

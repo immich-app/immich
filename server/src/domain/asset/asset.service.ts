@@ -8,22 +8,31 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
+import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobName,
+  AssetJobsDto,
+  AssetStatsDto,
   DownloadArchiveInfo,
-  DownloadDto,
+  DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
+  mapStats,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
 } from './dto';
-import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
-import { MapMarkerDto } from './dto/map-marker.dto';
-import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
-import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
-import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
+import {
+  AssetResponseDto,
+  mapAsset,
+  MapMarkerResponseDto,
+  MemoryLaneResponseDto,
+  TimeBucketResponseDto,
+} from './response-dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -53,6 +62,7 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
@@ -144,18 +154,27 @@ export class AssetService {
     return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
   }
 
+  private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
+    if (dto.albumId) {
+      await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
+    } else if (dto.userId) {
+      if (dto.isArchived !== false) {
+        await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
+      }
+      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+    } else {
+      dto.userId = authUser.id;
+    }
+  }
+
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
-    const { userId, ...options } = dto;
-    const targetId = userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
-    return this.assetRepository.getTimeBuckets(targetId, options);
+    await this.timeBucketChecks(authUser, dto);
+    return this.assetRepository.getTimeBuckets(dto);
   }
 
   async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    const { userId, timeBucket, ...options } = dto;
-    const targetId = userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [targetId]);
-    const assets = await this.assetRepository.getByTimeBucket(targetId, timeBucket, options);
+    await this.timeBucketChecks(authUser, dto);
+    const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
     return assets.map(mapAsset);
   }
 
@@ -170,7 +189,7 @@ export class AssetService {
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
   }
 
-  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {
+  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
@@ -228,7 +247,7 @@ export class AssetService {
     return { stream: zip.stream };
   }
 
-  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadDto): Promise<AsyncGenerator<AssetEntity[]>> {
+  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<AsyncGenerator<AssetEntity[]>> {
     const PAGINATION_SIZE = 2500;
 
     if (dto.assetIds) {
@@ -258,5 +277,31 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+    const { ids, ...options } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.assetRepository.updateAll(ids, options);
+  }
+
+  async run(authUser: AuthUserDto, dto: AssetJobsDto) {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, dto.assetIds);
+
+    for (const id of dto.assetIds) {
+      switch (dto.name) {
+        case AssetJobName.REFRESH_METADATA:
+          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          break;
+
+        case AssetJobName.REGENERATE_THUMBNAIL:
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          break;
+
+        case AssetJobName.TRANSCODE_VIDEO:
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          break;
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel
 
@@ -20,18 +20,6 @@ class MessageResponse(BaseModel):
     message: str
 
 
-class TagResponse(BaseModel):
-    __root__: list[str]
-
-
-class Embedding(BaseModel):
-    __root__: list[float]
-
-
-class EmbeddingResponse(BaseModel):
-    __root__: Embedding
-
-
 class BoundingBox(BaseModel):
     x1: int
     y1: int
@@ -39,23 +27,7 @@ class BoundingBox(BaseModel):
     y2: int
 
 
-class Face(BaseModel):
-    image_width: int
-    image_height: int
-    bounding_box: BoundingBox
-    score: float
-    embedding: Embedding
-
-    class Config:
-        alias_generator = to_lower_camel
-        allow_population_by_field_name = True
-
-
-class FaceResponse(BaseModel):
-    __root__: list[Face]
-
-
-class ModelType(Enum):
+class ModelType(StrEnum):
     IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"

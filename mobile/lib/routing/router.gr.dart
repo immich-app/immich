@@ -296,6 +296,22 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    MapRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const MapPage(),
+      );
+    },
+    AlbumOptionsRoute.name: (routeData) {
+      final args = routeData.argsAs<AlbumOptionsRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: AlbumOptionsPage(
+          key: args.key,
+          album: args.album,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -590,6 +606,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           MemoryRoute.name,
           path: '/memory-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          MapRoute.name,
+          path: '/map-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AlbumOptionsRoute.name,
+          path: '/album-options-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1316,6 +1348,51 @@ class MemoryRouteArgs {
   @override
   String toString() {
     return 'MemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+  }
+}
+
+/// [MapPage]
+class MapRoute extends PageRouteInfo<void> {
+  const MapRoute()
+      : super(
+          MapRoute.name,
+          path: '/map-page',
+        );
+
+  static const String name = 'MapRoute';
+}
+
+/// generated route for
+/// [AlbumOptionsPage]
+class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
+  AlbumOptionsRoute({
+    Key? key,
+    required Album album,
+  }) : super(
+          AlbumOptionsRoute.name,
+          path: '/album-options-page',
+          args: AlbumOptionsRouteArgs(
+            key: key,
+            album: album,
+          ),
+        );
+
+  static const String name = 'AlbumOptionsRoute';
+}
+
+class AlbumOptionsRouteArgs {
+  const AlbumOptionsRouteArgs({
+    this.key,
+    required this.album,
+  });
+
+  final Key? key;
+
+  final Album album;
+
+  @override
+  String toString() {
+    return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
   }
 }
 

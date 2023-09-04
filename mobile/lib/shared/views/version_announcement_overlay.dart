@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
+import 'package:immich_mobile/shared/providers/admin_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VersionAnnouncementOverlay extends HookConsumerWidget {
@@ -14,6 +15,12 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bool isAdmin = ref.watch(isAdminProvider);
+
+    if (!isAdmin) {
+      return const SizedBox.shrink();  // Don't show anything for non-admins
+    }
+
     void goToReleaseNote() async {
       final Uri url =
           Uri.parse('https://github.com/immich-app/immich/releases/latest');
@@ -98,7 +105,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       text:
                                           "version_announcement_overlay_text_3"
                                               .tr(),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -125,7 +132,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                   ),
                                 ).tr(),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),

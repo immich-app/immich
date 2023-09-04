@@ -7,12 +7,12 @@ export const load = (async ({ params, locals: { api, user } }) => {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  const albumId = params['albumId'];
-
   try {
-    const { data: album } = await api.albumApi.getAlbumInfo({ id: albumId });
+    const { data: album } = await api.albumApi.getAlbumInfo({ id: params.albumId, withoutAssets: true });
+
     return {
       album,
+      user,
       meta: {
         title: album.albumName,
       },

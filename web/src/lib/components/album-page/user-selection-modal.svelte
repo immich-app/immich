@@ -11,11 +11,14 @@
   import { AppRoute } from '$lib/constants';
 
   export let album: AlbumResponseDto;
-  export let sharedUsersInAlbum: Set<UserResponseDto>;
   let users: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    select: UserResponseDto[];
+    share: void;
+    close: void;
+  }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
@@ -25,7 +28,7 @@
     users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
 
     // Remove the existed shared users from the album
-    sharedUsersInAlbum.forEach((sharedUser) => {
+    album.sharedUsers.forEach((sharedUser) => {
       users = users.filter((user) => user.id !== sharedUser.id);
     });
   });
@@ -36,7 +39,7 @@
     sharedLinks = data.filter((link) => link.album?.id === album.id);
   };
 
-  const selectUser = (user: UserResponseDto) => {
+  const handleSelect = (user: UserResponseDto) => {
     if (selectedUsers.includes(user)) {
       selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
     } else {
@@ -44,12 +47,8 @@
     }
   };
 
-  const deselectUser = (user: UserResponseDto) => {
+  const handleUnselect = (user: UserResponseDto) => {
     selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
-  };
-
-  const onSharedLinkClick = () => {
-    dispatch('sharedlinkclick');
   };
 </script>
 
@@ -69,7 +68,7 @@
         {#each selectedUsers as user}
           {#key user.id}
             <button
-              on:click={() => deselectUser(user)}
+              on:click={() => handleUnselect(user)}
               class="flex place-items-center gap-1 rounded-full border border-gray-400 p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar {user} size="sm" autoColor />
@@ -86,7 +85,7 @@
       <div class="my-4">
         {#each users as user}
           <button
-            on:click={() => selectUser(user)}
+            on:click={() => handleSelect(user)}
             class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             {#if selectedUsers.includes(user)}
@@ -118,7 +117,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="flex place-content-end p-5">
-        <Button size="sm" rounded="lg" on:click={() => dispatch('add-user', { selectedUsers })}>Add</Button>
+        <Button size="sm" rounded="lg" on:click={() => dispatch('select', selectedUsers)}>Add</Button>
       </div>
     {/if}
   </div>
@@ -127,7 +126,7 @@
   <div id="shared-buttons" class="my-4 flex place-content-center place-items-center justify-around">
     <button
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-      on:click={onSharedLinkClick}
+      on:click={() => dispatch('share')}
     >
       <Link size={24} />
       <p class="text-sm">Create link</p>

@@ -1,58 +1,42 @@
-import os
-from io import BytesIO
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
-import cv2
-import numpy as np
-import uvicorn
-from fastapi import Body, Depends, FastAPI
-from PIL import Image
+import orjson
+from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi.responses import ORJSONResponse
+from starlette.formparsers import MultiPartParser
 
-from .config import settings
+from app.models.base import InferenceModel
+
+from .config import log, settings
 from .models.cache import ModelCache
 from .schemas import (
-    EmbeddingResponse,
-    FaceResponse,
     MessageResponse,
     ModelType,
-    TagResponse,
-    TextModelRequest,
     TextResponse,
 )
 
+MultiPartParser.max_file_size = 2**24  # spools to disk if payload is 16 MiB or larger
 app = FastAPI()
 
 
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
-
-
-async def load_models() -> None:
-    models = [
-        (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
-        (settings.clip_image_model, ModelType.CLIP),
-        (settings.clip_text_model, ModelType.CLIP),
-        (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION),
-    ]
-
-    # Get all models
-    for model_name, model_type in models:
-        await app.state.model_cache.get(model_name, model_type, eager=settings.eager_startup)
+    log.info(
+        (
+            "Created in-memory cache with unloading "
+            f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}."
+        )
+    )
+    # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
+    app.state.thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+    log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
     init_state()
-    await load_models()
-
-
-def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
-    return Image.open(BytesIO(byte_image))
-
-
-def dep_cv_image(byte_image: bytes = Body(...)) -> cv2.Mat:
-    byte_image_np = np.frombuffer(byte_image, np.uint8)
-    return cv2.imdecode(byte_image_np, cv2.IMREAD_COLOR)
 
 
 @app.get("/", response_model=MessageResponse)
@@ -65,62 +49,28 @@ def ping() -> str:
     return "pong"
 
 
-@app.post(
-    "/image-classifier/tag-image",
-    response_model=TagResponse,
-    status_code=200,
-)
-async def image_classification(
-    image: Image.Image = Depends(dep_pil_image),
-) -> list[str]:
-    model = await app.state.model_cache.get(settings.classification_model, ModelType.IMAGE_CLASSIFICATION)
-    labels = model.predict(image)
-    return labels
+@app.post("/predict")
+async def predict(
+    model_name: str = Form(alias="modelName"),
+    model_type: ModelType = Form(alias="modelType"),
+    options: str = Form(default="{}"),
+    text: str | None = Form(default=None),
+    image: UploadFile | None = None,
+) -> Any:
+    if image is not None:
+        inputs: str | bytes = await image.read()
+    elif text is not None:
+        inputs = text
+    else:
+        raise HTTPException(400, "Either image or text must be provided")
+
+    model: InferenceModel = await app.state.model_cache.get(model_name, model_type, **orjson.loads(options))
+    outputs = await run(model, inputs)
+    return ORJSONResponse(outputs)
 
 
-@app.post(
-    "/sentence-transformer/encode-image",
-    response_model=EmbeddingResponse,
-    status_code=200,
-)
-async def clip_encode_image(
-    image: Image.Image = Depends(dep_pil_image),
-) -> list[float]:
-    model = await app.state.model_cache.get(settings.clip_image_model, ModelType.CLIP)
-    embedding = model.predict(image)
-    return embedding
-
-
-@app.post(
-    "/sentence-transformer/encode-text",
-    response_model=EmbeddingResponse,
-    status_code=200,
-)
-async def clip_encode_text(payload: TextModelRequest) -> list[float]:
-    model = await app.state.model_cache.get(settings.clip_text_model, ModelType.CLIP)
-    embedding = model.predict(payload.text)
-    return embedding
-
-
-@app.post(
-    "/facial-recognition/detect-faces",
-    response_model=FaceResponse,
-    status_code=200,
-)
-async def facial_recognition(
-    image: cv2.Mat = Depends(dep_cv_image),
-) -> list[dict[str, Any]]:
-    model = await app.state.model_cache.get(settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION)
-    faces = model.predict(image)
-    return faces
-
-
-if __name__ == "__main__":
-    is_dev = os.getenv("NODE_ENV") == "development"
-    uvicorn.run(
-        "app.main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=is_dev,
-        workers=settings.workers,
-    )
+async def run(model: InferenceModel, inputs: Any) -> Any:
+    if app.state.thread_pool is not None:
+        return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict, inputs)
+    else:
+        return model.predict(inputs)

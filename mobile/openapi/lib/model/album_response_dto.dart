@@ -19,12 +19,15 @@ class AlbumResponseDto {
     this.assets = const [],
     required this.createdAt,
     required this.description,
+    this.endDate,
+    required this.hasSharedLink,
     required this.id,
     this.lastModifiedAssetTimestamp,
     required this.owner,
     required this.ownerId,
     required this.shared,
     this.sharedUsers = const [],
+    this.startDate,
     required this.updatedAt,
   });
 
@@ -39,6 +42,16 @@ class AlbumResponseDto {
   DateTime createdAt;
 
   String description;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? endDate;
+
+  bool hasSharedLink;
 
   String id;
 
@@ -58,6 +71,14 @@ class AlbumResponseDto {
 
   List<UserResponseDto> sharedUsers;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? startDate;
+
   DateTime updatedAt;
 
   @override
@@ -68,12 +89,15 @@ class AlbumResponseDto {
      other.assets == assets &&
      other.createdAt == createdAt &&
      other.description == description &&
+     other.endDate == endDate &&
+     other.hasSharedLink == hasSharedLink &&
      other.id == id &&
      other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
      other.owner == owner &&
      other.ownerId == ownerId &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
+     other.startDate == startDate &&
      other.updatedAt == updatedAt;
 
   @override
@@ -85,16 +109,19 @@ class AlbumResponseDto {
     (assets.hashCode) +
     (createdAt.hashCode) +
     (description.hashCode) +
+    (endDate == null ? 0 : endDate!.hashCode) +
+    (hasSharedLink.hashCode) +
     (id.hashCode) +
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
     (owner.hashCode) +
     (ownerId.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
+    (startDate == null ? 0 : startDate!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,6 +135,12 @@ class AlbumResponseDto {
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'description'] = this.description;
+    if (this.endDate != null) {
+      json[r'endDate'] = this.endDate!.toUtc().toIso8601String();
+    } else {
+    //  json[r'endDate'] = null;
+    }
+      json[r'hasSharedLink'] = this.hasSharedLink;
       json[r'id'] = this.id;
     if (this.lastModifiedAssetTimestamp != null) {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
@@ -118,6 +151,11 @@ class AlbumResponseDto {
       json[r'ownerId'] = this.ownerId;
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
+    if (this.startDate != null) {
+      json[r'startDate'] = this.startDate!.toUtc().toIso8601String();
+    } else {
+    //  json[r'startDate'] = null;
+    }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -136,12 +174,15 @@ class AlbumResponseDto {
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         createdAt: mapDateTime(json, r'createdAt', '')!,
         description: mapValueOfType<String>(json, r'description')!,
+        endDate: mapDateTime(json, r'endDate', ''),
+        hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,
         lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
+        startDate: mapDateTime(json, r'startDate', ''),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
@@ -196,6 +237,7 @@ class AlbumResponseDto {
     'assets',
     'createdAt',
     'description',
+    'hasSharedLink',
     'id',
     'owner',
     'ownerId',

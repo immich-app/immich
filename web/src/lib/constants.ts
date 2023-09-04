@@ -43,3 +43,11 @@ export enum ProjectionType {
   CYLINDER = 'CYLINDER',
   NONE = 'NONE',
 }
+
+export const dateFormats = {
+  album: <Intl.DateTimeFormatOptions>{
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  },
+};

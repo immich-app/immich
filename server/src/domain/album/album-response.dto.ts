@@ -13,20 +13,28 @@ export class AlbumResponseDto {
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
   sharedUsers!: UserResponseDto[];
+  hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
   owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
   lastModifiedAssetTimestamp?: Date;
+  startDate?: Date;
+  endDate?: Date;
 }
 
-const _map = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
+export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
 
   entity.sharedUsers?.forEach((user) => {
     const userDto = mapUser(user);
     sharedUsers.push(userDto);
   });
+
+  const assets = entity.assets || [];
+
+  const hasSharedLink = entity.sharedLinks?.length > 0;
+  const hasSharedUser = sharedUsers.length > 0;
 
   return {
     albumName: entity.albumName,
@@ -38,14 +46,17 @@ const _map = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
-    shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
-    assets: withAssets ? entity.assets?.map((asset) => mapAsset(asset)) || [] : [],
+    shared: hasSharedUser || hasSharedLink,
+    hasSharedLink,
+    startDate: assets.at(0)?.fileCreatedAt || undefined,
+    endDate: assets.at(-1)?.fileCreatedAt || undefined,
+    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
     assetCount: entity.assets?.length || 0,
   };
 };
 
-export const mapAlbum = (entity: AlbumEntity) => _map(entity, true);
-export const mapAlbumExcludeAssetInfo = (entity: AlbumEntity) => _map(entity, false);
+export const mapAlbumWithAssets = (entity: AlbumEntity) => mapAlbum(entity, true);
+export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, false);
 
 export class AlbumCountResponseDto {
   @ApiProperty({ type: 'integer' })

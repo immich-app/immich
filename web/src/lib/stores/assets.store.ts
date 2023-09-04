@@ -40,18 +40,32 @@ export class AssetStore {
   private store$ = writable(this);
   private assetToBucket: Record<string, AssetLookup> = {};
 
+  initialized = false;
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
   assets: AssetResponseDto[] = [];
+  albumAssets: Set<string> = new Set();
 
-  constructor(private options: AssetStoreOptions) {
+  constructor(private options: AssetStoreOptions, private albumId?: string) {
     this.store$.set(this);
   }
 
   subscribe = this.store$.subscribe;
 
   async init(viewport: Viewport) {
-    const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
+    this.initialized = false;
+    this.timelineHeight = 0;
+    this.buckets = [];
+    this.assets = [];
+    this.assetToBucket = {};
+    this.albumAssets = new Set();
+
+    const { data: buckets } = await api.assetApi.getTimeBuckets({
+      ...this.options,
+      key: api.getKey(),
+    });
+
+    this.initialized = true;
 
     this.buckets = buckets.map((bucket) => {
       const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
@@ -100,9 +114,29 @@ export class AssetStore {
       bucket.cancelToken = new AbortController();
 
       const { data: assets } = await api.assetApi.getByTimeBucket(
-        { ...this.options, timeBucket: bucketDate },
+        {
+          ...this.options,
+          timeBucket: bucketDate,
+          key: api.getKey(),
+        },
         { signal: bucket.cancelToken.signal },
       );
+
+      if (this.albumId) {
+        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+          {
+            albumId: this.albumId,
+            timeBucket: bucketDate,
+            size: this.options.size,
+            key: api.getKey(),
+          },
+          { signal: bucket.cancelToken.signal },
+        );
+
+        for (const asset of albumAssets) {
+          this.albumAssets.add(asset.id);
+        }
+      }
 
       bucket.assets = assets;
       this.emit(true);
@@ -157,12 +191,19 @@ export class AssetStore {
     this.emit(false);
   }
 
-  removeAsset(assetId: string) {
+  removeAssets(ids: string[]) {
+    // TODO: this could probably be more efficient
+    for (const id of ids) {
+      this.removeAsset(id);
+    }
+  }
+
+  removeAsset(id: string) {
     for (let i = 0; i < this.buckets.length; i++) {
       const bucket = this.buckets[i];
       for (let j = 0; j < bucket.assets.length; j++) {
         const asset = bucket.assets[j];
-        if (asset.id !== assetId) {
+        if (asset.id !== id) {
           continue;
         }
 

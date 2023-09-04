@@ -13,7 +13,10 @@
 
   export let album: AlbumResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    remove: string;
+    close: void;
+  }>();
 
   let currentUser: UserResponseDto;
   let position = { x: 0, y: 0 };
@@ -59,7 +62,7 @@
 
     try {
       await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
-      dispatch('user-deleted', { userId });
+      dispatch('remove', userId);
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.firstName}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (e) {
@@ -79,6 +82,16 @@
     </svelte:fragment>
 
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
+      <div class="flex w-full place-items-center justify-between gap-4 p-5">
+        <div class="flex place-items-center gap-4">
+          <UserAvatar user={album.owner} size="md" autoColor />
+          <p class="text-sm font-medium">{album.owner.firstName} {album.owner.lastName}</p>
+        </div>
+
+        <div id="icon-{album.owner.id}" class="flex place-items-center">
+          <p class="text-sm">Owner</p>
+        </div>
+      </div>
       {#each album.sharedUsers as user}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -88,7 +101,7 @@
             <p class="text-sm font-medium">{user.firstName} {user.lastName}</p>
           </div>
 
-          <div id={`icon-${user.id}`} class="flex place-items-center">
+          <div id="icon-{user.id}" class="flex place-items-center">
             {#if isOwned}
               <div>
                 <CircleIconButton

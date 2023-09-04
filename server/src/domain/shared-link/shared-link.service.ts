@@ -65,7 +65,7 @@ export class SharedLinkService {
       userId: authUser.id,
       type: dto.type,
       albumId: dto.albumId || null,
-      assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
+      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       description: dto.description || null,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
