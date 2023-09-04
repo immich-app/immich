@@ -10,6 +10,7 @@
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
   export let element: HTMLDivElement | undefined = undefined;
+
   let imgElement: HTMLDivElement;
   var assetData: string = "";
   let copyImageToClipboard: (src: string) => Promise<Blob>;
@@ -27,7 +28,7 @@
 
   const loadAssetData = async (forceWeb?: boolean) => {
     const isImageSupportedByWeb = (asset: AssetResponseDto) => {
-      const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const imgExtention = asset.originalPath.split('.').pop();
       
       return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
