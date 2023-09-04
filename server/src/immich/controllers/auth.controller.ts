@@ -17,7 +17,7 @@ import {
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { Authenticated, AuthUser, GetLoginDetails, PublicRoute } from '../app.guard';
+import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 

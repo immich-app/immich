@@ -18,8 +18,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, mapToUploadFile, Route } from '../../app.interceptor';
+import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';

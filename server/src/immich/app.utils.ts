@@ -1,8 +1,8 @@
 import {
-  ImmichReadStream,
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_API_KEY_NAME,
+  ImmichReadStream,
   SERVER_VERSION,
 } from '@app/domain';
 import { INestApplication, StreamableFile } from '@nestjs/common';

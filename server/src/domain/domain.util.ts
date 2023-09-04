@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidationOptions, ValidateIf } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf, ValidationOptions } from 'class-validator';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 

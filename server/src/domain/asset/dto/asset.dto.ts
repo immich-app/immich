@@ -1,6 +1,6 @@
 import { IsBoolean } from 'class-validator';
-import { BulkIdsDto } from '../response-dto';
 import { Optional } from '../../domain.util';
+import { BulkIdsDto } from '../response-dto';
 
 export class AssetBulkUpdateDto extends BulkIdsDto {
   @Optional()
