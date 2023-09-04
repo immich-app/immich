@@ -8,6 +8,8 @@ import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer_head
 import 'package:immich_mobile/modules/home/ui/profile_drawer/server_info_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 
@@ -68,6 +70,35 @@ class ProfileDrawer extends HookConsumerWidget {
       );
     }
 
+    buildAdminPageButton() {
+      User? user = Store.tryGet(StoreKey.currentUser);
+
+      if (user != null && user.isAdmin) {
+        return ListTile(
+          leading: SizedBox(
+            height: double.infinity,
+            child: Icon(
+              Icons.admin_panel_settings,
+              color: Theme.of(context).textTheme.labelMedium?.color,
+              size: 20,
+            ),
+          ),
+          title: Text(
+            "profile_drawer_admin_page",
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ).tr(),
+          onTap: () {
+            AutoRouter.of(context).push(const AdminWebViewRoute());
+          },
+        );
+      } else {
+        return Container();
+      }
+    }
+
     buildAppLogButton() {
       return ListTile(
         leading: SizedBox(
@@ -105,6 +136,7 @@ class ProfileDrawer extends HookConsumerWidget {
               const ProfileDrawerHeader(),
               buildSettingButton(),
               buildAppLogButton(),
+              buildAdminPageButton(),
               buildSignOutButton(),
             ],
           ),
