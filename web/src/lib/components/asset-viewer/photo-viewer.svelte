@@ -11,10 +11,10 @@
   export let element: HTMLDivElement | undefined = undefined;
 
   let imgElement: HTMLDivElement;
-  let assetData: string = "";
+  let assetData = '';
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
-  let webVersionForced: boolean = false;
+  let webVersionForced = false;
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -29,7 +29,7 @@
     const isImageSupportedByWeb = (asset: AssetResponseDto) => {
       const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const imgExtention = asset.originalPath.split('.').pop();
-      
+
       return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
     };
 
@@ -126,10 +126,9 @@
           if (!webVersionForced) {
             // There was an error loading the image, force web version
             loadAssetData(true);
-            assetData = "";
+            assetData = '';
             webVersionForced = true;
-          }
-          else {
+          } else {
             // Web version failed too, show error
             console.error('Error loading image', e);
           }
