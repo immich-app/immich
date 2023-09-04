@@ -146,6 +146,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     required String accessToken,
     required String serverUrl,
     bool offlineLogin = false,
+      bool oAuthLogin = false
   }) async {
     _apiService.setAccessToken(accessToken);
 
@@ -175,14 +176,16 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       }
 
       if (userResponseDto != null) {
+        user = User.fromDto(userResponseDto);
+        user.oAuthLoggedIn = oAuthLogin;
+
         Store.put(StoreKey.deviceId, deviceId);
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-        Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+        Store.put(StoreKey.currentUser, user);
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
         shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromDto(userResponseDto);
 
         retResult = true;
       } else {

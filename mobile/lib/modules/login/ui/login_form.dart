@@ -193,6 +193,7 @@ class LoginForm extends HookConsumerWidget {
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
                 serverUrl: serverEndpointController.text,
+                oAuthLogin: true,
               );
 
           if (isSuccess) {
