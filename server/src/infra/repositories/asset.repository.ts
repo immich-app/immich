@@ -18,7 +18,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '../entities';
+import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -29,7 +29,14 @@ const truncateMap: Record<TimeBucketSize, string> = {
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+  ) {}
+
+  async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
+    await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
+  }
 
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower

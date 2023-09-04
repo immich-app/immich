@@ -96,7 +96,6 @@ describe('AssetService', () => {
       create: jest.fn(),
       remove: jest.fn(),
 
-      update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getById: jest.fn(),

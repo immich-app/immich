@@ -41,7 +41,6 @@ import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-ass
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetRejectReason,
@@ -201,21 +200,6 @@ export class AssetService {
     }
 
     return data;
-  }
-
-  public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, assetId);
-
-    const asset = await this._assetRepository.getById(assetId);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-
-    const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
-
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [assetId] } });
-
-    return mapAsset(updatedAsset);
   }
 
   async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
