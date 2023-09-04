@@ -3,12 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
+  OneToMany, OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetFaceEntity } from './asset-face.entity';
 import { UserEntity } from './user.entity';
+import { AssetEntity } from '@app/infra/entities/asset.entity';
 
 @Entity('person')
 export class PersonEntity {
@@ -38,6 +39,9 @@ export class PersonEntity {
 
   @Column({ type: 'uuid', nullable: true })
   faceAssetId!: string | null;
+
+  @OneToOne(() => AssetEntity, { onDelete: 'SET NULL' })
+  faceAsset!: AssetEntity;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
   faces!: AssetFaceEntity[];
