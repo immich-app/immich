@@ -40,7 +40,7 @@ describe(PersonService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getAllForUser', () => {
+  describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
       await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
