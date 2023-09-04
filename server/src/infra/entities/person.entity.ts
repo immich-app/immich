@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { AssetFaceEntity } from './asset-face.entity';
 import { UserEntity } from './user.entity';
-import { AssetEntity } from '@app/infra/entities/asset.entity';
+import { AssetEntity } from './asset.entity';
 
 @Entity('person')
 export class PersonEntity {
