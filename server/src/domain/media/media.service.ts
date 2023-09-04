@@ -57,7 +57,10 @@ export class MediaService {
       : await this.personRepository.getAllWithoutThumbnail();
 
     for (const person of personList) {
-      const face = await this.personRepository.getRandomFace(person.id);
+      // use stored asset for generating thumbnail or pick a random one if not present
+      const face = person.faceAssetId ?
+        await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId }) :
+        await this.personRepository.getRandomFace(person.id);
       if (face) {
         const jobData = {
           imageWidth: face.imageWidth,

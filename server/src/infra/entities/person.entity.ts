@@ -36,6 +36,9 @@ export class PersonEntity {
   @Column({ default: '' })
   thumbnailPath!: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  faceAssetId!: string | null;
+
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
   faces!: AssetFaceEntity[];
 
