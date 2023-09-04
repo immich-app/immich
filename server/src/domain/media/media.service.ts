@@ -109,7 +109,7 @@ export class MediaService {
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    if (!asset) {
       return false;
     }
 
