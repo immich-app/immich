@@ -7,7 +7,7 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { usePagination } from '../domain.util';
 import { AssetFaceId, IFaceRepository } from '../facial-recognition';
-import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { SearchDto } from './dto';

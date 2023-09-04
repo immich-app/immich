@@ -2,10 +2,10 @@ import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   assetStub,
   authStub,
   fileStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,

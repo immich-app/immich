@@ -14,7 +14,7 @@ import {
 } from '@app/domain';
 import { dataSource } from '@app/infra';
 import request from 'supertest';
-import { loginResponseStub, loginStub, signupResponseStub, adminSignupStub } from './fixtures';
+import { adminSignupStub, loginResponseStub, loginStub, signupResponseStub } from './fixtures';
 
 export const db = {
   reset: async () => {
