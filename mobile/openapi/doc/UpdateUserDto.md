@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
 **lastName** | **String** |  | [optional] 
+**memoriesEnabled** | **bool** |  | [optional] 
 **password** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 

@@ -6,7 +6,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { AppService } from './app.service';
 import { useSwagger } from './app.utils';
 
 const logger = new Logger('ImmichServer');
@@ -27,7 +26,6 @@ export async function bootstrap() {
   app.useWebSocketAdapter(new RedisIoAdapter(app));
   useSwagger(app, isDev);
 
-  await app.get(AppService).init();
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;
 

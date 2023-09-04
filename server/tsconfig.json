@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "Node16",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -17,15 +17,35 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "@test": ["test"],
-      "@test/*": ["test/*"],
-      "@app/immich": ["src/immich"],
-      "@app/immich/*": ["src/immich/*"],
-      "@app/infra": ["src/infra"],
-      "@app/infra/*": ["src/infra/*"],
-      "@app/domain": ["src/domain"],
-      "@app/domain/*": ["src/domain/*"]
+      "@test": [
+        "test"
+      ],
+      "@test/*": [
+        "test/*"
+      ],
+      "@app/immich": [
+        "src/immich"
+      ],
+      "@app/immich/*": [
+        "src/immich/*"
+      ],
+      "@app/infra": [
+        "src/infra"
+      ],
+      "@app/infra/*": [
+        "src/infra/*"
+      ],
+      "@app/domain": [
+        "src/domain"
+      ],
+      "@app/domain/*": [
+        "src/domain/*"
+      ]
     }
   },
-  "exclude": ["dist", "node_modules", "upload"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "upload"
+  ]
 }

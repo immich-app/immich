@@ -12,7 +12,6 @@
   import Cog from 'svelte-material-icons/Cog.svelte';
   import Server from 'svelte-material-icons/Server.svelte';
   import StatusBox from '$lib/components/shared-components/status-box.svelte';
-  import { goto } from '$app/navigation';
   import { AppRoute } from '../../lib/constants';
   import type { LayoutData } from './$types';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
@@ -40,37 +39,29 @@
 
 <UserPageLayout user={data.user} showUploadButton={false} title={getPageTitle(data.routeId)}>
   <SideBarSection slot="sidebar">
-    <SideBarButton
-      title="Users"
-      logo={AccountMultipleOutline}
-      isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
-      on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
-    />
-    <SideBarButton
-      title="Jobs"
-      logo={Sync}
-      isSelected={data.routeId === AppRoute.ADMIN_JOBS}
-      on:selected={() => goto(AppRoute.ADMIN_JOBS)}
-    />
-    <SideBarButton
-      title="Settings"
-      logo={Cog}
-      isSelected={data.routeId === AppRoute.ADMIN_SETTINGS}
-      on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
-    />
-    <SideBarButton
-      title="Server Stats"
-      logo={Server}
-      isSelected={data.routeId === AppRoute.ADMIN_STATS}
-      on:selected={() => goto(AppRoute.ADMIN_STATS)}
-    />
+    <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT} draggable="false">
+      <SideBarButton
+        title="Users"
+        logo={AccountMultipleOutline}
+        isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
+      />
+    </a>
+    <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_JOBS} draggable="false">
+      <SideBarButton title="Jobs" logo={Sync} isSelected={data.routeId === AppRoute.ADMIN_JOBS} />
+    </a>
+    <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_SETTINGS} draggable="false">
+      <SideBarButton title="Settings" logo={Cog} isSelected={data.routeId === AppRoute.ADMIN_SETTINGS} />
+    </a>
+    <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_STATS} draggable="false">
+      <SideBarButton title="Server Stats" logo={Server} isSelected={data.routeId === AppRoute.ADMIN_STATS} />
+    </a>
     <div class="mb-6 mt-auto">
       <StatusBox />
     </div>
   </SideBarSection>
 
-  <section id="setting-content" class="mx-4 flex place-content-center">
-    <section class="w-full pb-28 pt-5 sm:w-5/6 md:w-[800px]">
+  <section id="setting-content" class="flex place-content-center sm:mx-4">
+    <section class="w-full pb-28 pt-5 sm:w-5/6 md:w-[850px]">
       <slot />
     </section>
   </section>

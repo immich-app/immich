@@ -1,7 +1,9 @@
 import { AssetType } from '@app/infra/entities';
-import { BadRequestException } from '@nestjs/common';
+import { Duration } from 'luxon';
 import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
+
+export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 
 const [major, minor, patch] = pkg.version.split('.');
 
@@ -21,15 +23,6 @@ export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${s
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
-export const MACHINE_LEARNING_URL = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
-export const MACHINE_LEARNING_ENABLED = MACHINE_LEARNING_URL !== 'false';
-
-export function assertMachineLearningEnabled() {
-  if (!MACHINE_LEARNING_ENABLED) {
-    throw new BadRequestException('Machine learning is not enabled.');
-  }
-}
-
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
@@ -48,6 +41,7 @@ const image: Record<string, string[]> = {
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
+  '.insp': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
   '.jxl': ['image/jxl'],
@@ -65,6 +59,7 @@ const image: Record<string, string[]> = {
   '.sr2': ['image/sr2', 'image/x-sony-sr2'],
   '.srf': ['image/srf', 'image/x-sony-srf'],
   '.srw': ['image/srw', 'image/x-samsung-srw'],
+  '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],
   '.webp': ['image/webp'],
   '.x3f': ['image/x3f', 'image/x-sigma-x3f'],
@@ -79,6 +74,7 @@ const video: Record<string, string[]> = {
   '.3gp': ['video/3gpp'],
   '.avi': ['video/avi', 'video/msvideo', 'video/vnd.avi', 'video/x-msvideo'],
   '.flv': ['video/x-flv'],
+  '.insv': ['video/mp4'],
   '.m2ts': ['video/mp2t'],
   '.mkv': ['video/x-matroska'],
   '.mov': ['video/quicktime'],
@@ -96,7 +92,7 @@ const sidecar: Record<string, string[]> = {
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
 const lookup = (filename: string) =>
-  ({ ...image, ...video, ...sidecar }[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream');
+  ({ ...image, ...video, ...sidecar })[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 
 export const mimeTypes = {
   image,

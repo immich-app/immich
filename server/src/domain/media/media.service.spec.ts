@@ -1,5 +1,6 @@
 import {
   AssetType,
+  Colorspace,
   SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
@@ -134,6 +135,8 @@ describe(MediaService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
+        quality: 80,
+        colorspace: Colorspace.P3,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
@@ -148,12 +151,11 @@ describe(MediaService.name, () => {
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        inputOptions: [],
+        inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
         outputOptions: [
-          '-ss 00:00:00.000',
           '-frames:v 1',
           '-v verbose',
-          '-vf scale=-2:1440:out_color_matrix=bt601:out_range=pc,format=yuv420p',
+          '-vf scale=-2:1440:flags=lanczos+accurate_rnd+bitexact+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -170,12 +172,11 @@ describe(MediaService.name, () => {
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        inputOptions: [],
+        inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
         outputOptions: [
-          '-ss 00:00:00.000',
           '-frames:v 1',
           '-v verbose',
-          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt470bg:t=601:m=bt470bg:range=pc,format=yuv420p',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
         ],
         twoPass: false,
       });
@@ -209,12 +210,13 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
 
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
-        '/uploads/user-id/thumbs/path.webp',
-        { format: 'webp', size: 250 },
-      );
-      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.webp' });
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.webp', {
+        format: 'webp',
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: 'upload/thumbs/user-id/asset-id.webp' });
     });
   });
 
@@ -311,10 +313,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf format=yuv420p',
             '-preset ultrafast',
@@ -350,10 +354,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf format=yuv420p',
             '-preset ultrafast',
@@ -374,10 +380,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -401,10 +409,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf format=yuv420p',
             '-preset ultrafast',
@@ -426,10 +436,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=720:-2,format=yuv420p',
             '-preset ultrafast',
@@ -451,10 +463,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -476,10 +490,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -525,10 +541,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -555,10 +573,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -582,10 +602,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -611,10 +633,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
@@ -642,10 +666,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 2',
@@ -672,10 +698,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-row-mt 1',
@@ -701,10 +729,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
@@ -729,10 +759,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -757,10 +789,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -785,10 +819,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec hevc',
-            '-acodec aac',
+            '-c:v hevc',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -816,10 +852,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec hevc',
-            '-acodec aac',
+            '-c:v hevc',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -876,19 +914,17 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
@@ -916,19 +952,17 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
@@ -952,19 +986,17 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
@@ -989,19 +1021,17 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-cq:v 23',
@@ -1022,19 +1052,17 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
@@ -1060,14 +1088,15 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec h264_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-acodec aac',
+            `-c:v h264_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
@@ -1095,14 +1124,15 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec h264_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-acodec aac',
+            `-c:v h264_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-global_quality 23',
@@ -1127,14 +1157,15 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec vp9_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-acodec aac',
+            `-c:v vp9_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
             '-low_power 1',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
@@ -1170,10 +1201,13 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1199,10 +1233,13 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1230,10 +1267,13 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-qp 23',
@@ -1257,10 +1297,13 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1280,10 +1323,13 @@ describe(MediaService.name, () => {
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD129', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1310,10 +1356,12 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
@@ -1345,10 +1393,12 @@ describe(MediaService.name, () => {
       {
         inputOptions: [],
         outputOptions: [
-          '-vcodec h264',
-          '-acodec aac',
+          '-c:v h264',
+          '-c:a aac',
           '-movflags faststart',
           '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
           '-v verbose',
           '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
@@ -1370,10 +1420,12 @@ describe(MediaService.name, () => {
       {
         inputOptions: [],
         outputOptions: [
-          '-vcodec h264',
-          '-acodec aac',
+          '-c:v h264',
+          '-c:a aac',
           '-movflags faststart',
           '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
           '-v verbose',
           '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
@@ -1395,10 +1447,12 @@ describe(MediaService.name, () => {
       {
         inputOptions: [],
         outputOptions: [
-          '-vcodec h264',
-          '-acodec aac',
+          '-c:v h264',
+          '-c:a aac',
           '-movflags faststart',
           '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
           '-v verbose',
           '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',

@@ -17,6 +17,7 @@
   import SideBarButton from './side-bar-button.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import SideBarSection from './side-bar-section.svelte';
+  import { featureFlags } from '$lib/stores/feature-flags.store';
 
   const getStats = async (dto: AssetApiGetAssetStatsRequest) => {
     const { data: stats } = await api.assetApi.getAssetStats(dto);
@@ -56,9 +57,11 @@
       </svelte:fragment>
     </SideBarButton>
   </a>
-  <a data-sveltekit-preload-data="hover" data-sveltekit-noscroll href={AppRoute.EXPLORE} draggable="false">
-    <SideBarButton title="Explore" logo={Magnify} isSelected={$page.route.id === '/(user)/explore'} />
-  </a>
+  {#if $featureFlags.search}
+    <a data-sveltekit-preload-data="hover" data-sveltekit-noscroll href={AppRoute.EXPLORE} draggable="false">
+      <SideBarButton title="Explore" logo={Magnify} isSelected={$page.route.id === '/(user)/explore'} />
+    </a>
+  {/if}
   <a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
     <SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
   </a>

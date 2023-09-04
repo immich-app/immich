@@ -41,8 +41,15 @@ export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
   sortBy: string;
+  view: string;
+}
+
+export enum AlbumViewMode {
+  Cover = 'Cover',
+  List = 'List',
 }
 
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
+  view: AlbumViewMode.Cover,
 });

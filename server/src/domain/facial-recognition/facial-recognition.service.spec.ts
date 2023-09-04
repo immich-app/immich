@@ -1,3 +1,4 @@
+import { Colorspace } from '@app/infra/entities';
 import {
   assetStub,
   faceStub,
@@ -9,6 +10,7 @@ import {
   newPersonRepositoryMock,
   newSearchRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -18,6 +20,7 @@ import { IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { IFaceRepository } from './face.repository';
 import { FacialRecognitionService } from './facial-recognition.services';
 
@@ -94,6 +97,7 @@ const faceSearch = {
 describe(FacialRecognitionService.name, () => {
   let sut: FacialRecognitionService;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineLearningMock: jest.Mocked<IMachineLearningRepository>;
@@ -104,6 +108,7 @@ describe(FacialRecognitionService.name, () => {
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     faceMock = newFaceRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
@@ -116,6 +121,7 @@ describe(FacialRecognitionService.name, () => {
 
     sut = new FacialRecognitionService(
       assetMock,
+      configMock,
       faceMock,
       jobMock,
       machineLearningMock,
@@ -174,9 +180,18 @@ describe(FacialRecognitionService.name, () => {
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
-      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith({
-        imagePath: assetStub.image.resizePath,
-      });
+      expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        {
+          imagePath: assetStub.image.resizePath,
+        },
+        {
+          enabled: true,
+          maxDistance: 0.6,
+          minScore: 0.7,
+          modelName: 'buffalo_l',
+        },
+      );
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
@@ -277,6 +292,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
@@ -298,6 +315,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
       });
     });
 
@@ -315,6 +334,8 @@ describe(FacialRecognitionService.name, () => {
       expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
       });
     });
   });

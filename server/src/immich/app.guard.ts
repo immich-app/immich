@@ -1,12 +1,12 @@
 import { AuthService, AuthUserDto, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
 import {
-  applyDecorators,
   CanActivate,
-  createParamDecorator,
   ExecutionContext,
   Injectable,
   Logger,
   SetMetadata,
+  applyDecorators,
+  createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiQuery, ApiSecurity } from '@nestjs/swagger';
@@ -80,7 +80,10 @@ export interface AuthRequest extends Request {
 export class AppGuard implements CanActivate {
   private logger = new Logger(AppGuard.name);
 
-  constructor(private reflector: Reflector, private authService: AuthService) {}
+  constructor(
+    private reflector: Reflector,
+    private authService: AuthService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler(), context.getClass()];

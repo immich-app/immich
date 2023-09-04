@@ -197,6 +197,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         albumThumbnailAssetId: null,
         shared: false,
         sharedUsers: [],
+        hasSharedLink: false,
         assets: [],
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),

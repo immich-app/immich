@@ -17,6 +17,7 @@ export const databaseConfig: PostgresConnectionOptions = {
   entities: [__dirname + '/entities/*.entity.{js,ts}'],
   synchronize: false,
   migrations: [__dirname + '/migrations/*.{js,ts}'],
+  subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: true,
   connectTimeoutMS: 10000, // 10 seconds
   ...urlOrParts,

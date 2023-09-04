@@ -3,6 +3,7 @@ import {
   AuthUserDto,
   LoginDetails,
   LoginResponseDto,
+  OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   OAuthConfigResponseDto,
@@ -11,7 +12,7 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { Authenticated, AuthUser, GetLoginDetails, PublicRoute } from '../app.guard';
+import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 @ApiTags('OAuth')
@@ -31,10 +32,17 @@ export class OAuthController {
     };
   }
 
+  /** @deprecated use feature flags and /oauth/authorize */
   @PublicRoute()
   @Post('config')
   generateConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.service.generateConfig(dto);
+  }
+
+  @PublicRoute()
+  @Post('authorize')
+  authorizeOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+    return this.service.authorize(dto);
   }
 
   @PublicRoute()

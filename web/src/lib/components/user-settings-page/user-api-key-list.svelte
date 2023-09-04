@@ -1,6 +1,5 @@
 <script lang="ts">
   import { api, APIKeyResponseDto } from '@api';
-  import { onMount } from 'svelte';
   import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
   import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
   import { fade } from 'svelte/transition';
@@ -12,7 +11,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import Button from '../elements/buttons/button.svelte';
 
-  let keys: APIKeyResponseDto[] = [];
+  export let keys: APIKeyResponseDto[];
 
   let newKey: Partial<APIKeyResponseDto> | null = null;
   let editKey: APIKeyResponseDto | null = null;
@@ -24,10 +23,6 @@
     day: 'numeric',
     year: 'numeric',
   };
-
-  onMount(() => {
-    refreshKeys();
-  });
 
   async function refreshKeys() {
     const { data } = await api.keyApi.getKeys();

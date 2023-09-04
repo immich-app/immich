@@ -12,11 +12,11 @@ import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
+  UserCountResponseDto,
+  UserResponseDto,
   mapCreateProfileImageResponse,
   mapUser,
   mapUserCountResponse,
-  UserCountResponseDto,
-  UserResponseDto,
 } from './response-dto';
 import { UserCore } from './user.core';
 import { IUserRepository } from './user.repository';

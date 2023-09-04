@@ -62,11 +62,17 @@ class ThumbnailImage extends HookConsumerWidget {
     }
 
     Widget buildImage(Asset asset) {
-      var image = ImmichImage(
-        asset,
+      var image = SizedBox(
         width: 300,
         height: 300,
-        useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+        child: Hero(
+          tag: asset.id + heroOffset,
+          child: ImmichImage(
+            asset,
+            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+            fit: BoxFit.cover,
+          ),
+        ),
       );
       if (!multiselectEnabled || !isSelected) {
         return image;
@@ -114,73 +120,70 @@ class ThumbnailImage extends HookConsumerWidget {
         onSelect?.call();
         HapticFeedback.heavyImpact();
       },
-      child: Hero(
-        tag: asset.id + heroOffset,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: multiselectEnabled && isSelected
-                    ? Border.all(
-                        color: onDeselect == null
-                            ? Colors.grey
-                            : assetContainerColor,
-                        width: 8,
-                      )
-                    : const Border(),
-              ),
-              child: buildImage(asset),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: multiselectEnabled && isSelected
+                  ? Border.all(
+                      color: onDeselect == null
+                          ? Colors.grey
+                          : assetContainerColor,
+                      width: 8,
+                    )
+                  : const Border(),
             ),
-            if (multiselectEnabled)
-              Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: buildSelectionIcon(asset),
-                ),
+            child: buildImage(asset),
+          ),
+          if (multiselectEnabled)
+            Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: buildSelectionIcon(asset),
               ),
-            if (showStorageIndicator)
-              Positioned(
-                right: 10,
-                bottom: 5,
-                child: Icon(
-                  storageIcon(asset),
-                  color: Colors.white,
-                  size: 18,
-                ),
+            ),
+          if (showStorageIndicator)
+            Positioned(
+              right: 10,
+              bottom: 5,
+              child: Icon(
+                storageIcon(asset),
+                color: Colors.white,
+                size: 18,
               ),
-            if (asset.isFavorite)
-              const Positioned(
-                left: 10,
-                bottom: 5,
-                child: Icon(
-                  Icons.favorite,
-                  color: Colors.white,
-                  size: 18,
-                ),
+            ),
+          if (asset.isFavorite)
+            const Positioned(
+              left: 10,
+              bottom: 5,
+              child: Icon(
+                Icons.favorite,
+                color: Colors.white,
+                size: 18,
               ),
-            if (!asset.isImage)
-              Positioned(
-                top: 5,
-                right: 5,
-                child: Row(
-                  children: [
-                    Text(
-                      asset.duration.toString().substring(0, 7),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.play_circle_outline_rounded,
+            ),
+          if (!asset.isImage)
+            Positioned(
+              top: 5,
+              right: 5,
+              child: Row(
+                children: [
+                  Text(
+                    asset.duration.toString().substring(0, 7),
+                    style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 10,
                     ),
-                  ],
-                ),
+                  ),
+                  const Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: Colors.white,
+                  ),
+                ],
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

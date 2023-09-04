@@ -88,7 +88,7 @@
       <input
         type="text"
         name="q"
-        class="w-full transition-all {grayTheme
+        class="w-full {grayTheme
           ? 'dark:bg-immich-dark-gray'
           : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showBigSearchBar
           ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'

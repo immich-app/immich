@@ -174,7 +174,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                     bottom: 10,
                     right: 25,
                     child: buildSelectedTextBox(),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -218,7 +218,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                             }),
                             future: albumInfo.assetCount,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),

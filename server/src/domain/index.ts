@@ -2,6 +2,7 @@ export * from './access';
 export * from './album';
 export * from './api-key';
 export * from './asset';
+export * from './audit';
 export * from './auth';
 export * from './communication';
 export * from './crypto';

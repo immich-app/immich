@@ -7,6 +7,7 @@
 
   export let url: string;
   export let altText: string;
+  export let title: string | null = null;
   export let heightStyle: string | undefined = undefined;
   export let widthStyle: string;
   export let thumbhash: string | null = null;
@@ -27,6 +28,7 @@
   style:opacity={hidden ? '0.5' : '1'}
   src={url}
   alt={altText}
+  {title}
   class="object-cover transition duration-300 {border
     ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
     : ''}"
@@ -51,6 +53,7 @@
     style:height={heightStyle}
     src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
     alt={altText}
+    {title}
     class="absolute top-0 object-cover"
     class:rounded-xl={curve}
     class:shadow-lg={shadow}

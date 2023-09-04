@@ -28,7 +28,8 @@
 
 - ⚠️ The project is under **very active** development.
 - ⚠️ Expect bugs and breaking changes.
-- ⚠️ **Do not use the app as the only way to store your photos and videos!**
+- ⚠️ **Do not use the app as the only way to store your photos and videos.**
+- ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 
 ## Content
 

@@ -49,7 +49,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           type: ThumbnailFormat.JPEG,
         ),
         httpHeaders: {
-          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"
+          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
         },
         cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
         errorWidget: (context, url, error) =>
@@ -105,9 +105,9 @@ class AlbumThumbnailListTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                           ),
-                        ).tr()
+                        ).tr(),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

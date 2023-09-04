@@ -1,10 +1,15 @@
 import { AuthUserDto } from '@app/domain';
 
-export const signupStub = {
+export const adminSignupStub = {
   firstName: 'Immich',
   lastName: 'Admin',
   email: 'admin@immich.app',
   password: 'Password123',
+};
+
+export const userSignupStub = {
+  ...adminSignupStub,
+  memoriesEnabled: true,
 };
 
 export const signupResponseStub = {
@@ -20,6 +25,11 @@ export const loginStub = {
     email: 'admin@immich.app',
     password: 'Password123',
   },
+};
+
+export const changePasswordStub = {
+  password: 'Password123',
+  newPassword: 'Password1234',
 };
 
 export const authStub = {

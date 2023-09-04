@@ -32,6 +32,7 @@ export enum JobName {
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
   METADATA_EXTRACTION = 'metadata-extraction',
+  LINK_LIVE_PHOTOS = 'link-live-photos',
 
   // user deletion
   USER_DELETION = 'user-deletion',
@@ -54,6 +55,7 @@ export enum JobName {
 
   // cleanup
   DELETE_FILES = 'delete-files',
+  CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
 
   // search
   SEARCH_INDEX_ASSETS = 'search-index-assets',
@@ -83,6 +85,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
+  [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
 
   // conversion
@@ -98,6 +101,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
   [JobName.METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.LINK_LIVE_PHOTOS]: QueueName.METADATA_EXTRACTION,
 
   // storage template
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,

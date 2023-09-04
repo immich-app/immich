@@ -230,7 +230,7 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /asset/download' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/download/archive' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
@@ -238,7 +238,7 @@ class AssetApi {
   /// * [String] key:
   Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download';
+    final path = r'/asset/download/archive';
 
     // ignore: prefer_final_locals
     Object? postBody = assetIdsDto;
@@ -353,14 +353,13 @@ class AssetApi {
   ///
   /// * [bool] isArchived:
   ///
-  /// * [bool] withoutThumbs:
-  ///   Include assets without thumbnails
-  ///
   /// * [num] skip:
+  ///
+  /// * [DateTime] updatedAfter:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, bool? withoutThumbs, num? skip, String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -380,11 +379,11 @@ class AssetApi {
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
     }
-    if (withoutThumbs != null) {
-      queryParams.addAll(_queryParams('', 'withoutThumbs', withoutThumbs));
-    }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+    if (updatedAfter != null) {
+      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
     }
 
     if (ifNoneMatch != null) {
@@ -415,15 +414,14 @@ class AssetApi {
   ///
   /// * [bool] isArchived:
   ///
-  /// * [bool] withoutThumbs:
-  ///   Include assets without thumbnails
-  ///
   /// * [num] skip:
+  ///
+  /// * [DateTime] updatedAfter:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, bool? withoutThumbs, num? skip, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, withoutThumbs: withoutThumbs, skip: skip, ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, skip: skip, updatedAfter: updatedAfter, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -853,51 +851,33 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/download' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/download/info' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [List<String>] assetIds:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] userId:
-  ///
-  /// * [num] archiveSize:
+  /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
+  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download';
+    final path = r'/asset/download/info';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = downloadInfoDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (assetIds != null) {
-      queryParams.addAll(_queryParams('multi', 'assetIds', assetIds));
-    }
-    if (albumId != null) {
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
-    }
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
-    if (archiveSize != null) {
-      queryParams.addAll(_queryParams('', 'archiveSize', archiveSize));
-    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -908,17 +888,11 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [List<String>] assetIds:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] userId:
-  ///
-  /// * [num] archiveSize:
+  /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo( assetIds: assetIds, albumId: albumId, userId: userId, archiveSize: archiveSize, key: key, );
+  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1251,6 +1225,45 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /asset/jobs' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AssetJobsDto] assetJobsDto (required):
+  Future<Response> runAssetJobsWithHttpInfo(AssetJobsDto assetJobsDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/jobs';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetJobsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AssetJobsDto] assetJobsDto (required):
+  Future<void> runAssetJobs(AssetJobsDto assetJobsDto,) async {
+    final response = await runAssetJobsWithHttpInfo(assetJobsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /asset/search' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1426,6 +1439,45 @@ class AssetApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'PUT /asset' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
+  Future<Response> updateAssetsWithHttpInfo(AssetBulkUpdateDto assetBulkUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetBulkUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
+  Future<void> updateAssets(AssetBulkUpdateDto assetBulkUpdateDto,) async {
+    final response = await updateAssetsWithHttpInfo(assetBulkUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].

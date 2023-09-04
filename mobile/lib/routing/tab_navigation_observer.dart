@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
@@ -6,6 +7,9 @@ import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {
@@ -46,6 +50,20 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'HomeRoute') {
       ref.invalidate(memoryFutureProvider);
+
+      // Update user info
+      try {
+        final userResponseDto =
+            await ref.read(apiServiceProvider).userApi.getMyUserInfo();
+
+        if (userResponseDto == null) {
+          return;
+        }
+
+        Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+      } catch (e) {
+        debugPrint("Error refreshing user info $e");
+      }
     }
     ref.watch(serverInfoProvider.notifier).getServerVersion();
   }
