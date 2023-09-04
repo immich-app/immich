@@ -11,11 +11,10 @@
   export let publicSharedKey = '';
   export let element: HTMLDivElement | undefined = undefined;
   let imgElement: HTMLDivElement;
-
-  let assetData: string;
-
+  var assetData: string = "";
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+  let webVersionForced: boolean = false;
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -23,12 +22,20 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
+    loadAssetData();
   });
 
-  const loadAssetData = async () => {
+  const loadAssetData = async (forceWeb?: boolean) => {
+    const isImageSupportedByWeb = (asset: AssetResponseDto) => {
+      const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      const imgExtention = asset.originalPath.split('.').pop();
+      
+      return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
+    };
+
     try {
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: true, key: publicSharedKey },
+        { id: asset.id, isThumb: false, isWeb: forceWeb || !isImageSupportedByWeb(asset), key: api.getKey() },
         {
           responseType: 'blob',
         },
@@ -105,9 +112,9 @@
   transition:fade={{ duration: 150 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
-  {#await loadAssetData()}
+  {#if !assetData.length}
     <LoadingSpinner />
-  {:then assetData}
+  {:else}
     <div bind:this={imgElement} class="h-full w-full">
       <img
         transition:fade={{ duration: 150 }}
@@ -115,7 +122,19 @@
         alt={asset.id}
         class="h-full w-full object-contain"
         draggable="false"
+        on:error={(e) => {
+          if (!webVersionForced) {
+            // There was an error loading the image, force web version
+            loadAssetData(true);
+            assetData = "";
+            webVersionForced = true;
+          }
+          else {
+            // Web version failed too, show error
+            console.error('Error loading image', e);
+          }
+        }}
       />
     </div>
-  {/await}
+  {/if}
 </div>
