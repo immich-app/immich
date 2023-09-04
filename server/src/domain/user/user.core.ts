@@ -16,7 +16,10 @@ import { IUserRepository, UserListFilter } from './user.repository';
 const SALT_ROUNDS = 10;
 
 export class UserCore {
-  constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private cryptoRepository: ICryptoRepository,
+  ) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {
