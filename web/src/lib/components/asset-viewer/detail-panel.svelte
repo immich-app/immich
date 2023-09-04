@@ -9,14 +9,17 @@
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
+  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getAssetFilename } from '$lib/utils/asset-utils';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
 
+  /** Holds the asset owner if it is not the current user*/
+  let assetOwner: UserResponseDto | undefined;
   let textarea: HTMLTextAreaElement;
   let description: string;
 
@@ -27,6 +30,13 @@
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
       });
+    }
+    if ($page?.data?.user?.id !== asset.ownerId) {
+      api.userApi.getUserById({ id: asset.ownerId }).then((res) => {
+        assetOwner = res.data;
+      });
+    } else {
+      assetOwner = undefined;
     }
   }
 
@@ -291,40 +301,60 @@
   </div>
 {/if}
 
-<section class="p-2 dark:text-immich-dark-fg">
-  <div class="px-4 py-4">
-    {#if albums.length > 0}
-      <p class="pb-4 text-sm">APPEARS IN</p>
-    {/if}
-    {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="flex gap-4 py-2 hover:cursor-pointer"
-          on:click={() => dispatch('click', album)}
-          on:keydown={() => dispatch('click', album)}
-        >
-          <div>
-            <img
-              alt={album.albumName}
-              class="h-[50px] w-[50px] rounded object-cover"
-              src={album.albumThumbnailAssetId &&
-                api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
-              draggable="false"
-            />
-          </div>
+{#if assetOwner}
+  <section class="p-2 dark:text-immich-dark-fg">
+    <div class="px-4 py-4">
+      <p class="pb-4 text-sm">UPLOADED BY</p>
+      <div class="flex gap-4 py-2">
+        <div>
+          <UserAvatar user={assetOwner} size="md" autoColor />
+        </div>
 
-          <div class="mb-auto mt-auto">
-            <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-            <div class="flex gap-2 text-sm">
-              <p>{album.assetCount} items</p>
-              {#if album.shared}
-                <p>· Shared</p>
-              {/if}
+        <div class="mb-auto mt-auto">
+          <p>
+            {assetOwner.firstName}
+            {assetOwner.lastName}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+{/if}
+
+{#if albums.length > 0}
+  <section class="p-2 dark:text-immich-dark-fg">
+    <div class="px-4 py-4">
+      <p class="pb-4 text-sm">APPEARS IN</p>
+      {#each albums as album}
+        <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="flex gap-4 py-2 hover:cursor-pointer"
+            on:click={() => dispatch('click', album)}
+            on:keydown={() => dispatch('click', album)}
+          >
+            <div>
+              <img
+                alt={album.albumName}
+                class="h-[50px] w-[50px] rounded object-cover"
+                src={album.albumThumbnailAssetId &&
+                  api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                draggable="false"
+              />
+            </div>
+
+            <div class="mb-auto mt-auto">
+              <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+              <div class="flex gap-2 text-sm">
+                <p>{album.assetCount} items</p>
+                {#if album.shared}
+                  <p>· Shared</p>
+                {/if}
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-    {/each}
-  </div>
-</section>
+        </a>
+      {/each}
+    </div>
+  </section>
+{/if}
