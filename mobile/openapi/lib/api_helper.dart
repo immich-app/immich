@@ -67,6 +67,12 @@ String parameterToString(dynamic value) {
   if (value is CLIPMode) {
     return CLIPModeTypeTransformer().encode(value).toString();
   }
+  if (value is CQMode) {
+    return CQModeTypeTransformer().encode(value).toString();
+  }
+  if (value is Colorspace) {
+    return ColorspaceTypeTransformer().encode(value).toString();
+  }
   if (value is DeleteAssetStatus) {
     return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
