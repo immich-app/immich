@@ -18,6 +18,7 @@ class User {
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
     this.memoryEnabled = true,
+    this.oAuthLoggedIn = false,
   });
 
   Id get isarId => fastHash(id);
@@ -45,6 +46,7 @@ class User {
   bool isAdmin;
   String profileImagePath;
   bool? memoryEnabled;
+  bool? oAuthLoggedIn;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -62,7 +64,8 @@ class User {
         isPartnerSharedWith == other.isPartnerSharedWith &&
         profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin &&
-        memoryEnabled == other.memoryEnabled;
+        memoryEnabled == other.memoryEnabled &&
+        oAuthLoggedIn == other.oAuthLoggedIn;
   }
 
   @override
