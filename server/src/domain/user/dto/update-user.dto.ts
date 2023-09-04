@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID } from 'class-validator';
-import { toEmail, toSanitized, Optional } from '../../domain.util';
+import { Optional, toEmail, toSanitized } from '../../domain.util';
 
 export class UpdateUserDto {
   @Optional()

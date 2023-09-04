@@ -16,7 +16,7 @@ import {
   userTokenStub,
 } from '@test';
 import { IncomingHttpHeaders } from 'http';
-import { generators, Issuer } from 'openid-client';
+import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';

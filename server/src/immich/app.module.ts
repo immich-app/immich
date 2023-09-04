@@ -12,8 +12,8 @@ import { AppGuard } from './app.guard';
 import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
 import {
-  AlbumController,
   APIKeyController,
+  AlbumController,
   AppController,
   AssetController,
   AuditController,

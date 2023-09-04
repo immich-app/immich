@@ -2,7 +2,7 @@ import { SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsEnum, IsString } from 'class-validator';
-import { ValidateUUID, Optional } from '../domain.util';
+import { Optional, ValidateUUID } from '../domain.util';
 
 export class SharedLinkCreateDto {
   @IsEnum(SharedLinkType)

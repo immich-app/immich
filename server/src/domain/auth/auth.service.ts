@@ -10,7 +10,7 @@ import {
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
-import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISharedLinkRepository } from '../shared-link';
@@ -31,11 +31,11 @@ import {
   AuthDeviceResponseDto,
   LoginResponseDto,
   LogoutResponseDto,
+  OAuthAuthorizeResponseDto,
+  OAuthConfigResponseDto,
   mapAdminSignupResponse,
   mapLoginResponse,
   mapUserToken,
-  OAuthAuthorizeResponseDto,
-  OAuthConfigResponseDto,
 } from './response-dto';
 import { IUserTokenRepository } from './user-token.repository';
 

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate } from 'class-validator';
-import { toBoolean, Optional } from '../../domain.util';
+import { Optional, toBoolean } from '../../domain.util';
 
 export class MapMarkerDto {
   @ApiProperty()

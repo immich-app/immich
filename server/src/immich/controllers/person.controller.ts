@@ -13,7 +13,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Authenticated, AuthUser } from '../app.guard';
+import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
