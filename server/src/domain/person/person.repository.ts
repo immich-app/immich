@@ -13,7 +13,9 @@ export interface UpdateFacesData {
 }
 
 export interface IPersonRepository {
-  getAll(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
+  getAll(): Promise<PersonEntity[]>;
+  getAllWithoutThumbnail(): Promise<PersonEntity[]>;
+  getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
 
@@ -27,4 +29,5 @@ export interface IPersonRepository {
   deleteAll(): Promise<number>;
 
   getFaceById(payload: AssetFaceId): Promise<AssetFaceEntity | null>;
+  getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
 }
