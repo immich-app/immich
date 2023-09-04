@@ -15,6 +15,7 @@ export class MediaRepository implements IMediaRepository {
 
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
+      .pipelineColorspace('rgb16')
       .extract({
         left: options.left,
         top: options.top,
@@ -38,7 +39,7 @@ export class MediaRepository implements IMediaRepository {
       }
     }
     const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-    sharp(input, { failOn: 'none' })
+    await sharp(input, { failOn: 'none' })
       .pipelineColorspace('rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
