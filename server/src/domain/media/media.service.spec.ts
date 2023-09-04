@@ -88,6 +88,39 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should queue all people with missing thumbnail path', async () => {
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([personStub.noThumbnail]);
+      personMock.getRandomFace.mockResolvedValue(faceStub.face1);
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getRandomFace).toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          imageWidth: faceStub.face1.imageWidth,
+          imageHeight: faceStub.face1.imageHeight,
+          boundingBox: {
+            x1: faceStub.face1.boundingBoxX1,
+            x2: faceStub.face1.boundingBoxX2,
+            y1: faceStub.face1.boundingBoxY1,
+            y2: faceStub.face1.boundingBoxY2,
+          },
+          assetId: faceStub.face1.assetId,
+          personId: personStub.newThumbnail.id,
+        },
+      });
+    });
+
     it('should queue all assets with missing resize path', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.noResizePath],
@@ -103,6 +136,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing webp path', async () => {
@@ -120,6 +156,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_WEBP_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -137,6 +176,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
   });
 
