@@ -11,7 +11,7 @@
   export let element: HTMLDivElement | undefined = undefined;
 
   let imgElement: HTMLDivElement;
-  var assetData: string = "";
+  let assetData: string = "";
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
   let webVersionForced: boolean = false;
