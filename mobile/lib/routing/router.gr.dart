@@ -302,6 +302,12 @@ class _$AppRouter extends RootStackRouter {
         child: const MapPage(),
       );
     },
+    AdminWebViewRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: AdminWebView(),
+      );
+    },
     AlbumOptionsRoute.name: (routeData) {
       final args = routeData.argsAs<AlbumOptionsRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -614,6 +620,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           MapRoute.name,
           path: '/map-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AdminWebViewRoute.name,
+          path: '/admin-web-view',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1356,6 +1370,17 @@ class MapRoute extends PageRouteInfo<void> {
   const MapRoute()
       : super(
           MapRoute.name,
+          path: '/map-page',
+        );
+
+  static const String name = 'MapRoute';
+}
+
+/// [AdminWebView]
+class AdminWebViewRoute extends PageRouteInfo<void> {
+  const AdminWebViewRoute()
+      : super(
+          AdminWebViewRoute.name,
           path: '/map-page',
         );
 
