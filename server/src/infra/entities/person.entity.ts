@@ -3,7 +3,8 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany, OneToOne,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -40,7 +41,7 @@ export class PersonEntity {
   @Column({ type: 'uuid', nullable: true })
   faceAssetId!: string | null;
 
-  @OneToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true})
+  @OneToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true })
   faceAsset!: AssetEntity | null;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
