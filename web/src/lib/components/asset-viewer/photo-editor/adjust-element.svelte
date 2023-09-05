@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
 
   export let title: string = 'Free';
-  export let isActive: boolean = false;
 
   export let type: boolean = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
 
@@ -49,7 +48,21 @@
 </script>
 
 <div class="flex w-full text-white">
-  <button class:active-edit={isActive} class="bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl">
+  <button
+    class="{(type && value != 1) || (!type && value != 0)
+      ? 'active-edit'
+      : ''} bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl"
+    on:click={() => {
+      if (type) {
+        value = 1;
+        rangeValue = 50;
+      } else {
+        value = 0;
+        rangeValue = 0;
+      }
+      renderProgress();
+    }}
+  >
     <slot />
   </button>
   <div class="relative grid w-full">
