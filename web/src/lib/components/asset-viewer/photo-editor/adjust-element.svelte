@@ -1,15 +1,64 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   export let title: string = 'Free';
   export let isActive: boolean = false;
+
+  export let type: boolean = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
+
+  export let value: number = 0;
+
+  let progressBar: HTMLDivElement;
+
+  let rangeValue: number = 0;
+
+  $: if (type) {
+    rangeValue = (value / 2) * 100;
+  } else {
+    rangeValue = value * 100;
+  }
+
+  onMount(() => {
+    renderProgress();
+  });
+
+  const renderProgress = () => {
+    const progress = rangeValue;
+    if (type) {
+      value = (progress * 2) / 100;
+    } else {
+      value = Number(progress) / 100;
+    }
+
+    const progressPercent = (progress / 100) * 100;
+    let progressColor;
+
+    if (type) {
+      if (progress <= 50) {
+        progressColor = `linear-gradient(90deg, #373737 ${progressPercent}%, #adcbfa ${progressPercent}%, #adcbfa 50%,#373737 50%)`;
+      } else {
+        progressColor = `linear-gradient(90deg, #373737 50%, #adcbfa 50%, #adcbfa ${progressPercent}%, #373737 ${progressPercent}%)`;
+      }
+    } else {
+      progressColor = `linear-gradient(90deg, #adcbfa ${progressPercent}%,#373737 ${progressPercent}%)`;
+    }
+    progressBar.style.background = '#373737';
+    progressBar.style.background = progressColor;
+    console.log(progressColor);
+  };
 </script>
 
-<div class="w-full flex text-white">
-  <button class:active-edit={isActive} class="rounded-full p-4 mr-3 text-2xl bg-immich-gray/10 hover:bg-immich-gray/20">
+<div class="flex w-full text-white">
+  <button class:active-edit={isActive} class="bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl">
     <slot />
   </button>
-  <div class="grid w-full">
+  <div class="relative grid w-full">
     <span>{title}</span>
-    <input type="range" name="" id="" />
+    <input bind:value={rangeValue} type="range" name="" id="" on:input={renderProgress} />
+    <div
+      bind:this={progressBar}
+      class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[14px] h-[3px] w-full rounded-full"
+    />
   </div>
 </div>
 
@@ -29,8 +78,8 @@
   input[type='range'] {
     color: #adcbfa;
     --thumb-height: 12px;
-    --track-height: 1px;
-    --track-color: rgba(246, 246, 244, 0.5);
+    --track-height: -1px;
+    --track-color: rgba(246, 246, 244, 0);
     --brightness-hover: 100%;
     --brightness-down: 100%;
     --clip-edges: 0.125em;

@@ -16,7 +16,7 @@
   import RelativeScale from 'svelte-material-icons/RelativeScale.svelte';
   import RectangleOutline from 'svelte-material-icons/RectangleOutline.svelte';
   import SquareOutline from 'svelte-material-icons/SquareOutline.svelte';
-  import Brightness6 from 'svelte-material-icons/Brightness6.svelte';
+
   import Close from 'svelte-material-icons/Close.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import FlipHorizontal from 'svelte-material-icons/FlipHorizontal.svelte';
@@ -29,11 +29,35 @@
   import AdjustElement from './adjust-element.svelte';
   import FilterCard from './filter-card.svelte';
 
+  //Filter icons
+  import ContrastCircle from 'svelte-material-icons/ContrastCircle.svelte';
+  import Brightness6 from 'svelte-material-icons/Brightness6.svelte';
+  import InvertColors from 'svelte-material-icons/InvertColors.svelte';
+  import Blur from 'svelte-material-icons/Blur.svelte';
+  import CircleHalfFull from 'svelte-material-icons/CircleHalfFull.svelte';
+  import DotsCircle from 'svelte-material-icons/DotsCircle.svelte';
+  import SelectInverse from 'svelte-material-icons/SelectInverse.svelte';
+  import Pillar from 'svelte-material-icons/Pillar.svelte';
+
   import Render from './render.svelte';
 
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher();
+
+  // Image adjustment
+  let filter = {
+    hdr: 0,
+    blur: 0,
+    brightness: 1,
+    contrast: 1,
+    grayscale: 0,
+    hueRotate: 1,
+    invert: 0,
+    opacity: 1,
+    saturation: 1,
+    sepia: 0,
+  };
 
   // Render
   let renderedImage: string;
@@ -61,7 +85,7 @@
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
 
-  let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'crop';
+  let activeButton: 'autofix' | 'crop' | 'adjust' | 'filter' = 'adjust';
   type activeEdit = 'optimized' | 'dynamic' | 'warm' | 'cold' | '';
   let activeEdit: activeEdit;
 
@@ -94,6 +118,20 @@
 
   $: currentRatio = imageElement ? imageElement.naturalWidth / imageWrapper.offsetWidth : 0;
 
+  //DEBUG
+
+  $: console.log(filter);
+  //END DEBUG
+
+  // Apply filter
+  $: if (imageElement) {
+    imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+      filter.contrast
+    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
+      filter.opacity
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+  }
+
   onMount(async () => {
     try {
       await loadAssetData();
@@ -102,6 +140,12 @@
       handleError(error, 'Failed to load asset data');
     }
     imageElement.src = assetData;
+    imageElement.onload = () => {
+      console.log('imageElement.onload');
+      initAngleSlider();
+      initAssetDrag();
+      setAspectRatio('original');
+    };
   });
 
   const loadAssetData = async () => {
@@ -127,17 +171,34 @@
 
   const navigateEditTab = async (button: 'autofix' | 'crop' | 'adjust' | 'filter') => {
     activeButton = button;
+    const cropWrapperParent = cropElementWrapper.parentElement;
+
+    //TODO: better solution
+    if (!cropWrapperParent) return;
+
     switch (activeButton) {
       case 'autofix':
+        cropWrapperParent.classList.remove('p-24');
+        cropWrapperParent.classList.remove('pb-52');
+        setAspectRatio(currentAspectRatio);
         break;
       case 'crop':
-        await setAspectRatio('original', false);
-        initAngleSlider();
-        initAssetDrag();
+        if (!cropWrapperParent.classList.contains('p-24')) {
+          cropWrapperParent.classList.add('p-24');
+          cropWrapperParent.classList.add('pb-52');
+        }
+        setAspectRatio(currentAspectRatio);
         break;
       case 'adjust':
+        cropWrapperParent.classList.remove('p-24');
+        cropWrapperParent.classList.remove('pb-52');
+        setAspectRatio(currentAspectRatio);
         break;
       case 'filter':
+        cropWrapperParent.classList.remove('p-24');
+        cropWrapperParent.classList.remove('pb-52');
+        setAspectRatio(currentAspectRatio);
+        break;
       default:
         break;
     }
@@ -242,6 +303,9 @@
       //cropElement.style.maxWidth = '100%';
     }
 
+    console.log('cropElement.offsetWidth', cropElement.offsetWidth);
+    console.log('cropElement.offsetHeight', cropElement.offsetHeight);
+
     currentTranslate = { x: 0, y: 0 };
     calcImageElement(currentAngle);
     setImageWrapperTransform();
@@ -340,6 +404,7 @@
     };
 
     const elementDrag = async (e: MouseEvent) => {
+      if (activeButton !== 'crop') return;
       e.preventDefault();
       // calculate the new cursor position:
       pos1 = pos3 - e.clientX;
@@ -451,32 +516,15 @@
     const cropElementWidth = cropElement.offsetWidth;
     const cropElementHeight = cropElement.offsetHeight;
 
+    console.log('cropElementWidth', cropElementWidth);
+    console.log('cropElementHeight', cropElementHeight);
+
     const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
     const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
 
     const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementHeight;
     const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementWidth;
 
-    // if (currentAngleOffset === 90 || currentAngleOffset === 270) {
-    //   if ((x1 + x2) / (y1 + y2) > 1 / originalAspect) {
-    //     imageWrapper.style.height = `${x1 + x2}px`;
-    //     imageWrapper.style.width = `${(x1 + x2) / (1 / originalAspect)}px`;
-    //     console.log('Translation in Y possible');
-    //     console.log('case1');
-    //     currentTranslateDirection = 'y';
-    //   } else if ((x1 + x2) / (y1 + y2) < 1 / originalAspect) {
-    //     imageWrapper.style.height = `${y1 + y2}px`;
-    //     imageWrapper.style.width = `${(y1 + y2) / (1 / originalAspect)}px`;
-    //     currentTranslateDirection = 'x';
-    //     console.log('Translation in X possible');
-    //     console.log('case2');
-    //   } else {
-    //     imageWrapper.style.width = `${y1 + y2}px`;
-    //     imageWrapper.style.height = `${(y1 + y2) / originalAspect}px`;
-    //     currentTranslateDirection = '';
-    //     console.log('case3');
-    //   }
-    // } else {
     if ((x1 + x2) / (y1 + y2) > originalAspect) {
       newWidth = `${x1 + x2}px`;
       newHeight = `${(x1 + x2) / originalAspect}px`;
@@ -495,7 +543,14 @@
       currentTranslateDirection = '';
       console.log('case6');
     }
-    // }
+
+    // Set image element width and height
+    console.log('newWidth', newWidth);
+    console.log('newHeight', newHeight);
+    console.log('currentAngleOffset', currentAngleOffset);
+    console.log('currentTranslateDirection', currentTranslateDirection);
+    console.log('currentTranslate', currentTranslate);
+    console.log('currentAngle', currentAngle);
 
     if (currentAngleOffset === 90 || currentAngleOffset === 270) {
       imageWrapper.style.height = newWidth;
@@ -617,7 +672,7 @@
     <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
     <div class="flex h-full w-full justify-center" bind:this={assetDragHandle}>
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
-      <div class="-z-10 flex h-full w-full items-center justify-center {activeButton == 'crop' ? 'p-24 pb-52' : ''}">
+      <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
           <div>
             <div bind:this={imageWrapper} class="">
@@ -625,129 +680,134 @@
             </div>
             <div
               bind:this={cropElement}
-              class="absolute left-1/2 top-1/2 z-[1000] z-[1000] mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent shadow-[0_0_500px_500px_rgba(0,0,0,0.8)]"
+              id="cropElement"
+              class="absolute left-1/2 top-1/2 z-[1000] mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent {activeButton ===
+              'crop'
+                ? 'shadow-[0_0_5000px_5000px_rgba(0,0,0,0.8)]'
+                : 'shadow-[0_0_5000px_5000px_#000000]'}"
             >
-              <div class="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white" />
-              <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-white" />
-              <div class="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-white" />
-              <div class="absolute -bottom-1 -right-1 h-2 w-2 rounded-full bg-white" />
+              {#if activeButton === 'crop'}
+                <div class="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white" />
+                <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-white" />
+                <div class="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-white" />
+                <div class="absolute -bottom-1 -right-1 h-2 w-2 rounded-full bg-white" />
+              {/if}
             </div>
           </div>
         </div>
       </div>
     </div>
-    {#if activeButton === 'crop'}
-      <div class="h-26 bg-immich-dark-bg absolute bottom-0 flex w-full justify-center gap-0 px-4 py-2">
-        <div class="grid h-full w-full max-w-[750px] grid-cols-[1fr,1fr,500px,2fr] grid-rows-1 items-center">
-          <!-- Crop Options -->
-          <div class="z-10 flex h-full w-full flex-col justify-center bg-black">
-            <button
-              on:click={() => flipHorizontal()}
-              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
-            >
-              <FlipHorizontal />
-            </button>
+    <div
+      class="{activeButton === 'crop'
+        ? ''
+        : 'hidden'} h-26 bg-immich-dark-bg absolute bottom-0 flex w-full justify-center gap-0 px-4 py-2"
+    >
+      <div class="grid h-full w-full max-w-[750px] grid-cols-[1fr,1fr,500px,2fr] grid-rows-1 items-center">
+        <!-- Crop Options -->
+        <div class="z-10 flex h-full w-full flex-col justify-center bg-black">
+          <button
+            on:click={() => flipHorizontal()}
+            class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
+          >
+            <FlipHorizontal />
+          </button>
 
-            <button
-              on:click={() => flipVertical()}
-              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
-            >
-              <FlipVertical />
-            </button>
-          </div>
-          <div class="z-10 flex h-full w-full items-center justify-center bg-black">
-            <button
-              on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
-              class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
-            >
-              <FormatRotate90 />
-            </button>
-          </div>
+          <button on:click={() => flipVertical()} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
+            <FlipVertical />
+          </button>
+        </div>
+        <div class="z-10 flex h-full w-full items-center justify-center bg-black">
+          <button
+            on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
+            class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
+          >
+            <FormatRotate90 />
+          </button>
+        </div>
 
-          <div class="relative z-0 h-[50px] w-[500px]">
-            <!-- Angle selector slider -->
-            <div
-              bind:this={angleSlider}
-              class="angle-slider absolute grid h-full w-full select-none grid-cols-[repeat(13,1fr)] grid-rows-2 justify-around text-center text-xs"
-            >
-              <div>-90°</div>
-              <div>-75°</div>
-              <div>-60°</div>
-              <div>-45°</div>
-              <div>-30°</div>
-              <div>-15°</div>
-              <div>0°</div>
-              <div>15°</div>
-              <div>30°</div>
-              <div>45°</div>
-              <div>60°</div>
-              <div>75°</div>
-              <div>90°</div>
-              <div class="col-start-1 col-end-[14] row-start-2 grid grid-cols-[repeat(39,1fr)]">
-                <div />
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div>.</div>
-                <div />
-              </div>
-            </div>
-            <div class="angle-slider-shadow absolute h-full w-full" />
-            <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full cursor-pointer" />
-            <div class="angle-slider-selection absolute left-[calc(50%-56px)] w-28 text-lg text-white">
-              <div class="-mt-1.5 flex justify-center">
-                {currentAngle}°
-              </div>
-              <div class="mt-1.5 flex justify-center">
-                <TriangleSmallUp />
-              </div>
+        <div class="relative z-0 h-[50px] w-[500px]">
+          <!-- Angle selector slider -->
+          <div
+            bind:this={angleSlider}
+            class="angle-slider absolute grid h-full w-full select-none grid-cols-[repeat(13,1fr)] grid-rows-2 justify-around text-center text-xs"
+          >
+            <div>-90°</div>
+            <div>-75°</div>
+            <div>-60°</div>
+            <div>-45°</div>
+            <div>-30°</div>
+            <div>-15°</div>
+            <div>0°</div>
+            <div>15°</div>
+            <div>30°</div>
+            <div>45°</div>
+            <div>60°</div>
+            <div>75°</div>
+            <div>90°</div>
+            <div class="col-start-1 col-end-[14] row-start-2 grid grid-cols-[repeat(39,1fr)]">
+              <div />
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div>.</div>
+              <div />
             </div>
           </div>
-
-          <div class="z-10 flex h-full w-full items-center justify-center bg-black">
-            <button
-              class=" text-md text-immich-dark-primary hover:bg-immich-dark-primary/10 focus:bg-immich-dark-primary/20 rounded border border-white px-3 py-1.5 focus:outline-none"
-              on:click={() => resetCropAndRotate()}
-            >
-              Reset
-            </button>
+          <div class="angle-slider-shadow absolute h-full w-full" />
+          <div bind:this={angleSliderHandle} class="angle-slider absolute z-20 h-full w-full cursor-pointer" />
+          <div class="angle-slider-selection absolute left-[calc(50%-56px)] w-28 text-lg text-white">
+            <div class="-mt-1.5 flex justify-center">
+              {currentAngle}°
+            </div>
+            <div class="mt-1.5 flex justify-center">
+              <TriangleSmallUp />
+            </div>
           </div>
         </div>
+
+        <div class="z-10 flex h-full w-full items-center justify-center bg-black">
+          <button
+            class=" text-md text-immich-dark-primary hover:bg-immich-dark-primary/10 focus:bg-immich-dark-primary/20 rounded border border-white px-3 py-1.5 focus:outline-none"
+            on:click={() => resetCropAndRotate()}
+          >
+            Reset
+          </button>
+        </div>
       </div>
-    {/if}
+    </div>
   </div>
   <!-- <div class="absolute h-full w-full" /> -->
   <div
@@ -890,11 +950,32 @@
       <div class="grid gap-y-2 px-6 pt-2">
         <!-- Adjust -->
         <div class="grid gap-y-8">
-          <AdjustElement title="HDR">
+          <!-- <AdjustElement title="HDR" type={false} bind:value={filter.hdr}>
             <ImageFilterHdr />
-          </AdjustElement>
-          <AdjustElement title="Brightness">
+          </AdjustElement> -->
+          <AdjustElement title="Brightness" type={true} bind:value={filter.brightness}>
             <Brightness6 />
+          </AdjustElement>
+          <AdjustElement title="Contrast" type={true} bind:value={filter.contrast}>
+            <ContrastCircle />
+          </AdjustElement>
+          <AdjustElement title="Saturation" type={true} bind:value={filter.saturation}>
+            <InvertColors />
+          </AdjustElement>
+          <AdjustElement title="Blur" type={false} bind:value={filter.blur}>
+            <Blur />
+          </AdjustElement>
+          <AdjustElement title="Grayscale" type={false} bind:value={filter.grayscale}>
+            <CircleHalfFull />
+          </AdjustElement>
+          <AdjustElement title="Hue Rotate" type={true} bind:value={filter.hueRotate}>
+            <DotsCircle />
+          </AdjustElement>
+          <AdjustElement title="Invert" type={false} bind:value={filter.invert}>
+            <SelectInverse />
+          </AdjustElement>
+          <AdjustElement title="Sepia" type={false} bind:value={filter.sepia}>
+            <Pillar />
           </AdjustElement>
         </div>
       </div>
