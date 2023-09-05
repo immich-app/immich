@@ -14,9 +14,9 @@ import {
 } from '@app/domain';
 import { CreateAlbumDto } from '@app/domain/album/dto/album-create.dto';
 import { dataSource } from '@app/infra';
-import request from 'supertest';
 import { UserEntity } from '@app/infra/entities';
-import { loginResponseStub, loginStub, signupResponseStub, adminSignupStub } from './fixtures';
+import request from 'supertest';
+import { adminSignupStub, loginResponseStub, loginStub, signupResponseStub } from './fixtures';
 
 export const db = {
   reset: async () => {

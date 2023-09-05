@@ -1,12 +1,12 @@
 import { AuthService, AuthUserDto, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
 import {
-  applyDecorators,
   CanActivate,
-  createParamDecorator,
   ExecutionContext,
   Injectable,
   Logger,
   SetMetadata,
+  applyDecorators,
+  createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiQuery, ApiSecurity } from '@nestjs/swagger';

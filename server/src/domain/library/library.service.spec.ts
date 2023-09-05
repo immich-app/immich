@@ -18,9 +18,9 @@ import {
 import { Stats } from 'fs';
 import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
 
+import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
 import { ILibraryRepository } from './library.repository';
 import { LibraryService } from './library.service';
-import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;

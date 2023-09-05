@@ -9,7 +9,7 @@ import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
 import { IJobRepository, JobName } from '../job';
-import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
   AssetBulkUpdateDto,
@@ -21,17 +21,18 @@ import {
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
-  mapStats,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
+  UpdateAssetDto,
+  mapStats,
 } from './dto';
 import {
   AssetResponseDto,
-  mapAsset,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   TimeBucketResponseDto,
+  mapAsset,
 } from './response-dto';
 
 export enum UploadFieldName {
@@ -281,6 +282,19 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
+
+    const { description, ...rest } = dto;
+    if (description !== undefined) {
+      await this.assetRepository.upsertExif({ assetId: id, description });
+    }
+
+    const asset = await this.assetRepository.save({ id, ...rest });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [id] } });
+    return mapAsset(asset);
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {

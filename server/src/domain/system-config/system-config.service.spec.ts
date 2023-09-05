@@ -13,7 +13,7 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { IJobRepository, JobName, QueueName } from '../job';
-import { defaults, SystemConfigValidator } from './system-config.core';
+import { SystemConfigValidator, defaults } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 

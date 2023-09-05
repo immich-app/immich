@@ -3,13 +3,13 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import {
+  adminSignupStub,
   changePasswordStub,
   deviceStub,
   errorStub,
   loginResponseStub,
   loginStub,
   signupResponseStub,
-  adminSignupStub,
   uuidStub,
 } from '../fixtures';
 import { api, db } from '../test-utils';

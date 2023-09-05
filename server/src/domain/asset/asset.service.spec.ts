@@ -1,9 +1,9 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   assetStub,
   authStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
@@ -519,6 +519,30 @@ describe(AssetService.name, () => {
       assetMock.getStatistics.mockResolvedValue(stats);
       await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
       expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.id, {});
+    });
+  });
+
+  describe('update', () => {
+    it('should require asset write access for the id', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(sut.update(authStub.admin, 'asset-1', { isArchived: false })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should update the asset', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      await sut.update(authStub.admin, 'asset-1', { isFavorite: true });
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true });
+    });
+
+    it('should update the exif description', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.save.mockResolvedValue(assetStub.image);
+      await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
     });
   });
 

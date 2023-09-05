@@ -2,10 +2,10 @@ import { ICryptoRepository, IJobRepository, ILibraryRepository, IStorageReposito
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   assetStub,
   authStub,
   fileStub,
-  IAccessRepositoryMock,
   libraryStub,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
@@ -100,7 +100,6 @@ describe('AssetService', () => {
       create: jest.fn(),
       remove: jest.fn(),
 
-      update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getById: jest.fn(),

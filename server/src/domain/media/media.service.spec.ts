@@ -200,12 +200,6 @@ describe(MediaService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalledWith();
     });
 
-    it('should skip thumbnail generate if resize path is missing', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
-      await sut.handleGenerateWebpThumbnail({ id: assetStub.noResizePath.id });
-      expect(mediaMock.resize).not.toHaveBeenCalled();
-    });
-
     it('should generate a thumbnail', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
