@@ -2,6 +2,7 @@ import { IAssetRepository } from '@app/domain';
 
 export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {
+    upsertExif: jest.fn(),
     getByDate: jest.fn(),
     getByIds: jest.fn().mockResolvedValue([]),
     getByAlbumId: jest.fn(),

@@ -18,7 +18,6 @@ import {
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import tz_lookup from '@photostructure/tz-lookup';
 import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
@@ -26,7 +25,6 @@ import { Duration } from 'luxon';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
 import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
 import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
@@ -65,7 +63,6 @@ export class MetadataExtractionProcessor {
     @Inject(IGeocodingRepository) private geocodingRepository: IGeocodingRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
 
     configService: ConfigService,
   ) {
@@ -407,7 +404,7 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+    await this.assetRepository.upsertExif(newExif);
     await this.assetRepository.save({
       id: asset.id,
       fileCreatedAt: fileCreatedAt || undefined,
@@ -506,7 +503,7 @@ export class MetadataExtractionProcessor {
       }
     }
 
-    await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+    await this.assetRepository.upsertExif(newExif);
     await this.assetRepository.save({ id: asset.id, duration: durationString, fileCreatedAt });
 
     return true;

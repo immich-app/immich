@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Paginated, PaginationOptions } from '../domain.util';
 
 export type AssetStats = Record<AssetType, number>;
@@ -86,4 +86,5 @@ export interface IAssetRepository {
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  upsertExif(exif: Partial<ExifEntity>): Promise<void>;
 }

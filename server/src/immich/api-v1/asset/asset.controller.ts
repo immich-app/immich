@@ -9,7 +9,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Response,
   UploadedFiles,
@@ -33,7 +32,6 @@ import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
@@ -192,18 +190,6 @@ export class AssetController {
   @Get('/assetById/:id')
   getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.assetService.getAssetById(authUser, id);
-  }
-
-  /**
-   * Update an asset
-   */
-  @Put('/:id')
-  updateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body(ValidationPipe) dto: UpdateAssetDto,
-  ): Promise<AssetResponseDto> {
-    return this.assetService.updateAsset(authUser, id, dto);
   }
 
   @Delete('/')

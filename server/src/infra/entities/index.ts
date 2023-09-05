@@ -3,6 +3,7 @@ import { APIKeyEntity } from './api-key.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { AssetEntity } from './asset.entity';
 import { AuditEntity } from './audit.entity';
+import { ExifEntity } from './exif.entity';
 import { PartnerEntity } from './partner.entity';
 import { PersonEntity } from './person.entity';
 import { SharedLinkEntity } from './shared-link.entity';
@@ -33,6 +34,7 @@ export const databaseEntities = [
   AssetEntity,
   AssetFaceEntity,
   AuditEntity,
+  ExifEntity,
   PartnerEntity,
   PersonEntity,
   SharedLinkEntity,
