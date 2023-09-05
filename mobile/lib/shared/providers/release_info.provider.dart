@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/utils/serverVersionReponseDto_to_string.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:version/version.dart';
@@ -58,7 +59,7 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
 
         // If server is already updated, ignore the new version announcement
         if (serverVersion != null &&
-            Version.parse(serverVersionReponseToString(serverVersion)) ==
+            Version.parse(serverVersionReponseDtoToString(serverVersion)) ==
                 Version.parse(latestTagVersion)) {
           debugPrint("Server is already updated");
           return;
@@ -92,10 +93,6 @@ class ReleaseInfoNotifier extends StateNotifier<ServerInfoState> {
         versionMismatchErrorMessage: "",
       );
     }
-  }
-
-  String serverVersionReponseToString(ServerVersionResponseDto dto) {
-    return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 
   void acknowledgeNewVersion() {

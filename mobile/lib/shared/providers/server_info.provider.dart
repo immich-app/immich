@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/utils/serverVersionReponseDto_to_string.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart';
@@ -41,7 +42,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
     Version currentAppVersion = Version.parse(packageInfo.version);
     Version currentServerVersion =
-        Version.parse(serverVersionReponseToString(serverVersion));
+        Version.parse(serverVersionReponseDtoToString(serverVersion));
 
     if (currentAppVersion > currentServerVersion) {
       state = state.copyWith(
@@ -57,10 +58,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
       isVersionMismatch: false,
       versionMismatchErrorMessage: "",
     );
-  }
-
-  String serverVersionReponseToString(ServerVersionResponseDto dto) {
-    return "${dto.major}.${dto.minor}.${dto.patch_}";
   }
 }
 
