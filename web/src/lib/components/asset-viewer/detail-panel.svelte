@@ -294,7 +294,7 @@
 {#if asset.owner && !isOwner}
   <section class="p-2 dark:text-immich-dark-fg">
     <div class="p-4">
-      <p class="text-sm">UPLOADED BY</p>
+      <p class="text-sm">SHARED BY</p>
       <div class="flex gap-4 py-4">
         <div>
           <UserAvatar user={asset.owner} size="md" autoColor />
