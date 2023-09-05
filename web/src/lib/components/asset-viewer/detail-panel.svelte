@@ -9,7 +9,7 @@
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
+  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getAssetFilename } from '$lib/utils/asset-utils';
@@ -18,10 +18,10 @@
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
 
-  /** Holds the asset owner if it is not the current user*/
-  let assetOwner: UserResponseDto | undefined;
   let textarea: HTMLTextAreaElement;
   let description: string;
+
+  $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -30,13 +30,6 @@
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
       });
-    }
-    if ($page?.data?.user?.id !== asset.ownerId) {
-      api.userApi.getUserById({ id: asset.ownerId }).then((res) => {
-        assetOwner = res.data;
-      });
-    } else {
-      assetOwner = undefined;
     }
   }
 
@@ -103,20 +96,17 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
-  <section
-    class="mx-4 mt-10"
-    style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
-  >
+  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
+      placeholder={!isOwner ? '' : 'Add a description'}
       on:focusin={handleFocusIn}
       on:focusout={handleFocusOut}
       on:input={autoGrowHeight}
       bind:value={description}
-      disabled={$page?.data?.user?.id !== asset.ownerId}
+      disabled={!isOwner}
     />
   </section>
 
@@ -301,19 +291,19 @@
   </div>
 {/if}
 
-{#if assetOwner}
+{#if asset.owner && !isOwner}
   <section class="p-2 dark:text-immich-dark-fg">
-    <div class="px-4 py-4">
-      <p class="pb-4 text-sm">UPLOADED BY</p>
-      <div class="flex gap-4 py-2">
+    <div class="p-4">
+      <p class="text-sm">UPLOADED BY</p>
+      <div class="flex gap-4 py-4">
         <div>
-          <UserAvatar user={assetOwner} size="md" autoColor />
+          <UserAvatar user={asset.owner} size="md" autoColor />
         </div>
 
         <div class="mb-auto mt-auto">
           <p>
-            {assetOwner.firstName}
-            {assetOwner.lastName}
+            {asset.owner.firstName}
+            {asset.owner.lastName}
           </p>
         </div>
       </div>
@@ -323,7 +313,7 @@
 
 {#if albums.length > 0}
   <section class="p-2 dark:text-immich-dark-fg">
-    <div class="px-4 py-4">
+    <div class="p-4">
       <p class="pb-4 text-sm">APPEARS IN</p>
       {#each albums as album}
         <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
