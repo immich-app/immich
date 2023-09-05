@@ -19,6 +19,8 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { loadFullSizeImage } from '$lib/stores/preferences.store';
+  import { isImageCommonlySupportedByWeb } from '$lib/utils/asset-utils';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -165,6 +167,13 @@
                   text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
               {/if}
+            {/if}
+
+            {#if asset.type === AssetTypeEnum.Image && isImageCommonlySupportedByWeb(asset)}
+              <MenuOption
+                on:click={() => ($loadFullSizeImage = !$loadFullSizeImage)}
+                text={$loadFullSizeImage ? 'Load web optimated image' : 'Load full sized image'}
+              />
             {/if}
           </ContextMenu>
         {/if}

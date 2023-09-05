@@ -6,6 +6,8 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { loadFullSizeImage } from '$lib/stores/preferences.store';
+  import { isImageCommonlySupportedByWeb } from '$lib/utils/asset-utils';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -22,20 +24,22 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
-    loadAssetData();
   });
 
-  const loadAssetData = async (forceWeb?: boolean) => {
-    const isImageSupportedByWeb = (asset: AssetResponseDto) => {
-      const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-      const imgExtention = asset.originalPath.split('.').pop();
-
-      return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
-    };
-
+  /**
+   * Loads the asset data from the API.
+   * @param forceWebImage - If true, the web version of the image will be loaded even if
+   * it's already in a format commonly supported by web browsers.
+   */
+  const loadAssetData = async (forceWebImage?: boolean) => {
     try {
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: forceWeb || !isImageSupportedByWeb(asset), key: api.getKey() },
+        {
+          id: asset.id,
+          isThumb: false,
+          isWeb: forceWebImage || !isImageCommonlySupportedByWeb(asset),
+          key: api.getKey(),
+        },
         {
           responseType: 'blob',
         },
@@ -51,6 +55,17 @@
       // Do nothing
     }
   };
+
+  // Load/reload asset data whenever the toggle changes
+  // but not if the web version is forced due to an error loading the full size image
+  $: if (loadFullSizeImage) {
+    if (!webVersionForced) {
+      loadAssetData(!$loadFullSizeImage);
+    }
+  }
+  $: if ($loadFullSizeImage && webVersionForced) {
+    loadAssetData(true);
+  }
 
   const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
@@ -122,16 +137,16 @@
         alt={asset.id}
         class="h-full w-full object-contain"
         draggable="false"
-        on:error={(e) => {
-          if (!webVersionForced) {
+        on:error={async (e) => {
+          if ($loadFullSizeImage && !webVersionForced) {
             // There was an error loading the image, force web version
-            loadAssetData(true);
+            console.log('Error loading full size image, dropping back to web version...');
             assetData = '';
             webVersionForced = true;
-          } else {
-            // Web version failed too, show error
-            console.error('Error loading image', e);
+            await loadAssetData(true);
+            return;
           }
+          console.error('Error loading image', e);
         }}
       />
     </div>

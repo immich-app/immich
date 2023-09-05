@@ -39,6 +39,8 @@ export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {})
 
 export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
+export const loadFullSizeImage = persisted<boolean>('load-full-size-image', false, {});
+
 export interface AlbumViewSettings {
   sortBy: string;
   view: string;

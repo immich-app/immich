@@ -173,3 +173,15 @@ export function getAssetRatio(asset: AssetResponseDto) {
   }
   return { width, height };
 }
+
+/**
+ * Return if an asset is an image commonly supported by web browsers
+ * @param asset Asset to check
+ * @returns true if the asset is an image commonly supported by web browsers
+ */
+export function isImageCommonlySupportedByWeb(asset: AssetResponseDto) {
+  const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  const imgExtention = asset.originalPath.split('.').pop();
+
+  return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
+}
