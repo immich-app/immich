@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
-import 'package:immich_mobile/utils/serverVersionReponseDto_to_string.dart';
+import 'package:immich_mobile/utils/server_version_reponse_dto_to_string.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart';

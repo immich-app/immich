@@ -8,7 +8,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
-import 'package:immich_mobile/utils/serverVersionReponseDto_to_string.dart';
+import 'package:immich_mobile/utils/server_version_reponse_dto_to_string.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:version/version.dart';
