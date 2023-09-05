@@ -41,7 +41,7 @@ export class PersonEntity {
   @Column({ type: 'uuid', nullable: true })
   faceAssetId!: string | null;
 
-  @OneToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true })
   faceAsset!: AssetEntity | null;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
