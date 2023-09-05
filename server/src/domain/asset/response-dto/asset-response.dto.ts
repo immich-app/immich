@@ -2,9 +2,9 @@ import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { PersonResponseDto, mapFace } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
+import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
-import { UserResponseDto, mapUser } from '../..';
 
 export class AssetResponseDto {
   id!: string;
