@@ -3,8 +3,8 @@ import { AppModule, UserController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { api, db } from '../../test-utils/test-utils';
 import { errorStub, userSignupStub, userStub } from '../fixtures';
+import { api, db } from '../test-utils/test-utils';
 
 describe(`${UserController.name}`, () => {
   let app: INestApplication;

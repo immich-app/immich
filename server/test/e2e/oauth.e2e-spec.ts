@@ -2,8 +2,8 @@ import { AppModule, OAuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { api, db } from '../../test-utils/test-utils';
 import { errorStub } from '../fixtures';
+import { api, db } from '../test-utils/test-utils';
 
 describe(`${OAuthController.name} (e2e)`, () => {
   let app: INestApplication;

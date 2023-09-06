@@ -5,8 +5,8 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
-import { api, db } from '../../test-utils/test-utils';
 import { errorStub, uuidStub } from '../fixtures';
+import { api, db } from '../test-utils/test-utils';
 
 const user1Dto = {
   email: 'user1@immich.app',

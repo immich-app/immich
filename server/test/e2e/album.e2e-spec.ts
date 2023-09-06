@@ -4,8 +4,8 @@ import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { api, db } from '../../test-utils/test-utils';
 import { errorStub, uuidStub } from '../fixtures';
+import { api, db } from '../test-utils/test-utils';
 
 const user1SharedUser = 'user1SharedUser';
 const user1SharedLink = 'user1SharedLink';

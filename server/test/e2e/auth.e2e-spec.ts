@@ -2,7 +2,6 @@ import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { api, db } from '../../test-utils/test-utils';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -13,6 +12,7 @@ import {
   signupResponseStub,
   uuidStub,
 } from '../fixtures';
+import { api, db } from '../test-utils/test-utils';
 
 const firstName = 'Immich';
 const lastName = 'Admin';
