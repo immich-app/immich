@@ -1,4 +1,4 @@
-import { IAssetRepository, LoginResponseDto } from '@app/domain';
+import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -131,6 +131,33 @@ describe(`${AssetController.name} (e2e)`, () => {
         exifInfo: expect.objectContaining({ description: 'Test asset description' }),
       });
       expect(status).toEqual(200);
+    });
+
+    it('should return tagged people', async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
+
+      const faceRepository = app.get<IFaceRepository>(IFaceRepository);
+      await faceRepository.create({ assetId: asset1.id, personId: person.id });
+
+      const { status, body } = await request(server)
+        .put(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ isFavorite: true });
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({
+        id: asset1.id,
+        isFavorite: true,
+        people: [
+          {
+            birthDate: null,
+            id: expect.any(String),
+            isHidden: false,
+            name: 'Test Person',
+            thumbnailPath: '',
+          },
+        ],
+      });
     });
   });
 });
