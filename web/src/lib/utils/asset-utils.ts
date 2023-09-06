@@ -181,7 +181,7 @@ export function getAssetRatio(asset: AssetResponseDto) {
  */
 export function isImageCommonlySupportedByWeb(asset: AssetResponseDto) {
   const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-  const imgExtention = asset.originalPath.split('.').pop();
+  const imgExtention = getFilenameExtension(asset.originalPath);
 
   return imgExtention && commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
 }

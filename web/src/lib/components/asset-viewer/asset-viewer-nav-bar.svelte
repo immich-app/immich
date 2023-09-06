@@ -172,7 +172,7 @@
             {#if asset.type === AssetTypeEnum.Image && isImageCommonlySupportedByWeb(asset)}
               <MenuOption
                 on:click={() => ($loadFullSizeImage = !$loadFullSizeImage)}
-                text={$loadFullSizeImage ? 'Load web optimated image' : 'Load full sized image'}
+                text={$loadFullSizeImage ? 'Load web-optimized image' : 'Load original image'}
               />
             {/if}
           </ContextMenu>

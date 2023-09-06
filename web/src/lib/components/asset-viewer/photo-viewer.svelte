@@ -58,14 +58,7 @@
 
   // Load/reload asset data whenever the toggle changes
   // but not if the web version is forced due to an error loading the full size image
-  $: if (loadFullSizeImage) {
-    if (!webVersionForced) {
-      loadAssetData(!$loadFullSizeImage);
-    }
-  }
-  $: if ($loadFullSizeImage && webVersionForced) {
-    loadAssetData(true);
-  }
+  $: loadAssetData(!$loadFullSizeImage || webVersionForced);
 
   const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
