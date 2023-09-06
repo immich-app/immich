@@ -76,6 +76,31 @@ describe(`${AssetController.name} (e2e)`, () => {
     await app.close();
   });
 
+  describe('POST /asset/upload', () => {
+    it('should upload a new asset', async () => {
+      const { asset, status } = await api.assetApi.upload(
+        server,
+        user1.accessToken,
+        'example-image',
+        'test/test-files/Walls_of_Dubrovnik-3.jpg',
+      );
+      expect(status).toBe(201);
+      expect(asset.duplicate).toBe(false);
+    });
+
+    it('should not upload the same asset twice', async () => {
+      api.assetApi.upload(server, user1.accessToken, 'example-image', 'test/test-files/Walls_of_Dubrovnik-3.jpg');
+      const { asset, status } = await api.assetApi.upload(
+        server,
+        user1.accessToken,
+        'example-image',
+        'test/test-files/Walls_of_Dubrovnik-3.jpg',
+      );
+      expect(status).toBe(200);
+      expect(asset.duplicate).toBe(true);
+    });
+  });
+
   describe('PUT /asset/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).put(`/asset/:${uuidStub.notFound}`);
