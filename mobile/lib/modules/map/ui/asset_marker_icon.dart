@@ -5,10 +5,10 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class AssetMarkerIcon extends StatelessWidget {
   const AssetMarkerIcon({
-    Key? key,
+    super.key,
     required this.id,
     this.isDarkTheme = false,
-  }) : super(key: key);
+  });
 
   final String id;
   final bool isDarkTheme;

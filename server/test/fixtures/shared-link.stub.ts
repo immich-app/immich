@@ -1,5 +1,5 @@
 import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetType, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
+import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
 import { userStub } from './user.stub';
@@ -158,7 +158,7 @@ export const sharedLinkStub = {
       assets: [
         {
           id: 'id_1',
-          owner: userStub.user1,
+          owner: undefined as unknown as UserEntity,
           ownerId: 'user_id_1',
           deviceAssetId: 'device_asset_id_1',
           deviceId: 'device_id_1',

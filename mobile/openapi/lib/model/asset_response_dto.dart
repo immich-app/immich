@@ -26,6 +26,7 @@ class AssetResponseDto {
     this.livePhotoVideoId,
     required this.originalFileName,
     required this.originalPath,
+    this.owner,
     required this.ownerId,
     this.people = const [],
     required this.resized,
@@ -69,6 +70,14 @@ class AssetResponseDto {
 
   String originalPath;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  UserResponseDto? owner;
+
   String ownerId;
 
   List<PersonResponseDto> people;
@@ -107,6 +116,7 @@ class AssetResponseDto {
      other.livePhotoVideoId == livePhotoVideoId &&
      other.originalFileName == originalFileName &&
      other.originalPath == originalPath &&
+     other.owner == owner &&
      other.ownerId == ownerId &&
      other.people == people &&
      other.resized == resized &&
@@ -132,6 +142,7 @@ class AssetResponseDto {
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (originalFileName.hashCode) +
     (originalPath.hashCode) +
+    (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
     (people.hashCode) +
     (resized.hashCode) +
@@ -142,7 +153,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -167,6 +178,11 @@ class AssetResponseDto {
     }
       json[r'originalFileName'] = this.originalFileName;
       json[r'originalPath'] = this.originalPath;
+    if (this.owner != null) {
+      json[r'owner'] = this.owner;
+    } else {
+    //  json[r'owner'] = null;
+    }
       json[r'ownerId'] = this.ownerId;
       json[r'people'] = this.people;
       json[r'resized'] = this.resized;
@@ -207,6 +223,7 @@ class AssetResponseDto {
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
+        owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized')!,

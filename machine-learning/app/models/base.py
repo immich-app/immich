@@ -8,7 +8,7 @@ from typing import Any
 from zipfile import BadZipFile
 
 import onnxruntime as ort
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf  # type: ignore
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile  # type: ignore
 
 from ..config import get_cache_dir, log, settings
 from ..schemas import ModelType
@@ -57,7 +57,7 @@ class InferenceModel(ABC):
 
         try:
             loader(**model_kwargs)
-        except (OSError, InvalidProtobuf, BadZipFile):
+        except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
             log.warn(
                 (
                     f"Failed to load {self.model_type.replace('_', ' ')} model '{self.model_name}'."
