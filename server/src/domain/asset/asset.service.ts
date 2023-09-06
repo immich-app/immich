@@ -24,6 +24,7 @@ import {
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
+  UpdateAssetDto,
   mapStats,
 } from './dto';
 import {
@@ -277,6 +278,19 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
+
+    const { description, ...rest } = dto;
+    if (description !== undefined) {
+      await this.assetRepository.upsertExif({ assetId: id, description });
+    }
+
+    const asset = await this.assetRepository.save({ id, ...rest });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [id] } });
+    return mapAsset(asset);
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {

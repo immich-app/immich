@@ -144,8 +144,6 @@ void main() {
       // TODO
     });
 
-    // Update an asset
-    //
     //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
       // TODO

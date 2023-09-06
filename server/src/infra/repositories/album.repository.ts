@@ -50,7 +50,10 @@ export class AlbumRepository implements IAlbumRepository {
 
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      where: { ownerId, assets: { id: assetId } },
+      where: [
+        { ownerId, assets: { id: assetId } },
+        { sharedUsers: { id: ownerId }, assets: { id: assetId } },
+      ],
       relations: { owner: true, sharedUsers: true },
       order: { createdAt: 'DESC' },
     });

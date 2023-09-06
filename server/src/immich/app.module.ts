@@ -1,6 +1,6 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -35,7 +35,7 @@ import {
     //
     DomainModule.register({ imports: [InfraModule] }),
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
+    TypeOrmModule.forFeature([AssetEntity]),
   ],
   controllers: [
     AssetController,

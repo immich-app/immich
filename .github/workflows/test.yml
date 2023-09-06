@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -115,7 +115,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -144,7 +144,7 @@ jobs:
     name: Run mobile unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
@@ -161,7 +161,7 @@ jobs:
       run:
         working-directory: ./machine-learning
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -189,7 +189,7 @@ jobs:
     name: Check generated files are up-to-date
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run API generation
         run: npm --prefix server run api:generate
       - name: Find file changes
@@ -224,7 +224,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install server dependencies
         run: npm --prefix server ci
       - name: Run existing migrations
@@ -249,7 +249,7 @@ jobs:
   #   name: Run mobile end-to-end integration tests
   #   runs-on: macos-latest
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
   #     - uses: actions/setup-java@v3
   #       with:
   #         distribution: 'zulu'

@@ -122,7 +122,7 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

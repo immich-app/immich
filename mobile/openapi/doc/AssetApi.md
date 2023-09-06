@@ -1368,8 +1368,6 @@ Name | Type | Description  | Notes
 
 
 
-Update an asset
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
