@@ -5034,7 +5034,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.76.1",
+    "version": "1.77.0",
     "contact": {}
   },
   "tags": [],
@@ -5546,6 +5546,9 @@
           "originalPath": {
             "type": "string"
           },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -5584,8 +5587,8 @@
           "type",
           "id",
           "deviceAssetId",
-          "ownerId",
           "deviceId",
+          "ownerId",
           "libraryId",
           "originalPath",
           "originalFileName",
