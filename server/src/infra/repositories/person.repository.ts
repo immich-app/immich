@@ -55,7 +55,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   getAllWithoutThumbnail(): Promise<PersonEntity[]> {
-    return this.personRepository.createQueryBuilder('person').where("person.thumbnailPath = ''").getMany();
+    return this.personRepository.findBy({ thumbnailPath: '' });
   }
 
   getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
@@ -128,11 +128,6 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository
-      .createQueryBuilder('assetFace')
-      .where('assetFace.personId = :personId', { personId: personId })
-      .orderBy('random()')
-      .limit(1)
-      .getOne();
+    return this.assetFaceRepository.findOneBy({ personId });
   }
 }
