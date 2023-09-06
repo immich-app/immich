@@ -97,6 +97,7 @@ doc/SearchExploreResponseDto.md
 doc/SearchFacetCountResponseDto.md
 doc/SearchFacetResponseDto.md
 doc/SearchResponseDto.md
+doc/ServerConfigDto.md
 doc/ServerFeaturesDto.md
 doc/ServerInfoApi.md
 doc/ServerInfoResponseDto.md
@@ -116,6 +117,7 @@ doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigMachineLearningDto.md
+doc/SystemConfigMapDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
 doc/SystemConfigStorageTemplateDto.md
@@ -249,6 +251,7 @@ lib/model/search_explore_response_dto.dart
 lib/model/search_facet_count_response_dto.dart
 lib/model/search_facet_response_dto.dart
 lib/model/search_response_dto.dart
+lib/model/server_config_dto.dart
 lib/model/server_features_dto.dart
 lib/model/server_info_response_dto.dart
 lib/model/server_media_types_response_dto.dart
@@ -265,6 +268,7 @@ lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_machine_learning_dto.dart
+lib/model/system_config_map_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
 lib/model/system_config_storage_template_dto.dart
@@ -382,6 +386,7 @@ test/search_explore_response_dto_test.dart
 test/search_facet_count_response_dto_test.dart
 test/search_facet_response_dto_test.dart
 test/search_response_dto_test.dart
+test/server_config_dto_test.dart
 test/server_features_dto_test.dart
 test/server_info_api_test.dart
 test/server_info_response_dto_test.dart
@@ -401,6 +406,7 @@ test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
+test/system_config_map_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart
 test/system_config_storage_template_dto_test.dart

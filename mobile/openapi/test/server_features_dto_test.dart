@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool map
+    test('to test the property `map`', () async {
+      // TODO
+    });
+
     // bool oauth
     test('to test the property `oauth`', () async {
       // TODO
