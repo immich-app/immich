@@ -82,6 +82,11 @@ void main() {
       // TODO
     });
 
+    // UserResponseDto owner
+    test('to test the property `owner`', () async {
+      // TODO
+    });
+
     // String ownerId
     test('to test the property `ownerId`', () async {
       // TODO

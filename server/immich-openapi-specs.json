@@ -5208,6 +5208,9 @@
           "originalPath": {
             "type": "string"
           },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -5246,8 +5249,8 @@
           "type",
           "id",
           "deviceAssetId",
-          "ownerId",
           "deviceId",
+          "ownerId",
           "originalPath",
           "originalFileName",
           "resized",

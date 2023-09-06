@@ -199,6 +199,10 @@ export class AssetService {
       data.people = [];
     }
 
+    if (authUser.isPublicUser) {
+      delete data.owner;
+    }
+
     return data;
   }
 
