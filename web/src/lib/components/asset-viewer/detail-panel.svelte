@@ -292,59 +292,55 @@
 {/if}
 
 {#if asset.owner && !isOwner}
-  <section class="p-2 dark:text-immich-dark-fg">
-    <div class="p-4">
-      <p class="text-sm">SHARED BY</p>
-      <div class="flex gap-4 py-4">
-        <div>
-          <UserAvatar user={asset.owner} size="md" autoColor />
-        </div>
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+    <p class="text-sm">SHARED BY</p>
+    <div class="flex gap-4 pt-4">
+      <div>
+        <UserAvatar user={asset.owner} size="md" autoColor />
+      </div>
 
-        <div class="mb-auto mt-auto">
-          <p>
-            {asset.owner.firstName}
-            {asset.owner.lastName}
-          </p>
-        </div>
+      <div class="mb-auto mt-auto">
+        <p>
+          {asset.owner.firstName}
+          {asset.owner.lastName}
+        </p>
       </div>
     </div>
   </section>
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-2 dark:text-immich-dark-fg">
-    <div class="p-4">
-      <p class="pb-4 text-sm">APPEARS IN</p>
-      {#each albums as album}
-        <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div
-            class="flex gap-4 py-2 hover:cursor-pointer"
-            on:click={() => dispatch('click', album)}
-            on:keydown={() => dispatch('click', album)}
-          >
-            <div>
-              <img
-                alt={album.albumName}
-                class="h-[50px] w-[50px] rounded object-cover"
-                src={album.albumThumbnailAssetId &&
-                  api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
-                draggable="false"
-              />
-            </div>
+  <section class="p-6 dark:text-immich-dark-fg">
+    <p class="pb-4 text-sm">APPEARS IN</p>
+    {#each albums as album}
+      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="flex gap-4 py-2 hover:cursor-pointer"
+          on:click={() => dispatch('click', album)}
+          on:keydown={() => dispatch('click', album)}
+        >
+          <div>
+            <img
+              alt={album.albumName}
+              class="h-[50px] w-[50px] rounded object-cover"
+              src={album.albumThumbnailAssetId &&
+                api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+              draggable="false"
+            />
+          </div>
 
-            <div class="mb-auto mt-auto">
-              <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-              <div class="flex gap-2 text-sm">
-                <p>{album.assetCount} items</p>
-                {#if album.shared}
-                  <p>· Shared</p>
-                {/if}
-              </div>
+          <div class="mb-auto mt-auto">
+            <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+            <div class="flex gap-2 text-sm">
+              <p>{album.assetCount} items</p>
+              {#if album.shared}
+                <p>· Shared</p>
+              {/if}
             </div>
           </div>
-        </a>
-      {/each}
-    </div>
+        </div>
+      </a>
+    {/each}
   </section>
 {/if}
