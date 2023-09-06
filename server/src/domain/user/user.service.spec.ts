@@ -22,7 +22,7 @@ import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { mapUser, UserResponseDto } from './response-dto';
+import { UserResponseDto, mapUser } from './response-dto';
 import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
