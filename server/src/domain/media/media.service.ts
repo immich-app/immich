@@ -52,11 +52,11 @@ export class MediaService {
       }
     }
 
-    const personList = force
+    const people = force
       ? await this.personRepository.getAll()
       : await this.personRepository.getAllWithoutThumbnail();
 
-    for (const person of personList) {
+    for (const person of people) {
       // use stored asset for generating thumbnail or pick a random one if not present
       const face = person.faceAssetId
         ? await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId })
