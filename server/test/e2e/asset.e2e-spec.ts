@@ -5,8 +5,8 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
+import { api, db } from '../../test-utils/test-utils';
 import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 const user1Dto = {
   email: 'user1@immich.app',
@@ -59,15 +59,15 @@ describe(`${AssetController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    const admin = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    const admin = await api.authApi.adminLogin(server);
 
     await api.userApi.create(server, admin.accessToken, user1Dto);
-    user1 = await api.login(server, { email: user1Dto.email, password: user1Dto.password });
+    user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
     asset1 = await createAsset(assetRepository, user1);
 
     await api.userApi.create(server, admin.accessToken, user2Dto);
-    user2 = await api.login(server, { email: user2Dto.email, password: user2Dto.password });
+    user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
     asset2 = await createAsset(assetRepository, user2);
   });
 

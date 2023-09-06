@@ -4,8 +4,8 @@ import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { api, db } from '../../test-utils/test-utils';
 import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 const user1SharedUser = 'user1SharedUser';
 const user1SharedLink = 'user1SharedLink';
@@ -31,8 +31,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    const admin = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    const admin = await api.authApi.adminLogin(server);
 
     await api.userApi.create(server, admin.accessToken, {
       email: 'user1@immich.app',
@@ -40,7 +40,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       firstName: 'User 1',
       lastName: 'Test',
     });
-    user1 = await api.login(server, { email: 'user1@immich.app', password: 'Password123' });
+    user1 = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
 
     await api.userApi.create(server, admin.accessToken, {
       email: 'user2@immich.app',
@@ -48,7 +48,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       firstName: 'User 2',
       lastName: 'Test',
     });
-    user2 = await api.login(server, { email: 'user2@immich.app', password: 'Password123' });
+    user2 = await api.authApi.login(server, { email: 'user2@immich.app', password: 'Password123' });
 
     const user1Albums = await Promise.all([
       api.albumApi.create(server, user1.accessToken, {

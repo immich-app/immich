@@ -3,8 +3,8 @@ import { AppModule, PersonController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { api, db } from '../../test-utils/test-utils';
 import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 describe(`${PersonController.name}`, () => {
   let app: INestApplication;
@@ -23,8 +23,8 @@ describe(`${PersonController.name}`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    loginResponse = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
   });
 

@@ -3,8 +3,8 @@ import { AppModule, ServerInfoController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { api, db } from '../../test-utils/test-utils';
 import { errorStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
   let app: INestApplication;
@@ -23,8 +23,8 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    loginResponse = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
   });
 
@@ -103,7 +103,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     it('should only work for admins', async () => {
       const loginDto = { email: 'test@immich.app', password: 'Immich123' };
       await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
-      const { accessToken: userAccessToken } = await api.login(server, loginDto);
+      const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
         .get('/server-info/stats')
         .set('Authorization', `Bearer ${userAccessToken}`);
