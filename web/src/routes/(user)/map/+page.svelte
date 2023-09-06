@@ -11,6 +11,7 @@
   import type { PageData } from './$types';
   import { DateTime, Duration } from 'luxon';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
   export let data: PageData;
 
@@ -100,7 +101,7 @@
 
 <UserPageLayout user={data.user} title={data.meta.title}>
   <div class="isolate h-full w-full">
-    {#if leaflet}
+    {#if leaflet && $serverConfig.loaded}
       {@const { Map, TileLayer, AssetMarkerCluster, Control } = leaflet}
       <Map
         center={[30, 0]}
@@ -115,7 +116,7 @@
         }}
       >
         <TileLayer
-          urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+          urlTemplate={$serverConfig.mapTileUrl}
           options={{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}

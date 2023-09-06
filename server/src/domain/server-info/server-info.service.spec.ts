@@ -143,22 +143,34 @@ describe(ServerInfoService.name, () => {
     it('should respond the server version', () => {
       expect(sut.getVersion()).toEqual(serverVersion);
     });
+  });
 
-    describe('getFeatures', () => {
-      it('should respond the server features', async () => {
-        await expect(sut.getFeatures()).resolves.toEqual({
-          clipEncode: true,
-          facialRecognition: true,
-          oauth: false,
-          oauthAutoLaunch: false,
-          passwordLogin: true,
-          search: true,
-          sidecar: true,
-          tagImage: true,
-          configFile: false,
-        });
-        expect(configMock.load).toHaveBeenCalled();
+  describe('getFeatures', () => {
+    it('should respond the server features', async () => {
+      await expect(sut.getFeatures()).resolves.toEqual({
+        clipEncode: true,
+        facialRecognition: true,
+        map: true,
+        oauth: false,
+        oauthAutoLaunch: false,
+        passwordLogin: true,
+        search: true,
+        sidecar: true,
+        tagImage: true,
+        configFile: false,
       });
+      expect(configMock.load).toHaveBeenCalled();
+    });
+  });
+
+  describe('getConfig', () => {
+    it('should respond the server configuration', async () => {
+      await expect(sut.getConfig()).resolves.toEqual({
+        loginPageMessage: '',
+        oauthButtonText: 'Login with OAuth',
+        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      });
+      expect(configMock.load).toHaveBeenCalled();
     });
   });
 

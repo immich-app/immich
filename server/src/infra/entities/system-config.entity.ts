@@ -58,6 +58,9 @@ export enum SystemConfigKey {
   MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE = 'machineLearning.facialRecognition.minScore',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MAX_DISTANCE = 'machineLearning.facialRecognition.maxDistance',
 
+  MAP_ENABLED = 'map.enabled',
+  MAP_TILE_URL = 'map.tileUrl',
+
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -163,6 +166,10 @@ export interface SystemConfig {
       minScore: number;
       maxDistance: number;
     };
+  };
+  map: {
+    enabled: boolean;
+    tileUrl: string;
   };
   oauth: {
     enabled: boolean;

@@ -1,18 +1,19 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
+  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
   import Calendar from 'svelte-material-icons/Calendar.svelte';
   import CameraIris from 'svelte-material-icons/CameraIris.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
@@ -268,12 +269,12 @@
   </div>
 </section>
 
-{#if latlng}
+{#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
       <Map center={latlng} zoom={14}>
         <TileLayer
-          urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+          urlTemplate={$serverConfig.mapTileUrl}
           options={{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}

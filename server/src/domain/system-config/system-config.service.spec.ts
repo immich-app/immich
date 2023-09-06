@@ -73,6 +73,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
       maxDistance: 0.6,
     },
   },
+  map: {
+    enabled: true,
+    tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
   oauth: {
     autoLaunch: true,
     autoRegister: true,
