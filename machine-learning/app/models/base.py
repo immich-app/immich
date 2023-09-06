@@ -57,7 +57,7 @@ class InferenceModel(ABC):
 
         try:
             loader(**model_kwargs)
-        except (BadZipFile, OSError, InvalidProtobuf, NoSuchFile):
+        except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
             log.warn(
                 (
                     f"Failed to load {self.model_type.replace('_', ' ')} model '{self.model_name}'."
