@@ -37,7 +37,7 @@ export class PersonEntity {
   @Column({ default: '' })
   thumbnailPath!: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ nullable: true })
   faceAssetId!: string | null;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true })
