@@ -70,7 +70,7 @@ export class MediaService {
             x2: face.boundingBoxX2,
             y1: face.boundingBoxY1,
             y2: face.boundingBoxY2,
-          } as BoundingBox,
+          },
           assetId: face.assetId,
           personId: person.id,
         } as IFaceThumbnailJob;
