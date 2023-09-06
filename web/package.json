@@ -64,6 +64,7 @@
     "@zoom-image/svelte": "^0.1.8",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
+    "context-filter-polyfill": "^0.3.6",
     "copy-image-clipboard": "^2.1.2",
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.7",

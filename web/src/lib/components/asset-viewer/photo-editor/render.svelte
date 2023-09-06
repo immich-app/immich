@@ -1,6 +1,7 @@
 <script lang="ts">
   import { doc } from 'prettier';
   import { onMount } from 'svelte';
+  import 'context-filter-polyfill'; // polyfill for canvas filters
 
   export let editedImage;
   export let assetData: string;
@@ -10,6 +11,18 @@
   export let translate: { x: number; y: number };
   export let aspectRatio: number;
   export let ratio: number; // ratio of original image to displayed image
+  export let filter: {
+    hdr: number;
+    blur: number;
+    brightness: number;
+    contrast: number;
+    grayscale: number;
+    hueRotate: number;
+    invert: number;
+    opacity: number;
+    saturation: number;
+    sepia: number;
+  };
 
   // let canvas: HTMLCanvasElement;
   // let canvas2: HTMLCanvasElement;
@@ -18,6 +31,7 @@
     const canvas = document.createElement('canvas');
     const img = new Image();
     img.src = assetData;
+
     const imgWidth = img.width;
     const imgHeight = img.height;
 
@@ -39,6 +53,11 @@
     ctx.save();
     ctx.translate(d / 2, d / 2);
     ctx.rotate((angle * Math.PI) / 180);
+    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
+      filter.grayscale
+    }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
+      filter.saturation
+    }) sepia(${filter.sepia})`;
     ctx.drawImage(img, dx + translateX, dy + translateY, imgWidth, imgHeight);
     ctx.save();
 

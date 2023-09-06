@@ -1026,6 +1026,7 @@
     aspectRatio={aspectRatioNum}
     crop={currentCrop}
     ratio={currentRatio}
+    filter={filter}
   />
 </div>
 
