@@ -131,6 +131,10 @@ class CLIPEncoder(InferenceModel):
             os.remove(file)
         return True
 
+    @property
+    def cached(self) -> bool:
+        return (self.cache_dir / "textual.onnx").is_file() and (self.cache_dir / "visual.onnx").is_file()
+
 
 # same as `_transform_blob` without `_blob2image`
 def _transform_pil_image(n_px: int) -> Compose:

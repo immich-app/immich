@@ -60,6 +60,15 @@ dependencies:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
   logging: ^1.1.0
 
+# This is uncommented in F-Droid build script
+# Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
+#fdependency_overrides:
+#f  geolocator_android:
+#f    git:
+#f      url: https://github.com/Zverik/flutter-geolocator.git
+#f      ref: floss
+#f      path: geolocator_android
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -2,13 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class ChangePasswordForm extends HookConsumerWidget {
   const ChangePasswordForm({Key? key}) : super(key: key);
@@ -84,13 +85,34 @@ class ChangePasswordForm extends HookConsumerWidget {
                                 .read(manualUploadProvider.notifier)
                                 .cancelBackup();
                             ref.read(backupProvider.notifier).cancelBackup();
-                            ref.read(assetProvider.notifier).clearAllAsset();
+                            await ref
+                                .read(assetProvider.notifier)
+                                .clearAllAsset();
                             ref.read(websocketProvider.notifier).disconnect();
 
-                            AutoRouter.of(context).replace(const LoginRoute());
+                            AutoRouter.of(context).navigateBack();
+
+                            ImmichToast.show(
+                              context: context,
+                              msg: "login_password_changed_success".tr(),
+                              toastType: ToastType.success,
+                              gravity: ToastGravity.TOP,
+                            );
+                          } else {
+                            ImmichToast.show(
+                              context: context,
+                              msg: "login_password_changed_error".tr(),
+                              toastType: ToastType.error,
+                              gravity: ToastGravity.TOP,
+                            );
                           }
                         }
                       },
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => AutoRouter.of(context).navigateBack(),
+                      label: const Text('Back'),
                     ),
                   ],
                 ),

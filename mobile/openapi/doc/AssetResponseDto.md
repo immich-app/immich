@@ -21,6 +21,7 @@ Name | Type | Description | Notes
 **livePhotoVideoId** | **String** |  | [optional] 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
+**owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
 **ownerId** | **String** |  | 
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
 **resized** | **bool** |  | 

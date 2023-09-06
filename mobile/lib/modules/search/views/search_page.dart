@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class SearchPage extends HookConsumerWidget {
     final curatedLocation = ref.watch(getCuratedLocationProvider);
     final curatedPeople = ref.watch(getCuratedPeopleProvider);
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    double imageSize = MediaQuery.of(context).size.width / 3;
+    double imageSize = math.min(MediaQuery.of(context).size.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
       fontWeight: FontWeight.bold,

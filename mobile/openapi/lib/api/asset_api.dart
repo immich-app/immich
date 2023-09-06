@@ -1384,10 +1384,7 @@ class AssetApi {
     return null;
   }
 
-  /// Update an asset
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PUT /asset/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1419,8 +1416,6 @@ class AssetApi {
     );
   }
 
-  /// Update an asset
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
