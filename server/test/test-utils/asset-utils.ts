@@ -4,7 +4,7 @@ import request from 'supertest';
 
 export const assetApi = {
   upload: async (server: any, accessToken: string, id: string, content?: Buffer) => {
-    const response = await request(server)
+    const { body, status } = await request(server)
       .post('/asset/upload')
       .set('Authorization', `Bearer ${accessToken}`)
       .field('deviceAssetId', id)
@@ -15,6 +15,7 @@ export const assetApi = {
       .field('duration', '0:00:00.000000')
       .attach('assetData', content || randomBytes(32), 'example.jpg');
 
-    return { asset: response.body as AssetFileUploadResponseDto, status: response.status };
+    expect(status).toBe(201);
+    return body as AssetFileUploadResponseDto;
   },
 };

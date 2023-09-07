@@ -78,17 +78,37 @@ describe(`${AssetController.name} (e2e)`, () => {
 
   describe('POST /asset/upload', () => {
     it('should upload a new asset', async () => {
-      const { asset, status } = await api.assetApi.upload(server, user1.accessToken, 'example-image');
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', false)
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.jpg');
+
       expect(status).toBe(201);
-      expect(asset.duplicate).toBe(false);
+      expect(body.duplicate).toBe(false);
     });
 
     it('should not upload the same asset twice', async () => {
       const content = randomBytes(32);
       await api.assetApi.upload(server, user1.accessToken, 'example-image', content);
-      const { asset, status } = await api.assetApi.upload(server, user1.accessToken, 'example-image', content);
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', false)
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', content, 'example.jpg');
+
       expect(status).toBe(200);
-      expect(asset.duplicate).toBe(true);
+      expect(body.duplicate).toBe(true);
     });
   });
 
