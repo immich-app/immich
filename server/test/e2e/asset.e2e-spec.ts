@@ -77,6 +77,21 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   describe('POST /asset/upload', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .post(`/asset/upload`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', false)
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', randomBytes(32), 'example.jpg');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
     it('should upload a new asset', async () => {
       const { body, status } = await request(server)
         .post('/asset/upload')
@@ -168,5 +183,45 @@ describe(`${AssetController.name} (e2e)`, () => {
       });
       expect(status).toEqual(200);
     });
+  });
+
+  describe('POST /asset/download/info', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .post(`/asset/download/info`)
+        .send({ assetIds: [asset1.id] });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should download info', async () => {
+      const { status, body } = await request(server)
+        .post('/asset/download/info')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ assetIds: [asset1.id] });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ archives: [expect.objectContaining({ assetIds: [asset1.id] })] }));
+    });
+  });
+
+  describe('POST /asset/download/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).post(`/asset/download/${asset1.id}`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    // Not possible because there is no local file that can be served.
+    // it('should download file', async () => {
+    //   const response = await request(server)
+    //     .post(`/asset/download/${asset1.id}`)
+    //     .set('Authorization', `Bearer ${user1.accessToken}`);
+
+    //   expect(response.status).toBe(201);
+    //   expect(response.headers['content-type']).toEqual('image/jpg');
+    // });
   });
 });
