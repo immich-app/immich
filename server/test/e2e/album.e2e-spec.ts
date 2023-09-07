@@ -150,16 +150,9 @@ describe(`${AlbumController.name} (e2e)`, () => {
       );
     });
 
-    // TODO: Add asset to album and test if it returns correctly.
     it('should return the album collection filtered by assetId', async () => {
-      const { asset } = await api.assetApi.upload(
-        server,
-        user1.accessToken,
-        'example',
-        'test/test-files/Walls_of_Dubrovnik-3.jpg',
-      );
-      const { id } = await api.albumApi.create(server, user1.accessToken, { albumName: 'test' });
-      api.albumApi.addAssets(server, user1.accessToken, id, { ids: [asset.id] });
+      const { asset } = await api.assetApi.upload(server, user1.accessToken, 'example');
+      await api.albumApi.create(server, user1.accessToken, { albumName: 'test', assetIds: [asset.id] });
 
       const { status, body } = await request(server)
         .get(`/album?assetId=${asset.id}`)

@@ -78,24 +78,15 @@ describe(`${AssetController.name} (e2e)`, () => {
 
   describe('POST /asset/upload', () => {
     it('should upload a new asset', async () => {
-      const { asset, status } = await api.assetApi.upload(
-        server,
-        user1.accessToken,
-        'example-image',
-        'test/test-files/Walls_of_Dubrovnik-3.jpg',
-      );
+      const { asset, status } = await api.assetApi.upload(server, user1.accessToken, 'example-image');
       expect(status).toBe(201);
       expect(asset.duplicate).toBe(false);
     });
 
     it('should not upload the same asset twice', async () => {
-      api.assetApi.upload(server, user1.accessToken, 'example-image', 'test/test-files/Walls_of_Dubrovnik-3.jpg');
-      const { asset, status } = await api.assetApi.upload(
-        server,
-        user1.accessToken,
-        'example-image',
-        'test/test-files/Walls_of_Dubrovnik-3.jpg',
-      );
+      const content = randomBytes(32);
+      await api.assetApi.upload(server, user1.accessToken, 'example-image', content);
+      const { asset, status } = await api.assetApi.upload(server, user1.accessToken, 'example-image', content);
       expect(status).toBe(200);
       expect(asset.duplicate).toBe(true);
     });
