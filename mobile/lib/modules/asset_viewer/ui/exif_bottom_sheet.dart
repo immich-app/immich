@@ -18,7 +18,10 @@ class ExifBottomSheet extends HookConsumerWidget {
   const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
 
   bool get hasCoordinates =>
-      asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
+      asset.exifInfo?.latitude != null &&
+      asset.exifInfo?.longitude != null &&
+      asset.exifInfo!.latitude! != 0 &&
+      asset.exifInfo!.longitude! != 0;
 
   String get formattedDateTime {
     final fileCreatedAt = asset.fileCreatedAt.toLocal();
