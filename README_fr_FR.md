@@ -11,7 +11,7 @@
 <p align="center">
 <img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - Solution de sauvegarde auto-hébergée performance des photos et des vidéos</h3>
+<h3 align="center">Immich - Solution de sauvegarde performante auto-hébergée des photos et des vidéos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
@@ -30,7 +30,7 @@
 - ⚠️ Le projet est en **très fort** développement.
 - ⚠️ Attendez-vous à rencontrer des bugs et des changements importants.
 - ⚠️ **N'utilisez pas cette application comme seule façon de sauvegarder vos photos et vos vidéos.**
-- ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1]([https://www.backblaze.com/blog/the-3-2-1-backup-strategy/](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/)) pour vos précieuses photos et vidéos !
+- ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
 
 ## Sommaire
 
@@ -95,7 +95,7 @@ Caractéristiques: Plan gratuit Oracle VM - Amsterdam - 2.4Ghz quatre-cœurs ARM
 
 # Soutenir le projet
 
-Je me suis engagé sur ce projet, et je ne compte pas m'arrêter. Je continuerai de mettre à jour les documentations, d'ajouter de nouvelles fonctionnalités et de résoudre des bugs. Mais je ne peux pas faire cela seul. Donc j'ai besoin de votre aide pour me donner encore plus de motivation et ainsi continuer.
+Je me suis engagé sur ce projet, et je ne compte pas m'arrêter. Je continuerai à mettre à jour les documentations, d'ajouter de nouvelles fonctionnalités et de résoudre des bugs. Mais je ne peux pas faire cela seul. Donc j'ai besoin de votre aide pour me donner encore plus de motivation et ainsi continuer.
 
 Comme l'ont dit nos hôtes dans le [selfhosted.show - Dans l'épisode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), c'est un travail colossal ce que l'équipe et moi faisons. J'aimerais un jour être capable de faire ça à temps plein, c'est pourquoi je vous demande votre aide pour rendre cela possible.
 
