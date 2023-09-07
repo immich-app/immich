@@ -7,6 +7,8 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
+  DeleteAssetDto,
+  DeleteAssetResponseDto,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
@@ -18,10 +20,22 @@ import {
   TimeBucketResponseDto,
   UpdateAssetDto as UpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
+import { asStreamableFile, UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
@@ -99,5 +113,10 @@ export class AssetController {
     @Body() dto: UpdateDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(authUser, id, dto);
+  }
+
+  @Delete('/')
+  deleteAsset(@AuthUser() authUser: AuthUserDto, @Body() dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    return this.service.deleteAll(authUser, dto);
   }
 }

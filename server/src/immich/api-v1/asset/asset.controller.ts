@@ -2,7 +2,6 @@ import { AssetResponseDto, AuthUserDto } from '@app/domain';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -17,8 +16,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
+import { FileUploadInterceptor, ImmichFile, mapToUploadFile, Route } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
@@ -27,7 +26,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
@@ -38,7 +36,6 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 
 interface UploadFiles {
   assetData: ImmichFile[];
@@ -190,14 +187,6 @@ export class AssetController {
   @Get('/assetById/:id')
   getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.assetService.getAssetById(authUser, id);
-  }
-
-  @Delete('/')
-  deleteAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: DeleteAssetDto,
-  ): Promise<DeleteAssetResponseDto[]> {
-    return this.assetService.deleteAll(authUser, dto);
   }
 
   /**

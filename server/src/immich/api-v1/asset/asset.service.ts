@@ -36,7 +36,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
@@ -51,7 +50,6 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 @Injectable()
 export class AssetService {
@@ -209,7 +207,17 @@ export class AssetService {
   async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
     await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
-    const asset = await this._assetRepository.get(assetId);
+    // TODO: Replace it with domain::assetrepo::getOneById after refactor
+    const asset = await this.assetRepository.findOne({
+      where: {
+        id: assetId,
+      },
+      relations: {
+        faces: {
+          person: true,
+        },
+      },
+    });
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -243,64 +251,6 @@ export class AssetService {
         : asset.encodedVideoPath || asset.originalPath;
 
     await this.sendFile(res, filepath);
-  }
-
-  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const deleteQueue: Array<string | null> = [];
-    const result: DeleteAssetResponseDto[] = [];
-
-    const ids = dto.ids.slice();
-    for (const id of ids) {
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
-      if (!hasAccess) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-        continue;
-      }
-
-      const asset = await this._assetRepository.get(id);
-      if (!asset) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-        continue;
-      }
-
-      try {
-        if (asset.faces) {
-          await Promise.all(
-            asset.faces.map(({ assetId, personId }) =>
-              this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-            ),
-          );
-        }
-
-        await this._assetRepository.remove(asset);
-        await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
-
-        result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-
-        if (!asset.isReadOnly) {
-          deleteQueue.push(
-            asset.originalPath,
-            asset.webpPath,
-            asset.resizePath,
-            asset.encodedVideoPath,
-            asset.sidecarPath,
-          );
-        }
-
-        // TODO refactor this to use cascades
-        if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
-          ids.push(asset.livePhotoVideoId);
-        }
-      } catch {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-      }
-    }
-
-    if (deleteQueue.length > 0) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: deleteQueue } });
-    }
-
-    return result;
   }
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {

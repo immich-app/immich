@@ -9,7 +9,8 @@ import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
 import { IJobRepository, JobName } from '../job';
-import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
+import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
 import {
   AssetBulkUpdateDto,
@@ -17,22 +18,24 @@ import {
   AssetJobName,
   AssetJobsDto,
   AssetStatsDto,
+  DeleteAssetDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
+  mapStats,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   UpdateAssetDto,
-  mapStats,
 } from './dto';
 import {
   AssetResponseDto,
+  DeleteAssetResponseDto,
+  mapAsset,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   TimeBucketResponseDto,
-  mapAsset,
 } from './response-dto';
 
 export enum UploadFieldName {
@@ -57,6 +60,7 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
+  private assetCore: AssetCore;
   private storageCore = new StorageCore();
 
   constructor(
@@ -67,6 +71,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.assetCore = new AssetCore(this.access, assetRepository, jobRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -297,6 +302,10 @@ export class AssetService {
     const { ids, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
     await this.assetRepository.updateAll(ids, options);
+  }
+
+  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    return this.assetCore.deleteAll(authUser, dto);
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

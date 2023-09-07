@@ -136,6 +136,17 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getOneById(id: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+      },
+    });
+  }
+
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
@@ -154,6 +165,10 @@ export class AssetRepository implements IAssetRepository {
         },
       },
     });
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.repository.remove(asset);
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {

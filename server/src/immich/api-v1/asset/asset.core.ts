@@ -5,10 +5,7 @@ import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
-  constructor(
-    private repository: IAssetRepository,
-    private jobRepository: IJobRepository,
-  ) {}
+  constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
 
   async create(
     authUser: AuthUserDto,
