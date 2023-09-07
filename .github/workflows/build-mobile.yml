@@ -64,10 +64,12 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
 
       - name: Publish Android Artifact
         uses: actions/upload-artifact@v3
         with:
           name: release-apk-signed
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: mobile/build/app/outputs/flutter-apk/*.apk
