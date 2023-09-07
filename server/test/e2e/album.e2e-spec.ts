@@ -211,7 +211,56 @@ describe(`${AlbumController.name} (e2e)`, () => {
     });
   });
 
+  describe('GET /album/count', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/album/count');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return total count of albums the user has access to', async () => {
+      const { status, body } = await request(server)
+        .get('/album/count')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ owned: 3, shared: 3, notShared: 1 });
+    });
+  });
+
+  describe('GET /album/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/album/${user1Albums[0].id}`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return album info for own album', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(user1Albums[0]);
+    });
+
+    it('should return album info for shared album', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user2Albums[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(user2Albums[0]);
+    });
+  });
+
   describe('PUT /album/:id/assets', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).put(`/album/${user1Albums[0].id}/assets`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
     it('should be able to add own asset to own album', async () => {
       const asset = await api.assetApi.upload(server, user1.accessToken, 'example1');
       const { status, body } = await request(server)
@@ -311,6 +360,58 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user1Asset.id, success: false, error: 'no_permission' })]);
+    });
+  });
+
+  describe('PUT :id/users', () => {
+    let album: AlbumResponseDto;
+
+    beforeEach(async () => {
+      album = await api.albumApi.create(server, user1.accessToken, { albumName: 'testAlbum' });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .put(`/album/${user1Albums[0].id}/users`)
+        .send({ sharedUserIds: [] });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should be able to add user to own album', async () => {
+      const { status, body } = await request(server)
+        .put(`/album/${album.id}/users`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedUserIds: [user2.userId] });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ sharedUsers: [expect.objectContaining({ id: user2.userId })] }));
+    });
+
+    // it('should not be able to share album with owner', async () => {
+    //   const { status, body } = await request(server)
+    //     .put(`/album/${album.id}/users`)
+    //     .set('Authorization', `Bearer ${user1.accessToken}`)
+    //     .send({ sharedUserIds: [user2.userId] });
+
+    //   expect(status).toBe(400);
+    //   expect(body).toEqual(errorStub.badRequest);
+    // });
+
+    it('should not be able to add existing user to shared album', async () => {
+      await request(server)
+        .put(`/album/${album.id}/users`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedUserIds: [user2.userId] });
+
+      const { status, body } = await request(server)
+        .put(`/album/${album.id}/users`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedUserIds: [user2.userId] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual({ ...errorStub.badRequest, message: 'User already added' });
     });
   });
 });
