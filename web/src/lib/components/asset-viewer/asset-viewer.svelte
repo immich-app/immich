@@ -114,7 +114,7 @@
         }
         return;
       case 'Delete':
-        isShowDeleteConfirmation = true;
+        trashAsset();
         return;
       case 'Escape':
         closeViewer();
@@ -162,17 +162,30 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const deleteAsset = async () => {
+  const trashAsset = async () => {
     try {
-      const { data: results } = await api.assetApi.deleteAssets({ bulkIdsDto: { ids: [asset.id] } });
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
       await navigateAssetForward();
 
-      for (const { success } of results) {
-        if (success) {
-          assetStore?.removeAsset(asset.id);
-        }
-      }
+      assetStore?.removeAsset(asset.id);
+
+      notificationController.show({
+        message: 'Moved to trash',
+        type: NotificationType.Info,
+      });
+    } catch (e) {
+      handleError(e, 'Unable to trash asset');
+    }
+  };
+
+  const deleteAsset = async () => {
+    try {
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
+
+      await navigateAssetForward();
+
+      assetStore?.removeAsset(asset.id);
     } catch (e) {
       handleError(e, 'Unable to delete asset');
     } finally {
@@ -352,6 +365,9 @@
           duration={5000}
         />
       </div>
+    {:else if asset.isTrashed}
+      <!-- TODO -->
+      <!-- <AppNavbar on:delete={isShowDeleteConfirmation = true}/> -->
     {:else}
       <AssetViewerNavBar
         {asset}
@@ -364,7 +380,7 @@
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={() => (isShowDeleteConfirmation = true)}
+        on:delete={trashAsset}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}

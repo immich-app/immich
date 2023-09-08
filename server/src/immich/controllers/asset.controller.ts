@@ -1,4 +1,5 @@
 import {
+  AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
   AssetJobsDto,
@@ -7,7 +8,6 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
-  BulkIdResponseDto,
   BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
@@ -100,14 +100,21 @@ export class AssetController {
     return this.service.run(authUser, dto);
   }
 
+  @Post('restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.restoreAll(authUser, dto);
+  }
+
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
   updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(authUser, dto);
   }
 
-  @Delete('/')
-  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(authUser, dto);
   }
 

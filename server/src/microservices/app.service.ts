@@ -1,4 +1,5 @@
 import {
+  AssetService,
   AuditService,
   FacialRecognitionService,
   IDeleteFilesJob,
@@ -27,6 +28,7 @@ export class AppService {
 
     private facialRecognitionService: FacialRecognitionService,
     private jobService: JobService,
+    private assetService: AssetService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
@@ -41,6 +43,8 @@ export class AppService {
 
   async init() {
     await this.jobService.registerHandlers({
+      [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
+      [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),

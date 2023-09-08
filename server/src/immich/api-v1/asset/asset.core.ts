@@ -5,10 +5,7 @@ import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
-  constructor(
-    private repository: IAssetRepository,
-    private jobRepository: IJobRepository,
-  ) {}
+  constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
 
   async create(
     authUser: AuthUserDto,
@@ -19,6 +16,7 @@ export class AssetCore {
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
+      deletedAt: null,
 
       checksum: file.checksum,
       originalPath: file.originalPath,

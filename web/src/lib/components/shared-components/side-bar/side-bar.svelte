@@ -9,6 +9,7 @@
   import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Map from 'svelte-material-icons/Map.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
   import { AppRoute } from '../../../constants';
@@ -133,6 +134,10 @@
         {/await}
       </svelte:fragment>
     </SideBarButton>
+
+    <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
+      <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={$page.route.id === '/(user)/trash'} />
+    </a>
   </a>
 
   <!-- Status Box -->

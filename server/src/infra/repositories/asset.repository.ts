@@ -120,6 +120,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         isVisible: options.isVisible,
         type: options.type,
+        deletedAt: options.isTrashed ? Not(IsNull()) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -129,6 +130,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: options.isTrashed,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -149,6 +151,14 @@ export class AssetRepository implements IAssetRepository {
 
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids) });
+  }
+
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.repository.restore({ id: In(ids) });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
@@ -414,7 +424,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -435,6 +445,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {

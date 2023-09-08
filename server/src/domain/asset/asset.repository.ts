@@ -10,6 +10,7 @@ export interface AssetStatsOptions {
 
 export interface AssetSearchOptions {
   isVisible?: boolean;
+  isTrashed?: boolean;
   type?: AssetType;
   order?: 'ASC' | 'DESC';
 }
@@ -56,6 +57,7 @@ export interface TimeBucketOptions {
   size: TimeBucketSize;
   isArchived?: boolean;
   isFavorite?: boolean;
+  isTrashed?: boolean;
   albumId?: string;
   personId?: string;
   userId?: string;
@@ -83,6 +85,8 @@ export interface IAssetRepository {
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
+  softDeleteAll(ids: string[]): Promise<void>;
+  restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;

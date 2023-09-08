@@ -9,35 +9,40 @@
   import { api } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
+  import Button from '../../elements/buttons/button.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;
+  export let force = false;
+
   const { getAssets, clearSelect } = getAssetControlContext();
 
   let isShowConfirmation = false;
   let loading = false;
 
+  const handleTrash = async () => {
+    if (force) {
+      isShowConfirmation = true;
+      return;
+    }
+
+    await handleDelete();
+  };
+
   const handleDelete = async () => {
     loading = true;
 
     try {
-      let count = 0;
-
-      const { data: deletedAssets } = await api.assetApi.deleteAssets({
-        bulkIdsDto: { ids: Array.from(getAssets()).map((a) => a.id) },
-      });
-
-      for (const { id, success } of deletedAssets) {
-        if (success) {
-          onAssetDelete(id);
-          count++;
-        }
+      const ids = Array.from(getAssets()).map((a) => a.id);
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids, force } });
+      for (const id of ids) {
+        onAssetDelete(id);
       }
 
       notificationController.show({
-        message: `Deleted ${count}`,
+        message: `${force ? 'Deleted' : 'Trashed'} ${ids.length} assets`,
         type: NotificationType.Info,
       });
 
@@ -51,15 +56,22 @@
   };
 </script>
 
-{#if menuItem}
-  <MenuOption text="Delete" on:click={() => (isShowConfirmation = true)} />
-{/if}
+{#if force}
+  <Button size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleTrash}>
+    <DeleteOutline size="24" />
+    <span class="ml-2">Permanently Delete</span>
+  </Button>
+{:else}
+  {#if menuItem}
+    <MenuOption text="Delete" on:click={handleTrash} />
+  {/if}
 
-{#if !menuItem}
-  {#if loading}
-    <CircleIconButton title="Loading" logo={TimerSand} />
-  {:else}
-    <CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+  {#if !menuItem}
+    {#if loading}
+      <CircleIconButton title="Loading" logo={TimerSand} />
+    {:else}
+      <CircleIconButton title="Delete" logo={DeleteOutline} on:click={handleTrash} />
+    {/if}
   {/if}
 {/if}
 

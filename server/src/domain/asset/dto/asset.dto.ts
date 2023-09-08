@@ -1,4 +1,4 @@
-import { IsBoolean, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Optional } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -24,4 +24,10 @@ export class UpdateAssetDto {
   @Optional()
   @IsString()
   description?: string;
+}
+
+export class AssetBulkDeleteDto extends BulkIdsDto {
+  @IsOptional()
+  @IsBoolean()
+  force?: boolean;
 }

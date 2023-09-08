@@ -8,11 +8,11 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IJobRepository, JobName } from '../job';
+import { IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
-import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
 import {
+  AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
   AssetJobName,
@@ -30,7 +30,6 @@ import {
 } from './dto';
 import {
   AssetResponseDto,
-  BulkIdResponseDto,
   BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
@@ -60,7 +59,6 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private assetCore: AssetCore;
   private storageCore = new StorageCore();
 
   constructor(
@@ -71,7 +69,6 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
-    this.assetCore = new AssetCore(this.access, assetRepository, jobRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -298,14 +295,78 @@ export class AssetService {
     return mapAsset(asset);
   }
 
-  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
     await this.assetRepository.updateAll(ids, options);
   }
 
-  deleteAll(authUser: AuthUserDto, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    return this.assetCore.deleteAll(authUser, dto);
+  async handleAssetDeletionCheck() {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { order: 'DESC', isTrashed: true }),
+    );
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
+      }
+    }
+
+    return true;
+  }
+
+  async handleAssetDeletion(job: IEntityJob) {
+    const asset = await this.assetRepository.getById(job.id);
+    if (!asset) {
+      return false;
+    }
+
+    if (asset.faces) {
+      await Promise.all(
+        asset.faces.map(({ assetId, personId }) =>
+          this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+        ),
+      );
+    }
+
+    await this.assetRepository.remove(asset);
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
+
+    // TODO refactor this to use cascades
+    if (asset.livePhotoVideoId) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+    }
+
+    if (!asset.isReadOnly) {
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: {
+          files: [asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath],
+        },
+      });
+    }
+
+    return true;
+  }
+
+  async deleteAll(authUser: AuthUserDto, dto: AssetBulkDeleteDto): Promise<void> {
+    const { ids, force } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_DELETE, ids);
+
+    if (force) {
+      // TODO turn into queued job to delete one at a time
+      for (const id of ids) {
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
+      }
+    } else {
+      await this.assetRepository.softDeleteAll(ids);
+    }
+  }
+
+  async restoreAll(authUser: AuthUserDto, dto: BulkIdsDto): Promise<void> {
+    const { ids } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
+    await this.assetRepository.restoreAll(ids);
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

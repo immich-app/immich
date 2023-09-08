@@ -65,6 +65,7 @@ export class AccessRepository implements IAccessRepository {
           id: assetId,
           ownerId: userId,
         },
+        withDeleted: true,
       });
     },
 

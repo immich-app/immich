@@ -25,6 +25,7 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
+  isTrashed!: boolean;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -52,6 +53,7 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
+    isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: withExif ? (entity.exifInfo ? mapExif(entity.exifInfo) : undefined) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,

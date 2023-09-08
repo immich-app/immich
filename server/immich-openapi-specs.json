@@ -687,24 +687,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BulkIdsDto"
+                "$ref": "#/components/schemas/AssetBulkDeleteDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/BulkIdResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
+          "204": {
             "description": ""
           }
         },
@@ -1510,6 +1500,41 @@
         ]
       }
     },
+    "/asset/restore": {
+      "post": {
+        "operationId": "restoreAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -1760,6 +1785,14 @@
             }
           },
           {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "timeBucket",
             "required": true,
             "in": "query",
@@ -1865,6 +1898,14 @@
           },
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
             "required": false,
             "in": "query",
             "schema": {
@@ -5010,6 +5051,24 @@
         ],
         "type": "object"
       },
+      "AssetBulkDeleteDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          },
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
       "AssetBulkUpdateDto": {
         "properties": {
           "ids": {
@@ -5219,6 +5278,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isTrashed": {
+            "type": "boolean"
+          },
           "livePhotoVideoId": {
             "nullable": true,
             "type": "string"
@@ -5281,6 +5343,7 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "isTrashed",
           "duration",
           "checksum"
         ],
