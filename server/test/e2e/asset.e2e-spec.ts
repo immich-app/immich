@@ -1,4 +1,4 @@
-import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
+import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -41,7 +41,11 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
 };
 
 let assetCount = 0;
-const createAsset = (repository: IAssetRepository, loginResponse: LoginResponseDto): Promise<AssetEntity> => {
+const createAsset = (
+  repository: IAssetRepository,
+  loginResponse: LoginResponseDto,
+  createdAt: Date,
+): Promise<AssetEntity> => {
   const id = assetCount++;
   return repository.save({
     ownerId: loginResponse.userId,
@@ -49,7 +53,7 @@ const createAsset = (repository: IAssetRepository, loginResponse: LoginResponseD
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
-    fileCreatedAt: new Date(),
+    fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
     type: AssetType.IMAGE,
     originalFileName: `test_${id}`,
@@ -64,6 +68,8 @@ describe(`${AssetController.name} (e2e)`, () => {
   let user2: LoginResponseDto;
   let asset1: AssetEntity;
   let asset2: AssetEntity;
+  let asset3: AssetEntity;
+  let asset4: AssetEntity;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -82,11 +88,13 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     await api.userApi.create(server, admin.accessToken, user1Dto);
     user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
-    asset1 = await createAsset(assetRepository, user1);
+    asset1 = await createAsset(assetRepository, user1, new Date('1970-01-01'));
+    asset2 = await createAsset(assetRepository, user1, new Date('1970-01-02'));
+    asset3 = await createAsset(assetRepository, user1, new Date('1970-02-01'));
 
     await api.userApi.create(server, admin.accessToken, user2Dto);
     user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset2 = await createAsset(assetRepository, user2);
+    asset4 = await createAsset(assetRepository, user2, new Date('1970-01-01'));
   });
 
   afterAll(async () => {
@@ -188,7 +196,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     it('should require access', async () => {
       const { status, body } = await request(server)
-        .put(`/asset/${asset2.id}`)
+        .put(`/asset/${asset4.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.noPermission);
@@ -319,7 +327,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({ images: 4, videos: 0, total: 4 });
+      expect(body).toEqual({ images: 6, videos: 0, total: 6 });
     });
 
     it('should return stats of all favored assets', async () => {
@@ -359,7 +367,94 @@ describe(`${AssetController.name} (e2e)`, () => {
         .query({ isFavorite: false, isArchived: false });
 
       expect(status).toBe(200);
-      expect(body).toEqual({ images: 1, videos: 0, total: 1 });
+      expect(body).toEqual({ images: 3, videos: 0, total: 3 });
+    });
+  });
+
+  describe('GET /asset/time-buckets', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/time-buckets').query({ size: TimeBucketSize.MONTH });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should get time buckets by month', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          { count: 1, timeBucket: asset3.fileCreatedAt.toISOString() },
+          { count: 2, timeBucket: asset1.fileCreatedAt.toISOString() },
+        ]),
+      );
+    });
+
+    it('should get time buckets by day', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.DAY });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          { count: 1, timeBucket: asset1.fileCreatedAt.toISOString() },
+          { count: 1, timeBucket: asset2.fileCreatedAt.toISOString() },
+          { count: 1, timeBucket: asset3.fileCreatedAt.toISOString() },
+        ]),
+      );
+    });
+  });
+
+  describe('GET /asset/time-bucket', () => {
+    let timeBucket: string;
+    beforeEach(async () => {
+      const { body, status } = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH });
+
+      expect(status).toBe(200);
+      timeBucket = body[1].timeBucket;
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-bucket')
+        .query({ size: TimeBucketSize.MONTH, timeBucket });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    // it('should fail if time bucket is invalid', async () => {
+    //   const { status, body } = await request(server)
+    //     .get('/asset/time-bucket')
+    //     .set('Authorization', `Bearer ${user1.accessToken}`)
+    //     .query({ size: TimeBucketSize.MONTH, timeBucket: 'foo' });
+
+    //   expect(status).toBe(400);
+    //   expect(body).toEqual(errorStub.badRequest);
+    // });
+
+    it('should return time bucket', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-bucket')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, timeBucket });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset1.id }),
+          expect.objectContaining({ id: asset2.id }),
+        ]),
+      );
     });
   });
 });
