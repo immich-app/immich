@@ -165,8 +165,16 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo}
+    {#if !asset.exifInfo && !asset.isExternal}
       <p class="text-sm">NO EXIF INFO AVAILABLE</p>
+    {:else if !asset.exifInfo && asset.isExternal}
+      <div class="flex gap-4 py-4">
+        <div>
+          <p class="break-all">
+            Metadata not loaded for {asset.originalPath}
+          </p>
+        </div>
+      </div>
     {:else}
       <p class="text-sm">DETAILS</p>
     {/if}
