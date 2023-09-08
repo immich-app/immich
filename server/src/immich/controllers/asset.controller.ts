@@ -7,8 +7,8 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
-  DeleteAssetDto,
-  DeleteAssetResponseDto,
+  BulkIdResponseDto,
+  BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
@@ -106,6 +106,11 @@ export class AssetController {
     return this.service.updateAll(authUser, dto);
   }
 
+  @Delete('/')
+  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    return this.service.deleteAll(authUser, dto);
+  }
+
   @Put(':id')
   updateAsset(
     @AuthUser() authUser: AuthUserDto,
@@ -113,10 +118,5 @@ export class AssetController {
     @Body() dto: UpdateDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(authUser, id, dto);
-  }
-
-  @Delete('/')
-  deleteAsset(@AuthUser() authUser: AuthUserDto, @Body() dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    return this.service.deleteAll(authUser, dto);
   }
 }

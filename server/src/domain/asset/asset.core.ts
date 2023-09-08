@@ -1,5 +1,8 @@
-import { DeleteAssetDto, DeleteAssetResponseDto, DeleteAssetStatusEnum, IAssetRepository } from '.';
-import { AccessCore, AuthUserDto, IJobRepository, JobName, Permission } from '..';
+import { IJobRepository, JobName } from '../job';
+import { AuthUserDto } from '../auth';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from './response-dto';
+import { AccessCore, Permission } from '../access';
+import { IAssetRepository } from './asset.repository';
 
 export class AssetCore {
   constructor(
@@ -8,21 +11,21 @@ export class AssetCore {
     private jobRepository: IJobRepository,
   ) {}
 
-  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  public async deleteAll(authUser: AuthUserDto, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const deleteQueue: Array<string | null> = [];
-    const result: DeleteAssetResponseDto[] = [];
+    const result: BulkIdResponseDto[] = [];
 
     const ids = dto.ids.slice();
     for (const id of ids) {
       const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
       if (!hasAccess) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        result.push({ id, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      const asset = await this.assetRepository.getOneById(id);
+      const asset = await this.assetRepository.getById(id);
       if (!asset) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        result.push({ id, success: false, error: BulkIdErrorReason.NOT_FOUND });
         continue;
       }
 
@@ -38,7 +41,7 @@ export class AssetCore {
         await this.assetRepository.remove(asset);
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
-        result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
+        result.push({ id, success: true });
 
         if (!asset.isReadOnly) {
           deleteQueue.push(
@@ -55,7 +58,7 @@ export class AssetCore {
           ids.push(asset.livePhotoVideoId);
         }
       } catch {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        result.push({ id, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
 

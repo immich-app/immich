@@ -681,13 +681,13 @@
     },
     "/asset": {
       "delete": {
-        "operationId": "deleteAsset",
+        "operationId": "deleteAssets",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DeleteAssetDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -699,7 +699,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/DeleteAssetResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -5765,48 +5765,6 @@
           "deviceId"
         ],
         "type": "object"
-      },
-      "DeleteAssetDto": {
-        "properties": {
-          "ids": {
-            "example": [
-              "bf973405-3f2a-48d2-a687-2ed4167164be",
-              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
-              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "title": "Array of asset IDs to delete",
-            "type": "array"
-          }
-        },
-        "required": [
-          "ids"
-        ],
-        "type": "object"
-      },
-      "DeleteAssetResponseDto": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/DeleteAssetStatus"
-          }
-        },
-        "required": [
-          "status",
-          "id"
-        ],
-        "type": "object"
-      },
-      "DeleteAssetStatus": {
-        "enum": [
-          "SUCCESS",
-          "FAILED"
-        ],
-        "type": "string"
       },
       "DownloadArchiveInfo": {
         "properties": {

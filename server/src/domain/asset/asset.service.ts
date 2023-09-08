@@ -18,7 +18,6 @@ import {
   AssetJobName,
   AssetJobsDto,
   AssetStatsDto,
-  DeleteAssetDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
@@ -31,7 +30,8 @@ import {
 } from './dto';
 import {
   AssetResponseDto,
-  DeleteAssetResponseDto,
+  BulkIdResponseDto,
+  BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   TimeBucketResponseDto,
@@ -304,7 +304,7 @@ export class AssetService {
     await this.assetRepository.updateAll(ids, options);
   }
 
-  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  deleteAll(authUser: AuthUserDto, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     return this.assetCore.deleteAll(authUser, dto);
   }
 

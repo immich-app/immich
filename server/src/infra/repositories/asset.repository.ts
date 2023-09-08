@@ -136,7 +136,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getOneById(id: string): Promise<AssetEntity | null> {
+  getById(id: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },
       relations: {

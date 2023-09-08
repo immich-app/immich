@@ -164,25 +164,17 @@
 
   const deleteAsset = async () => {
     try {
-      const { data: deletedAssets } = await api.assetApi.deleteAsset({
-        deleteAssetDto: {
-          ids: [asset.id],
-        },
-      });
+      const { data: results } = await api.assetApi.deleteAssets({ bulkIdsDto: { ids: [asset.id] } });
 
       await navigateAssetForward();
 
-      for (const asset of deletedAssets) {
-        if (asset.status == 'SUCCESS') {
+      for (const { success } of results) {
+        if (success) {
           assetStore?.removeAsset(asset.id);
         }
       }
     } catch (e) {
-      notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error deleting this asset, check console for more details',
-      });
-      console.error('Error deleteAsset', e);
+      handleError(e, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }

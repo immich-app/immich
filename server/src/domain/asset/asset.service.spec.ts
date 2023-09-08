@@ -18,7 +18,7 @@ import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
-import { mapAsset } from './response-dto';
+import { BulkIdErrorReason, mapAsset } from './response-dto';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -162,10 +162,10 @@ describe(AssetService.name, () => {
     storageMock = newStorageRepositoryMock();
     sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
 
-    when(assetMock.getOneById)
+    when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)
       .mockResolvedValue(assetStub.livePhotoStillAsset as AssetEntity);
-    when(assetMock.getOneById)
+    when(assetMock.getById)
       .calledWith(assetStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetStub.livePhotoMotionAsset as AssetEntity);
   });
@@ -570,23 +570,23 @@ describe(AssetService.name, () => {
 
   describe('deleteAll', () => {
     it('should return failed status when an asset is missing', async () => {
-      assetMock.getOneById.mockResolvedValue(null);
+      assetMock.getById.mockResolvedValue(null);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', status: 'FAILED' },
+        { id: 'asset1', success: false, error: BulkIdErrorReason.NOT_FOUND },
       ]);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should return failed status if delete fails', async () => {
-      assetMock.getOneById.mockResolvedValue({ id: 'asset1' } as AssetEntity);
+      assetMock.getById.mockResolvedValue({ id: 'asset1' } as AssetEntity);
       assetMock.remove.mockRejectedValue('delete failed');
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', status: 'FAILED' },
+        { id: 'asset1', success: false, error: BulkIdErrorReason.UNKNOWN },
       ]);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -596,8 +596,8 @@ describe(AssetService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id] })).resolves.toEqual([
-        { id: assetStub.livePhotoStillAsset.id, status: 'SUCCESS' },
-        { id: assetStub.livePhotoMotionAsset.id, status: 'SUCCESS' },
+        { id: assetStub.livePhotoStillAsset.id, success: true },
+        { id: assetStub.livePhotoMotionAsset.id, success: true },
       ]);
 
       expect(jobMock.queue).toHaveBeenCalledWith({
@@ -635,18 +635,18 @@ describe(AssetService.name, () => {
         encodedVideoPath: 'encoded-video-path-2',
       };
 
-      when(assetMock.getOneById)
+      when(assetMock.getById)
         .calledWith(asset1.id)
         .mockResolvedValue(asset1 as AssetEntity);
-      when(assetMock.getOneById)
+      when(assetMock.getById)
         .calledWith(asset2.id)
         .mockResolvedValue(asset2 as AssetEntity);
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
-        { id: 'asset1', status: 'SUCCESS' },
-        { id: 'asset2', status: 'SUCCESS' },
+        { id: 'asset1', success: true },
+        { id: 'asset2', success: true },
       ]);
 
       expect(jobMock.queue.mock.calls).toEqual([

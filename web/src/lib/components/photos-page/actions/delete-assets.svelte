@@ -25,15 +25,13 @@
     try {
       let count = 0;
 
-      const { data: deletedAssets } = await api.assetApi.deleteAsset({
-        deleteAssetDto: {
-          ids: Array.from(getAssets()).map((a) => a.id),
-        },
+      const { data: deletedAssets } = await api.assetApi.deleteAssets({
+        bulkIdsDto: { ids: Array.from(getAssets()).map((a) => a.id) },
       });
 
-      for (const asset of deletedAssets) {
-        if (asset.status === 'SUCCESS') {
-          onAssetDelete(asset.id);
+      for (const { id, success } of deletedAssets) {
+        if (success) {
+          onAssetDelete(id);
           count++;
         }
       }
