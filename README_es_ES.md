@@ -22,6 +22,7 @@
   <a href="README_zh_CN.md">中文</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ca_ES.md">Català</a>
+  <a href="README_fr_FR.md">Français</a>
 </p>
 
 ## Descargo de responsabilidad
