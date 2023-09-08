@@ -1,4 +1,5 @@
 import { PersonEntity } from '@app/infra/entities';
+import { assetStub } from '@test/fixtures/asset.stub';
 import { userStub } from './user.stub';
 
 export const personStub = {
@@ -12,6 +13,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   hidden: Object.freeze<PersonEntity>({
@@ -24,6 +27,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: true,
   }),
   withName: Object.freeze<PersonEntity>({
@@ -36,6 +41,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   noBirthDate: Object.freeze<PersonEntity>({
@@ -48,6 +55,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   withBirthDate: Object.freeze<PersonEntity>({
@@ -60,6 +69,8 @@ export const personStub = {
     birthDate: new Date('1976-06-30'),
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   noThumbnail: Object.freeze<PersonEntity>({
@@ -72,6 +83,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   newThumbnail: Object.freeze<PersonEntity>({
@@ -84,6 +97,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/new/path/to/thumbnail.jpg',
     faces: [],
+    faceAssetId: assetStub.image.id,
+    faceAsset: assetStub.image,
     isHidden: false,
   }),
   primaryPerson: Object.freeze<PersonEntity>({
@@ -96,6 +111,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
   mergePerson: Object.freeze<PersonEntity>({
@@ -108,6 +125,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail',
     faces: [],
+    faceAssetId: null,
+    faceAsset: null,
     isHidden: false,
   }),
 };
