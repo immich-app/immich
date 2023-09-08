@@ -127,7 +127,7 @@ class ExifBottomSheet extends HookConsumerWidget {
           ? formatBytes(a.exifInfo!.fileSize!)
           : "";
       String text = resolution + fileSize;
-      return text.isEmpty ? null : Text(text);
+      return text.isNotEmpty ? text : null;
     }
 
     buildDragHeader() {
@@ -210,8 +210,52 @@ class ExifBottomSheet extends HookConsumerWidget {
         ),
       );
     }
+    
+
+    buildImageProperties() {
+      // Helper to create the ListTile and avoid repeating code
+      createImagePropertiesListStyle(title, subtitle) => ListTile(
+            contentPadding: const EdgeInsets.all(0),
+            dense: true,
+            leading: Icon(
+              Icons.image,
+              color: textColor.withAlpha(200),
+            ),
+            titleAlignment: ListTileTitleAlignment.center,
+            title: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            subtitle: subtitle,
+          );
+
+      final imgSizeString = buildSizeText(asset);
+
+      if (imgSizeString == null && asset.fileName.isNotEmpty) {
+        // There is only filename
+        return createImagePropertiesListStyle(asset.fileName, null);
+      } else if (imgSizeString != null && asset.fileName.isNotEmpty) {
+        // There is both filename and size information
+        return createImagePropertiesListStyle(
+            asset.fileName, Text(imgSizeString));
+      } else if (imgSizeString != null && asset.fileName.isEmpty) {
+        // There is only size information
+        return createImagePropertiesListStyle(imgSizeString, null);
+      }
+    }
 
     buildDetail() {
+      final imgProperties = buildImageProperties();
+
+      // There are no details
+      if (imgProperties == null &&
+          (exifInfo == null || exifInfo.make == null)) {
+        return Container();
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -226,22 +270,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
             ).tr(),
           ),
-          ListTile(
-            contentPadding: const EdgeInsets.all(0),
-            dense: true,
-            leading: Icon(
-              Icons.image,
-              color: textColor.withAlpha(200),
-            ),
-            title: Text(
-              asset.fileName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            subtitle: buildSizeText(asset),
-          ),
+          if (imgProperties != null) imgProperties,
           if (exifInfo?.make != null)
             ListTile(
               contentPadding: const EdgeInsets.all(0),
