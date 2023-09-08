@@ -389,7 +389,13 @@ export class MetadataExtractionProcessor {
      * We will use Sharpjs to get the information.
      */
     if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
-      const metadata = await sharp(asset.originalPath).metadata();
+      let metadata: sharp.Metadata;
+      try {
+        metadata = await sharp(asset.originalPath).metadata();
+      } catch (error: any) {
+        this.logger.error(`Unable to extract metadata from ${asset.originalPath}: ${error}`, error?.stack);
+        throw error;
+      }
 
       if (newExif.exifImageHeight === null) {
         newExif.exifImageHeight = metadata.height || null;
