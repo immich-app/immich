@@ -1,8 +1,16 @@
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
+import { AssetResponseDto } from '../../src/domain';
 
 export const assetApi = {
+  get: async (server: any, accessToken: string, id: string) => {
+    const { body, status } = await request(server)
+      .get(`/asset/assetById/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body as AssetResponseDto;
+  },
   upload: async (server: any, accessToken: string, id: string, content?: Buffer) => {
     const { body, status } = await request(server)
       .post('/asset/upload')

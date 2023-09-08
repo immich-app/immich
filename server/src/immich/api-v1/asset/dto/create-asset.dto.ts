@@ -1,33 +1,43 @@
 import { Optional, toBoolean, toSanitized, UploadFieldName } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAssetBase {
   @IsNotEmpty()
+  @IsString()
   deviceAssetId!: string;
 
   @IsNotEmpty()
+  @IsString()
   deviceId!: string;
 
   @IsNotEmpty()
+  @IsDate()
+  @Type(() => Date)
   fileCreatedAt!: Date;
 
   @IsNotEmpty()
+  @IsDate()
+  @Type(() => Date)
   fileModifiedAt!: Date;
 
-  @IsNotEmpty()
+  @IsBoolean()
+  @Transform(toBoolean)
   isFavorite!: boolean;
 
   @Optional()
   @IsBoolean()
+  @Transform(toBoolean)
   isArchived?: boolean;
 
   @Optional()
   @IsBoolean()
+  @Transform(toBoolean)
   isVisible?: boolean;
 
   @Optional()
+  @IsString()
   duration?: string;
 }
 
@@ -51,6 +61,7 @@ export class CreateAssetDto extends CreateAssetBase {
 
 export class ImportAssetDto extends CreateAssetBase {
   @Optional()
+  @IsBoolean()
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
 

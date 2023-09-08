@@ -22,6 +22,24 @@ const user2Dto = {
   lastName: 'Test',
 };
 
+const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
+  const dto: Record<string, any> = {
+    deviceAssetId: 'example-image',
+    deviceId: 'TEST',
+    fileCreatedAt: new Date().toISOString(),
+    fileModifiedAt: new Date().toISOString(),
+    isFavorite: 'testing',
+    duration: '0:00:00.000000',
+  };
+
+  const omit = options?.omit;
+  if (omit) {
+    delete dto[omit];
+  }
+
+  return dto;
+};
+
 let assetCount = 0;
 const createAsset = (repository: IAssetRepository, loginResponse: LoginResponseDto): Promise<AssetEntity> => {
   const id = assetCount++;
@@ -92,6 +110,30 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    const invalid = [
+      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
+      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
+      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
+      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
+      { should: 'require `isFavorite`', dto: { ...makeUploadDto({ omit: 'isFavorite' }) } },
+      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
+      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
+      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
+      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
+    ];
+
+    for (const { should, dto } of invalid) {
+      it(`should: ${should}`, async () => {
+        const { status, body } = await request(server)
+          .post('/asset/upload')
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .attach('assetData', randomBytes(32), 'example.jpg')
+          .field(dto);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest);
+      });
+    }
+
     it('should upload a new asset', async () => {
       const { body, status } = await request(server)
         .post('/asset/upload')
@@ -100,12 +142,14 @@ describe(`${AssetController.name} (e2e)`, () => {
         .field('deviceId', 'TEST')
         .field('fileCreatedAt', new Date().toISOString())
         .field('fileModifiedAt', new Date().toISOString())
-        .field('isFavorite', false)
+        .field('isFavorite', 'true')
         .field('duration', '0:00:00.000000')
         .attach('assetData', randomBytes(32), 'example.jpg');
-
       expect(status).toBe(201);
-      expect(body.duplicate).toBe(false);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const asset = await api.assetApi.get(server, user1.accessToken, body.id);
+      expect(asset).toMatchObject({ id: body.id, isFavorite: true });
     });
 
     it('should not upload the same asset twice', async () => {
