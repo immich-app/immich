@@ -25,7 +25,7 @@ export const handle = (async ({ event, resolve }) => {
       if (apiError.response?.status && apiError.response?.status !== 401) {
         console.error(`${LOG_PREFIX}:handle`, err);
       } else if (!apiError.response?.status) {
-        console.error(`${LOG_PREFIX}:handle`, (err as Error)?.message);
+        console.error(`${LOG_PREFIX}:handle`, apiError?.message);
       }
     }
   }
