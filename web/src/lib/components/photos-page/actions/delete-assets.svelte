@@ -42,7 +42,7 @@
       }
 
       notificationController.show({
-        message: `${force ? 'Deleted' : 'Trashed'} ${ids.length} assets`,
+        message: `${force ? 'Permanently deleted' : 'Trashed'} ${ids.length} assets`,
         type: NotificationType.Info,
       });
 
@@ -77,14 +77,14 @@
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Delete Asset{getAssets().size > 1 ? 's' : ''}"
+    title="Permanently Delete Asset{getAssets().size > 1 ? 's' : ''}"
     confirmText="Delete"
     on:confirm={handleDelete}
     on:cancel={() => (isShowConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to delete
+        Are you sure you want to permanently delete
         {#if getAssets().size > 1}
           these <b>{getAssets().size}</b> assets? This will also remove them from their album(s).
         {:else}
