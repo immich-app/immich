@@ -236,14 +236,22 @@ class ExifBottomSheet extends HookConsumerWidget {
 
       if (imgSizeString == null && asset.fileName.isNotEmpty) {
         // There is only filename
-        return createImagePropertiesListStyle(asset.fileName, null);
+        return createImagePropertiesListStyle(
+          asset.fileName,
+          null,
+        );
       } else if (imgSizeString != null && asset.fileName.isNotEmpty) {
         // There is both filename and size information
         return createImagePropertiesListStyle(
-            asset.fileName, Text(imgSizeString));
+          asset.fileName,
+          Text(imgSizeString),
+        );
       } else if (imgSizeString != null && asset.fileName.isEmpty) {
         // There is only size information
-        return createImagePropertiesListStyle(imgSizeString, null);
+        return createImagePropertiesListStyle(
+          imgSizeString,
+          null,
+        );
       }
     }
 
