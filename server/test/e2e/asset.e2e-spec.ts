@@ -23,7 +23,11 @@ const user2Dto = {
 };
 
 let assetCount = 0;
-const createAsset = (repository: IAssetRepository, loginResponse: LoginResponseDto): Promise<AssetEntity> => {
+const createAsset = (
+  repository: IAssetRepository,
+  loginResponse: LoginResponseDto,
+  libraryId: string,
+): Promise<AssetEntity> => {
   const id = assetCount++;
   return repository.save({
     ownerId: loginResponse.userId,
@@ -31,6 +35,7 @@ const createAsset = (repository: IAssetRepository, loginResponse: LoginResponseD
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
+    libraryId,
     fileCreatedAt: new Date(),
     fileModifiedAt: new Date(),
     type: AssetType.IMAGE,
@@ -62,13 +67,16 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.adminSignUp(server);
     const admin = await api.adminLogin(server);
 
+    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+    const defaultLibrary = libraries[0];
+
     await api.userApi.create(server, admin.accessToken, user1Dto);
     user1 = await api.login(server, { email: user1Dto.email, password: user1Dto.password });
-    asset1 = await createAsset(assetRepository, user1);
+    asset1 = await createAsset(assetRepository, user1, defaultLibrary.id);
 
     await api.userApi.create(server, admin.accessToken, user2Dto);
     user2 = await api.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset2 = await createAsset(assetRepository, user2);
+    asset2 = await createAsset(assetRepository, user2, defaultLibrary.id);
   });
 
   afterAll(async () => {
@@ -88,7 +96,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .put(`/asset/${uuidStub.invalid}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
     });
 
     it('should require access', async () => {
