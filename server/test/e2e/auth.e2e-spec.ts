@@ -152,7 +152,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
   });
 
-  describe('DELETE /auth/devices/:id', () => {
+  describe('DELETE /auth/devices', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).delete(`/auth/devices`);
       expect(status).toBe(401);
