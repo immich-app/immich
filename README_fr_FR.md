@@ -27,7 +27,7 @@
 
 ## Clause de non-responsabilité
 
-- ⚠️ Le projet est en **très fort** développement.
+- ⚠️ Le projet est en développement **très intense**.
 - ⚠️ Attendez-vous à rencontrer des bugs et des changements importants.
 - ⚠️ **N'utilisez pas cette application comme seule façon de sauvegarder vos photos et vos vidéos.**
 - ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
@@ -97,7 +97,7 @@ Caractéristiques: Plan gratuit Oracle VM - Amsterdam - 2.4Ghz quatre-cœurs ARM
 
 Je me suis engagé sur ce projet, et je ne compte pas m'arrêter. Je continuerai à mettre à jour les documentations, d'ajouter de nouvelles fonctionnalités et de résoudre des bugs. Mais je ne peux pas faire cela seul. Donc j'ai besoin de votre aide pour me donner encore plus de motivation et ainsi continuer.
 
-Comme l'ont dit nos hôtes dans le [selfhosted.show - Dans l'épisode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), c'est un travail colossal ce que l'équipe et moi faisons. J'aimerais un jour être capable de faire ça à temps plein, c'est pourquoi je vous demande votre aide pour rendre cela possible.
+Comme l'ont dit nos hôtes dans le [selfhosted.show - Dans l'épisode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), c'est un travail colossal que l'équipe et moi faisons. J'aimerais un jour être capable de faire ça à temps plein, c'est pourquoi je vous demande votre aide pour rendre cela possible.
 
 Si vous estimez que c'est pour la bonne cause et que vous prévoyez d'utiliser l'application pour un moment, s'il-vous-plaît, pensez à soutenir le projet avec les moyens ci-dessous.
 
