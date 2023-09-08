@@ -84,7 +84,7 @@ class AssetService {
     }
   }
 
-  Future<List<DeleteAssetResponseDto>?> deleteAssets(
+  Future<List<BulkIdResponseDto>?> deleteAssets(
     Iterable<Asset> deleteAssets,
   ) async {
     try {
@@ -94,8 +94,7 @@ class AssetService {
         payload.add(asset.remoteId!);
       }
 
-      return await _apiService.assetApi
-          .deleteAsset(DeleteAssetDto(ids: payload));
+      return await _apiService.assetApi.deleteAssets(BulkIdsDto(ids: payload));
     } catch (error, stack) {
       log.severe("Error deleteAssets  ${error.toString()}", error, stack);
       return null;

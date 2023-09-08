@@ -131,11 +131,9 @@ class AssetNotifier extends StateNotifier<bool> {
     Iterable<Asset> assetsToDelete,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
-    final List<DeleteAssetResponseDto> deleteAssetResult =
+    final List<BulkIdResponseDto> deleteAssetResult =
         await _assetService.deleteAssets(remote) ?? [];
-    return deleteAssetResult
-        .where((a) => a.status == DeleteAssetStatus.SUCCESS)
-        .map((a) => a.id);
+    return deleteAssetResult.where((a) => a.success).map((a) => a.id);
   }
 
   Future<void> toggleFavorite(List<Asset> assets, bool status) async {
