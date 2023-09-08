@@ -22,7 +22,7 @@ export const handle = (async ({ event, resolve }) => {
       if (apiError.response?.status && apiError.response?.status !== 401) {
         console.error('[ERROR] hooks.server.ts [handle]:', err);
       } else if (!apiError.response?.status) {
-        console.error('[ERROR] hooks.server.ts [handle]:', err.message);
+        console.error('[ERROR] hooks.server.ts [handle]:', apiError.message);
       }
     }
   }
