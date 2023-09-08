@@ -9,6 +9,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Database from 'svelte-material-icons/Database.svelte';
   import Upload from 'svelte-material-icons/Upload.svelte';
+  import Pulse from 'svelte-loading-spinners/Pulse.svelte';
 
   import { slide } from 'svelte/transition';
   import { Dropdown, DropdownDivider, DropdownItem, Helper } from 'flowbite-svelte';
@@ -245,8 +246,17 @@
                 >
 
                 <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
-                <td class="w-1/6 text-ellipsis px-4 text-sm">{totalCount[index]} </td>
-                <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]} </td>
+                {#if totalCount[index] == undefined}
+                  <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
+                    <Pulse color="gray" size="40" unit="px" />
+                  </td>
+                {:else}
+                  <td class="w-1/6 text-ellipsis px-4 text-sm">
+                    {totalCount[index]}
+                  </td>
+                  <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]} </td>
+                {/if}
+
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
                   <button
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"

@@ -78,6 +78,7 @@
     "lodash-es": "^4.17.21",
     "luxon": "^3.2.1",
     "socket.io-client": "^4.6.1",
+    "svelte-loading-spinners": "^0.3.4",
     "svelte-local-storage-store": "^0.5.0",
     "svelte-material-icons": "^3.0.5",
     "thumbhash": "^0.1.1"
