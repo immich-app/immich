@@ -97,7 +97,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.0
         with:
           context: ${{ matrix.context }}
           platforms: ${{ matrix.platforms }}
@@ -181,7 +181,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.0
         with:
           context: ${{ matrix.context }}
           platforms: ${{ matrix.platforms }}

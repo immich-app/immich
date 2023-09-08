@@ -22,6 +22,7 @@
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
+  <a href="README_fr_FR.md">Français</a>
 </p>
 
 ## Disclaimer
@@ -85,7 +86,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | User-defined storage structure               | Yes    | Yes |
 | Public Sharing                               | No     | Yes |
 | Archive and Favorites                        | Yes    | Yes |
-| Global Map                                   | No     | Yes |
+| Global Map                                   | Yes    | Yes |
 | Partner Sharing                              | Yes    | Yes |
 | Facial recognition and clustering            | Yes    | Yes |
 | Memories (x years ago)                       | Yes    | Yes |

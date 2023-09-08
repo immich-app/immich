@@ -9,15 +9,19 @@ import {
 } from '@app/infra/entities';
 import {
   assetStub,
+  faceStub,
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  personStub,
   probeStub,
 } from '@test';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
+import { IPersonRepository } from '../person';
 import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IMediaRepository } from './media.repository';
@@ -29,6 +33,7 @@ describe(MediaService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
@@ -36,9 +41,10 @@ describe(MediaService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MediaService(assetMock, jobMock, mediaMock, storageMock, configMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock);
   });
 
   it('should be defined', () => {
@@ -51,6 +57,8 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -60,6 +68,57 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          imageWidth: faceStub.face1.imageWidth,
+          imageHeight: faceStub.face1.imageHeight,
+          boundingBox: {
+            x1: faceStub.face1.boundingBoxX1,
+            x2: faceStub.face1.boundingBoxX2,
+            y1: faceStub.face1.boundingBoxY1,
+            y2: faceStub.face1.boundingBoxY2,
+          },
+          assetId: faceStub.face1.assetId,
+          personId: personStub.newThumbnail.id,
+        },
+      });
+    });
+
+    it('should queue all people with missing thumbnail path', async () => {
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([personStub.noThumbnail]);
+      personMock.getRandomFace.mockResolvedValue(faceStub.face1);
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getRandomFace).toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          imageWidth: faceStub.face1.imageWidth,
+          imageHeight: faceStub.face1.imageHeight,
+          boundingBox: {
+            x1: faceStub.face1.boundingBoxX1,
+            x2: faceStub.face1.boundingBoxX2,
+            y1: faceStub.face1.boundingBoxY1,
+            y2: faceStub.face1.boundingBoxY2,
+          },
+          assetId: faceStub.face1.assetId,
+          personId: personStub.newThumbnail.id,
+        },
+      });
     });
 
     it('should queue all assets with missing resize path', async () => {
@@ -67,6 +126,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noResizePath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -76,6 +136,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing webp path', async () => {
@@ -83,6 +146,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noWebpPath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -92,6 +156,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_WEBP_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -99,6 +166,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noThumbhash],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -108,6 +176,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
   });
 
@@ -245,6 +316,7 @@ describe(MediaService.name, () => {
         items: [assetStub.video],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([]);
 
       await sut.handleQueueVideoConversion({ force: true });
 

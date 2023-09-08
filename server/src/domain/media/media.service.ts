@@ -4,11 +4,13 @@ import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IPersonRepository } from '../person';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
 import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
+
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
@@ -17,6 +19,7 @@ export class MediaService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -46,6 +49,32 @@ export class MediaService {
         if (!asset.thumbhash) {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
         }
+      }
+    }
+
+    const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
+
+    for (const person of people) {
+      // use stored asset for generating thumbnail or pick a random one if not present
+      const face = person.faceAssetId
+        ? await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId })
+        : await this.personRepository.getRandomFace(person.id);
+      if (face) {
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_FACE_THUMBNAIL,
+          data: {
+            imageWidth: face.imageWidth,
+            imageHeight: face.imageHeight,
+            boundingBox: {
+              x1: face.boundingBoxX1,
+              x2: face.boundingBoxX2,
+              y1: face.boundingBoxY1,
+              y2: face.boundingBoxY2,
+            },
+            assetId: face.assetId,
+            personId: person.id,
+          },
+        });
       }
     }
 

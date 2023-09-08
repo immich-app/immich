@@ -42,25 +42,31 @@ describe(PersonService.name, () => {
 
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
-      personMock.getAll.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
+      personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
       await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
         total: 1,
         visible: 1,
         people: [responseDto],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: false });
+      expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.id, {
+        minimumFaceCount: 1,
+        withHidden: false,
+      });
     });
     it('should get all visible people with thumbnails', async () => {
-      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
       await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
         total: 2,
         visible: 1,
         people: [responseDto],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: false });
+      expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.id, {
+        minimumFaceCount: 1,
+        withHidden: false,
+      });
     });
     it('should get all hidden and visible people with thumbnails', async () => {
-      personMock.getAll.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
       await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
         total: 2,
         visible: 1,
@@ -75,7 +81,10 @@ describe(PersonService.name, () => {
           },
         ],
       });
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 1, withHidden: true });
+      expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.id, {
+        minimumFaceCount: 1,
+        withHidden: true,
+      });
     });
   });
 
