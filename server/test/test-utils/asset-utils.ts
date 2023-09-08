@@ -1,3 +1,4 @@
+import { CreateAssetDto } from '@app/immich/api-v1/asset/dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
@@ -11,7 +12,12 @@ export const assetApi = {
     expect(status).toBe(200);
     return body as AssetResponseDto;
   },
-  upload: async (server: any, accessToken: string, id: string, content?: Buffer) => {
+  upload: async (
+    server: any,
+    accessToken: string,
+    id: string,
+    { content, isFavorite = false, isArchived = false }: Partial<CreateAssetDto> & { content?: Buffer } = {},
+  ) => {
     const { body, status } = await request(server)
       .post('/asset/upload')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -19,7 +25,8 @@ export const assetApi = {
       .field('deviceId', 'TEST')
       .field('fileCreatedAt', new Date().toISOString())
       .field('fileModifiedAt', new Date().toISOString())
-      .field('isFavorite', false)
+      .field('isFavorite', isFavorite)
+      .field('isArchived', isArchived)
       .field('duration', '0:00:00.000000')
       .attach('assetData', content || randomBytes(32), 'example.jpg');
 

@@ -123,7 +123,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     ];
 
     for (const { should, dto } of invalid) {
-      it(`should: ${should}`, async () => {
+      it(`should ${should}`, async () => {
         const { status, body } = await request(server)
           .post('/asset/upload')
           .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -154,7 +154,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
     it('should not upload the same asset twice', async () => {
       const content = randomBytes(32);
-      await api.assetApi.upload(server, user1.accessToken, 'example-image', content);
+      await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
       const { body, status } = await request(server)
         .post('/asset/upload')
         .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -258,14 +258,81 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    // Not possible because there is no local file that can be served.
-    // it('should download file', async () => {
-    //   const response = await request(server)
-    //     .post(`/asset/download/${asset1.id}`)
-    //     .set('Authorization', `Bearer ${user1.accessToken}`);
+    it('should download file', async () => {
+      const asset = await api.assetApi.upload(server, user1.accessToken, 'example');
+      const response = await request(server)
+        .post(`/asset/download/${asset.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
 
-    //   expect(response.status).toBe(201);
-    //   expect(response.headers['content-type']).toEqual('image/jpg');
-    // });
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toEqual('image/jpeg');
+    });
+  });
+
+  describe('GET /asset/statistics', () => {
+    beforeEach(async () => {
+      await api.assetApi.upload(server, user1.accessToken, 'favored_asset', { isFavorite: true });
+      await api.assetApi.upload(server, user1.accessToken, 'archived_asset', { isArchived: true });
+      await api.assetApi.upload(server, user1.accessToken, 'favored_archived_asset', {
+        isFavorite: true,
+        isArchived: true,
+      });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/album/statistics');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return stats of all assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 4, videos: 0, total: 4 });
+    });
+
+    it('should return stats of all favored assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isFavorite: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 2, videos: 0, total: 2 });
+    });
+
+    it('should return stats of all archived assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isArchived: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 2, videos: 0, total: 2 });
+    });
+
+    it('should return stats of all favored and archived assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isFavorite: true, isArchived: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 1, videos: 0, total: 1 });
+    });
+
+    it('should return stats of all assets neither favored nor archived', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isFavorite: false, isArchived: false });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 1, videos: 0, total: 1 });
+    });
   });
 });
