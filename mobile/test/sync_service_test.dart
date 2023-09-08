@@ -18,7 +18,6 @@ void main() {
     required String checksum,
     String? localId,
     String? remoteId,
-    int deviceId = 1,
     int ownerId = 590700560494856554, // hash of "1"
   }) {
     final DateTime date = DateTime(2000);
@@ -75,8 +74,8 @@ void main() {
       await Store.put(StoreKey.currentUser, owner);
     });
     final List<Asset> initialAssets = [
-      makeAsset(checksum: "a", remoteId: "0-1", deviceId: 0),
-      makeAsset(checksum: "b", remoteId: "2-1", deviceId: 2),
+      makeAsset(checksum: "a", remoteId: "0-1"),
+      makeAsset(checksum: "b", remoteId: "2-1"),
       makeAsset(checksum: "c", localId: "1", remoteId: "1-1"),
       makeAsset(checksum: "d", localId: "2"),
       makeAsset(checksum: "e", localId: "3"),
@@ -90,8 +89,8 @@ void main() {
     test('test inserting existing assets', () async {
       SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1", deviceId: 0),
-        makeAsset(checksum: "b", remoteId: "2-1", deviceId: 2),
+        makeAsset(checksum: "a", remoteId: "0-1"),
+        makeAsset(checksum: "b", remoteId: "2-1"),
         makeAsset(checksum: "c", remoteId: "1-1"),
       ];
       expect(db.assets.countSync(), 5);
@@ -104,12 +103,12 @@ void main() {
     test('test inserting new assets', () async {
       SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1", deviceId: 0),
-        makeAsset(checksum: "b", remoteId: "2-1", deviceId: 2),
+        makeAsset(checksum: "a", remoteId: "0-1"),
+        makeAsset(checksum: "b", remoteId: "2-1"),
         makeAsset(checksum: "c", remoteId: "1-1"),
         makeAsset(checksum: "d", remoteId: "1-2"),
         makeAsset(checksum: "f", remoteId: "1-4"),
-        makeAsset(checksum: "g", remoteId: "3-1", deviceId: 3),
+        makeAsset(checksum: "g", remoteId: "3-1"),
       ];
       expect(db.assets.countSync(), 5);
       final bool c1 =
@@ -121,12 +120,12 @@ void main() {
     test('test syncing duplicate assets', () async {
       SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1", deviceId: 0),
+        makeAsset(checksum: "a", remoteId: "0-1"),
         makeAsset(checksum: "b", remoteId: "1-1"),
-        makeAsset(checksum: "c", remoteId: "2-1", deviceId: 2),
-        makeAsset(checksum: "h", remoteId: "2-1b", deviceId: 2),
-        makeAsset(checksum: "i", remoteId: "2-1c", deviceId: 2),
-        makeAsset(checksum: "j", remoteId: "2-1d", deviceId: 2),
+        makeAsset(checksum: "c", remoteId: "2-1"),
+        makeAsset(checksum: "h", remoteId: "2-1b"),
+        makeAsset(checksum: "i", remoteId: "2-1c"),
+        makeAsset(checksum: "j", remoteId: "2-1d"),
       ];
       expect(db.assets.countSync(), 5);
       final bool c1 =
@@ -142,8 +141,8 @@ void main() {
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
       expect(c3, true);
       expect(db.assets.countSync(), 7);
-      remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e", deviceId: 2));
-      remoteAssets.add(makeAsset(checksum: "l", remoteId: "2-2", deviceId: 2));
+      remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
+      remoteAssets.add(makeAsset(checksum: "l", remoteId: "2-2"));
       final bool c4 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
       expect(c4, true);
@@ -153,12 +152,12 @@ void main() {
     test('test efficient sync', () async {
       SyncService s = SyncService(db, hs);
       final List<Asset> toUpsert = [
-        makeAsset(checksum: "a", remoteId: "0-1", deviceId: 0), // changed
-        makeAsset(checksum: "f", remoteId: "2-1", deviceId: 2), // new
-        makeAsset(checksum: "g", remoteId: "2-2", deviceId: 2), // new
+        makeAsset(checksum: "a", remoteId: "0-1"), // changed
+        makeAsset(checksum: "f", remoteId: "0-2"), // new
+        makeAsset(checksum: "g", remoteId: "0-3"), // new
       ];
       toUpsert[0].isFavorite = true;
-      final List<String> toDelete = ["1-1"];
+      final List<String> toDelete = ["2-1", "1-1"];
       final bool c = await s.syncRemoteAssetsToDb(
         owner,
         (user, since) async => (toUpsert, toDelete),

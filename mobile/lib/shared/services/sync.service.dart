@@ -153,11 +153,10 @@ class SyncService {
     if (toUpsert == null || toDelete == null) return null;
     try {
       if (toDelete.isNotEmpty) {
-        await _db.writeTxn(() => _db.assets.deleteAllByRemoteId(toDelete));
+        await _handleRemoteAssetRemoval(toDelete);
       }
       if (toUpsert.isNotEmpty) {
         final (_, updated) = await _linkWithExistingFromDb(toUpsert);
-        // assert(existing.isEmpty);
         await upsertAssetsWithExif(updated);
       }
       if (toUpsert.isNotEmpty || toDelete.isNotEmpty) {
@@ -169,6 +168,20 @@ class SyncService {
       _log.severe("Failed to sync remote assets to db: $e");
     }
     return null;
+  }
+
+  /// Deletes remote-only assets, updates merged assets to be local-only
+  Future<void> _handleRemoteAssetRemoval(List<String> idsToDelete) {
+    return _db.writeTxn(() async {
+      await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
+      final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
+      if (onlyLocal.isNotEmpty) {
+        for (final Asset a in onlyLocal) {
+          a.remoteId = null;
+        }
+        await _db.assets.putAll(onlyLocal);
+      }
+    });
   }
 
   /// Syncs assets by loading and comparing all assets from the server.
