@@ -26,7 +26,7 @@ export class PersonService {
   ) {}
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const people = await this.repository.getAll(authUser.id, {
+    const people = await this.repository.getAllForUser(authUser.id, {
       minimumFaceCount: 1,
       withHidden: dto.withHidden || false,
     });

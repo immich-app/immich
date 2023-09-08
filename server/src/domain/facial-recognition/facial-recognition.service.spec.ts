@@ -296,6 +296,7 @@ describe(FacialRecognitionService.name, () => {
         colorspace: Colorspace.P3,
       });
       expect(personMock.update).toHaveBeenCalledWith({
+        faceAssetId: 'asset-1',
         id: 'person-1',
         thumbnailPath: 'upload/thumbs/user-id/person-1.jpeg',
       });

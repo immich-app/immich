@@ -189,7 +189,9 @@ export class AssetRepository implements IAssetRepository {
         owner: true,
         smartInfo: true,
         tags: true,
-        faces: true,
+        faces: {
+          person: true,
+        },
       },
     });
   }

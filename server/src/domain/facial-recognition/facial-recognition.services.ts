@@ -171,7 +171,7 @@ export class FacialRecognitionService {
       quality: thumbnail.quality,
     } as const;
     await this.mediaRepository.resize(croppedOutput, output, thumbnailOptions);
-    await this.personRepository.update({ id: personId, thumbnailPath: output });
+    await this.personRepository.update({ id: personId, thumbnailPath: output, faceAssetId: data.assetId });
 
     return true;
   }

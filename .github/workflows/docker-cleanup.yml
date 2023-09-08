@@ -38,7 +38,7 @@ jobs:
       -
         name: Clean temporary images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/ephemeral@v0.2.0
+        uses: stumpylog/image-cleaner-action/ephemeral@v0.3.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
@@ -70,7 +70,7 @@ jobs:
       -
         name: Clean untagged images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/untagged@v0.2.0
+        uses: stumpylog/image-cleaner-action/untagged@v0.3.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
