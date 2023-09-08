@@ -1,4 +1,4 @@
-import { IPersonRepository, LoginResponseDto } from '@app/domain';
+import { IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, PersonController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -31,6 +31,92 @@ describe(`${PersonController.name}`, () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
+  });
+
+  describe('GET /person', () => {
+    beforeEach(async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const faceRepository = app.get<IFaceRepository>(IFaceRepository);
+      const faceAsset = await api.assetApi.upload(server, accessToken, 'face_asset');
+      const person1 = await personRepository.create({
+        ownerId: loginResponse.userId,
+        name: 'visible_person',
+        thumbnailPath: '/thumbnail/face_asset',
+      });
+      await faceRepository.create({ assetId: faceAsset.id, personId: person1.id });
+
+      const person2 = await personRepository.create({
+        ownerId: loginResponse.userId,
+        name: 'hidden_person',
+        isHidden: true,
+        thumbnailPath: '/thumbnail/face_asset',
+      });
+      await faceRepository.create({ assetId: faceAsset.id, personId: person2.id });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/person');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return all people (including hidden)', async () => {
+      const { status, body } = await request(server)
+        .get('/person')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ withHidden: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        total: 2,
+        visible: 1,
+        people: [
+          expect.objectContaining({ name: 'visible_person' }),
+          expect.objectContaining({ name: 'hidden_person' }),
+        ],
+      });
+    });
+
+    it('should return only visible people', async () => {
+      const { status, body } = await request(server).get('/person').set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        total: 1,
+        visible: 1,
+        people: [expect.objectContaining({ name: 'visible_person' })],
+      });
+    });
+  });
+
+  describe('GET /person/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/person/${uuidStub.notFound}`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should throw error if person with id does not exist', async () => {
+      const { status, body } = await request(server)
+        .get(`/person/${uuidStub.notFound}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest);
+    });
+
+    it('should return person information', async () => {
+      const personRepository = app.get<IPersonRepository>(IPersonRepository);
+      const person = await personRepository.create({ ownerId: loginResponse.userId });
+      const { status, body } = await request(server)
+        .get(`/person/${person.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: person.id }));
+    });
   });
 
   describe('PUT /person/:id', () => {
