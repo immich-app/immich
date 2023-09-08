@@ -12,7 +12,7 @@ Method | HTTP request | Description
 [**bulkUploadCheck**](AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-[**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
+[**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 [**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
@@ -210,8 +210,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteAsset**
-> List<DeleteAssetResponseDto> deleteAsset(deleteAssetDto)
+# **deleteAssets**
+> List<BulkIdResponseDto> deleteAssets(bulkIdsDto)
 
 
 
@@ -234,13 +234,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final deleteAssetDto = DeleteAssetDto(); // DeleteAssetDto | 
+final bulkIdsDto = BulkIdsDto(); // BulkIdsDto | 
 
 try {
-    final result = api_instance.deleteAsset(deleteAssetDto);
+    final result = api_instance.deleteAssets(bulkIdsDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->deleteAsset: $e\n');
+    print('Exception when calling AssetApi->deleteAssets: $e\n');
 }
 ```
 
@@ -248,11 +248,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **deleteAssetDto** | [**DeleteAssetDto**](DeleteAssetDto.md)|  | 
+ **bulkIdsDto** | [**BulkIdsDto**](BulkIdsDto.md)|  | 
 
 ### Return type
 
-[**List<DeleteAssetResponseDto>**](DeleteAssetResponseDto.md)
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
 
 ### Authorization
 

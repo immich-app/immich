@@ -183,13 +183,13 @@ class AssetApi {
   /// Performs an HTTP 'DELETE /asset' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [DeleteAssetDto] deleteAssetDto (required):
-  Future<Response> deleteAssetWithHttpInfo(DeleteAssetDto deleteAssetDto,) async {
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> deleteAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
     // ignore: prefer_final_locals
-    Object? postBody = deleteAssetDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -211,9 +211,9 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [DeleteAssetDto] deleteAssetDto (required):
-  Future<List<DeleteAssetResponseDto>?> deleteAsset(DeleteAssetDto deleteAssetDto,) async {
-    final response = await deleteAssetWithHttpInfo(deleteAssetDto,);
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<List<BulkIdResponseDto>?> deleteAssets(BulkIdsDto bulkIdsDto,) async {
+    final response = await deleteAssetsWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -222,8 +222,8 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<DeleteAssetResponseDto>') as List)
-        .cast<DeleteAssetResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList();
 
     }

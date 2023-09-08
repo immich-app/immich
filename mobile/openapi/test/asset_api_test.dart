@@ -38,8 +38,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<DeleteAssetResponseDto>> deleteAsset(DeleteAssetDto deleteAssetDto) async
-    test('test deleteAsset', () async {
+    //Future<List<BulkIdResponseDto>> deleteAssets(BulkIdsDto bulkIdsDto) async
+    test('test deleteAssets', () async {
       // TODO
     });
 
