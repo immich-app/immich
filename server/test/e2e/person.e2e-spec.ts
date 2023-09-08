@@ -1,5 +1,6 @@
 import { IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, PersonController } from '@app/immich';
+import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -11,6 +12,10 @@ describe(`${PersonController.name}`, () => {
   let server: any;
   let loginResponse: LoginResponseDto;
   let accessToken: string;
+  let personRepository: IPersonRepository;
+  let faceRepository: IFaceRepository;
+  let visiblePerson: PersonEntity;
+  let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -19,6 +24,8 @@ describe(`${PersonController.name}`, () => {
 
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
+    personRepository = app.get<IPersonRepository>(IPersonRepository);
+    faceRepository = app.get<IFaceRepository>(IFaceRepository);
   });
 
   beforeEach(async () => {
@@ -26,6 +33,22 @@ describe(`${PersonController.name}`, () => {
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
+
+    const faceAsset = await api.assetApi.upload(server, accessToken, 'face_asset');
+    visiblePerson = await personRepository.create({
+      ownerId: loginResponse.userId,
+      name: 'visible_person',
+      thumbnailPath: '/thumbnail/face_asset',
+    });
+    await faceRepository.create({ assetId: faceAsset.id, personId: visiblePerson.id });
+
+    hiddenPerson = await personRepository.create({
+      ownerId: loginResponse.userId,
+      name: 'hidden_person',
+      isHidden: true,
+      thumbnailPath: '/thumbnail/face_asset',
+    });
+    await faceRepository.create({ assetId: faceAsset.id, personId: hiddenPerson.id });
   });
 
   afterAll(async () => {
@@ -34,25 +57,7 @@ describe(`${PersonController.name}`, () => {
   });
 
   describe('GET /person', () => {
-    beforeEach(async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
-      const faceRepository = app.get<IFaceRepository>(IFaceRepository);
-      const faceAsset = await api.assetApi.upload(server, accessToken, 'face_asset');
-      const person1 = await personRepository.create({
-        ownerId: loginResponse.userId,
-        name: 'visible_person',
-        thumbnailPath: '/thumbnail/face_asset',
-      });
-      await faceRepository.create({ assetId: faceAsset.id, personId: person1.id });
-
-      const person2 = await personRepository.create({
-        ownerId: loginResponse.userId,
-        name: 'hidden_person',
-        isHidden: true,
-        thumbnailPath: '/thumbnail/face_asset',
-      });
-      await faceRepository.create({ assetId: faceAsset.id, personId: person2.id });
-    });
+    beforeEach(async () => {});
 
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/person');
@@ -108,14 +113,12 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should return person information', async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
-      const person = await personRepository.create({ ownerId: loginResponse.userId });
       const { status, body } = await request(server)
-        .get(`/person/${person.id}`)
+        .get(`/person/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ id: person.id }));
+      expect(body).toEqual(expect.objectContaining({ id: visiblePerson.id }));
     });
   });
 
@@ -128,10 +131,8 @@ describe(`${PersonController.name}`, () => {
 
     for (const key of ['name', 'featureFaceAssetId', 'isHidden']) {
       it(`should not allow null ${key}`, async () => {
-        const personRepository = app.get<IPersonRepository>(IPersonRepository);
-        const person = await personRepository.create({ ownerId: loginResponse.userId });
         const { status, body } = await request(server)
-          .put(`/person/${person.id}`)
+          .put(`/person/${visiblePerson.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ [key]: null });
         expect(status).toBe(400);
@@ -151,10 +152,8 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should update a date of birth', async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
-      const person = await personRepository.create({ ownerId: loginResponse.userId });
       const { status, body } = await request(server)
-        .put(`/person/${person.id}`)
+        .put(`/person/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ birthDate: '1990-01-01T05:00:00.000Z' });
       expect(status).toBe(200);
@@ -162,7 +161,6 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should clear a date of birth', async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({
         birthDate: new Date('1990-01-01'),
         ownerId: loginResponse.userId,
