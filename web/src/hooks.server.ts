@@ -19,8 +19,10 @@ export const handle = (async ({ event, resolve }) => {
       const apiError = err as AxiosError;
 
       // Ignore 401 unauthorized errors and log all others.
-      if (apiError.response?.status !== 401) {
+      if (apiError.response?.status && apiError.response?.status !== 401) {
         console.error('[ERROR] hooks.server.ts [handle]:', err);
+      } else if (!apiError.response?.status) {
+        console.error('[ERROR] hooks.server.ts [handle]:', err.message);
       }
     }
   }
