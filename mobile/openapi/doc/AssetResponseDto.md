@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
 **isFavorite** | **bool** |  | 
+**isTrashed** | **bool** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
