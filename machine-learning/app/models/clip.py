@@ -55,7 +55,7 @@ class CLIPEncoder(InferenceModel):
 
     def _load(self) -> None:
         if self.mode == "text" or self.mode is None:
-            log.info(f"Loading text model '{self.model_name}'")
+            log.debug(f"Loading clip text model '{self.model_name}'")
             self.text_model = ort.InferenceSession(
                 self.cache_dir / "textual.onnx",
                 sess_options=self.sess_options,
@@ -66,7 +66,7 @@ class CLIPEncoder(InferenceModel):
             self.tokenizer = Tokenizer(self.model_name)
 
         if self.mode == "vision" or self.mode is None:
-            log.info(f"Loading vision model '{self.model_name}'")
+            log.debug(f"Loading clip vision model '{self.model_name}'")
             self.vision_model = ort.InferenceSession(
                 self.cache_dir / "visual.onnx",
                 sess_options=self.sess_options,
