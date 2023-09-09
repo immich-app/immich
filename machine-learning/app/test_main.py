@@ -169,7 +169,9 @@ class TestCache:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
-    def test_tagging_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
+    def test_tagging_endpoint(
+        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
+    ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         response = deployed_app.post(
@@ -210,9 +212,7 @@ class TestEndpoints:
         assert response.status_code == 200
         assert response.json() == responses["clip"]["text"]
 
-    def test_face_endpoint(
-        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
-    ) -> None:
+    def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
 
