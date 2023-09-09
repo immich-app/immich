@@ -26,7 +26,7 @@ class ImageClassifier(InferenceModel):
         self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def _download(self, **model_kwargs: Any) -> None:
+    def _download(self) -> None:
         snapshot_download(
             cache_dir=self.cache_dir,
             repo_id=self.model_name,
@@ -35,10 +35,10 @@ class ImageClassifier(InferenceModel):
             local_dir_use_symlinks=True,
         )
 
-    def _load(self, **model_kwargs: Any) -> None:
+    def _load(self) -> None:
         processor = AutoImageProcessor.from_pretrained(self.cache_dir, cache_dir=self.cache_dir)
         model_path = self.cache_dir / "model.onnx"
-        model_kwargs |= {
+        model_kwargs = {
             "cache_dir": self.cache_dir,
             "provider": self.providers[0],
             "provider_options": self.provider_options[0],
