@@ -19,7 +19,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     const formData = await this.getFormData(input, config);
     const res = await fetch(`${url}/predict`, { method: 'POST', body: formData });
     if (res.status >= 400) {
-      throw new Error(`Request ${config.modelType ? `for ${config.modelType.replace('-', ' ')} ` : ''}failed with status ${res.status}: ${res.statusText}`);
+      throw new Error(
+        `Request ${config.modelType ? `for ${config.modelType.replace('-', ' ')} ` : ''}failed with status ${
+          res.status
+        }: ${res.statusText}`,
+      );
     }
     return res.json();
   }
