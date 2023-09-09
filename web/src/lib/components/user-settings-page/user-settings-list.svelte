@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { APIKeyResponseDto, AuthDeviceResponseDto, oauth, UserResponseDto } from '@api';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';

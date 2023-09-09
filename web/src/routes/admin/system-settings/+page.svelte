@@ -3,6 +3,7 @@
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
+  import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
@@ -11,7 +12,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { downloadManager } from '$lib/stores/download';
-  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { SystemConfigDto, api, copyToClipboard } from '@api';
   import Alert from 'svelte-material-icons/Alert.svelte';
@@ -57,20 +58,6 @@
         <span class="pl-2">Export as JSON</span>
       </Button>
     </div>
-    <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
-      <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Video Transcoding Settings"
-      subtitle="Manage the resolution and encoding information of the video files"
-    >
-      <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
-    </SettingAccordion>
-
-    <SettingAccordion title="Machine Learning Settings" subtitle="Manage model settings">
-      <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
-    </SettingAccordion>
 
     <SettingAccordion
       title="Job Settings"
@@ -80,12 +67,20 @@
       <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
     </SettingAccordion>
 
-    <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
-      <PasswordLoginSettings disabled={$featureFlags.configFile} passwordLoginConfig={configs.passwordLogin} />
+    <SettingAccordion title="Machine Learning Settings" subtitle="Manage model settings">
+      <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Map Settings" subtitle="Manage map settings">
+      <MapSettings disabled={$featureFlags.configFile} mapConfig={configs.map} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
       <OAuthSettings disabled={$featureFlags.configFile} oauthConfig={configs.oauth} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
+      <PasswordLoginSettings disabled={$featureFlags.configFile} passwordLoginConfig={configs.passwordLogin} />
     </SettingAccordion>
 
     <SettingAccordion
@@ -98,6 +93,17 @@
         storageConfig={configs.storageTemplate}
         user={data.user}
       />
+    </SettingAccordion>
+
+    <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
+      <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
+    </SettingAccordion>
+
+    <SettingAccordion
+      title="Video Transcoding Settings"
+      subtitle="Manage the resolution and encoding information of the video files"
+    >
+      <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
     </SettingAccordion>
   {/await}
 </section>

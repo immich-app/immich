@@ -55,7 +55,6 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
-
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
@@ -74,6 +73,10 @@ export const defaults = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.6,
     },
+  },
+  map: {
+    enabled: true,
+    tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   },
   oauth: {
     enabled: false,
@@ -108,6 +111,7 @@ export enum FeatureFlag {
   CLIP_ENCODE = 'clipEncode',
   FACIAL_RECOGNITION = 'facialRecognition',
   TAG_IMAGE = 'tagImage',
+  MAP = 'map',
   SIDECAR = 'sidecar',
   SEARCH = 'search',
   OAUTH = 'oauth',
@@ -169,6 +173,7 @@ export class SystemConfigCore {
       [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
+      [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
 
