@@ -169,7 +169,7 @@ class TestCache:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
-    def test_tagging_endpoint(self, pil_image: Image.Image, tag_response: list[str], deployed_app: TestClient) -> None:
+    def test_tagging_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         response = deployed_app.post(
@@ -182,10 +182,10 @@ class TestEndpoints:
             files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
-        assert response.json() == tag_response
+        assert response.json() == responses["image-classification"]
 
     def test_clip_image_endpoint(
-        self, pil_image: Image.Image, clip_image_response: list[float], deployed_app: TestClient
+        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
@@ -195,9 +195,9 @@ class TestEndpoints:
             files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
-        assert response.json() == clip_image_response
+        assert response.json() == responses["clip"]["image"]
 
-    def test_clip_text_endpoint(self, clip_text_response: list[float], deployed_app: TestClient) -> None:
+    def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
@@ -208,10 +208,10 @@ class TestEndpoints:
             },
         )
         assert response.status_code == 200
-        assert response.json() == clip_text_response
+        assert response.json() == responses["clip"]["text"]
 
     def test_face_endpoint(
-        self, pil_image: Image.Image, face_response: list[dict[str, Any]], deployed_app: TestClient
+        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
@@ -226,7 +226,7 @@ class TestEndpoints:
             files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
-        assert response.json() == face_response
+        assert response.json() == responses["facial-recognition"]
 
 
 def test_sess_options() -> None:
