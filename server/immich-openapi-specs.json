@@ -3664,6 +3664,27 @@
         ]
       }
     },
+    "/server-info/config": {
+      "get": {
+        "operationId": "getServerConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/features": {
       "get": {
         "operationId": "getServerFeatures",
@@ -7113,6 +7134,25 @@
         ],
         "type": "object"
       },
+      "ServerConfigDto": {
+        "properties": {
+          "loginPageMessage": {
+            "type": "string"
+          },
+          "mapTileUrl": {
+            "type": "string"
+          },
+          "oauthButtonText": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oauthButtonText",
+          "loginPageMessage",
+          "mapTileUrl"
+        ],
+        "type": "object"
+      },
       "ServerFeaturesDto": {
         "properties": {
           "clipEncode": {
@@ -7122,6 +7162,9 @@
             "type": "boolean"
           },
           "facialRecognition": {
+            "type": "boolean"
+          },
+          "map": {
             "type": "boolean"
           },
           "oauth": {
@@ -7144,15 +7187,16 @@
           }
         },
         "required": [
-          "configFile",
           "clipEncode",
+          "configFile",
           "facialRecognition",
-          "sidecar",
-          "search",
-          "tagImage",
+          "map",
           "oauth",
           "oauthAutoLaunch",
-          "passwordLogin"
+          "passwordLogin",
+          "sidecar",
+          "search",
+          "tagImage"
         ],
         "type": "object"
       },
@@ -7484,6 +7528,9 @@
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
+          "map": {
+            "$ref": "#/components/schemas/SystemConfigMapDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -7500,6 +7547,7 @@
         "required": [
           "ffmpeg",
           "machineLearning",
+          "map",
           "oauth",
           "passwordLogin",
           "storageTemplate",
@@ -7658,6 +7706,21 @@
           "classification",
           "clip",
           "facialRecognition"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMapDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "tileUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "tileUrl"
         ],
         "type": "object"
       },

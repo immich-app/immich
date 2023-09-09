@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
-  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { api, oauth } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -158,7 +158,7 @@
           <LoadingSpinner />
         </span>
       {:else}
-        {$featureFlags.passwordLogin ? 'Login with OAuth' : 'Login'}
+        {$serverConfig.oauthButtonText}
       {/if}
     </Button>
   </div>

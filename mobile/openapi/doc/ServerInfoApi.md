@@ -9,6 +9,7 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**getServerConfig**](ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 [**getServerFeatures**](ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 [**getServerInfo**](ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 [**getServerVersion**](ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
@@ -16,6 +17,43 @@ Method | HTTP request | Description
 [**getSupportedMediaTypes**](ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 [**pingServer**](ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 
+
+# **getServerConfig**
+> ServerConfigDto getServerConfig()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = ServerInfoApi();
+
+try {
+    final result = api_instance.getServerConfig();
+    print(result);
+} catch (e) {
+    print('Exception when calling ServerInfoApi->getServerConfig: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ServerConfigDto**](ServerConfigDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getServerFeatures**
 > ServerFeaturesDto getServerFeatures()
