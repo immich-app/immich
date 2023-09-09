@@ -183,5 +183,5 @@ export function isImageCommonlySupportedByWeb(asset: AssetResponseDto): boolean 
   const commonWebSupportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
   const imgExtention = getFilenameExtension(asset.originalPath);
 
-  return commonWebSupportedExtensions.includes(imgExtention.toLowerCase());
+  return commonWebSupportedExtensions.includes(imgExtention);
 }
