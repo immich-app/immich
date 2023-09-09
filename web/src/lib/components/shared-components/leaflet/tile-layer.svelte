@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
   import { TileLayer, type TileLayerOptions } from 'leaflet';
+  import { onDestroy, onMount } from 'svelte';
   import { getMapContext } from './map.svelte';
 
   export let urlTemplate: string;
@@ -15,6 +15,6 @@
   });
 
   onDestroy(() => {
-    if (tileLayer) tileLayer.remove();
+    tileLayer?.remove();
   });
 </script>

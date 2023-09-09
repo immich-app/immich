@@ -1,4 +1,5 @@
-from typing import Iterator, TypeAlias
+import json
+from typing import Any, Iterator, TypeAlias
 from unittest import mock
 
 import numpy as np
@@ -31,3 +32,8 @@ def mock_get_model() -> Iterator[mock.Mock]:
 def deployed_app() -> TestClient:
     init_state()
     return TestClient(app)
+
+
+@pytest.fixture(scope="session")
+def responses() -> dict[str, Any]:
+    return json.load(open("responses.json", "r"))

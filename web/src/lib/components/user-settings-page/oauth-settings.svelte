@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { oauth, UserResponseDto } from '@api';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
