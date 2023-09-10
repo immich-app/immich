@@ -90,7 +90,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
+*AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
@@ -107,6 +107,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
+*AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -192,6 +193,7 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
+ - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
@@ -226,9 +228,6 @@ Class | Method | HTTP request | Description
  - [CreateUserDto](doc//CreateUserDto.md)
  - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
  - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
- - [DeleteAssetDto](doc//DeleteAssetDto.md)
- - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
- - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)

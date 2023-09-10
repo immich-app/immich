@@ -199,6 +199,8 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkDeleteDto':
+          return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':
           return AssetBulkUpdateDto.fromJson(value);
         case 'AssetBulkUploadCheckDto':
@@ -267,12 +269,6 @@ class ApiClient {
           return CuratedLocationsResponseDto.fromJson(value);
         case 'CuratedObjectsResponseDto':
           return CuratedObjectsResponseDto.fromJson(value);
-        case 'DeleteAssetDto':
-          return DeleteAssetDto.fromJson(value);
-        case 'DeleteAssetResponseDto':
-          return DeleteAssetResponseDto.fromJson(value);
-        case 'DeleteAssetStatus':
-          return DeleteAssetStatusTypeTransformer().decode(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
