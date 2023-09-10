@@ -5464,13 +5464,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
+         * @param {boolean} [withDeleted] 
          * @param {number} [skip] 
          * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, withDeleted?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5502,6 +5503,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isArchived !== undefined) {
                 localVarQueryParameter['isArchived'] = isArchived;
+            }
+
+            if (withDeleted !== undefined) {
+                localVarQueryParameter['withDeleted'] = withDeleted;
             }
 
             if (skip !== undefined) {
@@ -6674,14 +6679,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
+         * @param {boolean} [withDeleted] 
          * @param {number} [skip] 
          * @param {string} [updatedAfter] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withDeleted?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, withDeleted, skip, updatedAfter, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6990,7 +6996,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withDeleted, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -7303,6 +7309,13 @@ export interface AssetApiGetAllAssetsRequest {
      * @memberof AssetApiGetAllAssets
      */
     readonly isArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly withDeleted?: boolean
 
     /**
      * 
@@ -7911,7 +7924,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withDeleted, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

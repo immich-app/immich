@@ -17,6 +17,12 @@ export class AssetSearchDto {
   isArchived?: boolean;
 
   @Optional()
+  @IsNotEmpty()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withDeleted?: boolean;
+
+  @Optional()
   @IsNumber()
   skip?: number;
 

@@ -111,6 +111,8 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
     });
   }
 
@@ -135,6 +137,7 @@ export class AssetRepository implements IAssetRepository {
       order: {
         fileCreatedAt: 'DESC',
       },
+      withDeleted: dto.withDeleted,
     });
   }
 
