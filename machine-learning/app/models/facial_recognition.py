@@ -26,7 +26,7 @@ class FaceRecognizer(InferenceModel):
         self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(model_name, cache_dir, **model_kwargs)
 
-    def _download(self, **model_kwargs: Any) -> None:
+    def _download(self) -> None:
         zip_file = self.cache_dir / f"{self.model_name}.zip"
         download_file(f"{BASE_REPO_URL}/{self.model_name}.zip", zip_file)
         with zipfile.ZipFile(zip_file, "r") as zip:
@@ -36,7 +36,7 @@ class FaceRecognizer(InferenceModel):
             zip.extractall(self.cache_dir, members=[det_file, rec_file])
         zip_file.unlink()
 
-    def _load(self, **model_kwargs: Any) -> None:
+    def _load(self) -> None:
         try:
             det_file = next(self.cache_dir.glob("det_*.onnx"))
             rec_file = next(self.cache_dir.glob("w600k_*.onnx"))

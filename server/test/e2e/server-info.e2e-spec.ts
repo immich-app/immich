@@ -83,12 +83,25 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         clipEncode: true,
         configFile: false,
         facialRecognition: true,
+        map: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
         search: false,
         sidecar: true,
         tagImage: true,
+      });
+    });
+  });
+
+  describe('GET /server-info/config', () => {
+    it('should respond with the server configuration', async () => {
+      const { status, body } = await request(server).get('/server-info/config');
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        loginPageMessage: '',
+        oauthButtonText: 'Login with OAuth',
+        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       });
     });
   });

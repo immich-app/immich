@@ -42,7 +42,7 @@ class CLIPEncoder(InferenceModel):
         jina_model_name = self._get_jina_model_name(model_name)
         super().__init__(jina_model_name, cache_dir, **model_kwargs)
 
-    def _download(self, **model_kwargs: Any) -> None:
+    def _download(self) -> None:
         models: tuple[tuple[str, str], tuple[str, str]] = _MODELS[self.model_name]
         text_onnx_path = self.cache_dir / "textual.onnx"
         vision_onnx_path = self.cache_dir / "visual.onnx"
@@ -53,8 +53,9 @@ class CLIPEncoder(InferenceModel):
         if not vision_onnx_path.is_file():
             self._download_model(*models[1])
 
-    def _load(self, **model_kwargs: Any) -> None:
+    def _load(self) -> None:
         if self.mode == "text" or self.mode is None:
+            log.debug(f"Loading clip text model '{self.model_name}'")
             self.text_model = ort.InferenceSession(
                 self.cache_dir / "textual.onnx",
                 sess_options=self.sess_options,
@@ -65,6 +66,7 @@ class CLIPEncoder(InferenceModel):
             self.tokenizer = Tokenizer(self.model_name)
 
         if self.mode == "vision" or self.mode is None:
+            log.debug(f"Loading clip vision model '{self.model_name}'")
             self.vision_model = ort.InferenceSession(
                 self.cache_dir / "visual.onnx",
                 sess_options=self.sess_options,

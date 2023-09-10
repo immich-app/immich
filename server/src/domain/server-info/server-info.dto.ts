@@ -79,16 +79,21 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
-export class ServerFeaturesDto implements FeatureFlags {
-  configFile!: boolean;
-  clipEncode!: boolean;
-  facialRecognition!: boolean;
-  sidecar!: boolean;
-  search!: boolean;
-  tagImage!: boolean;
+export class ServerConfigDto {
+  oauthButtonText!: string;
+  loginPageMessage!: string;
+  mapTileUrl!: string;
+}
 
-  // TODO: use these instead of `POST oauth/config`
+export class ServerFeaturesDto implements FeatureFlags {
+  clipEncode!: boolean;
+  configFile!: boolean;
+  facialRecognition!: boolean;
+  map!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;
+  sidecar!: boolean;
+  search!: boolean;
+  tagImage!: boolean;
 }

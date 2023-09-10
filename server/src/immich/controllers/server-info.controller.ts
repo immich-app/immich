@@ -1,4 +1,5 @@
 import {
+  ServerConfigDto,
   ServerFeaturesDto,
   ServerInfoResponseDto,
   ServerInfoService,
@@ -40,6 +41,12 @@ export class ServerInfoController {
   @Get('features')
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
+  }
+
+  @PublicRoute()
+  @Get('config')
+  getServerConfig(): Promise<ServerConfigDto> {
+    return this.service.getConfig();
   }
 
   @AdminRoute()

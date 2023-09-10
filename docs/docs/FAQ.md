@@ -96,10 +96,6 @@ docker-compose down -v
 
 After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting an unwanted files or folders.
 
-### Why iOS app shows duplicate photos on the timeline while the web doesn't?
-
-If you are using `My Photo Stream`, the Photos app temporarily creates duplicates of photos taken in the last 30 days. These photos are included in the `Recents` album and thus shown up twice. To fix this, you can disable `My Photo Stream` in the native Photos app or choose a different album in the backup screen in Immich.
-
 ### How can I move all data (photos, persons, albums) from one user to another?
 
 This requires some database queries. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.

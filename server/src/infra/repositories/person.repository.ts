@@ -50,7 +50,15 @@ export class PersonRepository implements IPersonRepository {
     return people.length;
   }
 
-  getAll(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
+  getAll(): Promise<PersonEntity[]> {
+    return this.personRepository.find();
+  }
+
+  getAllWithoutThumbnail(): Promise<PersonEntity[]> {
+    return this.personRepository.findBy({ thumbnailPath: '' });
+  }
+
+  getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
@@ -117,5 +125,9 @@ export class PersonRepository implements IPersonRepository {
 
   async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ assetId, personId });
+  }
+
+  async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOneBy({ personId });
   }
 }

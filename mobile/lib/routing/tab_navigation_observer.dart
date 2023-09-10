@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {
@@ -42,6 +43,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'SharingRoute') {
       ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+      ref.read(assetProvider.notifier).getPartnerAssets();
     }
 
     if (route.name == 'LibraryRoute') {
@@ -50,6 +52,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'HomeRoute') {
       ref.invalidate(memoryFutureProvider);
+      Future(() => ref.read(assetProvider.notifier).getAllAsset());
 
       // Update user info
       try {
