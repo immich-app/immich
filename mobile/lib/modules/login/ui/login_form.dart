@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_logo.dart';
 import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -388,7 +390,7 @@ class LoginForm extends HookConsumerWidget {
   }
 }
 
-class ServerEndpointInput extends StatelessWidget {
+class ServerEndpointInput extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final Function()? onSubmit;
@@ -399,6 +401,13 @@ class ServerEndpointInput extends StatelessWidget {
     required this.focusNode,
     this.onSubmit,
   }) : super(key: key);
+
+  @override
+  _ServerEndpointInputState createState() => _ServerEndpointInputState();
+}
+
+class _ServerEndpointInputState extends State<ServerEndpointInput> {
+  bool _acceptSelfSignedCerts = Store.tryGet(StoreKey.selfSignedCert) ?? false;
 
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;
@@ -416,22 +425,44 @@ class ServerEndpointInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: 'login_form_endpoint_url'.tr(),
-        border: const OutlineInputBorder(),
-        hintText: 'login_form_endpoint_hint'.tr(),
-        errorMaxLines: 4,
-      ),
-      validator: _validateInput,
-      autovalidateMode: AutovalidateMode.always,
-      focusNode: focusNode,
-      autofillHints: const [AutofillHints.url],
-      keyboardType: TextInputType.url,
-      autocorrect: false,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      textInputAction: TextInputAction.go,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: widget.controller,
+          decoration: InputDecoration(
+            labelText: 'login_form_endpoint_url'.tr(),
+            border: const OutlineInputBorder(),
+            hintText: 'login_form_endpoint_hint'.tr(),
+            errorMaxLines: 4,
+          ),
+          validator: _validateInput,
+          autovalidateMode: AutovalidateMode.always,
+          focusNode: widget.focusNode,
+          autofillHints: const [AutofillHints.url],
+          keyboardType: TextInputType.url,
+          autocorrect: false,
+          onFieldSubmitted: (_) => widget.onSubmit?.call(),
+          textInputAction: TextInputAction.go,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Checkbox(
+              value: _acceptSelfSignedCerts,
+              onChanged: (value) {
+                setState(() {
+                  bool certAccetVal = value ?? false;
+                  _acceptSelfSignedCerts = certAccetVal;
+                  Store.put(StoreKey.selfSignedCert, certAccetVal);
+                  HttpOverrides.global = HttpSSLCertOverride();
+                });
+              },
+            ),
+            const Text('Accept self-signed certificates'),
+          ],
+        ),
+      ],
     );
   }
 }
