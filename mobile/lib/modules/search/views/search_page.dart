@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 // ignore: must_be_immutable
@@ -27,6 +28,8 @@ class SearchPage extends HookConsumerWidget {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
     final curatedLocation = ref.watch(getCuratedLocationProvider);
     final curatedPeople = ref.watch(getCuratedPeopleProvider);
+    final isMapEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     double imageSize = math.min(MediaQuery.of(context).size.width / 3, 150);
 
@@ -107,6 +110,7 @@ class SearchPage extends HookConsumerWidget {
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
           data: (locations) => CuratedPlacesRow(
+            isMapEnabled: isMapEnabled,
             content: locations
                 .map(
                   (o) => CuratedContent(
