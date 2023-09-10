@@ -312,6 +312,12 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    RecycleBinRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const RecycleBinPage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -622,6 +628,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AlbumOptionsRoute.name,
           path: '/album-options-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          RecycleBinRoute.name,
+          path: '/recycle-bin-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1395,6 +1409,18 @@ class AlbumOptionsRouteArgs {
   String toString() {
     return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
   }
+}
+
+/// generated route for
+/// [RecycleBinPage]
+class RecycleBinRoute extends PageRouteInfo<void> {
+  const RecycleBinRoute()
+      : super(
+          RecycleBinRoute.name,
+          path: '/recycle-bin-page',
+        );
+
+  static const String name = 'RecycleBinRoute';
 }
 
 /// generated route for

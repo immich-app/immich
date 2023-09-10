@@ -15,7 +15,6 @@ import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
@@ -92,18 +91,31 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<void> deleteAssets(Iterable<Asset> deleteAssets) async {
+  Future<void> deleteAssets(
+    Iterable<Asset> deleteAssets, {
+    bool? force = false,
+  }) async {
     _deleteInProgress = true;
     state = true;
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
+      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        final dbIds = deleteAssets.map((e) => e.id).toList();
-        await _db.writeTxn(() async {
-          await _db.exifInfos.deleteAll(dbIds);
-          await _db.assets.deleteAll(dbIds);
-        });
+        final trashedAssets = deleteAssets.map((e) {
+          e.isTrashed = true;
+          return e;
+        }).toList();
+        if (force == null || !force) {
+          await _db.writeTxn(() async {
+            await _db.assets.putAll(trashedAssets);
+          });
+        } else {
+          final dbIds = deleteAssets.map((e) => e.id).toList();
+          await _db.writeTxn(() async {
+            await _db.exifInfos.deleteAll(dbIds);
+            await _db.assets.deleteAll(dbIds);
+          });
+        }
       }
     } finally {
       _deleteInProgress = false;
@@ -127,13 +139,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return [];
   }
 
-  Future<Iterable<String>> _deleteRemoteAssets(
+  Future<Iterable<String?>> _deleteRemoteAssets(
     Iterable<Asset> assetsToDelete,
+    bool? force,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
-    final List<BulkIdResponseDto> deleteAssetResult =
-        await _assetService.deleteAssets(remote) ?? [];
-    return deleteAssetResult.where((a) => a.success).map((a) => a.id);
+
+    final isSuccess = await _assetService.deleteAssets(remote, force: force);
+    return isSuccess ? remote.map((e) => e.remoteId) : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, bool status) async {
@@ -187,6 +200,7 @@ final assetsProvider =
       .filter()
       .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
@@ -207,6 +221,7 @@ final remoteAssetsProvider =
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

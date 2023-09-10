@@ -28,6 +28,7 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/recycle_bin/views/recycle_bin_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
@@ -156,6 +157,7 @@ part 'router.gr.dart';
     AutoRoute(page: MemoryPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: MapPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: RecycleBinPage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {

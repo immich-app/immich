@@ -91,6 +91,29 @@ class ProfileDrawer extends HookConsumerWidget {
       );
     }
 
+    buildRecyceledBinButton() {
+      return ListTile(
+        leading: SizedBox(
+          height: double.infinity,
+          child: Icon(
+            Icons.delete_rounded,
+            color: Theme.of(context).textTheme.labelMedium?.color,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          "Recycled Bin",
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ).tr(),
+        onTap: () {
+          AutoRouter.of(context).push(const RecycleBinRoute());
+        },
+      );
+    }
+
     return Drawer(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -103,6 +126,7 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               const ProfileDrawerHeader(),
+              buildRecyceledBinButton(),
               buildSettingButton(),
               buildAppLogButton(),
               buildSignOutButton(),
