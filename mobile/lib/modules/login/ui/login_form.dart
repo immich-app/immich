@@ -403,10 +403,10 @@ class ServerEndpointInput extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ServerEndpointInputState createState() => _ServerEndpointInputState();
+  ServerEndpointInputState createState() => ServerEndpointInputState();
 }
 
-class _ServerEndpointInputState extends State<ServerEndpointInput> {
+class ServerEndpointInputState extends State<ServerEndpointInput> {
   bool _acceptSelfSignedCerts = Store.tryGet(StoreKey.selfSignedCert) ?? false;
 
   String? _validateInput(String? url) {
