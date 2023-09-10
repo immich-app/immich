@@ -17,15 +17,20 @@ const ETagSchema = CollectionSchema(
   name: r'ETag',
   id: -644290296585643859,
   properties: {
-    r'id': PropertySchema(
+    r'assetCount': PropertySchema(
       id: 0,
+      name: r'assetCount',
+      type: IsarType.long,
+    ),
+    r'id': PropertySchema(
+      id: 1,
       name: r'id',
       type: IsarType.string,
     ),
-    r'value': PropertySchema(
-      id: 1,
-      name: r'value',
-      type: IsarType.string,
+    r'time': PropertySchema(
+      id: 2,
+      name: r'time',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _eTagEstimateSize,
@@ -63,12 +68,6 @@ int _eTagEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.id.length * 3;
-  {
-    final value = object.value;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   return bytesCount;
 }
 
@@ -78,8 +77,9 @@ void _eTagSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.id);
-  writer.writeString(offsets[1], object.value);
+  writer.writeLong(offsets[0], object.assetCount);
+  writer.writeString(offsets[1], object.id);
+  writer.writeDateTime(offsets[2], object.time);
 }
 
 ETag _eTagDeserialize(
@@ -89,8 +89,9 @@ ETag _eTagDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = ETag(
-    id: reader.readString(offsets[0]),
-    value: reader.readStringOrNull(offsets[1]),
+    assetCount: reader.readLongOrNull(offsets[0]),
+    id: reader.readString(offsets[1]),
+    time: reader.readDateTimeOrNull(offsets[2]),
   );
   return object;
 }
@@ -103,9 +104,11 @@ P _eTagDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -294,6 +297,75 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
 }
 
 extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'assetCount',
+      ));
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'assetCount',
+      ));
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'assetCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'assetCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'assetCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'assetCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<ETag, ETag, QAfterFilterCondition> idEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -474,146 +546,70 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueIsNull() {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'value',
+        property: r'time',
       ));
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueIsNotNull() {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'value',
+        property: r'time',
       ));
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'value',
+        property: r'time',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueGreaterThan(
-    String? value, {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeGreaterThan(
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'value',
+        property: r'time',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueLessThan(
-    String? value, {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeLessThan(
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'value',
+        property: r'time',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeBetween(
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'value',
+        property: r'time',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'value',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'value',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueContains(String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'value',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueMatches(String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'value',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'value',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> valueIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'value',
-        value: '',
       ));
     });
   }
@@ -624,6 +620,18 @@ extension ETagQueryObject on QueryBuilder<ETag, ETag, QFilterCondition> {}
 extension ETagQueryLinks on QueryBuilder<ETag, ETag, QFilterCondition> {}
 
 extension ETagQuerySortBy on QueryBuilder<ETag, ETag, QSortBy> {
+  QueryBuilder<ETag, ETag, QAfterSortBy> sortByAssetCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assetCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterSortBy> sortByAssetCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assetCount', Sort.desc);
+    });
+  }
+
   QueryBuilder<ETag, ETag, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -636,20 +644,32 @@ extension ETagQuerySortBy on QueryBuilder<ETag, ETag, QSortBy> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterSortBy> sortByValue() {
+  QueryBuilder<ETag, ETag, QAfterSortBy> sortByTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'value', Sort.asc);
+      return query.addSortBy(r'time', Sort.asc);
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterSortBy> sortByValueDesc() {
+  QueryBuilder<ETag, ETag, QAfterSortBy> sortByTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'value', Sort.desc);
+      return query.addSortBy(r'time', Sort.desc);
     });
   }
 }
 
 extension ETagQuerySortThenBy on QueryBuilder<ETag, ETag, QSortThenBy> {
+  QueryBuilder<ETag, ETag, QAfterSortBy> thenByAssetCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assetCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterSortBy> thenByAssetCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'assetCount', Sort.desc);
+    });
+  }
+
   QueryBuilder<ETag, ETag, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -674,20 +694,26 @@ extension ETagQuerySortThenBy on QueryBuilder<ETag, ETag, QSortThenBy> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterSortBy> thenByValue() {
+  QueryBuilder<ETag, ETag, QAfterSortBy> thenByTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'value', Sort.asc);
+      return query.addSortBy(r'time', Sort.asc);
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterSortBy> thenByValueDesc() {
+  QueryBuilder<ETag, ETag, QAfterSortBy> thenByTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'value', Sort.desc);
+      return query.addSortBy(r'time', Sort.desc);
     });
   }
 }
 
 extension ETagQueryWhereDistinct on QueryBuilder<ETag, ETag, QDistinct> {
+  QueryBuilder<ETag, ETag, QDistinct> distinctByAssetCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'assetCount');
+    });
+  }
+
   QueryBuilder<ETag, ETag, QDistinct> distinctById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -695,10 +721,9 @@ extension ETagQueryWhereDistinct on QueryBuilder<ETag, ETag, QDistinct> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QDistinct> distinctByValue(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QDistinct> distinctByTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'value', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'time');
     });
   }
 }
@@ -710,15 +735,21 @@ extension ETagQueryProperty on QueryBuilder<ETag, ETag, QQueryProperty> {
     });
   }
 
+  QueryBuilder<ETag, int?, QQueryOperations> assetCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'assetCount');
+    });
+  }
+
   QueryBuilder<ETag, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<ETag, String?, QQueryOperations> valueProperty() {
+  QueryBuilder<ETag, DateTime?, QQueryOperations> timeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'value');
+      return query.addPropertyName(r'time');
     });
   }
 }

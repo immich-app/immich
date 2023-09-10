@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -13,6 +14,14 @@ class PartnerDetailPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assets = ref.watch(assetsProvider(partner.isarId));
+
+    useEffect(
+      () {
+        ref.read(assetProvider.notifier).getPartnerAssets(partner);
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -30,7 +39,8 @@ class PartnerDetailPage extends HookConsumerWidget {
               )
             : ImmichAssetGrid(
                 renderList: renderList,
-                onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
+                onRefresh: () =>
+                    ref.read(assetProvider.notifier).getPartnerAssets(partner),
               ),
         error: (e, _) => Text("Error loading partners:\n$e"),
         loading: () => const Center(child: ImmichLoadingIndicator()),
