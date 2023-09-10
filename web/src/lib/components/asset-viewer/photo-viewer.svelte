@@ -91,6 +91,7 @@
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
+      maxZoom: 10,
       wheelZoomRatio: 0.2,
     });
   }
