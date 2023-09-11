@@ -77,16 +77,13 @@ describe(SmartInfoService.name, () => {
     });
   });
 
-  describe('handleTagImage', () => {
+  describe('handleClassifyImage', () => {
     it('should do nothing if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
       await sut.handleClassifyImage({ id: '123' });
-      await sut.handleQueueEncodeClip({});
-      await sut.handleEncodeClip({ id: '123' });
 
-      expect(assetMock.getAll).not.toHaveBeenCalled();
-      expect(assetMock.getWithout).not.toHaveBeenCalled();
+      expect(machineMock.classifyImage).not.toHaveBeenCalled();
       expect(assetMock.getByIds).not.toHaveBeenCalled();
     });
 
@@ -129,6 +126,15 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleQueueEncodeClip', () => {
+    it('should do nothing if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await sut.handleQueueEncodeClip({});
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+    });
+
     it('should queue the assets without clip embeddings', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
@@ -155,6 +161,15 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleEncodeClip', () => {
+    it('should do nothing if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await sut.handleEncodeClip({ id: '123' });
+
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(machineMock.encodeImage).not.toHaveBeenCalled();
+    });
+
     it('should skip assets without a resize path', async () => {
       const asset = { resizePath: '' } as AssetEntity;
       assetMock.getByIds.mockResolvedValue([asset]);
