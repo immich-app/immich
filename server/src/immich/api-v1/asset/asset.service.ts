@@ -207,7 +207,6 @@ export class AssetService {
   async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
     await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
-    // TODO: Replace it with domain::assetrepo::getById after refactor
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
