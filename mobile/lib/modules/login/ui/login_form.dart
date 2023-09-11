@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,16 @@ class LoginForm extends HookConsumerWidget {
         ImmichToast.show(
           context: context,
           msg: e.message ?? 'login_form_api_exception'.tr(),
+          toastType: ToastType.error,
+        );
+        isOauthEnable.value = false;
+        isPasswordLoginEnable.value = true;
+        isLoadingServer.value = false;
+        return false;
+      } on HandshakeException catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: 'login_form_handshake_exception'.tr(),
           toastType: ToastType.error,
         );
         isOauthEnable.value = false;

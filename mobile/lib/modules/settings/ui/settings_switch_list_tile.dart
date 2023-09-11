@@ -30,7 +30,9 @@ class SettingsSwitchListTile extends StatelessWidget {
           valueNotifier.value = value;
           appSettingService.setSetting(settingsEnum, value);
         }
-        onChanged!(value);
+        if (onChanged != null) {
+          onChanged!(value);
+        }
       },
       activeColor: enabled
           ? Theme.of(context).primaryColor
