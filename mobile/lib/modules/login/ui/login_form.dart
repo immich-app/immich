@@ -89,7 +89,7 @@ class LoginForm extends HookConsumerWidget {
         isPasswordLoginEnable.value = true;
         isLoadingServer.value = false;
         return false;
-      } on HandshakeException catch (e) {
+      } on HandshakeException {
         ImmichToast.show(
           context: context,
           msg: 'login_form_handshake_exception'.tr(),
