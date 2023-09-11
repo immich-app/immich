@@ -4,9 +4,10 @@ import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dt
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils/test-utils';
 
 const user1SharedUser = 'user1SharedUser';
 const user1SharedLink = 'user1SharedLink';

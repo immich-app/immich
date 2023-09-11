@@ -3,8 +3,9 @@ import { AppModule, PartnerController } from '@app/immich';
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { errorStub, uuidStub } from '@test';
-import { api, db } from '@test/test-utils/test-utils';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub, uuidStub } from '@test/fixtures';
 import request from 'supertest';
 
 const user1Dto = {

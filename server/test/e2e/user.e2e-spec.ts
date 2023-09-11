@@ -2,9 +2,10 @@ import { LoginResponseDto } from '@app/domain';
 import { AppModule, UserController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub, userSignupStub, userStub } from '@test/fixtures';
 import request from 'supertest';
-import { errorStub, userSignupStub, userStub } from '../fixtures';
-import { api, db } from '../test-utils/test-utils';
 
 describe(`${UserController.name}`, () => {
   let app: INestApplication;

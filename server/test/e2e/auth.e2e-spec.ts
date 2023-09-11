@@ -1,7 +1,8 @@
 import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import { api } from '@test/api';
+import { db } from '@test/db';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -11,8 +12,8 @@ import {
   loginStub,
   signupResponseStub,
   uuidStub,
-} from '../fixtures';
-import { api, db } from '../test-utils/test-utils';
+} from '@test/fixtures';
+import request from 'supertest';
 
 const firstName = 'Immich';
 const lastName = 'Admin';

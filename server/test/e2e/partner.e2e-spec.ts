@@ -2,8 +2,9 @@ import { IPartnerRepository, LoginResponseDto, PartnerDirection } from '@app/dom
 import { AppModule, PartnerController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { errorStub } from '@test';
-import { api, db } from '@test/test-utils/test-utils';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub } from '@test/fixtures';
 import request from 'supertest';
 
 const user1Dto = {

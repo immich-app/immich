@@ -3,10 +3,11 @@ import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub, uuidStub } from '@test/fixtures';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
-import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils/test-utils';
 
 const user1Dto = {
   email: 'user1@immich.app',

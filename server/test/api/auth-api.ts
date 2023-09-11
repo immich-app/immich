@@ -37,8 +37,10 @@ export const authApi = {
     return body as AuthDeviceResponseDto[];
   },
   validateToken: async (server: any, accessToken: string) => {
-    const response = await request(server).post('/auth/validateToken').set('Authorization', `Bearer ${accessToken}`);
-    expect(response.body).toEqual({ authStatus: true });
-    expect(response.status).toBe(200);
+    const { status, body } = await request(server)
+      .post('/auth/validateToken')
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(body).toEqual({ authStatus: true });
+    expect(status).toBe(200);
   },
 };

@@ -2,9 +2,10 @@ import { LoginResponseDto } from '@app/domain';
 import { AppModule, ServerInfoController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub } from '@test/fixtures';
 import request from 'supertest';
-import { errorStub } from '../fixtures';
-import { api, db } from '../test-utils/test-utils';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
   let app: INestApplication;
