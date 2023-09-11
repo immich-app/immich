@@ -159,6 +159,8 @@ class AssetNotifier extends StateNotifier<bool> {
       }
     }
   }
+
+  Future<Asset> loadExif(Asset a) => _assetService.loadExif(a);
 }
 
 final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
@@ -169,15 +171,6 @@ final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
   );
-});
-
-final assetDetailProvider =
-    StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
-  yield await ref.watch(assetServiceProvider).loadExif(asset);
-  final db = ref.watch(dbProvider);
-  await for (final a in db.assets.watchObject(asset.id)) {
-    if (a != null) yield await ref.watch(assetServiceProvider).loadExif(a);
-  }
 });
 
 final assetsProvider =

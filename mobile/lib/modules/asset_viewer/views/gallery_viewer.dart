@@ -64,9 +64,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-    final watchedAsset = ref.watch(assetDetailProvider(currentAsset));
 
-    Asset asset() => watchedAsset.value ?? currentAsset;
+    Asset asset() => currentAsset;
 
     useEffect(
       () {
@@ -175,7 +174,9 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
-    void showInfo() {
+    void showInfo() async {
+      final assetWithExif =
+          await ref.read(assetProvider.notifier).loadExif(currentAsset);
       showModalBottomSheet(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
@@ -194,7 +195,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: asset()),
+            child: ExifBottomSheet(asset: assetWithExif),
           );
         },
       );
