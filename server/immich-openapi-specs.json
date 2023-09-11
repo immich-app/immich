@@ -743,14 +743,6 @@
             }
           },
           {
-            "name": "withDeleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "skip",
             "required": false,
             "in": "query",

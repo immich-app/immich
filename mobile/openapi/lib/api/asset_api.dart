@@ -342,15 +342,13 @@ class AssetApi {
   ///
   /// * [bool] isArchived:
   ///
-  /// * [bool] withDeleted:
-  ///
   /// * [num] skip:
   ///
   /// * [DateTime] updatedAfter:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, bool? withDeleted, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -369,9 +367,6 @@ class AssetApi {
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (withDeleted != null) {
-      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
     }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
@@ -408,16 +403,14 @@ class AssetApi {
   ///
   /// * [bool] isArchived:
   ///
-  /// * [bool] withDeleted:
-  ///
   /// * [num] skip:
   ///
   /// * [DateTime] updatedAfter:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, bool? withDeleted, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, withDeleted: withDeleted, skip: skip, updatedAfter: updatedAfter, ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, skip: skip, updatedAfter: updatedAfter, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

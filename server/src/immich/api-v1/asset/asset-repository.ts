@@ -137,7 +137,7 @@ export class AssetRepository implements IAssetRepository {
       order: {
         fileCreatedAt: 'DESC',
       },
-      withDeleted: dto.withDeleted,
+      withDeleted: true,
     });
   }
 
