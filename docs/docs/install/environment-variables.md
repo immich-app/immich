@@ -4,6 +4,17 @@ sidebar_position: 90
 
 # Environment Variables
 
+:::caution
+
+To change environment variables, you must recreate the Immich containers.
+Just restarting the containers does not replace the environment within the container!
+
+In order to recreate the container using docker compose, run `docker compose up -d`.
+In most cases docker will recognize that the `.env` file has changed and recreate the affected containers.
+If this should not work, try running `docker compose up -d --force-recreate`.
+
+:::
+
 ## Docker Compose
 
 | Variable          | Description           |  Default  | Services                                                       |
