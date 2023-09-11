@@ -246,38 +246,58 @@ class LoginForm extends HookConsumerWidget {
             onSubmit: getServerLoginCredential,
           ),
           const SizedBox(height: 18),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed: isLoadingServer.value ? null : getServerLoginCredential,
-            icon: const Icon(Icons.arrow_forward_rounded),
-            label: const Text(
-              'login_form_next_button',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
+          Row(
+            children: [
+              Expanded(
+                child: IconButton.filled(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: () =>
+                      AutoRouter.of(context).push(const SettingsRoute()),
+                  icon: const Icon(Icons.settings_rounded),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed:
+                      isLoadingServer.value ? null : getServerLoginCredential,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text(
+                    'login_form_next_button',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ).tr(),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
-          ListTile(
-            leading: SizedBox(
-              height: double.infinity,
-              child: Icon(
-                Icons.settings_rounded,
-                color: Theme.of(context).textTheme.labelMedium?.color,
-                size: 20,
-              ),
-            ),
-            title: Text(
-              "profile_drawer_settings",
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ).tr(),
-            onTap: () {
-              AutoRouter.of(context).push(const SettingsRoute());
-            },
-          ),
+          // ListTile(
+          //   leading: SizedBox(
+          //     height: double.infinity,
+          //     child: Icon(
+          //       Icons.settings_rounded,
+          //       color: Theme.of(context).textTheme.labelMedium?.color,
+          //       size: 20,
+          //     ),
+          //   ),
+          //   title: Text(
+          //     "profile_drawer_settings",
+          //     style: Theme.of(context)
+          //         .textTheme
+          //         .labelLarge
+          //         ?.copyWith(fontWeight: FontWeight.bold),
+          //   ).tr(),
+          //   onTap: () {
+          //     AutoRouter.of(context).push(const SettingsRoute());
+          //   },
+          // ),
           if (isLoadingServer.value) const LoadingIcon(),
         ],
       );
