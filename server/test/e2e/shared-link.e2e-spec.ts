@@ -130,7 +130,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
     });
   });
 
-  describe('POST /shared-link/:id', () => {
+  describe('POST /shared-link', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server)
         .post('/shared-link')
