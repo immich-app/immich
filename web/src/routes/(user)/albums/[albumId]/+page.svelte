@@ -45,6 +45,7 @@
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { disableShortcut } from '$lib/stores/shortcut.store';
 
   export let data: PageData;
 
@@ -276,6 +277,7 @@
 
       album.description = description;
       isEditingDescription = false;
+      $disableShortcut = false;
     } catch (error) {
       handleError(error, 'Error updating album description');
     }
@@ -472,7 +474,10 @@
           {#if isOwned || album.description}
             <button
               class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-              on:click={() => (isEditingDescription = true)}
+              on:click={() => {
+                isEditingDescription = true;
+                $disableShortcut = true;
+              }}
               class:hover:border-gray-400={isOwned}
               disabled={!isOwned}
               title="Edit description"
@@ -539,7 +544,10 @@
 {#if isEditingDescription}
   <EditDescriptionModal
     {album}
-    on:close={() => (isEditingDescription = false)}
+    on:close={() => {
+      isEditingDescription = false;
+      $disableShortcut = false;
+    }}
     on:updated={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
