@@ -278,26 +278,6 @@ class LoginForm extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: 18),
-          // ListTile(
-          //   leading: SizedBox(
-          //     height: double.infinity,
-          //     child: Icon(
-          //       Icons.settings_rounded,
-          //       color: Theme.of(context).textTheme.labelMedium?.color,
-          //       size: 20,
-          //     ),
-          //   ),
-          //   title: Text(
-          //     "profile_drawer_settings",
-          //     style: Theme.of(context)
-          //         .textTheme
-          //         .labelLarge
-          //         ?.copyWith(fontWeight: FontWeight.bold),
-          //   ).tr(),
-          //   onTap: () {
-          //     AutoRouter.of(context).push(const SettingsRoute());
-          //   },
-          // ),
           if (isLoadingServer.value) const LoadingIcon(),
         ],
       );
