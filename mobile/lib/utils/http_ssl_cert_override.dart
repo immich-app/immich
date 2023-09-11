@@ -19,7 +19,7 @@ class HttpSSLCertOverride extends HttpOverrides {
         bool isLoggedIn = Store.tryGet(StoreKey.currentUser) != null;
 
         // Conduct server host checks if user is logged in to avoid making
-        // increase SSL connections to services that are not the immich server.
+        // insecure SSL connections to services that are not the immich server.
         if (isLoggedIn && selfSignedCertsAllowed) {
           String serverHost =
               Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
