@@ -102,7 +102,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
-  recycleBin: {
+  trash: {
     enabled: false,
     days: 10,
   },

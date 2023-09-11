@@ -103,7 +103,7 @@ export const defaults = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
-  recycleBin: {
+  trash: {
     enabled: true,
     days: 30,
   },
@@ -120,7 +120,7 @@ export enum FeatureFlag {
   OAUTH_AUTO_LAUNCH = 'oauthAutoLaunch',
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
-  RECYCLE_BIN = 'recycleBin',
+  TRASH = 'trash',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -179,7 +179,7 @@ export class SystemConfigCore {
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
-      [FeatureFlag.RECYCLE_BIN]: config.recycleBin.enabled,
+      [FeatureFlag.TRASH]: config.trash.enabled,
 
       // TODO: use these instead of `POST oauth/config`
       [FeatureFlag.OAUTH]: config.oauth.enabled,

@@ -14,9 +14,9 @@ Name | Type | Description | Notes
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
-**recycleBin** | [**SystemConfigRecycleBinDto**](SystemConfigRecycleBinDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 
 **thumbnail** | [**SystemConfigThumbnailDto**](SystemConfigThumbnailDto.md) |  | 
+**trash** | [**SystemConfigTrashDto**](SystemConfigTrashDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

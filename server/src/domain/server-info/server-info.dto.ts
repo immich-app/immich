@@ -83,7 +83,7 @@ export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
   mapTileUrl!: string;
-  recycleBinDays!: number;
+  trashDays!: number;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
@@ -91,7 +91,7 @@ export class ServerFeaturesDto implements FeatureFlags {
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
-  recycleBin!: boolean;
+  trash!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;

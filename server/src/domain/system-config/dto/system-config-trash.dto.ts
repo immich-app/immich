@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsBoolean, IsNumber, Min } from 'class-validator';
 
-export class SystemConfigRecycleBinDto {
+export class SystemConfigTrashDto {
   @IsBoolean()
   enabled!: boolean;
 

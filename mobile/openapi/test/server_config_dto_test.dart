@@ -31,8 +31,8 @@ void main() {
       // TODO
     });
 
-    // num recycleBinDays
-    test('to test the property `recycleBinDays`', () async {
+    // num trashDays
+    test('to test the property `trashDays`', () async {
       // TODO
     });
 

@@ -20,10 +20,10 @@ class ServerFeaturesDto {
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
-    required this.recycleBin,
     required this.search,
     required this.sidecar,
     required this.tagImage,
+    required this.trash,
   });
 
   bool clipEncode;
@@ -40,13 +40,13 @@ class ServerFeaturesDto {
 
   bool passwordLogin;
 
-  bool recycleBin;
-
   bool search;
 
   bool sidecar;
 
   bool tagImage;
+
+  bool trash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
@@ -57,10 +57,10 @@ class ServerFeaturesDto {
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
-     other.recycleBin == recycleBin &&
      other.search == search &&
      other.sidecar == sidecar &&
-     other.tagImage == tagImage;
+     other.tagImage == tagImage &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -72,13 +72,13 @@ class ServerFeaturesDto {
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
-    (recycleBin.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
-    (tagImage.hashCode);
+    (tagImage.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, recycleBin=$recycleBin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -89,10 +89,10 @@ class ServerFeaturesDto {
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
-      json[r'recycleBin'] = this.recycleBin;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'tagImage'] = this.tagImage;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -111,10 +111,10 @@ class ServerFeaturesDto {
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
-        recycleBin: mapValueOfType<bool>(json, r'recycleBin')!,
         search: mapValueOfType<bool>(json, r'search')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
         tagImage: mapValueOfType<bool>(json, r'tagImage')!,
+        trash: mapValueOfType<bool>(json, r'trash')!,
       );
     }
     return null;
@@ -169,10 +169,10 @@ class ServerFeaturesDto {
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',
-    'recycleBin',
     'search',
     'sidecar',
     'tagImage',
+    'trash',
   };
 }
 

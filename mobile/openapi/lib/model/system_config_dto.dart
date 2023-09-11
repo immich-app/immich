@@ -19,9 +19,9 @@ class SystemConfigDto {
     required this.map,
     required this.oauth,
     required this.passwordLogin,
-    required this.recycleBin,
     required this.storageTemplate,
     required this.thumbnail,
+    required this.trash,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -36,11 +36,11 @@ class SystemConfigDto {
 
   SystemConfigPasswordLoginDto passwordLogin;
 
-  SystemConfigRecycleBinDto recycleBin;
-
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThumbnailDto thumbnail;
+
+  SystemConfigTrashDto trash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
@@ -50,9 +50,9 @@ class SystemConfigDto {
      other.map == map &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
-     other.recycleBin == recycleBin &&
      other.storageTemplate == storageTemplate &&
-     other.thumbnail == thumbnail;
+     other.thumbnail == thumbnail &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -63,12 +63,12 @@ class SystemConfigDto {
     (map.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
-    (recycleBin.hashCode) +
     (storageTemplate.hashCode) +
-    (thumbnail.hashCode);
+    (thumbnail.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, recycleBin=$recycleBin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,9 +78,9 @@ class SystemConfigDto {
       json[r'map'] = this.map;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
-      json[r'recycleBin'] = this.recycleBin;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -98,9 +98,9 @@ class SystemConfigDto {
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
-        recycleBin: SystemConfigRecycleBinDto.fromJson(json[r'recycleBin'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
+        trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
       );
     }
     return null;
@@ -154,9 +154,9 @@ class SystemConfigDto {
     'map',
     'oauth',
     'passwordLogin',
-    'recycleBin',
     'storageTemplate',
     'thumbnail',
+    'trash',
   };
 }
 

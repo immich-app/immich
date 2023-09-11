@@ -82,8 +82,8 @@ export enum SystemConfigKey {
   THUMBNAIL_QUALITY = 'thumbnail.quality',
   THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
 
-  RECYCLE_BIN_ENABLED = 'recycleBin.enabled',
-  RECYCLE_BIN_DAYS = 'recycleBin.days',
+  TRASH_ENABLED = 'trash.enabled',
+  TRASH_DAYS = 'trash.days',
 }
 
 export enum TranscodePolicy {
@@ -199,7 +199,7 @@ export interface SystemConfig {
     quality: number;
     colorspace: Colorspace;
   };
-  recycleBin: {
+  trash: {
     enabled: boolean;
     days: number;
   };

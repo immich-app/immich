@@ -65,7 +65,7 @@ export class ServerInfoService {
     return {
       loginPageMessage,
       mapTileUrl: config.map.tileUrl,
-      recycleBinDays: config.recycleBin.days,
+      trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
     };
   }

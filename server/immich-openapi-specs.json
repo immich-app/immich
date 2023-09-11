@@ -6679,7 +6679,7 @@
           "oauthButtonText": {
             "type": "string"
           },
-          "recycleBinDays": {
+          "trashDays": {
             "type": "number"
           }
         },
@@ -6687,7 +6687,7 @@
           "oauthButtonText",
           "loginPageMessage",
           "mapTileUrl",
-          "recycleBinDays"
+          "trashDays"
         ],
         "type": "object"
       },
@@ -6714,9 +6714,6 @@
           "passwordLogin": {
             "type": "boolean"
           },
-          "recycleBin": {
-            "type": "boolean"
-          },
           "search": {
             "type": "boolean"
           },
@@ -6725,6 +6722,9 @@
           },
           "tagImage": {
             "type": "boolean"
+          },
+          "trash": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -6732,7 +6732,7 @@
           "configFile",
           "facialRecognition",
           "map",
-          "recycleBin",
+          "trash",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin",
@@ -7079,14 +7079,14 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
-          "recycleBin": {
-            "$ref": "#/components/schemas/SystemConfigRecycleBinDto"
-          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
+          },
+          "trash": {
+            "$ref": "#/components/schemas/SystemConfigTrashDto"
           }
         },
         "required": [
@@ -7098,7 +7098,7 @@
           "storageTemplate",
           "job",
           "thumbnail",
-          "recycleBin"
+          "trash"
         ],
         "type": "object"
       },
@@ -7328,21 +7328,6 @@
         ],
         "type": "object"
       },
-      "SystemConfigRecycleBinDto": {
-        "properties": {
-          "days": {
-            "type": "number"
-          },
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled",
-          "days"
-        ],
-        "type": "object"
-      },
       "SystemConfigStorageTemplateDto": {
         "properties": {
           "template": {
@@ -7430,6 +7415,21 @@
           "jpegSize",
           "quality",
           "colorspace"
+        ],
+        "type": "object"
+      },
+      "SystemConfigTrashDto": {
+        "properties": {
+          "days": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "days"
         ],
         "type": "object"
       },

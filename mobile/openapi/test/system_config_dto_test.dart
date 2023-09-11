@@ -46,11 +46,6 @@ void main() {
       // TODO
     });
 
-    // SystemConfigRecycleBinDto recycleBin
-    test('to test the property `recycleBin`', () async {
-      // TODO
-    });
-
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO
@@ -58,6 +53,11 @@ void main() {
 
     // SystemConfigThumbnailDto thumbnail
     test('to test the property `thumbnail`', () async {
+      // TODO
+    });
+
+    // SystemConfigTrashDto trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 

@@ -15,10 +15,10 @@ Name | Type | Description | Notes
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 
-**recycleBin** | **bool** |  | 
 **search** | **bool** |  | 
 **sidecar** | **bool** |  | 
 **tagImage** | **bool** |  | 
+**trash** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

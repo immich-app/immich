@@ -2349,7 +2349,7 @@ export interface ServerConfigDto {
      * @type {number}
      * @memberof ServerConfigDto
      */
-    'recycleBinDays': number;
+    'trashDays': number;
 }
 /**
  * 
@@ -2404,12 +2404,6 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
-    'recycleBin': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ServerFeaturesDto
-     */
     'search': boolean;
     /**
      * 
@@ -2423,6 +2417,12 @@ export interface ServerFeaturesDto {
      * @memberof ServerFeaturesDto
      */
     'tagImage': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
+    'trash': boolean;
 }
 /**
  * 
@@ -2850,12 +2850,6 @@ export interface SystemConfigDto {
     'passwordLogin': SystemConfigPasswordLoginDto;
     /**
      * 
-     * @type {SystemConfigRecycleBinDto}
-     * @memberof SystemConfigDto
-     */
-    'recycleBin': SystemConfigRecycleBinDto;
-    /**
-     * 
      * @type {SystemConfigStorageTemplateDto}
      * @memberof SystemConfigDto
      */
@@ -2866,6 +2860,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'thumbnail': SystemConfigThumbnailDto;
+    /**
+     * 
+     * @type {SystemConfigTrashDto}
+     * @memberof SystemConfigDto
+     */
+    'trash': SystemConfigTrashDto;
 }
 /**
  * 
@@ -3190,25 +3190,6 @@ export interface SystemConfigPasswordLoginDto {
 /**
  * 
  * @export
- * @interface SystemConfigRecycleBinDto
- */
-export interface SystemConfigRecycleBinDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigRecycleBinDto
-     */
-    'days': number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigRecycleBinDto
-     */
-    'enabled': boolean;
-}
-/**
- * 
- * @export
  * @interface SystemConfigStorageTemplateDto
  */
 export interface SystemConfigStorageTemplateDto {
@@ -3301,6 +3282,25 @@ export interface SystemConfigThumbnailDto {
 }
 
 
+/**
+ * 
+ * @export
+ * @interface SystemConfigTrashDto
+ */
+export interface SystemConfigTrashDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigTrashDto
+     */
+    'days': number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigTrashDto
+     */
+    'enabled': boolean;
+}
 /**
  * 
  * @export

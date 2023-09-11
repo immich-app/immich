@@ -51,11 +51,6 @@ void main() {
       // TODO
     });
 
-    // bool recycleBin
-    test('to test the property `recycleBin`', () async {
-      // TODO
-    });
-
     // bool search
     test('to test the property `search`', () async {
       // TODO
@@ -68,6 +63,11 @@ void main() {
 
     // bool tagImage
     test('to test the property `tagImage`', () async {
+      // TODO
+    });
+
+    // bool trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 
