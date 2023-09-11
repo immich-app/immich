@@ -118,6 +118,7 @@ doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
+doc/SystemConfigRecycleBinDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThumbnailDto.md
@@ -267,6 +268,7 @@ lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
+lib/model/system_config_recycle_bin_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_thumbnail_dto.dart
@@ -403,6 +405,7 @@ test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart
+test/system_config_recycle_bin_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
 test/system_config_thumbnail_dto_test.dart

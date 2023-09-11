@@ -102,6 +102,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  recycleBin: {
+    enabled: false,
+    days: 10,
+  },
 });
 
 describe(SystemConfigService.name, () => {

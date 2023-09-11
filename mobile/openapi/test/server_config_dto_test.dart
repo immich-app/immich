@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // num recycleBinDays
+    test('to test the property `recycleBinDays`', () async {
+      // TODO
+    });
+
 
   });
 

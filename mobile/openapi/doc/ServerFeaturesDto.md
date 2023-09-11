@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 
+**recycleBin** | **bool** |  | 
 **search** | **bool** |  | 
 **sidecar** | **bool** |  | 
 **tagImage** | **bool** |  | 

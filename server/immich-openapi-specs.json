@@ -6678,12 +6678,16 @@
           },
           "oauthButtonText": {
             "type": "string"
+          },
+          "recycleBinDays": {
+            "type": "number"
           }
         },
         "required": [
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl"
+          "mapTileUrl",
+          "recycleBinDays"
         ],
         "type": "object"
       },
@@ -6710,6 +6714,9 @@
           "passwordLogin": {
             "type": "boolean"
           },
+          "recycleBin": {
+            "type": "boolean"
+          },
           "search": {
             "type": "boolean"
           },
@@ -6725,6 +6732,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "recycleBin",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin",
@@ -7071,6 +7079,9 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
+          "recycleBin": {
+            "$ref": "#/components/schemas/SystemConfigRecycleBinDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -7086,7 +7097,8 @@
           "passwordLogin",
           "storageTemplate",
           "job",
-          "thumbnail"
+          "thumbnail",
+          "recycleBin"
         ],
         "type": "object"
       },
@@ -7313,6 +7325,21 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigRecycleBinDto": {
+        "properties": {
+          "days": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "days"
         ],
         "type": "object"
       },

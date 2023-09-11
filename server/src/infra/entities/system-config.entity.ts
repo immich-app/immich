@@ -81,6 +81,9 @@ export enum SystemConfigKey {
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
   THUMBNAIL_QUALITY = 'thumbnail.quality',
   THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
+
+  RECYCLE_BIN_ENABLED = 'recycleBin.enabled',
+  RECYCLE_BIN_DAYS = 'recycleBin.days',
 }
 
 export enum TranscodePolicy {
@@ -195,5 +198,9 @@ export interface SystemConfig {
     jpegSize: number;
     quality: number;
     colorspace: Colorspace;
+  };
+  recycleBin: {
+    enabled: boolean;
+    days: number;
   };
 }

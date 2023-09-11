@@ -94,16 +94,18 @@ export const defaults = Object.freeze<SystemConfig>({
   passwordLogin: {
     enabled: true,
   },
-
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+  },
+  recycleBin: {
+    enabled: true,
+    days: 30,
   },
 });
 
@@ -118,6 +120,7 @@ export enum FeatureFlag {
   OAUTH_AUTO_LAUNCH = 'oauthAutoLaunch',
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
+  RECYCLE_BIN = 'recycleBin',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -176,6 +179,7 @@ export class SystemConfigCore {
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
+      [FeatureFlag.RECYCLE_BIN]: config.recycleBin.enabled,
 
       // TODO: use these instead of `POST oauth/config`
       [FeatureFlag.OAUTH]: config.oauth.enabled,

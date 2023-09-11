@@ -16,6 +16,7 @@ class ServerConfigDto {
     required this.loginPageMessage,
     required this.mapTileUrl,
     required this.oauthButtonText,
+    required this.recycleBinDays,
   });
 
   String loginPageMessage;
@@ -24,27 +25,32 @@ class ServerConfigDto {
 
   String oauthButtonText;
 
+  num recycleBinDays;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
      other.loginPageMessage == loginPageMessage &&
      other.mapTileUrl == mapTileUrl &&
-     other.oauthButtonText == oauthButtonText;
+     other.oauthButtonText == oauthButtonText &&
+     other.recycleBinDays == recycleBinDays;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (loginPageMessage.hashCode) +
     (mapTileUrl.hashCode) +
-    (oauthButtonText.hashCode);
+    (oauthButtonText.hashCode) +
+    (recycleBinDays.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[loginPageMessage=$loginPageMessage, mapTileUrl=$mapTileUrl, oauthButtonText=$oauthButtonText]';
+  String toString() => 'ServerConfigDto[loginPageMessage=$loginPageMessage, mapTileUrl=$mapTileUrl, oauthButtonText=$oauthButtonText, recycleBinDays=$recycleBinDays]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'mapTileUrl'] = this.mapTileUrl;
       json[r'oauthButtonText'] = this.oauthButtonText;
+      json[r'recycleBinDays'] = this.recycleBinDays;
     return json;
   }
 
@@ -59,6 +65,9 @@ class ServerConfigDto {
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         mapTileUrl: mapValueOfType<String>(json, r'mapTileUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
+        recycleBinDays: json[r'recycleBinDays'] == null
+            ? null
+            : num.parse(json[r'recycleBinDays'].toString()),
       );
     }
     return null;
@@ -109,6 +118,7 @@ class ServerConfigDto {
     'loginPageMessage',
     'mapTileUrl',
     'oauthButtonText',
+    'recycleBinDays',
   };
 }
 

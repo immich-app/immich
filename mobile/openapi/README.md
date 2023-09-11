@@ -286,6 +286,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
+ - [SystemConfigRecycleBinDto](doc//SystemConfigRecycleBinDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)

@@ -2344,6 +2344,12 @@ export interface ServerConfigDto {
      * @memberof ServerConfigDto
      */
     'oauthButtonText': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServerConfigDto
+     */
+    'recycleBinDays': number;
 }
 /**
  * 
@@ -2393,6 +2399,12 @@ export interface ServerFeaturesDto {
      * @memberof ServerFeaturesDto
      */
     'passwordLogin': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
+    'recycleBin': boolean;
     /**
      * 
      * @type {boolean}
@@ -2838,6 +2850,12 @@ export interface SystemConfigDto {
     'passwordLogin': SystemConfigPasswordLoginDto;
     /**
      * 
+     * @type {SystemConfigRecycleBinDto}
+     * @memberof SystemConfigDto
+     */
+    'recycleBin': SystemConfigRecycleBinDto;
+    /**
+     * 
      * @type {SystemConfigStorageTemplateDto}
      * @memberof SystemConfigDto
      */
@@ -3166,6 +3184,25 @@ export interface SystemConfigPasswordLoginDto {
      * 
      * @type {boolean}
      * @memberof SystemConfigPasswordLoginDto
+     */
+    'enabled': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigRecycleBinDto
+ */
+export interface SystemConfigRecycleBinDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SystemConfigRecycleBinDto
+     */
+    'days': number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigRecycleBinDto
      */
     'enabled': boolean;
 }
