@@ -42,6 +42,7 @@ class LoginForm extends HookConsumerWidget {
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
     )..repeat();
+    final isDarkTheme = Brightness.dark == Theme.of(context).brightness;
 
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
@@ -237,6 +238,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     buildSelectServer() {
+      const buttonRadius = 25.0;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -252,19 +254,33 @@ class LoginForm extends HookConsumerWidget {
                 child: IconButton.filled(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor:
+                        Theme.of(context).primaryColor.withAlpha(240),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(buttonRadius),
+                        bottomLeft: Radius.circular(buttonRadius),
+                      ),
+                    ),
                   ),
+                  color: isDarkTheme ? Colors.black : Colors.white,
                   onPressed: () =>
                       AutoRouter.of(context).push(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 1),
               Expanded(
                 flex: 3,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(buttonRadius),
+                        bottomRight: Radius.circular(buttonRadius),
+                      ),
+                    ),
                   ),
                   onPressed:
                       isLoadingServer.value ? null : getServerLoginCredential,
