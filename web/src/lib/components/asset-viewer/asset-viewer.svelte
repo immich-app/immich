@@ -90,12 +90,12 @@
   };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-
     if (shouldDisableShortcut(event)) {
       return;
     }
+
+    const key = event.key;
+    const shiftKey = event.shiftKey;
 
     switch (key) {
       case 'a':
