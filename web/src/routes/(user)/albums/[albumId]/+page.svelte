@@ -303,10 +303,7 @@
           <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
         {/if}
         {#if isAllUserOwned}
-          <DeleteAssets
-            menuItem
-            onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-          />
+          <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
         {/if}
       </AssetSelectContextMenu>
     </AssetSelectControlBar>

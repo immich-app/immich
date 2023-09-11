@@ -22,7 +22,6 @@
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
 
-
   export let data: PageData;
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false });
