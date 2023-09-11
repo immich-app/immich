@@ -135,9 +135,11 @@
       </svelte:fragment>
     </SideBarButton>
 
-    <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
-      <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={$page.route.id === '/(user)/trash'} />
-    </a>
+    {#if $featureFlags.recycleBin}
+      <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
+        <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={$page.route.id === '/(user)/trash'} />
+      </a>
+    {/if}
   </a>
 
   <!-- Status Box -->

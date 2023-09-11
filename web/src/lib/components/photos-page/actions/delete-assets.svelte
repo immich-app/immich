@@ -9,7 +9,7 @@
   import { api } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import Button from '../../elements/buttons/button.svelte';
+
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
@@ -56,23 +56,12 @@
   };
 </script>
 
-{#if force}
-  <Button size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleTrash}>
-    <DeleteOutline size="24" />
-    <span class="ml-2">Permanently Delete</span>
-  </Button>
+{#if menuItem}
+  <MenuOption text={force ? 'Permanently Delete' : 'Delete'} on:click={handleTrash} />
+{:else if loading}
+  <CircleIconButton title="Loading" logo={TimerSand} />
 {:else}
-  {#if menuItem}
-    <MenuOption text="Delete" on:click={handleTrash} />
-  {/if}
-
-  {#if !menuItem}
-    {#if loading}
-      <CircleIconButton title="Loading" logo={TimerSand} />
-    {:else}
-      <CircleIconButton title="Delete" logo={DeleteOutline} on:click={handleTrash} />
-    {/if}
-  {/if}
+  <CircleIconButton title="Delete" logo={DeleteOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}

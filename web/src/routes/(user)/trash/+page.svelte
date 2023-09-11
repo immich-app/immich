@@ -6,13 +6,19 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AssetAction } from '$lib/constants';
+  import { AppRoute, AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { TimeBucketSize } from '@api';
   import type { PageData } from './$types';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { goto } from '$app/navigation';
 
   export let data: PageData;
+
+  $: if ($featureFlags.loaded && !$featureFlags.recycleBin) {
+    goto(AppRoute.PHOTOS);
+  }
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
@@ -27,8 +33,10 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
-  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
-    <EmptyPlaceholder text="Trashed photos and videos will show up here." alt="Empty trash can" slot="empty" />
-  </AssetGrid>
-</UserPageLayout>
+{#if $featureFlags.loaded && $featureFlags.recycleBin}
+  <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
+    <AssetGrid forceDelete {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+      <EmptyPlaceholder text="Trashed photos and videos will show up here." alt="Empty trash can" slot="empty" />
+    </AssetGrid>
+  </UserPageLayout>
+{/if}

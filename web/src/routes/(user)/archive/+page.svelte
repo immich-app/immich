@@ -12,6 +12,7 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { TimeBucketSize } from '@api';
@@ -37,7 +38,7 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+    <DeleteAssets force={!$featureFlags.recycleBin} onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={DotsVertical} title="Add">
       <DownloadAction menuItem />
       <FavoriteAction menuItem removeFavorite={isAllFavorite} />

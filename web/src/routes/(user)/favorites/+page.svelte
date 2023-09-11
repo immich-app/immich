@@ -18,6 +18,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let data: PageData;
 
@@ -38,7 +39,7 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+    <DeleteAssets force={!$featureFlags.recycleBin} onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={DotsVertical} title="Menu">
       <DownloadAction menuItem />
       <ArchiveAction menuItem unarchive={isAllArchive} />

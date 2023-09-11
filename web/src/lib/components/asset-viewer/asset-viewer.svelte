@@ -26,6 +26,7 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
+
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { disableShortcut } from '$lib/stores/shortcut.store';
 
@@ -33,6 +34,7 @@
   export let asset: AssetResponseDto;
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  export let force = false;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -114,7 +116,7 @@
         }
         return;
       case 'Delete':
-        trashAsset();
+        trashOrDelete();
         return;
       case 'Escape':
         closeViewer();
@@ -162,6 +164,12 @@
     $isShowDetail = !$isShowDetail;
   };
 
+  $: trashOrDelete = !force
+    ? trashAsset
+    : () => {
+        isShowDeleteConfirmation = true;
+      };
+
   const trashAsset = async () => {
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
@@ -186,6 +194,11 @@
       await navigateAssetForward();
 
       assetStore?.removeAsset(asset.id);
+
+      notificationController.show({
+        message: 'Permanently deleted asset',
+        type: NotificationType.Info,
+      });
     } catch (e) {
       handleError(e, 'Unable to delete asset');
     } finally {
@@ -365,9 +378,6 @@
           duration={5000}
         />
       </div>
-    {:else if asset.isTrashed}
-      <!-- TODO -->
-      <!-- <AppNavbar on:delete={isShowDeleteConfirmation = true}/> -->
     {:else}
       <AssetViewerNavBar
         {asset}
@@ -380,7 +390,7 @@
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={trashAsset}
+        on:delete={trashOrDelete}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}
