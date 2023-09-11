@@ -7,6 +7,8 @@
   "advanced_settings_tile_title": "Advanced",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_self_signed_ssl_title": "Allow self-signed SSL certificates",
+  "advanced_settings_self_signed_ssl_subtitle": "Skips SSL certificate verification for the server endpoint. Required for self-signed certificates.",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
   "album_thumbnail_card_item": "1 item",
