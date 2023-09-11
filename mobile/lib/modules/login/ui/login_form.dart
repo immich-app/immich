@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_logo.dart';
 import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -248,13 +246,28 @@ class LoginForm extends HookConsumerWidget {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ).tr(),
           ),
-          if (isLoadingServer.value)
-            const Padding(
-              padding: EdgeInsets.only(top: 18.0),
-              child: Center(
-                child: CircularProgressIndicator(),
+          const SizedBox(height: 18),
+          ListTile(
+            leading: SizedBox(
+              height: double.infinity,
+              child: Icon(
+                Icons.settings_rounded,
+                color: Theme.of(context).textTheme.labelMedium?.color,
+                size: 20,
               ),
             ),
+            title: Text(
+              "profile_drawer_settings",
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ).tr(),
+            onTap: () {
+              AutoRouter.of(context).push(const SettingsRoute());
+            },
+          ),
+          if (isLoadingServer.value) const LoadingIcon(),
         ],
       );
     }
@@ -287,18 +300,7 @@ class LoginForm extends HookConsumerWidget {
             // Note: This used to have an AnimatedSwitcher, but was removed
             // because of https://github.com/flutter/flutter/issues/120874
             isLoading.value
-                ? const Padding(
-                    padding: EdgeInsets.only(top: 18.0),
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: FittedBox(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  )
+                ? const LoadingIcon()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -390,7 +392,7 @@ class LoginForm extends HookConsumerWidget {
   }
 }
 
-class ServerEndpointInput extends StatefulWidget {
+class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final Function()? onSubmit;
@@ -401,13 +403,6 @@ class ServerEndpointInput extends StatefulWidget {
     required this.focusNode,
     this.onSubmit,
   }) : super(key: key);
-
-  @override
-  ServerEndpointInputState createState() => ServerEndpointInputState();
-}
-
-class ServerEndpointInputState extends State<ServerEndpointInput> {
-  bool _acceptSelfSignedCerts = Store.tryGet(StoreKey.selfSignedCert) ?? false;
 
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;
@@ -425,44 +420,22 @@ class ServerEndpointInputState extends State<ServerEndpointInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: widget.controller,
-          decoration: InputDecoration(
-            labelText: 'login_form_endpoint_url'.tr(),
-            border: const OutlineInputBorder(),
-            hintText: 'login_form_endpoint_hint'.tr(),
-            errorMaxLines: 4,
-          ),
-          validator: _validateInput,
-          autovalidateMode: AutovalidateMode.always,
-          focusNode: widget.focusNode,
-          autofillHints: const [AutofillHints.url],
-          keyboardType: TextInputType.url,
-          autocorrect: false,
-          onFieldSubmitted: (_) => widget.onSubmit?.call(),
-          textInputAction: TextInputAction.go,
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Checkbox(
-              value: _acceptSelfSignedCerts,
-              onChanged: (value) {
-                setState(() {
-                  bool certAccetVal = value ?? false;
-                  _acceptSelfSignedCerts = certAccetVal;
-                  Store.put(StoreKey.selfSignedCert, certAccetVal);
-                  HttpOverrides.global = HttpSSLCertOverride();
-                });
-              },
-            ),
-            const Text('Accept self-signed certificates'),
-          ],
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: 'login_form_endpoint_url'.tr(),
+        border: const OutlineInputBorder(),
+        hintText: 'login_form_endpoint_hint'.tr(),
+        errorMaxLines: 4,
+      ),
+      validator: _validateInput,
+      autovalidateMode: AutovalidateMode.always,
+      focusNode: focusNode,
+      autofillHints: const [AutofillHints.url],
+      keyboardType: TextInputType.url,
+      autocorrect: false,
+      onFieldSubmitted: (_) => onSubmit?.call(),
+      textInputAction: TextInputAction.go,
     );
   }
 }
@@ -599,6 +572,26 @@ class OAuthLoginButton extends ConsumerWidget {
       label: Text(
         buttonLabel,
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class LoadingIcon extends StatelessWidget {
+  const LoadingIcon({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 18.0),
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: FittedBox(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+          ),
+        ),
       ),
     );
   }

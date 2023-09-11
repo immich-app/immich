@@ -125,7 +125,6 @@ part 'router.gr.dart';
     AutoRoute(
       page: SettingsPage,
       guards: [
-        AuthGuard,
         DuplicateGuard,
       ],
     ),
