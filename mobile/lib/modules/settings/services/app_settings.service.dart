@@ -60,10 +60,6 @@ enum AppSettingsEnum<T> {
 }
 
 class AppSettingsService {
-  static T getSettingStatic<T>(AppSettingsEnum<T> setting) {
-    return Store.get(setting.storeKey, setting.defaultValue);
-  }
-
   T getSetting<T>(AppSettingsEnum<T> setting) {
     return Store.get(setting.storeKey, setting.defaultValue);
   }

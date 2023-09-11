@@ -10,11 +10,11 @@ class HttpSSLCertOverride extends HttpOverrides {
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
         var log = Logger("HttpSSLCertOverride");
 
+        AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
+        
         // Check if user has allowed self signed SSL certificates.
-        bool selfSignedCertsAllowed = AppSettingsService.getSettingStatic(
-              AppSettingsEnum.allowSelfSignedSSLCert,
-            ) ??
-            false;
+        bool selfSignedCertsAllowed =
+            Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
 
         bool isLoggedIn = Store.tryGet(StoreKey.currentUser) != null;
 
