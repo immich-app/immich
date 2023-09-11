@@ -16,9 +16,7 @@
 
   export let data: PageData;
 
-  $: if ($featureFlags.loaded && !$featureFlags.recycleBin) {
-    goto(AppRoute.PHOTOS);
-  }
+  $: $featureFlags.trash || goto(AppRoute.PHOTOS);
 
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
@@ -33,7 +31,7 @@
   </AssetSelectControlBar>
 {/if}
 
-{#if $featureFlags.loaded && $featureFlags.recycleBin}
+{#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
     <AssetGrid forceDelete {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
       <EmptyPlaceholder text="Trashed photos and videos will show up here." alt="Empty trash can" slot="empty" />

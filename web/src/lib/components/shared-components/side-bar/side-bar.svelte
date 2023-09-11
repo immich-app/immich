@@ -135,7 +135,7 @@
       </svelte:fragment>
     </SideBarButton>
 
-    {#if $featureFlags.recycleBin}
+    {#if $featureFlags.trash}
       <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
         <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={$page.route.id === '/(user)/trash'} />
       </a>

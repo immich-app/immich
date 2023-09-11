@@ -25,7 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
-  export let forceDelete = !$featureFlags.recycleBin;
+  export let forceDelete = !$featureFlags.trash;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;

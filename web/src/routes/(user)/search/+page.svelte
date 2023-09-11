@@ -27,7 +27,6 @@
   import { browser } from '$app/environment';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let data: PageData;
 
@@ -107,7 +106,7 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <DeleteAssets force={!$featureFlags.recycleBin} {onAssetDelete} />
+      <DeleteAssets {onAssetDelete} />
 
       <AssetSelectContextMenu icon={DotsVertical} title="Add">
         <DownloadAction menuItem />

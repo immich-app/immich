@@ -19,7 +19,7 @@
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
-  import RecycleBinSettings from '$lib/components/admin-page/settings/recycle-bin-settings/recycle-bin-settings.svelte';
+  import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
 
   export let data: PageData;
 
@@ -76,8 +76,8 @@
       <MapSettings disabled={$featureFlags.configFile} mapConfig={configs.map} />
     </SettingAccordion>
 
-    <SettingAccordion title="Recycle Bin Settings" subtitle="Manage recycle bin settings">
-      <RecycleBinSettings disabled={$featureFlags.configFile} recycleBinConfig={configs.recycleBin} />
+    <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+      <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

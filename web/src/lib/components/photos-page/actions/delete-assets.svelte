@@ -12,10 +12,11 @@
 
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;
-  export let force = false;
+  export let force = !$featureFlags.trash;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 

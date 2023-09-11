@@ -31,7 +31,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -305,7 +304,6 @@
         {/if}
         {#if isAllUserOwned}
           <DeleteAssets
-            force={!$featureFlags.recycleBin}
             menuItem
             onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
           />

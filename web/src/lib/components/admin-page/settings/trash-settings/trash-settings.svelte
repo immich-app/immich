@@ -4,36 +4,35 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigRecycleBinDto } from '@api';
+  import { api, SystemConfigTrashDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
-  export let recycleBinConfig: SystemConfigRecycleBinDto; // this is the config that is being edited
+  export let trashConfig: SystemConfigTrashDto; // this is the config that is being edited
   export let disabled = false;
 
-  let savedConfig: SystemConfigRecycleBinDto;
-  let defaultConfig: SystemConfigRecycleBinDto;
+  let savedConfig: SystemConfigTrashDto;
+  let defaultConfig: SystemConfigTrashDto;
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.recycleBin),
-      api.systemConfigApi.getDefaults().then((res) => res.data.recycleBin),
+      api.systemConfigApi.getConfig().then((res) => res.data.trash),
+      api.systemConfigApi.getDefaults().then((res) => res.data.trash),
     ]);
   }
 
   async function saveSetting() {
     try {
-      console.log(`Updated Recycle Bin Config: ${JSON.stringify(recycleBinConfig)}`);
       const { data: current } = await api.systemConfigApi.getConfig();
       const { data: updated } = await api.systemConfigApi.updateConfig({
-        systemConfigDto: { ...current, recycleBin: recycleBinConfig },
+        systemConfigDto: { ...current, trash: trashConfig },
       });
 
-      recycleBinConfig = { ...updated.recycleBin };
-      savedConfig = { ...updated.recycleBin };
+      trashConfig = { ...updated.trash };
+      savedConfig = { ...updated.trash };
 
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
     } catch (error) {
@@ -44,8 +43,8 @@
   async function reset() {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-    recycleBinConfig = { ...resetConfig.recycleBin };
-    savedConfig = { ...resetConfig.recycleBin };
+    trashConfig = { ...resetConfig.trash };
+    savedConfig = { ...resetConfig.trash };
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -56,11 +55,11 @@
   async function resetToDefault() {
     const { data: configs } = await api.systemConfigApi.getDefaults();
 
-    recycleBinConfig = { ...configs.recycleBin };
-    defaultConfig = { ...configs.recycleBin };
+    trashConfig = { ...configs.trash };
+    defaultConfig = { ...configs.trash };
 
     notificationController.show({
-      message: 'Reset recycle bin settings to default',
+      message: 'Reset trash settings to default',
       type: NotificationType.Info,
     });
   }
@@ -74,8 +73,8 @@
           <SettingSwitch
             title="ENABLED"
             {disabled}
-            subtitle="Enable Recycle Bin features"
-            bind:checked={recycleBinConfig.enabled}
+            subtitle="Enable Trash features"
+            bind:checked={trashConfig.enabled}
           />
 
           <hr />
@@ -83,11 +82,11 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label="Number of days"
-            desc="Number of days to keep the assets in recycle bin before permanently removing them"
-            bind:value={recycleBinConfig.days}
+            desc="Number of days to keep the assets in trash before permanently removing them"
+            bind:value={trashConfig.days}
             required={true}
-            disabled={disabled || !recycleBinConfig.enabled}
-            isEdited={recycleBinConfig.days !== savedConfig.days}
+            disabled={disabled || !trashConfig.enabled}
+            isEdited={trashConfig.days !== savedConfig.days}
           />
 
           <SettingButtonsRow
