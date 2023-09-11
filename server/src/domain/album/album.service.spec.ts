@@ -155,14 +155,12 @@ describe(AlbumService.name, () => {
       albumMock.create.mockResolvedValue(albumStub.empty);
       userMock.get.mockResolvedValue(userStub.user1);
 
-      expect(
-        sut.create(authStub.admin, {
-          albumName: 'Empty album',
-          sharedWithUserIds: ['user-id'],
-          description: '',
-          assetIds: ['123'],
-        }),
-      );
+      await sut.create(authStub.admin, {
+        albumName: 'Empty album',
+        sharedWithUserIds: ['user-id'],
+        description: '',
+        assetIds: ['123'],
+      });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ALBUM,
