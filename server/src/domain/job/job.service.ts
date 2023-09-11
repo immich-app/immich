@@ -171,15 +171,20 @@ export class JobService {
         }
         break;
 
+      case JobName.GENERATE_FACE_THUMBNAIL:
+        const { assetId, personId } = item.data;
+        const [asset] = await this.assetRepository.getByIds([assetId]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, asset.ownerId, { personId, assetId });
+        }
+        break;
+
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
-        if (item.data.source !== 'upload') {
-          break;
-        }
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
@@ -188,9 +193,19 @@ export class JobService {
           } else if (asset.livePhotoVideoId) {
             await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
           }
-          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
         break;
+      }
+
+      case JobName.GENERATE_WEBP_THUMBNAIL: {
+        if (item.data.source !== 'upload') {
+          break;
+        }
+
+        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+        }
       }
     }
 

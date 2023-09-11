@@ -1,5 +1,5 @@
 import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
-import { debounce } from 'lodash-es';
+import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { Unsubscriber, writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
@@ -77,13 +77,14 @@ export class AssetStore {
       websocketStore.onUploadSuccess.subscribe((value) => {
         if (value) {
           this.pendingChanges.push({ type: 'add', value });
-          this.debouncer();
+          this.processPendingChanges();
         }
       }),
+
       websocketStore.onAssetDelete.subscribe((value) => {
         if (value) {
           this.pendingChanges.push({ type: 'remove', value });
-          this.debouncer();
+          this.processPendingChanges();
         }
       }),
     );
@@ -95,7 +96,7 @@ export class AssetStore {
     }
   }
 
-  debouncer = debounce(() => {
+  processPendingChanges = throttle(() => {
     for (const { type, value } of this.pendingChanges) {
       switch (type) {
         case 'add':
@@ -109,11 +110,7 @@ export class AssetStore {
 
     this.pendingChanges = [];
     this.emit(true);
-  }, 2000);
-
-  flush() {
-    this.debouncer.flush();
-  }
+  }, 10_000);
 
   async init(viewport: Viewport) {
     this.initialized = false;

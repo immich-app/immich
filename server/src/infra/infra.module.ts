@@ -27,7 +27,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommunicationGateway } from './communication.gateway';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
@@ -90,7 +89,7 @@ const providers: Provider[] = [
     BullModule.forRoot(bullConfig),
     BullModule.registerQueue(...bullQueues),
   ],
-  providers: [...providers, CommunicationGateway],
+  providers: [...providers],
   exports: [...providers, BullModule],
 })
 export class InfraModule {}
