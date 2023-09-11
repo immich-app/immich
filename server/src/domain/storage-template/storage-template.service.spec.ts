@@ -34,6 +34,41 @@ describe(StorageTemplateService.name, () => {
     sut = new StorageTemplateService(assetMock, configMock, defaults, storageMock, userMock);
   });
 
+  describe('handleMigrationSingle', () => {
+    it('should migrate single moving picture', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+      const path = (id: string) => `upload/library/${userStub.user1.id}/2023/2023-02-23/${id}.jpg`;
+      const newPath = (id: string) => `upload/library/${userStub.user1.id}/2023/2023-02-23/${id}+1.jpg`;
+
+      when(storageMock.checkFileExists).calledWith(path(assetStub.livePhotoStillAsset.id)).mockResolvedValue(true);
+      when(storageMock.checkFileExists).calledWith(newPath(assetStub.livePhotoStillAsset.id)).mockResolvedValue(false);
+
+      when(storageMock.checkFileExists).calledWith(path(assetStub.livePhotoMotionAsset.id)).mockResolvedValue(true);
+      when(storageMock.checkFileExists).calledWith(newPath(assetStub.livePhotoMotionAsset.id)).mockResolvedValue(false);
+
+      when(assetMock.save)
+        .calledWith({ id: assetStub.livePhotoStillAsset.id, originalPath: newPath(assetStub.livePhotoStillAsset.id) })
+        .mockResolvedValue(assetStub.livePhotoStillAsset);
+
+      when(assetMock.save)
+        .calledWith({ id: assetStub.livePhotoMotionAsset.id, originalPath: newPath(assetStub.livePhotoMotionAsset.id) })
+        .mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      when(assetMock.getByIds)
+        .calledWith([assetStub.livePhotoStillAsset.id])
+        .mockResolvedValue([assetStub.livePhotoStillAsset]);
+
+      when(assetMock.getByIds)
+        .calledWith([assetStub.livePhotoMotionAsset.id])
+        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      await expect(sut.handleMigrationSingle({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
+    });
+  });
+
   describe('handle template migration', () => {
     it('should handle no assets', async () => {
       assetMock.getAll.mockResolvedValue({

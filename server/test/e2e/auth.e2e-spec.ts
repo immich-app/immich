@@ -1,7 +1,8 @@
 import { AppModule, AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
+import { api } from '@test/api';
+import { db } from '@test/db';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -11,8 +12,8 @@ import {
   loginStub,
   signupResponseStub,
   uuidStub,
-} from '../fixtures';
-import { api, db } from '../test-utils';
+} from '@test/fixtures';
+import request from 'supertest';
 
 const firstName = 'Immich';
 const lastName = 'Admin';
@@ -35,8 +36,8 @@ describe(`${AuthController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    const response = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    const response = await api.authApi.adminLogin(server);
     accessToken = response.accessToken;
   });
 
@@ -67,7 +68,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     }
 
     it(`should sign up the admin`, async () => {
-      await api.adminSignUp(server);
+      await api.authApi.adminSignUp(server);
     });
 
     it('should sign up the admin with a local domain', async () => {
@@ -87,7 +88,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
 
     it('should not allow a second admin to sign up', async () => {
-      await api.adminSignUp(server);
+      await api.authApi.adminSignUp(server);
 
       const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
@@ -152,7 +153,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
   });
 
-  describe('DELETE /auth/devices/:id', () => {
+  describe('DELETE /auth/devices', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).delete(`/auth/devices`);
       expect(status).toBe(401);
@@ -161,15 +162,15 @@ describe(`${AuthController.name} (e2e)`, () => {
 
     it('should logout all devices (except the current one)', async () => {
       for (let i = 0; i < 5; i++) {
-        await api.adminLogin(server);
+        await api.authApi.adminLogin(server);
       }
 
-      await expect(api.getAuthDevices(server, accessToken)).resolves.toHaveLength(6);
+      await expect(api.authApi.getAuthDevices(server, accessToken)).resolves.toHaveLength(6);
 
       const { status } = await request(server).delete(`/auth/devices`).set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(204);
 
-      await api.validateToken(server, accessToken);
+      await api.authApi.validateToken(server, accessToken);
     });
   });
 
@@ -181,7 +182,7 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
 
     it('should logout a device', async () => {
-      const [device] = await api.getAuthDevices(server, accessToken);
+      const [device] = await api.authApi.getAuthDevices(server, accessToken);
       const { status } = await request(server)
         .delete(`/auth/devices/${device.id}`)
         .set('Authorization', `Bearer ${accessToken}`);
@@ -244,7 +245,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
 
-      await api.login(server, { email: 'admin@immich.app', password: 'Password1234' });
+      await api.authApi.login(server, { email: 'admin@immich.app', password: 'Password1234' });
     });
   });
 
