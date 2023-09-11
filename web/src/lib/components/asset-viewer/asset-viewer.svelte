@@ -27,7 +27,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
-  import { shouldDisableShortcut } from '$lib/utils/shortcut';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -90,7 +90,7 @@
   };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (shouldDisableShortcut(event)) {
+    if (shouldIgnoreShortcut(event)) {
       return;
     }
 
