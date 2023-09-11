@@ -1,8 +1,9 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
+import { ISystemConfigRepository, SystemConfigCore } from '..';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
@@ -59,6 +60,7 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
+  private configCore: SystemConfigCore;
   private storageCore = new StorageCore();
 
   constructor(
@@ -66,9 +68,11 @@ export class AssetService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISystemConfigRepository) private configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -302,8 +306,13 @@ export class AssetService {
   }
 
   async handleAssetDeletionCheck() {
+    const config = await this.configCore.getConfig();
+    const trashedDays = config.trash.enabled ? config.trash.days : 0;
+    const trashedBefore = DateTime.now()
+      .minus(Duration.fromObject({ days: trashedDays }))
+      .toJSDate();
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { order: 'DESC', isTrashed: true }),
+      this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore: trashedBefore }),
     );
 
     for await (const assets of assetPagination) {

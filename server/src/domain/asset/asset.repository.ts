@@ -10,7 +10,7 @@ export interface AssetStatsOptions {
 
 export interface AssetSearchOptions {
   isVisible?: boolean;
-  isTrashed?: boolean;
+  trashedBefore?: Date;
   type?: AssetType;
   order?: 'ASC' | 'DESC';
 }

@@ -17,7 +17,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
@@ -120,7 +120,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         isVisible: options.isVisible,
         type: options.type,
-        deletedAt: options.isTrashed ? Not(IsNull()) : undefined,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -130,7 +130,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
-      withDeleted: options.isTrashed,
+      withDeleted: !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
