@@ -198,9 +198,12 @@ Typesense URL example JSON before encoding:
 | `MACHINE_LEARNING_WORKERS`<sup>\*3</sup>         | Number of worker processes to spawn                               |         `1`         | machine learning |
 | `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed    |        `120`        | machine learning |
 
-\*1: This is an experimental feature. It may result in increased memory use over time when loading models repeatedly.
-\*2: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
-\*3: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.
+\*1: This is an experimental feature. It may result in increased memory use over time when loading models repeatedly.  
+
+\*2: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.  
+
+\*3: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.  
+
 
 :::info
 
