@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Hosting the machine-learning service on another system
 
 To alleviate [performance issues on low-memory systems](/docs/FAQ.md#why-is-immich-slow-on-low-memory-systems-like-the-raspberry-pi) like the Raspberry Pi, you may also host Immich's machine-learning container on a more powerful system (e.g. your laptop or desktop computer):
