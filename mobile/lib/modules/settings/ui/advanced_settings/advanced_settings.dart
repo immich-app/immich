@@ -89,14 +89,13 @@ class AdvancedSettings extends HookConsumerWidget {
             activeColor: Theme.of(context).primaryColor,
           ),
         ),
-        if (isLoggedIn)
-          SettingsSwitchListTile(
-            appSettingService: appSettingService,
-            valueNotifier: preferRemote,
-            settingsEnum: AppSettingsEnum.preferRemoteImage,
-            title: "advanced_settings_prefer_remote_title".tr(),
-            subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
-          ),
+        SettingsSwitchListTile(
+          appSettingService: appSettingService,
+          valueNotifier: preferRemote,
+          settingsEnum: AppSettingsEnum.preferRemoteImage,
+          title: "advanced_settings_prefer_remote_title".tr(),
+          subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
+        ),
         SettingsSwitchListTile(
           enabled: !isLoggedIn,
           appSettingService: appSettingService,

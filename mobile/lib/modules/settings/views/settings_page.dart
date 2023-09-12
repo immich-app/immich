@@ -13,7 +13,6 @@ class SettingsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    bool isLoggedIn = Store.tryGet(StoreKey.currentUser) != null;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -39,10 +38,10 @@ class SettingsPage extends HookConsumerWidget {
           ...ListTile.divideTiles(
             context: context,
             tiles: [
-              if (isLoggedIn) const ImageViewerQualitySetting(),
+              const ImageViewerQualitySetting(),
               const ThemeSetting(),
-              if (isLoggedIn) const AssetListSettings(),
-              if (isLoggedIn) const NotificationSetting(),
+              const AssetListSettings(),
+              const NotificationSetting(),
               // const ExperimentalSettings(),
               const AdvancedSettings(),
             ],
