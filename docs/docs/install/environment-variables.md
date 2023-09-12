@@ -188,15 +188,19 @@ Typesense URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                |       Default       | Services         |
-| :----------------------------------------------- | :----------------------------------------- | :-----------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Model TTL                                  |        `300`        | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | ML Cache Location                          |      `/cache`       | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Request thread pool size                   | number of CPU cores | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations        |         `1`         | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation |         `2`         | machine learning |
+| Variable                                         | Description                                                       |       Default       | Services         |
+| :----------------------------------------------- | :---------------------------------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`<sup>\*1</sup>       | Inactivity time (s) before a model is unloaded (disabled if <= 0) |         `0`         | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                             |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*2</sup> | Thread count of the request thread pool (disabled if <= 0)        | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                               |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                        |         `2`         | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*3</sup>         | Number of worker processes to spawn                               |         `1`         | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed    |        `120`        | machine learning |
 
-\*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
+\*1: This is an experimental feature. It may result in increased memory use over time when loading models repeatedly.
+\*2: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
+\*3: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.
 
 :::info
 
