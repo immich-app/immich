@@ -173,3 +173,15 @@ export function getAssetRatio(asset: AssetResponseDto) {
   }
   return { width, height };
 }
+
+// list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
+const supportedImageExtensions = new Set(['apng', 'avif', 'gif', 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'webp']);
+
+/**
+ * Returns true if the asset is an image supported by web browsers, false otherwise
+ */
+export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
+  const imgExtension = getFilenameExtension(asset.originalPath);
+
+  return supportedImageExtensions.has(imgExtension);
+}
