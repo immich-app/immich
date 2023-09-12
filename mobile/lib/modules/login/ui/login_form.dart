@@ -254,8 +254,6 @@ class LoginForm extends HookConsumerWidget {
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor:
-                        Theme.of(context).primaryColor.withAlpha(240),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(buttonRadius),
