@@ -174,9 +174,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
-    void showInfo() async {
-      final assetWithExif =
-          await ref.read(assetProvider.notifier).loadExif(currentAsset);
+    void showInfo() {
       showModalBottomSheet(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
@@ -195,7 +193,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: assetWithExif),
+            child: ExifBottomSheet(asset: currentAsset),
           );
         },
       );
