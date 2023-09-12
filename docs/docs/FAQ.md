@@ -39,7 +39,7 @@ This often happens when using a reverse proxy or cloudflare tunnel in front of I
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ.md#how-can-i-disable-machine-learning#how-can-i-lower-immichs-cpu-usage) this or [disable](/docs/FAQ.md#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#how-can-i-lower-immichs-cpu-usage) this or [disable](/docs/FAQ.md#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### How can I lower Immich's CPU usage?
 
