@@ -31,6 +31,9 @@ export class ExifEntity {
   @Column({ type: 'timestamptz', nullable: true })
   dateTimeOriginal!: Date | null;
 
+  @Column({ type: 'timestamp', nullable: true })
+  localDateTime!: Date | null;
+
   @Column({ type: 'timestamptz', nullable: true })
   modifyDate!: Date | null;
 

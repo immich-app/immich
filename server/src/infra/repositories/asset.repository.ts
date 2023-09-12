@@ -384,16 +384,16 @@ export class AssetRepository implements IAssetRepository {
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
-      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "localDateTime")`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "localDateTime")`)
+      .orderBy(`date_trunc('${truncateValue}', "localDateTime")`, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
+      .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
       .orderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
@@ -404,7 +404,8 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .andWhere('exifInfo.localDateTime IS NOT NULL');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });

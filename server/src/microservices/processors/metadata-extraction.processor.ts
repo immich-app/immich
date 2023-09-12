@@ -21,7 +21,7 @@ import { ConfigService } from '@nestjs/config';
 import tz_lookup from '@photostructure/tz-lookup';
 import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import { Duration } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -329,6 +329,8 @@ export class MetadataExtractionProcessor {
     newExif.dateTimeOriginal = fileCreatedAt;
     newExif.modifyDate = fileModifiedAt;
     newExif.timeZone = timeZone;
+    newExif.localDateTime =
+      fileCreatedAt && timeZone ? DateTime.fromJSDate(fileCreatedAt).setZone(timeZone).toJSDate() : fileCreatedAt;
     newExif.lensModel = getExifProperty('LensModel');
     newExif.fNumber = toNumberOrNull(getExifProperty('FNumber'));
     newExif.focalLength = toNumberOrNull(getExifProperty('FocalLength'));

@@ -5943,6 +5943,12 @@
             "nullable": true,
             "type": "string"
           },
+          "localDateTime": {
+            "default": null,
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "longitude": {
             "default": null,
             "nullable": true,

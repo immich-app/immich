@@ -45,7 +45,9 @@ export function splitBucketIntoDateGroups(
 ): AssetResponseDto[][] {
   return lodash
     .chain(assets)
-    .groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString(locale, groupDateFormat))
+    .groupBy((asset) =>
+      new Date(asset.exifInfo?.localDateTime || asset.fileCreatedAt).toLocaleDateString(locale, groupDateFormat),
+    )
     .sortBy((group) => assets.indexOf(group[0]))
     .value();
 }
