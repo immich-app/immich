@@ -6,7 +6,6 @@ import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list
 import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/notification_setting/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({Key? key}) : super(key: key);

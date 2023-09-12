@@ -251,7 +251,7 @@ class LoginForm extends HookConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: IconButton.filled(
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     backgroundColor:
@@ -263,10 +263,10 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  color: isDarkTheme ? Colors.black : Colors.white,
                   onPressed: () =>
                       AutoRouter.of(context).push(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
+                  label: const SizedBox.shrink(),
                 ),
               ),
               const SizedBox(width: 1),
