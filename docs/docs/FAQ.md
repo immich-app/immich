@@ -45,14 +45,15 @@ Immich optionally uses machine learning for several features. However, it can be
 
 The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Encode CLIP, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
 
-* Lower the job concurrency for these jobs to 1.
-* Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
-* Set the `TYPESENSE_THREAD_POOL_SIZE` environmental variable and restart the Typesense container. For instance, `TYPESENSE_THREAD_POOL_SIZE=8` will limit it to 8 threads.
-* Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good. 
-  * You *must* re-run the Recognize Faces job for all images after this for facial recognition on new images to work properly.
-* If these changes are not enough, see [below](/docs/FAQ.md#how-can-i-disable-machine-learning) for how you can disable machine learning.
+- Lower the job concurrency for these jobs to 1.
+- Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
+- Set the `TYPESENSE_THREAD_POOL_SIZE` environmental variable and restart the Typesense container. For instance, `TYPESENSE_THREAD_POOL_SIZE=8` will limit it to 8 threads.
+- Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
+  - You _must_ re-run the Recognize Faces job for all images after this for facial recognition on new images to work properly.
+- If these changes are not enough, see [below](/docs/FAQ.md#how-can-i-disable-machine-learning) for how you can disable machine learning.
 
 ### How can I disable machine learning?
+
 :::info
 Disabling machine learning will result in a poor experience for searching and the 'Explore' page, as these are reliant on it to work as intended.
 :::
@@ -62,6 +63,7 @@ Machine learning can be disabled under Settings > Machine Learning Settings, eit
 However, disabling all jobs will not disable the machine learning service itself. To prevent it from starting up at all in this case, you can comment out the `immich-machine-learning` section of the docker-compose.yml.
 
 ### How can I disable TypeSense?
+
 :::info
 Disabling Typesense will result in a poor search experience since searching is reliant on it.
 :::
@@ -71,7 +73,6 @@ You can disable Typesense by commenting out the `immich-typesense` section of th
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
 You can delete the model cache volume, which is where models are downloaded. This will give the service a clean environment to download the model again.
-
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
