@@ -42,7 +42,6 @@ class LoginForm extends HookConsumerWidget {
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
     )..repeat();
-    final isDarkTheme = Brightness.dark == Theme.of(context).brightness;
 
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
