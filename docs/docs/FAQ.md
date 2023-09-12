@@ -68,6 +68,11 @@ Disabling Typesense will result in a poor search experience since searching is r
 
 You can disable Typesense by commenting out the `immich-typesense` section of the docker-compose.yml and setting `TYPESENSE_ENABLED=false` in your .env file.
 
+### I'm getting errors about models being corrupt or failing to download. What do I do?
+
+You can delete the model cache volume, which is where models are downloaded. This will give the service a clean environment to download the model again.
+
+
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
 Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
