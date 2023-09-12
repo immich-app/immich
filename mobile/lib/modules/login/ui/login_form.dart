@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,16 @@ class LoginForm extends HookConsumerWidget {
         ImmichToast.show(
           context: context,
           msg: e.message ?? 'login_form_api_exception'.tr(),
+          toastType: ToastType.error,
+        );
+        isOauthEnable.value = false;
+        isPasswordLoginEnable.value = true;
+        isLoadingServer.value = false;
+        return false;
+      } on HandshakeException {
+        ImmichToast.show(
+          context: context,
+          msg: 'login_form_handshake_exception'.tr(),
           toastType: ToastType.error,
         );
         isOauthEnable.value = false;
@@ -226,6 +237,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     buildSelectServer() {
+      const buttonRadius = 25.0;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -235,24 +247,51 @@ class LoginForm extends HookConsumerWidget {
             onSubmit: getServerLoginCredential,
           ),
           const SizedBox(height: 18),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed: isLoadingServer.value ? null : getServerLoginCredential,
-            icon: const Icon(Icons.arrow_forward_rounded),
-            label: const Text(
-              'login_form_next_button',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
-          ),
-          if (isLoadingServer.value)
-            const Padding(
-              padding: EdgeInsets.only(top: 18.0),
-              child: Center(
-                child: CircularProgressIndicator(),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(buttonRadius),
+                        bottomLeft: Radius.circular(buttonRadius),
+                      ),
+                    ),
+                  ),
+                  onPressed: () =>
+                      AutoRouter.of(context).push(const SettingsRoute()),
+                  icon: const Icon(Icons.settings_rounded),
+                  label: const SizedBox.shrink(),
+                ),
               ),
-            ),
+              const SizedBox(width: 1),
+              Expanded(
+                flex: 3,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(buttonRadius),
+                        bottomRight: Radius.circular(buttonRadius),
+                      ),
+                    ),
+                  ),
+                  onPressed:
+                      isLoadingServer.value ? null : getServerLoginCredential,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text(
+                    'login_form_next_button',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ).tr(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (isLoadingServer.value) const LoadingIcon(),
         ],
       );
     }
@@ -285,18 +324,7 @@ class LoginForm extends HookConsumerWidget {
             // Note: This used to have an AnimatedSwitcher, but was removed
             // because of https://github.com/flutter/flutter/issues/120874
             isLoading.value
-                ? const Padding(
-                    padding: EdgeInsets.only(top: 18.0),
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: FittedBox(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  )
+                ? const LoadingIcon()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -568,6 +596,26 @@ class OAuthLoginButton extends ConsumerWidget {
       label: Text(
         buttonLabel,
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class LoadingIcon extends StatelessWidget {
+  const LoadingIcon({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 18.0),
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: FittedBox(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+          ),
+        ),
       ),
     );
   }
