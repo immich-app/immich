@@ -20,6 +20,7 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -76,6 +77,9 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
