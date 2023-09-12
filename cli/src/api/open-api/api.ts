@@ -1477,6 +1477,12 @@ export interface ExifResponseDto {
     'lensModel'?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
+    'localDateTime'?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof ExifResponseDto
      */

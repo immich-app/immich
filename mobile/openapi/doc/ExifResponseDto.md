@@ -21,6 +21,7 @@ Name | Type | Description | Notes
 **iso** | **num** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **lensModel** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | [optional] 
 **longitude** | **num** |  | [optional] 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 

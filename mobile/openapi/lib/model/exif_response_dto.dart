@@ -26,6 +26,7 @@ class ExifResponseDto {
     this.iso,
     this.latitude,
     this.lensModel,
+    this.localDateTime,
     this.longitude,
     this.make,
     this.model,
@@ -62,6 +63,8 @@ class ExifResponseDto {
 
   String? lensModel;
 
+  DateTime? localDateTime;
+
   num? longitude;
 
   String? make;
@@ -93,6 +96,7 @@ class ExifResponseDto {
      other.iso == iso &&
      other.latitude == latitude &&
      other.lensModel == lensModel &&
+     other.localDateTime == localDateTime &&
      other.longitude == longitude &&
      other.make == make &&
      other.model == model &&
@@ -118,6 +122,7 @@ class ExifResponseDto {
     (iso == null ? 0 : iso!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
+    (localDateTime == null ? 0 : localDateTime!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
@@ -128,7 +133,7 @@ class ExifResponseDto {
     (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
+  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, localDateTime=$localDateTime, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -196,6 +201,11 @@ class ExifResponseDto {
       json[r'lensModel'] = this.lensModel;
     } else {
     //  json[r'lensModel'] = null;
+    }
+    if (this.localDateTime != null) {
+      json[r'localDateTime'] = this.localDateTime!.toUtc().toIso8601String();
+    } else {
+    //  json[r'localDateTime'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
@@ -273,6 +283,7 @@ class ExifResponseDto {
             ? null
             : num.parse(json[r'latitude'].toString()),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
+        localDateTime: mapDateTime(json, r'localDateTime', ''),
         longitude: json[r'longitude'] == null
             ? null
             : num.parse(json[r'longitude'].toString()),

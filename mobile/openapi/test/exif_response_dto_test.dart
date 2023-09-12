@@ -81,6 +81,11 @@ void main() {
       // TODO
     });
 
+    // DateTime localDateTime
+    test('to test the property `localDateTime`', () async {
+      // TODO
+    });
+
     // num longitude
     test('to test the property `longitude`', () async {
       // TODO
