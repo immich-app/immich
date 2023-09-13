@@ -92,7 +92,7 @@
   "backup_controller_page_uploading_file_info": "Laster opp filinformasjon",
   "backup_err_only_album": "Kan ikke fjerne det eneste albumet",
   "backup_info_card_assets": "objekter",
-  "backup_manual_cancelled": "Cancelled",
+  "backup_manual_cancelled": "Avbrutt",
   "backup_manual_failed": "Feilet",
   "backup_manual_in_progress": "Opplasting er allerede i gang. Prøv igjen om litt",
   "backup_manual_success": "Vellykket",
