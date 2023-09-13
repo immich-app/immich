@@ -69,8 +69,8 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Functies                                            | Mobile | Web |
 | --------------------------------------------------- | ------ | --- |
 | Upload en bekijk video's en foto's                  | Yes    | Yes |
-| Automatische back-up wanneer de app wordt geopend   | Yes    | N/A |
-| Selectieve album(s) voor back-up                    | Yes    | N/A |
+| Automatische back-up wanneer de app wordt geopend   | Yes    | NVT |
+| Selectieve album(s) voor back-up                    | Yes    | NVT |
 | Download foto's en video's naar een lokaal apparaat | Yes    | Yes |
 | Ondersteuning voor meerdere gebruikers              | Yes    | Yes |
 | Album en gedeelde albums                            | Yes    | Yes |
@@ -79,10 +79,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Metagegevensweergave (EXIF, kaart)                  | Yes    | Yes |
 | Zoek op metagegevens, objecten, gezichten en CLIP   | Yes    | Yes |
 | Administratieve functies (gebruikersbeheer)         | No     | Yes |
-| Back-up op de achtergrond                           | Yes    | N/A |
+| Back-up op de achtergrond                           | Yes    | NVT |
 | Virtueel scrollen                                   | Yes    | Yes |
 | OAuth-ondersteuning                                 | Yes    | Yes |
-| API-sleutels                                        | N/A    | Yes |
+| API-sleutels                                        | NVT    | Yes |
 | LivePhoto-back-up en weergave                       | iOS    | Yes |
 | Door de gebruiker gedefinieerde opslagstructuur     | Yes    | Yes |
 | Openbaar delen                                      | No     | Yes |
