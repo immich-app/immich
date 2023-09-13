@@ -111,7 +111,7 @@ export class SearchService {
       fieldName,
       items: items
         .map(({ value, data }) => ({ value, data: lookup[data.id] }))
-        .filter(({ data }) => !!data)
+        .filter(({ data }) => !!data && !data.isArchived)
         .map(({ value, data }) => ({ value, data: mapAsset(data) })),
     }));
   }

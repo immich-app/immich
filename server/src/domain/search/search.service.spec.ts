@@ -144,6 +144,27 @@ describe(SearchService.name, () => {
       expect(searchMock.explore).toHaveBeenCalledWith(authStub.admin.id);
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
     });
+
+    it('should exclude explore data if items are archived', async () => {
+      searchMock.explore.mockResolvedValue([
+        {
+          fieldName: 'name',
+          items: [
+            {
+              value: 'image',
+              data: {
+                ...assetStub.image,
+                isArchived: true,
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(sut.getExploreData(authStub.admin)).resolves.toEqual([]);
+
+      expect(searchMock.explore).toHaveBeenCalledWith(authStub.admin.id);
+    });
   });
 
   describe('search', () => {
