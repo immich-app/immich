@@ -13,6 +13,7 @@
   import type { PageData } from './$types';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
+  import empty3Url from '$lib/assets/empty-3.svg';
 
   export let data: PageData;
 
@@ -34,7 +35,7 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
     <AssetGrid forceDelete {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
-      <EmptyPlaceholder text="Trashed photos and videos will show up here." alt="Empty trash can" slot="empty" />
+      <EmptyPlaceholder text="Trashed photos and videos will show up here." alt="Empty trash can" slot="empty" src={empty3Url}  />
     </AssetGrid>
   </UserPageLayout>
 {/if}
