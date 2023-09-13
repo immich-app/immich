@@ -22,7 +22,7 @@ import tz_lookup from '@photostructure/tz-lookup';
 import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { promisify } from 'util';
@@ -32,6 +32,13 @@ import { parseISO } from '../utils/exif/iso';
 import { toNumberOrNull } from '../utils/numbers';
 
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
+
+interface MotionPhotosData {
+  isMotionPhoto: string | number | null;
+  isMicroVideo: string | number | null;
+  videoOffset: string | number | null;
+  directory: DirectoryEntry[] | null;
+}
 
 interface DirectoryItem {
   Length?: number;
@@ -153,131 +160,6 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  async addExtractedLivePhoto(sourceAsset: AssetEntity, video: string, created: Date | null): Promise<AssetEntity> {
-    if (sourceAsset.livePhotoVideoId) {
-      const [liveAsset] = await this.assetRepository.getByIds([sourceAsset.livePhotoVideoId]);
-      // already exists so no need to generate ID.
-      if (liveAsset.originalPath == video) {
-        return liveAsset;
-      }
-      liveAsset.originalPath = video;
-      return this.assetRepository.save(liveAsset);
-    }
-    const liveAsset = await this.assetRepository.save({
-      ownerId: sourceAsset.ownerId,
-      owner: sourceAsset.owner,
-
-      checksum: await this.cryptoRepository.hashFile(video),
-      originalPath: video,
-
-      fileCreatedAt: created ?? sourceAsset.fileCreatedAt,
-      fileModifiedAt: sourceAsset.fileModifiedAt,
-
-      deviceAssetId: 'NONE',
-      deviceId: 'NONE',
-
-      type: AssetType.VIDEO,
-      isFavorite: false,
-      isArchived: sourceAsset.isArchived,
-      duration: null,
-      isVisible: false,
-      livePhotoVideo: null,
-      resizePath: null,
-      webpPath: null,
-      thumbhash: null,
-      encodedVideoPath: null,
-      tags: [],
-      sharedLinks: [],
-      originalFileName: path.parse(video).name,
-      faces: [],
-      sidecarPath: null,
-      isReadOnly: sourceAsset.isReadOnly,
-    });
-
-    sourceAsset.livePhotoVideoId = liveAsset.id;
-    await this.assetRepository.save(sourceAsset);
-    return liveAsset;
-  }
-
-  private async extractNewPixelLivePhoto(
-    asset: AssetEntity,
-    directory: DirectoryEntry[],
-    fileCreatedAt: Date | null,
-  ): Promise<AssetEntity | null> {
-    if (asset.livePhotoVideoId) {
-      // Already extracted, don't try again.
-      const [ret] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
-      this.logger.log(`Already extracted asset ${ret.originalPath}.`);
-      return ret;
-    }
-    let foundMotionPhoto = false;
-    let motionPhotoOffsetFromEnd = 0;
-    let motionPhotoLength = 0;
-
-    // Look for the directory entry with semantic label "MotionPhoto", which is the embedded video.
-    // Then, determine the length from the end of the file to the start of the embedded video.
-    for (const entry of directory) {
-      if (entry.Item.Semantic == 'MotionPhoto') {
-        if (foundMotionPhoto) {
-          this.logger.error(`Asset ${asset.originalPath} has more than one motion photo.`);
-          continue;
-        }
-        foundMotionPhoto = true;
-        motionPhotoLength = entry.Item.Length ?? 0;
-      }
-      if (foundMotionPhoto) {
-        motionPhotoOffsetFromEnd += entry.Item.Length ?? 0;
-        motionPhotoOffsetFromEnd += entry.Item.Padding ?? 0;
-      }
-    }
-
-    if (!foundMotionPhoto || motionPhotoLength == 0) {
-      return null;
-    }
-    return this.extractEmbeddedVideo(asset, motionPhotoOffsetFromEnd, motionPhotoLength, fileCreatedAt);
-  }
-
-  private async extractEmbeddedVideo(
-    asset: AssetEntity,
-    offsetFromEnd: number,
-    length: number | null,
-    fileCreatedAt: Date | null,
-  ) {
-    let file = null;
-    try {
-      file = await fs.promises.open(asset.originalPath);
-      let extracted = null;
-      // Read in embedded video.
-      const stat = await file.stat();
-      if (length == null) {
-        length = offsetFromEnd;
-      }
-      const offset = stat.size - offsetFromEnd;
-      extracted = await file.read({
-        buffer: Buffer.alloc(length),
-        position: offset,
-        length: length,
-      });
-
-      // Write out extracted video, and add it to the asset repository.
-      const encodedVideoFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-      this.storageRepository.mkdirSync(encodedVideoFolder);
-      const livePhotoPath = path.join(encodedVideoFolder, path.parse(asset.originalPath).name + '.mp4');
-      await fs.promises.writeFile(livePhotoPath, extracted.buffer);
-
-      const result = await this.addExtractedLivePhoto(asset, livePhotoPath, fileCreatedAt);
-      await this.handleMetadataExtraction({ id: result.id });
-      return result;
-    } catch (e) {
-      this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${e}`);
-      return null;
-    } finally {
-      if (file) {
-        await file.close();
-      }
-    }
-  }
-
   private async handlePhotoMetadataExtraction(asset: AssetEntity) {
     const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
       this.logger.warn(
@@ -314,7 +196,7 @@ export class MetadataExtractionProcessor {
     const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
     const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
     const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
-    const fileStats = fs.statSync(asset.originalPath);
+    const fileStats = await fs.stat(asset.originalPath);
     const fileSizeInBytes = fileStats.size;
 
     const newExif = new ExifEntity();
@@ -349,39 +231,21 @@ export class MetadataExtractionProcessor {
       newExif.longitude = lon;
     }
 
-    if (getExifProperty('MotionPhoto')) {
-      // Seen on more recent Pixel phones: starting as early as Pixel 4a, possibly earlier.
-      const rawDirectory = getExifProperty('Directory');
-      if (Array.isArray(rawDirectory)) {
-        // exiftool-vendor thinks directory is a string, but actually it's an array of DirectoryEntry.
-        const directory = rawDirectory as DirectoryEntry[];
-        await this.extractNewPixelLivePhoto(asset, directory, fileCreatedAt);
-      } else {
-        this.logger.warn(`Failed to get Pixel motionPhoto information: directory: ${JSON.stringify(rawDirectory)}`);
-      }
-    } else if (getExifProperty('MicroVideo')) {
-      // Seen on earlier Pixel phones - Pixel 2 and earlier, possibly Pixel 3.
-      let offset = getExifProperty('MicroVideoOffset'); // offset from end of file.
-      if (typeof offset == 'string') {
-        offset = parseInt(offset);
-      }
-      if (Number.isNaN(offset) || offset == null) {
-        this.logger.warn(
-          `Failed to get MicroVideo information for ${asset.originalPath}, offset=${getExifProperty(
-            'MicroVideoOffset',
-          )}`,
-        );
-      } else {
-        await this.extractEmbeddedVideo(asset, offset, null, fileCreatedAt);
-      }
-    }
-
     const projectionType = getExifProperty('ProjectionType');
     if (projectionType) {
       newExif.projectionType = String(projectionType).toUpperCase();
     }
 
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
+
+    const rawDirectory = getExifProperty('Directory');
+    await this.applyMotionPhotos(asset, {
+      isMotionPhoto: getExifProperty('MotionPhoto'),
+      isMicroVideo: getExifProperty('MicroVideo'),
+      videoOffset: getExifProperty('MicroVideoOffset'),
+      directory: Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null,
+    });
+
     await this.applyReverseGeocoding(asset, newExif);
 
     /**
@@ -523,6 +387,80 @@ export class MetadataExtractionProcessor {
           error?.stack,
         );
       }
+    }
+  }
+
+  private async applyMotionPhotos(asset: AssetEntity, data: MotionPhotosData) {
+    if (asset.livePhotoVideoId) {
+      return;
+    }
+
+    const { isMotionPhoto, isMicroVideo, directory, videoOffset } = data;
+
+    let length = 0;
+    let padding = 0;
+
+    if (isMotionPhoto && directory) {
+      for (const entry of directory) {
+        if (entry.Item.Semantic == 'MotionPhoto') {
+          length = entry.Item.Length ?? 0;
+          padding = entry.Item.Padding ?? 0;
+          break;
+        }
+      }
+    }
+
+    if (isMicroVideo && typeof videoOffset === 'number') {
+      length = videoOffset;
+    }
+
+    if (!length) {
+      return;
+    }
+
+    this.logger.debug(`Starting motion photo video extraction (${asset.id})`);
+
+    let file = null;
+    try {
+      const encodedFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
+      const encodedFile = path.join(encodedFolder, path.parse(asset.originalPath).name + '.mp4');
+      this.storageRepository.mkdirSync(encodedFolder);
+
+      file = await fs.open(asset.originalPath);
+
+      const stat = await file.stat();
+      const position = stat.size - length - padding;
+      const video = await file.read({ buffer: Buffer.alloc(length), position, length });
+      const checksum = await this.cryptoRepository.hashSha1(video.buffer);
+
+      let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
+      if (!motionAsset) {
+        motionAsset = await this.assetRepository.save({
+          type: AssetType.VIDEO,
+          fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
+          fileModifiedAt: asset.fileModifiedAt,
+          checksum,
+          ownerId: asset.ownerId,
+          originalPath: encodedFile,
+          originalFileName: asset.originalFileName,
+          isVisible: false,
+          isReadOnly: true,
+          deviceAssetId: 'NONE',
+          deviceId: 'NONE',
+        });
+
+        await fs.writeFile(encodedFile, video.buffer);
+
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+      }
+
+      await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+
+      this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
+    } catch (error: Error | any) {
+      this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
+    } finally {
+      await file?.close();
     }
   }
 
