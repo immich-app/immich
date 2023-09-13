@@ -67,7 +67,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 # Functies
 
 | Functies                                            | Mobiel | Web |
-| --------------------------------------------------- | ------ | --- |
+|-----------------------------------------------------|--------|-----|
 | Upload en bekijk video's en foto's                  | Ja     | Ja  |
 | Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
 | Selectieve album(s) voor back-up                    | Ja     | NVT |
@@ -75,7 +75,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
 | Album en gedeelde albums                            | Ja     | Ja  |
 | Versleepbare scroll balk                            | Ja     | Ja  |
-| Ondersteuening voor het RAW formaat                 | Ja     | Ja  |
+| Ondersteuning voor het RAW formaat                  | Ja     | Ja  |
 | Metagegevensweergave (EXIF, kaart)                  | Ja     | Ja  |
 | Zoek op metagegevens, objecten, gezichten en CLIP   | Ja     | Ja  |
 | Administratieve functies (gebruikersbeheer)         | Nee    | Ja  |
@@ -87,16 +87,16 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Door de gebruiker gedefinieerde opslagstructuur     | Ja     | Ja  |
 | Openbaar delen                                      | Nee    | Ja  |
 | Archief en Favorieten                               | Ja     | Ja  |
-| Wereld  kaart                                       | Ja     | Ja  |
+| Wereldkaart                                         | Ja     | Ja  |
 | Delen met partner                                   | Ja     | Ja  |
 | Gezichtsherkenning en groepering                    | Ja     | Ja  |
-| Herinneringen (x Ja  ar geleden)                    | Ja     | Ja  |
+| Herinneringen (x jaar geleden)                      | Ja     | Ja  |
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
 
 # Steun het project
 
-Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp Needig om mij extra motivatie te geven om door te gaan.
+Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp nodig om mij extra motivatie te geven om door te gaan.
 
 Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een eNeerme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
 
@@ -104,7 +104,7 @@ Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel 
 
 ## Doneren
 
-- [Maandelijke donatie](https://github.com/sponsors/alextran1502) via GitHub Sponsors
+- [Maandelijkse donatie](https://github.com/sponsors/alextran1502) via GitHub Sponsors
 - [Eenmalige donatie](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
