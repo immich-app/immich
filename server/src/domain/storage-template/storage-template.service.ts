@@ -89,7 +89,6 @@ export class StorageTemplateService {
     return true;
   }
 
-  // TODO: use asset core (once in domain)
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
     if (asset.isReadOnly || asset.isExternal) {
       // External assets are not affected by storage template
@@ -122,7 +121,7 @@ export class StorageTemplateService {
             error?.stack,
           );
 
-          // Either sidecar move failed or the save failed. Eithr way, move media back
+          // Either sidecar move failed or the save failed. Either way, move media back
           await this.storageRepository.moveFile(destination, source);
 
           if (asset.sidecarPath && sidecarDestination && sidecarMoved) {

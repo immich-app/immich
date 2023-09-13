@@ -10,6 +10,7 @@
   import { AlbumResponseDto, api } from '@api';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { disableShortcut } from '$lib/stores/shortcut.store';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -19,11 +20,13 @@
 
   const handleHideAlbumPicker = () => {
     showAlbumPicker = false;
+    $disableShortcut = false;
     closeMenu();
   };
 
   const handleAddToNewAlbum = (event: CustomEvent) => {
     showAlbumPicker = false;
+    $disableShortcut = false;
 
     const { albumName }: { albumName: string } = event.detail;
     const assetIds = Array.from(getAssets()).map((asset) => asset.id);
@@ -43,6 +46,7 @@
 
   const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
     showAlbumPicker = false;
+    $disableShortcut = false;
     const album = event.detail.album;
     const assetIds = Array.from(getAssets()).map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
@@ -50,7 +54,13 @@
   };
 </script>
 
-<MenuOption on:click={() => (showAlbumPicker = true)} text={shared ? 'Add to Shared Album' : 'Add to Album'} />
+<MenuOption
+  on:click={() => {
+    showAlbumPicker = true;
+    $disableShortcut = true;
+  }}
+  text={shared ? 'Add to Shared Album' : 'Add to Album'}
+/>
 
 {#if showAlbumPicker}
   <AlbumSelectionModal

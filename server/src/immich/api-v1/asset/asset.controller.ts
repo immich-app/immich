@@ -63,7 +63,7 @@ export class AssetController {
   async uploadFile(
     @AuthUser() authUser: AuthUserDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
-    @Body(new ValidationPipe()) dto: CreateAssetDto,
+    @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
@@ -90,7 +90,7 @@ export class AssetController {
   @Post('import')
   async importFile(
     @AuthUser() authUser: AuthUserDto,
-    @Body(new ValidationPipe()) dto: ImportAssetDto,
+    @Body(new ValidationPipe({ transform: true })) dto: ImportAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const responseDto = await this.assetService.importFile(authUser, dto);

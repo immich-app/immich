@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.pro
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/tab.provider.dart';
 
 class TabControllerPage extends HookConsumerWidget {
   const TabControllerPage({Key? key}) : super(key: key);
@@ -51,6 +52,7 @@ class TabControllerPage extends HookConsumerWidget {
           }
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
+          ref.read(tabProvider.notifier).state = TabEnum.values[index];
         },
         selectedIconTheme: IconThemeData(
           color: Theme.of(context).primaryColor,
@@ -103,6 +105,7 @@ class TabControllerPage extends HookConsumerWidget {
           }
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
+          ref.read(tabProvider.notifier).state = TabEnum.values[index];
         },
         destinations: [
           NavigationDestination(

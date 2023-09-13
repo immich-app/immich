@@ -27,6 +27,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
+  import { disableShortcut } from '$lib/stores/shortcut.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -89,6 +90,10 @@
   };
 
   const handleKeyboardPress = (key: string, shiftKey: boolean) => {
+    if ($disableShortcut) {
+      return;
+    }
+
     switch (key) {
       case 'a':
       case 'A':
@@ -207,11 +212,13 @@
 
   const openAlbumPicker = (shared: boolean) => {
     isShowAlbumPicker = true;
+    $disableShortcut = true;
     addToSharedAlbum = shared;
   };
 
   const handleAddToNewAlbum = (event: CustomEvent) => {
     isShowAlbumPicker = false;
+    $disableShortcut = false;
 
     const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
@@ -222,6 +229,7 @@
 
   const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
     isShowAlbumPicker = false;
+    $disableShortcut = false;
     const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
@@ -449,7 +457,10 @@
       on:newAlbum={handleAddToNewAlbum}
       on:newSharedAlbum={handleAddToNewAlbum}
       on:album={handleAddToAlbum}
-      on:close={() => (isShowAlbumPicker = false)}
+      on:close={() => {
+        isShowAlbumPicker = false;
+        $disableShortcut = false;
+      }}
     />
   {/if}
 

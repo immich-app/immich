@@ -1,9 +1,10 @@
 import { AppModule, OAuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub } from '@test/fixtures';
 import request from 'supertest';
-import { errorStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 describe(`${OAuthController.name} (e2e)`, () => {
   let app: INestApplication;
@@ -20,7 +21,7 @@ describe(`${OAuthController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
+    await api.authApi.adminSignUp(server);
   });
 
   afterAll(async () => {

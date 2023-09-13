@@ -153,44 +153,30 @@ describe(AlbumService.name, () => {
   describe('create', () => {
     it('creates album', async () => {
       albumMock.create.mockResolvedValue(albumStub.empty);
+      userMock.get.mockResolvedValue(userStub.user1);
 
-      await expect(sut.create(authStub.admin, { albumName: 'Empty album' })).resolves.toEqual({
+      await sut.create(authStub.admin, {
         albumName: 'Empty album',
+        sharedWithUserIds: ['user-id'],
         description: '',
-        albumThumbnailAssetId: null,
-        assetCount: 0,
-        assets: [],
-        createdAt: expect.anything(),
-        id: 'album-1',
-        owner: {
-          email: 'admin@test.com',
-          firstName: 'admin_first_name',
-          id: 'admin_id',
-          isAdmin: true,
-          lastName: 'admin_last_name',
-          oauthId: '',
-          profileImagePath: '',
-          shouldChangePassword: false,
-          storageLabel: 'admin',
-          createdAt: new Date('2021-01-01'),
-          deletedAt: null,
-          updatedAt: new Date('2021-01-01'),
-          externalPath: null,
-          memoriesEnabled: true,
-        },
-        ownerId: 'admin_id',
-        shared: false,
-        sharedUsers: [],
-        startDate: undefined,
-        endDate: undefined,
-        hasSharedLink: false,
-        updatedAt: expect.anything(),
+        assetIds: ['123'],
       });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ALBUM,
         data: { ids: [albumStub.empty.id] },
       });
+
+      expect(albumMock.create).toHaveBeenCalledWith({
+        ownerId: authStub.admin.id,
+        albumName: albumStub.empty.albumName,
+        description: albumStub.empty.description,
+        sharedUsers: [{ id: 'user-id' }],
+        assets: [{ id: '123' }],
+        albumThumbnailAssetId: '123',
+      });
+
+      expect(userMock.get).toHaveBeenCalledWith('user-id');
     });
 
     it('should require valid userIds', async () => {

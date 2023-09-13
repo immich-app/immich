@@ -1351,6 +1351,7 @@ class MemoryRouteArgs {
   }
 }
 
+/// generated route for
 /// [MapPage]
 class MapRoute extends PageRouteInfo<void> {
   const MapRoute()
