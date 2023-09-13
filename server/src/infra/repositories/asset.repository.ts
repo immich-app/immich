@@ -156,6 +156,10 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { ownerId: userId, checksum } });
+  }
+
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
 

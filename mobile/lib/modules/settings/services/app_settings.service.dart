@@ -49,6 +49,7 @@ enum AppSettingsEnum<T> {
   mapThemeMode<bool>(StoreKey.mapThemeMode, null, false),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
   mapRelativeDate<int>(StoreKey.mapRelativeDate, null, 0),
+  allowSelfSignedSSLCert<bool>(StoreKey.selfSignedCert, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

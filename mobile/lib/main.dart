@@ -29,6 +29,7 @@ import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
@@ -41,6 +42,7 @@ void main() async {
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
+  HttpOverrides.global = HttpSSLCertOverride();
   runApp(getMainWidget(db));
 }
 
