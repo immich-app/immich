@@ -211,7 +211,7 @@ describe(LibraryService.name, () => {
           {
             ownerId: mockUser.id,
             libraryId: libraryStub.externalLibrary1.id,
-            checksum: expect.any(String),
+            checksum: expect.any(Buffer),
             originalPath: '/data/user1/photo.jpg',
             deviceAssetId: expect.any(String),
             deviceId: 'Library Import',
@@ -258,7 +258,7 @@ describe(LibraryService.name, () => {
           {
             ownerId: mockUser.id,
             libraryId: libraryStub.externalLibrary1.id,
-            checksum: expect.any(String),
+            checksum: expect.any(Buffer),
             originalPath: '/data/user1/photo.jpg',
             deviceAssetId: expect.any(String),
             deviceId: 'Library Import',
@@ -304,7 +304,7 @@ describe(LibraryService.name, () => {
           {
             ownerId: mockUser.id,
             libraryId: libraryStub.externalLibrary1.id,
-            checksum: expect.any(String),
+            checksum: expect.any(Buffer),
             originalPath: '/data/user1/video.mp4',
             deviceAssetId: expect.any(String),
             deviceId: 'Library Import',
