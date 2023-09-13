@@ -66,39 +66,39 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 # Features
 
-| Functies                                            | Mobile | Web |
+| Functies                                            | Mobiel | Web |
 | --------------------------------------------------- | ------ | --- |
-| Upload en bekijk video's en foto's                  | Yes    | Yes |
-| Automatische back-up wanneer de app wordt geopend   | Yes    | NVT |
-| Selectieve album(s) voor back-up                    | Yes    | NVT |
-| Download foto's en video's naar een lokaal apparaat | Yes    | Yes |
-| Ondersteuning voor meerdere gebruikers              | Yes    | Yes |
-| Album en gedeelde albums                            | Yes    | Yes |
-| Versleepbare scroll balk                            | Yes    | Yes |
-| Ondersteuening voor het RAW formaat                 | Yes    | Yes |
-| Metagegevensweergave (EXIF, kaart)                  | Yes    | Yes |
-| Zoek op metagegevens, objecten, gezichten en CLIP   | Yes    | Yes |
-| Administratieve functies (gebruikersbeheer)         | No     | Yes |
-| Back-up op de achtergrond                           | Yes    | NVT |
-| Virtueel scrollen                                   | Yes    | Yes |
-| OAuth-ondersteuning                                 | Yes    | Yes |
-| API-sleutels                                        | NVT    | Yes |
-| LivePhoto-back-up en weergave                       | iOS    | Yes |
-| Door de gebruiker gedefinieerde opslagstructuur     | Yes    | Yes |
-| Openbaar delen                                      | No     | Yes |
-| Archief en Favorieten                               | Yes    | Yes |
-| Wereld  kaart                                       | Yes    | Yes |
-| Delen met partner                                   | Yes    | Yes |
-| Gezichtsherkenning en groepering                    | Yes    | Yes |
-| Herinneringen (x jaar geleden)                      | Yes    | Yes |
-| Offline-ondersteuning                               | Yes    | No  |
-| Alleen-lezen galerij                                | Yes    | Yes |
+| Upload en bekijk video's en foto's                  | Ja     | Ja  |
+| Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
+| Selectieve album(s) voor back-up                    | Ja     | NVT |
+| Download foto's en video's naar een lokaal apparaat | Ja     | Ja  |
+| Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
+| Album en gedeelde albums                            | Ja     | Ja  |
+| Versleepbare scroll balk                            | Ja     | Ja  |
+| Ondersteuening voor het RAW formaat                 | Ja     | Ja  |
+| Metagegevensweergave (EXIF, kaart)                  | Ja     | Ja  |
+| Zoek op metagegevens, objecten, gezichten en CLIP   | Ja     | Ja  |
+| Administratieve functies (gebruikersbeheer)         | Nee    | Ja  |
+| Back-up op de achtergrond                           | Ja     | NVT |
+| Virtueel scrollen                                   | Ja     | Ja  |
+| OAuth-ondersteuning                                 | Ja     | Ja  |
+| API-sleutels                                        | NVT    | Ja  |
+| LivePhoto-back-up en weergave                       | iOS    | Ja  |
+| Door de gebruiker gedefinieerde opslagstructuur     | Ja     | Ja  |
+| Openbaar delen                                      | Nee    | Ja  |
+| Archief en Favorieten                               | Ja     | Ja  |
+| Wereld  kaart                                       | Ja     | Ja  |
+| Delen met partner                                   | Ja     | Ja  |
+| Gezichtsherkenning en groepering                    | Ja     | Ja  |
+| Herinneringen (x Ja  ar geleden)                    | Ja     | Ja  |
+| Offline-ondersteuning                               | Ja     | Nee |
+| Alleen-lezen galerij                                | Ja     | Ja  |
 
 # Support the project
 
-Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp nodig om mij extra motivatie te geven om door te gaan.
+Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp Needig om mij extra motivatie te geven om door te gaan.
 
-Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een enorme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
+Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een eNeerme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
 
 Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel lang ziet gebruiken, overweeg dan om het project te steunen met de onderstaande optie.
 
