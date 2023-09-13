@@ -2,10 +2,6 @@
 sidebar_position: 3
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-import CodeBlock from '@theme/CodeBlock';
-
 # Helpful database queries for advanced debugging of Immich
 
 ## Prerequisites
@@ -24,7 +20,7 @@ In that shell, simply run `psql immich DB_USERNAME` while replacing your `DB_USE
 
 ### Kubernetes
 
-If you're using Kubernetes in your home lab you are crazy and know how to run a command anyway.
+If you're using Kubernetes in your home lab you know what you are doing and how to run a command anyway.
 
 ## Queries
 
@@ -32,8 +28,7 @@ If you're using Kubernetes in your home lab you are crazy and know how to run a 
 Don't forget the ';' at the end of each query ;)
 :::
 
-<Tabs queryString='query'>
-<TabItem value="assetInformatonByName" label="Get asset information by file name" default>
+### Get asset information by file name
 
 ```sql
 SELECT
@@ -46,8 +41,7 @@ WHERE
 
 `FILE NAME` should hereby be replaced by the according file name.
 
-</TabItem>
-<TabItem value="assetsWithoutMetadata" label="Get all assets without metadata">
+### Get all assets without metadata
 
 ```sql
 SELECT
@@ -60,9 +54,9 @@ WHERE
 	"exif"."assetId" IS NULL;
 ```
 
-</TabItem>
-<TabItem value="systemConfig" label="Get stored system config">
-<b>Only applicable when not using the <a href="https://docs.immich.app/docs/install/config-file">config file</a>.</b>
+### Get stored system config
+
+**Only applicable when not using the [config file](https://docs.immich.app/docs/install/config-file).**
 
 ```sql
 SELECT
@@ -70,6 +64,3 @@ SELECT
 FROM
 	"system_config";
 ```
-
-</TabItem>
-</Tabs>
