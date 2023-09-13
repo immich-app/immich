@@ -91,7 +91,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
-    this.albumRepository.softDeleteAll(userId);
+    await this.albumRepository.softDeleteAll(userId);
     const deletedUser = await this.userCore.deleteUser(authUser, user);
     return mapUser(deletedUser);
   }
@@ -101,6 +101,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    await this.albumRepository.restoreAll(userId);
     const updatedUser = await this.userCore.restoreUser(authUser, user);
     return mapUser(updatedUser);
   }

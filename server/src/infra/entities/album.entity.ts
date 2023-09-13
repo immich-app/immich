@@ -55,5 +55,5 @@ export class AlbumEntity {
   sharedLinks!: SharedLinkEntity[];
 
   @DeleteDateColumn()
-  deletedAt?: Date;
+  deletedAt?: Date | null;
 }
