@@ -33,18 +33,18 @@
 - ⚠️ **Gebruik de app niet als de enige manier om uw foto's en video's op te slaan.**
 - ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
 
-## Content
+## Inhoud
 
 - [Officiële documentatie](https://immich.app/docs)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
-- [Functies](#features)
+- [Functies](#functies)
 - [Introductie](https://immich.app/docs/overview/introduction)
 - [Installatie](https://immich.app/docs/install/requirements)
 - [Richtlijnen voor bijdragen](https://immich.app/docs/overview/support-the-project)
-- [Steun het project](#support-the-project)
+- [Steun het project](#steun-het-project)
 
-## Documentation
+## Documentatie
 
 De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vinden op https://immich.app/.
 
@@ -64,7 +64,7 @@ wachtwoord: demo
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
-# Features
+# Functies
 
 | Functies                                            | Mobiel | Web |
 | --------------------------------------------------- | ------ | --- |
@@ -94,7 +94,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
 
-# Support the project
+# Steun het project
 
 Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp Needig om mij extra motivatie te geven om door te gaan.
 
@@ -102,7 +102,7 @@ Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-m
 
 Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel lang ziet gebruiken, overweeg dan om het project te steunen met de onderstaande optie.
 
-## Donation
+## Doneren
 
 - [Maandelijke donatie](https://github.com/sponsors/alextran1502) via GitHub Sponsors
 - [Eenmalige donatie](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
