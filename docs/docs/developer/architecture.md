@@ -89,6 +89,12 @@ The machine learning service is written in [Python](https://www.python.org/) and
 
 All machine learning related operations have been externalized to this service, `immich-machine-learning`. Python is a natural choice for AI and machine learning. It also has some pretty specific hardware requirements. Running it as a separate container makes it possible to run the container on a separate machine, or easily disable it entirely.
 
+Each request to the machine learning service contains the relevant metadata for the model task, model name, and so on. These settings are stored in Postgres along with other system configs. For each request, the microservices container fetches these settings in order to attach them to the request.
+
+Internally, the machine learning service downloads, loads and configures the specified model for a given request before processing the text or image payload with it. Models that have been loaded are cached and reused across requests. A thread pool is used to process each request in a different thread so as not to block the async event loop.
+
+All models are in ONNX format. This format has wide industry support, meaning that most other model formats can be exported to it and many hardware APIs support it. It's also quite fast.
+
 Machine learning models are also quite _large_, requiring _quite a bit_ of memory. We are always looking for ways to improve and optimize this aspect of this container specifically.
 
 ### Postgres

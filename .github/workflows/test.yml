@@ -149,7 +149,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.0"
+          flutter-version: "3.13.3"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1

@@ -9,6 +9,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getByAlbumId: jest.fn(),
     getByUserId: jest.fn(),
     getWithout: jest.fn(),
+    getByChecksum: jest.fn(),
     getWith: jest.fn(),
     getFirstAssetForAlbumId: jest.fn(),
     getLastUpdatedAssetForAlbumId: jest.fn(),

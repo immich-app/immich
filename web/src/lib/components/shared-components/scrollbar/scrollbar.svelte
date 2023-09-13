@@ -59,7 +59,7 @@
 {#if $assetStore.timelineHeight > height}
   <div
     id="immich-scrubbable-scrollbar"
-    class="fixed right-0 z-[100] select-none bg-immich-bg hover:cursor-row-resize"
+    class="fixed right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
     style:width={isDragging ? '100vw' : '60px'}
     style:height={height + 'px'}
     style:background-color={isDragging ? 'transparent' : 'transparent'}
