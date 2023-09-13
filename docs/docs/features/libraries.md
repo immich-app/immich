@@ -18,6 +18,12 @@ If a file is modified outside of Immich, the changes will not be reflected in im
 - Scan All Library Files: Same as above, but will check each existing asset to see if the modification time has changed. If it has, the asset will be updated. Since it has to check each asset, this is slower than Scan Library Files.
 - Force Scan All Library Files: Same as above, but will read each asset from disk no matter the modification time. This is useful in some cases where an asset has been modified externally but the modification time has not changed. This is the slowest way to scan because it reads each asset from disk.
 
+:::caution
+
+Due to aggressive caching it can take some time for a refreshed asset to appear correctly in the web view. You need to clear the cache in your browser to see the changes. This is a known issue and will be fixed in a future release. In Chrome, you need to open the developer console with F12, then reload the page with F5, and finally right click on the reload button and select "Empty Cache and Hard Reload".
+
+:::
+
 In external libraries, the file path is used for duplicate detection. This means that if a file is moved to a different location, it will be added as a new asset. If the file is moved back to its original location, it will be added as a new asset. In contrast to upload libraries, two identical files can be uploaded if they are in different locations. This is a deliberate design choice to make Immich reflect the file system as closely as possible. Remember that duplication detection is only done within the same library, so if you have multiple external libraries, the same file can be added to multiple libraries.
 
 ### Deleted External Assets
