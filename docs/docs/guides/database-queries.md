@@ -4,6 +4,17 @@ sidebar_position: 3
 
 # Helpful database queries for advanced debugging of Immich
 
+:::danger
+
+Keep in mind that mucking around in the database might set the moon on fire, as I've been told.
+All queries provided below should not modify anything.
+Do NOT modify the database, as this will break your install.
+
+Nevertheless, it is highly recommended to have current backups.
+As always: No backup? No pity!
+
+:::
+
 ## Prerequisites
 
 In order to execute the queries, you must first connect to the container and get the postgres shell.
