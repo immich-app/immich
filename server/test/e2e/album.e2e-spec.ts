@@ -406,15 +406,15 @@ describe(`${AlbumController.name} (e2e)`, () => {
       expect(body).toEqual(expect.objectContaining({ sharedUsers: [expect.objectContaining({ id: user2.userId })] }));
     });
 
-    // it('should not be able to share album with owner', async () => {
-    //   const { status, body } = await request(server)
-    //     .put(`/album/${album.id}/users`)
-    //     .set('Authorization', `Bearer ${user1.accessToken}`)
-    //     .send({ sharedUserIds: [user2.userId] });
+    it('should not be able to share album with owner', async () => {
+      const { status, body } = await request(server)
+        .put(`/album/${album.id}/users`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedUserIds: [user1.userId] });
 
-    //   expect(status).toBe(400);
-    //   expect(body).toEqual(errorStub.badRequest);
-    // });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest);
+    });
 
     it('should not be able to add existing user to shared album', async () => {
       await request(server)
