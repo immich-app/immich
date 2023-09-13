@@ -10,6 +10,7 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     getOwned: jest.fn(),
     getShared: jest.fn(),
     getNotShared: jest.fn(),
+    softDeleteAll: jest.fn(),
     deleteAll: jest.fn(),
     getAll: jest.fn(),
     removeAsset: jest.fn(),
