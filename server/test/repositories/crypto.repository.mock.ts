@@ -9,6 +9,5 @@ export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
     hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
     hashSha1: jest.fn().mockImplementation((input) => Buffer.from(`${input.toString()} (hashed)`)),
     hashFile: jest.fn().mockImplementation((input) => `${input} (file-hashed)`),
-    hashSha1: jest.fn().mockImplementation((input) => `${input} (hashed)`),
   };
 };
