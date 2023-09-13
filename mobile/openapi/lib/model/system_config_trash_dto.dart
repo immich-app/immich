@@ -17,7 +17,7 @@ class SystemConfigTrashDto {
     required this.enabled,
   });
 
-  num days;
+  int days;
 
   bool enabled;
 
@@ -50,9 +50,7 @@ class SystemConfigTrashDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigTrashDto(
-        days: json[r'days'] == null
-            ? null
-            : num.parse(json[r'days'].toString()),
+        days: mapValueOfType<int>(json, r'days')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
       );
     }

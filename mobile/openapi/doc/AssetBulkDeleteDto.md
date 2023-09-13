@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**emptyTrash** | **bool** |  | [optional] 
 **force** | **bool** |  | [optional] 
 **ids** | **List<String>** |  | [default to const []]
 

@@ -5053,6 +5053,9 @@
       },
       "AssetBulkDeleteDto": {
         "properties": {
+          "emptyTrash": {
+            "type": "boolean"
+          },
           "force": {
             "type": "boolean"
           },
@@ -6672,14 +6675,14 @@
             "type": "string"
           },
           "trashDays": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
+          "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl",
-          "trashDays"
+          "mapTileUrl"
         ],
         "type": "object"
       },
@@ -7413,15 +7416,15 @@
       "SystemConfigTrashDto": {
         "properties": {
           "days": {
-            "type": "number"
+            "type": "integer"
           },
           "enabled": {
             "type": "boolean"
           }
         },
         "required": [
-          "enabled",
-          "days"
+          "days",
+          "enabled"
         ],
         "type": "object"
       },

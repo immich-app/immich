@@ -25,7 +25,7 @@ class ServerConfigDto {
 
   String oauthButtonText;
 
-  num trashDays;
+  int trashDays;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
@@ -65,9 +65,7 @@ class ServerConfigDto {
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         mapTileUrl: mapValueOfType<String>(json, r'mapTileUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
-        trashDays: json[r'trashDays'] == null
-            ? null
-            : num.parse(json[r'trashDays'].toString()),
+        trashDays: mapValueOfType<int>(json, r'trashDays')!,
       );
     }
     return null;

@@ -44,7 +44,7 @@ export class AppService {
   async init() {
     await this.jobService.registerHandlers({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
-      [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
+      [JobName.ASSET_DELETION_CHECK]: (data) => this.assetService.handleAssetDeletionCheck(data),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),

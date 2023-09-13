@@ -16,7 +16,7 @@ void main() {
   // final instance = SystemConfigTrashDto();
 
   group('test SystemConfigTrashDto', () {
-    // num days
+    // int days
     test('to test the property `days`', () async {
       // TODO
     });

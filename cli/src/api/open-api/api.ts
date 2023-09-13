@@ -355,6 +355,12 @@ export interface AssetBulkDeleteDto {
      * @type {boolean}
      * @memberof AssetBulkDeleteDto
      */
+    'emptyTrash'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkDeleteDto
+     */
     'force'?: boolean;
     /**
      * 

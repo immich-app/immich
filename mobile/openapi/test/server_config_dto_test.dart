@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    // num trashDays
+    // int trashDays
     test('to test the property `trashDays`', () async {
       // TODO
     });

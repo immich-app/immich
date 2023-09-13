@@ -103,15 +103,17 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         ownerId: userId,
-        isVisible: true,
+        isVisible: options.isVisible,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
       },
+      withDeleted: !!options.trashedBefore,
     });
   }
 

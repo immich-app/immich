@@ -3,14 +3,14 @@ import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { ISystemConfigRepository, SystemConfigCore } from '..';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IEntityJob, IJobRepository, ITrashJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IAssetRepository } from './asset.repository';
 import {
   AssetBulkDeleteDto,
@@ -68,7 +68,7 @@ export class AssetService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) private configRepository: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
@@ -275,7 +275,9 @@ export class AssetService {
     if (dto.userId) {
       const userId = dto.userId;
       await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
-      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
+      return usePagination(PAGINATION_SIZE, (pagination) =>
+        this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
+      );
     }
 
     throw new BadRequestException('assetIds, albumId, or userId is required');
@@ -305,14 +307,18 @@ export class AssetService {
     await this.assetRepository.updateAll(ids, options);
   }
 
-  async handleAssetDeletionCheck() {
+  async handleAssetDeletionCheck(job: ITrashJob) {
+    const { force: emptyBin, userId } = job;
     const config = await this.configCore.getConfig();
-    const trashedDays = config.trash.enabled ? config.trash.days : 0;
+    const trashedDays = config.trash.enabled && !emptyBin ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
+    // If userId is not available, empty the trash for all users, else empty trash only for the specific user
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore: trashedBefore }),
+      !userId
+        ? this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore })
+        : this.assetRepository.getByUserId(pagination, userId, { trashedBefore }),
     );
 
     for await (const assets of assetPagination) {
@@ -359,7 +365,16 @@ export class AssetService {
   }
 
   async deleteAll(authUser: AuthUserDto, dto: AssetBulkDeleteDto): Promise<void> {
-    const { ids, force } = dto;
+    const { ids, force, emptyTrash } = dto;
+
+    if (emptyTrash) {
+      await this.jobRepository.queue({
+        name: JobName.ASSET_DELETION_CHECK,
+        data: { force: true, userId: authUser.id },
+      });
+      return;
+    }
+
     await this.access.requirePermission(authUser, Permission.ASSET_DELETE, ids);
 
     if (force) {
