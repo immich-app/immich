@@ -23,6 +23,7 @@ export interface IAlbumRepository {
   getOwned(ownerId: string): Promise<AlbumEntity[]>;
   getShared(ownerId: string): Promise<AlbumEntity[]>;
   getNotShared(ownerId: string): Promise<AlbumEntity[]>;
+  softDeleteAll(userId: string): Promise<void>;
   deleteAll(userId: string): Promise<void>;
   getAll(): Promise<AlbumEntity[]>;
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity>;

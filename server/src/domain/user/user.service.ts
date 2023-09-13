@@ -91,6 +91,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    this.albumRepository.softDeleteAll(userId);
     const deletedUser = await this.userCore.deleteUser(authUser, user);
     return mapUser(deletedUser);
   }
