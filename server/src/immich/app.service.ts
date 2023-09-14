@@ -32,7 +32,7 @@ export class AppService {
   async onConfig(config: SystemConfig) {
     if (
       config.newVersionCheck.enabled &&
-      !this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
+      !this.serverService.schedulerRegistry.doesExist('interval', 'check-available-version')
     ) {
       this.logger.verbose('Added check-available-version interval');
       await this.systemConfigService.handleImmichLatestVersionAvailable();
@@ -40,15 +40,15 @@ export class AppService {
         () => this.systemConfigService.handleImmichLatestVersionAvailable(),
         checkIntervalTime,
       );
-      this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
+      this.serverService.schedulerRegistry.addInterval('check-available-version', interval);
     } else if (
       !config.newVersionCheck.enabled &&
-      this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
+      this.serverService.schedulerRegistry.doesExist('interval', 'check-available-version')
     ) {
       this.logger.verbose('Removed check-available-version interval');
       this.systemConfigService.availableVersion = null;
       this.systemConfigService.dateCheckAvailbleVersion = null;
-      this.configCore.schedulerRegistry.deleteInterval('check-available-version');
+      this.serverService.schedulerRegistry.deleteInterval('check-available-version');
     }
   }
 
@@ -62,7 +62,15 @@ export class AppService {
     await this.searchService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
 
-    await this.serverService.initCheckNewService();
+    const config = await this.configCore.getConfig();
+    if (config.newVersionCheck.enabled) {
+      await this.systemConfigService.handleImmichLatestVersionAvailable();
+      const interval = setInterval(
+        () => this.systemConfigService.handleImmichLatestVersionAvailable(),
+        checkIntervalTime,
+      );
+      this.serverService.schedulerRegistry.addInterval('check-available-version', interval);
+    }
   }
 
   async destroy() {

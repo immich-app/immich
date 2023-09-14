@@ -1,5 +1,5 @@
-import { checkIntervalTime } from '@app/infra';
 import { Inject, Injectable } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -20,6 +20,7 @@ import {
 export class ServerInfoService {
   private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  public schedulerRegistry: SchedulerRegistry;
 
   constructor(
     private systemConfigService: SystemConfigService,
@@ -28,6 +29,7 @@ export class ServerInfoService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.schedulerRegistry = new SchedulerRegistry();
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -68,21 +70,9 @@ export class ServerInfoService {
     return this.configCore.getFeatures();
   }
 
-  async initCheckNewService() {
-    const config = await this.configCore.getConfig();
-    if (config.newVersionCheck.enabled) {
-      await this.systemConfigService.handleImmichLatestVersionAvailable();
-      const interval = setInterval(
-        () => this.systemConfigService.handleImmichLatestVersionAvailable(),
-        checkIntervalTime,
-      );
-      this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
-    }
-  }
-
   teardown() {
-    if (this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')) {
-      this.configCore.schedulerRegistry.deleteInterval('check-available-version');
+    if (this.schedulerRegistry.doesExist('interval', 'check-available-version')) {
+      this.schedulerRegistry.deleteInterval('check-available-version');
     }
   }
 

@@ -12,7 +12,6 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as _ from 'lodash';
@@ -137,11 +136,7 @@ export class SystemConfigCore {
 
   public config$ = singleton;
 
-  public schedulerRegistry: SchedulerRegistry;
-
-  constructor(private repository: ISystemConfigRepository) {
-    this.schedulerRegistry = new SchedulerRegistry();
-  }
+  constructor(private repository: ISystemConfigRepository) {}
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
