@@ -76,7 +76,6 @@
       previousRoute = from.url.href;
     }
     if (previousPersonId !== data.person.id) {
-      console.log('person changed!');
       assetStore = new AssetStore({
         size: TimeBucketSize.Month,
         isArchived: false,
