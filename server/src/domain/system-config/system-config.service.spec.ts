@@ -1,7 +1,7 @@
 import {
   AudioCodec,
-  CQMode,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -13,7 +13,7 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { IJobRepository, JobName, QueueName } from '../job';
-import { SystemConfigValidator, defaults } from './system-config.core';
+import { defaults, SystemConfigValidator } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 
@@ -102,7 +102,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
-  checkAvailableVersion: {
+  newVersionCheck: {
     enabled: true,
   },
 });

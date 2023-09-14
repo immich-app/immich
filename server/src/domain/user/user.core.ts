@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ReadStream, constants, createReadStream } from 'fs';
+import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
@@ -16,10 +16,7 @@ import { IUserRepository, UserListFilter } from './user.repository';
 const SALT_ROUNDS = 10;
 
 export class UserCore {
-  constructor(
-    private userRepository: IUserRepository,
-    private cryptoRepository: ICryptoRepository,
-  ) {}
+  constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {

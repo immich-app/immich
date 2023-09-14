@@ -31,7 +31,7 @@ export class AppService {
 
   async onConfig(config: SystemConfig) {
     if (
-      config.checkAvailableVersion.enabled &&
+      config.newVersionCheck.enabled &&
       !this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
     ) {
       this.logger.verbose('Added check-available-version interval');
@@ -42,7 +42,7 @@ export class AppService {
       );
       this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
     } else if (
-      !config.checkAvailableVersion.enabled &&
+      !config.newVersionCheck.enabled &&
       this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')
     ) {
       this.logger.verbose('Removed check-available-version interval');
@@ -63,7 +63,7 @@ export class AppService {
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
 
     const config = await this.configCore.getConfig();
-    if (config.checkAvailableVersion.enabled) {
+    if (config.newVersionCheck.enabled) {
       await this.systemConfigService.handleImmichLatestVersionAvailable();
       const interval = setInterval(
         () => this.systemConfigService.handleImmichLatestVersionAvailable(),

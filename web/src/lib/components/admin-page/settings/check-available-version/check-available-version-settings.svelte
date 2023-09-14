@@ -23,8 +23,8 @@
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.checkAvailableVersion),
-      api.systemConfigApi.getDefaults().then((res) => res.data.checkAvailableVersion),
+      api.systemConfigApi.getConfig().then((res) => res.data.newVersionCheck),
+      api.systemConfigApi.getDefaults().then((res) => res.data.newVersionCheck),
     ]);
   }
   onMount(async () => {
@@ -42,12 +42,12 @@
       const result = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...configs,
-          checkAvailableVersion: checkAvailableVersionConfig,
+          newVersionCheck: checkAvailableVersionConfig,
         },
       });
 
-      checkAvailableVersionConfig = { ...result.data.checkAvailableVersion };
-      savedConfig = { ...result.data.checkAvailableVersion };
+      checkAvailableVersionConfig = { ...result.data.newVersionCheck };
+      savedConfig = { ...result.data.newVersionCheck };
 
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
     } catch (error) {
@@ -58,8 +58,8 @@
   async function reset() {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-    checkAvailableVersionConfig = { ...resetConfig.checkAvailableVersion };
-    savedConfig = { ...resetConfig.checkAvailableVersion };
+    checkAvailableVersionConfig = { ...resetConfig.newVersionCheck };
+    savedConfig = { ...resetConfig.newVersionCheck };
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -70,8 +70,8 @@
   async function resetToDefault() {
     const { data: configs } = await api.systemConfigApi.getDefaults();
 
-    checkAvailableVersionConfig = { ...configs.checkAvailableVersion };
-    defaultConfig = { ...configs.checkAvailableVersion };
+    checkAvailableVersionConfig = { ...configs.newVersionCheck };
+    defaultConfig = { ...configs.newVersionCheck };
 
     notificationController.show({
       message: 'Reset settings to default',

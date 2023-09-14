@@ -1,7 +1,7 @@
 import { AuthUserDto, SearchDto, SearchExploreResponseDto, SearchResponseDto, SearchService } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated } from '../app.guard';
+import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 @ApiTags('Search')

@@ -16,11 +16,6 @@ void main() {
   // final instance = SystemConfigDto();
 
   group('test SystemConfigDto', () {
-    // SystemConfigCheckAvailableVersionDto checkAvailableVersion
-    test('to test the property `checkAvailableVersion`', () async {
-      // TODO
-    });
-
     // SystemConfigFFmpegDto ffmpeg
     test('to test the property `ffmpeg`', () async {
       // TODO
@@ -38,6 +33,11 @@ void main() {
 
     // SystemConfigMapDto map
     test('to test the property `map`', () async {
+      // TODO
+    });
+
+    // SystemConfigCheckAvailableVersionDto newVersionCheck
+    test('to test the property `newVersionCheck`', () async {
       // TODO
     });
 

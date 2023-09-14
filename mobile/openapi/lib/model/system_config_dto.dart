@@ -13,18 +13,16 @@ part of openapi.api;
 class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
-    required this.checkAvailableVersion,
     required this.ffmpeg,
     required this.job,
     required this.machineLearning,
     required this.map,
+    required this.newVersionCheck,
     required this.oauth,
     required this.passwordLogin,
     required this.storageTemplate,
     required this.thumbnail,
   });
-
-  SystemConfigCheckAvailableVersionDto checkAvailableVersion;
 
   SystemConfigFFmpegDto ffmpeg;
 
@@ -33,6 +31,8 @@ class SystemConfigDto {
   SystemConfigMachineLearningDto machineLearning;
 
   SystemConfigMapDto map;
+
+  SystemConfigCheckAvailableVersionDto newVersionCheck;
 
   SystemConfigOAuthDto oauth;
 
@@ -44,11 +44,11 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
-     other.checkAvailableVersion == checkAvailableVersion &&
      other.ffmpeg == ffmpeg &&
      other.job == job &&
      other.machineLearning == machineLearning &&
      other.map == map &&
+     other.newVersionCheck == newVersionCheck &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
      other.storageTemplate == storageTemplate &&
@@ -57,26 +57,26 @@ class SystemConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (checkAvailableVersion.hashCode) +
     (ffmpeg.hashCode) +
     (job.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
+    (newVersionCheck.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
     (storageTemplate.hashCode) +
     (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[checkAvailableVersion=$checkAvailableVersion, ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'checkAvailableVersion'] = this.checkAvailableVersion;
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'job'] = this.job;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
+      json[r'newVersionCheck'] = this.newVersionCheck;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'storageTemplate'] = this.storageTemplate;
@@ -92,11 +92,11 @@ class SystemConfigDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigDto(
-        checkAvailableVersion: SystemConfigCheckAvailableVersionDto.fromJson(json[r'checkAvailableVersion'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
+        newVersionCheck: SystemConfigCheckAvailableVersionDto.fromJson(json[r'newVersionCheck'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
@@ -148,11 +148,11 @@ class SystemConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'checkAvailableVersion',
     'ffmpeg',
     'job',
     'machineLearning',
     'map',
+    'newVersionCheck',
     'oauth',
     'passwordLogin',
     'storageTemplate',

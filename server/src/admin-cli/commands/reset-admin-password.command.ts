@@ -6,10 +6,7 @@ import { Command, CommandRunner, InquirerService, Question, QuestionSet } from '
   description: 'Reset the admin password',
 })
 export class ResetAdminPasswordCommand extends CommandRunner {
-  constructor(
-    private userService: UserService,
-    private readonly inquirer: InquirerService,
-  ) {
+  constructor(private userService: UserService, private readonly inquirer: InquirerService) {
     super();
   }
 

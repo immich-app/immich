@@ -8,11 +8,11 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**checkAvailableVersion** | [**SystemConfigCheckAvailableVersionDto**](SystemConfigCheckAvailableVersionDto.md) |  | 
 **ffmpeg** | [**SystemConfigFFmpegDto**](SystemConfigFFmpegDto.md) |  | 
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
+**newVersionCheck** | [**SystemConfigCheckAvailableVersionDto**](SystemConfigCheckAvailableVersionDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 

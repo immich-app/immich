@@ -108,7 +108,7 @@
     </SettingAccordion>
 
     <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
-      <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.checkAvailableVersion} />
+      <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.newVersionCheck} />
     </SettingAccordion>
   {/await}
 </section>

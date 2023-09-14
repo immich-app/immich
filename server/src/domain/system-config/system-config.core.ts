@@ -1,7 +1,7 @@
 import {
   AudioCodec,
-  CQMode,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -12,6 +12,7 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as _ from 'lodash';
@@ -20,7 +21,6 @@ import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { SystemConfigDto } from './dto';
 import { ISystemConfigRepository } from './system-config.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
@@ -107,7 +107,7 @@ export const defaults = Object.freeze<SystemConfig>({
     colorspace: Colorspace.P3,
   },
 
-  checkAvailableVersion: {
+  newVersionCheck: {
     enabled: true,
   },
 });

@@ -2869,12 +2869,6 @@ export interface SystemConfigCheckAvailableVersionDto {
 export interface SystemConfigDto {
     /**
      * 
-     * @type {SystemConfigCheckAvailableVersionDto}
-     * @memberof SystemConfigDto
-     */
-    'checkAvailableVersion': SystemConfigCheckAvailableVersionDto;
-    /**
-     * 
      * @type {SystemConfigFFmpegDto}
      * @memberof SystemConfigDto
      */
@@ -2897,6 +2891,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'map': SystemConfigMapDto;
+    /**
+     * 
+     * @type {SystemConfigCheckAvailableVersionDto}
+     * @memberof SystemConfigDto
+     */
+    'newVersionCheck': SystemConfigCheckAvailableVersionDto;
     /**
      * 
      * @type {SystemConfigOAuthDto}

@@ -7096,9 +7096,6 @@
       },
       "SystemConfigDto": {
         "properties": {
-          "checkAvailableVersion": {
-            "$ref": "#/components/schemas/SystemConfigCheckAvailableVersionDto"
-          },
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
@@ -7110,6 +7107,9 @@
           },
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
+          },
+          "newVersionCheck": {
+            "$ref": "#/components/schemas/SystemConfigCheckAvailableVersionDto"
           },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
@@ -7133,7 +7133,7 @@
           "storageTemplate",
           "job",
           "thumbnail",
-          "checkAvailableVersion"
+          "newVersionCheck"
         ],
         "type": "object"
       },

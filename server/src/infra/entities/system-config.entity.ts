@@ -80,7 +80,7 @@ export enum SystemConfigKey {
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
 
-  CHECK_AVAILABLE_VERSION_ENABLED = 'checkAvailableVersion.enabled',
+  CHECK_AVAILABLE_VERSION_ENABLED = 'newVersionCheck.enabled',
   THUMBNAIL_QUALITY = 'thumbnail.quality',
   THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
 }
@@ -198,7 +198,7 @@ export interface SystemConfig {
     quality: number;
     colorspace: Colorspace;
   };
-  checkAvailableVersion: {
+  newVersionCheck: {
     enabled: boolean;
   };
 }

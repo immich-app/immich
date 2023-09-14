@@ -55,7 +55,7 @@ export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigCheckAvailableVersionDto)
   @ValidateNested()
   @IsObject()
-  checkAvailableVersion!: SystemConfigCheckAvailableVersionDto;
+  newVersionCheck!: SystemConfigCheckAvailableVersionDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

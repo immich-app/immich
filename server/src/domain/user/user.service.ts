@@ -14,11 +14,11 @@ import { SystemConfigService } from '../system-config';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
-  UserCountResponseDto,
-  UserResponseDto,
   mapCreateProfileImageResponse,
   mapUser,
   mapUserCountResponse,
+  UserCountResponseDto,
+  UserResponseDto,
 } from './response-dto';
 import { AvailableVersionResponseDto } from './response-dto/user-available-version.dto';
 import { UserCore } from './user.core';
