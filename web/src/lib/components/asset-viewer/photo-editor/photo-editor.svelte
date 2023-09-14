@@ -40,6 +40,7 @@
   import Pillar from 'svelte-material-icons/Pillar.svelte';
 
   import Render from './render.svelte';
+  import { presets } from './filter.js';
 
   import { createEventDispatcher } from 'svelte';
 
@@ -76,6 +77,8 @@
   let currentCrop = { width: 0, height: 0 };
   let currentFlipY = false;
   let currentFlipX = false;
+
+  let currentFilter = 'Without';
 
   let currentRatio = 0;
 
@@ -124,13 +127,18 @@
   //END DEBUG
 
   // Apply filter
-  $: if (imageElement) {
-    imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+  $: if (imageElement && filter) {
+    console.log('apply filter');
+    console.log(filter);
+    (imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
       filter.contrast
     }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
       filter.opacity
-    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`),
+      console.log('applied filter');
   }
+
+  $: (filter = currentFilter === 'Without' ? presets.without : presets[currentFilter]), console.log(filter);
 
   onMount(async () => {
     try {
@@ -983,35 +991,36 @@
       <div class="grid justify-center px-6 pt-2">
         <!-- Filter -->
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Without" />
-          <FilterCard title="Vivid" />
+          <FilterCard title="Custom" bind:currentFilter />
+          <FilterCard title="Without" bind:currentFilter />
+          <FilterCard title="Vivid" bind:currentFilter />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Playa" />
-          <FilterCard title="Honey" />
-          <FilterCard title="Isla" />
-          <FilterCard title="Desert" />
-          <FilterCard title="Clay" />
-          <FilterCard title="Palma" />
-          <FilterCard title="Blush" />
-          <FilterCard title="Alpaca" />
-          <FilterCard title="Modena" />
+          <FilterCard title="Playa" bind:currentFilter />
+          <FilterCard title="Honey" bind:currentFilter />
+          <FilterCard title="Isla" bind:currentFilter />
+          <FilterCard title="Desert" bind:currentFilter />
+          <FilterCard title="Clay" bind:currentFilter />
+          <FilterCard title="Palma" bind:currentFilter />
+          <FilterCard title="Blush" bind:currentFilter />
+          <FilterCard title="Alpaca" bind:currentFilter />
+          <FilterCard title="Modena" bind:currentFilter />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="West" />
-          <FilterCard title="Metro" />
-          <FilterCard title="Reel" />
-          <FilterCard title="Bazaar" />
-          <FilterCard title="Ollie" />
+          <FilterCard title="West" bind:currentFilter />
+          <FilterCard title="Metro" bind:currentFilter />
+          <FilterCard title="Reel" bind:currentFilter />
+          <FilterCard title="Bazaar" bind:currentFilter />
+          <FilterCard title="Ollie" bind:currentFilter />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Onyx" />
-          <FilterCard title="Eiffel" />
-          <FilterCard title="Vogue" />
-          <FilterCard title="Vista" />
+          <FilterCard title="Onyx" bind:currentFilter />
+          <FilterCard title="Eiffel" bind:currentFilter />
+          <FilterCard title="Vogue" bind:currentFilter />
+          <FilterCard title="Vista" bind:currentFilter />
         </div>
       </div>
     {/if}
@@ -1026,7 +1035,7 @@
     aspectRatio={aspectRatioNum}
     crop={currentCrop}
     ratio={currentRatio}
-    filter={filter}
+    {filter}
   />
 </div>
 
