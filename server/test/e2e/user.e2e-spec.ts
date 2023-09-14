@@ -1,4 +1,4 @@
-import { LoginResponseDto } from '@app/domain';
+import { AlbumResponseDto, IAlbumRepository, LoginResponseDto, UserResponseDto, UserService } from '@app/domain';
 import { AppModule, UserController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -12,6 +12,8 @@ describe(`${UserController.name}`, () => {
   let server: any;
   let loginResponse: LoginResponseDto;
   let accessToken: string;
+  let userService: UserService;
+  let albumRepository: IAlbumRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,6 +29,9 @@ describe(`${UserController.name}`, () => {
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
+
+    albumRepository = app.get<IAlbumRepository>(IAlbumRepository);
+    userService = app.get<UserService>(UserService);
   });
 
   afterAll(async () => {
@@ -170,6 +175,55 @@ describe(`${UserController.name}`, () => {
         memoriesEnabled: false,
       });
       expect(status).toBe(201);
+    });
+  });
+
+  describe('DELETE /user/:id', () => {
+    let userToDelete: UserResponseDto;
+    let album: AlbumResponseDto;
+
+    beforeEach(async () => {
+      userToDelete = await api.userApi.create(server, accessToken, {
+        email: userStub.user1.email,
+        firstName: userStub.user1.firstName,
+        lastName: userStub.user1.lastName,
+        password: 'superSecurePassword',
+      });
+      const { accessToken: userAccessToken } = await api.authApi.login(server, {
+        email: userToDelete.email,
+        password: 'superSecurePassword',
+      });
+
+      album = await api.albumApi.create(server, userAccessToken, { albumName: 'album' });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).delete(`/user/${userToDelete.id}`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should delete user and linked albums', async () => {
+      const deleteRequest = await request(server)
+        .delete(`/user/${userToDelete.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(deleteRequest.status).toBe(200);
+      expect(deleteRequest.body).toEqual(
+        expect.objectContaining({ ...userToDelete, updatedAt: expect.anything(), deletedAt: expect.anything() }),
+      );
+
+      await userService.handleUserDelete({ id: userToDelete.id });
+
+      const { status, body } = await request(server)
+        .get('/user')
+        .query({ isAll: true })
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+
+      await expect(albumRepository.getById(album.id, { withAssets: true })).resolves.toEqual(null);
     });
   });
 
