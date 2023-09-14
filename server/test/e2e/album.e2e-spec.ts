@@ -413,7 +413,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .send({ sharedUserIds: [user1.userId] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual({ ...errorStub.badRequest, message: 'Cannot be shared with owner' });
     });
 
     it('should not be able to add existing user to shared album', async () => {
