@@ -67,6 +67,12 @@ export class ServerInfoService {
     return this.configCore.getFeatures();
   }
 
+  teardown() {
+    if (this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')) {
+      this.configCore.schedulerRegistry.deleteInterval('check-available-version');
+    }
+  }
+
   async getConfig(): Promise<ServerConfigDto> {
     const config = await this.configCore.getConfig();
 

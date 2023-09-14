@@ -75,8 +75,6 @@ export class AppService {
 
   async destroy() {
     this.searchService.teardown();
-    if (this.configCore.schedulerRegistry.doesExist('interval', 'check-available-version')) {
-      this.configCore.schedulerRegistry.deleteInterval('check-available-version');
-    }
+    this.serverService.teardown();
   }
 }

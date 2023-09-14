@@ -1,4 +1,4 @@
-import { ServerVersion } from '..';
+import { ServerVersion } from '../domain.constant';
 import { compareVersions, stringToVersion } from './system-config.util';
 
 describe('compare server versions', () => {
