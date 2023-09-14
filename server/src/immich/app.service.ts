@@ -62,15 +62,7 @@ export class AppService {
     await this.searchService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
 
-    const config = await this.configCore.getConfig();
-    if (config.newVersionCheck.enabled) {
-      await this.systemConfigService.handleImmichLatestVersionAvailable();
-      const interval = setInterval(
-        () => this.systemConfigService.handleImmichLatestVersionAvailable(),
-        checkIntervalTime,
-      );
-      this.configCore.schedulerRegistry.addInterval('check-available-version', interval);
-    }
+    await this.serverService.initCheckNewService();
   }
 
   async destroy() {
