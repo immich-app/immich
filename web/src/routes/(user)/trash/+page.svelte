@@ -17,6 +17,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { api, TimeBucketSize } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+  import HistoryOutline from 'svelte-material-icons/History.svelte';
   import type { PageData } from './$types';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
@@ -32,7 +33,7 @@
 
   const handleEmptyTrash = async () => {
     try {
-      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [], emptyTrash: true } });
+      await api.assetApi.updateTrash({ updateTrashDto: { deleteAll: true } });
 
       notificationController.show({
         message: `Empty trash initiated. Refresh the page to see the changes`,
@@ -40,6 +41,19 @@
       });
     } catch (e) {
       handleError(e, 'Error emptying trash');
+    }
+  };
+
+  const handleRestoreTrash = async () => {
+    try {
+      await api.assetApi.updateTrash({ updateTrashDto: { restoreAll: true } });
+
+      notificationController.show({
+        message: `Restore trash initiated. Refresh the page to see the changes`,
+        type: NotificationType.Info,
+      });
+    } catch (e) {
+      handleError(e, 'Error restoring trash');
     }
   };
 </script>
@@ -55,6 +69,12 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
     <div class="flex place-items-center gap-2" slot="buttons">
+      <LinkButton on:click={handleRestoreTrash}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <HistoryOutline size="18" />
+          Restore All
+        </div>
+      </LinkButton>
       <LinkButton on:click={handleEmptyTrash}>
         <div class="flex place-items-center gap-2 text-sm">
           <DeleteOutline size="18" />

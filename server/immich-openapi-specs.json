@@ -1961,6 +1961,41 @@
         ]
       }
     },
+    "/asset/trash": {
+      "post": {
+        "operationId": "updateTrash",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrashDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
@@ -5053,9 +5088,6 @@
       },
       "AssetBulkDeleteDto": {
         "properties": {
-          "emptyTrash": {
-            "type": "boolean"
-          },
           "force": {
             "type": "boolean"
           },
@@ -7548,6 +7580,17 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateTrashDto": {
+        "properties": {
+          "deleteAll": {
+            "type": "boolean"
+          },
+          "restoreAll": {
+            "type": "boolean"
           }
         },
         "type": "object"

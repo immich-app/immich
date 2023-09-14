@@ -29,4 +29,17 @@ class TrashService {
       return false;
     }
   }
+
+  Future<void> updateTrash({bool? restoreAll, bool? deleteAll}) async {
+    try {
+      await _apiService.assetApi.updateTrash(
+        UpdateTrashDto(
+          restoreAll: restoreAll,
+          deleteAll: deleteAll,
+        ),
+      );
+    } catch (error, stack) {
+      log.severe("Cannot restore assets ${error.toString()}", error, stack);
+    }
+  }
 }

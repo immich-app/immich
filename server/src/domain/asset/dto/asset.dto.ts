@@ -30,8 +30,4 @@ export class AssetBulkDeleteDto extends BulkIdsDto {
   @IsOptional()
   @IsBoolean()
   force?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  emptyTrash?: boolean;
 }

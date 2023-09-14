@@ -6,7 +6,6 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
-  ITrashJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -75,7 +74,7 @@ export type JobItem =
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
   | { name: JobName.ASSET_DELETION; data: IEntityJob }
-  | { name: JobName.ASSET_DELETION_CHECK; data: ITrashJob }
+  | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

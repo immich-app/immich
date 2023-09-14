@@ -19,6 +19,7 @@ import {
   TimeBucketDto,
   TimeBucketResponseDto,
   UpdateAssetDto as UpdateDto,
+  UpdateTrashDto,
 } from '@app/domain';
 import {
   Body,
@@ -116,6 +117,12 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(authUser, dto);
+  }
+
+  @Post('trash')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updateTrash(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateTrashDto): Promise<void> {
+    return this.service.updateTrash(authUser, dto);
   }
 
   @Put(':id')

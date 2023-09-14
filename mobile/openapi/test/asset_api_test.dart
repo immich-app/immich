@@ -159,6 +159,11 @@ void main() {
       // TODO
     });
 
+    //Future updateTrash(UpdateTrashDto updateTrashDto) async
+    test('test updateTrash', () async {
+      // TODO
+    });
+
     //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isReadOnly, bool isVisible, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO

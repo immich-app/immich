@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dar
 import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
@@ -32,17 +31,10 @@ class TrashPage extends HookConsumerWidget {
     }
 
     handleEmptyTrash() async {
-      // TODO: Need to properly handle asset refresh after empty trash
       processing.value = true;
-      await ref.read(assetServiceProvider).deleteAssets(
-        [],
-        emptyTrash: true,
-      );
-      await Future.delayed(
-        const Duration(seconds: 2),
-        () async => await ref.read(assetProvider.notifier).getAllAsset(),
-      );
+      await ref.read(trashProvider.notifier).emptyTrash();
       processing.value = false;
+      selectionEnabledHook.value = false;
     }
 
     Future<void> handlePermanentDelete() async {
@@ -69,7 +61,12 @@ class TrashPage extends HookConsumerWidget {
       }
     }
 
-    Future<void> handleRestoreAll() async {}
+    Future<void> handleRestoreAll() async {
+      processing.value = true;
+      await ref.read(trashProvider.notifier).restoreTrash();
+      processing.value = false;
+      selectionEnabledHook.value = false;
+    }
 
     Future<void> handleRestore() async {
       processing.value = true;
@@ -110,7 +107,12 @@ class TrashPage extends HookConsumerWidget {
     AppBar buildAppBar(String count) {
       return AppBar(
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: !selectionEnabledHook.value
+              ? () => AutoRouter.of(context).pop()
+              : () {
+                  selectionEnabledHook.value = false;
+                  selection.value = {};
+                },
           icon: !selectionEnabledHook.value
               ? const Icon(Icons.arrow_back_ios_rounded)
               : const Icon(Icons.close_rounded),

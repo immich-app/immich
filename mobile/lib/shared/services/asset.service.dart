@@ -89,7 +89,6 @@ class AssetService {
   Future<bool> deleteAssets(
     Iterable<Asset> deleteAssets, {
     bool? force = false,
-    bool? emptyTrash = false,
   }) async {
     try {
       final List<String> payload = [];
@@ -102,7 +101,6 @@ class AssetService {
         AssetBulkDeleteDto(
           ids: payload,
           force: force,
-          emptyTrash: emptyTrash,
         ),
       );
       return true;

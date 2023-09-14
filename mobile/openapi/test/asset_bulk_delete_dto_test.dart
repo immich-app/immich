@@ -16,11 +16,6 @@ void main() {
   // final instance = AssetBulkDeleteDto();
 
   group('test AssetBulkDeleteDto', () {
-    // bool emptyTrash
-    test('to test the property `emptyTrash`', () async {
-      // TODO
-    });
-
     // bool force
     test('to test the property `force`', () async {
       // TODO

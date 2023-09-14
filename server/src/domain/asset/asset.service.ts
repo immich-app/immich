@@ -8,7 +8,7 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IEntityJob, IJobRepository, ITrashJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IAssetRepository } from './asset.repository';
@@ -27,6 +27,7 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   UpdateAssetDto,
+  UpdateTrashDto,
   mapStats,
 } from './dto';
 import {
@@ -307,18 +308,14 @@ export class AssetService {
     await this.assetRepository.updateAll(ids, options);
   }
 
-  async handleAssetDeletionCheck(job: ITrashJob) {
-    const { force: emptyBin, userId } = job;
+  async handleAssetDeletionCheck() {
     const config = await this.configCore.getConfig();
-    const trashedDays = config.trash.enabled && !emptyBin ? config.trash.days : 0;
+    const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
-    // If userId is not available, empty the trash for all users, else empty trash only for the specific user
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      !userId
-        ? this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore })
-        : this.assetRepository.getByUserId(pagination, userId, { trashedBefore }),
+      this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore }),
     );
 
     for await (const assets of assetPagination) {
@@ -365,15 +362,7 @@ export class AssetService {
   }
 
   async deleteAll(authUser: AuthUserDto, dto: AssetBulkDeleteDto): Promise<void> {
-    const { ids, force, emptyTrash } = dto;
-
-    if (emptyTrash) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION_CHECK,
-        data: { force: true, userId: authUser.id },
-      });
-      return;
-    }
+    const { ids, force } = dto;
 
     await this.access.requirePermission(authUser, Permission.ASSET_DELETE, ids);
 
@@ -384,6 +373,34 @@ export class AssetService {
       }
     } else {
       await this.assetRepository.softDeleteAll(ids);
+    }
+  }
+
+  async updateTrash(authUser: AuthUserDto, dto: UpdateTrashDto): Promise<void> {
+    const { restoreAll, deleteAll } = dto;
+
+    if (!restoreAll && !deleteAll) {
+      return;
+    }
+
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getByUserId(pagination, authUser.id, { trashedBefore: DateTime.now().toJSDate() }),
+    );
+
+    if (restoreAll) {
+      for await (const assets of assetPagination) {
+        await this.assetRepository.restoreAll(assets.map((a) => a.id));
+      }
+      return;
+    }
+
+    if (deleteAll) {
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
+        }
+      }
+      return;
     }
   }
 

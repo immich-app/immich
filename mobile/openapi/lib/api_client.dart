@@ -415,6 +415,8 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
+        case 'UpdateTrashDto':
+          return UpdateTrashDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':

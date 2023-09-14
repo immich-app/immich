@@ -26,10 +26,6 @@ export interface IBulkEntityJob extends IBaseJob {
   ids: string[];
 }
 
-export interface ITrashJob extends IBaseJob {
-  userId?: string;
-}
-
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }

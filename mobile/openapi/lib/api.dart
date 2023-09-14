@@ -161,6 +161,7 @@ part 'model/transcode_policy.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_asset_dto.dart';
 part 'model/update_tag_dto.dart';
+part 'model/update_trash_dto.dart';
 part 'model/update_user_dto.dart';
 part 'model/usage_by_user_dto.dart';
 part 'model/user_count_response_dto.dart';

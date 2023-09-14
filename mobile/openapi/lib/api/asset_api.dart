@@ -1517,6 +1517,45 @@ class AssetApi {
     }
   }
 
+  /// Performs an HTTP 'POST /asset/trash' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [UpdateTrashDto] updateTrashDto (required):
+  Future<Response> updateTrashWithHttpInfo(UpdateTrashDto updateTrashDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/trash';
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateTrashDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [UpdateTrashDto] updateTrashDto (required):
+  Future<void> updateTrash(UpdateTrashDto updateTrashDto,) async {
+    final response = await updateTrashWithHttpInfo(updateTrashDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
