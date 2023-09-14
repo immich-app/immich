@@ -312,10 +312,10 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    RecycleBinRoute.name: (routeData) {
+    TrashRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const RecycleBinPage(),
+        child: const TrashPage(),
       );
     },
     HomeRoute.name: (routeData) {
@@ -634,7 +634,7 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
-          RecycleBinRoute.name,
+          TrashRoute.name,
           path: '/recycle-bin-page',
           guards: [
             authGuard,
@@ -1412,15 +1412,15 @@ class AlbumOptionsRouteArgs {
 }
 
 /// generated route for
-/// [RecycleBinPage]
-class RecycleBinRoute extends PageRouteInfo<void> {
-  const RecycleBinRoute()
+/// [TrashPage]
+class TrashRoute extends PageRouteInfo<void> {
+  const TrashRoute()
       : super(
-          RecycleBinRoute.name,
+          TrashRoute.name,
           path: '/recycle-bin-page',
         );
 
-  static const String name = 'RecycleBinRoute';
+  static const String name = 'TrashRoute';
 }
 
 /// generated route for

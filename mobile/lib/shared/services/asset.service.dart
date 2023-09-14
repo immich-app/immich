@@ -55,7 +55,7 @@ class AssetService {
         .getAuditDeletes(EntityType.ASSET, since, userId: user.id);
     if (deleted == null || deleted.needsFullSync) return (null, null);
     final assetDto = await _apiService.assetApi
-        .getAllAssets(userId: user.id, updatedAfter: since, withDeleted: true);
+        .getAllAssets(userId: user.id, updatedAfter: since);
     if (assetDto == null) return (null, null);
     return (assetDto.map(Asset.remote).toList(), deleted.ids);
   }
@@ -66,7 +66,6 @@ class AssetService {
       final List<AssetResponseDto>? assets =
           await _apiService.assetApi.getAllAssets(
         userId: user.id,
-        withDeleted: true,
       );
       if (assets == null) {
         return null;
@@ -90,6 +89,7 @@ class AssetService {
   Future<bool> deleteAssets(
     Iterable<Asset> deleteAssets, {
     bool? force = false,
+    bool? emptyTrash = false,
   }) async {
     try {
       final List<String> payload = [];
@@ -98,8 +98,13 @@ class AssetService {
         payload.add(asset.remoteId!);
       }
 
-      await _apiService.assetApi
-          .deleteAssets(AssetBulkDeleteDto(ids: payload, force: force));
+      await _apiService.assetApi.deleteAssets(
+        AssetBulkDeleteDto(
+          ids: payload,
+          force: force,
+          emptyTrash: emptyTrash,
+        ),
+      );
       return true;
     } catch (error, stack) {
       log.severe("Error deleteAssets  ${error.toString()}", error, stack);

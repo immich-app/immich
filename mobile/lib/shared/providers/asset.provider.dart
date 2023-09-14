@@ -101,21 +101,27 @@ class AssetNotifier extends StateNotifier<bool> {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        final trashedAssets = deleteAssets.map((e) {
-          e.isTrashed = true;
-          return e;
-        }).toList();
+        // Local only assets are permanently deleted for now. So always remove them from db
+        var dbIds = deleteAssets
+            .where((a) => a.isLocal && !a.isRemote)
+            .map((e) => e.id)
+            .toList();
         if (force == null || !force) {
+          final trashedAssets = remoteDeleted.map((e) {
+            e.isTrashed = true;
+            return e;
+          }).toList();
           await _db.writeTxn(() async {
             await _db.assets.putAll(trashedAssets);
           });
         } else {
-          final dbIds = deleteAssets.map((e) => e.id).toList();
-          await _db.writeTxn(() async {
-            await _db.exifInfos.deleteAll(dbIds);
-            await _db.assets.deleteAll(dbIds);
-          });
+          // Add all remote assets to be deleted from isar as since they are permanently deleted
+          dbIds.addAll(remoteDeleted.map((e) => e.id));
         }
+        await _db.writeTxn(() async {
+          await _db.exifInfos.deleteAll(dbIds);
+          await _db.assets.deleteAll(dbIds);
+        });
       }
     } finally {
       _deleteInProgress = false;
@@ -139,14 +145,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return [];
   }
 
-  Future<Iterable<String?>> _deleteRemoteAssets(
+  Future<Iterable<Asset>> _deleteRemoteAssets(
     Iterable<Asset> assetsToDelete,
     bool? force,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
 
     final isSuccess = await _assetService.deleteAssets(remote, force: force);
-    return isSuccess ? remote.map((e) => e.remoteId) : [];
+    return isSuccess ? remote : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, bool status) async {

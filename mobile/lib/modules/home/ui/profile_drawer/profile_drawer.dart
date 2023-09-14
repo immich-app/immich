@@ -102,14 +102,14 @@ class ProfileDrawer extends HookConsumerWidget {
           ),
         ),
         title: Text(
-          "Recycled Bin",
+          "Trash",
           style: Theme.of(context)
               .textTheme
               .labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () {
-          AutoRouter.of(context).push(const RecycleBinRoute());
+          AutoRouter.of(context).push(const TrashRoute());
         },
       );
     }
