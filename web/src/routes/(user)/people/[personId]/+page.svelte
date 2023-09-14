@@ -206,6 +206,14 @@
       handleError(error, 'Unable to save date of birth');
     }
   };
+
+  const goBack = () => {
+    viewMode = ViewMode.VIEW_ASSETS;
+    if ($page.url.searchParams.has('action')) {
+      $page.url.searchParams.delete('action');
+      goto($page.url);
+    }
+  };
 </script>
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
@@ -228,7 +236,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={() => (viewMode = ViewMode.VIEW_ASSETS)} />
+  <MergeFaceSelector person={data.person} on:go-back={() => goBack()} />
 {/if}
 
 <header>
