@@ -28,7 +28,7 @@
     ]);
   }
   onMount(async () => {
-    const { data } = await api.userApi.getLatestImmichVersionAvailable();
+    const { data } = await api.serverInfoApi.getLatestImmichVersionAvailable();
     if (data.dateCheckAvailbleVersion) lastCheck = new Date(data.dateCheckAvailbleVersion).toLocaleString();
     else {
       lastCheck = 'Never';

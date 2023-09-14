@@ -17,6 +17,11 @@ void main() {
   // final instance = ServerInfoApi();
 
   group('tests for ServerInfoApi', () {
+    //Future<AvailableVersionResponseDto> getLatestImmichVersionAvailable() async
+    test('test getLatestImmichVersionAvailable', () async {
+      // TODO
+    });
+
     //Future<ServerConfigDto> getServerConfig() async
     test('test getServerConfig', () async {
       // TODO

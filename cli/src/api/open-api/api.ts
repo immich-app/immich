@@ -10961,6 +10961,44 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getLatestImmichVersionAvailable: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/server-info/available-version`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getServerConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/server-info/config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -11192,6 +11230,15 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getLatestImmichVersionAvailable(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AvailableVersionResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getLatestImmichVersionAvailable(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getServerConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerConfigDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getServerConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -11265,6 +11312,14 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getLatestImmichVersionAvailable(options?: AxiosRequestConfig): AxiosPromise<AvailableVersionResponseDto> {
+            return localVarFp.getLatestImmichVersionAvailable(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getServerConfig(options?: AxiosRequestConfig): AxiosPromise<ServerConfigDto> {
             return localVarFp.getServerConfig(options).then((request) => request(axios, basePath));
         },
@@ -11326,6 +11381,16 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
  * @extends {BaseAPI}
  */
 export class ServerInfoApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServerInfoApi
+     */
+    public getLatestImmichVersionAvailable(options?: AxiosRequestConfig) {
+        return ServerInfoApiFp(this.configuration).getLatestImmichVersionAvailable(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -13435,44 +13500,6 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLatestImmichVersionAvailable: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/user/available-version`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         getMyUserInfo: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/user/me`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -13765,15 +13792,6 @@ export const UserApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getLatestImmichVersionAvailable(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AvailableVersionResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLatestImmichVersionAvailable(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         async getMyUserInfo(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getMyUserInfo(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -13873,14 +13891,6 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          */
         getAllUsers(requestParameters: UserApiGetAllUsersRequest, options?: AxiosRequestConfig): AxiosPromise<Array<UserResponseDto>> {
             return localVarFp.getAllUsers(requestParameters.isAll, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getLatestImmichVersionAvailable(options?: AxiosRequestConfig): AxiosPromise<AvailableVersionResponseDto> {
-            return localVarFp.getLatestImmichVersionAvailable(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14113,16 +14123,6 @@ export class UserApi extends BaseAPI {
      */
     public getAllUsers(requestParameters: UserApiGetAllUsersRequest, options?: AxiosRequestConfig) {
         return UserApiFp(this.configuration).getAllUsers(requestParameters.isAll, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UserApi
-     */
-    public getLatestImmichVersionAvailable(options?: AxiosRequestConfig) {
-        return UserApiFp(this.configuration).getLatestImmichVersionAvailable(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

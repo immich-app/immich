@@ -142,6 +142,7 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
+*ServerInfoApi* | [**getLatestImmichVersionAvailable**](doc//ServerInfoApi.md#getlatestimmichversionavailable) | **GET** /server-info/available-version | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
@@ -173,7 +174,6 @@ Class | Method | HTTP request | Description
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getLatestImmichVersionAvailable**](doc//UserApi.md#getlatestimmichversionavailable) | **GET** /user/available-version | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
 *UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 

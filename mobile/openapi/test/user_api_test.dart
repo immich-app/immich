@@ -37,11 +37,6 @@ void main() {
       // TODO
     });
 
-    //Future<AvailableVersionResponseDto> getLatestImmichVersionAvailable() async
-    test('test getLatestImmichVersionAvailable', () async {
-      // TODO
-    });
-
     //Future<UserResponseDto> getMyUserInfo() async
     test('test getMyUserInfo', () async {
       // TODO
