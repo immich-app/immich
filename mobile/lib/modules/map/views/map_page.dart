@@ -166,14 +166,15 @@ class MapPageState extends ConsumerState<MapPage> {
         final mapMarker = mapMarkerData.value
             .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
         if (mapMarker != null) {
+          const zoomLevel = 16.0;
           LatLng? newCenter = mapController.centerBoundsWithPadding(
             mapMarker.point,
             const Offset(0, -120),
-            zoomLevel: 6,
+            zoomLevel: zoomLevel,
           );
           if (newCenter != null) {
             forceAssetUpdate = true;
-            mapController.move(newCenter, 6);
+            mapController.move(newCenter, zoomLevel);
           }
         }
       }
@@ -385,6 +386,7 @@ class MapPageState extends ConsumerState<MapPage> {
             builder: (ctx) => GestureDetector(
               onTap: () => openAssetInViewer(closestAssetMarker.value!.asset),
               child: AssetMarkerIcon(
+                key: Key(closestAssetMarker.value!.asset.remoteId!),
                 isDarkTheme: isDarkTheme,
                 id: closestAssetMarker.value!.asset.remoteId!,
               ),
@@ -421,8 +423,15 @@ class MapPageState extends ConsumerState<MapPage> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: Colors.black.withOpacity(0.5),
-        statusBarIconBrightness: Brightness.light,
+        statusBarColor:
+            (isDarkTheme ? Colors.black : Colors.white).withOpacity(0.5),
+        statusBarIconBrightness:
+            isDarkTheme ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor:
+            isDarkTheme ? Colors.grey[900] : Colors.grey[100],
+        systemNavigationBarIconBrightness:
+            isDarkTheme ? Brightness.light : Brightness.dark,
+        systemNavigationBarDividerColor: Colors.transparent,
       ),
       child: Theme(
         // Override app theme based on map theme

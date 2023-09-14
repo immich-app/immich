@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { ValidateUUID, Optional } from '../../domain.util';
+import { Optional, ValidateUUID } from '../../domain.util';
 
 export class UpdateAlbumDto {
   @Optional()

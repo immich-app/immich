@@ -202,8 +202,9 @@ class BackupService {
     Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
-    Function(ErrorUploadAsset) errorCb,
-  ) async {
+    Function(ErrorUploadAsset) errorCb, {
+    bool sortAssets = false,
+  }) async {
     if (Platform.isAndroid &&
         !(await Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
@@ -218,7 +219,22 @@ class BackupService {
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
-    for (var entity in assetList) {
+    // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
+    await PhotoManager.requestPermissionExtend();
+
+    List<AssetEntity> assetsToUpload = sortAssets
+        // Upload images before video assets
+        // these are further sorted by using their creation date
+        ? assetList.sorted(
+            (a, b) {
+              final cmp = a.typeInt - b.typeInt;
+              if (cmp != 0) return cmp;
+              return a.createDateTime.compareTo(b.createDateTime);
+            },
+          )
+        : assetList.toList();
+
+    for (var entity in assetsToUpload) {
       try {
         if (entity.type == AssetType.video) {
           file = await entity.originFile;
@@ -248,7 +264,8 @@ class BackupService {
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
-          req.fields['fileCreatedAt'] = entity.createDateTime.toUtc().toIso8601String();
+          req.fields['fileCreatedAt'] =
+              entity.createDateTime.toUtc().toIso8601String();
           req.fields['fileModifiedAt'] =
               entity.modifiedDateTime.toUtc().toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();

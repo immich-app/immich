@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Paginated, PaginationOptions } from '../domain.util';
 
 export type AssetStats = Record<AssetType, number>;
@@ -71,6 +71,7 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
+  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
@@ -86,4 +87,5 @@ export interface IAssetRepository {
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  upsertExif(exif: Partial<ExifEntity>): Promise<void>;
 }

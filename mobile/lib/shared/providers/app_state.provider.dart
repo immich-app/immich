@@ -1,4 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -11,6 +13,7 @@ import 'package:immich_mobile/modules/settings/providers/notification_permission
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/providers/tab.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -47,8 +50,18 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
     if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
       ref.read(backupProvider.notifier).resumeBackup();
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-      ref.watch(assetProvider.notifier).getAllAsset();
-      ref.watch(serverInfoProvider.notifier).getServerVersion();
+      ref.read(serverInfoProvider.notifier).getServerVersion();
+      switch (ref.read(tabProvider)) {
+        case TabEnum.home:
+          ref.read(assetProvider.notifier).getAllAsset();
+        case TabEnum.search:
+        // nothing to do
+        case TabEnum.sharing:
+          ref.read(assetProvider.notifier).getPartnerAssets();
+          ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        case TabEnum.library:
+          ref.read(albumProvider.notifier).getAllAlbums();
+      }
     }
 
     ref.watch(websocketProvider.notifier).connect();

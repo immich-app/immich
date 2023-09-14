@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ISystemConfigRepository } from '.';
 import { ServerVersion, serverVersion } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
-import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
+import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
   supportedDayTokens,

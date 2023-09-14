@@ -17,13 +17,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.0"
+          flutter-version: "3.13.3"
 
       - name: Install dependencies
         run: dart pub get

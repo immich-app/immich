@@ -3,15 +3,15 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
-import { ImmichReadStream, IStorageRepository } from '../storage';
+import { IStorageRepository, ImmichReadStream } from '../storage';
 import {
-  mapPerson,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
+  mapPerson,
 } from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
 
@@ -26,7 +26,7 @@ export class PersonService {
   ) {}
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const people = await this.repository.getAll(authUser.id, {
+    const people = await this.repository.getAllForUser(authUser.id, {
       minimumFaceCount: 1,
       withHidden: dto.withHidden || false,
     });

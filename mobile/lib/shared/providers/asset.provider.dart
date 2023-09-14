@@ -27,6 +27,7 @@ class AssetNotifier extends StateNotifier<bool> {
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
+  bool _getPartnerAssetsInProgress = false;
 
   AssetNotifier(
     this._assetService,
@@ -49,19 +50,35 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
-      await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
-      final List<User> partners =
-          await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
-      for (User u in partners) {
-        await _assetService.refreshRemoteAssets(u);
-      }
+
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
       state = false;
+    }
+  }
+
+  Future<void> getPartnerAssets([User? partner]) async {
+    if (_getPartnerAssetsInProgress) return;
+    try {
+      final stopwatch = Stopwatch()..start();
+      _getPartnerAssetsInProgress = true;
+      if (partner == null) {
+        await _userService.refreshUsers();
+        final List<User> partners =
+            await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
+        for (User u in partners) {
+          await _assetService.refreshRemoteAssets(u);
+        }
+      } else {
+        await _assetService.refreshRemoteAssets(partner);
+      }
+      log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
+    } finally {
+      _getPartnerAssetsInProgress = false;
     }
   }
 

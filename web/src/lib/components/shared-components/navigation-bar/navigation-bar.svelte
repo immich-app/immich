@@ -16,7 +16,7 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import Cog from 'svelte-material-icons/Cog.svelte';
   import UserAvatar from '../user-avatar.svelte';
-  import { featureFlags } from '$lib/stores/feature-flags.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   export let user: UserResponseDto;
   export let showUploadButton = true;
 

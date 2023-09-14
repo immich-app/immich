@@ -21,6 +21,7 @@
   import { browser } from '$app/environment';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let data: PageData;
   let selectHidden = false;
@@ -60,6 +61,9 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     switch (event.key) {
       case 'Escape':
         handleCloseClick();

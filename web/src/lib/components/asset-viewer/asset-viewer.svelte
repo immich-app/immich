@@ -27,6 +27,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -52,7 +53,7 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
 
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -88,7 +89,14 @@
     }
   };
 
-  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
+
+    const key = event.key;
+    const shiftKey = event.shiftKey;
+
     switch (key) {
       case 'a':
       case 'A':

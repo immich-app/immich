@@ -2020,7 +2020,6 @@
     },
     "/asset/{id}": {
       "put": {
-        "description": "Update an asset",
         "operationId": "updateAsset",
         "parameters": [
           {
@@ -3338,6 +3337,27 @@
             "api_key": []
           }
         ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/config": {
+      "get": {
+        "operationId": "getServerConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
         "tags": [
           "Server Info"
         ]
@@ -4745,7 +4765,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.76.1",
+    "version": "1.78.1",
     "contact": {}
   },
   "tags": [],
@@ -5241,6 +5261,9 @@
           "originalPath": {
             "type": "string"
           },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -5279,8 +5302,8 @@
           "type",
           "id",
           "deviceAssetId",
-          "ownerId",
           "deviceId",
+          "ownerId",
           "originalPath",
           "originalFileName",
           "resized",
@@ -6677,6 +6700,25 @@
         ],
         "type": "object"
       },
+      "ServerConfigDto": {
+        "properties": {
+          "loginPageMessage": {
+            "type": "string"
+          },
+          "mapTileUrl": {
+            "type": "string"
+          },
+          "oauthButtonText": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oauthButtonText",
+          "loginPageMessage",
+          "mapTileUrl"
+        ],
+        "type": "object"
+      },
       "ServerFeaturesDto": {
         "properties": {
           "clipEncode": {
@@ -6686,6 +6728,9 @@
             "type": "boolean"
           },
           "facialRecognition": {
+            "type": "boolean"
+          },
+          "map": {
             "type": "boolean"
           },
           "oauth": {
@@ -6708,15 +6753,16 @@
           }
         },
         "required": [
-          "configFile",
           "clipEncode",
+          "configFile",
           "facialRecognition",
-          "sidecar",
-          "search",
-          "tagImage",
+          "map",
           "oauth",
           "oauthAutoLaunch",
-          "passwordLogin"
+          "passwordLogin",
+          "sidecar",
+          "search",
+          "tagImage"
         ],
         "type": "object"
       },
@@ -7062,6 +7108,9 @@
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
+          "map": {
+            "$ref": "#/components/schemas/SystemConfigMapDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -7078,6 +7127,7 @@
         "required": [
           "ffmpeg",
           "machineLearning",
+          "map",
           "oauth",
           "passwordLogin",
           "storageTemplate",
@@ -7252,6 +7302,21 @@
           "classification",
           "clip",
           "facialRecognition"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMapDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "tileUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "tileUrl"
         ],
         "type": "object"
       },
@@ -7519,18 +7584,6 @@
           },
           "isFavorite": {
             "type": "boolean"
-          },
-          "tagIds": {
-            "example": [
-              "bf973405-3f2a-48d2-a687-2ed4167164be",
-              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
-              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "title": "Array of tag IDs to add to the asset",
-            "type": "array"
           }
         },
         "type": "object"

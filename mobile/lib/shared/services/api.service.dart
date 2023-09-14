@@ -20,6 +20,7 @@ class ApiService {
   late ServerInfoApi serverInfoApi;
   late PartnerApi partnerApi;
   late PersonApi personApi;
+  late AuditApi auditApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -43,6 +44,7 @@ class ApiService {
     searchApi = SearchApi(_apiClient);
     partnerApi = PartnerApi(_apiClient);
     personApi = PersonApi(_apiClient);
+    auditApi = AuditApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

@@ -64,9 +64,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-    final watchedAsset = ref.watch(assetDetailProvider(currentAsset));
 
-    Asset asset() => watchedAsset.value ?? currentAsset;
+    Asset asset() => currentAsset;
 
     useEffect(
       () {
@@ -194,7 +193,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: asset()),
+            child: ExifBottomSheet(asset: currentAsset),
           );
         },
       );

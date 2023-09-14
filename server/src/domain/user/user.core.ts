@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { constants, createReadStream, ReadStream } from 'fs';
+import { ReadStream, constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';

@@ -1,24 +1,28 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
+  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
   import Calendar from 'svelte-material-icons/Calendar.svelte';
   import CameraIris from 'svelte-material-icons/CameraIris.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
 
   let textarea: HTMLTextAreaElement;
   let description: string;
+
+  $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -93,20 +97,17 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
-  <section
-    class="mx-4 mt-10"
-    style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
-  >
+  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
+      placeholder={!isOwner ? '' : 'Add a description'}
       on:focusin={handleFocusIn}
       on:focusout={handleFocusOut}
       on:input={autoGrowHeight}
       bind:value={description}
-      disabled={$page?.data?.user?.id !== asset.ownerId}
+      disabled={!isOwner}
     />
   </section>
 
@@ -268,12 +269,12 @@
   </div>
 </section>
 
-{#if latlng}
+{#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
       <Map center={latlng} zoom={14}>
         <TileLayer
-          urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+          urlTemplate={$serverConfig.mapTileUrl}
           options={{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}
@@ -291,11 +292,27 @@
   </div>
 {/if}
 
-<section class="p-2 dark:text-immich-dark-fg">
-  <div class="px-4 py-4">
-    {#if albums.length > 0}
-      <p class="pb-4 text-sm">APPEARS IN</p>
-    {/if}
+{#if asset.owner && !isOwner}
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+    <p class="text-sm">SHARED BY</p>
+    <div class="flex gap-4 pt-4">
+      <div>
+        <UserAvatar user={asset.owner} size="md" autoColor />
+      </div>
+
+      <div class="mb-auto mt-auto">
+        <p>
+          {asset.owner.firstName}
+          {asset.owner.lastName}
+        </p>
+      </div>
+    </div>
+  </section>
+{/if}
+
+{#if albums.length > 0}
+  <section class="p-6 dark:text-immich-dark-fg">
+    <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -326,5 +343,5 @@
         </div>
       </a>
     {/each}
-  </div>
-</section>
+  </section>
+{/if}

@@ -7,6 +7,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -17,8 +19,12 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
 
-  bool get hasCoordinates =>
-      asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
+  bool hasCoordinates(ExifInfo? exifInfo) =>
+      exifInfo != null &&
+      exifInfo.latitude != null &&
+      exifInfo.longitude != null &&
+      exifInfo.latitude != 0 &&
+      exifInfo.longitude != 0;
 
   String get formattedDateTime {
     final fileCreatedAt = asset.fileCreatedAt.toLocal();
@@ -28,13 +34,13 @@ class ExifBottomSheet extends HookConsumerWidget {
     return '$date • $time';
   }
 
-  Future<Uri?> _createCoordinatesUri() async {
-    if (!hasCoordinates) {
+  Future<Uri?> _createCoordinatesUri(ExifInfo? exifInfo) async {
+    if (!hasCoordinates(exifInfo)) {
       return null;
     }
 
-    double latitude = asset.exifInfo!.latitude!;
-    double longitude = asset.exifInfo!.longitude!;
+    final double latitude = exifInfo!.latitude!;
+    final double longitude = exifInfo.longitude!;
 
     const zoomLevel = 16;
 
@@ -72,7 +78,8 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exifInfo = asset.exifInfo;
+    final assetWithExif = ref.watch(assetDetailProvider(asset));
+    final exifInfo = (assetWithExif.value ?? asset).exifInfo;
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     var textColor = isDarkTheme ? Colors.white : Colors.black;
 
@@ -101,7 +108,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 ),
               ],
               onTap: (tapPosition, latLong) async {
-                Uri? uri = await _createCoordinatesUri();
+                Uri? uri = await _createCoordinatesUri(exifInfo);
 
                 if (uri == null) {
                   return;
@@ -124,7 +131,7 @@ class ExifBottomSheet extends HookConsumerWidget {
           ? formatBytes(a.exifInfo!.fileSize!)
           : "";
       String text = resolution + fileSize;
-      return text.isEmpty ? null : Text(text);
+      return text.isNotEmpty ? text : null;
     }
 
     buildDragHeader() {
@@ -143,7 +150,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     buildLocation() {
       // Guard no lat/lng
-      if (!hasCoordinates) {
+      if (!hasCoordinates(exifInfo)) {
         return Container();
       }
 
@@ -208,7 +215,58 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
+    buildImageProperties() {
+      // Helper to create the ListTile and avoid repeating code
+      createImagePropertiesListStyle(title, subtitle) => ListTile(
+            contentPadding: const EdgeInsets.all(0),
+            dense: true,
+            leading: Icon(
+              Icons.image,
+              color: textColor.withAlpha(200),
+            ),
+            titleAlignment: ListTileTitleAlignment.center,
+            title: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            subtitle: subtitle,
+          );
+
+      final imgSizeString = buildSizeText(asset);
+
+      if (imgSizeString == null && asset.fileName.isNotEmpty) {
+        // There is only filename
+        return createImagePropertiesListStyle(
+          asset.fileName,
+          null,
+        );
+      } else if (imgSizeString != null && asset.fileName.isNotEmpty) {
+        // There is both filename and size information
+        return createImagePropertiesListStyle(
+          asset.fileName,
+          Text(imgSizeString),
+        );
+      } else if (imgSizeString != null && asset.fileName.isEmpty) {
+        // There is only size information
+        return createImagePropertiesListStyle(
+          imgSizeString,
+          null,
+        );
+      }
+    }
+
     buildDetail() {
+      final imgProperties = buildImageProperties();
+
+      // There are no details
+      if (imgProperties == null &&
+          (exifInfo == null || exifInfo.make == null)) {
+        return Container();
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -223,22 +281,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
             ).tr(),
           ),
-          ListTile(
-            contentPadding: const EdgeInsets.all(0),
-            dense: true,
-            leading: Icon(
-              Icons.image,
-              color: textColor.withAlpha(200),
-            ),
-            title: Text(
-              asset.fileName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            subtitle: buildSizeText(asset),
-          ),
+          if (imgProperties != null) imgProperties,
           if (exifInfo?.make != null)
             ListTile(
               contentPadding: const EdgeInsets.all(0),
@@ -294,7 +337,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
-                              flex: hasCoordinates ? 5 : 0,
+                              flex: hasCoordinates(exifInfo) ? 5 : 0,
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: buildLocation(),
@@ -324,7 +367,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                     if (asset.isRemote) DescriptionInput(asset: asset),
                     const SizedBox(height: 8.0),
                     buildLocation(),
-                    SizedBox(height: hasCoordinates ? 16.0 : 0.0),
+                    SizedBox(height: hasCoordinates(exifInfo) ? 16.0 : 0.0),
                     buildDetail(),
                     const SizedBox(height: 50),
                   ],

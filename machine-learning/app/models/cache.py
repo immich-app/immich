@@ -17,7 +17,7 @@ class ModelCache:
         revalidate: bool = False,
         timeout: int | None = None,
         profiling: bool = False,
-    ):
+    ) -> None:
         """
         Args:
             ttl: Unloads model after this duration. Disabled if None. Defaults to None.
