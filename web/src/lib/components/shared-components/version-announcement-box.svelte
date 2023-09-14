@@ -21,7 +21,7 @@
 
   onMount(async () => {
     try {
-      const { data } = await api.userApi.getLatestImmichVersionAvailable();
+      const { data } = await api.serverInfoApi.getLatestImmichVersionAvailable();
       if (data.isAvailable && data.releaseVersion) {
         releaseVersion = semverToName({
           major: data.releaseVersion.major,
