@@ -283,7 +283,6 @@ export class MetadataExtractionProcessor {
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
-    this.logger.log('dateTimeOriginal', firstDateTime(tags), 'timeZone', tags.tz);
 
     return [
       <ExifEntity>{
