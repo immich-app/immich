@@ -2,9 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
+import { ISystemConfigRepository, SystemConfigCore, SystemConfigService } from '../system-config';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
 import {
+  AvailableVersionResponseDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerInfoResponseDto,
@@ -20,6 +21,7 @@ export class ServerInfoService {
   private configCore: SystemConfigCore;
 
   constructor(
+    private systemConfigService: SystemConfigService,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -42,6 +44,15 @@ export class ServerInfoService {
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
     serverInfo.diskUsagePercentage = parseFloat(usagePercentage);
     return serverInfo;
+  }
+
+  async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
+    return {
+      isAvailable: this.systemConfigService.availableVersion !== null,
+      dateCheckAvailbleVersion: this.systemConfigService.dateCheckAvailbleVersion,
+      currentVersion: serverVersion,
+      releaseVersion: this.systemConfigService.availableVersion,
+    };
   }
 
   ping(): ServerPingResponse {

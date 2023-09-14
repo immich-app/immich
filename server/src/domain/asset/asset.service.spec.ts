@@ -1,9 +1,9 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   assetStub,
   authStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,

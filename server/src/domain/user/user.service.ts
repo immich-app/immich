@@ -6,21 +6,18 @@ import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
-import { serverVersion } from '../domain.constant';
 import { IEntityJob, IJobRepository, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
-import { SystemConfigService } from '../system-config';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
+  UserCountResponseDto,
+  UserResponseDto,
   mapCreateProfileImageResponse,
   mapUser,
   mapUserCountResponse,
-  UserCountResponseDto,
-  UserResponseDto,
 } from './response-dto';
-import { AvailableVersionResponseDto } from './response-dto/user-available-version.dto';
 import { UserCore } from './user.core';
 import { IUserRepository } from './user.repository';
 
@@ -31,7 +28,6 @@ export class UserService {
   private storageCore = new StorageCore();
 
   constructor(
-    private systemConfigService: SystemConfigService,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
 
@@ -78,15 +74,6 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const createdUser = await this.userCore.createUser(createUserDto);
     return mapUser(createdUser);
-  }
-
-  async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
-    return {
-      isAvailable: this.systemConfigService.availableVersion !== null,
-      dateCheckAvailbleVersion: this.systemConfigService.dateCheckAvailbleVersion,
-      currentVersion: serverVersion,
-      releaseVersion: this.systemConfigService.availableVersion,
-    };
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {

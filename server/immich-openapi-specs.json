@@ -3342,6 +3342,38 @@
         ]
       }
     },
+    "/server-info/available-version": {
+      "get": {
+        "operationId": "getLatestImmichVersionAvailable",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableVersionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -4433,38 +4465,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/available-version": {
-      "get": {
-        "operationId": "getLatestImmichVersionAvailable",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AvailableVersionResponseDto"
                 }
               }
             },

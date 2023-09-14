@@ -1,6 +1,6 @@
 import { assetStub, newAssetRepositoryMock, newJobRepositoryMock, newStorageRepositoryMock } from '@test';
 import { constants } from 'fs/promises';
-import { IAssetRepository, WithoutProperty, WithProperty } from '../asset';
+import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { MetadataService } from './metadata.service';

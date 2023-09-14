@@ -10,7 +10,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authenticated, AuthUser } from '../app.guard';
+import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
