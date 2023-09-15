@@ -42,6 +42,7 @@ interface ImmichTags extends Tags {
   MotionPhotoVersion?: number;
   MotionPhotoPresentationTimestampUs?: number;
   MediaGroupUUID?: string;
+  ImagePixelDepth?: string;
 }
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
@@ -260,7 +261,7 @@ export class MetadataExtractionProcessor {
       backfillTimezones: true,
       inferTimezoneFromDatestamps: true,
       useMWG: true,
-      numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
+      numericTags: DefaultReadTaskOptions.numericTags.concat(['BitsPerSample', 'FocalLength', 'ImagePixelDepth']),
       geoTz: (lat: number, lon: number): string => geotz.find(lat, lon)[0],
     };
 
@@ -283,11 +284,18 @@ export class MetadataExtractionProcessor {
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
+    let bitsPerSample = tags.BitsPerSample ?? tags.ComponentBitDepth ?? tags.BitDepth ?? tags.ColorBitDepth ?? null;
+    bitsPerSample ??= tags.ImagePixelDepth ? Number.parseInt(tags.ImagePixelDepth) : null;
+    if (bitsPerSample && bitsPerSample >= 24 && bitsPerSample % 3 === 0) {
+      bitsPerSample /= 3;
+    }
 
     return [
       <ExifEntity>{
         // altitude: tags.GPSAltitude ?? null,
         assetId: asset.id,
+        bitsPerSample,
+        colorspace: tags.ColorSpace ?? null,
         dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
@@ -305,6 +313,7 @@ export class MetadataExtractionProcessor {
         model: tags.Model ?? null,
         modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
         orientation: validate(tags.Orientation)?.toString() ?? null,
+        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
         projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
         timeZone: tags.tz,
       },
