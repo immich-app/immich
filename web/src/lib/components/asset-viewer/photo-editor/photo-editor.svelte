@@ -143,7 +143,7 @@
       // Throw error
       handleError(error, 'Failed to load asset data');
     }
-    imageElement.src = assetData;
+    imageElement.src = thumbData || assetData;
     imageElement.onload = () => {
       console.log('imageElement.onload');
       initAngleSlider();
