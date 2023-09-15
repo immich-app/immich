@@ -5318,7 +5318,7 @@
         "enum": [
           "mp3",
           "aac",
-          "opus"
+          "libopus"
         ],
         "type": "string"
       },
