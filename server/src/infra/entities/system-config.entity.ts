@@ -99,7 +99,7 @@ export enum VideoCodec {
 export enum AudioCodec {
   MP3 = 'mp3',
   AAC = 'aac',
-  OPUS = 'opus',
+  OPUS = 'libopus',
 }
 
 export enum TranscodeHWAccel {
