@@ -22,3 +22,12 @@ export function exifTimeZone(exifDate: string | Date | ExifDateTime | undefined)
 
   return exifDate.zone ?? null;
 }
+
+export function exifTimeZoneOffset(exifDate: string | Date | ExifDateTime | undefined): number | null {
+  const isExifDate = exifDate instanceof ExifDateTime;
+  if (!isExifDate) {
+    return null;
+  }
+
+  return exifDate.tzoffsetMinutes ?? null;
+}

@@ -388,9 +388,9 @@ export class AssetRepository implements IAssetRepository {
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "localDateTime")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "localDateTime")`)
-      .orderBy(`date_trunc('${truncateValue}', "localDateTime")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
+      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
       .getRawMany();
   }
 

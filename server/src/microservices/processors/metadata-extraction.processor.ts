@@ -21,13 +21,13 @@ import { ConfigService } from '@nestjs/config';
 import tz_lookup from '@photostructure/tz-lookup';
 import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import { DateTime, Duration } from 'luxon';
+import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { promisify } from 'util';
 import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
-import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
+import { exifTimeZone, exifTimeZoneOffset, exifToDate } from '../utils/exif/date-time';
 import { parseISO } from '../utils/exif/iso';
 import { toNumberOrNull } from '../utils/numbers';
 
@@ -194,6 +194,7 @@ export class MetadataExtractionProcessor {
     };
 
     const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+    const timeZoneOffset = exifTimeZoneOffset(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
     const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
     const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
     const fileStats = await fs.stat(asset.originalPath);
@@ -211,8 +212,14 @@ export class MetadataExtractionProcessor {
     newExif.dateTimeOriginal = fileCreatedAt;
     newExif.modifyDate = fileModifiedAt;
     newExif.timeZone = timeZone;
-    newExif.localDateTime =
-      fileCreatedAt && timeZone ? DateTime.fromJSDate(fileCreatedAt).setZone(timeZone).toJSDate() : fileCreatedAt;
+
+    let localDateTime = fileCreatedAt;
+
+    if (fileCreatedAt && timeZoneOffset) {
+      localDateTime = new Date(fileCreatedAt.getTime() + timeZoneOffset * 60000);
+    }
+
+    newExif.localDateTime = localDateTime;
     newExif.lensModel = getExifProperty('LensModel');
     newExif.fNumber = toNumberOrNull(getExifProperty('FNumber'));
     newExif.focalLength = toNumberOrNull(getExifProperty('FocalLength'));
