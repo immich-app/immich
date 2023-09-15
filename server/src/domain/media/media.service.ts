@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetEntity, AssetType, Colorspace, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
@@ -113,8 +113,9 @@ export class MediaService {
   async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
     const { thumbnail } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
-    const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
     const path = this.ensureThumbnailPath(asset, format);
+    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
+    const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
     await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
     return path;
   }
@@ -333,5 +334,14 @@ export class MediaService {
     const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
     this.storageRepository.mkdirSync(folderPath);
     return join(folderPath, `${asset.id}.${extension}`);
+  }
+
+  isSRGB(asset: AssetEntity): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+    if (colorspace || profileDescription) {
+      return [colorspace, profileDescription].includes('sRGB');
+    }
+    // assume sRGB for 8-bit images with no color profile or colorspace metadata
+    return bitsPerSample === 8;
   }
 }
