@@ -159,7 +159,7 @@
   const loadAssetData = async () => {
     try {
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: true, key: publicSharedKey },
+        { id: asset.id, isThumb: false, isWeb: false, key: publicSharedKey },
         {
           responseType: 'blob',
         },
