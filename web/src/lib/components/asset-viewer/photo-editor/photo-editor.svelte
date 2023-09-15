@@ -138,6 +138,7 @@
 
   onMount(async () => {
     try {
+      await loadThumbData();
       await loadAssetData();
     } catch (error) {
       // Throw error
@@ -171,7 +172,9 @@
       // Do nothing
       console.log('Failed to load asset data');
     }
+  };
 
+  const loadThumbData = async () => {
     // Load thumbnail
     try {
       const { data } = await api.assetApi.serveFile(
