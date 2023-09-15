@@ -110,6 +110,7 @@
 
   export let asset: AssetResponseDto;
   let assetData: string;
+  let thumbData: string;
   let publicSharedKey = '';
 
   $: currentCrop = cropElement
@@ -120,11 +121,6 @@
     : { width: 0, height: 0 };
 
   $: currentRatio = imageElement ? imageElement.naturalWidth / imageWrapper.offsetWidth : 0;
-
-  //DEBUG
-
-  $: console.log(filter);
-  //END DEBUG
 
   // Apply filter
   $: if (imageElement && filter) {
@@ -170,10 +166,30 @@
       }
 
       assetData = URL.createObjectURL(data);
-      return assetData;
+      //return assetData;
     } catch {
       // Do nothing
       console.log('Failed to load asset data');
+    }
+
+    // Load thumbnail
+    try {
+      const { data } = await api.assetApi.serveFile(
+        { id: asset.id, isThumb: true, isWeb: true, key: publicSharedKey },
+        {
+          responseType: 'blob',
+        },
+      );
+
+      if (!(data instanceof Blob)) {
+        return;
+      }
+
+      thumbData = URL.createObjectURL(data);
+      //return thumbData;
+    } catch {
+      // Do nothing
+      console.log('Failed to load thumb data');
     }
   };
 
