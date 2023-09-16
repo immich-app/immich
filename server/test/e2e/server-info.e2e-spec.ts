@@ -91,6 +91,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         search: false,
         sidecar: true,
         tagImage: true,
+        trash: true,
       });
     });
   });
@@ -103,6 +104,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        trashDays: 30,
       });
     });
   });
