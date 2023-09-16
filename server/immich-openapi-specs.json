@@ -1634,6 +1634,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

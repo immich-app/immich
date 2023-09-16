@@ -5674,10 +5674,11 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
+         * @param {boolean} [isTrashed] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetStats: async (isArchived?: boolean, isFavorite?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAssetStats: async (isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/statistics`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5705,6 +5706,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
+            }
+
+            if (isTrashed !== undefined) {
+                localVarQueryParameter['isTrashed'] = isTrashed;
             }
 
 
@@ -6808,11 +6813,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
+         * @param {boolean} [isTrashed] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetStats(isArchived?: boolean, isFavorite?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetStatsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetStats(isArchived, isFavorite, options);
+        async getAssetStats(isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetStatsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetStats(isArchived, isFavorite, isTrashed, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7126,7 +7132,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAssetStats(requestParameters: AssetApiGetAssetStatsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<AssetStatsResponseDto> {
-            return localVarFp.getAssetStats(requestParameters.isArchived, requestParameters.isFavorite, options).then((request) => request(axios, basePath));
+            return localVarFp.getAssetStats(requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7485,6 +7491,13 @@ export interface AssetApiGetAssetStatsRequest {
      * @memberof AssetApiGetAssetStats
      */
     readonly isFavorite?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetAssetStats
+     */
+    readonly isTrashed?: boolean
 }
 
 /**
@@ -8076,7 +8089,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAssetStats(requestParameters: AssetApiGetAssetStatsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetStats(requestParameters.isArchived, requestParameters.isFavorite, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAssetStats(requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

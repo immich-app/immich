@@ -6,6 +6,7 @@ export type AssetStats = Record<AssetType, number>;
 export interface AssetStatsOptions {
   isFavorite?: boolean;
   isArchived?: boolean;
+  isTrashed?: boolean;
 }
 
 export interface AssetSearchOptions {

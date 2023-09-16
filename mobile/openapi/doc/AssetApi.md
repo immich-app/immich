@@ -558,7 +558,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetStats**
-> AssetStatsResponseDto getAssetStats(isArchived, isFavorite)
+> AssetStatsResponseDto getAssetStats(isArchived, isFavorite, isTrashed)
 
 
 
@@ -583,9 +583,10 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
+final isTrashed = true; // bool | 
 
 try {
-    final result = api_instance.getAssetStats(isArchived, isFavorite);
+    final result = api_instance.getAssetStats(isArchived, isFavorite, isTrashed);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetStats: $e\n');
@@ -598,6 +599,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
+ **isTrashed** | **bool**|  | [optional] 
 
 ### Return type
 

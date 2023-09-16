@@ -72,7 +72,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite }) async
+    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStats', () async {
       // TODO
     });

@@ -390,13 +390,17 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite } = options;
+    const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();

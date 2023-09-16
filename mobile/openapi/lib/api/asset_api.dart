@@ -538,7 +538,9 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, }) async {
+  ///
+  /// * [bool] isTrashed:
+  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/statistics';
 
@@ -554,6 +556,9 @@ class AssetApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
 
     const contentTypes = <String>[];
@@ -575,8 +580,10 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, }) async {
-    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, );
+  ///
+  /// * [bool] isTrashed:
+  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
+    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

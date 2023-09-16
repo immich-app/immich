@@ -37,6 +37,7 @@
   const isFavoritesSelected = $page.route.id === '/(user)/favorites';
   const isPhotosSelected = $page.route.id === '/(user)/photos';
   const isSharingSelected = $page.route.id === '/(user)/sharing';
+  const isTrashSelected = $page.route.id === '/(user)/trash';
 </script>
 
 <SideBarSection>
@@ -137,7 +138,19 @@
 
     {#if $featureFlags.trash}
       <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
-        <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={$page.route.id === '/(user)/trash'} />
+        <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={isTrashSelected}
+      >
+        <svelte:fragment slot="moreInformation">
+          {#await getStats({ isTrashed: true })}
+            <LoadingSpinner />
+          {:then data}
+            <div>
+              <p>{data.videos.toLocaleString($locale)} Videos</p>
+              <p>{data.images.toLocaleString($locale)} Photos</p>
+            </div>
+          {/await}
+        </svelte:fragment>
+      </SideBarButton>
       </a>
     {/if}
   </a>
