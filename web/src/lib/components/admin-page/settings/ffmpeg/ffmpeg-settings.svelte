@@ -145,7 +145,7 @@
             options={[
               { value: AudioCodec.Aac, text: 'aac' },
               { value: AudioCodec.Mp3, text: 'mp3' },
-              { value: AudioCodec.Opus, text: 'opus' },
+              { value: AudioCodec.Libopus, text: 'opus' },
             ]}
             name="acodec"
             isEdited={ffmpegConfig.targetAudioCodec !== savedConfig.targetAudioCodec}
