@@ -29,11 +29,13 @@
 
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
 
   const dispatch = createEventDispatcher<{
@@ -167,7 +169,7 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  $: trashOrDelete = !force
+  $: trashOrDelete = !(force || !isTrashEnabled)
     ? trashAsset
     : () => {
         isShowDeleteConfirmation = true;

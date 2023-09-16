@@ -149,6 +149,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
 

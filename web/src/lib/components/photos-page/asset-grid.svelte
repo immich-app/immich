@@ -25,7 +25,8 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
-  export let forceDelete = !$featureFlags.trash;
+  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
+  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -385,7 +386,7 @@
     <AssetViewer
       {assetStore}
       asset={$viewingAsset}
-      force={forceDelete}
+      force={forceDelete || !isTrashEnabled}
       on:previous={() => handlePrevious()}
       on:next={() => handleNext()}
       on:close={() => handleClose()}
