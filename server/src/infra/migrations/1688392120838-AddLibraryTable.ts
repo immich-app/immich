@@ -23,17 +23,40 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `ALTER TABLE "assets" ADD CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c" FOREIGN KEY ("libraryId") REFERENCES "libraries"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
     );
 
-    // Create default library for each user and assign all assets to it
-    const userIds: string[] = (await queryRunner.query(`SELECT id FROM "users"`)).map((user: any) => user.id);
+    // Create default library for each user and assign all assets to it.
+    // Read-only assets will be moved to an external library instead
+    const users: [{id: string, externalPath: string | null, numReadonlyAssets: number}] =
+      await queryRunner.query(`SELECT users.id "id", "externalPath", COUNT(assets.id) "numReadonlyAssets" FROM "users" LEFT JOIN "assets" ON users.id = assets."ownerId" AND assets."isReadOnly"=true GROUP BY users.id`);
 
-    for (const userId of userIds) {
-      await queryRunner.query(
-        `INSERT INTO "libraries" ("name", "ownerId", "type", "importPaths", "exclusionPatterns") VALUES ('Default Library', '${userId}', 'UPLOAD', '{}', '{}')`,
-      );
+    for (const user of users) {
+      const defaultLibraryId = (await queryRunner.query(
+        `INSERT INTO "libraries" ("name", "ownerId", "type", "importPaths", "exclusionPatterns")
+         VALUES ('Default library', $1, 'UPLOAD', '{}', '{}')
+         RETURNING "id"`, [user.id]
+      ))[0].id;
 
+      // migrate non-readonly assets to the default library
       await queryRunner.query(
-        `UPDATE "assets" SET "libraryId" = (SELECT id FROM "libraries" WHERE "ownerId" = '${userId}' LIMIT 1) WHERE "ownerId" = '${userId}'`,
-      );
+        `UPDATE "assets" SET "libraryId" = $1 WHERE "ownerId" = $2 AND "isReadOnly" = false`, [defaultLibraryId, user.id]);
+
+      if (user.numReadonlyAssets > 0) {
+        if (!user.externalPath) {
+          // no import path but read-only assets present???
+          console.log(`no import path for user ${user.id}, skipping`);
+          continue;
+        }
+
+        const externalLibraryId = (await queryRunner.query(
+          `INSERT INTO "libraries" ("name", "ownerId", "type", "importPaths", "exclusionPatterns")
+         VALUES ('Default external library', $1, 'EXTERNAL', ARRAY[$2], '{}')
+         RETURNING "id"`, [user.id, user.externalPath]
+        ))[0].id;
+
+        // migrate read-only assets to the default external library
+        await queryRunner.query(
+          `UPDATE "assets" SET "libraryId" = $1 WHERE "ownerId" = $2 AND "isReadOnly" = true`, [externalLibraryId, user.id]);
+
+      }
     }
 
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" SET NOT NULL`);
