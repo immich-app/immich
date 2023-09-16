@@ -669,7 +669,41 @@ describe(AssetService.name, () => {
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
 
       expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['asset1', 'asset2']);
-      expect(jobMock.queue).not.toBeCalled();
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_REMOVE_ASSET,
+            data: { ids: ['asset1', 'asset2'] },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('restoreAll', () => {
+    it('should required asset restore access for all ids', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(
+        sut.deleteAll(authStub.user1, {
+          ids: ['asset-1'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should restore a batch of assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      await sut.restoreAll(authStub.user1, { ids: ['asset1', 'asset2'] });
+
+      expect(assetMock.restoreAll).toHaveBeenCalledWith(['asset1', 'asset2']);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_INDEX_ASSET,
+            data: { ids: ['asset1', 'asset2'] },
+          },
+        ],
+      ]);
     });
   });
 
