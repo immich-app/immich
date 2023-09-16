@@ -100,12 +100,6 @@ class Asset {
 
   /// stores the raw SHA1 bytes as a base64 String
   /// because Isar cannot sort lists of byte arrays
-  @Index(
-    unique: true,
-    replace: false,
-    type: IndexType.hash,
-    composite: [CompositeIndex("ownerId")],
-  )
   String checksum;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
@@ -114,6 +108,11 @@ class Asset {
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? localId;
 
+  @Index(
+    unique: true,
+    replace: false,
+    composite: [CompositeIndex("checksum", type: IndexType.hash)],
+  )
   int ownerId;
 
   DateTime fileCreatedAt;
