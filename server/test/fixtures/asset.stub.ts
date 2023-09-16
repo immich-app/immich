@@ -33,6 +33,7 @@ export const assetStub = {
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
+    deletedAt: null,
   }),
   noWebpPath: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -66,6 +67,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 123_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -96,6 +98,7 @@ export const assetStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
+    deletedAt: null,
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -129,6 +132,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   image1: Object.freeze<AssetEntity>({
     id: 'asset-id-1',
@@ -162,6 +166,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -195,6 +200,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 100_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -257,6 +263,7 @@ export const assetStub = {
       longitude: 100,
       fileSizeInByte: 23_456,
     } as ExifEntity,
+    deletedAt: null,
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -287,5 +294,6 @@ export const assetStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: '/original/path.ext.xmp',
+    deletedAt: null,
   }),
 };

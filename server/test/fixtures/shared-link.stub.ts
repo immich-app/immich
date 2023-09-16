@@ -64,6 +64,7 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  isTrashed: false,
 };
 
 const albumResponse: AlbumResponseDto = {
@@ -220,6 +221,7 @@ export const sharedLinkStub = {
           sharedLinks: [],
           faces: [],
           sidecarPath: null,
+          deletedAt: null,
         },
       ],
     },

@@ -9,16 +9,18 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { ISystemConfigRepository } from '..';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
+import { IJobRepository, JobItem, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { AssetStats, IAssetRepository } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
-import { BulkIdErrorReason, mapAsset } from './response-dto';
+import { mapAsset } from './response-dto';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -149,6 +151,7 @@ describe(AssetService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -160,7 +163,8 @@ describe(AssetService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
+    configMock = newSystemConfigRepositoryMock();
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock);
 
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -168,6 +172,17 @@ describe(AssetService.name, () => {
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetStub.livePhotoMotionAsset as AssetEntity);
+
+    when(jobMock.queue)
+      .calledWith(
+        expect.objectContaining({
+          name: JobName.ASSET_DELETION,
+        }),
+      )
+      .mockImplementation(async (item: JobItem) => {
+        const jobData = (item as { data?: any })?.data || {};
+        await sut.handleAssetDeletion(jobData);
+      });
   });
 
   describe('canUpload', () => {
@@ -450,7 +465,9 @@ describe(AssetService.name, () => {
         downloadResponse,
       );
 
-      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.id);
+      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.id, {
+        isVisible: true,
+      });
     });
 
     it('should split archives by size', async () => {
@@ -569,54 +586,33 @@ describe(AssetService.name, () => {
   });
 
   describe('deleteAll', () => {
-    it('should return failed status when an asset is missing', async () => {
-      assetMock.getById.mockResolvedValue(null);
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', success: false, error: BulkIdErrorReason.NOT_FOUND },
-      ]);
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should return failed status if delete fails', async () => {
-      assetMock.getById.mockResolvedValue({ id: 'asset1' } as AssetEntity);
-      assetMock.remove.mockRejectedValue('delete failed');
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', success: false, error: BulkIdErrorReason.UNKNOWN },
-      ]);
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
     it('should delete a live photo', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
-      await expect(sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id] })).resolves.toEqual([
-        { id: assetStub.livePhotoStillAsset.id, success: true },
-        { id: assetStub.livePhotoMotionAsset.id, success: true },
-      ]);
+      await sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id], force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: {
-          files: [
-            'fake_path/asset_1.jpeg',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'fake_path/asset_1.mp4',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-        },
-      });
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoStillAsset.id } }],
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoStillAsset.id] } }],
+        [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoMotionAsset.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: ['fake_path/asset_1.mp4', undefined, undefined, undefined, undefined],
+            },
+          },
+        ],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: ['fake_path/asset_1.jpeg', undefined, undefined, undefined, undefined],
+            },
+          },
+        ],
+      ]);
     });
 
     it('should delete a batch of assets', async () => {
@@ -644,30 +640,26 @@ describe(AssetService.name, () => {
 
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
-        { id: 'asset1', success: true },
-        { id: 'asset2', success: true },
-      ]);
+      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
         [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset1'] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: ['original-path-1', 'web-path-1', 'resize-path-1', undefined, undefined],
+            },
+          },
+        ],
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
         [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset2'] } }],
         [
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [
-                'original-path-1',
-                'web-path-1',
-                'resize-path-1',
-                undefined,
-                undefined,
-                'original-path-2',
-                'web-path-2',
-                'resize-path-2',
-                'encoded-video-path-2',
-                undefined,
-              ],
+              files: ['original-path-2', 'web-path-2', 'resize-path-2', 'encoded-video-path-2', undefined],
             },
           },
         ],
