@@ -52,6 +52,35 @@ class TrashNotifier extends StateNotifier<bool> {
     }
   }
 
+  Future<bool> restoreAssets(Iterable<Asset> assetList) async {
+    try {
+      final result = await _trashService.restoreAssets(assetList);
+
+      if (result) {
+        final remoteAssets = assetList.where((a) => a.isRemote).toList();
+
+        var updatedAssets = remoteAssets.map((e) {
+          e.isTrashed = false;
+          return e;
+        }).toList();
+
+        await _db.writeTxn(() async {
+          await _db.assets.putAll(updatedAssets);
+        });
+
+        // Refresh assets in background
+        Future.delayed(
+          const Duration(seconds: 4),
+          () async => await ref.read(assetProvider.notifier).getAllAsset(),
+        );
+        return true;
+      }
+    } catch (error, stack) {
+      log.severe("Cannot restore trash ${error.toString()}", error, stack);
+    }
+    return false;
+  }
+
   Future<void> restoreTrash() async {
     try {
       final user = ref.watch(currentUserProvider);

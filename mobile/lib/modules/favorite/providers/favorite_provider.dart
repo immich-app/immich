@@ -16,6 +16,7 @@ final favoriteAssetsProvider = StreamProvider<RenderList>((ref) async* {
       .filter()
       .ownerIdEqualTo(user.isarId)
       .isFavoriteEqualTo(true)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

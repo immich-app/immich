@@ -6,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dart';
-import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
@@ -94,20 +93,17 @@ class TrashPage extends HookConsumerWidget {
       try {
         if (selection.value.isNotEmpty) {
           final result = await ref
-              .read(trashServiceProvider)
+              .read(trashProvider.notifier)
               .restoreAssets(selection.value);
 
           final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
-          if (result) {
-            await ref.read(assetProvider.notifier).getAllAsset();
-            if (context.mounted) {
-              ImmichToast.show(
-                context: context,
-                msg:
-                    '${selection.value.length} $assetOrAssets restored successfully',
-                gravity: ToastGravity.BOTTOM,
-              );
-            }
+          if (result && context.mounted) {
+            ImmichToast.show(
+              context: context,
+              msg:
+                  '${selection.value.length} $assetOrAssets restored successfully',
+              gravity: ToastGravity.BOTTOM,
+            );
           }
         }
       } finally {
