@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dar
 import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
@@ -30,11 +31,31 @@ class TrashPage extends HookConsumerWidget {
       selection.value = selectedAssets;
     }
 
-    handleEmptyTrash() async {
+    onEmptyTrash() async {
       processing.value = true;
       await ref.read(trashProvider.notifier).emptyTrash();
       processing.value = false;
       selectionEnabledHook.value = false;
+      if (context.mounted) {
+        ImmichToast.show(
+          context: context,
+          msg: 'Emptied trash',
+          gravity: ToastGravity.BOTTOM,
+        );
+      }
+    }
+
+    handleEmptyTrash() async {
+      await showDialog(
+        context: context,
+        builder: (context) => ConfirmDialog(
+          onOk: () => onEmptyTrash(),
+          title: "Empty trash",
+          ok: "Ok",
+          content:
+              "Do you want to empty your trashed assets? These items will be permanently removed from Immich",
+        ),
+      );
     }
 
     Future<void> handlePermanentDelete() async {

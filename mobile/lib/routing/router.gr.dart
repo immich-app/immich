@@ -632,7 +632,7 @@ class _$AppRouter extends RootStackRouter {
         ),
         RouteConfig(
           TrashRoute.name,
-          path: '/recycle-bin-page',
+          path: '/trash-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1414,7 +1414,7 @@ class TrashRoute extends PageRouteInfo<void> {
   const TrashRoute()
       : super(
           TrashRoute.name,
-          path: '/recycle-bin-page',
+          path: '/trash-page',
         );
 
   static const String name = 'TrashRoute';

@@ -26,11 +26,13 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
               search: true,
               sidecar: true,
               tagImage: true,
+              trash: true,
             ),
             serverConfig: ServerConfigDto(
               loginPageMessage: "",
               mapTileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
               oauthButtonText: "",
+              trashDays: 30,
             ),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",

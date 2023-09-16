@@ -18,10 +18,12 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
@@ -64,6 +66,12 @@ class GalleryViewerPage extends HookConsumerWidget {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
+    final isTrashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final navStack = AutoRouter.of(context).stackData;
+    final isFromTrash = isTrashEnabled &&
+        navStack.length > 2 &&
+        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
 
     Asset asset() => currentAsset;
 
@@ -204,6 +212,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         context: context,
         builder: (BuildContext _) {
           return DeleteDialog(
+            isTrashEnabled: isTrashEnabled && !isFromTrash,
             onDelete: () {
               if (totalAssets == 1) {
                 // Handle only one asset
@@ -215,7 +224,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                   curve: Curves.fastLinearToSlowEaseIn,
                 );
               }
-              ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
+              ref.watch(assetProvider.notifier).deleteAssets(
+                {deleteAsset},
+                force: !isTrashEnabled || isFromTrash,
+              );
             },
           );
         },

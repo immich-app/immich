@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/home/ui/profile_drawer/server_info_box.dar
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 
 class ProfileDrawer extends HookConsumerWidget {
@@ -16,6 +17,9 @@ class ProfileDrawer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+
     buildSignOutButton() {
       return ListTile(
         leading: SizedBox(
@@ -91,7 +95,7 @@ class ProfileDrawer extends HookConsumerWidget {
       );
     }
 
-    buildRecyceledBinButton() {
+    buildTrashButton() {
       return ListTile(
         leading: SizedBox(
           height: double.infinity,
@@ -126,7 +130,7 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               const ProfileDrawerHeader(),
-              buildRecyceledBinButton(),
+              if (trashEnabled) buildTrashButton(),
               buildSettingButton(),
               buildAppLogButton(),
               buildSignOutButton(),
