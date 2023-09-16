@@ -28,9 +28,7 @@ export class MediaService {
     this.configCore = new SystemConfigCore(configRepository);
   }
 
-  async handleQueueGenerateThumbnails(job: IBaseJob) {
-    const { force } = job;
-
+  async handleQueueGenerateThumbnails({ force }: IBaseJob) {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -76,6 +74,58 @@ export class MediaService {
           },
         });
       }
+    }
+
+    return true;
+  }
+
+  async handleQueueMigration() {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination),
+    );
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.ASSET_MIGRATION, data: { id: asset.id } });
+      }
+    }
+
+    const people = await this.personRepository.getAll();
+
+    for (const person of people) {
+      if (person.faceAssetId) {
+        await this.jobRepository.queue({
+          name: JobName.FACE_THUMBNAIL_MIGRATION,
+          data: { assetId: person.faceAssetId, personId: person.id },
+        });
+      }
+    }
+
+    return true;
+  }
+
+  async handleAssetMigration({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
+    const webpPath = this.ensureThumbnailPath(asset, 'webp');
+    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+
+    if (asset.resizePath && asset.resizePath !== resizePath) {
+      await this.storageRepository.moveFile(asset.resizePath, resizePath);
+      await this.assetRepository.save({ id: asset.id, resizePath });
+    }
+
+    if (asset.webpPath && asset.webpPath !== webpPath) {
+      await this.storageRepository.moveFile(asset.webpPath, webpPath);
+      await this.assetRepository.save({ id: asset.id, webpPath });
+    }
+
+    if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
+      await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
+      await this.assetRepository.save({ id: asset.id, encodedVideoPath });
     }
 
     return true;
@@ -184,9 +234,7 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-    const output = join(outputFolder, `${asset.id}.mp4`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.ensureEncodedVideoPath(asset, 'mp4');
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
     const mainVideoStream = this.getMainStream(videoStreams);
@@ -330,7 +378,19 @@ export class MediaService {
   }
 
   ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    let folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    return this.ensurePath(asset, StorageFolder.THUMBNAILS, extension);
+  }
+
+  ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
+    return this.ensurePath(asset, StorageFolder.ENCODED_VIDEO, extension);
+  }
+
+  private ensurePath(
+    asset: AssetEntity,
+    folder: StorageFolder.ENCODED_VIDEO | StorageFolder.UPLOAD | StorageFolder.PROFILE | StorageFolder.THUMBNAILS,
+    extension: string,
+  ): string {
+    let folderPath = this.storageCore.getFolderLocation(folder, asset.ownerId);
     folderPath = join(folderPath, asset.id.substring(0, 2), asset.id.substring(2, 4), asset.id.substring(4, 6));
     this.storageRepository.mkdirSync(folderPath);
     return join(folderPath, `${asset.id}.${extension}`);

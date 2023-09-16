@@ -2,7 +2,15 @@ import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import {
+  IAssetFaceJob,
+  IBaseJob,
+  IEntityJob,
+  IFaceThumbnailJob,
+  IJobRepository,
+  JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
+} from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
@@ -117,6 +125,29 @@ export class FacialRecognitionService {
     return true;
   }
 
+  async handleFaceThumbnailMigration({ assetId, personId }: IAssetFaceJob) {
+    const [asset] = await this.assetRepository.getByIds([assetId]);
+
+    if (!asset) {
+      return false;
+    }
+
+    const person = await this.personRepository.getById(asset.ownerId, personId);
+
+    if (!person) {
+      return false;
+    }
+
+    const path = this.ensureFaceThumbnailPath(asset.ownerId, personId, 'jpeg');
+
+    if (person.thumbnailPath && person.thumbnailPath !== path) {
+      await this.storageRepository.moveFile(person.thumbnailPath, path);
+      await this.personRepository.update({ id: personId, thumbnailPath: path });
+    }
+
+    return true;
+  }
+
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
@@ -132,9 +163,7 @@ export class FacialRecognitionService {
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
 
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${personId}.jpeg`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.ensureFaceThumbnailPath(asset.ownerId, personId, 'jpeg');
 
     const { x1, y1, x2, y2 } = boundingBox;
 
@@ -174,5 +203,13 @@ export class FacialRecognitionService {
     await this.personRepository.update({ id: personId, thumbnailPath: output, faceAssetId: data.assetId });
 
     return true;
+  }
+
+  ensureFaceThumbnailPath(ownerId: string, personId: string, extension: string): string {
+    let folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, ownerId);
+    folderPath = join(folderPath, personId.substring(0, 2), personId.substring(2, 4), personId.substring(4, 6));
+    this.storageRepository.mkdirSync(folderPath);
+
+    return join(folderPath, `${personId}.${extension}`);
   }
 }

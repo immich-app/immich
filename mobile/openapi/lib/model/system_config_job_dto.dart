@@ -16,6 +16,7 @@ class SystemConfigJobDto {
     required this.backgroundTask,
     required this.clipEncoding,
     required this.metadataExtraction,
+    required this.migration,
     required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
@@ -30,6 +31,8 @@ class SystemConfigJobDto {
   JobSettingsDto clipEncoding;
 
   JobSettingsDto metadataExtraction;
+
+  JobSettingsDto migration;
 
   JobSettingsDto objectTagging;
 
@@ -50,6 +53,7 @@ class SystemConfigJobDto {
      other.backgroundTask == backgroundTask &&
      other.clipEncoding == clipEncoding &&
      other.metadataExtraction == metadataExtraction &&
+     other.migration == migration &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
@@ -64,6 +68,7 @@ class SystemConfigJobDto {
     (backgroundTask.hashCode) +
     (clipEncoding.hashCode) +
     (metadataExtraction.hashCode) +
+    (migration.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
@@ -73,13 +78,14 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'clipEncoding'] = this.clipEncoding;
       json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
@@ -101,6 +107,7 @@ class SystemConfigJobDto {
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
         clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobSettingsDto.fromJson(json[r'migration'])!,
         objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
@@ -158,6 +165,7 @@ class SystemConfigJobDto {
     'backgroundTask',
     'clipEncoding',
     'metadataExtraction',
+    'migration',
     'objectTagging',
     'recognizeFaces',
     'search',

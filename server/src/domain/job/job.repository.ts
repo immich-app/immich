@@ -42,6 +42,11 @@ export type JobItem =
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
   | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
+  // Migration
+  | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
+  | { name: JobName.ASSET_MIGRATION; data?: IEntityJob }
+  | { name: JobName.FACE_THUMBNAIL_MIGRATION; data?: IAssetFaceJob }
+
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }

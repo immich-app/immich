@@ -4974,6 +4974,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -5003,6 +5006,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
@@ -6101,6 +6105,7 @@
           "clipEncoding",
           "backgroundTask",
           "storageTemplateMigration",
+          "migration",
           "search",
           "sidecar"
         ],
@@ -7147,6 +7152,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -7176,6 +7184,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",

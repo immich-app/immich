@@ -7,6 +7,7 @@ export enum QueueName {
   CLIP_ENCODING = 'clipEncoding',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
+  MIGRATION = 'migration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
 }
@@ -43,6 +44,11 @@ export enum JobName {
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
   SYSTEM_CONFIG_CHANGE = 'system-config-change',
+
+  // migration
+  QUEUE_MIGRATION = 'queue-migration',
+  ASSET_MIGRATION = 'asset-migration',
+  FACE_THUMBNAIL_MIGRATION = 'face-thumbnail-migration',
 
   // object tagging
   QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
@@ -108,6 +114,11 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,
   [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
   [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+
+  // migration
+  [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
+  [JobName.ASSET_MIGRATION]: QueueName.MIGRATION,
+  [JobName.FACE_THUMBNAIL_MIGRATION]: QueueName.MIGRATION,
 
   // object tagging
   [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
