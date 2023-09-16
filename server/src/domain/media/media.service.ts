@@ -330,7 +330,8 @@ export class MediaService {
   }
 
   ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    let folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    folderPath = join(folderPath, asset.id.substring(0, 2), asset.id.substring(2, 4), asset.id.substring(4, 6));
     this.storageRepository.mkdirSync(folderPath);
     return join(folderPath, `${asset.id}.${extension}`);
   }
