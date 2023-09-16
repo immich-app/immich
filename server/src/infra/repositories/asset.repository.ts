@@ -83,8 +83,10 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
+
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -178,6 +180,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
 
