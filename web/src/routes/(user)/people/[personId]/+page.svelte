@@ -76,6 +76,24 @@
     }
   });
 
+  const hideFace = async () => {
+    try {
+      await api.personApi.updatePerson({
+        id: data.person.id,
+        personUpdateDto: { isHidden: true },
+      });
+
+      notificationController.show({
+        message: 'Changed visibility succesfully',
+        type: NotificationType.Info,
+      });
+
+      goto(AppRoute.EXPLORE, { replaceState: true });
+    } catch (error) {
+      handleError(error, 'Unable to hide person');
+    }
+  };
+
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
     if (viewMode !== ViewMode.SELECT_FACE) {
       return;
@@ -246,6 +264,7 @@
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
             <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
+            <MenuOption text="Hide face" on:click={() => hideFace()} />
           </AssetSelectContextMenu>
         </svelte:fragment>
       </ControlAppBar>

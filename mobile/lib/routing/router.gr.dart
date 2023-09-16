@@ -556,10 +556,7 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           SettingsRoute.name,
           path: '/settings-page',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
+          guards: [duplicateGuard],
         ),
         RouteConfig(
           AppLogRoute.name,

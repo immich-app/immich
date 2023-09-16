@@ -214,6 +214,15 @@ describe('AuthService', () => {
 
       expect(userTokenMock.delete).toHaveBeenCalledWith('123', 'token123');
     });
+
+    it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
+      const authUser = { id: '123' } as AuthUserDto;
+
+      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
+        successful: true,
+        redirectUri: '/auth/login?autoLaunch=0',
+      });
+    });
   });
 
   describe('adminSignUp', () => {

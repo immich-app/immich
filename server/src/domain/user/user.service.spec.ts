@@ -1,5 +1,10 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
@@ -7,6 +12,7 @@ import {
   newJobRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
+  userStub,
 } from '@test';
 import { when } from 'jest-when';
 import { IAlbumRepository } from '../album';
@@ -16,7 +22,7 @@ import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserResponseDto } from './response-dto';
+import { UserResponseDto, mapUser } from './response-dto';
 import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
@@ -216,6 +222,13 @@ describe(UserService.name, () => {
       expect(userMock.getList).toHaveBeenCalled();
       expect(response).toEqual({ userCount: 1 });
     });
+
+    it('should get the user count of all admin users', async () => {
+      userMock.getList.mockResolvedValue([adminUser, immichUser]);
+
+      await expect(sut.getCount({ admin: true })).resolves.toEqual({ userCount: 1 });
+      expect(userMock.getList).toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {
@@ -223,12 +236,17 @@ describe(UserService.name, () => {
       const update: UpdateUserDto = {
         id: immichUser.id,
         shouldChangePassword: true,
+        email: 'immich@test.com',
+        storageLabel: 'storage_label',
       };
+      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByStorageLabel.mockResolvedValue(null);
+      userMock.update.mockResolvedValue({ ...updatedImmichUser, isAdmin: true, storageLabel: 'storage_label' });
 
-      when(userMock.update).calledWith(update.id, update).mockResolvedValueOnce(updatedImmichUser);
-
-      const updatedUser = await sut.update(immichUserAuth, update);
+      const updatedUser = await sut.update({ ...immichUserAuth, isAdmin: true }, update);
       expect(updatedUser.shouldChangePassword).toEqual(true);
+      expect(userMock.getByEmail).toHaveBeenCalledWith(update.email);
+      expect(userMock.getByStorageLabel).toHaveBeenCalledWith(update.storageLabel);
     });
 
     it('should not set an empty string for storage label', async () => {
@@ -345,20 +363,37 @@ describe(UserService.name, () => {
   });
 
   describe('restore', () => {
+    it('should throw error if user could not be found', async () => {
+      userMock.get.mockResolvedValue(null);
+
+      await expect(sut.restore(immichUserAuth, adminUser.id)).rejects.toThrowError(BadRequestException);
+      expect(userMock.restore).not.toHaveBeenCalled();
+    });
+
     it('should require an admin', async () => {
       when(userMock.get).calledWith(adminUser.id, true).mockResolvedValue(adminUser);
       await expect(sut.restore(immichUserAuth, adminUser.id)).rejects.toBeInstanceOf(ForbiddenException);
       expect(userMock.get).toHaveBeenCalledWith(adminUser.id, true);
     });
 
-    it('should require the auth user be an admin', async () => {
-      await expect(sut.delete(immichUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
+    it('should restore an user', async () => {
+      userMock.get.mockResolvedValue(immichUser);
+      userMock.restore.mockResolvedValue(immichUser);
 
-      expect(userMock.delete).not.toHaveBeenCalled();
+      await expect(sut.restore(adminUserAuth, immichUser.id)).resolves.toEqual(mapUser(immichUser));
+      expect(userMock.get).toHaveBeenCalledWith(immichUser.id, true);
+      expect(userMock.restore).toHaveBeenCalledWith(immichUser);
     });
   });
 
   describe('delete', () => {
+    it('should throw error if user could not be found', async () => {
+      userMock.get.mockResolvedValue(null);
+
+      await expect(sut.delete(immichUserAuth, adminUser.id)).rejects.toThrowError(BadRequestException);
+      expect(userMock.delete).not.toHaveBeenCalled();
+    });
+
     it('cannot delete admin user', async () => {
       await expect(sut.delete(adminUserAuth, adminUserAuth.id)).rejects.toBeInstanceOf(ForbiddenException);
     });
@@ -368,9 +403,18 @@ describe(UserService.name, () => {
 
       expect(userMock.delete).not.toHaveBeenCalled();
     });
+
+    it('should delete user', async () => {
+      userMock.get.mockResolvedValue(immichUser);
+      userMock.delete.mockResolvedValue(immichUser);
+
+      await expect(sut.delete(adminUserAuth, immichUser.id)).resolves.toEqual(mapUser(immichUser));
+      expect(userMock.get).toHaveBeenCalledWith(immichUser.id, undefined);
+      expect(userMock.delete).toHaveBeenCalledWith(immichUser);
+    });
   });
 
-  describe('update', () => {
+  describe('create', () => {
     it('should not create a user if there is no local admin account', async () => {
       when(userMock.getAdmin).calledWith().mockResolvedValueOnce(null);
 
@@ -383,6 +427,30 @@ describe(UserService.name, () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('should create user', async () => {
+      userMock.getAdmin.mockResolvedValue(userStub.admin);
+      userMock.create.mockResolvedValue(userStub.user1);
+
+      await expect(
+        sut.create({
+          email: userStub.user1.email,
+          firstName: userStub.user1.firstName,
+          lastName: userStub.user1.lastName,
+          password: 'password',
+          storageLabel: 'label',
+        }),
+      ).resolves.toEqual(mapUser(userStub.user1));
+
+      expect(userMock.getAdmin).toBeCalled();
+      expect(userMock.create).toBeCalledWith({
+        email: userStub.user1.email,
+        firstName: userStub.user1.firstName,
+        lastName: userStub.user1.lastName,
+        storageLabel: 'label',
+        password: expect.anything(),
+      });
+    });
   });
 
   describe('createProfileImage', () => {
@@ -393,6 +461,13 @@ describe(UserService.name, () => {
       await sut.createProfileImage(adminUserAuth, file);
 
       expect(userMock.update).toHaveBeenCalledWith(adminUserAuth.id, { profileImagePath: file.path });
+    });
+
+    it('should throw an error if the user profile could not be updated with the new image', async () => {
+      const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
+
+      await expect(sut.createProfileImage(adminUserAuth, file)).rejects.toThrowError(InternalServerErrorException);
     });
   });
 

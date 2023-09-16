@@ -136,9 +136,6 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_DELETE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });
-    if (!album) {
-      throw new BadRequestException('Album not found');
-    }
 
     await this.albumRepository.delete(album);
     await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
@@ -228,6 +225,10 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: false });
 
     for (const userId of dto.sharedUserIds) {
+      if (album.ownerId === userId) {
+        throw new BadRequestException('Cannot be shared with owner');
+      }
+
       const exists = album.sharedUsers.find((user) => user.id === userId);
       if (exists) {
         throw new BadRequestException('User already added');

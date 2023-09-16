@@ -1,4 +1,4 @@
-import { Colorspace } from '@app/infra/entities';
+import { Colorspace, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   faceStub,
@@ -137,6 +137,14 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleQueueRecognizeFaces', () => {
+    it('should return if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(true);
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(configMock.load).toHaveBeenCalled();
+    });
+
     it('should queue missing assets', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
@@ -170,6 +178,14 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleRecognizeFaces', () => {
+    it('should return if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await expect(sut.handleRecognizeFaces({ id: 'foo' })).resolves.toBe(true);
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(configMock.load).toHaveBeenCalled();
+    });
+
     it('should skip when no resize path', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
@@ -260,6 +276,14 @@ describe(FacialRecognitionService.name, () => {
   });
 
   describe('handleGenerateFaceThumbnail', () => {
+    it('should return if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+
+      await expect(sut.handleGenerateFaceThumbnail(face.middle)).resolves.toBe(true);
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(configMock.load).toHaveBeenCalled();
+    });
+
     it('should skip an asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
 

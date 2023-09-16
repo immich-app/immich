@@ -1,16 +1,22 @@
-import { IPersonRepository, LoginResponseDto } from '@app/domain';
+import { IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, PersonController } from '@app/immich';
+import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { api } from '@test/api';
+import { db } from '@test/db';
+import { errorStub, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { errorStub, uuidStub } from '../fixtures';
-import { api, db } from '../test-utils';
 
 describe(`${PersonController.name}`, () => {
   let app: INestApplication;
   let server: any;
   let loginResponse: LoginResponseDto;
   let accessToken: string;
+  let personRepository: IPersonRepository;
+  let faceRepository: IFaceRepository;
+  let visiblePerson: PersonEntity;
+  let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -19,18 +25,102 @@ describe(`${PersonController.name}`, () => {
 
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
+    personRepository = app.get<IPersonRepository>(IPersonRepository);
+    faceRepository = app.get<IFaceRepository>(IFaceRepository);
   });
 
   beforeEach(async () => {
     await db.reset();
-    await api.adminSignUp(server);
-    loginResponse = await api.adminLogin(server);
+    await api.authApi.adminSignUp(server);
+    loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
+
+    const faceAsset = await api.assetApi.upload(server, accessToken, 'face_asset');
+    visiblePerson = await personRepository.create({
+      ownerId: loginResponse.userId,
+      name: 'visible_person',
+      thumbnailPath: '/thumbnail/face_asset',
+    });
+    await faceRepository.create({ assetId: faceAsset.id, personId: visiblePerson.id });
+
+    hiddenPerson = await personRepository.create({
+      ownerId: loginResponse.userId,
+      name: 'hidden_person',
+      isHidden: true,
+      thumbnailPath: '/thumbnail/face_asset',
+    });
+    await faceRepository.create({ assetId: faceAsset.id, personId: hiddenPerson.id });
   });
 
   afterAll(async () => {
     await db.disconnect();
     await app.close();
+  });
+
+  describe('GET /person', () => {
+    beforeEach(async () => {});
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/person');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return all people (including hidden)', async () => {
+      const { status, body } = await request(server)
+        .get('/person')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ withHidden: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        total: 2,
+        visible: 1,
+        people: [
+          expect.objectContaining({ name: 'visible_person' }),
+          expect.objectContaining({ name: 'hidden_person' }),
+        ],
+      });
+    });
+
+    it('should return only visible people', async () => {
+      const { status, body } = await request(server).get('/person').set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        total: 1,
+        visible: 1,
+        people: [expect.objectContaining({ name: 'visible_person' })],
+      });
+    });
+  });
+
+  describe('GET /person/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get(`/person/${uuidStub.notFound}`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should throw error if person with id does not exist', async () => {
+      const { status, body } = await request(server)
+        .get(`/person/${uuidStub.notFound}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest);
+    });
+
+    it('should return person information', async () => {
+      const { status, body } = await request(server)
+        .get(`/person/${visiblePerson.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: visiblePerson.id }));
+    });
   });
 
   describe('PUT /person/:id', () => {
@@ -42,10 +132,8 @@ describe(`${PersonController.name}`, () => {
 
     for (const key of ['name', 'featureFaceAssetId', 'isHidden']) {
       it(`should not allow null ${key}`, async () => {
-        const personRepository = app.get<IPersonRepository>(IPersonRepository);
-        const person = await personRepository.create({ ownerId: loginResponse.userId });
         const { status, body } = await request(server)
-          .put(`/person/${person.id}`)
+          .put(`/person/${visiblePerson.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ [key]: null });
         expect(status).toBe(400);
@@ -65,10 +153,8 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should update a date of birth', async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
-      const person = await personRepository.create({ ownerId: loginResponse.userId });
       const { status, body } = await request(server)
-        .put(`/person/${person.id}`)
+        .put(`/person/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ birthDate: '1990-01-01T05:00:00.000Z' });
       expect(status).toBe(200);
@@ -76,7 +162,6 @@ describe(`${PersonController.name}`, () => {
     });
 
     it('should clear a date of birth', async () => {
-      const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({
         birthDate: new Date('1990-01-01'),
         ownerId: loginResponse.userId,

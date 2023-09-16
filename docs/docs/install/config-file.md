@@ -54,6 +54,25 @@ The default configuration looks like this:
       "concurrency": 1
     }
   },
+  "machineLearning": {
+    "classification": {
+      "minScore": 0.7,
+      "enabled": true,
+      "modelName": "microsoft/resnet-50"
+    },
+    "enabled": true,
+    "url": "http://immich-machine-learning:3003",
+    "clip": {
+      "enabled": true,
+      "modelName": "ViT-B-32::openai"
+    },
+    "facialRecognition": {
+      "enabled": true,
+      "modelName": "buffalo_l",
+      "minScore": 0.7,
+      "maxDistance": 0.6
+    }
+  },
   "oauth": {
     "enabled": false,
     "issuerUrl": "",
@@ -75,7 +94,9 @@ The default configuration looks like this:
   },
   "thumbnail": {
     "webpSize": 250,
-    "jpegSize": 1440
+    "jpegSize": 1440,
+    "quality": 90,
+    "colorspace": "p3"
   }
 }
 ```
