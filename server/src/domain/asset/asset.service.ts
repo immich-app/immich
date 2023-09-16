@@ -373,6 +373,7 @@ export class AssetService {
       }
     } else {
       await this.assetRepository.softDeleteAll(ids);
+      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids } });
     }
   }
 
@@ -389,7 +390,9 @@ export class AssetService {
 
     if (restoreAll) {
       for await (const assets of assetPagination) {
-        await this.assetRepository.restoreAll(assets.map((a) => a.id));
+        const ids = assets.map((a) => a.id);
+        await this.assetRepository.restoreAll(ids);
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
       }
       return;
     }
@@ -408,6 +411,7 @@ export class AssetService {
     const { ids } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {
