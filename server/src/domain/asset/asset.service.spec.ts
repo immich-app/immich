@@ -4,6 +4,7 @@ import {
   IAccessRepositoryMock,
   assetStub,
   authStub,
+  faceStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
@@ -172,17 +173,6 @@ describe(AssetService.name, () => {
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetStub.livePhotoMotionAsset as AssetEntity);
-
-    when(jobMock.queue)
-      .calledWith(
-        expect.objectContaining({
-          name: JobName.ASSET_DELETION,
-        }),
-      )
-      .mockImplementation(async (item: JobItem) => {
-        const jobData = (item as { data?: any })?.data || {};
-        await sut.handleAssetDeletion(jobData);
-      });
   });
 
   describe('canUpload', () => {
@@ -653,13 +643,108 @@ describe(AssetService.name, () => {
   });
 
   describe('deleteAll', () => {
-    it('should delete a live photo', async () => {
+    it('should required asset delete access for all ids', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(
+        sut.deleteAll(authStub.user1, {
+          ids: ['asset-1'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should force delete a batch of assets', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
-      await sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id], force: true });
+      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoStillAsset.id } }],
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
+      ]);
+    });
+
+    it('should soft delete a batch of assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
+
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['asset1', 'asset2']);
+      expect(jobMock.queue).not.toBeCalled();
+    });
+  });
+
+  describe('handleAssetDeletion', () => {
+    beforeEach(() => {
+      when(jobMock.queue)
+        .calledWith(
+          expect.objectContaining({
+            name: JobName.ASSET_DELETION,
+          }),
+        )
+        .mockImplementation(async (item: JobItem) => {
+          const jobData = (item as { data?: any })?.data || {};
+          await sut.handleAssetDeletion(jobData);
+        });
+    });
+
+    it('should remove faces', async () => {
+      const assetWithFace = { ...(assetStub.image as AssetEntity), faces: [faceStub.face1, faceStub.mergeFace1] };
+
+      when(assetMock.getById).calledWith(assetWithFace.id).mockResolvedValue(assetWithFace);
+
+      await sut.handleAssetDeletion({ id: assetWithFace.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_REMOVE_FACE,
+            data: { assetId: faceStub.face1.assetId, personId: faceStub.face1.personId },
+          },
+        ],
+        [
+          {
+            name: JobName.SEARCH_REMOVE_FACE,
+            data: { assetId: faceStub.mergeFace1.assetId, personId: faceStub.mergeFace1.personId },
+          },
+        ],
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetWithFace.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetWithFace.originalPath,
+                assetWithFace.webpPath,
+                assetWithFace.resizePath,
+                assetWithFace.encodedVideoPath,
+                assetWithFace.sidecarPath,
+              ],
+            },
+          },
+        ],
+      ]);
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetWithFace);
+    });
+
+    it('should not schedule delete-files job for readonly assets', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.readOnly.id)
+        .mockResolvedValue(assetStub.readOnly as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.readOnly.id] } }],
+      ]);
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
+    });
+
+    it('should delete a live photo', async () => {
+      await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoStillAsset.id] } }],
         [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoMotionAsset.id } }],
         [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoMotionAsset.id] } }],
@@ -676,57 +761,6 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: ['fake_path/asset_1.jpeg', undefined, undefined, undefined, undefined],
-            },
-          },
-        ],
-      ]);
-    });
-
-    it('should delete a batch of assets', async () => {
-      const asset1 = {
-        id: 'asset1',
-        originalPath: 'original-path-1',
-        resizePath: 'resize-path-1',
-        webpPath: 'web-path-1',
-      };
-
-      const asset2 = {
-        id: 'asset2',
-        originalPath: 'original-path-2',
-        resizePath: 'resize-path-2',
-        webpPath: 'web-path-2',
-        encodedVideoPath: 'encoded-video-path-2',
-      };
-
-      when(assetMock.getById)
-        .calledWith(asset1.id)
-        .mockResolvedValue(asset1 as AssetEntity);
-      when(assetMock.getById)
-        .calledWith(asset2.id)
-        .mockResolvedValue(asset2 as AssetEntity);
-
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
-        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset1'] } }],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: ['original-path-1', 'web-path-1', 'resize-path-1', undefined, undefined],
-            },
-          },
-        ],
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
-        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset2'] } }],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: ['original-path-2', 'web-path-2', 'resize-path-2', 'encoded-video-path-2', undefined],
             },
           },
         ],

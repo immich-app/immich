@@ -296,4 +296,8 @@ export const assetStub = {
     sidecarPath: '/original/path.ext.xmp',
     deletedAt: null,
   }),
+  readOnly: Object.freeze({
+    id: 'read-only-asset',
+    isReadOnly: true,
+  }),
 };
