@@ -217,24 +217,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       final assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
-        final assetList =
-            await album.getAssetListRange(start: 0, end: assetCountInAlbum);
-
-        if (assetList.isNotEmpty) {
-          final thumbnailAsset = assetList.first;
-
-          try {
-            final thumbnailData = await thumbnailAsset
-                .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-            availableAlbum =
-                availableAlbum.copyWith(thumbnailData: thumbnailData);
-          } catch (e, stack) {
-            log.severe(
-              "Failed to get thumbnail for album ${album.name}",
-              e.toString(),
-              stack,
-            );
-          }
+        final assetList = await album.getAssetListPaged(page: 0, size: 1);
+        final thumbnailAsset = assetList.first;
+        try {
+          final thumbnailData = await thumbnailAsset
+              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
+          availableAlbum =
+              availableAlbum.copyWith(thumbnailData: thumbnailData);
+        } catch (e, stack) {
+          log.severe(
+            "Failed to get thumbnail for album ${album.name}",
+            e.toString(),
+            stack,
+          );
         }
 
         availableAlbums.add(availableAlbum);

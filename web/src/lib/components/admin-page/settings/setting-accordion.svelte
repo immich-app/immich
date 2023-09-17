@@ -8,7 +8,7 @@
 </script>
 
 <div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
-  <div class="flex place-items-center justify-between">
+  <button on:click={toggle} class="flex cursor-pointer place-items-center justify-between text-left">
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
@@ -18,7 +18,6 @@
     </div>
 
     <button
-      on:click={toggle}
       aria-expanded={isOpen}
       class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20"
     >
@@ -36,7 +35,7 @@
         <path d="M19 9l-7 7-7-7" />
       </svg>
     </button>
-  </div>
+  </button>
 
   {#if isOpen}
     <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">

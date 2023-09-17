@@ -4733,7 +4733,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.77.0",
+    "version": "1.78.1",
     "contact": {}
   },
   "tags": [],
@@ -5318,7 +5318,7 @@
         "enum": [
           "mp3",
           "aac",
-          "opus"
+          "libopus"
         ],
         "type": "string"
       },
