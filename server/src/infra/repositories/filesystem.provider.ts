@@ -56,11 +56,7 @@ export class FilesystemProvider implements IStorageRepository {
     await fs.rm(folder, options);
   }
 
-  async removeEmptyDirs(directory: string) {
-    await this._removeEmptyDirs(directory, false);
-  }
-
-  private async _removeEmptyDirs(directory: string, self: boolean) {
+  async removeEmptyDirs(directory: string, self: boolean = false) {
     // lstat does not follow symlinks (in contrast to stat)
     const stats = await fs.lstat(directory);
     if (!stats.isDirectory()) {
@@ -68,7 +64,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
 
     const files = await fs.readdir(directory);
-    await Promise.all(files.map((file) => this._removeEmptyDirs(path.join(directory, file), true)));
+    await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
     if (self) {
       const updated = await fs.readdir(directory);

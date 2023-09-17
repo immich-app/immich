@@ -26,6 +26,10 @@ export class StorageService {
 
       try {
         await this.storageRepository.unlink(file);
+        const found = file.match(/(?<path>.*\/.*)\/.*\/.*\..*/);
+        if (found?.groups) {
+          await this.storageRepository.removeEmptyDirs(found.groups.path, true);
+        }
       } catch (error: any) {
         this.logger.warn('Unable to remove file from disk', error);
       }
