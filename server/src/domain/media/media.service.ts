@@ -93,16 +93,14 @@ export class MediaService {
     const people = await this.personRepository.getAll();
 
     for (const person of people) {
-      if (person.faceAssetId) {
-        await this.jobRepository.queue({
-          name: JobName.FACE_THUMBNAIL_MIGRATION,
-          data: { assetId: person.faceAssetId, personId: person.id },
-        });
-      }
+      await this.jobRepository.queue({
+        name: JobName.FACE_THUMBNAIL_MIGRATION,
+        data: { ownerId: person.ownerId, personId: person.id },
+      });
     }
 
-    await this.storageRepository.removeEmptyDirs(StorageFolder.THUMBNAILS);
-    await this.storageRepository.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    await this.storageRepository.removeEmptyDirs(this.storageCore.getBaseFolder(StorageFolder.THUMBNAILS));
+    await this.storageRepository.removeEmptyDirs(this.storageCore.getBaseFolder(StorageFolder.ENCODED_VIDEO));
 
     return true;
   }

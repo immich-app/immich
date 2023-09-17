@@ -6,6 +6,7 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
+  IPersonJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -45,7 +46,7 @@ export type JobItem =
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
   | { name: JobName.ASSET_MIGRATION; data?: IEntityJob }
-  | { name: JobName.FACE_THUMBNAIL_MIGRATION; data?: IAssetFaceJob }
+  | { name: JobName.FACE_THUMBNAIL_MIGRATION; data?: IPersonJob }
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }

@@ -3,11 +3,11 @@ import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import {
-  IAssetFaceJob,
   IBaseJob,
   IEntityJob,
   IFaceThumbnailJob,
   IJobRepository,
+  IPersonJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,
 } from '../job';
@@ -125,20 +125,14 @@ export class FacialRecognitionService {
     return true;
   }
 
-  async handleFaceThumbnailMigration({ assetId, personId }: IAssetFaceJob) {
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-
-    if (!asset) {
-      return false;
-    }
-
-    const person = await this.personRepository.getById(asset.ownerId, personId);
+  async handleFaceThumbnailMigration({ ownerId, personId }: IPersonJob) {
+    const person = await this.personRepository.getById(ownerId, personId);
 
     if (!person) {
       return false;
     }
 
-    const path = this.ensureFaceThumbnailPath(asset.ownerId, personId, 'jpeg');
+    const path = this.ensureFaceThumbnailPath(ownerId, personId, 'jpeg');
 
     if (person.thumbnailPath && person.thumbnailPath !== path) {
       await this.storageRepository.moveFile(person.thumbnailPath, path);
