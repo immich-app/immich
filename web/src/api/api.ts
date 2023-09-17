@@ -128,6 +128,7 @@ export class ImmichApi {
       [JobName.RecognizeFaces]: 'Recognize Faces',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
+      [JobName.Migration]: 'Migration',
       [JobName.BackgroundTask]: 'Background Tasks',
       [JobName.Search]: 'Search',
     };

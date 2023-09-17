@@ -102,6 +102,12 @@
       allowForceCommand: false,
       component: StorageMigrationDescription,
     },
+    [JobName.Migration]: {
+      icon: FolderMove,
+      title: api.getJobName(JobName.Migration),
+      subtitle: 'Migrate assets and face thumbnails',
+      allowForceCommand: false,
+    },
   };
   $: jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
 
