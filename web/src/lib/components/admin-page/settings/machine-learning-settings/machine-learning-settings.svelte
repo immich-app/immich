@@ -204,7 +204,6 @@
               bind:value={machineLearningConfig.facialRecognition.minFaces}
               step="1"
               min="1"
-              max="5"
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}
               isEdited={machineLearningConfig.facialRecognition.minFaces !== savedConfig.facialRecognition.minFaces}
             />

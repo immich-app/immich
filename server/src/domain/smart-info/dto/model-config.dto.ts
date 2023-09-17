@@ -51,7 +51,6 @@ export class RecognitionConfig extends ModelConfig {
 
   @IsNumber()
   @Min(1)
-  @Max(5)
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   minFaces!: number;
