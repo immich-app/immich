@@ -57,7 +57,7 @@ export class FilesystemProvider implements IStorageRepository {
   }
 
   async removeEmptyDirs(directory: string) {
-    this._removeEmptyDirs(directory, false);
+    await this._removeEmptyDirs(directory, false);
   }
 
   private async _removeEmptyDirs(directory: string, self: boolean) {
