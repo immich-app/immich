@@ -101,6 +101,9 @@ export class MediaService {
       }
     }
 
+    await this.storageRepository.removeEmptyDirs(StorageFolder.THUMBNAILS);
+    await this.storageRepository.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+
     return true;
   }
 
