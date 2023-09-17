@@ -7,12 +7,8 @@
   const toggle = () => (isOpen = !isOpen);
 </script>
 
-<div
-  class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700"
->
-  <button
-    on:click={toggle}
-    class="flex place-items-center justify-between cursor-pointer text-left">
+<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
+  <button on:click={toggle} class="flex cursor-pointer place-items-center justify-between text-left">
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
