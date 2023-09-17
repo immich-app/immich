@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
@@ -25,6 +26,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
@@ -208,28 +210,39 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void handleDelete(Asset deleteAsset) {
+      onDelete(bool force) {
+        if (totalAssets == 1) {
+          // Handle only one asset
+          AutoRouter.of(context).pop();
+        } else {
+          // Go to next page otherwise
+          controller.nextPage(
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.fastLinearToSlowEaseIn,
+          );
+        }
+        ref.watch(assetProvider.notifier).deleteAssets(
+          {deleteAsset},
+          force: force,
+        );
+      }
+
+      if (isTrashEnabled && !isFromTrash) {
+        onDelete(false);
+        if (context.mounted) {
+          ImmichToast.show(
+            durationInSecond: 1,
+            context: context,
+            msg: 'Asset trashed',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+        return;
+      }
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return DeleteDialog(
-            isTrashEnabled: isTrashEnabled && !isFromTrash,
-            onDelete: () {
-              if (totalAssets == 1) {
-                // Handle only one asset
-                AutoRouter.of(context).pop();
-              } else {
-                // Go to next page otherwise
-                controller.nextPage(
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.fastLinearToSlowEaseIn,
-                );
-              }
-              ref.watch(assetProvider.notifier).deleteAssets(
-                {deleteAsset},
-                force: !isTrashEnabled || isFromTrash,
-              );
-            },
-          );
+          return DeleteDialog(onDelete: () => onDelete(true));
         },
       );
     }

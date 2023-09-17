@@ -5,9 +5,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -18,6 +20,8 @@ class TrashPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trashedAssets = ref.watch(trashedAssetsProvider);
+    final trashDays =
+        ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
     final processing = useState(false);
@@ -49,15 +53,14 @@ class TrashPage extends HookConsumerWidget {
         context: context,
         builder: (context) => ConfirmDialog(
           onOk: () => onEmptyTrash(),
-          title: "Empty trash",
-          ok: "Ok",
-          content:
-              "Do you want to empty your trashed assets? These items will be permanently removed from Immich",
+          title: "trash_page_empty_trash_btn".tr(),
+          ok: "trash_page_empty_trash_dialog_ok".tr(),
+          content: "trash_page_empty_trash_dialog_content".tr(),
         ),
       );
     }
 
-    Future<void> handlePermanentDelete() async {
+    Future<void> onPermanentlyDelete() async {
       processing.value = true;
       try {
         if (selection.value.isNotEmpty) {
@@ -79,6 +82,15 @@ class TrashPage extends HookConsumerWidget {
         processing.value = false;
         selectionEnabledHook.value = false;
       }
+    }
+
+    handlePermanentDelete() async {
+      await showDialog(
+        context: context,
+        builder: (context) => DeleteDialog(
+          onDelete: () => onPermanentlyDelete(),
+        ),
+      );
     }
 
     Future<void> handleRestoreAll() async {
@@ -116,9 +128,9 @@ class TrashPage extends HookConsumerWidget {
       if (selectionEnabledHook.value) {
         return selection.value.isNotEmpty
             ? "${selection.value.length}"
-            : "Select assets";
+            : "trash_page_select_assets_btn".tr();
       }
-      return 'Trash ({})'.tr(args: [count]);
+      return 'trash_page_title'.tr(args: [count]);
     }
 
     AppBar buildAppBar(String count) {
@@ -144,11 +156,11 @@ class TrashPage extends HookConsumerWidget {
                 return [
                   PopupMenuItem(
                     value: () => selectionEnabledHook.value = true,
-                    child: const Text('Select'),
+                    child: const Text('trash_page_select_btn').tr(),
                   ),
                   PopupMenuItem(
                     value: handleEmptyTrash,
-                    child: const Text('Empty bin'),
+                    child: const Text('trash_page_empty_trash_btn').tr(),
                   ),
                 ];
               },
@@ -176,8 +188,8 @@ class TrashPage extends HookConsumerWidget {
                     ),
                     label: Text(
                       selection.value.isEmpty
-                          ? 'Delete All'.tr()
-                          : 'Delete'.tr(),
+                          ? 'trash_page_delete_all'.tr()
+                          : 'trash_page_delete'.tr(),
                       style: TextStyle(fontSize: 14, color: Colors.red[400]),
                     ),
                     onPressed: processing.value
@@ -192,8 +204,8 @@ class TrashPage extends HookConsumerWidget {
                     ),
                     label: Text(
                       selection.value.isEmpty
-                          ? 'Restore All'.tr()
-                          : 'Restore'.tr(),
+                          ? 'trash_page_restore_all'.tr()
+                          : 'trash_page_restore'.tr(),
                       style: const TextStyle(fontSize: 14),
                     ),
                     onPressed: processing.value
@@ -223,7 +235,7 @@ class TrashPage extends HookConsumerWidget {
         appBar: buildAppBar(data.totalAssets.toString()),
         body: data.isEmpty
             ? Center(
-                child: Text('No trashed assets'.tr()),
+                child: Text('trash_page_no_assets'.tr()),
               )
             : Stack(
                 children: [
@@ -233,16 +245,16 @@ class TrashPage extends HookConsumerWidget {
                       listener: selectionListener,
                       selectionActive: selectionEnabledHook.value,
                       showMultiSelectIndicator: false,
-                      topWidget: const Padding(
-                        padding: EdgeInsets.only(
+                      topWidget: Padding(
+                        padding: const EdgeInsets.only(
                           top: 24,
                           bottom: 24,
                           left: 12,
                           right: 12,
                         ),
-                        child: Text(
-                          "Backed up items will be permanently deleted after 60 days",
-                        ),
+                        child: const Text(
+                          "trash_page_info",
+                        ).tr(args: ["$trashDays"]),
                       ),
                     ),
                   ),
