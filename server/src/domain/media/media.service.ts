@@ -391,7 +391,7 @@ export class MediaService {
     extension: string,
   ): string {
     let folderPath = this.storageCore.getFolderLocation(folder, asset.ownerId);
-    folderPath = join(folderPath, asset.id.substring(0, 2), asset.id.substring(2, 4), asset.id.substring(4, 6));
+    folderPath = join(folderPath, asset.id.substring(0, 2), asset.id.substring(2, 4));
     this.storageRepository.mkdirSync(folderPath);
     return join(folderPath, `${asset.id}.${extension}`);
   }

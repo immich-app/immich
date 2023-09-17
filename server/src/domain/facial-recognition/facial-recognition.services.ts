@@ -207,7 +207,7 @@ export class FacialRecognitionService {
 
   ensureFaceThumbnailPath(ownerId: string, personId: string, extension: string): string {
     let folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, ownerId);
-    folderPath = join(folderPath, personId.substring(0, 2), personId.substring(2, 4), personId.substring(4, 6));
+    folderPath = join(folderPath, personId.substring(0, 2), personId.substring(2, 4));
     this.storageRepository.mkdirSync(folderPath);
 
     return join(folderPath, `${personId}.${extension}`);
