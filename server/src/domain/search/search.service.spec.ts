@@ -161,7 +161,12 @@ describe(SearchService.name, () => {
         },
       ]);
 
-      await expect(sut.getExploreData(authStub.admin)).resolves.toEqual([]);
+      await expect(sut.getExploreData(authStub.admin)).resolves.toEqual([
+        {
+          fieldName: 'name',
+          items: [],
+        },
+      ]);
 
       expect(searchMock.explore).toHaveBeenCalledWith(authStub.admin.id);
     });
