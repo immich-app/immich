@@ -57,6 +57,7 @@ export enum SystemConfigKey {
   MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL_NAME = 'machineLearning.facialRecognition.modelName',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_SCORE = 'machineLearning.facialRecognition.minScore',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MAX_DISTANCE = 'machineLearning.facialRecognition.maxDistance',
+  MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES = 'machineLearning.facialRecognition.minFaces',
 
   MAP_ENABLED = 'map.enabled',
   MAP_TILE_URL = 'map.tileUrl',
@@ -164,6 +165,7 @@ export interface SystemConfig {
       enabled: boolean;
       modelName: string;
       minScore: number;
+      minFaces: number;
       maxDistance: number;
     };
   };
