@@ -29,13 +29,14 @@ class TrashNotifier extends StateNotifier<bool> {
       }
       await _trashService.updateTrash(deleteAll: true);
 
-      final assets = await _db.assets
+      final dbIds = await _db.assets
+          .where()
+          .remoteIdIsNotNull()
           .filter()
           .ownerIdEqualTo(user.isarId)
           .isTrashedEqualTo(true)
+          .idProperty()
           .findAll();
-
-      var dbIds = assets.where((a) => a.isRemote).map((e) => e.id).toList();
 
       await _db.writeTxn(() async {
         await _db.exifInfos.deleteAll(dbIds);
@@ -90,12 +91,14 @@ class TrashNotifier extends StateNotifier<bool> {
       await _trashService.updateTrash(restoreAll: true);
 
       final assets = await _db.assets
+          .where()
+          .remoteIdIsNotNull()
           .filter()
           .ownerIdEqualTo(user.isarId)
           .isTrashedEqualTo(true)
           .findAll();
 
-      var updatedAssets = assets.where((a) => a.isRemote).map((e) {
+      var updatedAssets = assets.map((e) {
         e.isTrashed = false;
         return e;
       }).toList();
