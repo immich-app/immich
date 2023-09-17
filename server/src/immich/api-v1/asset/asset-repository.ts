@@ -195,6 +195,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         checksum: In(checksums),
       },
+      withDeleted: true,
     });
   }
 
