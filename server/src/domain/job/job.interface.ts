@@ -25,7 +25,6 @@ export interface IPersonJob extends IBaseJob {
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload';
-  deleteOld?: boolean;
 }
 
 export interface IBulkEntityJob extends IBaseJob {
