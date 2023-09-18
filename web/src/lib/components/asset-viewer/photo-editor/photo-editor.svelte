@@ -79,6 +79,9 @@
   let renderElement: SvelteComponent;
   let editorElement: HTMLDivElement;
   let imageElement: HTMLImageElement;
+
+  let originalImage: HTMLImageElement;
+
   let imageWrapper: HTMLDivElement;
   let cropElement: HTMLDivElement;
   let cropElementWrapper: HTMLDivElement;
@@ -133,7 +136,7 @@
       }
     : { width: 0, height: 0 };
 
-  $: currentRatio = imageElement ? imageElement.naturalWidth / imageWrapper.offsetWidth : 0;
+  $: currentRatio = originalImage ? originalImage.naturalWidth / imageWrapper.offsetWidth : 0;
 
   const isFilter = (f: Preset) => {
     if (!f) return false;
@@ -222,6 +225,8 @@
       }
 
       assetData = URL.createObjectURL(data);
+      originalImage = document.createElement('img');
+      originalImage.src = assetData;
       //return assetData;
     } catch {
       // Do nothing
