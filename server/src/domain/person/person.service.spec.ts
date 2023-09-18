@@ -97,7 +97,7 @@ describe(PersonService.name, () => {
   });
 
   describe('getById', () => {
-    it('should require PERSON_READ permission', async () => {
+    it('should require person.read permission', async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getById(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
@@ -121,7 +121,7 @@ describe(PersonService.name, () => {
   });
 
   describe('getThumbnail', () => {
-    it('should require PERSON_READ permission', async () => {
+    it('should require person.read permission', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
@@ -155,7 +155,7 @@ describe(PersonService.name, () => {
   });
 
   describe('getAssets', () => {
-    it('should require PERSON_READ', async () => {
+    it('should require person.read permission', async () => {
       personMock.getAssets.mockResolvedValue([assetStub.image, assetStub.video]);
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getAssets(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
@@ -173,7 +173,7 @@ describe(PersonService.name, () => {
   });
 
   describe('update', () => {
-    it('should require PERSON_WRITE permission', async () => {
+    it('should require person.write permission', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
@@ -319,7 +319,7 @@ describe(PersonService.name, () => {
   });
 
   describe('mergePerson', () => {
-    it('should require PERSON_WRITE permission', async () => {
+    it('should require person.write and person.merge permission', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
       personMock.prepareReassignFaces.mockResolvedValue([]);
