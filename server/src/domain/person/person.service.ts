@@ -149,13 +149,12 @@ export class PersonService {
 
   async mergePerson(authUser: AuthUserDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
     const primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, primaryPerson.id);
     for (const mergeId of mergeIds) {
       const hasPermission = await this.access.hasPermission(authUser, Permission.PERSON_MERGE, mergeId);
 
