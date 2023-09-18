@@ -101,24 +101,25 @@ class AssetNotifier extends StateNotifier<bool> {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
+        List<Asset>? assetsToUpdate;
         // Local only assets are permanently deleted for now. So always remove them from db
-        var dbIds = deleteAssets
+        final dbIds = deleteAssets
             .where((a) => a.isLocal && !a.isRemote)
             .map((e) => e.id)
             .toList();
         if (force == null || !force) {
-          final trashedAssets = remoteDeleted.map((e) {
+          assetsToUpdate = remoteDeleted.map((e) {
             e.isTrashed = true;
             return e;
           }).toList();
-          await _db.writeTxn(() async {
-            await _db.assets.putAll(trashedAssets);
-          });
         } else {
           // Add all remote assets to be deleted from isar as since they are permanently deleted
           dbIds.addAll(remoteDeleted.map((e) => e.id));
         }
         await _db.writeTxn(() async {
+          if (assetsToUpdate != null) {
+            await _db.assets.putAll(assetsToUpdate);
+          }
           await _db.exifInfos.deleteAll(dbIds);
           await _db.assets.deleteAll(dbIds);
         });
