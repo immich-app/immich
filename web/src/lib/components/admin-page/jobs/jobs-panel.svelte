@@ -105,7 +105,7 @@
     [JobName.Migration]: {
       icon: FolderMove,
       title: api.getJobName(JobName.Migration),
-      subtitle: 'Migrate assets and face thumbnails',
+      subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
       allowForceCommand: false,
     },
   };
