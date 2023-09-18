@@ -12,7 +12,7 @@ final trashServiceProvider = Provider<TrashService>((ref) {
 });
 
 class TrashService {
-  final log = Logger("TrashService");
+  final _log = Logger("TrashService");
 
   final ApiService _apiService;
 
@@ -25,7 +25,7 @@ class TrashService {
       await _apiService.assetApi.restoreAssets(BulkIdsDto(ids: remoteIds));
       return true;
     } catch (error, stack) {
-      log.severe("Cannot restore assets ${error.toString()}", error, stack);
+      _log.severe("Cannot restore assets ${error.toString()}", error, stack);
       return false;
     }
   }
@@ -39,7 +39,7 @@ class TrashService {
         ),
       );
     } catch (error, stack) {
-      log.severe("Cannot restore assets ${error.toString()}", error, stack);
+      _log.severe("Cannot restore assets ${error.toString()}", error, stack);
     }
   }
 }

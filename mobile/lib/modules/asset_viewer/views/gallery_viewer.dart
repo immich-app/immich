@@ -221,7 +221,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             curve: Curves.fastLinearToSlowEaseIn,
           );
         }
-        ref.watch(assetProvider.notifier).deleteAssets(
+        ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
           force: force,
         );

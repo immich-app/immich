@@ -11,19 +11,19 @@ import 'package:logging/logging.dart';
 
 class TrashNotifier extends StateNotifier<bool> {
   final Isar _db;
-  final Ref ref;
+  final Ref _ref;
   final TrashService _trashService;
-  final log = Logger('TrashNotifier');
+  final _log = Logger('TrashNotifier');
 
   TrashNotifier(
     this._trashService,
     this._db,
-    this.ref,
+    this._ref,
   ) : super(false);
 
   Future<void> emptyTrash() async {
     try {
-      final user = ref.watch(currentUserProvider);
+      final user = _ref.read(currentUserProvider);
       if (user == null) {
         return;
       }
@@ -46,10 +46,10 @@ class TrashNotifier extends StateNotifier<bool> {
       // Refresh assets in background
       Future.delayed(
         const Duration(seconds: 4),
-        () async => await ref.read(assetProvider.notifier).getAllAsset(),
+        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
       );
     } catch (error, stack) {
-      log.severe("Cannot empty trash ${error.toString()}", error, stack);
+      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
     }
   }
 
@@ -60,7 +60,7 @@ class TrashNotifier extends StateNotifier<bool> {
       if (result) {
         final remoteAssets = assetList.where((a) => a.isRemote).toList();
 
-        var updatedAssets = remoteAssets.map((e) {
+        final updatedAssets = remoteAssets.map((e) {
           e.isTrashed = false;
           return e;
         }).toList();
@@ -72,19 +72,19 @@ class TrashNotifier extends StateNotifier<bool> {
         // Refresh assets in background
         Future.delayed(
           const Duration(seconds: 4),
-          () async => await ref.read(assetProvider.notifier).getAllAsset(),
+          () async => await _ref.read(assetProvider.notifier).getAllAsset(),
         );
         return true;
       }
     } catch (error, stack) {
-      log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }
     return false;
   }
 
   Future<void> restoreTrash() async {
     try {
-      final user = ref.watch(currentUserProvider);
+      final user = _ref.read(currentUserProvider);
       if (user == null) {
         return;
       }
@@ -98,7 +98,7 @@ class TrashNotifier extends StateNotifier<bool> {
           .isTrashedEqualTo(true)
           .findAll();
 
-      var updatedAssets = assets.map((e) {
+      final updatedAssets = assets.map((e) {
         e.isTrashed = false;
         return e;
       }).toList();
@@ -110,10 +110,10 @@ class TrashNotifier extends StateNotifier<bool> {
       // Refresh assets in background
       Future.delayed(
         const Duration(seconds: 4),
-        () async => await ref.read(assetProvider.notifier).getAllAsset(),
+        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
       );
     } catch (error, stack) {
-      log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }
   }
 }
@@ -127,7 +127,7 @@ final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
 });
 
 final trashedAssetsProvider = StreamProvider<RenderList>((ref) async* {
-  final user = ref.watch(currentUserProvider);
+  final user = ref.read(currentUserProvider);
   if (user == null) return;
   final query = ref
       .watch(dbProvider)
