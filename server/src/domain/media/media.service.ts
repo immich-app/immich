@@ -2,7 +2,7 @@ import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec }
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { IPersonRepository } from '../person';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
@@ -80,6 +80,11 @@ export class MediaService {
   }
 
   async handleQueueMigration() {
+    if (!(await this.jobRepository.getQueueStatus(QueueName.MIGRATION)).isActive) {
+      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
     );
@@ -98,9 +103,6 @@ export class MediaService {
         data: { id: person.id },
       });
     }
-
-    await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
-    await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
 
     return true;
   }
