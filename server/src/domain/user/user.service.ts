@@ -101,8 +101,8 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
-    await this.albumRepository.restoreAll(userId);
     const updatedUser = await this.userCore.restoreUser(authUser, user);
+    await this.albumRepository.restoreAll(userId);
     return mapUser(updatedUser);
   }
 
