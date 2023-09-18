@@ -69,21 +69,9 @@
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 
   $: {
-    if (name != '') {
-      suggestedPeople = [];
-      for (const person of people) {
-        if (person.name.startsWith(name) && person.id != data.person.id) {
-          suggestedPeople.push(person);
-
-          // Limit the size of filteredArray to 5
-          if (suggestedPeople.length === 5) {
-            break;
-          }
-        }
-      }
-    } else {
-      suggestedPeople = [];
-    }
+    suggestedPeople = !name
+      ? []
+      : people.filter((person) => person.name.startsWith(name) && person.id !== data.person.id).slice(0, 5);
   }
 
   onMount(() => {
@@ -161,7 +149,7 @@
     }
   };
 
-  const suggestPeople = (person: PersonResponseDto) => {
+  const handleSuggestPeople = (person: PersonResponseDto) => {
     isEditingName = false;
     potentialMergePeople = [];
     personMerge1 = data.person;
@@ -372,7 +360,7 @@
                   ? 'rounded-b-lg'
                   : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
               >
-                <button class="flex w-full place-items-center" on:click={() => suggestPeople(person)}>
+                <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
                   <ImageThumbnail
                     circle
                     shadow
