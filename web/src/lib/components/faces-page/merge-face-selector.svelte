@@ -36,7 +36,7 @@
     dispatch('go-back');
   };
 
-  const swapPeople = () => {
+  const handleSwapPeople = () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     goto(`${AppRoute.PEOPLE}/${person.id}?action=merge`);
   };
@@ -123,7 +123,7 @@
             <span class="grid grid-cols-1"
               ><CallMerge size={48} class="rotate-90 dark:text-white" />
               {#if selectedPeople.length === 1}
-                <button class="flex justify-center" on:click={() => swapPeople()}
+                <button class="flex justify-center" on:click={handleSwapPeople}
                   ><SwapHorizontal size={24} class="dark:text-white" />
                 </button>
               {/if}

@@ -207,7 +207,7 @@
     }
   };
 
-  const goBack = () => {
+  const handleGoBack = () => {
     viewMode = ViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has('action')) {
       $page.url.searchParams.delete('action');
@@ -236,7 +236,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={() => goBack()} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
 {/if}
 
 <header>
