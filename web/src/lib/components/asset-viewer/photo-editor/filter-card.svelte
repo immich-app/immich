@@ -11,7 +11,21 @@
   let imgElement: HTMLImageElement;
 
   import Check from 'svelte-material-icons/Check.svelte';
-  import { presets } from './filter';
+  import { presets as presetsObject } from './filter';
+
+  type Preset = {
+    blur: number;
+    brightness: number;
+    contrast: number;
+    grayscale: number;
+    hueRotate: number;
+    invert: number;
+    opacity: number;
+    saturation: number;
+    sepia: number;
+  };
+
+  const presets = presetsObject as { [key: string]: Preset };
 
   onMount(() => {
     if (title === 'Custom') {
