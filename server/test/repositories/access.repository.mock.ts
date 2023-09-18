@@ -4,6 +4,7 @@ export interface IAccessRepositoryMock {
   asset: jest.Mocked<IAccessRepository['asset']>;
   album: jest.Mocked<IAccessRepository['album']>;
   library: jest.Mocked<IAccessRepository['library']>;
+  person: jest.Mocked<IAccessRepository['person']>;
 }
 
 export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
@@ -23,6 +24,10 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
 
     library: {
       hasPartnerAccess: jest.fn(),
+    },
+
+    person: {
+      hasOwnerAccess: jest.fn(),
     },
   };
 };
