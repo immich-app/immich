@@ -28,19 +28,19 @@ const responseDto: PersonResponseDto = {
 };
 
 describe(PersonService.name, () => {
-  let sut: PersonService;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
   let accessMock: IAccessRepositoryMock;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
+  let sut: PersonService;
 
   beforeEach(async () => {
+    accessMock = newAccessRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
-    accessMock = newAccessRepositoryMock();
     sut = new PersonService(accessMock, personMock, configMock, storageMock, jobMock);
   });
 
