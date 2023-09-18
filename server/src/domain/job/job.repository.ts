@@ -45,8 +45,8 @@ export type JobItem =
 
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
-  | { name: JobName.ASSET_MIGRATION; data?: IEntityJob }
-  | { name: JobName.FACE_THUMBNAIL_MIGRATION; data?: IPersonJob }
+  | { name: JobName.MIGRATE_ASSET; data?: IEntityJob }
+  | { name: JobName.MIGRATE_PERSON; data?: IPersonJob }
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }

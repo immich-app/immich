@@ -85,7 +85,7 @@ export class MediaService {
 
     for await (const assets of assetPagination) {
       for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_MIGRATION, data: { id: asset.id } });
+        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
       }
     }
 
@@ -93,7 +93,7 @@ export class MediaService {
 
     for (const person of people) {
       await this.jobRepository.queue({
-        name: JobName.FACE_THUMBNAIL_MIGRATION,
+        name: JobName.MIGRATE_PERSON,
         data: { ownerId: person.ownerId, personId: person.id },
       });
     }

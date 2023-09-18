@@ -47,8 +47,8 @@ export enum JobName {
 
   // migration
   QUEUE_MIGRATION = 'queue-migration',
-  ASSET_MIGRATION = 'asset-migration',
-  FACE_THUMBNAIL_MIGRATION = 'face-thumbnail-migration',
+  MIGRATE_ASSET = 'migrate-asset',
+  MIGRATE_PERSON = 'migrate-person',
 
   // object tagging
   QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
@@ -117,8 +117,8 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // migration
   [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
-  [JobName.ASSET_MIGRATION]: QueueName.MIGRATION,
-  [JobName.FACE_THUMBNAIL_MIGRATION]: QueueName.MIGRATION,
+  [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
+  [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
 
   // object tagging
   [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
