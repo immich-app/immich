@@ -72,7 +72,9 @@
   $: {
     suggestedPeople = !name
       ? []
-      : people.filter((person) => person.name.startsWith(name) && person.id !== data.person.id).slice(0, 5);
+      : people
+          .filter((person: PersonResponseDto) => person.name.startsWith(name) && person.id !== data.person.id)
+          .slice(0, 5);
   }
 
   onMount(() => {
