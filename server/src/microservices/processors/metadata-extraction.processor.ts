@@ -61,7 +61,7 @@ interface ImmichTags extends Tags {
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private reverseGeocodingEnabled: boolean;
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,

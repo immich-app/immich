@@ -25,7 +25,7 @@ import { IUserRepository } from './user.repository';
 export class UserService {
   private logger = new Logger(UserService.name);
   private userCore: UserCore;
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
 
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,

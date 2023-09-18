@@ -1,5 +1,4 @@
 import { Inject, Logger } from '@nestjs/common';
-import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import {
@@ -21,7 +20,7 @@ import { AssetFaceId, IFaceRepository } from './face.repository';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -125,14 +124,14 @@ export class FacialRecognitionService {
     return true;
   }
 
-  async handleFaceThumbnailMigration({ ownerId, personId }: IPersonJob) {
+  async handlePersonThumbnailMigration({ ownerId, personId }: IPersonJob) {
     const person = await this.personRepository.getById(ownerId, personId);
 
     if (!person) {
       return false;
     }
 
-    const path = this.ensureFaceThumbnailPath(ownerId, personId, 'jpeg');
+    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, ownerId, `${personId}.jpeg`);
 
     if (person.thumbnailPath && person.thumbnailPath !== path) {
       await this.storageRepository.moveFile(person.thumbnailPath, path);
@@ -157,7 +156,7 @@ export class FacialRecognitionService {
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
 
-    const output = this.ensureFaceThumbnailPath(asset.ownerId, personId, 'jpeg');
+    const output = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
 
     const { x1, y1, x2, y2 } = boundingBox;
 
@@ -197,13 +196,5 @@ export class FacialRecognitionService {
     await this.personRepository.update({ id: personId, thumbnailPath: output, faceAssetId: data.assetId });
 
     return true;
-  }
-
-  ensureFaceThumbnailPath(ownerId: string, personId: string, extension: string): string {
-    let folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, ownerId);
-    folderPath = join(folderPath, personId.substring(0, 2), personId.substring(2, 4));
-    this.storageRepository.mkdirSync(folderPath);
-
-    return join(folderPath, `${personId}.${extension}`);
   }
 }

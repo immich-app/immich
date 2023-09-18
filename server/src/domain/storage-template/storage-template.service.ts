@@ -30,7 +30,7 @@ export interface MoveAssetMetadata {
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(

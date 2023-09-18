@@ -1,6 +1,5 @@
 import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
-import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -14,7 +13,7 @@ import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIC
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -379,21 +378,10 @@ export class MediaService {
   }
 
   ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    return this.ensurePath(asset, StorageFolder.THUMBNAILS, extension);
+    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`);
   }
 
   ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
-    return this.ensurePath(asset, StorageFolder.ENCODED_VIDEO, extension);
-  }
-
-  private ensurePath(
-    asset: AssetEntity,
-    folder: StorageFolder.ENCODED_VIDEO | StorageFolder.UPLOAD | StorageFolder.PROFILE | StorageFolder.THUMBNAILS,
-    extension: string,
-  ): string {
-    let folderPath = this.storageCore.getFolderLocation(folder, asset.ownerId);
-    folderPath = join(folderPath, asset.id.substring(0, 2), asset.id.substring(2, 4));
-    this.storageRepository.mkdirSync(folderPath);
-    return join(folderPath, `${asset.id}.${extension}`);
+    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
   }
 }

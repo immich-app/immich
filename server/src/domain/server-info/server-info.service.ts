@@ -16,7 +16,7 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
   private configCore: SystemConfigCore;
 
   constructor(

@@ -57,7 +57,7 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private storageCore = new StorageCore();
+  private storageCore = new StorageCore(this.storageRepository);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
