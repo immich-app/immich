@@ -40,15 +40,28 @@
   import Pillar from 'svelte-material-icons/Pillar.svelte';
 
   import Render from './render.svelte';
-  import { presets } from './filter.js';
+  import { presets as presetsObject } from './filter.js';
+
+  const presets = presetsObject as { [key: string]: Preset };
+
+  type Preset = {
+    blur: number;
+    brightness: number;
+    contrast: number;
+    grayscale: number;
+    hueRotate: number;
+    invert: number;
+    opacity: number;
+    saturation: number;
+    sepia: number;
+  };
 
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher();
 
   // Image adjustment
-  let filter = {
-    hdr: 0,
+  let filter: Preset = {
     blur: 0,
     brightness: 1,
     contrast: 1,
@@ -78,7 +91,7 @@
   let currentFlipY = false;
   let currentFlipX = false;
 
-  let currentFilter = 'Without';
+  let currentFilter = 'without';
 
   let currentRatio = 0;
 
@@ -122,8 +135,33 @@
 
   $: currentRatio = imageElement ? imageElement.naturalWidth / imageWrapper.offsetWidth : 0;
 
-  // Apply filter
-  $: if (imageElement && filter) {
+  const isFilter = (f: Preset) => {
+    if (!f) return false;
+    if (
+      f.blur === filter.blur &&
+      f.brightness === filter.brightness &&
+      f.contrast === filter.contrast &&
+      f.grayscale === filter.grayscale &&
+      f.hueRotate === filter.hueRotate &&
+      f.invert === filter.invert &&
+      f.opacity === filter.opacity &&
+      f.saturation === filter.saturation &&
+      f.sepia === filter.sepia
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const applyFilter = () => {
+    if (!isFilter(presets[currentFilter] as Preset)) {
+      console.log(currentFilter);
+      console.log(presets[currentFilter]);
+      console.log(filter);
+      currentFilter = 'custom';
+    }
+
     console.log('apply filter');
     console.log(filter);
     (imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
@@ -132,9 +170,7 @@
       filter.opacity
     }) saturate(${filter.saturation}) sepia(${filter.sepia})`),
       console.log('applied filter');
-  }
-
-  $: (filter = currentFilter === 'Without' ? presets.without : presets[currentFilter]), console.log(filter);
+  };
 
   onMount(async () => {
     try {
@@ -152,6 +188,25 @@
       setAspectRatio('original');
     };
   });
+
+  const setPreset = (event: CustomEvent<string>) => {
+    const preset = event.detail;
+    console.log(presets);
+    filter.blur = presets[preset].blur;
+    filter.brightness = presets[preset].brightness;
+    filter.contrast = presets[preset].contrast;
+    filter.grayscale = presets[preset].grayscale;
+    filter.hueRotate = presets[preset].hueRotate;
+    filter.invert = presets[preset].invert;
+    filter.opacity = presets[preset].opacity;
+    filter.saturation = presets[preset].saturation;
+    filter.sepia = presets[preset].sepia;
+
+    console.log(presets);
+    console.log(preset);
+    applyFilter();
+    currentFilter = preset;
+  };
 
   const loadAssetData = async () => {
     try {
@@ -980,28 +1035,28 @@
           <!-- <AdjustElement title="HDR" type={false} bind:value={filter.hdr}>
             <ImageFilterHdr />
           </AdjustElement> -->
-          <AdjustElement title="Brightness" type={true} bind:value={filter.brightness}>
+          <AdjustElement title="Brightness" type={true} bind:value={filter.brightness} on:applyFilter={applyFilter}>
             <Brightness6 />
           </AdjustElement>
-          <AdjustElement title="Contrast" type={true} bind:value={filter.contrast}>
+          <AdjustElement title="Contrast" type={true} bind:value={filter.contrast} on:applyFilter={applyFilter}>
             <ContrastCircle />
           </AdjustElement>
-          <AdjustElement title="Saturation" type={true} bind:value={filter.saturation}>
+          <AdjustElement title="Saturation" type={true} bind:value={filter.saturation} on:applyFilter={applyFilter}>
             <InvertColors />
           </AdjustElement>
-          <AdjustElement title="Blur" type={false} bind:value={filter.blur}>
+          <AdjustElement title="Blur" type={false} bind:value={filter.blur} on:applyFilter={applyFilter}>
             <Blur />
           </AdjustElement>
-          <AdjustElement title="Grayscale" type={false} bind:value={filter.grayscale}>
+          <AdjustElement title="Grayscale" type={false} bind:value={filter.grayscale} on:applyFilter={applyFilter}>
             <CircleHalfFull />
           </AdjustElement>
-          <AdjustElement title="Hue Rotate" type={true} bind:value={filter.hueRotate}>
+          <AdjustElement title="Hue Rotate" type={true} bind:value={filter.hueRotate} on:applyFilter={applyFilter}>
             <DotsCircle />
           </AdjustElement>
-          <AdjustElement title="Invert" type={false} bind:value={filter.invert}>
+          <AdjustElement title="Invert" type={false} bind:value={filter.invert} on:applyFilter={applyFilter}>
             <SelectInverse />
           </AdjustElement>
-          <AdjustElement title="Sepia" type={false} bind:value={filter.sepia}>
+          <AdjustElement title="Sepia" type={false} bind:value={filter.sepia} on:applyFilter={applyFilter}>
             <Pillar />
           </AdjustElement>
         </div>
@@ -1010,36 +1065,36 @@
       <div class="grid justify-center px-6 pt-2">
         <!-- Filter -->
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Custom" bind:currentFilter />
-          <FilterCard title="Without" bind:currentFilter />
-          <FilterCard title="Vivid" bind:currentFilter />
+          <FilterCard title="Custom" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Without" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Vivid" {currentFilter} on:setPreset={setPreset} {thumbData} />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Playa" bind:currentFilter />
-          <FilterCard title="Honey" bind:currentFilter />
-          <FilterCard title="Isla" bind:currentFilter />
-          <FilterCard title="Desert" bind:currentFilter />
-          <FilterCard title="Clay" bind:currentFilter />
-          <FilterCard title="Palma" bind:currentFilter />
-          <FilterCard title="Blush" bind:currentFilter />
-          <FilterCard title="Alpaca" bind:currentFilter />
-          <FilterCard title="Modena" bind:currentFilter />
+          <FilterCard title="Playa" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Honey" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Isla" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Desert" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Clay" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Palma" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Blush" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Alpaca" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Modena" {currentFilter} on:setPreset={setPreset} {thumbData} />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="West" bind:currentFilter />
-          <FilterCard title="Metro" bind:currentFilter />
-          <FilterCard title="Reel" bind:currentFilter />
-          <FilterCard title="Bazaar" bind:currentFilter />
-          <FilterCard title="Ollie" bind:currentFilter />
+          <FilterCard title="West" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Metro" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Reel" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Bazaar" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Ollie" {currentFilter} on:setPreset={setPreset} {thumbData} />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Onyx" bind:currentFilter />
-          <FilterCard title="Eiffel" bind:currentFilter />
-          <FilterCard title="Vogue" bind:currentFilter />
-          <FilterCard title="Vista" bind:currentFilter />
+          <FilterCard title="Onyx" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Eiffel" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Vogue" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard title="Vista" {currentFilter} on:setPreset={setPreset} {thumbData} />
         </div>
       </div>
     {/if}

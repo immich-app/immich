@@ -1,9 +1,35 @@
 <script lang="ts">
+  import { onMount, createEventDispatcher } from 'svelte';
+
   export let title: string = 'Without';
 
   export let currentFilter: string;
+  export let thumbData: string;
+
+  let dispatch = createEventDispatcher();
+
+  let imgElement: HTMLImageElement;
 
   import Check from 'svelte-material-icons/Check.svelte';
+  import { presets } from './filter';
+
+  onMount(() => {
+    if (title === 'Custom') {
+      return;
+    }
+    const img = new Image();
+    img.src = thumbData;
+    img.onload = () => {
+      imgElement.src = img.src;
+    };
+    const filter = presets[title.toLowerCase()];
+
+    imgElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+      filter.contrast
+    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
+      filter.opacity
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+  });
 </script>
 
 <button
@@ -12,16 +38,23 @@
     if (title === 'Custom') {
       return;
     }
-    currentFilter = title.toLowerCase();
+    dispatch('setPreset', title.toLowerCase());
   }}
 >
-  {#if title.toLowerCase() === currentFilter}
-    <div class="bg-immich-primary flex h-[92px] w-[92px] items-center justify-center text-3xl">
-      <Check />
-    </div>
-  {:else}
-    <img class="bg-immich-gray/10 h-[92px] w-[92px]" src="" alt="asset preview" />
-  {/if}
+  <div
+    class="bg-immich-primary flex h-[92px] w-[92px] items-center justify-center text-3xl {title.toLowerCase() ===
+    currentFilter
+      ? ''
+      : 'hidden'}"
+  >
+    <Check />
+  </div>
+  <img
+    bind:this={imgElement}
+    class="bg-immich-gray/10 h-[92px] w-[92px] {title.toLowerCase() === currentFilter ? 'hidden' : ''}"
+    src=""
+    alt="asset preview"
+  />
   <div class="my-[4px]">{title}</div>
 </button>
 

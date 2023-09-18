@@ -5,7 +5,6 @@ export const presets = {
     saturation: 1,
     hueRotate: 1,
     sepia: 0,
-    sepiaHueRotate: 1,
     blur: 0, // Default blur value
     grayscale: 0, // Default grayscale value
     invert: 0, // Default invert value
@@ -17,7 +16,6 @@ export const presets = {
     saturation: 1.1,
     hueRotate: 1.0333,
     sepia: 0.05,
-    sepiaHueRotate: 1.0833,
     blur: 0, // Default blur value
     grayscale: 0, // Default grayscale value
     invert: 0,
@@ -29,7 +27,6 @@ export const presets = {
     saturation: 1.5,
     hueRotate: 1.3333,
     sepia: 0.05,
-    sepiaHueRotate: 1.0833,
     blur: 0, // Default blur value
     grayscale: 0, // Default grayscale value
     invert: 0, // Default invert value

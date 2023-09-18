@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
 
   export let title: string = 'Free';
 
@@ -7,6 +7,7 @@
 
   export let value: number = 0;
 
+  let dispatch = createEventDispatcher();
   let progressBar: HTMLDivElement;
 
   let rangeValue: number = 0;
@@ -44,6 +45,7 @@
     progressBar.style.background = '#373737';
     progressBar.style.background = progressColor;
     console.log(progressColor);
+    dispatch('applyFilter');
   };
 </script>
 
