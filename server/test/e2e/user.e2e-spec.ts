@@ -209,9 +209,11 @@ describe(`${UserController.name}`, () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(deleteRequest.status).toBe(200);
-      expect(deleteRequest.body).toEqual(
-        expect.objectContaining({ ...userToDelete, updatedAt: expect.anything(), deletedAt: expect.anything() }),
-      );
+      expect(deleteRequest.body).toEqual({
+        ...userToDelete,
+        updatedAt: expect.any(String),
+        deletedAt: expect.any(String),
+      });
 
       await userService.handleUserDelete({ id: userToDelete.id });
 
@@ -291,9 +293,9 @@ describe(`${UserController.name}`, () => {
         lastName: 'Last Name',
       });
 
-      expect(after).toMatchObject({
+      expect(after).toEqual({
         ...before,
-        updatedAt: expect.anything(),
+        updatedAt: expect.any(String),
         firstName: 'First Name',
         lastName: 'Last Name',
       });

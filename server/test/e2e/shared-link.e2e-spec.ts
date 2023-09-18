@@ -99,7 +99,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .query({ key: sharedLink.key + 'foo' });
 
       expect(status).toBe(401);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid share key' }));
+      expect(body).toEqual(errorStub.invalidShareKey);
     });
 
     it('should return unauthorized if target has been soft deleted', async () => {
@@ -113,7 +113,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/shared-link/me').query({ key: softDeletedAlbumLink.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid share key' }));
+      expect(body).toEqual(errorStub.invalidShareKey);
     });
   });
 

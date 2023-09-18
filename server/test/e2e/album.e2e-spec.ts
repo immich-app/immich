@@ -118,7 +118,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.badRequest);
     });
 
-    it('should not return shared albums with an deleted owner', async () => {
+    it('should not return shared albums with a deleted owner', async () => {
       await api.userApi.delete(server, admin.accessToken, user1.userId);
       const { status, body } = await request(server)
         .get('/album?shared=true')
