@@ -72,6 +72,26 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByDayOfYear(ownerId: string, date: Date): Promise<AssetEntity[]> {
+    const dayOfYear = DateTime.fromJSDate(date).toFormat('MM-dd');
+    return this.repository
+      .createQueryBuilder('entity')
+      .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
+      .where(
+        `entity.ownerId = :ownerId 
+      AND entity.isVisible = true 
+      AND entity.isArchived = false 
+      AND entity.resizePath IS NOT NULL 
+      AND TO_CHAR(exifInfo.localDateTime, 'MM-DD') = :dayOfYear`,
+        {
+          ownerId,
+          dayOfYear,
+        },
+      )
+      .orderBy('exifInfo.localDateTime', 'DESC')
+      .getMany();
+  }
+
   getByIds(ids: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { id: In(ids) },

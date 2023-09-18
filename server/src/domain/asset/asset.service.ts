@@ -1,5 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
+import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
@@ -139,20 +140,21 @@ export class AssetService {
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const target = DateTime.fromJSDate(dto.timestamp);
 
-    const onRequest = async (yearsAgo: number): Promise<MemoryLaneResponseDto> => {
-      const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: yearsAgo }).toJSDate());
+    const assets = (await this.assetRepository.getByDayOfYear(authUser.id, target.toJSDate())).map((asset) => {
+      let yearsAgo = 0;
+      if (asset.exifInfo?.localDateTime) {
+        yearsAgo = dto.timestamp.getFullYear() - asset.exifInfo.localDateTime.getFullYear();
+      }
       return {
         title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
-        assets: assets.map((a) => mapAsset(a)),
+        asset: mapAsset(asset),
       };
-    };
+    });
 
-    const requests: Promise<MemoryLaneResponseDto>[] = [];
-    for (let i = 1; i <= dto.years; i++) {
-      requests.push(onRequest(i));
-    }
-
-    return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
+    return _.chain(assets)
+      .groupBy((asset) => asset.title)
+      .map((assets, title) => ({ title, assets: assets.map((asset) => asset.asset) }))
+      .value();
   }
 
   private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
