@@ -30,8 +30,8 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
     this.access = new AccessCore(accessRepository);
+    this.configCore = new SystemConfigCore(configRepository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
