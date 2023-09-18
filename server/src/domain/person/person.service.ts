@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '..';
+import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
@@ -19,16 +19,16 @@ import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
-  private configCore: SystemConfigCore;
   private access: AccessCore;
+  private configCore: SystemConfigCore;
   readonly logger = new Logger(PersonService.name);
 
   constructor(
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
     this.access = new AccessCore(accessRepository);
@@ -53,7 +53,8 @@ export class PersonService {
   }
 
   async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
-    return this.findOrFail(authUser, id).then(mapPerson);
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    return this.findOrFail(id).then(mapPerson);
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
@@ -73,10 +74,10 @@ export class PersonService {
   }
 
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    let person = await this.findOrFail(authUser, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
+    let person = await this.findOrFail(id);
 
     if (dto.name !== undefined || dto.birthDate !== undefined || dto.isHidden !== undefined) {
-      await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
       person = await this.repository.update({ id, name: dto.name, birthDate: dto.birthDate, isHidden: dto.isHidden });
       if (this.needsSearchIndexUpdate(dto)) {
         const assets = await this.repository.getAssets(id);
@@ -148,15 +149,22 @@ export class PersonService {
 
   async mergePerson(authUser: AuthUserDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
-    const primaryPerson = await this.findOrFail(authUser, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, primaryPerson.id);
     for (const mergeId of mergeIds) {
+      const hasPermission = await this.access.hasPermission(authUser, Permission.PERSON_MERGE, mergeId);
+
+      if (!hasPermission) {
+        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
+        continue;
+      }
+
       try {
-        await this.access.requirePermission(authUser, Permission.PERSON_WRITE, mergeId);
         const mergePerson = await this.repository.getById(mergeId);
         if (!mergePerson) {
           results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
@@ -197,8 +205,7 @@ export class PersonService {
     return dto.name !== undefined || dto.isHidden !== undefined;
   }
 
-  private async findOrFail(authUser: AuthUserDto, id: string) {
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+  private async findOrFail(id: string) {
     const person = await this.repository.getById(id);
     if (!person) {
       throw new BadRequestException('Person not found');

@@ -8,8 +8,8 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
-    @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
+    @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
   ) {}
 
   library = {

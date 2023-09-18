@@ -41,7 +41,7 @@ describe(PersonService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     accessMock = newAccessRepositoryMock();
-    sut = new PersonService(personMock, configMock, storageMock, jobMock, accessMock);
+    sut = new PersonService(accessMock, personMock, configMock, storageMock, jobMock);
   });
 
   it('should be defined', () => {
