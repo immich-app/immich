@@ -1,15 +1,7 @@
 import { Inject, Logger } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import {
-  IBaseJob,
-  IEntityJob,
-  IFaceThumbnailJob,
-  IJobRepository,
-  IPersonJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-} from '../job';
+import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
@@ -124,18 +116,18 @@ export class FacialRecognitionService {
     return true;
   }
 
-  async handlePersonThumbnailMigration({ ownerId, personId }: IPersonJob) {
-    const person = await this.personRepository.getById(ownerId, personId);
+  async handlePersonThumbnailMigration({ id }: IEntityJob) {
+    const person = await this.personRepository.getById(id);
 
     if (!person) {
       return false;
     }
 
-    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, ownerId, `${personId}.jpeg`);
+    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
 
     if (person.thumbnailPath && person.thumbnailPath !== path) {
       await this.storageRepository.moveFile(person.thumbnailPath, path);
-      await this.personRepository.update({ id: personId, thumbnailPath: path });
+      await this.personRepository.update({ id, thumbnailPath: path });
     }
 
     return true;

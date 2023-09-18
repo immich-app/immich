@@ -13,8 +13,8 @@ import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIC
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
-  private storageCore = new StorageCore(this.storageRepository);
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -25,6 +25,7 @@ export class MediaService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(this.storageRepository);
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -94,12 +95,12 @@ export class MediaService {
     for (const person of people) {
       await this.jobRepository.queue({
         name: JobName.MIGRATE_PERSON,
-        data: { ownerId: person.ownerId, personId: person.id },
+        data: { id: person.id },
       });
     }
 
-    await this.storageRepository.removeEmptyDirs(this.storageCore.getBaseFolder(StorageFolder.THUMBNAILS));
-    await this.storageRepository.removeEmptyDirs(this.storageCore.getBaseFolder(StorageFolder.ENCODED_VIDEO));
+    await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+    await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
 
     return true;
   }

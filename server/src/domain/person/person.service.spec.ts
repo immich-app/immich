@@ -37,10 +37,10 @@ describe(PersonService.name, () => {
 
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
-    personMock = newPersonRepositoryMock();
-    storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
+    personMock = newPersonRepositoryMock();
+    storageMock = newStorageRepositoryMock();
     sut = new PersonService(accessMock, personMock, configMock, storageMock, jobMock);
   });
 
