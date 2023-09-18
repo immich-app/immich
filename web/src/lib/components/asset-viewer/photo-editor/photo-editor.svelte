@@ -110,6 +110,8 @@
 
   let aspectRatioNum = 9 / 16;
 
+  let isRendering = false;
+
   type aspectRatio =
     | 'free'
     | 'square'
@@ -715,7 +717,8 @@
   // Temporary function
   const save = async () => {
     // TBD
-    renderElement.start();
+    if (isRendering) return;
+    await renderElement.start();
   };
 
   const setImageWrapperTransform = () => {
@@ -747,8 +750,24 @@
     </button>
     <button
       on:click={() => save()}
-      class=" bg-immich-dark-primary hover:bg-immich-dark-primary/80 ml-auto mr-5 rounded-md p-[6px] px-4 text-black"
+      disabled={isRendering}
+      class=" {isRendering
+        ? 'bg-immich-dark-primary/50 hover:cursor-wait'
+        : 'bg-immich-dark-primary hover:bg-immich-dark-primary/80 '}  ml-auto mr-5 inline-flex items-center rounded-md p-[6px] px-4 text-black"
     >
+      <svg
+        class="-ml-1 mr-3 h-5 w-5 animate-spin text-black {isRendering ? '' : 'hidden'}"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        />
+      </svg>
       Save
     </button>
     <button class="hover:bg-immich-gray/10 mr-4 rounded-full p-3 text-2xl text-white">
@@ -1115,6 +1134,7 @@
     crop={currentCrop}
     ratio={currentRatio}
     {filter}
+    bind:isRendering
   />
 </div>
 

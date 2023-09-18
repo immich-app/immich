@@ -4,6 +4,7 @@
   import 'context-filter-polyfill'; // polyfill for canvas filters
 
   export let editedImage;
+  export let isRendering = false;
   export let assetData: string;
   export let angle: number;
   export let crop: { width: number; height: number };
@@ -12,7 +13,6 @@
   export let aspectRatio: number;
   export let ratio: number; // ratio of original image to displayed image
   export let filter: {
-    hdr: number;
     blur: number;
     brightness: number;
     contrast: number;
@@ -27,7 +27,8 @@
   // let canvas: HTMLCanvasElement;
   // let canvas2: HTMLCanvasElement;
 
-  export const start = () => {
+  export const start = async () => {
+    isRendering = true;
     const canvas = document.createElement('canvas');
     const img = new Image();
     img.src = assetData;
@@ -83,19 +84,19 @@
       cropWidth,
       cropHeight,
     );
-
     cropCtx.save();
 
     // download image
-    const dataURL = canvas2.toDataURL('image/png');
-    editedImage = dataURL;
+    // hack to first render loading animation
+    window.setTimeout(() => {
+      const dataURL = canvas2.toDataURL('image/png');
+      editedImage = dataURL;
 
-    const l = document.createElement('a');
-    l.href = dataURL;
-    l.download = 'test.png';
-    l.click();
+      const l = document.createElement('a');
+      l.href = dataURL;
+      l.download = 'test.png';
+      l.click();
+      isRendering = false;
+    }, 0);
   };
 </script>
-
-<!-- <canvas bind:this={canvas2} /> -->
-<!-- <img class="absolute z-[9999]" src={assetData} alt="" /> -->
