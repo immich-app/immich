@@ -48,4 +48,10 @@ export class RecognitionConfig extends ModelConfig {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   maxDistance!: number;
+
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minFaces!: number;
 }

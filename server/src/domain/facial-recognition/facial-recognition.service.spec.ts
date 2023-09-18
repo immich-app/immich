@@ -205,6 +205,7 @@ describe(FacialRecognitionService.name, () => {
           enabled: true,
           maxDistance: 0.6,
           minScore: 0.7,
+          minFaces: 1,
           modelName: 'buffalo_l',
         },
       );

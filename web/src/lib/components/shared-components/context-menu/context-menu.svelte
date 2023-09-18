@@ -23,7 +23,7 @@
 <div
   transition:slide={{ duration: 200, easing: quintOut }}
   bind:this={menuElement}
-  class="absolute w-[200px] overflow-hidden rounded-lg shadow-lg"
+  class="absolute z-10 w-[200px] overflow-hidden rounded-lg shadow-lg"
   style="left: {left}px; top: {top}px;"
   role="menu"
   use:clickOutside

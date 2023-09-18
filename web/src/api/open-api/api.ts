@@ -758,7 +758,7 @@ export type AssetTypeEnum = typeof AssetTypeEnum[keyof typeof AssetTypeEnum];
 export const AudioCodec = {
     Mp3: 'mp3',
     Aac: 'aac',
-    Opus: 'opus'
+    Libopus: 'libopus'
 } as const;
 
 export type AudioCodec = typeof AudioCodec[keyof typeof AudioCodec];
@@ -2159,6 +2159,12 @@ export interface RecognitionConfig {
      * @memberof RecognitionConfig
      */
     'maxDistance': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RecognitionConfig
+     */
+    'minFaces': number;
     /**
      * 
      * @type {number}

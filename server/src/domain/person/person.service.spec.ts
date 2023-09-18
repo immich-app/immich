@@ -6,11 +6,13 @@ import {
   newJobRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
 import { BulkIdErrorReason } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { PersonResponseDto } from './person.dto';
 import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
@@ -26,14 +28,16 @@ const responseDto: PersonResponseDto = {
 describe(PersonService.name, () => {
   let sut: PersonService;
   let personMock: jest.Mocked<IPersonRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new PersonService(personMock, storageMock, jobMock);
+    sut = new PersonService(personMock, configMock, storageMock, jobMock);
   });
 
   it('should be defined', () => {
