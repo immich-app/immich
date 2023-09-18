@@ -86,14 +86,13 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
-  getById(ownerId: string, personId: string): Promise<PersonEntity | null> {
-    return this.personRepository.findOne({ where: { id: personId, ownerId } });
+  getById(personId: string): Promise<PersonEntity | null> {
+    return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getAssets(ownerId: string, personId: string): Promise<AssetEntity[]> {
+  getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
-        ownerId,
         faces: {
           personId,
         },

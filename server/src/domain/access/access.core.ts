@@ -23,6 +23,9 @@ export enum Permission {
 
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
+
+  PERSON_READ = 'person.read',
+  PERSON_WRITE = 'person.write',
 }
 
 export class AccessCore {
@@ -166,6 +169,12 @@ export class AccessCore {
 
       case Permission.LIBRARY_DOWNLOAD:
         return authUser.id === id;
+
+      case Permission.PERSON_READ:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_WRITE:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       default:
         return false;

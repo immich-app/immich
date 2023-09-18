@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AccessCore, IAccessRepository, Permission } from '..';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
@@ -19,6 +20,7 @@ import { IPersonRepository, UpdateFacesData } from './person.repository';
 @Injectable()
 export class PersonService {
   private configCore: SystemConfigCore;
+  private access: AccessCore;
   readonly logger = new Logger(PersonService.name);
 
   constructor(
@@ -26,8 +28,10 @@ export class PersonService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.access = new AccessCore(accessRepository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -48,12 +52,13 @@ export class PersonService {
     };
   }
 
-  getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
+  async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
     return this.findOrFail(authUser, id).then(mapPerson);
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
-    const person = await this.repository.getById(authUser.id, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
     }
@@ -62,7 +67,8 @@ export class PersonService {
   }
 
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
-    const assets = await this.repository.getAssets(authUser.id, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const assets = await this.repository.getAssets(id);
     return assets.map(mapAsset);
   }
 
@@ -70,9 +76,10 @@ export class PersonService {
     let person = await this.findOrFail(authUser, id);
 
     if (dto.name !== undefined || dto.birthDate !== undefined || dto.isHidden !== undefined) {
+      await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
       person = await this.repository.update({ id, name: dto.name, birthDate: dto.birthDate, isHidden: dto.isHidden });
       if (this.needsSearchIndexUpdate(dto)) {
-        const assets = await this.repository.getAssets(authUser.id, id);
+        const assets = await this.repository.getAssets(id);
         const ids = assets.map((asset) => asset.id);
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
       }
@@ -146,9 +153,11 @@ export class PersonService {
 
     const results: BulkIdResponseDto[] = [];
 
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, primaryPerson.id);
     for (const mergeId of mergeIds) {
       try {
-        const mergePerson = await this.repository.getById(authUser.id, mergeId);
+        await this.access.requirePermission(authUser, Permission.PERSON_WRITE, mergeId);
+        const mergePerson = await this.repository.getById(mergeId);
         if (!mergePerson) {
           results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
@@ -189,7 +198,8 @@ export class PersonService {
   }
 
   private async findOrFail(authUser: AuthUserDto, id: string) {
-    const person = await this.repository.getById(authUser.id, id);
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const person = await this.repository.getById(id);
     if (!person) {
       throw new BadRequestException('Person not found');
     }
