@@ -1,77 +1,81 @@
----
-sidebar_position: 3
----
-
-# Helpful database queries for advanced debugging of Immich
+# Database Queries
 
 :::danger
-
-Keep in mind that mucking around in the database might set the moon on fire, as I've been told.
-All queries provided below should not modify anything.
-Do NOT modify the database, as this will break your install.
-
-Nevertheless, it is highly recommended to have current backups.
-As always: No backup? No pity!
-
+Keep in mind that mucking around in the database might set the moon on fire. Avoid modifying the database directly when possible, and always have current backups.
 :::
 
-## Prerequisites
+:::tip
+Run `docker exec -it immich_postgres psql immich <DB_USERNAME>` to connect to the database via the container directly.
 
-In order to execute the queries, you must first connect to the container and get the postgres shell.
-
-### Docker Compose
-
-If you are using docker compose, simply run `docker exec -it immich_postgres psql immich DB_USERNAME` while `DB_USERNAME`
-should be replaced by the according value [set in your `.env` file](https://docs.immich.app/docs/install/environment-variables#database).
-
-### GUI (Portainer, Unraid, ...)
-
-When using a GUI, it will most likely provide the ability to create a shell within the container.
-In that shell, simply run `psql immich DB_USERNAME` while replacing your `DB_USERNAME` like explained above.
-
-### Kubernetes
-
-If you're using Kubernetes in your home lab you know what you are doing and how to run a command anyway.
-
-## Queries
-
-:::caution
-Don't forget the ';' at the end of each query ;)
+(Replace `<DB_USERNAME>` wit the value from your [`.env` file](/docs/install/environment-variables#database)).
 :::
 
-### Get asset information by file name
+## Assets
 
-```sql
-SELECT
-	"id" AS "Id", "originalFileName" AS "File name", "originalPath" AS "Path"
-FROM
-	"assets"
-WHERE
-	"originalFileName" = 'FILE NAME';
+:::note
+The `"originalFileName"` column is the name of the uploaded file _without_ the extension.
+:::
+
+```sql title="Find by original filename"
+SELECT * FROM "assets" WHERE "originalFileName" = 'PXL_20230903_232542848';
+SELECT * FROM "assets" WHERE "originalFileName" LIKE 'PXL_%'; -- all files starting with PXL_
+SELECT * FROM "assets" WHERE "originalFileName" LIKE '%_2023_%'; -- all files with _2023_ in the middle
 ```
 
-`FILE NAME` should hereby be replaced by the according file name.
-
-### Get all assets without metadata
-
-```sql
-SELECT
-  "assetId" AS "Id", "originalFileName" AS "File name", "livePhotoCID" AS "Live photo id"
-FROM
-  "exif"
-LEFT JOIN
-  "assets" ON "assets"."id" = "exif"."assetId"
-WHERE
-	"exif"."assetId" IS NULL;
+```sql title="Find by path"
+SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-03/PXL_20230903_232542848.jpg';
+SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
-### Get stored system config
-
-**Only applicable when not using the [config file](https://docs.immich.app/docs/install/config-file).**
-
-```sql
-SELECT
-	"key" AS "Setting", "value" AS "Value"
-FROM
-	"system_config";
+```sql title="Find by checksum" (sha1)
+SELECT encode("checksum", 'hex') FROM "assets";
+SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
 ```
+
+```sql title="Live photos"
+SELECT * FROM "assets" where "livePhotoVideoId" IS NOT NULL;
+```
+
+```sql title="Without metadata"
+SELECT "assets".* FROM "exif"  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId" WHERE "exif"."assetId" IS NULL;
+```
+
+```sql title="Without thumbnails"
+SELECT * FROM "assets" WHERE "assets"."resizePath" IS NULL OR "assets"."webpPath" IS NULL;
+```
+
+```sql title="By type"
+SELECT * FROM "assets" WHERE "assets"."type" = 'VIDEO';
+SELECT * FROM "assets" WHERE "assets"."type" = 'IMAGE';
+```
+
+```sql title="Count by type"
+SELECT "assets"."type", count(*) FROM "assets" GROUP BY "assets"."type";
+```
+
+```sql title="Count by type (per user)"
+SELECT
+  "users"."email", "assets"."type", COUNT(*)
+FROM
+  "assets"
+JOIN
+  "users" ON "assets"."ownerId" = "users"."id"
+GROUP BY
+  "assets"."type", "users"."email"
+ORDER BY
+  "users"."email";
+```
+
+## Users
+
+```sql title="List"
+SELECT * FROM "users";
+```
+
+## System Config
+
+```sql title="Custom settings"
+SELECT "key", "value" FROM "system_config";
+```
+
+(Only used when not using the [config file](/docs/install/config-file))
