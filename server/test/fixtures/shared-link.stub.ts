@@ -198,6 +198,7 @@ export const sharedLinkStub = {
             fileSizeInByte: 100,
             orientation: 'orientation',
             dateTimeOriginal: today,
+            localDateTime: today,
             modifyDate: today,
             timeZone: 'America/Los_Angeles',
             latitude: 100,
