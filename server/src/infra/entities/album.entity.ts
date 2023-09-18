@@ -37,6 +37,9 @@ export class AlbumEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @DeleteDateColumn()
+  deletedAt!: Date | null;
+
   @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   albumThumbnailAsset!: AssetEntity | null;
 
@@ -53,7 +56,4 @@ export class AlbumEntity {
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
   sharedLinks!: SharedLinkEntity[];
-
-  @DeleteDateColumn()
-  deletedAt?: Date | null;
 }
