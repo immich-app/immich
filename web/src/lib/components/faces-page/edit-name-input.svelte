@@ -16,7 +16,7 @@
 
 <div
   class="flex w-full place-items-center {suggestedPeople
-    ? 'rounded-t-lg border-b-2 dark:border-immich-dark-gray'
+    ? 'rounded-t-lg border-b dark:border-immich-dark-gray'
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
   <ImageThumbnail

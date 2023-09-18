@@ -370,7 +370,7 @@
               <div
                 class="flex {index === suggestedPeople.length - 1
                   ? 'rounded-b-lg'
-                  : 'border-b-2 dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
               >
                 <button class="flex w-full place-items-center" on:click={() => suggestPeople(person)}>
                   <ImageThumbnail
