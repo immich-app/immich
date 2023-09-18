@@ -6471,6 +6471,9 @@
           "maxDistance": {
             "type": "integer"
           },
+          "minFaces": {
+            "type": "integer"
+          },
           "minScore": {
             "type": "integer"
           },
@@ -6484,6 +6487,7 @@
         "required": [
           "minScore",
           "maxDistance",
+          "minFaces",
           "enabled",
           "modelName"
         ],
