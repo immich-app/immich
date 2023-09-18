@@ -142,6 +142,14 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  async restoreAll(userId: string): Promise<void> {
+    await this.repository.restore({ ownerId: userId });
+  }
+
+  async softDeleteAll(userId: string): Promise<void> {
+    await this.repository.softDelete({ ownerId: userId });
+  }
+
   async deleteAll(userId: string): Promise<void> {
     await this.repository.delete({ ownerId: userId });
   }
