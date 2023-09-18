@@ -35,6 +35,7 @@ class ImageWrapper extends StatefulWidget {
     required this.disableGestures,
     required this.errorBuilder,
     required this.enablePanAlways,
+    required this.index,
   }) : super(key: key);
 
   final ImageProvider imageProvider;
@@ -64,6 +65,7 @@ class ImageWrapper extends StatefulWidget {
   final FilterQuality? filterQuality;
   final bool? disableGestures;
   final bool? enablePanAlways;
+  final int index;
 
   @override
   createState() => _ImageWrapperState();
@@ -128,6 +130,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _lastException = null;
         _lastStack = null;
       }
+
       synchronousCall ? setupCB() : setState(setupCB);
     }
 
@@ -212,7 +215,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   Widget _buildLoading(BuildContext context) {
     if (widget.loadingBuilder != null) {
-      return widget.loadingBuilder!(context, _loadingProgress);
+      return widget.loadingBuilder!(context, _loadingProgress, widget.index);
     }
 
     return PhotoViewDefaultLoading(

@@ -2134,6 +2134,12 @@ export interface RecognitionConfig {
      * @type {number}
      * @memberof RecognitionConfig
      */
+    'minFaces': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RecognitionConfig
+     */
     'minScore': number;
     /**
      * 

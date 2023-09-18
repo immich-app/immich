@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/cache/widgets_binding.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -37,7 +38,7 @@ import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  ImmichWidgetsBinding();
 
   final db = await loadDb();
   await initApp();

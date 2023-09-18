@@ -281,6 +281,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
           )
         : PhotoView(
             key: ObjectKey(index),
+            index: index,
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
@@ -315,7 +316,10 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     );
   }
 
-  PhotoViewGalleryPageOptions _buildPageOption(BuildContext context, int index) {
+  PhotoViewGalleryPageOptions _buildPageOption(
+    BuildContext context,
+    int index,
+  ) {
     if (widget._isBuilder) {
       return widget.builder!(context, index);
     }

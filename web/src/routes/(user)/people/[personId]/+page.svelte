@@ -43,7 +43,7 @@
     BIRTH_DATE = 'birth-date',
   }
 
-  const assetStore = new AssetStore({
+  let assetStore = new AssetStore({
     size: TimeBucketSize.Month,
     isArchived: false,
     personId: data.person.id,
@@ -54,6 +54,7 @@
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
+  let previousPersonId: string = data.person.id;
   let people = data.people.people;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
@@ -73,6 +74,14 @@
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
+    }
+    if (previousPersonId !== data.person.id) {
+      assetStore = new AssetStore({
+        size: TimeBucketSize.Month,
+        isArchived: false,
+        personId: data.person.id,
+      });
+      previousPersonId = data.person.id;
     }
   });
 
@@ -215,6 +224,14 @@
       handleError(error, 'Unable to save date of birth');
     }
   };
+
+  const handleGoBack = () => {
+    viewMode = ViewMode.VIEW_ASSETS;
+    if ($page.url.searchParams.has('action')) {
+      $page.url.searchParams.delete('action');
+      goto($page.url);
+    }
+  };
 </script>
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
@@ -237,7 +254,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={() => (viewMode = ViewMode.VIEW_ASSETS)} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
 {/if}
 
 <header>
@@ -279,48 +296,50 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid
-    {assetStore}
-    {assetInteractionStore}
-    isSelectionMode={viewMode === ViewMode.SELECT_FACE}
-    singleSelect={viewMode === ViewMode.SELECT_FACE}
-    on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
-  >
-    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <!-- Face information block -->
-      <section class="flex place-items-center p-4 sm:px-6">
-        {#if isEditingName}
-          <EditNameInput
-            person={data.person}
-            on:change={(event) => handleNameChange(event.detail)}
-            on:cancel={() => handleCancelEditName()}
-          />
-        {:else}
-          <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(data.person.id)}
-              altText={data.person.name}
-              widthStyle="3.375rem"
-              heightStyle="3.375rem"
+  {#key previousPersonId}
+    <AssetGrid
+      {assetStore}
+      {assetInteractionStore}
+      isSelectionMode={viewMode === ViewMode.SELECT_FACE}
+      singleSelect={viewMode === ViewMode.SELECT_FACE}
+      on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
+    >
+      {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
+        <!-- Face information block -->
+        <section class="flex place-items-center p-4 sm:px-6">
+          {#if isEditingName}
+            <EditNameInput
+              person={data.person}
+              on:change={(event) => handleNameChange(event.detail)}
+              on:cancel={() => handleCancelEditName()}
             />
-          </button>
+          {:else}
+            <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(data.person.id)}
+                altText={data.person.name}
+                widthStyle="3.375rem"
+                heightStyle="3.375rem"
+              />
+            </button>
 
-          <button
-            title="Edit name"
-            class="px-4 text-immich-primary dark:text-immich-dark-primary"
-            on:click={() => (isEditingName = true)}
-          >
-            {#if data.person.name}
-              <p class="py-2 font-medium">{data.person.name}</p>
-            {:else}
-              <p class="w-fit font-medium">Add a name</p>
-              <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
-            {/if}
-          </button>
-        {/if}
-      </section>
-    {/if}
-  </AssetGrid>
+            <button
+              title="Edit name"
+              class="px-4 text-immich-primary dark:text-immich-dark-primary"
+              on:click={() => (isEditingName = true)}
+            >
+              {#if data.person.name}
+                <p class="py-2 font-medium">{data.person.name}</p>
+              {:else}
+                <p class="w-fit font-medium">Add a name</p>
+                <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+              {/if}
+            </button>
+          {/if}
+        </section>
+      {/if}
+    </AssetGrid>
+  {/key}
 </main>
