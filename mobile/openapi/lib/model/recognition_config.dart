@@ -15,6 +15,7 @@ class RecognitionConfig {
   RecognitionConfig({
     required this.enabled,
     required this.maxDistance,
+    required this.minFaces,
     required this.minScore,
     required this.modelName,
     this.modelType,
@@ -23,6 +24,8 @@ class RecognitionConfig {
   bool enabled;
 
   int maxDistance;
+
+  int minFaces;
 
   int minScore;
 
@@ -40,6 +43,7 @@ class RecognitionConfig {
   bool operator ==(Object other) => identical(this, other) || other is RecognitionConfig &&
      other.enabled == enabled &&
      other.maxDistance == maxDistance &&
+     other.minFaces == minFaces &&
      other.minScore == minScore &&
      other.modelName == modelName &&
      other.modelType == modelType;
@@ -49,17 +53,19 @@ class RecognitionConfig {
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
     (maxDistance.hashCode) +
+    (minFaces.hashCode) +
     (minScore.hashCode) +
     (modelName.hashCode) +
     (modelType == null ? 0 : modelType!.hashCode);
 
   @override
-  String toString() => 'RecognitionConfig[enabled=$enabled, maxDistance=$maxDistance, minScore=$minScore, modelName=$modelName, modelType=$modelType]';
+  String toString() => 'RecognitionConfig[enabled=$enabled, maxDistance=$maxDistance, minFaces=$minFaces, minScore=$minScore, modelName=$modelName, modelType=$modelType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
       json[r'maxDistance'] = this.maxDistance;
+      json[r'minFaces'] = this.minFaces;
       json[r'minScore'] = this.minScore;
       json[r'modelName'] = this.modelName;
     if (this.modelType != null) {
@@ -80,6 +86,7 @@ class RecognitionConfig {
       return RecognitionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         maxDistance: mapValueOfType<int>(json, r'maxDistance')!,
+        minFaces: mapValueOfType<int>(json, r'minFaces')!,
         minScore: mapValueOfType<int>(json, r'minScore')!,
         modelName: mapValueOfType<String>(json, r'modelName')!,
         modelType: ModelType.fromJson(json[r'modelType']),
@@ -132,6 +139,7 @@ class RecognitionConfig {
   static const requiredKeys = <String>{
     'enabled',
     'maxDistance',
+    'minFaces',
     'minScore',
     'modelName',
   };

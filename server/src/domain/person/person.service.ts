@@ -4,6 +4,7 @@ import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream } from '../storage';
+import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import {
   MergePersonDto,
   PeopleResponseDto,
@@ -17,17 +18,22 @@ import { IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
+  private configCore: SystemConfigCore;
   readonly logger = new Logger(PersonService.name);
 
   constructor(
     @Inject(IPersonRepository) private repository: IPersonRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
+    const { machineLearning } = await this.configCore.getConfig();
     const people = await this.repository.getAllForUser(authUser.id, {
-      minimumFaceCount: 1,
+      minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
     const persons: PersonResponseDto[] = people

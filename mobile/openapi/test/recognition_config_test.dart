@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // int minFaces
+    test('to test the property `minFaces`', () async {
+      // TODO
+    });
+
     // int minScore
     test('to test the property `minScore`', () async {
       // TODO

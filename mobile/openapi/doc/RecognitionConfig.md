@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **enabled** | **bool** |  | 
 **maxDistance** | **int** |  | 
+**minFaces** | **int** |  | 
 **minScore** | **int** |  | 
 **modelName** | **String** |  | 
 **modelType** | [**ModelType**](ModelType.md) |  | [optional] 

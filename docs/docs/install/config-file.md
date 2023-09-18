@@ -70,7 +70,8 @@ The default configuration looks like this:
       "enabled": true,
       "modelName": "buffalo_l",
       "minScore": 0.7,
-      "maxDistance": 0.6
+      "maxDistance": 0.6,
+      "minFaces": 1
     }
   },
   "oauth": {
