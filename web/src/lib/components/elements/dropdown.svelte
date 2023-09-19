@@ -4,13 +4,12 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
   import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  interface DropdownOption {
-    value: string;
-    icon?: Icon;
-  }
-
-  export let options: DropdownOption[] | string[] = [];
+  const dispatch = createEventDispatcher<{
+    changeSort: string;
+  }>();
+  export let options: string[];
   export let value = options[0];
   export let icons: (typeof Icon)[] | undefined = undefined;
 
@@ -21,7 +20,12 @@
   };
 
   const handleSelectOption = (index: number) => {
-    value = options[index];
+    if (options[index] === value) {
+      dispatch('changeSort', value);
+    } else {
+      value = options[index];
+    }
+
     showMenu = false;
   };
 

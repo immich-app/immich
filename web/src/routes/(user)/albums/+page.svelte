@@ -1,3 +1,13 @@
+<script lang="ts" context="module">
+  // table is the text printed in the table and order is the text printed in the dropDow menu
+  export interface Sort {
+    table: string;
+    dropDow: string;
+    sortDesc: boolean;
+    width: string;
+  }
+</script>
+
 <script lang="ts">
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
@@ -5,7 +15,6 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
   import FormatListBulletedSquare from 'svelte-material-icons/FormatListBulletedSquare.svelte';
   import ViewGridOutline from 'svelte-material-icons/ViewGridOutline.svelte';
   import type { PageData } from './$types';
@@ -26,10 +35,19 @@
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
   import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+  import TableHeader from '$lib/components/elements/table-header.svelte';
+  import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte';
+  import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte';
 
   export let data: PageData;
 
-  const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
+  let sortByOptions: Record<string, Sort> = {
+    albumTitle: { table: 'Album title', dropDow: 'Album title', sortDesc: true, width: 'w-4/12' },
+    numberOfAssets: { table: 'Assets', dropDow: 'Number of assets', sortDesc: true, width: 'w-2/12' },
+    lastModified: { table: 'Updated date', dropDow: 'Last modified', sortDesc: true, width: 'w-3/12' },
+    mostRecent: { table: 'Created date', dropDow: 'Most recent photo', sortDesc: true, width: 'w-3/12' },
+  };
+
   const viewOptions = [
     {
       name: AlbumViewMode.Cover,
@@ -86,16 +104,34 @@
 
   $: {
     const { sortBy } = $albumViewSettings;
-    if (sortBy === 'Most recent photo') {
+    if (sortBy === sortByOptions.mostRecent.dropDow) {
       $albums = $unsortedAlbums.sort((a, b) =>
-        a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-          ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
-          : sortByDate(a.updatedAt, b.updatedAt),
+        sortByOptions.mostRecent.sortDesc
+          ? a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
+            ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
+            : sortByDate(a.updatedAt, b.updatedAt)
+          : a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
+          ? sortByDate(b.lastModifiedAssetTimestamp, a.lastModifiedAssetTimestamp)
+          : sortByDate(b.updatedAt, a.updatedAt),
       );
-    } else if (sortBy === 'Last modified') {
-      $albums = $unsortedAlbums.sort((a, b) => sortByDate(a.updatedAt, b.updatedAt));
-    } else if (sortBy === 'Album title') {
-      $albums = $unsortedAlbums.sort((a, b) => a.albumName.localeCompare(b.albumName));
+    } else if (sortBy === sortByOptions.albumTitle.dropDow) {
+      $albums = $unsortedAlbums.sort((a, b) =>
+        sortByOptions.albumTitle.sortDesc
+          ? a.albumName.localeCompare(b.albumName)
+          : b.albumName.localeCompare(a.albumName),
+      );
+    } else if (sortBy === sortByOptions.lastModified.dropDow) {
+      $albums = $unsortedAlbums.sort((a, b) =>
+        sortByOptions.lastModified.sortDesc
+          ? sortByDate(a.updatedAt, b.updatedAt)
+          : sortByDate(b.updatedAt, a.updatedAt),
+      );
+    } else if (sortBy === sortByOptions.numberOfAssets.dropDow) {
+      $albums = $unsortedAlbums.sort((a, b) =>
+        sortByOptions.numberOfAssets.sortDesc
+          ? a.albumName.localeCompare(b.albumName)
+          : b.albumName.localeCompare(a.albumName),
+      );
     }
   }
 
@@ -136,7 +172,18 @@
       </div>
     </LinkButton>
 
-    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} icons={[SwapVertical]} />
+    <Dropdown
+      options={Object.values(sortByOptions).map((CourseInfo) => CourseInfo.dropDow)}
+      bind:value={$albumViewSettings.sortBy}
+      icons={Object.keys(sortByOptions).map((key) => (sortByOptions[key].sortDesc ? ArrowDownThin : ArrowUpThin))}
+      on:changeSort={(event) => {
+        for (const key in sortByOptions) {
+          if (sortByOptions[key].dropDow === event.detail) {
+            sortByOptions[key].sortDesc = !sortByOptions[key].sortDesc;
+          }
+        }
+      }}
+    />
     <Dropdown options={viewOptionNames} bind:value={$albumViewSettings.view} icons={viewOptionIcons} />
   </div>
 
@@ -155,10 +202,9 @@
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
         <tr class="flex w-full place-items-center p-5">
-          <th class="w-1/4 text-left text-sm font-medium">Album title</th>
-          <th class="w-1/4 text-right text-sm font-medium">Assets</th>
-          <th class="w-1/4 text-right text-sm font-medium">Updated date</th>
-          <th class="w-1/4 text-right text-sm font-medium">Created date</th>
+          {#each Object.keys(sortByOptions) as key (key)}
+            <TableHeader bind:albumViewSettings={$albumViewSettings.sortBy} bind:option={sortByOptions[key]} />
+          {/each}
         </tr>
       </thead>
       <tbody
@@ -171,13 +217,13 @@
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-1/4 text-ellipsis text-left">{album.albumName}</td>
-            <td class="text-md w-1/4 text-ellipsis text-right">
+            <td class="text-md w-4/12 text-ellipsis text-left">{album.albumName}</td>
+            <td class="text-md w-2/12 text-ellipsis text-center">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md w-3/12 text-ellipsis text-center">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-md w-3/12 text-ellipsis text-center">{dateLocaleString(album.createdAt)}</td>
           </tr>
         {/each}
       </tbody>
