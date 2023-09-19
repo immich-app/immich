@@ -19,6 +19,8 @@ export class AddLocalDateTime1694525143117 implements MigrationInterface {
       where
         "exif"."assetId" = "assets"."id" and
         "exif"."timeZone" is null`);
+
+    await queryRunner.query(`ALTER TABLE "exif" ALTER COLUMN "localDateTime" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
