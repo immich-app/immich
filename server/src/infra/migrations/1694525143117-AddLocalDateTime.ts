@@ -7,10 +7,7 @@ export class AddLocalDateTime1694525143117 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "assets" ADD "localDateTime" TIMESTAMP`);
     await queryRunner.query(`
       update "assets"
-        set "localDateTime" = "assets"."fileCreatedAt"
-        from "assets"
-      where
-        "assets"."assetId" = "assets"."id"`);
+        set "localDateTime" = "fileCreatedAt"`);
 
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "localDateTime" SET NOT NULL`);
   }
