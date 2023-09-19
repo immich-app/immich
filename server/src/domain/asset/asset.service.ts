@@ -140,8 +140,8 @@ export class AssetService {
     const assets = (await this.assetRepository.getByDayOfYear(authUser.id, dto.timestamp))
       .map((asset) => {
         let yearsAgo = 0;
-        if (asset.exifInfo?.localDateTime) {
-          yearsAgo = dto.timestamp.getFullYear() - asset.exifInfo.localDateTime.getFullYear();
+        if (asset.localDateTime) {
+          yearsAgo = dto.timestamp.getFullYear() - asset.localDateTime.getFullYear();
         }
         return {
           yearsAgo,

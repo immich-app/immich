@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **isArchived** | **bool** |  | 
 **isFavorite** | **bool** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 

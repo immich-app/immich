@@ -66,6 +66,9 @@ export class AssetEntity {
   @Column({ type: 'timestamptz' })
   fileCreatedAt!: Date;
 
+  @Column({ type: 'timestamp' })
+  localDateTime!: Date;
+
   @Column({ type: 'timestamptz' })
   fileModifiedAt!: Date;
 

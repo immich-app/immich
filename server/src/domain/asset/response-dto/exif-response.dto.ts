@@ -11,7 +11,6 @@ export class ExifResponseDto {
   fileSizeInByte?: number | null = null;
   orientation?: string | null = null;
   dateTimeOriginal?: Date | null = null;
-  localDateTime?: Date | null = null;
   modifyDate?: Date | null = null;
   timeZone?: string | null = null;
   lensModel?: string | null = null;
@@ -42,7 +41,6 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,
     focalLength: entity.focalLength,
-    localDateTime: entity.localDateTime,
     iso: entity.iso,
     exposureTime: entity.exposureTime,
     latitude: entity.latitude,

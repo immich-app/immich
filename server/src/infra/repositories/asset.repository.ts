@@ -78,21 +78,20 @@ export class AssetRepository implements IAssetRepository {
 
     return this.repository
       .createQueryBuilder('entity')
-      .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
       .where(
         `entity.ownerId = :ownerId 
       AND entity.isVisible = true 
       AND entity.isArchived = false 
       AND entity.resizePath IS NOT NULL
-      AND TO_CHAR(exifInfo.localDateTime, 'MM-DD') = :dayOfYear
-      AND EXTRACT(YEAR FROM exifInfo.localDateTime) != :currentYear`,
+      AND TO_CHAR(entity.localDateTime, 'MM-DD') = :dayOfYear
+      AND EXTRACT(YEAR FROM entity.localDateTime) != :currentYear`,
         {
           ownerId,
           dayOfYear,
           currentYear,
         },
       )
-      .orderBy('exifInfo.localDateTime', 'ASC')
+      .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
 
@@ -429,11 +428,7 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: TimeBucketOptions) {
     const { isArchived, isFavorite, albumId, personId, userId } = options;
 
-    let builder = this.repository
-      .createQueryBuilder('asset')
-      .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
-      .andWhere('exifInfo.localDateTime IS NOT NULL');
+    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });

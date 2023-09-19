@@ -24,6 +24,7 @@ class AssetResponseDto {
     required this.isArchived,
     required this.isFavorite,
     this.livePhotoVideoId,
+    required this.localDateTime,
     required this.originalFileName,
     required this.originalPath,
     this.owner,
@@ -65,6 +66,8 @@ class AssetResponseDto {
   bool isFavorite;
 
   String? livePhotoVideoId;
+
+  DateTime localDateTime;
 
   String originalFileName;
 
@@ -114,6 +117,7 @@ class AssetResponseDto {
      other.isArchived == isArchived &&
      other.isFavorite == isFavorite &&
      other.livePhotoVideoId == livePhotoVideoId &&
+     other.localDateTime == localDateTime &&
      other.originalFileName == originalFileName &&
      other.originalPath == originalPath &&
      other.owner == owner &&
@@ -140,6 +144,7 @@ class AssetResponseDto {
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+    (localDateTime.hashCode) +
     (originalFileName.hashCode) +
     (originalPath.hashCode) +
     (owner == null ? 0 : owner!.hashCode) +
@@ -153,7 +158,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -176,6 +181,7 @@ class AssetResponseDto {
     } else {
     //  json[r'livePhotoVideoId'] = null;
     }
+      json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
       json[r'originalPath'] = this.originalPath;
     if (this.owner != null) {
@@ -221,6 +227,7 @@ class AssetResponseDto {
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        localDateTime: mapDateTime(json, r'localDateTime', '')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
@@ -288,6 +295,7 @@ class AssetResponseDto {
     'id',
     'isArchived',
     'isFavorite',
+    'localDateTime',
     'originalFileName',
     'originalPath',
     'ownerId',

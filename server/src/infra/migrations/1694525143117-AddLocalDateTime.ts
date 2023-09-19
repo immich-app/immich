@@ -4,26 +4,18 @@ export class AddLocalDateTime1694525143117 implements MigrationInterface {
   name = 'AddLocalDateTime1694525143117';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "exif" ADD "localDateTime" TIMESTAMP`);
+    await queryRunner.query(`ALTER TABLE "assets" ADD "localDateTime" TIMESTAMP`);
     await queryRunner.query(`
-      update "exif"
-        set "localDateTime" = "assets"."fileCreatedAt" at TIME ZONE "exif"."timeZone"
-        from "assets"
-      where
-        "exif"."assetId" = "assets"."id" and
-        "exif"."timeZone" is not null`);
-    await queryRunner.query(`
-      update "exif"
+      update "assets"
         set "localDateTime" = "assets"."fileCreatedAt"
         from "assets"
       where
-        "exif"."assetId" = "assets"."id" and
-        "exif"."timeZone" is null`);
+        "assets"."assetId" = "assets"."id"`);
 
-    await queryRunner.query(`ALTER TABLE "exif" ALTER COLUMN "localDateTime" SET NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "localDateTime" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "localDateTime"`);
+    await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN "localDateTime"`);
   }
 }

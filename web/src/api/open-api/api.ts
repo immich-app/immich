@@ -638,6 +638,12 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
+    'localDateTime': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
     'originalFileName': string;
     /**
      * 
@@ -1475,12 +1481,6 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'lensModel'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'localDateTime'?: string | null;
     /**
      * 
      * @type {number}

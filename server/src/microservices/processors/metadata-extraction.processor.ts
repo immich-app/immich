@@ -149,9 +149,24 @@ export class MetadataExtractionProcessor {
     await this.applyReverseGeocoding(asset, exifData);
 
     await this.assetRepository.upsertExif(exifData);
+
+    let localDateTime = exifData.dateTimeOriginal ?? undefined;
+
+    const dateTimeOriginal = exifDate(firstDateTime(tags)) ?? exifData.dateTimeOriginal;
+    const timeZoneOffset = tzOffset(firstDateTime(tags)) ?? 0;
+
+    console.log(dateTimeOriginal, timeZoneOffset);
+
+    if (dateTimeOriginal && timeZoneOffset) {
+      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
+    }
+
+    console.log(localDateTime);
+
     await this.assetRepository.save({
       id: asset.id,
       duration: tags.Duration ? Duration.fromObject({ seconds: tags.Duration }).toFormat('hh:mm:ss.SSS') : null,
+      localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
@@ -283,23 +298,13 @@ export class MetadataExtractionProcessor {
 
     const tags = { ...mediaTags, ...sidecarTags };
 
-    this.logger.verbose('Exif Tags', tags);
-
-    let localDateTime = asset.fileCreatedAt;
-
-    const dateTimeOriginal = exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt;
-
-    const timeZoneOffset = tzOffset(firstDateTime(tags)) ?? 0;
-
-    if (dateTimeOriginal && timeZoneOffset) {
-      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
-    }
+    //this.logger.verbose('Exif Tags', tags);
 
     return [
       <ExifEntity>{
         // altitude: tags.GPSAltitude ?? null,
         assetId: asset.id,
-        dateTimeOriginal: dateTimeOriginal,
+        dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
@@ -311,7 +316,6 @@ export class MetadataExtractionProcessor {
         latitude: validate(tags.GPSLatitude),
         lensModel: tags.LensModel ?? null,
         livePhotoCID: (asset.type === AssetType.VIDEO ? tags.ContentIdentifier : tags.MediaGroupUUID) ?? null,
-        localDateTime,
         longitude: validate(tags.GPSLongitude),
         make: tags.Make ?? null,
         model: tags.Model ?? null,

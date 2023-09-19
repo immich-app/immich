@@ -5222,6 +5222,10 @@
             "nullable": true,
             "type": "string"
           },
+          "localDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
           "originalFileName": {
             "type": "string"
           },
@@ -5280,6 +5284,7 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "localDateTime",
           "duration",
           "checksum"
         ],
@@ -5939,12 +5944,6 @@
           },
           "lensModel": {
             "default": null,
-            "nullable": true,
-            "type": "string"
-          },
-          "localDateTime": {
-            "default": null,
-            "format": "date-time",
             "nullable": true,
             "type": "string"
           },
