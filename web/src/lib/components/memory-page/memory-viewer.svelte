@@ -212,7 +212,9 @@
 
             <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>
-                {DateTime.fromISO(currentMemory.assets[0].fileCreatedAt).toLocaleString(DateTime.DATE_FULL)}
+                {DateTime.fromISO(
+                  currentMemory.assets[0].exifInfo?.localDateTime ?? currentMemory.assets[0].fileCreatedAt,
+                ).toLocaleString(DateTime.DATE_FULL)}
               </p>
               <p>
                 {currentAsset.exifInfo?.city || ''}
