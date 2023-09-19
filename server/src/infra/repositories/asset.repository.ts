@@ -421,14 +421,15 @@ export class AssetRepository implements IAssetRepository {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
       .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
-      .orderBy('asset.fileCreatedAt', 'DESC')
+      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
+      .addOrderBy('asset.localDateTime', 'DESC')
       .getMany();
   }
 
   private getBuilder(options: TimeBucketOptions) {
     const { isArchived, isFavorite, albumId, personId, userId } = options;
 
-    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
+    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true').leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });

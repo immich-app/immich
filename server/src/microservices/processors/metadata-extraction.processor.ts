@@ -155,13 +155,9 @@ export class MetadataExtractionProcessor {
     const dateTimeOriginal = exifDate(firstDateTime(tags)) ?? exifData.dateTimeOriginal;
     const timeZoneOffset = tzOffset(firstDateTime(tags)) ?? 0;
 
-    console.log(dateTimeOriginal, timeZoneOffset);
-
     if (dateTimeOriginal && timeZoneOffset) {
       localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
     }
-
-    console.log(localDateTime);
 
     await this.assetRepository.save({
       id: asset.id,
@@ -298,7 +294,7 @@ export class MetadataExtractionProcessor {
 
     const tags = { ...mediaTags, ...sidecarTags };
 
-    //this.logger.verbose('Exif Tags', tags);
+    this.logger.verbose('Exif Tags', tags);
 
     return [
       <ExifEntity>{

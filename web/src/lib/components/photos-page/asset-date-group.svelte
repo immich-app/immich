@@ -128,7 +128,7 @@
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
     {@const groupTitle = formatGroupTitle(
-      DateTime.fromISO(asset.exifInfo?.localDateTime || asset.fileCreatedAt).startOf('day'),
+      DateTime.fromISO(asset.localDateTime || asset.fileCreatedAt).startOf('day'),
     )}
     <!-- Asset Group By Date -->
 
