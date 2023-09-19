@@ -56,6 +56,7 @@ const createAsset = (
     deviceId: 'e2e-test',
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
+    localDateTime: createdAt,
     type: AssetType.IMAGE,
     originalFileName: `test_${id}`,
   });
