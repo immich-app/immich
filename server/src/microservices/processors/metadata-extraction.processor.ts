@@ -46,6 +46,7 @@ interface ImmichTags extends Tags {
 }
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
+// exiftool returns strings when it fails to parse non-string values, so this is used where a string is not expected
 const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : value ?? null);
 
 export class MetadataExtractionProcessor {
@@ -261,7 +262,7 @@ export class MetadataExtractionProcessor {
       backfillTimezones: true,
       inferTimezoneFromDatestamps: true,
       useMWG: true,
-      numericTags: DefaultReadTaskOptions.numericTags.concat(['BitsPerSample', 'FocalLength', 'ImagePixelDepth']),
+      numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
       geoTz: (lat: number, lon: number): string => geotz.find(lat, lon)[0],
     };
 
@@ -284,17 +285,12 @@ export class MetadataExtractionProcessor {
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
-    let bitsPerSample = tags.BitsPerSample ?? tags.ComponentBitDepth ?? tags.BitDepth ?? tags.ColorBitDepth ?? null;
-    bitsPerSample ??= tags.ImagePixelDepth ? Number.parseInt(tags.ImagePixelDepth) : null;
-    if (bitsPerSample && bitsPerSample >= 24 && bitsPerSample % 3 === 0) {
-      bitsPerSample /= 3;
-    }
 
     return [
       <ExifEntity>{
         // altitude: tags.GPSAltitude ?? null,
         assetId: asset.id,
-        bitsPerSample,
+        bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
         dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
@@ -319,5 +315,23 @@ export class MetadataExtractionProcessor {
       },
       tags,
     ];
+  }
+
+  getBitsPerSample(tags: ImmichTags): number | null {
+    const bitDepthTags = [
+      tags.BitsPerSample,
+      tags.ComponentBitDepth,
+      tags.ImagePixelDepth,
+      tags.BitDepth,
+      tags.ColorBitDepth,
+      // `numericTags` doesn't parse values like '12 12 12'
+    ].map((tag) => (typeof tag === 'string' ? Number.parseInt(tag) : tag));
+
+    let bitsPerSample = bitDepthTags.find((tag) => typeof tag === 'number' && !Number.isNaN(tag)) ?? null;
+    if (bitsPerSample && bitsPerSample >= 24 && bitsPerSample % 3 === 0) {
+      bitsPerSample /= 3; // converts per-pixel bit depth to per-channel
+    }
+
+    return bitsPerSample;
   }
 }
