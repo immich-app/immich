@@ -40,15 +40,21 @@
   import TableHeader from '$lib/components/elements/table-header.svelte';
   import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte';
   import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte';
+  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 
   export let data: PageData;
+  let shouldShowEditUserForm = false;
+  let selectedAlbum: AlbumResponseDto;
 
   let sortByOptions: Record<string, Sort> = {
     albumTitle: {
       table: 'Album title',
       sortTitle: 'Album title',
       sortDesc: true,
-      widthClass: 'w-4/12',
+      widthClass: 'w-5/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? a.albumName.localeCompare(b.albumName) : b.albumName.localeCompare(a.albumName),
@@ -68,7 +74,7 @@
       table: 'Updated date',
       sortTitle: 'Last modified',
       sortDesc: true,
-      widthClass: 'w-3/12',
+      widthClass: 'w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? sortByDate(a.updatedAt, b.updatedAt) : sortByDate(b.updatedAt, a.updatedAt),
@@ -79,7 +85,7 @@
       table: 'Created date',
       sortTitle: 'Most recent photo',
       sortDesc: true,
-      widthClass: 'w-3/12',
+      widthClass: 'w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse
@@ -92,6 +98,11 @@
         );
       },
     },
+  };
+
+  const handleEdit = (album: AlbumResponseDto) => {
+    selectedAlbum = { ...album };
+    shouldShowEditUserForm = true;
   };
 
   const viewOptions = [
@@ -120,6 +131,11 @@
 
   let albums = unsortedAlbums;
   let albumToDelete: AlbumResponseDto | null;
+
+  const chooseAlbumToDelete = (album: AlbumResponseDto) => {
+    $contextMenuTargetAlbum = album;
+    setAlbumToDelete();
+  };
 
   const setAlbumToDelete = () => {
     albumToDelete = $contextMenuTargetAlbum ?? null;
@@ -184,7 +200,26 @@
       console.log(error);
     }
   };
+
+  const successModifyAlbum = () => {
+    shouldShowEditUserForm = false;
+    notificationController.show({
+      message: 'Album infos updated',
+      type: NotificationType.Info,
+    });
+    $albums[$albums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
+  };
 </script>
+
+{#if shouldShowEditUserForm}
+  <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+    <EditAlbumForm
+      album={selectedAlbum}
+      on:edit-success={() => successModifyAlbum()}
+      on:cancel={() => (shouldShowEditUserForm = false)}
+    />
+  </FullScreenModal>
+{/if}
 
 <UserPageLayout user={data.user} title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
@@ -228,6 +263,7 @@
           {#each Object.keys(sortByOptions) as key (key)}
             <TableHeader bind:albumViewSettings={$albumViewSettings.sortBy} bind:option={sortByOptions[key]} />
           {/each}
+          <th class="w-1/12 text-center text-sm font-medium">Action</th>
         </tr>
       </thead>
       <tbody
@@ -240,13 +276,27 @@
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-4/12 text-ellipsis text-left">{album.albumName}</td>
+            <td class="text-md w-5/12 text-ellipsis text-left">{album.albumName}</td>
             <td class="text-md w-2/12 text-ellipsis text-center">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-3/12 text-ellipsis text-center">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-3/12 text-ellipsis text-center">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md w-2/12 text-ellipsis text-center">{dateLocaleString(album.updatedAt)}</td>
+            <td class="text-md w-2/12 text-ellipsis text-center">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md w-1/12 text-ellipsis text-center">
+              <button
+                on:click|stopPropagation={() => handleEdit(album)}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <PencilOutline size="16" />
+              </button>
+              <button
+                on:click|stopPropagation={() => chooseAlbumToDelete(album)}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <TrashCanOutline size="16" />
+              </button>
+            </td>
           </tr>
         {/each}
       </tbody>
