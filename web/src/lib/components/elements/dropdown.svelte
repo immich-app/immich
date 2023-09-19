@@ -7,7 +7,7 @@
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher<{
-    changeSort: string;
+    select: string;
   }>();
   export let options: string[];
   export let value = options[0];
@@ -21,7 +21,7 @@
 
   const handleSelectOption = (index: number) => {
     if (options[index] === value) {
-      dispatch('changeSort', value);
+      dispatch('select', value);
     } else {
       value = options[index];
     }

@@ -5,20 +5,20 @@
   export let option: Sort;
 
   const handleSort = () => {
-    if (albumViewSettings === option.dropDow) {
+    if (albumViewSettings === option.sortTitle) {
       option.sortDesc = !option.sortDesc;
     } else {
-      albumViewSettings = option.dropDow;
+      albumViewSettings = option.sortTitle;
     }
   };
 </script>
 
-<th class="text-center {option.width} text-sm font-medium"
+<th class="text-center {option.widthClass} text-sm font-medium"
   ><button
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
     on:click={() => handleSort()}
   >
-    {#if albumViewSettings === option.dropDow}
+    {#if albumViewSettings === option.sortTitle}
       {#if option.sortDesc}
         &#8595;
       {:else}

@@ -2,9 +2,9 @@
   // table is the text printed in the table and order is the text printed in the dropDow menu
   export interface Sort {
     table: string;
-    dropDow: string;
+    sortTitle: string;
     sortDesc: boolean;
-    width: string;
+    widthClass: string;
   }
 </script>
 
@@ -42,10 +42,10 @@
   export let data: PageData;
 
   let sortByOptions: Record<string, Sort> = {
-    albumTitle: { table: 'Album title', dropDow: 'Album title', sortDesc: true, width: 'w-4/12' },
-    numberOfAssets: { table: 'Assets', dropDow: 'Number of assets', sortDesc: true, width: 'w-2/12' },
-    lastModified: { table: 'Updated date', dropDow: 'Last modified', sortDesc: true, width: 'w-3/12' },
-    mostRecent: { table: 'Created date', dropDow: 'Most recent photo', sortDesc: true, width: 'w-3/12' },
+    albumTitle: { table: 'Album title', sortTitle: 'Album title', sortDesc: true, widthClass: 'w-4/12' },
+    numberOfAssets: { table: 'Assets', sortTitle: 'Number of assets', sortDesc: true, widthClass: 'w-2/12' },
+    lastModified: { table: 'Updated date', sortTitle: 'Last modified', sortDesc: true, widthClass: 'w-3/12' },
+    mostRecent: { table: 'Created date', sortTitle: 'Most recent photo', sortDesc: true, widthClass: 'w-3/12' },
   };
 
   const viewOptions = [
@@ -104,7 +104,7 @@
 
   $: {
     const { sortBy } = $albumViewSettings;
-    if (sortBy === sortByOptions.mostRecent.dropDow) {
+    if (sortBy === sortByOptions.mostRecent.sortTitle) {
       $albums = $unsortedAlbums.sort((a, b) =>
         sortByOptions.mostRecent.sortDesc
           ? a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
@@ -114,19 +114,19 @@
           ? sortByDate(b.lastModifiedAssetTimestamp, a.lastModifiedAssetTimestamp)
           : sortByDate(b.updatedAt, a.updatedAt),
       );
-    } else if (sortBy === sortByOptions.albumTitle.dropDow) {
+    } else if (sortBy === sortByOptions.albumTitle.sortTitle) {
       $albums = $unsortedAlbums.sort((a, b) =>
         sortByOptions.albumTitle.sortDesc
           ? a.albumName.localeCompare(b.albumName)
           : b.albumName.localeCompare(a.albumName),
       );
-    } else if (sortBy === sortByOptions.lastModified.dropDow) {
+    } else if (sortBy === sortByOptions.lastModified.sortTitle) {
       $albums = $unsortedAlbums.sort((a, b) =>
         sortByOptions.lastModified.sortDesc
           ? sortByDate(a.updatedAt, b.updatedAt)
           : sortByDate(b.updatedAt, a.updatedAt),
       );
-    } else if (sortBy === sortByOptions.numberOfAssets.dropDow) {
+    } else if (sortBy === sortByOptions.numberOfAssets.sortTitle) {
       $albums = $unsortedAlbums.sort((a, b) =>
         sortByOptions.numberOfAssets.sortDesc
           ? a.albumName.localeCompare(b.albumName)
@@ -173,12 +173,12 @@
     </LinkButton>
 
     <Dropdown
-      options={Object.values(sortByOptions).map((CourseInfo) => CourseInfo.dropDow)}
+      options={Object.values(sortByOptions).map((CourseInfo) => CourseInfo.sortTitle)}
       bind:value={$albumViewSettings.sortBy}
       icons={Object.keys(sortByOptions).map((key) => (sortByOptions[key].sortDesc ? ArrowDownThin : ArrowUpThin))}
-      on:changeSort={(event) => {
+      on:select={(event) => {
         for (const key in sortByOptions) {
-          if (sortByOptions[key].dropDow === event.detail) {
+          if (sortByOptions[key].sortTitle === event.detail) {
             sortByOptions[key].sortDesc = !sortByOptions[key].sortDesc;
           }
         }
