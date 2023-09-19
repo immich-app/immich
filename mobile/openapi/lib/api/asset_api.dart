@@ -978,7 +978,6 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [DateTime] timestamp (required):
-  ///   Get pictures for +24 hours from this time going back x years
   Future<Response> getMemoryLaneWithHttpInfo(DateTime timestamp,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/memory-lane';
@@ -1009,7 +1008,6 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [DateTime] timestamp (required):
-  ///   Get pictures for +24 hours from this time going back x years
   Future<List<MemoryLaneResponseDto>?> getMemoryLane(DateTime timestamp,) async {
     final response = await getMemoryLaneWithHttpInfo(timestamp,);
     if (response.statusCode >= HttpStatus.badRequest) {

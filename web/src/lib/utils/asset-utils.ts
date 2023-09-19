@@ -152,11 +152,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation == 6 || orientation == 90;
+  return orientation === 5 || orientation === 6 || orientation === 90;
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation == 8 || orientation == -90;
+  return orientation === 7 || orientation === 8 || orientation === -90;
 }
 
 /**

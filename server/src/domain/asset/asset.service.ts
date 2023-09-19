@@ -1,7 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import _ from 'lodash';
-import { DateTime } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
@@ -138,22 +137,27 @@ export class AssetService {
   }
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const target = DateTime.fromJSDate(dto.timestamp);
-
-    const assets = (await this.assetRepository.getByDayOfYear(authUser.id, target.toJSDate())).map((asset) => {
-      let yearsAgo = 0;
-      if (asset.exifInfo?.localDateTime) {
-        yearsAgo = dto.timestamp.getFullYear() - asset.exifInfo.localDateTime.getFullYear();
-      }
-      return {
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
-        asset: mapAsset(asset),
-      };
-    });
+    const assets = (await this.assetRepository.getByDayOfYear(authUser.id, dto.timestamp))
+      .map((asset) => {
+        let yearsAgo = 0;
+        if (asset.exifInfo?.localDateTime) {
+          yearsAgo = dto.timestamp.getFullYear() - asset.exifInfo.localDateTime.getFullYear();
+        }
+        return {
+          yearsAgo,
+          title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+          asset: mapAsset(asset),
+        };
+      })
+      .filter((asset) => asset.yearsAgo > 0)
+      .sort((asset1, asset2) => asset1.yearsAgo - asset2.yearsAgo);
 
     return _.chain(assets)
       .groupBy((asset) => asset.title)
-      .map((assets, title) => ({ title, assets: assets.map((asset) => asset.asset) }))
+      .map((assets, title) => ({
+        title,
+        assets: assets.map((asset) => asset.asset),
+      }))
       .value();
   }
 

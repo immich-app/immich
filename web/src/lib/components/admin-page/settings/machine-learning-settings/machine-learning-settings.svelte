@@ -196,6 +196,17 @@
               isEdited={machineLearningConfig.facialRecognition.maxDistance !==
                 savedConfig.facialRecognition.maxDistance}
             />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="MIN FACES DETECTED"
+              desc="The minimum number of faces of a person that must be detected for them to appear in the People tab. Setting this to a value greater than 1 can prevent strangers or blurry faces that are not the main subject of the image from being displayed."
+              bind:value={machineLearningConfig.facialRecognition.minFaces}
+              step="1"
+              min="1"
+              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}
+              isEdited={machineLearningConfig.facialRecognition.minFaces !== savedConfig.facialRecognition.minFaces}
+            />
           </div>
         </SettingAccordion>
 
