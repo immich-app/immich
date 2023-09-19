@@ -339,7 +339,7 @@ export class MediaService {
   isSRGB(asset: AssetEntity): boolean {
     const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
     if (colorspace || profileDescription) {
-      return [colorspace, profileDescription].includes('sRGB');
+      return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     }
     // assume sRGB for 8-bit images with no color profile or colorspace metadata
     return bitsPerSample === 8;
