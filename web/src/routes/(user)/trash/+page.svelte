@@ -22,6 +22,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
   export let data: PageData;
 
@@ -30,8 +31,10 @@
   const assetStore = new AssetStore({ size: TimeBucketSize.Month, isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  let isShowEmptyConfirmation = false;
 
   const handleEmptyTrash = async () => {
+    isShowEmptyConfirmation = false;
     try {
       await api.assetApi.updateTrash({ updateTrashDto: { deleteAll: true } });
 
@@ -75,7 +78,7 @@
           Restore All
         </div>
       </LinkButton>
-      <LinkButton on:click={handleEmptyTrash}>
+      <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <DeleteOutline size="18" />
           Empty Trash
@@ -92,4 +95,18 @@
       />
     </AssetGrid>
   </UserPageLayout>
+{/if}
+
+{#if isShowEmptyConfirmation}
+  <ConfirmDialogue
+    title="Empty Trash"
+    confirmText="Empty"
+    on:confirm={handleEmptyTrash}
+    on:cancel={() => (isShowEmptyConfirmation = false)}
+  >
+    <svelte:fragment slot="prompt">
+      <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
+      <p><b>You cannot undo this action!</b></p>
+    </svelte:fragment>
+  </ConfirmDialogue>
 {/if}
