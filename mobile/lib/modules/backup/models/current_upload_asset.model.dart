@@ -3,6 +3,7 @@ import 'dart:convert';
 class CurrentUploadAsset {
   final String id;
   final DateTime fileCreatedAt;
+  final int fileSize;
   final String fileName;
   final String fileType;
 
@@ -11,6 +12,7 @@ class CurrentUploadAsset {
     required this.fileCreatedAt,
     required this.fileName,
     required this.fileType,
+    required this.fileSize,
   });
 
   CurrentUploadAsset copyWith({
@@ -18,12 +20,14 @@ class CurrentUploadAsset {
     DateTime? fileCreatedAt,
     String? fileName,
     String? fileType,
+    int? fileSize,
   }) {
     return CurrentUploadAsset(
       id: id ?? this.id,
       fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
       fileName: fileName ?? this.fileName,
       fileType: fileType ?? this.fileType,
+      fileSize: fileSize ?? this.fileSize,
     );
   }
 
@@ -34,6 +38,7 @@ class CurrentUploadAsset {
     result.addAll({'fileCreatedAt': fileCreatedAt.millisecondsSinceEpoch});
     result.addAll({'fileName': fileName});
     result.addAll({'fileType': fileType});
+    result.addAll({'fileSize': fileSize});
 
     return result;
   }
@@ -44,6 +49,7 @@ class CurrentUploadAsset {
       fileCreatedAt: DateTime.fromMillisecondsSinceEpoch(map['fileCreatedAt']),
       fileName: map['fileName'] ?? '',
       fileType: map['fileType'] ?? '',
+      fileSize: map['fileSize'] ?? '',
     );
   }
 
@@ -54,7 +60,7 @@ class CurrentUploadAsset {
 
   @override
   String toString() {
-    return 'CurrentUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType)';
+    return 'CurrentUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType, fileSize: $fileSize)';
   }
 
   @override
@@ -65,7 +71,8 @@ class CurrentUploadAsset {
         other.id == id &&
         other.fileCreatedAt == fileCreatedAt &&
         other.fileName == fileName &&
-        other.fileType == fileType;
+        other.fileType == fileType &&
+        other.fileSize == fileSize;
   }
 
   @override
@@ -73,6 +80,7 @@ class CurrentUploadAsset {
     return id.hashCode ^
         fileCreatedAt.hashCode ^
         fileName.hashCode ^
-        fileType.hashCode;
+        fileType.hashCode ^
+        fileSize.hashCode;
   }
 }

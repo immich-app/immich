@@ -774,7 +774,9 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             buildStorageInformation(),
             const Divider(),
-            const CurrentUploadingAssetInfoBox(),
+            if (backupState.backupProgress == BackUpProgressEnum.inProgress ||
+                  backupState.backupProgress ==
+                      BackUpProgressEnum.manualInProgress) const CurrentUploadingAssetInfoBox(),
             if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
             buildBackupButton(),
           ],

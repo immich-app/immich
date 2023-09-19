@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +12,7 @@ import 'package:immich_mobile/modules/backup/providers/error_backup_list.provide
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
 class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
   const CurrentUploadingAssetInfoBox({super.key});
@@ -67,7 +70,6 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         children: [
           TableRow(
             decoration: const BoxDecoration(
-                // color: Colors.grey[100],
                 ),
             children: [
               TableCell(
@@ -89,7 +91,24 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           ),
           TableRow(
             decoration: const BoxDecoration(
-                // color: Colors.grey[200],
+                ),
+            children: [
+              TableCell(
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: const Text(
+                    "backup_controller_page_filesize",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10.0,
+                    ),
+                  ).tr(args: [formatBytes(asset.fileSize)]),
+                ),
+              ),
+            ],
+          ),
+          TableRow(
+            decoration: const BoxDecoration(
                 ),
             children: [
               TableCell(
@@ -111,7 +130,6 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           ),
           TableRow(
             decoration: const BoxDecoration(
-                // color: Colors.grey[100],
                 ),
             children: [
               TableCell(
@@ -177,7 +195,6 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             child: Icon(
               Icons.image_outlined,
               color: Theme.of(context).primaryColor,
-              size: 30,
             ),
           ),
           crossFadeState: isShowThumbnail.value
@@ -211,7 +228,12 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   ),
                   Text(
                     " ${uploadProgress.toStringAsFixed(0)}%",
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontFeatures: [
+                        FontFeature.tabularFigures()
+                      ],
+                      ),
                   ),
                 ],
               ),

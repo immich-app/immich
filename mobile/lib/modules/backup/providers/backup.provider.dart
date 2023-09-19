@@ -64,6 +64,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
+              fileSize: 0,
             ),
           ),
         );

@@ -32,6 +32,14 @@ final manualUploadProvider =
   );
 });
 
+final CurrentUploadAsset defaultCurrentUploadAsset = CurrentUploadAsset(
+              id: '...',
+              fileCreatedAt: DateTime.parse('2020-10-04'),
+              fileName: '...',
+              fileType: '...',
+              fileSize: 0,
+            );
+
 class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   final Logger _log = Logger("ManualUploadNotifier");
   final LocalNotificationService _localNotificationService;
@@ -46,12 +54,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           ManualUploadState(
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
-            currentUploadAsset: CurrentUploadAsset(
-              id: '...',
-              fileCreatedAt: DateTime.parse('2020-10-04'),
-              fileName: '...',
-              fileType: '...',
-            ),
+            currentUploadAsset: defaultCurrentUploadAsset,
             totalAssetsToUpload: 0,
             successfulUploads: 0,
             currentAssetIndex: 0,
@@ -185,12 +188,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           totalAssetsToUpload: allUploadAssets.length,
           successfulUploads: 0,
           currentAssetIndex: 0,
-          currentUploadAsset: CurrentUploadAsset(
-            id: '...',
-            fileCreatedAt: DateTime.parse('2020-10-04'),
-            fileName: '...',
-            fileType: '...',
-          ),
+          currentUploadAsset: defaultCurrentUploadAsset,
           cancelToken: CancellationToken(),
         );
         // Reset Error List

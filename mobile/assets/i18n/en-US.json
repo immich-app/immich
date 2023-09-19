@@ -74,6 +74,7 @@
   "backup_controller_page_failed": "Failed ({})",
   "backup_controller_page_filename": "File name: {} [{}]",
   "backup_controller_page_id": "ID: {}",
+  "backup_controller_page_filesize": "Size: {}",
   "backup_controller_page_info": "Backup Information",
   "backup_controller_page_none_selected": "None selected",
   "backup_controller_page_remainder": "Remainder",

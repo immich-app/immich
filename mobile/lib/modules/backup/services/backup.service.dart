@@ -229,10 +229,12 @@ class BackupService {
         if (file != null) {
           String originalFileName = await entity.titleAsync;
           var fileStream = file.openRead();
+          var fileSize = file.lengthSync();
+
           var assetRawUploadData = http.MultipartFile(
             "assetData",
             fileStream,
-            file.lengthSync(),
+            fileSize,
             filename: originalFileName,
           );
 
@@ -271,6 +273,7 @@ class BackupService {
                   : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
+              fileSize: fileSize,
             ),
           );
 
