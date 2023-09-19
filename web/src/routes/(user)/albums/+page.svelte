@@ -1,10 +1,12 @@
 <script lang="ts" context="module">
-  // table is the text printed in the table and order is the text printed in the dropDow menu
+  // table is the text printed in the table and sortTitle is the text printed in the dropDow menu
+
   export interface Sort {
     table: string;
     sortTitle: string;
     sortDesc: boolean;
     widthClass: string;
+    sortFn: (reverse: boolean, albums: AlbumResponseDto[]) => AlbumResponseDto[];
   }
 </script>
 
@@ -42,10 +44,54 @@
   export let data: PageData;
 
   let sortByOptions: Record<string, Sort> = {
-    albumTitle: { table: 'Album title', sortTitle: 'Album title', sortDesc: true, widthClass: 'w-4/12' },
-    numberOfAssets: { table: 'Assets', sortTitle: 'Number of assets', sortDesc: true, widthClass: 'w-2/12' },
-    lastModified: { table: 'Updated date', sortTitle: 'Last modified', sortDesc: true, widthClass: 'w-3/12' },
-    mostRecent: { table: 'Created date', sortTitle: 'Most recent photo', sortDesc: true, widthClass: 'w-3/12' },
+    albumTitle: {
+      table: 'Album title',
+      sortTitle: 'Album title',
+      sortDesc: true,
+      widthClass: 'w-4/12',
+      sortFn: (reverse, albums) => {
+        return albums.sort((a, b) =>
+          reverse ? a.albumName.localeCompare(b.albumName) : b.albumName.localeCompare(a.albumName),
+        );
+      },
+    },
+    numberOfAssets: {
+      table: 'Assets',
+      sortTitle: 'Number of assets',
+      sortDesc: true,
+      widthClass: 'w-2/12',
+      sortFn: (reverse, albums) => {
+        return albums.sort((a, b) => (reverse ? a.assetCount - b.assetCount : b.assetCount - a.assetCount));
+      },
+    },
+    lastModified: {
+      table: 'Updated date',
+      sortTitle: 'Last modified',
+      sortDesc: true,
+      widthClass: 'w-3/12',
+      sortFn: (reverse, albums) => {
+        return albums.sort((a, b) =>
+          reverse ? sortByDate(a.updatedAt, b.updatedAt) : sortByDate(b.updatedAt, a.updatedAt),
+        );
+      },
+    },
+    mostRecent: {
+      table: 'Created date',
+      sortTitle: 'Most recent photo',
+      sortDesc: true,
+      widthClass: 'w-3/12',
+      sortFn: (reverse, albums) => {
+        return albums.sort((a, b) =>
+          reverse
+            ? a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
+              ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
+              : sortByDate(a.updatedAt, b.updatedAt)
+            : a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
+            ? sortByDate(b.lastModifiedAssetTimestamp, a.lastModifiedAssetTimestamp)
+            : sortByDate(b.updatedAt, a.updatedAt),
+        );
+      },
+    },
   };
 
   const viewOptions = [
@@ -104,34 +150,11 @@
 
   $: {
     const { sortBy } = $albumViewSettings;
-    if (sortBy === sortByOptions.mostRecent.sortTitle) {
-      $albums = $unsortedAlbums.sort((a, b) =>
-        sortByOptions.mostRecent.sortDesc
-          ? a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-            ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
-            : sortByDate(a.updatedAt, b.updatedAt)
-          : a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-          ? sortByDate(b.lastModifiedAssetTimestamp, a.lastModifiedAssetTimestamp)
-          : sortByDate(b.updatedAt, a.updatedAt),
-      );
-    } else if (sortBy === sortByOptions.albumTitle.sortTitle) {
-      $albums = $unsortedAlbums.sort((a, b) =>
-        sortByOptions.albumTitle.sortDesc
-          ? a.albumName.localeCompare(b.albumName)
-          : b.albumName.localeCompare(a.albumName),
-      );
-    } else if (sortBy === sortByOptions.lastModified.sortTitle) {
-      $albums = $unsortedAlbums.sort((a, b) =>
-        sortByOptions.lastModified.sortDesc
-          ? sortByDate(a.updatedAt, b.updatedAt)
-          : sortByDate(b.updatedAt, a.updatedAt),
-      );
-    } else if (sortBy === sortByOptions.numberOfAssets.sortTitle) {
-      $albums = $unsortedAlbums.sort((a, b) =>
-        sortByOptions.numberOfAssets.sortDesc
-          ? a.albumName.localeCompare(b.albumName)
-          : b.albumName.localeCompare(a.albumName),
-      );
+    for (const key in sortByOptions) {
+      if (sortByOptions[key].sortTitle === sortBy) {
+        $albums = sortByOptions[key].sortFn(sortByOptions[key].sortDesc, $unsortedAlbums);
+        break;
+      }
     }
   }
 
