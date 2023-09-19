@@ -149,7 +149,6 @@ export class AssetService {
           asset: mapAsset(asset),
         };
       })
-      .filter((asset) => asset.yearsAgo > 0)
       .sort((asset1, asset2) => asset1.yearsAgo - asset2.yearsAgo);
 
     return _.chain(assets)
