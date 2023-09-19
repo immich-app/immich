@@ -429,7 +429,10 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: TimeBucketOptions) {
     const { isArchived, isFavorite, albumId, personId, userId } = options;
 
-    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true').leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+    let builder = this.repository
+      .createQueryBuilder('asset')
+      .where('asset.isVisible = true')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
