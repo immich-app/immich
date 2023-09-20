@@ -28,7 +28,7 @@ In external libraries, the file path is used for duplicate detection. This means
 
 :::caution
 
-If you assets from an external library to an album and then move the asset to another location within the library, the asset will be removed from the album. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
+If you add assets from an external library to an album and then move the asset to another location within the library, the asset will be removed from the album upon rescan. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
 
 :::
 
