@@ -36,7 +36,6 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
-  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
   import TableHeader from '$lib/components/elements/table-header.svelte';
   import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte';
   import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte';
@@ -54,7 +53,7 @@
       table: 'Album title',
       sortTitle: 'Album title',
       sortDesc: true,
-      widthClass: 'w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
+      widthClass: 'w-8/12 text-left sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? a.albumName.localeCompare(b.albumName) : b.albumName.localeCompare(a.albumName),
@@ -65,7 +64,7 @@
       table: 'Assets',
       sortTitle: 'Number of assets',
       sortDesc: true,
-      widthClass: 'w-4/12 sm:w-2/12  2xl:w-1/12',
+      widthClass: 'w-4/12 text-center sm:w-2/12  2xl:w-1/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) => (reverse ? a.assetCount - b.assetCount : b.assetCount - a.assetCount));
       },
@@ -74,7 +73,7 @@
       table: 'Updated date',
       sortTitle: 'Last modified',
       sortDesc: true,
-      widthClass: 'hidden sm:block w-3/12 lg:w-2/12',
+      widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? sortByDate(a.updatedAt, b.updatedAt) : sortByDate(b.updatedAt, a.updatedAt),
@@ -85,7 +84,7 @@
       table: 'Created date',
       sortTitle: 'Most recent photo',
       sortDesc: true,
-      widthClass: 'hidden sm:block w-3/12 lg:w-2/12',
+      widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse
@@ -104,19 +103,6 @@
     selectedAlbum = { ...album };
     shouldShowEditUserForm = true;
   };
-
-  const viewOptions = [
-    {
-      name: AlbumViewMode.Cover,
-      icon: ViewGridOutline,
-    },
-    {
-      name: AlbumViewMode.List,
-      icon: FormatListBulletedSquare,
-    },
-  ];
-  const viewOptionNames = viewOptions.map((option) => option.name);
-  const viewOptionIcons: (typeof Icon)[] = viewOptions.map((option) => option.icon);
 
   const {
     albums: unsortedAlbums,
@@ -209,6 +195,14 @@
     });
     $albums[$albums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
   };
+
+  const handleChangeListMode = () => {
+    if ($albumViewSettings.view === AlbumViewMode.Cover) {
+      $albumViewSettings.view = AlbumViewMode.List;
+    } else {
+      $albumViewSettings.view = AlbumViewMode.Cover;
+    }
+  };
 </script>
 
 {#if shouldShowEditUserForm}
@@ -242,7 +236,18 @@
         }
       }}
     />
-    <Dropdown options={viewOptionNames} bind:value={$albumViewSettings.view} icons={viewOptionIcons} />
+
+    <LinkButton on:click={() => handleChangeListMode()}>
+      <div class="flex place-items-center gap-2 text-sm">
+        {#if $albumViewSettings.view === AlbumViewMode.List}
+          <ViewGridOutline size="18" />
+          <p class="hidden sm:block">Cover</p>
+        {:else}
+          <FormatListBulletedSquare size="18" />
+          <p class="hidden sm:block">List</p>
+        {/if}
+      </div>
+    </LinkButton>
   </div>
 
   <!-- Album Card -->
