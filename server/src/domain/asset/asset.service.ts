@@ -26,8 +26,8 @@ import {
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
+  TrashAction,
   UpdateAssetDto,
-  UpdateTrashDto,
   mapStats,
 } from './dto';
 import {
@@ -315,7 +315,7 @@ export class AssetService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { order: 'DESC', trashedBefore }),
+      this.assetRepository.getAll(pagination, { trashedBefore }),
     );
 
     for await (const assets of assetPagination) {
@@ -367,7 +367,6 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      // TODO turn into queued job to delete one at a time
       for (const id of ids) {
         await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
       }
@@ -377,18 +376,12 @@ export class AssetService {
     }
   }
 
-  async updateTrash(authUser: AuthUserDto, dto: UpdateTrashDto): Promise<void> {
-    const { restoreAll, deleteAll } = dto;
-
-    if (!restoreAll && !deleteAll) {
-      return;
-    }
-
+  async handleTrashAction(authUser: AuthUserDto, action: TrashAction): Promise<void> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getByUserId(pagination, authUser.id, { trashedBefore: DateTime.now().toJSDate() }),
     );
 
-    if (restoreAll) {
+    if (action == TrashAction.RESTORE_ALL) {
       for await (const assets of assetPagination) {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
@@ -397,7 +390,7 @@ export class AssetService {
       return;
     }
 
-    if (deleteAll) {
+    if (action == TrashAction.EMPTY_ALL) {
       for await (const assets of assetPagination) {
         for (const asset of assets) {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });

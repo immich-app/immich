@@ -18,8 +18,8 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
+  TrashAction,
   UpdateAssetDto as UpdateDto,
-  UpdateTrashDto,
 } from '@app/domain';
 import {
   Body,
@@ -101,12 +101,6 @@ export class AssetController {
     return this.service.run(authUser, dto);
   }
 
-  @Post('restore')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.service.restoreAll(authUser, dto);
-  }
-
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
   updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
@@ -119,10 +113,22 @@ export class AssetController {
     return this.service.deleteAll(authUser, dto);
   }
 
-  @Post('trash')
+  @Post('restore')
   @HttpCode(HttpStatus.NO_CONTENT)
-  updateTrash(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateTrashDto): Promise<void> {
-    return this.service.updateTrash(authUser, dto);
+  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.restoreAll(authUser, dto);
+  }
+
+  @Post('trash/empty')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  emptyTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.EMPTY_ALL);
+  }
+
+  @Post('trash/restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
   }
 
   @Put(':id')

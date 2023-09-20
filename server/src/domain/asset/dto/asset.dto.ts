@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 import { Optional } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -26,8 +26,13 @@ export class UpdateAssetDto {
   description?: string;
 }
 
+export enum TrashAction {
+  EMPTY_ALL = 'empty-all',
+  RESTORE_ALL = 'restore-all',
+}
+
 export class AssetBulkDeleteDto extends BulkIdsDto {
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   force?: boolean;
 }

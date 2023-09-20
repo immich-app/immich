@@ -14,10 +14,10 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
-import { ISystemConfigRepository } from '..';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobItem, JobName } from '../job';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { AssetStats, IAssetRepository, TimeBucketSize } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';

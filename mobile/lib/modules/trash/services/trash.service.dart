@@ -30,16 +30,19 @@ class TrashService {
     }
   }
 
-  Future<void> updateTrash({bool? restoreAll, bool? deleteAll}) async {
+  Future<void> emptyTrash() async {
     try {
-      await _apiService.assetApi.updateTrash(
-        UpdateTrashDto(
-          restoreAll: restoreAll,
-          deleteAll: deleteAll,
-        ),
-      );
+      await _apiService.assetApi.emptyTrash();
     } catch (error, stack) {
-      _log.severe("Cannot restore assets ${error.toString()}", error, stack);
+      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
+    }
+  }
+
+  Future<void> restoreTrash() async {
+    try {
+      await _apiService.assetApi.restoreTrash();
+    } catch (error, stack) {
+      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }
   }
 }

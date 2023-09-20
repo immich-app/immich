@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, Min } from 'class-validator';
+import { IsBoolean, IsInt, Min } from 'class-validator';
 
 export class SystemConfigTrashDto {
   @IsBoolean()
   enabled!: boolean;
 
-  @IsNumber()
+  @IsInt()
   @Min(0)
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })

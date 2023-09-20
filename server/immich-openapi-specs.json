@@ -1969,20 +1969,35 @@
         ]
       }
     },
-    "/asset/trash": {
+    "/asset/trash/empty": {
       "post": {
-        "operationId": "updateTrash",
+        "operationId": "emptyTrash",
         "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTrashDto"
-              }
-            }
-          },
-          "required": true
+        "responses": {
+          "204": {
+            "description": ""
+          }
         },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/trash/restore": {
+      "post": {
+        "operationId": "restoreTrash",
+        "parameters": [],
         "responses": {
           "204": {
             "description": ""
@@ -7592,17 +7607,6 @@
         "properties": {
           "name": {
             "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "UpdateTrashDto": {
-        "properties": {
-          "deleteAll": {
-            "type": "boolean"
-          },
-          "restoreAll": {
-            "type": "boolean"
           }
         },
         "type": "object"

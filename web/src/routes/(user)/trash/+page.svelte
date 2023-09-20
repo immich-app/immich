@@ -6,7 +6,7 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -36,7 +36,7 @@
   const handleEmptyTrash = async () => {
     isShowEmptyConfirmation = false;
     try {
-      await api.assetApi.updateTrash({ updateTrashDto: { deleteAll: true } });
+      await api.assetApi.emptyTrash();
 
       notificationController.show({
         message: `Empty trash initiated. Refresh the page to see the changes`,
@@ -49,7 +49,7 @@
 
   const handleRestoreTrash = async () => {
     try {
-      await api.assetApi.updateTrash({ updateTrashDto: { restoreAll: true } });
+      await api.assetApi.restoreTrash();
 
       notificationController.show({
         message: `Restore trash initiated. Refresh the page to see the changes`,
@@ -86,7 +86,7 @@
       </LinkButton>
     </div>
 
-    <AssetGrid forceDelete {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+    <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
       <EmptyPlaceholder
         text="Trashed photos and videos will show up here."
         alt="Empty trash can"

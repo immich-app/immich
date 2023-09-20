@@ -27,7 +27,7 @@ class TrashNotifier extends StateNotifier<bool> {
       if (user == null) {
         return;
       }
-      await _trashService.updateTrash(deleteAll: true);
+      await _trashService.emptyTrash();
 
       final dbIds = await _db.assets
           .where()
@@ -88,7 +88,7 @@ class TrashNotifier extends StateNotifier<bool> {
       if (user == null) {
         return;
       }
-      await _trashService.updateTrash(restoreAll: true);
+      await _trashService.restoreTrash();
 
       final assets = await _db.assets
           .where()

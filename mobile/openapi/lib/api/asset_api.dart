@@ -330,6 +330,39 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /asset/trash/empty' operation and returns the [Response].
+  Future<Response> emptyTrashWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/trash/empty';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> emptyTrash() async {
+    final response = await emptyTrashWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Get all AssetEntity belong to the user
   ///
   /// Note: This method returns the HTTP [Response].
@@ -1274,6 +1307,39 @@ class AssetApi {
     }
   }
 
+  /// Performs an HTTP 'POST /asset/trash/restore' operation and returns the [Response].
+  Future<Response> restoreTrashWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/trash/restore';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> restoreTrash() async {
+    final response = await restoreTrashWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /asset/jobs' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1519,45 +1585,6 @@ class AssetApi {
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
   Future<void> updateAssets(AssetBulkUpdateDto assetBulkUpdateDto,) async {
     final response = await updateAssetsWithHttpInfo(assetBulkUpdateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Performs an HTTP 'POST /asset/trash' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [UpdateTrashDto] updateTrashDto (required):
-  Future<Response> updateTrashWithHttpInfo(UpdateTrashDto updateTrashDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/trash';
-
-    // ignore: prefer_final_locals
-    Object? postBody = updateTrashDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [UpdateTrashDto] updateTrashDto (required):
-  Future<void> updateTrash(UpdateTrashDto updateTrashDto,) async {
-    final response = await updateTrashWithHttpInfo(updateTrashDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

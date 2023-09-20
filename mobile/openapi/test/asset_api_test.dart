@@ -53,6 +53,11 @@ void main() {
       // TODO
     });
 
+    //Future emptyTrash() async
+    test('test emptyTrash', () async {
+      // TODO
+    });
+
     // Get all AssetEntity belong to the user
     //
     //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, num skip, DateTime updatedAfter, String ifNoneMatch }) async
@@ -134,6 +139,11 @@ void main() {
       // TODO
     });
 
+    //Future restoreTrash() async
+    test('test restoreTrash', () async {
+      // TODO
+    });
+
     //Future runAssetJobs(AssetJobsDto assetJobsDto) async
     test('test runAssetJobs', () async {
       // TODO
@@ -156,11 +166,6 @@ void main() {
 
     //Future updateAssets(AssetBulkUpdateDto assetBulkUpdateDto) async
     test('test updateAssets', () async {
-      // TODO
-    });
-
-    //Future updateTrash(UpdateTrashDto updateTrashDto) async
-    test('test updateTrash', () async {
       // TODO
     });
 
