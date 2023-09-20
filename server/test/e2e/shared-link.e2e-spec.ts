@@ -99,7 +99,21 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .query({ key: sharedLink.key + 'foo' });
 
       expect(status).toBe(401);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid share key' }));
+      expect(body).toEqual(errorStub.invalidShareKey);
+    });
+
+    it('should return unauthorized if target has been soft deleted', async () => {
+      const softDeletedAlbum = await api.albumApi.create(server, user1.accessToken, { albumName: 'shared with link' });
+      const softDeletedAlbumLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: softDeletedAlbum.id,
+      });
+      await api.userApi.delete(server, accessToken, user1.userId);
+
+      const { status, body } = await request(server).get('/shared-link/me').query({ key: softDeletedAlbumLink.key });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.invalidShareKey);
     });
   });
 

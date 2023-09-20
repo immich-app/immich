@@ -22,4 +22,8 @@ export interface IAccessRepository {
   timeline: {
     hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
   };
+
+  person: {
+    hasOwnerAccess(userId: string, personId: string): Promise<boolean>;
+  };
 }

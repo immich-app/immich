@@ -156,6 +156,7 @@ export const sharedLinkStub = {
       description: '',
       createdAt: today,
       updatedAt: today,
+      deletedAt: null,
       albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
       sharedUsers: [],

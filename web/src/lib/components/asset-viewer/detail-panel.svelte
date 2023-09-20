@@ -25,6 +25,10 @@
   $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
   $: {
+    if (textarea) {
+      textarea.value = asset?.exifInfo?.description || '';
+    }
+
     // Get latest description from server
     if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {

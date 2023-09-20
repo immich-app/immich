@@ -1,4 +1,4 @@
-import { Optional, toBoolean, toSanitized, UploadFieldName, ValidateUUID } from '@app/domain';
+import { Optional, toBoolean, UploadFieldName, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
@@ -81,12 +81,10 @@ export class ImportAssetDto extends CreateAssetBase {
 
   @IsString()
   @IsNotEmpty()
-  @Transform(toSanitized)
   assetPath!: string;
 
   @IsString()
   @Optional()
   @IsNotEmpty()
-  @Transform(toSanitized)
   sidecarPath?: string;
 }

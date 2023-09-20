@@ -56,8 +56,6 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ---
 
-## Uploading existing libraries
-
 ### Run via Docker
 
 You can run the CLI inside of a docker container to avoid needing to install anything.

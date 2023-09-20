@@ -5055,7 +5055,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.78.0",
+    "version": "1.78.1",
     "contact": {}
   },
   "tags": [],
@@ -5660,7 +5660,7 @@
         "enum": [
           "mp3",
           "aac",
-          "opus"
+          "libopus"
         ],
         "type": "string"
       },
@@ -6954,6 +6954,9 @@
           "maxDistance": {
             "type": "integer"
           },
+          "minFaces": {
+            "type": "integer"
+          },
           "minScore": {
             "type": "integer"
           },
@@ -6967,6 +6970,7 @@
         "required": [
           "minScore",
           "maxDistance",
+          "minFaces",
           "enabled",
           "modelName"
         ],
