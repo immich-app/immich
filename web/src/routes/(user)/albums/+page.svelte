@@ -43,6 +43,7 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import { orderBy } from 'lodash-es';
 
   export let data: PageData;
   let shouldShowEditUserForm = false;
@@ -55,18 +56,16 @@
       sortDesc: true,
       widthClass: 'w-8/12 text-left sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
       sortFn: (reverse, albums) => {
-        return albums.sort((a, b) =>
-          reverse ? a.albumName.localeCompare(b.albumName) : b.albumName.localeCompare(a.albumName),
-        );
+        return orderBy(albums, 'albumName', [reverse ? 'desc' : 'asc']);
       },
     },
     numberOfAssets: {
       table: 'Assets',
       sortTitle: 'Number of assets',
       sortDesc: true,
-      widthClass: 'w-4/12 text-center sm:w-2/12  2xl:w-1/12',
+      widthClass: 'w-4/12 text-center sm:w-2/12 2xl:w-1/12',
       sortFn: (reverse, albums) => {
-        return albums.sort((a, b) => (reverse ? a.assetCount - b.assetCount : b.assetCount - a.assetCount));
+        return orderBy(albums, 'assetCount', [reverse ? 'desc' : 'asc']);
       },
     },
     lastModified: {
@@ -75,9 +74,7 @@
       sortDesc: true,
       widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
-        return albums.sort((a, b) =>
-          reverse ? sortByDate(a.updatedAt, b.updatedAt) : sortByDate(b.updatedAt, a.updatedAt),
-        );
+        return orderBy(albums, [(album) => new Date(album.updatedAt)], [reverse ? 'desc' : 'asc']);
       },
     },
     mostRecent: {
@@ -86,14 +83,13 @@
       sortDesc: true,
       widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
-        return albums.sort((a, b) =>
-          reverse
-            ? a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-              ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
-              : sortByDate(a.updatedAt, b.updatedAt)
-            : a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-            ? sortByDate(b.lastModifiedAssetTimestamp, a.lastModifiedAssetTimestamp)
-            : sortByDate(b.updatedAt, a.updatedAt),
+        return orderBy(
+          albums,
+          [
+            (album) =>
+              album.lastModifiedAssetTimestamp ? new Date(album.lastModifiedAssetTimestamp) : new Date(album.updatedAt),
+          ],
+          [reverse ? 'desc' : 'asc'],
         );
       },
     },
@@ -142,12 +138,6 @@
     } finally {
       albumToDelete = null;
     }
-  };
-
-  const sortByDate = (a: string, b: string) => {
-    const aDate = new Date(a);
-    const bDate = new Date(b);
-    return bDate.getTime() - aDate.getTime();
   };
 
   $: {
