@@ -26,6 +26,12 @@ Due to aggressive caching it can take some time for a refreshed asset to appear 
 
 In external libraries, the file path is used for duplicate detection. This means that if a file is moved to a different location, it will be added as a new asset. If the file is moved back to its original location, it will be added as a new asset. In contrast to upload libraries, two identical files can be uploaded if they are in different locations. This is a deliberate design choice to make Immich reflect the file system as closely as possible. Remember that duplication detection is only done within the same library, so if you have multiple external libraries, the same file can be added to multiple libraries.
 
+:::caution
+
+If you assets from an external library to an album and then move the asset to another location within the library, the asset will be removed from the album. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
+
+:::
+
 ### Deleted External Assets
 
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
