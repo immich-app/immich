@@ -188,7 +188,7 @@ export class AccessCore {
 
       case Permission.LIBRARY_DELETE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);
-      
+
       case Permission.PERSON_READ:
         return this.repository.person.hasOwnerAccess(authUser.id, id);
 
