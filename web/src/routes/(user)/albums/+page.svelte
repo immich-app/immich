@@ -54,7 +54,7 @@
       table: 'Album title',
       sortTitle: 'Album title',
       sortDesc: true,
-      widthClass: 'w-5/12',
+      widthClass: 'w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? a.albumName.localeCompare(b.albumName) : b.albumName.localeCompare(a.albumName),
@@ -65,7 +65,7 @@
       table: 'Assets',
       sortTitle: 'Number of assets',
       sortDesc: true,
-      widthClass: 'w-2/12',
+      widthClass: 'w-4/12 sm:w-2/12  2xl:w-1/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) => (reverse ? a.assetCount - b.assetCount : b.assetCount - a.assetCount));
       },
@@ -74,7 +74,7 @@
       table: 'Updated date',
       sortTitle: 'Last modified',
       sortDesc: true,
-      widthClass: 'w-2/12',
+      widthClass: 'hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse ? sortByDate(a.updatedAt, b.updatedAt) : sortByDate(b.updatedAt, a.updatedAt),
@@ -85,7 +85,7 @@
       table: 'Created date',
       sortTitle: 'Most recent photo',
       sortDesc: true,
-      widthClass: 'w-2/12',
+      widthClass: 'hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return albums.sort((a, b) =>
           reverse
@@ -259,11 +259,11 @@
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <tr class="flex w-full place-items-center p-5">
+        <tr class="flex w-full place-items-center p-2 md:p-5">
           {#each Object.keys(sortByOptions) as key (key)}
             <TableHeader bind:albumViewSettings={$albumViewSettings.sortBy} bind:option={sortByOptions[key]} />
           {/each}
-          <th class="w-1/12 text-center text-sm font-medium">Action</th>
+          <th class="hidden w-2/12 text-center text-sm font-medium lg:block 2xl:w-1/12">Action</th>
         </tr>
       </thead>
       <tbody
@@ -271,19 +271,23 @@
       >
         {#each $albums as album (album.id)}
           <tr
-            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
             on:click={() => goto(`albums/${album.id}`)}
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-5/12 text-ellipsis text-left">{album.albumName}</td>
-            <td class="text-md w-2/12 text-ellipsis text-center">
+            <td class="text-md w-8/12 text-ellipsis text-left sm:w-4/12 md:w-4/12 2xl:w-6/12">{album.albumName}</td>
+            <td class="text-md w-4/12 text-ellipsis text-center sm:w-2/12 md:w-2/12 2xl:w-1/12">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-2/12 text-ellipsis text-center">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-2/12 text-ellipsis text-center">{dateLocaleString(album.createdAt)}</td>
-            <td class="text-md w-1/12 text-ellipsis text-center">
+            <td class="text-md hidden w-3/12 text-ellipsis text-center sm:block lg:w-2/12"
+              >{dateLocaleString(album.updatedAt)}</td
+            >
+            <td class="text-md hidden w-3/12 text-ellipsis text-center sm:block lg:w-2/12"
+              >{dateLocaleString(album.createdAt)}</td
+            >
+            <td class="text-md hidden w-2/12 text-ellipsis text-center lg:block 2xl:w-1/12">
               <button
                 on:click|stopPropagation={() => handleEdit(album)}
                 class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"

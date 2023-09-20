@@ -40,7 +40,7 @@
       {#if icon}
         <svelte:component this={icon} size="18" />
       {/if}
-      {value}
+      <p class="hidden sm:block">{value}</p>
     </div>
   </LinkButton>
 
