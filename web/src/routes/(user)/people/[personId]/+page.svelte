@@ -63,7 +63,7 @@
 
   let personName = '';
 
-  let name: string;
+  let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
@@ -73,7 +73,10 @@
     suggestedPeople = !name
       ? []
       : people
-          .filter((person: PersonResponseDto) => person.name.startsWith(name) && person.id !== data.person.id)
+          .filter(
+            (person: PersonResponseDto) =>
+              person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+          )
           .slice(0, 5);
   }
 
