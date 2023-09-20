@@ -3189,6 +3189,48 @@
         ]
       }
     },
+    "/person/unmerge": {
+      "post": {
+        "operationId": "unMergePerson",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnMergePersonDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkIdResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
     "/person/{id}": {
       "get": {
         "operationId": "getPerson",
@@ -7966,6 +8008,21 @@
           "disabled"
         ],
         "type": "string"
+      },
+      "UnMergePersonDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "personId"
+        ],
+        "type": "object"
       },
       "UpdateAlbumDto": {
         "properties": {

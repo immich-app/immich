@@ -10,6 +10,7 @@ import {
   PersonSearchDto,
   PersonService,
   PersonUpdateDto,
+  UnMergePersonDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -27,6 +28,11 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
 @UseValidation()
 export class PersonController {
   constructor(private service: PersonService) {}
+
+  @Post('/unmerge')
+  unMergePerson(@AuthUser() authUser: AuthUserDto, @Body() dto: UnMergePersonDto): Promise<BulkIdResponseDto> {
+    return this.service.unMergePerson(authUser, dto);
+  }
 
   @Get()
   getAllPeople(@AuthUser() authUser: AuthUserDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {

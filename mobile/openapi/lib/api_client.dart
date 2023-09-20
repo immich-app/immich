@@ -421,6 +421,8 @@ class ApiClient {
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
+        case 'UnMergePersonDto':
+          return UnMergePersonDto.fromJson(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':

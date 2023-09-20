@@ -1,6 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    AlbumResponseDto,
+    api,
+    AssetJobName,
+    AssetResponseDto,
+    AssetTypeEnum,
+    PersonResponseDto,
+    SharedLinkResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -28,6 +36,8 @@
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -50,8 +60,11 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let showUnMergeModal = false;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
+
+  $: people = asset.people || [];
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
@@ -86,6 +99,27 @@
       appearsInAlbums = data;
     } catch (e) {
       console.error('Error getting album that asset belong to', e);
+    }
+  };
+
+  const handleUnMergePerson = async (person: PersonResponseDto) => {
+    try {
+      const { data } = await api.personApi.unMergePerson({
+        unMergePersonDto: { assetId: asset.id, personId: person.id },
+      });
+      if (data.success) {
+        notificationController.show({
+          type: NotificationType.Info,
+          message: `Asset un-merged from ${person.name ? person.name : person.id}`,
+        });
+      }
+      people = people.filter((item) => item.id !== person.id);
+
+      if (people.length < 1) {
+        showUnMergeModal = false;
+      }
+    } catch (error) {
+      handleError(error, `Unable to un-merge asset for person ${person.name ? person.name : person.id}`);
     }
   };
 
@@ -382,9 +416,43 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:unMergePerson={() => (showUnMergeModal = true)}
       />
     {/if}
   </div>
+  {#if showUnMergeModal}
+    <FullScreenModal on:clickOutside={() => (showUnMergeModal = false)}>
+      <div
+        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      >
+        <div
+          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+        >
+          <section class="px-4 py-4 text-sm">
+            <h2>PEOPLE</h2>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              {#each people as person (person.id)}
+                <button class="w-[90px]" on:click={() => handleUnMergePerson(person)}>
+                  <ImageThumbnail
+                    curve
+                    shadow
+                    url={api.getPeopleThumbnailUrl(person.id)}
+                    altText={person.name}
+                    title={person.name}
+                    widthStyle="90px"
+                    heightStyle="90px"
+                    thumbhash={null}
+                  />
+                  <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+                </button>
+              {/each}
+            </div>
+          </section>
+        </div>
+      </div>
+    </FullScreenModal>
+  {/if}
 
   {#if !isSlideshowMode && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">

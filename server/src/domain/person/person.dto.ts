@@ -58,6 +58,15 @@ export class MergePersonDto {
   ids!: string[];
 }
 
+export class UnMergePersonDto {
+  @IsString()
+  @IsNotEmpty()
+  assetId!: string;
+  @IsString()
+  @IsNotEmpty()
+  personId!: string;
+}
+
 export class PersonSearchDto {
   @IsBoolean()
   @Transform(toBoolean)

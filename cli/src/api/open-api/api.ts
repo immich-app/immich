@@ -3666,6 +3666,25 @@ export type TranscodePolicy = typeof TranscodePolicy[keyof typeof TranscodePolic
 /**
  * 
  * @export
+ * @interface UnMergePersonDto
+ */
+export interface UnMergePersonDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UnMergePersonDto
+     */
+    'assetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UnMergePersonDto
+     */
+    'personId': string;
+}
+/**
+ * 
+ * @export
  * @interface UpdateAlbumDto
  */
 export interface UpdateAlbumDto {
@@ -11082,6 +11101,50 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {UnMergePersonDto} unMergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        unMergePerson: async (unMergePersonDto: UnMergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'unMergePersonDto' is not null or undefined
+            assertParamExists('unMergePerson', 'unMergePersonDto', unMergePersonDto)
+            const localVarPath = `/person/unmerge`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(unMergePersonDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {PeopleUpdateDto} peopleUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11235,6 +11298,16 @@ export const PersonApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {UnMergePersonDto} unMergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async unMergePerson(unMergePersonDto: UnMergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BulkIdResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.unMergePerson(unMergePersonDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {PeopleUpdateDto} peopleUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11308,6 +11381,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          */
         mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig): AxiosPromise<Array<BulkIdResponseDto>> {
             return localVarFp.mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PersonApiUnMergePersonRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        unMergePerson(requestParameters: PersonApiUnMergePersonRequest, options?: AxiosRequestConfig): AxiosPromise<BulkIdResponseDto> {
+            return localVarFp.unMergePerson(requestParameters.unMergePersonDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -11408,6 +11490,20 @@ export interface PersonApiMergePersonRequest {
 }
 
 /**
+ * Request parameters for unMergePerson operation in PersonApi.
+ * @export
+ * @interface PersonApiUnMergePersonRequest
+ */
+export interface PersonApiUnMergePersonRequest {
+    /**
+     * 
+     * @type {UnMergePersonDto}
+     * @memberof PersonApiUnMergePerson
+     */
+    readonly unMergePersonDto: UnMergePersonDto
+}
+
+/**
  * Request parameters for updatePeople operation in PersonApi.
  * @export
  * @interface PersonApiUpdatePeopleRequest
@@ -11502,6 +11598,17 @@ export class PersonApi extends BaseAPI {
      */
     public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiUnMergePersonRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public unMergePerson(requestParameters: PersonApiUnMergePersonRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).unMergePerson(requestParameters.unMergePersonDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

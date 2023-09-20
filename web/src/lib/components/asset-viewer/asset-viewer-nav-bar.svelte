@@ -6,7 +6,6 @@
   import { createEventDispatcher } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-  import AlertOutline from 'svelte-material-icons/AlertOutline.svelte';
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -47,6 +46,7 @@
     asProfileImage: void;
     runJob: AssetJobName;
     playSlideShow: void;
+    unMergePerson: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -75,14 +75,6 @@
     <CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
-    {#if asset.isOffline}
-      <CircleIconButton
-        isOpacity={true}
-        logo={AlertOutline}
-        on:click={() => dispatch('showDetail')}
-        title="Asset Offline"
-      />
-    {/if}
     {#if showMotionPlayButton}
       {#if isMotionPhotoPlaying}
         <CircleIconButton
@@ -143,9 +135,7 @@
     {/if}
 
     {#if isOwner}
-      {#if !asset.isReadOnly && !asset.isExternal}
-        <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-      {/if}
+      <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
         <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}
@@ -162,6 +152,7 @@
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
               <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+              <MenuOption on:click={() => dispatch('unMergePerson')} text="Unmerge person" />
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
                 text={api.getAssetJobName(AssetJobName.RefreshMetadata)}
