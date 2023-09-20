@@ -101,6 +101,20 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
+  {#if asset.isOffline}
+    <section class="px-4 py-4">
+      <div role="alert">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">Asset offline</div>
+        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+          <p>
+            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
+            then rescan the library.
+          </p>
+        </div>
+      </div>
+    </section>
+  {/if}
+
   <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
     <textarea
       bind:this={textarea}
@@ -156,8 +170,16 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo}
+    {#if !asset.exifInfo && !asset.isExternal}
       <p class="text-sm">NO EXIF INFO AVAILABLE</p>
+    {:else if !asset.exifInfo && asset.isExternal}
+      <div class="flex gap-4 py-4">
+        <div>
+          <p class="break-all">
+            Metadata not loaded for {asset.originalPath}
+          </p>
+        </div>
+      </div>
     {:else}
       <p class="text-sm">DETAILS</p>
     {/if}

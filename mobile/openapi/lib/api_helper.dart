@@ -73,6 +73,9 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
+  if (value is DeleteAssetStatus) {
+    return DeleteAssetStatusTypeTransformer().encode(value).toString();
+  }
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
   }
@@ -81,6 +84,9 @@ String parameterToString(dynamic value) {
   }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
+  }
+  if (value is LibraryType) {
+    return LibraryTypeTypeTransformer().encode(value).toString();
   }
   if (value is ModelType) {
     return ModelTypeTypeTransformer().encode(value).toString();

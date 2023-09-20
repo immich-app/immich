@@ -513,6 +513,7 @@ describe(AssetService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -528,6 +529,8 @@ describe(AssetService.name, () => {
     });
 
     it('should split archives by size', async () => {
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
+
       assetMock.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },

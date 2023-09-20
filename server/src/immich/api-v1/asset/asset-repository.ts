@@ -22,7 +22,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
   ): Promise<AssetEntity>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
@@ -148,6 +148,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        library: true,
       },
       withDeleted: true,
     });

@@ -90,10 +90,9 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
+*AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
-*AssetApi* | [**emptyTrash**](doc//AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
@@ -108,8 +107,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
-*AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
-*AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -127,6 +124,14 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
+*LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
+*LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
+*LibraryApi* | [**getAllForUser**](doc//LibraryApi.md#getallforuser) | **GET** /library | 
+*LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
+*LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
+*LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
+*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
+*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
 *OAuthApi* | [**authorizeOAuth**](doc//OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
@@ -195,7 +200,6 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
- - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
@@ -225,11 +229,15 @@ Class | Method | HTTP request | Description
  - [ClassificationConfig](doc//ClassificationConfig.md)
  - [Colorspace](doc//Colorspace.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
+ - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
  - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
  - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
+ - [DeleteAssetDto](doc//DeleteAssetDto.md)
+ - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
+ - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
@@ -242,6 +250,9 @@ Class | Method | HTTP request | Description
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
+ - [LibraryResponseDto](doc//LibraryResponseDto.md)
+ - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
+ - [LibraryType](doc//LibraryType.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
@@ -260,6 +271,7 @@ Class | Method | HTTP request | Description
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [RecognitionConfig](doc//RecognitionConfig.md)
+ - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
@@ -291,7 +303,6 @@ Class | Method | HTTP request | Description
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
- - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [ThumbnailFormat](doc//ThumbnailFormat.md)
@@ -302,6 +313,7 @@ Class | Method | HTTP request | Description
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

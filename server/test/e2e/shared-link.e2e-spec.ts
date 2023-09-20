@@ -160,7 +160,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest());
     });
 
     it('should require an asset/album id', async () => {
@@ -211,7 +211,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .send({ description: 'foo' });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest());
     });
 
     it('should update shared link', async () => {
@@ -241,7 +241,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest());
     });
 
     it('should update shared link', async () => {

@@ -17,8 +17,11 @@ Name | Type | Description | Notes
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
+**isExternal** | **bool** |  | 
 **isFavorite** | **bool** |  | 
-**isTrashed** | **bool** |  | 
+**isOffline** | **bool** |  | 
+**isReadOnly** | **bool** |  | 
+**libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 

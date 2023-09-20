@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { api, AssetResponseDto } from '@api';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -13,6 +13,7 @@
 
   let imgElement: HTMLDivElement;
   let assetData: string;
+  let abortController: AbortController;
   let hasZoomed = false;
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
@@ -25,12 +26,20 @@
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
   });
 
+  onDestroy(() => {
+    abortController?.abort();
+  });
+
   const loadAssetData = async ({ loadOriginal }: { loadOriginal: boolean }) => {
     try {
+      abortController?.abort();
+      abortController = new AbortController();
+
       const { data } = await api.assetApi.serveFile(
         { id: asset.id, isThumb: false, isWeb: !loadOriginal, key: api.getKey() },
         {
           responseType: 'blob',
+          signal: abortController.signal,
         },
       );
 

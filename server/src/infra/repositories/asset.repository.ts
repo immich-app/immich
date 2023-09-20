@@ -38,6 +38,12 @@ export class AssetRepository implements IAssetRepository {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity> {
+    return this.repository.save(asset);
+  }
+
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
 
@@ -117,6 +123,39 @@ export class AssetRepository implements IAssetRepository {
       },
       withDeleted: !!options.trashedBefore,
     });
+  }
+
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { library: { id: In(libraryIds) } },
+    });
+  }
+
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { library: { id: libraryId }, originalPath: originalPath },
+    });
+  }
+
+  getById(assetId: string): Promise<AssetEntity> {
+    return this.repository.findOneOrFail({
+      where: {
+        id: assetId,
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        faces: {
+          person: true,
+        },
+      },
+    });
+  }
+
+  remove(asset: AssetEntity): Promise<AssetEntity> {
+    return this.repository.remove(asset);
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
@@ -305,12 +344,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity> {
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
       case WithProperty.SIDECAR:
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
+        break;
+      case WithProperty.IS_OFFLINE:
+        if (!libraryId) {
+          throw new Error('Library id is required when finding offline assets');
+        }
+        where = [{ isOffline: true, libraryId: libraryId }];
         break;
 
       default:

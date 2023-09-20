@@ -45,6 +45,7 @@ let assetCount = 0;
 const createAsset = (
   repository: IAssetRepository,
   loginResponse: LoginResponseDto,
+  libraryId: string,
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
@@ -54,6 +55,7 @@ const createAsset = (
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
+    libraryId,
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
     type: AssetType.IMAGE,
@@ -87,15 +89,19 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
+    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+    const defaultLibrary = libraries[0];
+
     await api.userApi.create(server, admin.accessToken, user1Dto);
     user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
-    asset1 = await createAsset(assetRepository, user1, new Date('1970-01-01'));
-    asset2 = await createAsset(assetRepository, user1, new Date('1970-01-02'));
-    asset3 = await createAsset(assetRepository, user1, new Date('1970-02-01'));
+
+    asset1 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
+    asset2 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02'));
+    asset3 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01'));
 
     await api.userApi.create(server, admin.accessToken, user2Dto);
     user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset4 = await createAsset(assetRepository, user2, new Date('1970-01-01'));
+    asset4 = await createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01'));
   });
 
   afterAll(async () => {
@@ -139,7 +145,7 @@ describe(`${AssetController.name} (e2e)`, () => {
           .attach('assetData', randomBytes(32), 'example.jpg')
           .field(dto);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -192,7 +198,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .put(`/asset/${uuidStub.invalid}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
     });
 
     it('should require access', async () => {

@@ -13,6 +13,7 @@ import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
+import { ILibraryRepository } from '../library';
 import { ISharedLinkRepository } from '../shared-link';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -66,11 +67,12 @@ export class AuthService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30000 });
   }
