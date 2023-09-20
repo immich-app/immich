@@ -98,6 +98,9 @@ export class JobService {
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
 
+      case QueueName.LIBRARY:
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }
@@ -118,7 +121,7 @@ export class JobService {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
-          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+          this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         }
       });
     }
@@ -138,6 +141,7 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
   }
 
   /**

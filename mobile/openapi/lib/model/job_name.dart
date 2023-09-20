@@ -33,6 +33,7 @@ class JobName {
   static const storageTemplateMigration = JobName._(r'storageTemplateMigration');
   static const search = JobName._(r'search');
   static const sidecar = JobName._(r'sidecar');
+  static const library_ = JobName._(r'library');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -46,6 +47,7 @@ class JobName {
     storageTemplateMigration,
     search,
     sidecar,
+    library_,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -94,6 +96,7 @@ class JobNameTypeTransformer {
         case r'storageTemplateMigration': return JobName.storageTemplateMigration;
         case r'search': return JobName.search;
         case r'sidecar': return JobName.sidecar;
+        case r'library': return JobName.library_;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

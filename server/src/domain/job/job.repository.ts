@@ -1,4 +1,5 @@
 import { JobName, QueueName } from './job.constants';
+
 import {
   IAssetFaceJob,
   IBaseJob,
@@ -6,6 +7,9 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
+  ILibraryFileJob,
+  ILibraryRefreshJob,
+  IOfflineLibraryFileJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -73,6 +77,15 @@ export type JobItem =
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
+
+  // Library Managment
+  | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_MARK_ASSET_OFFLINE; data: IOfflineLibraryFileJob }
+  | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
+  | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

@@ -12,6 +12,7 @@ export class AssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
+  libraryId!: string;
 
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
@@ -25,6 +26,9 @@ export class AssetResponseDto {
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
+  isOffline!: boolean;
+  isExternal!: boolean;
+  isReadOnly!: boolean;
   duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
@@ -42,6 +46,7 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
     deviceId: entity.deviceId,
+    libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
@@ -59,6 +64,9 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
+    isExternal: entity.isExternal,
+    isOffline: entity.isOffline,
+    isReadOnly: entity.isReadOnly,
   };
 }
 

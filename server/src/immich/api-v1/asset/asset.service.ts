@@ -6,6 +6,7 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
+  ILibraryRepository,
   IStorageRepository,
   JobName,
   mapAsset,
@@ -14,7 +15,7 @@ import {
   Permission,
   UploadFile,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -65,6 +66,7 @@ export class AssetService {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
@@ -93,6 +95,16 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
+      if (!dto.libraryId) {
+        // No library given, fall back to default upload library
+        const defaultUploadLibrary = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+
+        if (!defaultUploadLibrary) {
+          throw new InternalServerErrorException('Cannot find default upload library for user ' + authUser.id);
+        }
+        dto.libraryId = defaultUploadLibrary.id;
+      }
+
       const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
@@ -104,7 +116,7 @@ export class AssetService {
       });
 
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
@@ -156,20 +168,9 @@ export class AssetService {
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
-      }
-
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
-        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
-        if (duplicate) {
-          if (duplicate.ownerId === authUser.id) {
-            return { id: duplicate.id, duplicate: true };
-          }
-
-          throw new BadRequestException('Path in use by another user');
-        }
       }
 
       this.logger.error(`Error importing file ${error}`, error?.stack);
@@ -183,7 +184,7 @@ export class AssetService {
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
@@ -258,7 +259,8 @@ export class AssetService {
       }
 
       const asset = await this._assetRepository.get(id);
-      if (!asset) {
+      if (!asset || !asset.library || asset.library.type === LibraryType.EXTERNAL) {
+        // We don't allow deletions assets belong to an external library
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
@@ -291,7 +293,8 @@ export class AssetService {
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
           ids.push(asset.livePhotoVideoId);
         }
-      } catch {
+      } catch (error) {
+        this.logger.error(`Error deleting asset ${id}`, error);
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }

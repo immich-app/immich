@@ -9,6 +9,7 @@ export * from './face.repository';
 export * from './filesystem.provider';
 export * from './geocoding.repository';
 export * from './job.repository';
+export * from './library.repository';
 export * from './machine-learning.repository';
 export * from './media.repository';
 export * from './partner.repository';

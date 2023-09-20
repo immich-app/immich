@@ -9,6 +9,7 @@ export enum QueueName {
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  LIBRARY = 'library',
 }
 
 export enum JobCommand {
@@ -52,6 +53,15 @@ export enum JobName {
   QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
   RECOGNIZE_FACES = 'recognize-faces',
   PERSON_CLEANUP = 'person-cleanup',
+
+  // library managment
+  LIBRARY_SCAN = 'library-refresh',
+  LIBRARY_SCAN_ASSET = 'library-refresh-asset',
+  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
+  LIBRARY_MARK_ASSET_OFFLINE = 'library-mark-asset-offline',
+  LIBRARY_DELETE = 'library-delete',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
+  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -140,4 +150,13 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+
+  // Library managment
+  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_MARK_ASSET_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 };

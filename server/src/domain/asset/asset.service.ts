@@ -162,7 +162,7 @@ export class AssetService {
       if (dto.isArchived !== false) {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
-      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
     }
@@ -185,6 +185,10 @@ export class AssetService {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
     }
 
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
@@ -268,7 +272,7 @@ export class AssetService {
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
     }
 
