@@ -10,10 +10,10 @@ import {
   PersonSearchDto,
   PersonService,
   PersonUpdateDto,
-  UnMergePersonDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -29,9 +29,13 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
 export class PersonController {
   constructor(private service: PersonService) {}
 
-  @Post('/unmerge')
-  unMergePerson(@AuthUser() authUser: AuthUserDto, @Body() dto: UnMergePersonDto): Promise<BulkIdResponseDto> {
-    return this.service.unMergePerson(authUser, dto);
+  @Delete('/person/:id/asset/:assetId')
+  unMergePerson(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('assetId', new ParseMeUUIDPipe({ version: '4' })) assetId: string,
+  ): Promise<BulkIdResponseDto> {
+    return this.service.unMergePerson(authUser, id, assetId);
   }
 
   @Get()

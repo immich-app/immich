@@ -165,7 +165,6 @@ part 'model/time_bucket_size.dart';
 part 'model/tone_mapping.dart';
 part 'model/transcode_hw_accel.dart';
 part 'model/transcode_policy.dart';
-part 'model/un_merge_person_dto.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_asset_dto.dart';
 part 'model/update_library_dto.dart';

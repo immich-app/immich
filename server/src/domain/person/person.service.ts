@@ -13,7 +13,6 @@ import {
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
-  UnMergePersonDto,
   mapPerson,
 } from './person.dto';
 import { IPersonRepository, UpdateFacesData } from './person.repository';
@@ -148,28 +147,21 @@ export class PersonService {
     return true;
   }
 
-  async unMergePerson(authUser: AuthUserDto, dto: UnMergePersonDto): Promise<BulkIdResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, dto.personId);
+  async unMergePerson(authUser: AuthUserDto, personId: string, assetId: string): Promise<BulkIdResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
 
-    const oldPerson = await this.findOrFail(dto.personId);
+    const oldPerson = await this.findOrFail(personId);
 
     const newPerson = await this.repository.create({ ownerId: authUser.id });
     let result: BulkIdResponseDto;
     try {
-      const mergePerson = await this.repository.getById(oldPerson.id);
-      if (!mergePerson) {
-        result = { id: oldPerson.id, success: false, error: BulkIdErrorReason.NOT_FOUND };
-      }
-
-      this.logger.log(`un-merging ${dto.assetId} from ${oldPerson.id}`);
-      await this.repository.removeFaceFromPerson(oldPerson.id, newPerson.id, dto.assetId);
+      this.logger.log(`un-merging ${assetId} from ${oldPerson.id}`);
+      await this.repository.reassignFace(oldPerson.id, newPerson.id, assetId);
 
       await this.repository.update({
         id: newPerson.id,
-        faceAssetId: dto.assetId,
+        faceAssetId: assetId,
       });
-
-      const assetId = dto.assetId;
       const face = await this.repository.getFaceById({ personId: newPerson.id, assetId });
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
@@ -178,7 +170,7 @@ export class PersonService {
         name: JobName.GENERATE_FACE_THUMBNAIL,
         data: {
           personId: newPerson.id,
-          assetId: dto.assetId,
+          assetId: assetId,
           boundingBox: {
             x1: face.boundingBoxX1,
             x2: face.boundingBoxX2,
@@ -192,7 +184,7 @@ export class PersonService {
 
       result = { id: oldPerson.id, success: true };
     } catch (error: Error | any) {
-      this.logger.error(`Unable to un-merge asset ${dto.assetId} from ${oldPerson.id}`, error?.stack);
+      this.logger.error(`Unable to un-merge asset ${assetId} from ${oldPerson.id}`, error?.stack);
       result = { id: oldPerson.id, success: false, error: BulkIdErrorReason.UNKNOWN };
     }
     return result;

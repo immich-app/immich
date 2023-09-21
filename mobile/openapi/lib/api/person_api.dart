@@ -269,27 +269,31 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /person/unmerge' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /person/person/{id}/asset/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [UnMergePersonDto] unMergePersonDto (required):
-  Future<Response> unMergePersonWithHttpInfo(UnMergePersonDto unMergePersonDto,) async {
+  /// * [String] id (required):
+  ///
+  /// * [String] assetId (required):
+  Future<Response> unMergePersonWithHttpInfo(String id, String assetId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/unmerge';
+    final path = r'/person/person/{id}/asset/{assetId}'
+      .replaceAll('{id}', id)
+      .replaceAll('{assetId}', assetId);
 
     // ignore: prefer_final_locals
-    Object? postBody = unMergePersonDto;
+    Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
+    const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
       path,
-      'POST',
+      'DELETE',
       queryParams,
       postBody,
       headerParams,
@@ -300,9 +304,11 @@ class PersonApi {
 
   /// Parameters:
   ///
-  /// * [UnMergePersonDto] unMergePersonDto (required):
-  Future<BulkIdResponseDto?> unMergePerson(UnMergePersonDto unMergePersonDto,) async {
-    final response = await unMergePersonWithHttpInfo(unMergePersonDto,);
+  /// * [String] id (required):
+  ///
+  /// * [String] assetId (required):
+  Future<BulkIdResponseDto?> unMergePerson(String id, String assetId,) async {
+    final response = await unMergePersonWithHttpInfo(id, assetId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

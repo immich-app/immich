@@ -22,7 +22,7 @@ export interface IPersonRepository {
   getAssets(personId: string): Promise<AssetEntity[]>;
   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
-  removeFaceFromPerson(oldPersonId: string, newPersonId: string, assetId: string): Promise<number>;
+  reassignFace(oldPersonId: string, newPersonId: string, assetId: string): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

@@ -27,10 +27,17 @@
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
   export let showSlideshow = false;
+  export let showUnmergeButton = false;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'runJob'
+    | 'playSlideShow'
+    | 'unMergePerson';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -152,7 +159,9 @@
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
               <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
-              <MenuOption on:click={() => dispatch('unMergePerson')} text="Unmerge person" />
+              {#if showUnmergeButton}
+                <MenuOption on:click={() => onMenuClick('unMergePerson')} text="Unmerge person" />
+              {/if}
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
                 text={api.getAssetJobName(AssetJobName.RefreshMetadata)}

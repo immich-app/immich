@@ -40,7 +40,7 @@ export class PersonRepository implements IPersonRepository {
     return result.affected ?? 0;
   }
 
-  async removeFaceFromPerson(oldPersonId: string, newPersonId: string, assetId: string): Promise<number> {
+  async reassignFace(oldPersonId: string, newPersonId: string, assetId: string): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()

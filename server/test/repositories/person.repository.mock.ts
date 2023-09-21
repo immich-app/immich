@@ -9,7 +9,7 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     getAssets: jest.fn(),
     getAllWithoutFaces: jest.fn(),
 
-    removeFaceFromPerson: jest.fn(),
+    reassignFace: jest.fn(),
 
     create: jest.fn(),
     update: jest.fn(),

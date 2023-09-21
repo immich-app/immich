@@ -104,9 +104,7 @@
 
   const handleUnMergePerson = async (person: PersonResponseDto) => {
     try {
-      const { data } = await api.personApi.unMergePerson({
-        unMergePersonDto: { assetId: asset.id, personId: person.id },
-      });
+      const { data } = await api.personApi.unMergePerson({ id: person.id, assetId: asset.id });
       if (data.success) {
         notificationController.show({
           type: NotificationType.Info,
@@ -403,6 +401,7 @@
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
         showSlideshow={!!assetStore}
+        showUnmergeButton={people.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -422,39 +421,42 @@
   </div>
   {#if showUnMergeModal}
     <FullScreenModal on:clickOutside={() => (showUnMergeModal = false)}>
-      <div
-        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
-      >
+      <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
         <div
-          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
+          class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[375px]"
         >
-          <section class="px-4 py-4 text-sm">
-            <h2>PEOPLE</h2>
-
-            <div class="mt-4 flex flex-wrap gap-2">
-              {#each people as person (person.id)}
-                <button class="w-[90px]" on:click={() => handleUnMergePerson(person)}>
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                  />
-                  <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                </button>
-              {/each}
+          <div class="relative flex items-center justify-between">
+            <h1 class=" px-4 font-medium text-immich-primary dark:text-immich-dark-primary">
+              Unmerge face{people.length == 1 ? '' : 's'}
+            </h1>
+            <div class="p-2">
+              <CircleIconButton logo={Close} on:click={() => (showUnMergeModal = false)} />
             </div>
-          </section>
+          </div>
+
+          <div class="grid grid-cols-3 items-start justify-center p-4">
+            {#each people as person (person.id)}
+              <button class="w-fit justify-self-center px-2" on:click={() => handleUnMergePerson(person)}>
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={api.getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                />
+                <p class="mt-1 font-medium" title={person.name}>{person.name}</p>
+              </button>
+            {/each}
+          </div>
         </div>
       </div>
     </FullScreenModal>
   {/if}
 
-  {#if !isSlideshowMode && showNavigation}
+  {#if !isSlideshowMode && showNavigation && !showUnMergeModal}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
@@ -495,7 +497,7 @@
     {/key}
   </div>
 
-  {#if !isSlideshowMode && showNavigation}
+  {#if !isSlideshowMode && showNavigation && !showUnMergeModal}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>

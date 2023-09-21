@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<BulkIdResponseDto> unMergePerson(UnMergePersonDto unMergePersonDto) async
+    //Future<BulkIdResponseDto> unMergePerson(String id, String assetId) async
     test('test unMergePerson', () async {
       // TODO
     });

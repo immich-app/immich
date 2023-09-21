@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 [**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 [**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
-[**unMergePerson**](PersonApi.md#unmergeperson) | **POST** /person/unmerge | 
+[**unMergePerson**](PersonApi.md#unmergeperson) | **DELETE** /person/person/{id}/asset/{assetId} | 
 [**updatePeople**](PersonApi.md#updatepeople) | **PUT** /person | 
 [**updatePerson**](PersonApi.md#updateperson) | **PUT** /person/{id} | 
 
@@ -297,7 +297,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **unMergePerson**
-> BulkIdResponseDto unMergePerson(unMergePersonDto)
+> BulkIdResponseDto unMergePerson(id, assetId)
 
 
 
@@ -320,10 +320,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
-final unMergePersonDto = UnMergePersonDto(); // UnMergePersonDto | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final assetId = assetId_example; // String | 
 
 try {
-    final result = api_instance.unMergePerson(unMergePersonDto);
+    final result = api_instance.unMergePerson(id, assetId);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->unMergePerson: $e\n');
@@ -334,7 +335,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **unMergePersonDto** | [**UnMergePersonDto**](UnMergePersonDto.md)|  | 
+ **id** | **String**|  | 
+ **assetId** | **String**|  | 
 
 ### Return type
 
@@ -346,7 +348,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
