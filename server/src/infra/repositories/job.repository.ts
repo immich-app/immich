@@ -49,6 +49,10 @@ export class JobRepository implements IJobRepository {
     return this.getQueue(name).drain();
   }
 
+  obliterate(name: QueueName, force = false) {
+    return this.getQueue(name).obliterate({force});
+  }
+
   getJobCounts(name: QueueName): Promise<JobCounts> {
     return this.getQueue(name).getJobCounts(
       'active',

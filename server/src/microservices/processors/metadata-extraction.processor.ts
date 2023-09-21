@@ -76,9 +76,10 @@ export class MetadataExtractionProcessor {
         await this.geocodingRepository.deleteCache();
       }
       this.logger.log('Initializing Reverse Geocoding');
-
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.geocodingRepository.init();
+
+      //await this.geocodingRepository.init();
+
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log('Reverse Geocoding Initialized');

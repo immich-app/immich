@@ -61,8 +61,8 @@
     "exiftool-vendored": "^23.0.0",
     "exiftool-vendored.pl": "^12.62.0",
     "fluent-ffmpeg": "^2.1.2",
-    "glob": "^10.3.3",
     "geo-tz": "^7.0.7",
+    "glob": "^10.3.3",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "immich": "^0.41.0",
@@ -86,6 +86,7 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^10.1.16",
+    "@nestjs/microservices": "^10.2.5",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
     "@openapitools/openapi-generator-cli": "2.7.0",

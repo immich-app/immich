@@ -49,6 +49,10 @@ export function getAuthUser(): AuthUserDto {
   };
 }
 
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const api = {
   adminSignUp: async (server: any) => {
     const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);

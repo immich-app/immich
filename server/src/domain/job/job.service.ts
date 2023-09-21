@@ -63,6 +63,12 @@ export class JobService {
     return response;
   }
 
+  async obliterateAll(force = false): Promise<void> {
+    for (const queueName of Object.values(QueueName)) {
+      await this.jobRepository.obliterate(queueName, force);
+    }
+  }
+
   private async start(name: QueueName, { force }: JobCommandDto): Promise<void> {
     const { isActive } = await this.jobRepository.getQueueStatus(name);
     if (isActive) {

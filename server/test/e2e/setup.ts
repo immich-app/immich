@@ -18,4 +18,6 @@ export default async () => {
 
   process.env.REDIS_PORT = String(redis.getMappedPort(6379));
   process.env.REDIS_HOSTNAME = redis.getHost();
+
+  process.env.TYPESENSE_ENABLED = 'false';
 };

@@ -21,8 +21,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "21.0.0-nightly20230921480ab8c3a4"
+
       - name: Run npm install
         run: npm ci
+
+      - name: Checkout test assets
+        uses: actions/checkout@v4
+        with:
+          repository: etnoy/immich-test-assets
+          path: ./test/assets
 
       - name: Run e2e tests
         run: npm run test:e2e
