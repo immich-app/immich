@@ -2,6 +2,7 @@ import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLin
 import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
+import { libraryStub } from './library.stub';
 import { userStub } from './user.stub';
 
 const today = new Date();
@@ -50,6 +51,9 @@ const assetResponse: AssetResponseDto = {
   resized: false,
   thumbhash: null,
   fileModifiedAt: today,
+  isExternal: false,
+  isReadOnly: false,
+  isOffline: false,
   fileCreatedAt: today,
   updatedAt: today,
   isFavorite: false,
@@ -64,6 +68,7 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  libraryId: 'library-id',
 };
 
 const albumResponse: AlbumResponseDto = {
@@ -173,7 +178,11 @@ export const sharedLinkStub = {
           updatedAt: today,
           isFavorite: false,
           isArchived: false,
+          isExternal: false,
           isReadOnly: false,
+          isOffline: false,
+          libraryId: 'library-id',
+          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],

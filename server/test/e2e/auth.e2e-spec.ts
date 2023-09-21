@@ -52,18 +52,33 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
 
     const invalid = [
-      { should: 'require an email address', data: { firstName, lastName, password } },
-      { should: 'require a password', data: { firstName, lastName, email } },
-      { should: 'require a first name ', data: { lastName, email, password } },
-      { should: 'require a last name ', data: { firstName, email, password } },
-      { should: 'require a valid email', data: { firstName, lastName, email: 'immich', password } },
+      {
+        should: 'require an email address',
+        data: { firstName, lastName, password },
+      },
+      {
+        should: 'require a password',
+        data: { firstName, lastName, email },
+      },
+      {
+        should: 'require a first name ',
+        data: { lastName, email, password },
+      },
+      {
+        should: 'require a last name ',
+        data: { firstName, email, password },
+      },
+      {
+        should: 'require a valid email',
+        data: { firstName, lastName, email: 'immich', password },
+      },
     ];
 
     for (const { should, data } of invalid) {
       it(`should ${should}`, async () => {
         const { status, body } = await request(server).post('/auth/admin-sign-up').send(data);
         expect(status).toEqual(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -102,7 +117,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .post('/auth/admin-sign-up')
           .send({ ...adminSignupStub, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
   });
@@ -120,7 +135,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .post('/auth/login')
           .send({ ...loginStub.admin, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -225,7 +240,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .send({ ...changePasswordStub, [key]: null })
           .set('Authorization', `Bearer ${accessToken}`);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 

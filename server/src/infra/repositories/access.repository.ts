@@ -1,7 +1,7 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AlbumEntity, AssetEntity, PartnerEntity, PersonEntity, SharedLinkEntity } from '../entities';
+import { AlbumEntity, AssetEntity, LibraryEntity, PartnerEntity, PersonEntity, SharedLinkEntity } from '../entities';
 
 export class AccessRepository implements IAccessRepository {
   constructor(
@@ -10,9 +10,29 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
+    @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
   ) {}
 
   library = {
+    hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
+      return this.libraryRepository.exist({
+        where: {
+          id: libraryId,
+          ownerId: userId,
+        },
+      });
+    },
+    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
+      return this.partnerRepository.exist({
+        where: {
+          sharedWithId: userId,
+          sharedById: partnerId,
+        },
+      });
+    },
+  };
+
+  timeline = {
     hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
       return this.partnerRepository.exist({
         where: {

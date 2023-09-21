@@ -1,4 +1,4 @@
-import { Optional, toBoolean, UploadFieldName } from '@app/domain';
+import { Optional, toBoolean, UploadFieldName, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
@@ -39,13 +39,24 @@ export class CreateAssetBase {
   @Optional()
   @IsString()
   duration?: string;
+
+  @Optional()
+  @IsBoolean()
+  isExternal?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  isOffline?: boolean;
 }
 
 export class CreateAssetDto extends CreateAssetBase {
   @Optional()
   @IsBoolean()
   @Transform(toBoolean)
-  isReadOnly?: boolean = false;
+  isReadOnly?: boolean;
+
+  @ValidateUUID({ optional: true })
+  libraryId?: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
@@ -64,6 +75,9 @@ export class ImportAssetDto extends CreateAssetBase {
   @IsBoolean()
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
+
+  @ValidateUUID()
+  libraryId?: string;
 
   @IsString()
   @IsNotEmpty()

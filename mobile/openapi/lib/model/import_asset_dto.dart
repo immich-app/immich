@@ -20,9 +20,12 @@ class ImportAssetDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     this.isArchived,
+    this.isExternal,
     required this.isFavorite,
+    this.isOffline,
     this.isReadOnly = true,
     this.isVisible,
+    this.libraryId,
     this.sidecarPath,
   });
 
@@ -52,7 +55,23 @@ class ImportAssetDto {
   ///
   bool? isArchived;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isExternal;
+
   bool isFavorite;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isOffline;
 
   bool isReadOnly;
 
@@ -63,6 +82,14 @@ class ImportAssetDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isVisible;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -81,9 +108,12 @@ class ImportAssetDto {
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.isArchived == isArchived &&
+     other.isExternal == isExternal &&
      other.isFavorite == isFavorite &&
+     other.isOffline == isOffline &&
      other.isReadOnly == isReadOnly &&
      other.isVisible == isVisible &&
+     other.libraryId == libraryId &&
      other.sidecarPath == sidecarPath;
 
   @override
@@ -96,13 +126,16 @@ class ImportAssetDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
+    (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite.hashCode) +
+    (isOffline == null ? 0 : isOffline!.hashCode) +
     (isReadOnly.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (sidecarPath == null ? 0 : sidecarPath!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isFavorite=$isFavorite, isReadOnly=$isReadOnly, isVisible=$isVisible, sidecarPath=$sidecarPath]';
+  String toString() => 'ImportAssetDto[assetPath=$assetPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, libraryId=$libraryId, sidecarPath=$sidecarPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -121,12 +154,27 @@ class ImportAssetDto {
     } else {
     //  json[r'isArchived'] = null;
     }
+    if (this.isExternal != null) {
+      json[r'isExternal'] = this.isExternal;
+    } else {
+    //  json[r'isExternal'] = null;
+    }
       json[r'isFavorite'] = this.isFavorite;
+    if (this.isOffline != null) {
+      json[r'isOffline'] = this.isOffline;
+    } else {
+    //  json[r'isOffline'] = null;
+    }
       json[r'isReadOnly'] = this.isReadOnly;
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
+    }
+    if (this.libraryId != null) {
+      json[r'libraryId'] = this.libraryId;
+    } else {
+    //  json[r'libraryId'] = null;
     }
     if (this.sidecarPath != null) {
       json[r'sidecarPath'] = this.sidecarPath;
@@ -151,9 +199,12 @@ class ImportAssetDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isOffline: mapValueOfType<bool>(json, r'isOffline'),
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        libraryId: mapValueOfType<String>(json, r'libraryId'),
         sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
       );
     }

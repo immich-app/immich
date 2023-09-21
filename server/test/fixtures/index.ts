@@ -7,6 +7,7 @@ export * from './device.stub';
 export * from './error.stub';
 export * from './face.stub';
 export * from './file.stub';
+export * from './library.stub';
 export * from './media.stub';
 export * from './partner.stub';
 export * from './person.stub';
