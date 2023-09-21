@@ -19,11 +19,14 @@ export interface AssetOwnerCheck extends AssetCheck {
   ownerId: string;
 }
 
+export type AssetCreate = Omit<
+  AssetEntity,
+  'id' | 'createdAt' | 'updatedAt' | 'owner' | 'livePhotoVideoId' | 'library'
+>;
+
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity>;
+  create(asset: AssetCreate): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
@@ -151,9 +154,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity> {
+  create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
   }
 
