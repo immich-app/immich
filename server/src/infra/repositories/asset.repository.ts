@@ -178,7 +178,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids) });
+    await this.repository.softDelete({ id: In(ids), isExternal: false });
   }
 
   async restoreAll(ids: string[]): Promise<void> {

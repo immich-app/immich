@@ -36,7 +36,9 @@
     loading = true;
 
     try {
-      const ids = Array.from(getAssets()).map((a) => a.id);
+      const ids = Array.from(getAssets())
+        .filter((a) => !a.isExternal)
+        .map((a) => a.id);
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids, force } });
       for (const id of ids) {
         onAssetDelete(id);
