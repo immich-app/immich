@@ -14,6 +14,11 @@ export const assetApi = {
     expect(status).toBe(200);
     return body as AssetResponseDto;
   },
+  getAllAssets: async (server: any, accessToken: string) => {
+    const { body, status } = await request(server).get(`/asset/`).set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body as AssetResponseDto[];
+  },
   upload: async (server: any, accessToken: string, id: string, dto: UploadDto = {}) => {
     const { content, isFavorite = false, isArchived = false } = dto;
     const { body, status } = await request(server)

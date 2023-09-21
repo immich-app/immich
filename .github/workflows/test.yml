@@ -37,7 +37,7 @@ jobs:
           path: ./test/assets
 
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: NODE_OPTIONS='--experimental-vm-modules' npm run test:e2e
         if: ${{ !cancelled() }}
 
   doc-tests:

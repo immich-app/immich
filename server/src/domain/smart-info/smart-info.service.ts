@@ -43,7 +43,6 @@ export class SmartInfoService {
 
   async handleClassifyImage({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
-    console.log(machineLearning);
     if (!machineLearning.enabled || !machineLearning.classification.enabled) {
       return true;
     }

@@ -1,50 +1,35 @@
-import {
-  AuthService,
-  AuthUserDto,
-  ISystemConfigRepository,
-  JobCommand,
-  JobService,
-  LibraryService,
-  QueueName,
-  SystemConfigCore,
-} from '@app/domain';
+import { JobService, LoginResponseDto, QueueName } from '@app/domain';
 import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
-import { AppService } from '@app/immich/app.service';
-import { RedisIoAdapter } from '@app/infra';
 import { LibraryType } from '@app/infra/entities';
-import { INestApplication, Logger } from '@nestjs/common';
-import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
+import { INestApplication } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { sleep } from '@test/test-utils';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
-import { bootstrap } from 'src/microservices/main';
 
 import { MicroservicesModule } from 'src/microservices/microservices.module';
 
 describe('libe2e', () => {
   let app: INestApplication;
 
-  let authService: AuthService;
-  let appService: AppService;
-  let assetService: AssetService;
-
   let microServices: INestApplication;
 
-  let libraryService: LibraryService;
   let jobService: JobService;
-  let microAppService: MicroAppService;
-
-  let adminUser: AuthUserDto;
 
   let server: any;
 
   let moduleFixture: TestingModule;
   let microFixture: TestingModule;
 
+  let admin: LoginResponseDto;
+
   beforeAll(async () => {
+    process.env.TYPESENSE_ENABLED = 'false';
+    process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
+
     jest.useRealTimers();
 
     moduleFixture = await Test.createTestingModule({
@@ -83,26 +68,16 @@ describe('libe2e', () => {
       //  .setLogger(new Logger())
       .compile();
 
-    const configCore = new SystemConfigCore(moduleFixture.get(ISystemConfigRepository));
-    let config = await configCore.getConfig();
-    config.machineLearning.enabled = false;
-    console.log(config);
-    await configCore.updateConfig(config);
-
-    microServices = microFixture.createNestApplication();
-
-    await microServices.init();
-
     app = moduleFixture.createNestApplication();
     server = app.getHttpServer();
 
     await app.init();
 
-    await app.startAllMicroservices();
-
-    await app.init();
-
     jobService = moduleFixture.get(JobService);
+
+    microServices = microFixture.createNestApplication();
+
+    await microServices.init();
 
     await microFixture.get(MicroAppService).init();
   });
@@ -110,10 +85,11 @@ describe('libe2e', () => {
   describe('can import library', () => {
     beforeAll(async () => {
       await db.reset();
+
       await jobService.obliterateAll(true);
 
       await api.authApi.adminSignUp(server);
-      const admin = await api.authApi.adminLogin(server);
+      admin = await api.authApi.adminLogin(server);
       await api.userApi.update(server, admin.accessToken, { id: admin.userId, externalPath: '/' });
 
       const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
@@ -131,7 +107,7 @@ describe('libe2e', () => {
       // TODO: this shouldn't be a while loop
       while (!isFinished) {
         const jobStatus = await api.jobApi.getAllJobsStatus(server, admin.accessToken);
-        console.log(jobStatus);
+        // console.log(jobStatus);
 
         let jobsActive = false;
         Object.values(jobStatus).forEach((job) => {
@@ -145,26 +121,29 @@ describe('libe2e', () => {
         }
         isFinished = true;
 
-        await sleep(5000);
+        await sleep(2000);
       }
 
       // Library has been refreshed now
     });
 
     it('scans the library', async () => {
-      const assets = await assetService.getAllAssets(adminUser, {});
-      console.log(assets);
-      const jobStatus = await jobService.getAllJobsStatus();
-      console.log(jobStatus);
-
-      // Should have imported the 7 test assets
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(assets).toHaveLength(7);
     });
   });
 
+  afterEach(async () => {
+    // await clearDb(database);
+    await jobService.obliterateAll(true);
+  });
+
   afterAll(async () => {
     // await clearDb(database);
+    await db.disconnect();
     await app.close();
     await microServices.close();
+    await moduleFixture.close();
+    await microFixture.close();
   });
 });

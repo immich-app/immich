@@ -1,5 +1,4 @@
 import { CreateLibraryDto, LibraryResponseDto, LibraryStatsResponseDto, ScanLibraryDto } from '@app/domain';
-import { send } from 'process';
 import request from 'supertest';
 
 export const libraryApi = {
@@ -19,7 +18,7 @@ export const libraryApi = {
   },
 
   scanLibrary: async (server: any, accessToken: string, id: string, dto: ScanLibraryDto) => {
-    const { body, status } = await request(server)
+    const { status } = await request(server)
       .post(`/library/${id}/scan`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send(dto);
