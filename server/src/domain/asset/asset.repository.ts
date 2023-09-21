@@ -98,7 +98,5 @@ export interface IAssetRepository {
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
-  remove(asset: AssetEntity): Promise<AssetEntity>;
-  getById(assetId: string): Promise<AssetEntity>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
 }

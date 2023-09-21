@@ -8,7 +8,7 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IAssetDeletionJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import { IAssetRepository } from './asset.repository';
@@ -331,9 +331,16 @@ export class AssetService {
     return true;
   }
 
-  async handleAssetDeletion(job: IEntityJob) {
-    const asset = await this.assetRepository.getById(job.id);
+  async handleAssetDeletion(job: IAssetDeletionJob) {
+    const { id, fromExternal } = job;
+
+    const asset = await this.assetRepository.getById(id);
     if (!asset) {
+      return false;
+    }
+
+    // Ignore requests that are not from external library job but is for an external asset
+    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
       return false;
     }
 
@@ -353,13 +360,13 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
+    const files = [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath];
+    if (!fromExternal) {
+      files.push(asset.originalPath);
+    }
+
     if (!asset.isReadOnly) {
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: {
-          files: [asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath],
-        },
-      });
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
     }
 
     return true;

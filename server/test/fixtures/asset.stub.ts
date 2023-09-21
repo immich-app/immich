@@ -178,7 +178,7 @@ export const assetStub = {
     livePhotoVideoId: null,
     isOffline: false,
     libraryId: 'library-id',
-    library: libraryStub.uploadLibrary1,
+    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
@@ -412,5 +412,7 @@ export const assetStub = {
   readOnly: Object.freeze({
     id: 'read-only-asset',
     isReadOnly: true,
+    libraryId: 'library-id',
+    library: libraryStub.uploadLibrary1,
   }),
 };

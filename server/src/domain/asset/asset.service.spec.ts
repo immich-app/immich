@@ -750,11 +750,11 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetWithFace.originalPath,
                 assetWithFace.webpPath,
                 assetWithFace.resizePath,
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
+                assetWithFace.originalPath,
               ],
             },
           },
@@ -778,6 +778,43 @@ describe(AssetService.name, () => {
       expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
     });
 
+    it('should not process assets from external library without fromExternal flag', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.external.id)
+        .mockResolvedValue(assetStub.external as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.external.id });
+
+      expect(jobMock.queue).not.toBeCalled();
+      expect(assetMock.remove).not.toBeCalled();
+    });
+
+    it('should process assets from external library with fromExternal flag', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.external.id)
+        .mockResolvedValue(assetStub.external as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.external);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.external.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.external.webpPath,
+                assetStub.external.resizePath,
+                assetStub.external.encodedVideoPath,
+                assetStub.external.sidecarPath,
+              ],
+            },
+          },
+        ],
+      ]);
+    });
+
     it('should delete a live photo', async () => {
       await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
 
@@ -789,7 +826,7 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: ['fake_path/asset_1.mp4', undefined, undefined, undefined, undefined],
+              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.mp4'],
             },
           },
         ],
@@ -797,7 +834,7 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: ['fake_path/asset_1.jpeg', undefined, undefined, undefined, undefined],
+              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
             },
           },
         ],

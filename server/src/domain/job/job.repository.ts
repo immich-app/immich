@@ -1,6 +1,7 @@
 import { JobName, QueueName } from './job.constants';
 
 import {
+  IAssetDeletionJob,
   IAssetFaceJob,
   IBaseJob,
   IBulkEntityJob,
@@ -77,7 +78,7 @@ export type JobItem =
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
-  | { name: JobName.ASSET_DELETION; data: IEntityJob }
+  | { name: JobName.ASSET_DELETION; data: IAssetDeletionJob }
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Managment
