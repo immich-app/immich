@@ -1,6 +1,6 @@
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 
-export const assetSchemaVersion = ;
+export const assetSchemaVersion = 9;
 export const assetSchema: CollectionCreateSchema = {
   name: `assets-v${assetSchemaVersion}`,
   fields: [
