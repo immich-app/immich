@@ -22,8 +22,6 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: actions/setup-node@v3
-        with:
-          node-version: "21.0.0-nightly20230921480ab8c3a4"
 
       - name: Run npm install
         run: npm ci
