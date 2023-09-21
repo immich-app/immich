@@ -80,11 +80,6 @@ export class MediaService {
   }
 
   async handleQueueMigration() {
-    if (!(await this.jobRepository.getQueueStatus(QueueName.MIGRATION)).isActive) {
-      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
-      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
-    }
-
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
     );
@@ -103,6 +98,13 @@ export class MediaService {
         data: { id: person.id },
       });
     }
+
+    while ((await this.jobRepository.getJobCounts(QueueName.MIGRATION)).waiting > 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+    await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
 
     return true;
   }
