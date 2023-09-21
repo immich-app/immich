@@ -1,9 +1,7 @@
 import { JobService, LoginResponseDto, QueueName } from '@app/domain';
-import { AssetService } from '@app/immich/api-v1/asset/asset.service';
 import { AppModule } from '@app/immich/app.module';
 import { LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
@@ -33,51 +31,25 @@ describe('libe2e', () => {
     jest.useRealTimers();
 
     moduleFixture = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        ClientsModule.register([
-          {
-            name: 'microservices',
-            transport: Transport.REDIS,
-            options: {
-              host: process.env.REDIS_HOSTNAME,
-              port: Number(process.env.REDIS_PORT),
-            },
-          },
-        ]),
-      ],
-    })
-      //.setLogger(new Logger())
-      .compile();
+      imports: [AppModule],
+    }).compile();
 
     microFixture = await Test.createTestingModule({
-      imports: [
-        MicroservicesModule,
-        ClientsModule.register([
-          {
-            name: 'microservices',
-            transport: Transport.REDIS,
-            options: {
-              host: process.env.REDIS_HOSTNAME,
-              port: Number(process.env.REDIS_PORT),
-            },
-          },
-        ]),
-      ],
-    })
-      //  .setLogger(new Logger())
-      .compile();
+      imports: [MicroservicesModule],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     server = app.getHttpServer();
 
     await app.init();
+    app.enableShutdownHooks();
 
     jobService = moduleFixture.get(JobService);
 
     microServices = microFixture.createNestApplication();
 
     await microServices.init();
+    microServices.enableShutdownHooks();
 
     await microFixture.get(MicroAppService).init();
   });
@@ -106,8 +78,10 @@ describe('libe2e', () => {
       let isFinished = false;
       // TODO: this shouldn't be a while loop
       while (!isFinished) {
+        await sleep(100);
+
         const jobStatus = await api.jobApi.getAllJobsStatus(server, admin.accessToken);
-        // console.log(jobStatus);
+        console.log(jobStatus.library);
 
         let jobsActive = false;
         Object.values(jobStatus).forEach((job) => {
@@ -121,10 +95,8 @@ describe('libe2e', () => {
         }
         isFinished = true;
 
-        await sleep(2000);
+        await sleep(5000);
       }
-
-      // Library has been refreshed now
     });
 
     it('scans the library', async () => {
@@ -134,12 +106,10 @@ describe('libe2e', () => {
   });
 
   afterEach(async () => {
-    // await clearDb(database);
     await jobService.obliterateAll(true);
   });
 
   afterAll(async () => {
-    // await clearDb(database);
     await db.disconnect();
     await app.close();
     await microServices.close();
