@@ -8,50 +8,36 @@ import { db } from '@test/db';
 import { sleep } from '@test/test-utils';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 
-import { MicroservicesModule } from 'src/microservices/microservices.module';
+import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
 
 describe('libe2e', () => {
   let app: INestApplication;
-
-  let microServices: INestApplication;
 
   let jobService: JobService;
 
   let server: any;
 
   let moduleFixture: TestingModule;
-  let microFixture: TestingModule;
 
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    process.env.TYPESENSE_ENABLED = 'false';
-    process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
-
     jest.useRealTimers();
 
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
-
-    microFixture = await Test.createTestingModule({
-      imports: [MicroservicesModule],
+      providers: [MetadataExtractionProcessor, MicroAppService],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    server = app.getHttpServer();
 
     await app.init();
     app.enableShutdownHooks();
+    server = app.getHttpServer();
 
     jobService = moduleFixture.get(JobService);
 
-    microServices = microFixture.createNestApplication();
-
-    await microServices.init();
-    microServices.enableShutdownHooks();
-
-    await microFixture.get(MicroAppService).init();
+    await moduleFixture.get(MicroAppService).init();
   });
 
   describe('can import library', () => {
@@ -71,6 +57,8 @@ describe('libe2e', () => {
         exclusionPatterns: [],
       });
 
+      console.log(await api.libraryApi.getAll(server, admin.accessToken));
+
       // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
@@ -78,24 +66,23 @@ describe('libe2e', () => {
       let isFinished = false;
       // TODO: this shouldn't be a while loop
       while (!isFinished) {
-        await sleep(100);
-
         const jobStatus = await api.jobApi.getAllJobsStatus(server, admin.accessToken);
-        console.log(jobStatus.library);
 
         let jobsActive = false;
         Object.values(jobStatus).forEach((job) => {
           if (job.queueStatus.isActive) {
             jobsActive = true;
           }
+          if (job.queueStatus.active > 0 || job.queueStatus.waiting > 0) {
+            jobsActive = true;
+          }
         });
 
-        if (!jobsActive && jobStatus[QueueName.LIBRARY].jobCounts.completed > 0) {
+        if (!jobsActive) {
           isFinished = true;
         }
-        isFinished = true;
 
-        await sleep(5000);
+        await sleep(200);
       }
     });
 
@@ -112,8 +99,6 @@ describe('libe2e', () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
-    await microServices.close();
     await moduleFixture.close();
-    await microFixture.close();
   });
 });
