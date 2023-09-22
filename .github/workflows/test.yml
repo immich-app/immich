@@ -35,7 +35,7 @@ jobs:
           node-version: "21.0.0-nightly20230921480ab8c3a4"
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -yqq build-essential ninja-build meson pkg-config jq zlib1g autoconf libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libjpeg-turbo8-dev libgsf-1-dev libheif-dev liblcms2-2 mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) && ./install-ffmpeg.sh && sudo apt-get autoremove && sudo apt-get clean && rm -rf /var/lib/apt/lists/*
+        run: sudo apt-get update && sudo apt-get install -yqq build-essential ninja-build meson pkg-config jq zlib1g autoconf libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libjpeg-turbo8-dev libgsf-1-dev libheif-dev liblcms2-2 mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) && ./bin/install-ffmpeg.sh && sudo apt-get autoremove && sudo apt-get clean && rm -rf /var/lib/apt/lists/*
 
       - name: Install libraw, imagemagick, libvips
         run: ./bin/build-libraw.sh && ./bin/build-imagemagick.sh && ./bin/build-libvips.sh
