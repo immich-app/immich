@@ -1,7 +1,7 @@
 import { JobService, LoginResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
 import { LibraryType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
@@ -27,7 +27,9 @@ describe('libe2e', () => {
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
       providers: [MetadataExtractionProcessor, MicroAppService],
-    }).compile();
+    })
+      .setLogger(new Logger())
+      .compile();
 
     app = moduleFixture.createNestApplication();
 
