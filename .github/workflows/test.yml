@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: etnoy/immich-test-assets
-          path: ./test/assets
+          path: ./server/test/assets
 
       - name: Run e2e tests
         run: NODE_OPTIONS='--experimental-vm-modules' npm run test:e2e

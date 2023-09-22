@@ -40,7 +40,7 @@ describe('libe2e', () => {
 
     jobService = moduleFixture.get(JobService);
 
-    await moduleFixture.get(MicroAppService).init();
+    await moduleFixture.get(MicroAppService).init(true);
   });
 
   describe('can import library', () => {
@@ -95,12 +95,11 @@ describe('libe2e', () => {
     });
   });
 
-  afterEach(async () => {
-    await jobService.obliterateAll(true);
-  });
+  afterEach(async () => {});
 
   afterAll(async () => {
     await jobService.closeAll();
+    await jobService.obliterateAll(true);
     await app.close();
     await moduleFixture.close();
     await db.disconnect();
