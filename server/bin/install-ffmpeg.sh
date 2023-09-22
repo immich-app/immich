@@ -11,7 +11,8 @@ echo "$FFMPEG_SHA256  jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.
 
 wget -nv https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v${FFMPEG_VERSION}/jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
 sha256sum -c ffmpeg.sha256
-apt-get -yqq -f install ./jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
+echo apt-get -y -f install ./jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
+apt-get -y -f install ./jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
 rm jellyfin-ffmpeg6_${FFMPEG_VERSION}-bookworm_${TARGETARCH}.deb
 rm ffmpeg.sha256
 ldconfig /usr/lib/jellyfin-ffmpeg/lib
