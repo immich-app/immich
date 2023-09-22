@@ -255,14 +255,16 @@
 
   const onDeleteLibraryClicked = (index: number, library: LibraryResponseDto) => {
     closeAll();
-    refreshStats(index);
 
-    if (totalCount[index] > 0) {
-      deleteAssetCount = totalCount[index];
-      confirmDeleteLibrary = library;
-    } else {
-      deleteLibrary = library;
-      handleDelete();
+    if (confirm(`Are you sure you want to delete ${library.name} library?`) == true) {
+      refreshStats(index);
+      if (totalCount[index] > 0) {
+        deleteAssetCount = totalCount[index];
+        confirmDeleteLibrary = library;
+      } else {
+        deleteLibrary = library;
+        handleDelete();
+      }
     }
   };
 </script>
