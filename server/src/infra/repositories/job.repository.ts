@@ -28,16 +28,6 @@ export class JobRepository implements IJobRepository {
     worker.concurrency = concurrency;
   }
 
-  async closeWorkers() {
-    for (const queue in Object.keys(this.workers)) {
-      const queueName = queue as QueueName;
-      const worker = this.workers[queueName];
-      if (worker) {
-        await worker.close();
-      }
-    }
-  }
-
   async getQueueStatus(name: QueueName): Promise<QueueStatus> {
     const queue = this.getQueue(name);
 

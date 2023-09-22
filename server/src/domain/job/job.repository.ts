@@ -112,5 +112,4 @@ export interface IJobRepository {
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
   obliterate(name: QueueName, force: boolean): Promise<void>;
-  closeWorkers(): Promise<void>;
 }

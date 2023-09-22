@@ -4,6 +4,7 @@ import {
   AuthDeviceResponseDto,
   AuthUserDto,
   CreateUserDto,
+  JobService,
   LibraryResponseDto,
   LoginCredentialDto,
   LoginResponseDto,
@@ -51,6 +52,30 @@ export function getAuthUser(): AuthUserDto {
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function waitForQueues(jobService: JobService) {
+  let isFinished = false;
+  // TODO: this shouldn't be a while loop
+  while (!isFinished) {
+    const jobStatus = await jobService.getAllJobsStatus();
+
+    let jobsActive = false;
+    Object.values(jobStatus).forEach((job) => {
+      if (job.queueStatus.isActive) {
+        jobsActive = true;
+      }
+      if (job.queueStatus.active > 0 || job.queueStatus.waiting > 0) {
+        jobsActive = true;
+      }
+    });
+
+    if (!jobsActive) {
+      isFinished = true;
+    }
+
+    await sleep(100);
+  }
 }
 
 export const api = {

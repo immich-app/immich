@@ -1,25 +1,20 @@
 import { JobService, LoginResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
 import { LibraryType } from '@app/infra/entities';
-import { JobRepository } from '@app/infra/repositories';
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
-import { sleep } from '@test/test-utils';
+import { waitForQueues } from '@test/test-utils';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 
 import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
 
-describe('libe2e', () => {
+describe('Library queue e2e', () => {
   let app: INestApplication;
-
   let jobService: JobService;
-
   let server: any;
-
   let moduleFixture: TestingModule;
-
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
@@ -44,7 +39,9 @@ describe('libe2e', () => {
   });
 
   describe('can import library', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
+      // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
+
       await db.reset();
 
       await jobService.obliterateAll(true);
@@ -52,7 +49,9 @@ describe('libe2e', () => {
       await api.authApi.adminSignUp(server);
       admin = await api.authApi.adminLogin(server);
       await api.userApi.update(server, admin.accessToken, { id: admin.userId, externalPath: '/' });
+    });
 
+    it('should scan the whole folder', async () => {
       const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         name: 'Library',
@@ -60,45 +59,34 @@ describe('libe2e', () => {
         exclusionPatterns: [],
       });
 
-      console.log(await api.libraryApi.getAll(server, admin.accessToken));
-
-      // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
-
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
 
-      let isFinished = false;
-      // TODO: this shouldn't be a while loop
-      while (!isFinished) {
-        const jobStatus = await api.jobApi.getAllJobsStatus(server, admin.accessToken);
+      await waitForQueues(jobService);
 
-        let jobsActive = false;
-        Object.values(jobStatus).forEach((job) => {
-          if (job.queueStatus.isActive) {
-            jobsActive = true;
-          }
-          if (job.queueStatus.active > 0 || job.queueStatus.waiting > 0) {
-            jobsActive = true;
-          }
-        });
-
-        if (!jobsActive) {
-          isFinished = true;
-        }
-
-        await sleep(200);
-      }
-    });
-
-    it('scans the library', async () => {
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(assets).toHaveLength(7);
     });
+
+    it('scan with exclusions', async () => {
+      const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        name: 'Library',
+        importPaths: [`${__dirname}/../assets/nature/`],
+        exclusionPatterns: ['**/*o*/**', '**/*c*/**'],
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+
+      await waitForQueues(jobService);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toHaveLength(1);
+      expect(assets[0].originalFileName).toBe('silver_fir');
+    });
   });
 
-  afterEach(async () => {});
-
   afterAll(async () => {
-    await jobService.closeAll();
     await jobService.obliterateAll(true);
     await app.close();
     await moduleFixture.close();

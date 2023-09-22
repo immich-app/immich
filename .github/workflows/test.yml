@@ -17,6 +17,10 @@ jobs:
       run:
         working-directory: ./server
 
+    env:
+      ENV LD_LIBRARY_PATH: /usr/local/lib:$LD_LIBRARY_PATH
+      ENV LD_RUN_PATH: /usr/local/lib:$LD_RUN_PATH
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,6 +34,12 @@ jobs:
         with:
           node-version: "21.0.0-nightly20230921480ab8c3a4"
 
+      - name: Install dependencies
+        run: sudo apt-get update && apt-get install -yqq build-essential ninja-build meson pkg-config jq zlib1g autoconf libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libjpeg62-turbo-dev libgsf-1-dev libspng-dev libjxl-dev libheif-dev liblcms2-2 mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) && ./install-ffmpeg.sh && apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+      - name: Install libraw, imagemagick, libvips
+        run: ./bin/build-libraw.sh && ./bin/build-imagemagick.sh && ./bin/build-libvips.sh
+
       - name: Checkout test assets
         uses: actions/checkout@v4
         with:
@@ -37,7 +47,7 @@ jobs:
           path: ./server/test/assets
 
       - name: Run e2e tests
-        run: NODE_OPTIONS='--experimental-vm-modules' npm run test:e2e
+        run: npm run test:e2e -- --forceExit
         if: ${{ !cancelled() }}
 
   doc-tests:

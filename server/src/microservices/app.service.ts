@@ -44,8 +44,10 @@ export class AppService {
 
   async init(clearBeforeStart = false) {
     if (clearBeforeStart) {
+      // Clear all jobs on application startup, mainly used for e2e testing
       await this.jobService.obliterateAll(true);
     }
+
     await this.jobService.registerHandlers({
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),

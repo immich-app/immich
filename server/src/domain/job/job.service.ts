@@ -69,10 +69,6 @@ export class JobService {
     }
   }
 
-  async closeAll(): Promise<void> {
-    await this.jobRepository.closeWorkers();
-  }
-
   private async start(name: QueueName, { force }: JobCommandDto): Promise<void> {
     const { isActive } = await this.jobRepository.getQueueStatus(name);
     if (isActive) {
