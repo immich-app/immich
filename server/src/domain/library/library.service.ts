@@ -350,6 +350,8 @@ export class LibraryService {
   }
 
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+    console.log('Handle queue asset refresh: ' + job);
+    console.log(await this.repository.getAll(true, LibraryType.EXTERNAL));
     const library = await this.repository.get(job.id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
       this.logger.warn('Can only refresh external libraries');

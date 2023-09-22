@@ -26,7 +26,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand --detectOpenHandles",
+    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand --detectOpenHandles --verbose",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
     "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./src/infra/database.config.ts",
