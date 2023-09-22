@@ -26,6 +26,7 @@ Found Admin:
 - Email=admin@example.com
 - Name=Immich Admin
 ? Please choose a new password (optional) immich-is-cool
+The admin password has been updated.
 ```
 
 Disable Password Login
