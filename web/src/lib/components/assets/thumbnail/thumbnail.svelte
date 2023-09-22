@@ -45,9 +45,9 @@
     return [235, 235];
   })();
 
-  const thumbnailClickedHandler = () => {
+  const thumbnailClickedHandler = (e?: MouseEvent) => {
     if (!disabled) {
-      dispatch('click', { asset });
+      dispatch('click', { asset, event: e });
     }
   };
 

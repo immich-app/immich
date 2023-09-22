@@ -18,6 +18,8 @@
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { quartOut } from 'svelte/easing';
+  import Spinner from '../elements/spinner.svelte';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -32,6 +34,9 @@
   let element: HTMLElement;
   let showShortcuts = false;
   let showSkeleton = true;
+  let expandImageBCR: DOMRect | null = null;
+  let expandImageSrc: string | null = null;
+  let showExpanded = false;
 
   $: timelineY = element?.scrollTop || 0;
 
@@ -276,6 +281,57 @@
     assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
   };
 
+  const handleClickEvent = (event: PointerEvent) => {
+    const targetDiv = event.target as HTMLElement;
+    if (targetDiv.parentElement) {
+      const image = targetDiv.parentElement.querySelector('img');
+      if (image) expandImageSrc = image?.src;
+    }
+    expandImageBCR = (event.target as HTMLElement).getBoundingClientRect();
+    showExpanded = true;
+  };
+
+  const expandTransition = (
+    node: HTMLElement,
+      { delay = 0, duration = 200, easing = quartOut }: any) => {
+      const originalRect = expandImageBCR;
+      const targetWidth = window.innerWidth;
+      const targetHeight = window.innerHeight;
+
+      return {
+        delay,
+        duration,
+        easing,
+        css: (t: number) => {
+          if (originalRect === null) return '';
+
+          const eased = easing(t);
+
+          const widthDiff = targetWidth - originalRect.width;
+          const heightDiff = targetHeight - originalRect.height;
+
+          const currentWidth = originalRect.width + widthDiff * eased;
+          const currentHeight = originalRect.height + heightDiff * eased;
+
+          const topDiff = originalRect.top * -1;
+          const leftDiff = originalRect.left * -1;
+
+          const currentTop = originalRect.top + topDiff * eased;
+          const currentLeft = originalRect.left + leftDiff * eased;
+
+          const backgroundOpacity = t;
+
+          return `
+            width: ${currentWidth}px;
+            height: ${currentHeight}px;
+            top: ${currentTop}px;
+            left: ${currentLeft}px;
+            background-color: rgba(0, 0, 0, ${backgroundOpacity});
+          `;
+        },
+      };
+    };
+
   const selectAssetCandidates = (asset: AssetResponseDto) => {
     if (!shiftKeyIsDown) {
       return;
@@ -316,6 +372,17 @@
   on:scrollTimeline={({ detail }) => (element.scrollTop = detail)}
 />
 
+{#if showExpanded && expandImageBCR}
+  <div class="fixed inset-0 z-[1002]" in:expandTransition={{ duration: 500 }} on:introend={() => {showExpanded = false;}}>
+    <img 
+      src={expandImageSrc}
+      class="absolute transform object-contain w-full h-full blur-[2px]"
+      alt=""
+      />
+      <Spinner/>
+  </div>
+{/if}
+
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
@@ -328,10 +395,10 @@
   <!-- skeleton -->
   {#if showSkeleton}
     <div class="mt-8 animate-pulse">
-      <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+      <div class="bg-immich-primary/20 dark:bg-immich-dark-primary/20 mb-2 h-4 w-24 rounded-full" />
       <div class="flex w-[120%] flex-wrap">
         {#each Array(100) as _}
-          <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+          <div class="bg-immich-primary/20 dark:bg-immich-dark-primary/20 m-[1px] h-[10em] w-[16em]" />
         {/each}
       </div>
     </div>
@@ -365,6 +432,7 @@
                 on:shift={handleScrollTimeline}
                 on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
                 on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+                on:clickEvent={({ detail: event }) => handleClickEvent(event)}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}

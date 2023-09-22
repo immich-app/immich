@@ -31,6 +31,7 @@
     selectAssets: AssetResponseDto;
     selectAssetCandidates: AssetResponseDto | null;
     shift: { heightDelta: number };
+    clickEvent: PointerEvent;
   }>();
 
   let isMouseOverGroup = false;
@@ -89,13 +90,19 @@
     return width;
   };
 
-  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
-    if (isSelectionMode || $isMultiSelectState) {
-      assetSelectHandler(asset, assetsInDateGroup, groupTitle);
-      return;
-    }
+  const assetClickHandler = (
+    event: CustomEvent,
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+    ) => {
+      if (isSelectionMode || $isMultiSelectState) {
+        assetSelectHandler(asset, assetsInDateGroup, groupTitle);
+        return;
+      }
 
     assetViewingStore.setAssetId(asset.id);
+    dispatch('clickEvent', event.detail.event);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
@@ -180,7 +187,7 @@
             <Thumbnail
               {asset}
               {groupIndex}
-              on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
+              on:click={(event) => assetClickHandler(event, asset, groupAssets, groupTitle)}
               on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
               on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
               selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
