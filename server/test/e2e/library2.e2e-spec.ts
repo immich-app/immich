@@ -1,4 +1,4 @@
-import { JobService, LoginResponseDto, QueueName } from '@app/domain';
+import { JobService, LoginResponseDto } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
 import { LibraryType } from '@app/infra/entities';
 import { INestApplication, Logger } from '@nestjs/common';
