@@ -7,10 +7,10 @@ set -e
 echo Using platform $FFMPEG_PLATFORM
 
 LOCK=$(jq -c '.packages[] | select(.name == "ffmpeg")' build-lock.json)
-export TARGETARCH=${FFMPEG_PLATFORM}-${TARGETARCH:=$(dpkg --print-architecture)}
-echo $TARGETARCH
+TARGETARCH=${TARGETARCH:=$(dpkg --print-architecture)}
+export PLATFORMARCH=${FFMPEG_PLATFORM}-${TARGETARCH}
 FFMPEG_VERSION=${FFMPEG_VERSION:=$(echo $LOCK | jq -r '.version')}
-FFMPEG_SHA256=${FFMPEG_SHA256:=$(echo $LOCK | jq -r '.sha256[$ENV.TARGETARCH]')}
+FFMPEG_SHA256=${FFMPEG_SHA256:=$(echo $LOCK | jq -r '.sha256[$ENV.PLATFORMARCH]')}
 echo $FFMPEG_SHA256
 
 echo "$FFMPEG_SHA256  jellyfin-ffmpeg6_${FFMPEG_VERSION}-${FFMPEG_PLATFORM}_${TARGETARCH}.deb" > ffmpeg.sha256
