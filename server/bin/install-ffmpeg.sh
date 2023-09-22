@@ -4,6 +4,8 @@ set -e
 
 FFMPEG_PLATFORM="${FFMPEG_PLATFORM:=bookworm}"
 
+echo Using platform $FFMPEG_PLATFORM
+
 LOCK=$(jq -c '.packages[] | select(.name == "ffmpeg")' build-lock.json)
 export TARGETARCH=${TARGETARCH:=$(dpkg --print-architecture)}
 FFMPEG_VERSION=${FFMPEG_VERSION:=$(echo $LOCK | jq -r '.version')}
