@@ -2,7 +2,7 @@
 
 set -e
 
-FFMPEG_PLATFORM="${FFMPEG_PLATFORM:=bookworm}"
+: "${FFMPEG_PLATFORM:=bookworm}"
 
 echo Using platform $FFMPEG_PLATFORM
 
