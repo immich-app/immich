@@ -1,6 +1,7 @@
 import { JobService, LoginResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
 import { LibraryType } from '@app/infra/entities';
+import { JobRepository } from '@app/infra/repositories';
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
@@ -99,8 +100,9 @@ describe('libe2e', () => {
   });
 
   afterAll(async () => {
-    await db.disconnect();
+    await jobService.closeAll();
     await app.close();
     await moduleFixture.close();
+    await db.disconnect();
   });
 });
