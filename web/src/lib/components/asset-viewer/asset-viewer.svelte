@@ -28,6 +28,7 @@
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -52,20 +53,73 @@
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let canCopyImagesToClipboard: boolean;
+  let temporarilyHideNavbarAndArrows = false;
+  let assetViewerHtmlElement: HTMLElement;
+  let assetContainer: HTMLDivElement;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
-  onMount(async () => {
+  const hasTouchScreen = 'ontouchstart' in window;
+  const minimumSwipeDistance = 40; // Minimum distance in pixels to trigger a swipe
+
+  const registerSwipeEventListeners = () => {
+    if (!hasTouchScreen) return;
+
+    let startX = 0;
+    let startY = 0;
+
+    const touchStart = (e: TouchEvent) => {
+      startX = e.changedTouches[0].clientX;
+      startY = e.changedTouches[0].clientY;
+    };
+
+    const swipe = (e: TouchEvent) => {
+      const x = e.changedTouches[0].clientX;
+      const y = e.changedTouches[0].clientY;
+      const dx = x - startX;
+      const dy = y - startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (absDx > absDy && absDx > minimumSwipeDistance && $photoZoomState.currentZoom === 1) {
+        temporarilyHideNavbarAndArrows = true;
+        if (dx > 0) navigateAssetBackward();
+        else navigateAssetForward();
+      }
+    };
+
+    const toggleNavbarAndArrows = () => {
+      temporarilyHideNavbarAndArrows = !temporarilyHideNavbarAndArrows;
+    };
+
+    assetViewerHtmlElement.addEventListener('touchstart', touchStart);
+    assetViewerHtmlElement.addEventListener('touchend', swipe);
+
+    // TODO: we should listen click event for a better behavior
+    // but click event is not fired because createZoomImageWheel calls preventDefault on click event
+    assetContainer.addEventListener('touchend', toggleNavbarAndArrows);
+
+    return () => {
+      assetViewerHtmlElement.removeEventListener('touchstart', touchStart);
+      assetViewerHtmlElement.removeEventListener('touchend', swipe);
+      assetContainer.removeEventListener('touchend', toggleNavbarAndArrows);
+    };
+  };
+
+  onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
 
-    if (!sharedLink) {
-      await getAllAlbums();
-    }
+    if (!sharedLink) getAllAlbums();
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+    import('copy-image-clipboard').then((module) => (canCopyImagesToClipboard = module.canCopyImagesToClipboard()));
+
+    const unregisterSwipeEventListeners = registerSwipeEventListeners();
+
+    return () => {
+      unregisterSwipeEventListeners?.();
+    };
   });
 
   onDestroy(() => {
@@ -295,7 +349,6 @@
    */
 
   let isSlideshowMode = false;
-  let assetViewerHtmlElement: HTMLElement;
   let progressBar: ProgressBar;
   let progressBarStatus: ProgressBarStatus;
 
@@ -360,7 +413,7 @@
           duration={5000}
         />
       </div>
-    {:else}
+    {:else if !temporarilyHideNavbarAndArrows}
       <AssetViewerNavBar
         {asset}
         isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -386,13 +439,13 @@
     {/if}
   </div>
 
-  {#if !isSlideshowMode && showNavigation}
+  {#if !isSlideshowMode && showNavigation && !temporarilyHideNavbarAndArrows}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
   {/if}
 
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="col-span-4 col-start-1 row-span-full row-start-1" bind:this={assetContainer}>
     {#key asset.id}
       {#if !asset.resized}
         <div class="flex h-full w-full justify-center">
@@ -427,7 +480,7 @@
     {/key}
   </div>
 
-  {#if !isSlideshowMode && showNavigation}
+  {#if !isSlideshowMode && showNavigation && !temporarilyHideNavbarAndArrows}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
