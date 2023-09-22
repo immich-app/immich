@@ -38,7 +38,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -yqq build-essential ninja-build meson pkg-config jq zlib1g autoconf libglib2.0-dev libexpat1-dev librsvg2-dev libexif-dev libwebp-dev liborc-0.4-dev libjpeg-turbo8-dev libgsf-1-dev libheif-dev liblcms2-2 mesa-va-drivers libmimalloc2.0 $(if [ $(arch) = "x86_64" ]; then echo "intel-media-va-driver-non-free"; fi) && sudo FFMPEG_PLATFORM=jammy ./bin/install-ffmpeg.sh && sudo apt-get autoremove && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
 
       - name: Copy build files
-        run: mkdir build && cp bin/build-libraw.sh bin/build-imagemagick.sh bin/build-libvips.sh use-camera-wb.patch build-lock.json build
+        run: mkdir build && cp bin/build-libraw.sh bin/build-imagemagick.sh bin/build-libvips.sh bin/use-camera-wb.patch build-lock.json build
 
       - name: Install libraw, imagemagick, libvips
         run: cd build && sudo sudo ./build-libraw.sh && sudo ./build-imagemagick.sh && sudo ./build-libvips.sh
