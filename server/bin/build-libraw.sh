@@ -14,7 +14,6 @@ tar -xvf ${LIBRAW_VERSION}.tar.gz -C libraw --strip-components=1
 rm ${LIBRAW_VERSION}.tar.gz
 rm libraw.sha256
 cd libraw
-autoupdate
 autoreconf --install
 ./configure
 make -j$(nproc)
