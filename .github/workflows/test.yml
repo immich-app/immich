@@ -50,7 +50,7 @@ jobs:
           path: ./server/test/assets
 
       - name: Run e2e tests
-        run: npm run test:e2e -- --forceExit
+        run: npm run test:e2e -- --forceExit --detectOpenHandles
 
   doc-tests:
     name: Run documentation checks

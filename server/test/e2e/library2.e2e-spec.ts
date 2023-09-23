@@ -18,6 +18,8 @@ describe('Library queue e2e', () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
+    await db.reset();
+
     jest.useRealTimers();
 
     moduleFixture = await Test.createTestingModule({
