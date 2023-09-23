@@ -1,5 +1,6 @@
 <script>
   export let text = '';
+  export let subtitle = '';
 </script>
 
 <button
@@ -12,4 +13,10 @@
   {:else}
     <slot />
   {/if}
+
+  <slot name="subtitle">
+    <p class="text-xs text-gray-500">
+      {subtitle}
+    </p>
+  </slot>
 </button>

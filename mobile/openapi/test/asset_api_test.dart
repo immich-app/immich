@@ -112,6 +112,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getRandom({ num count }) async
+    test('test getRandom', () async {
+      // TODO
+    });
+
     //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
     test('test getTimeBuckets', () async {
       // TODO

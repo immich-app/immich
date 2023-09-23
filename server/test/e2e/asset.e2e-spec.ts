@@ -1,4 +1,11 @@
-import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  IFaceRepository,
+  IPersonRepository,
+  LoginResponseDto,
+  TimeBucketSize,
+} from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -322,7 +329,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/album/statistics');
+      const { status, body } = await request(server).get('/asset/statistics');
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
@@ -375,6 +382,58 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 3, videos: 0, total: 3 });
+    });
+  });
+
+  describe('GET /asset/random', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/random');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return 1 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(1);
+      expect(assets[0].ownerId).toBe(user1.userId);
+      // assets owned by user1
+      expect([asset1.id, asset2.id, asset3.id]).toContain(assets[0].id);
+      // assets owned by user2
+      expect(assets[0].id).not.toBe(asset4.id);
+    });
+
+    it('should return 2 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random?count=2')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(2);
+
+      for (const asset of assets) {
+        expect(asset.ownerId).toBe(user1.userId);
+        // assets owned by user1
+        expect([asset1.id, asset2.id, asset3.id]).toContain(asset.id);
+        // assets owned by user2
+        expect(asset.id).not.toBe(asset4.id);
+      }
+    });
+
+    it('should return error', async () => {
+      const { status } = await request(server)
+        .get('/asset/random?count=ABC')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(400);
     });
   });
 
