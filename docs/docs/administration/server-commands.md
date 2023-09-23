@@ -19,7 +19,7 @@ To run a command, [connect](/docs/guides/docker-help.md#attach-to-a-container) t
 Reset Admin Password
 
 ```
-# immich-admin reset-admin-password
+immich-admin reset-admin-password
 Found Admin:
 - ID=e65e6f88-2a30-4dbe-8dd9-1885f4889b53
 - OAuth ID=
@@ -32,21 +32,21 @@ The admin password has been updated.
 Disable Password Login
 
 ```
-# immich-admin disable-password-login
+immich-admin disable-password-login
 Password login has been disabled.
 ```
 
 Enabled Password Login
 
 ```
-# immich-admin enable-password-login
+immich-admin enable-password-login
 Password login has been enabled.
 ```
 
 List Users
 
 ```
-# immich-admin list-users
+immich-admin list-users
 [
   {
     id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',
