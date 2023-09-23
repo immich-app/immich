@@ -6314,6 +6314,49 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {number} [count] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRandom: async (count?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/random`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (count !== undefined) {
+                localVarQueryParameter['count'] = count;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {TimeBucketSize} size 
          * @param {string} [userId] 
          * @param {string} [albumId] 
@@ -7045,6 +7088,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} [count] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getRandom(count?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getRandom(count, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {TimeBucketSize} size 
          * @param {string} [userId] 
          * @param {string} [albumId] 
@@ -7317,6 +7370,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getMemoryLane(requestParameters: AssetApiGetMemoryLaneRequest, options?: AxiosRequestConfig): AxiosPromise<Array<MemoryLaneResponseDto>> {
             return localVarFp.getMemoryLane(requestParameters.timestamp, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiGetRandomRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getRandom(requestParameters: AssetApiGetRandomRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getRandom(requestParameters.count, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7750,6 +7812,20 @@ export interface AssetApiGetMemoryLaneRequest {
      * @memberof AssetApiGetMemoryLane
      */
     readonly timestamp: string
+}
+
+/**
+ * Request parameters for getRandom operation in AssetApi.
+ * @export
+ * @interface AssetApiGetRandomRequest
+ */
+export interface AssetApiGetRandomRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetApiGetRandom
+     */
+    readonly count?: number
 }
 
 /**
@@ -8242,6 +8318,17 @@ export class AssetApi extends BaseAPI {
      */
     public getMemoryLane(requestParameters: AssetApiGetMemoryLaneRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getMemoryLane(requestParameters.timestamp, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiGetRandomRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getRandom(requestParameters: AssetApiGetRandomRequest = {}, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getRandom(requestParameters.count, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
