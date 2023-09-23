@@ -433,9 +433,9 @@ export class AssetRepository implements IAssetRepository {
     // can't use queryBuilder because of custom OFFSET clause
     return this.repository.query(
       `SELECT *
-                                  FROM assets
-                                  WHERE "ownerId" = $1
-                                  OFFSET FLOOR(RANDOM() * (SELECT COUNT(*) FROM ASSETS)) LIMIT $2`,
+       FROM assets
+       WHERE "ownerId" = $1
+       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - 1, 0) FROM ASSETS)) LIMIT $2`,
       [ownerId, count],
     );
   }
