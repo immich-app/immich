@@ -17,16 +17,7 @@
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
-  export let people: PersonResponseDto[];
-  let potentialMergePeople: PersonResponseDto[] = people
-    .filter(
-      (person: PersonResponseDto) =>
-        personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
-        person.id !== personMerge2.id &&
-        person.id !== personMerge1.id &&
-        !person.isHidden,
-    )
-    .slice(0, 3);
+  export let potentialMergePeople: PersonResponseDto[];
 
   let choosePersonToMerge = false;
 
@@ -48,7 +39,9 @@
         <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
           Merge faces - {title}
         </h1>
-        <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
+        <div class="p-2">
+          <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
+        </div>
       </div>
 
       <div class="flex items-center justify-center px-2 py-4 md:h-36 md:px-4 md:py-4">
