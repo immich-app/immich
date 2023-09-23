@@ -52,6 +52,7 @@ describe(JobService.name, () => {
         [{ name: JobName.PERSON_CLEANUP }],
         [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
         [{ name: JobName.CLEAN_OLD_AUDIT_LOGS }],
+        [{ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }],
       ]);
     });
   });
@@ -97,6 +98,7 @@ describe(JobService.name, () => {
         [QueueName.VIDEO_CONVERSION]: expectedJobStatus,
         [QueueName.RECOGNIZE_FACES]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
+        [QueueName.LIBRARY]: expectedJobStatus,
       });
     });
   });
@@ -225,6 +227,7 @@ describe(JobService.name, () => {
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
+          [QueueName.LIBRARY]: { concurrency: 10 },
           [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
@@ -237,6 +240,7 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.STORAGE_TEMPLATE_MIGRATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);

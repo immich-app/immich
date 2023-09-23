@@ -24,11 +24,11 @@ export const errorStub = {
     statusCode: 401,
     message: 'Invalid share key',
   },
-  badRequest: {
+  badRequest: (message: any = null) => ({
     error: 'Bad Request',
     statusCode: 400,
-    message: expect.any(Array),
-  },
+    message: message ?? expect.anything(),
+  }),
   noPermission: {
     error: 'Bad Request',
     statusCode: 400,
@@ -43,5 +43,10 @@ export const errorStub = {
     error: 'Bad Request',
     statusCode: 400,
     message: 'The server already has an admin',
+  },
+  noDeleteUploadLibrary: {
+    error: 'Bad Request',
+    statusCode: 400,
+    message: 'Cannot delete the last upload library',
   },
 };

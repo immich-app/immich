@@ -146,7 +146,6 @@ export class MetadataExtractionProcessor {
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
-
     await this.assetRepository.upsertExif(exifData);
     await this.assetRepository.save({
       id: asset.id,

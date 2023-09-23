@@ -138,7 +138,7 @@ describe(`${UserController.name}`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userSignupStub, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -238,7 +238,7 @@ describe(`${UserController.name}`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userStub.admin, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 

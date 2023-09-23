@@ -10,19 +10,25 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { ExifEntity } from './exif.entity';
+import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 
+export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
+
 @Entity('assets')
-@Unique('UQ_userid_checksum', ['owner', 'checksum'])
+// Checksums must be unique per user and library
+@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'library', 'checksum'], {
+  unique: true,
+})
+// For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -36,13 +42,19 @@ export class AssetEntity {
   @Column()
   ownerId!: string;
 
+  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  library!: LibraryEntity;
+
+  @Column()
+  libraryId!: string;
+
   @Column()
   deviceId!: string;
 
   @Column()
   type!: AssetType;
 
-  @Column({ unique: true })
+  @Column()
   originalPath!: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -76,7 +88,13 @@ export class AssetEntity {
   isArchived!: boolean;
 
   @Column({ type: 'boolean', default: false })
+  isExternal!: boolean;
+
+  @Column({ type: 'boolean', default: false })
   isReadOnly!: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isOffline!: boolean;
 
   @Column({ type: 'bytea' })
   @Index()

@@ -17,9 +17,9 @@ export interface IPersonRepository {
   getAllWithoutThumbnail(): Promise<PersonEntity[]>;
   getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
-  getById(userId: string, personId: string): Promise<PersonEntity | null>;
+  getById(personId: string): Promise<PersonEntity | null>;
 
-  getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
+  getAssets(personId: string): Promise<AssetEntity[]>;
   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
 

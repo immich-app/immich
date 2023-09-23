@@ -15,6 +15,7 @@ class SystemConfigJobDto {
   SystemConfigJobDto({
     required this.backgroundTask,
     required this.clipEncoding,
+    required this.library_,
     required this.metadataExtraction,
     required this.objectTagging,
     required this.recognizeFaces,
@@ -28,6 +29,8 @@ class SystemConfigJobDto {
   JobSettingsDto backgroundTask;
 
   JobSettingsDto clipEncoding;
+
+  JobSettingsDto library_;
 
   JobSettingsDto metadataExtraction;
 
@@ -49,6 +52,7 @@ class SystemConfigJobDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
      other.backgroundTask == backgroundTask &&
      other.clipEncoding == clipEncoding &&
+     other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
@@ -63,6 +67,7 @@ class SystemConfigJobDto {
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
     (clipEncoding.hashCode) +
+    (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
@@ -73,12 +78,13 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'clipEncoding'] = this.clipEncoding;
+      json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
@@ -100,6 +106,7 @@ class SystemConfigJobDto {
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
         clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
+        library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
@@ -157,6 +164,7 @@ class SystemConfigJobDto {
   static const requiredKeys = <String>{
     'backgroundTask',
     'clipEncoding',
+    'library',
     'metadataExtraction',
     'objectTagging',
     'recognizeFaces',

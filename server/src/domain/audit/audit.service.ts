@@ -25,7 +25,7 @@ export class AuditService {
 
   async getDeletes(authUser: AuthUserDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
 
     const audits = await this.repository.getAfter(dto.after, {
       ownerId: userId,
