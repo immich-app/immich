@@ -404,9 +404,9 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(assets.length).toBe(1);
       expect(assets[0].ownerId).toBe(user1.userId);
       // assets owned by user1
-      expect(assets[0].id == asset1.id || assets[0].id == asset2.id || assets[0].id == asset3.id).toBeTruthy();
+      expect([asset1.id, asset2.id, asset3.id]).toContain(assets[0].id);
       // assets owned by user2
-      expect(assets[0].id == asset4.id).toBeFalsy();
+      expect(assets[0].id).not.toBe(asset4.id);
     });
 
     it('should return 2 random assets', async () => {
@@ -422,9 +422,9 @@ describe(`${AssetController.name} (e2e)`, () => {
       for (const asset of assets) {
         expect(asset.ownerId).toBe(user1.userId);
         // assets owned by user1
-        expect(asset.id == asset1.id || asset.id == asset2.id || asset.id == asset3.id).toBeTruthy();
+        expect([asset1.id, asset2.id, asset3.id]).toContain(asset.id);
         // assets owned by user2
-        expect(asset.id == asset4.id).toBeFalsy();
+        expect(asset.id).not.toBe(asset4.id);
       }
     });
 
