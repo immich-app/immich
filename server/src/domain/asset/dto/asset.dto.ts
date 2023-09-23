@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsPositive, IsString } from 'class-validator';
 import { Optional } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -29,8 +29,8 @@ export class UpdateAssetDto {
 
 export class RandomAssetsDto {
   @Optional()
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @Type(() => Number)
-  count?: number | null;
+  count?: number;
 }
