@@ -322,7 +322,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/album/statistics');
+      const { status, body } = await request(server).get('/asset/statistics');
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
