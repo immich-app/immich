@@ -1519,7 +1519,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "nullable": true,
               "type": "number"
             }
           }
