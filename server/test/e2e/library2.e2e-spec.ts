@@ -1,5 +1,6 @@
 import { JobService, LoginResponseDto } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
+import { RedisIoAdapter } from '@app/infra';
 import { LibraryType } from '@app/infra/entities';
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -31,6 +32,8 @@ describe('Library queue e2e', () => {
 
     app = moduleFixture.createNestApplication();
 
+    app.useWebSocketAdapter(new RedisIoAdapter(app));
+
     await app.init();
     app.enableShutdownHooks();
     server = app.getHttpServer();
@@ -38,6 +41,13 @@ describe('Library queue e2e', () => {
     jobService = moduleFixture.get(JobService);
 
     await moduleFixture.get(MicroAppService).init(true);
+  });
+
+  afterAll(async () => {
+    await jobService.obliterateAll(true);
+    await app.close();
+    await moduleFixture.close();
+    await db.disconnect();
   });
 
   describe('can import library', () => {
@@ -86,12 +96,5 @@ describe('Library queue e2e', () => {
       expect(assets).toHaveLength(1);
       expect(assets[0].originalFileName).toBe('silver_fir');
     });
-  });
-
-  afterAll(async () => {
-    await jobService.obliterateAll(true);
-    await app.close();
-    await moduleFixture.close();
-    await db.disconnect();
   });
 });

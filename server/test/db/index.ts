@@ -3,6 +3,7 @@ import { dataSource } from '@app/infra';
 export const db = {
   reset: async () => {
     if (!dataSource.isInitialized) {
+      console.log('Initializing test database...');
       await dataSource.initialize();
     }
 

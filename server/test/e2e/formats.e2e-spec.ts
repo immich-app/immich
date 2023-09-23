@@ -1,5 +1,6 @@
 import { JobService, LoginResponseDto } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
+import { RedisIoAdapter } from '@app/infra';
 import { LibraryType } from '@app/infra/entities';
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -31,6 +32,8 @@ describe('File format (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
 
+    app.useWebSocketAdapter(new RedisIoAdapter(app));
+
     await app.init();
     app.enableShutdownHooks();
     server = app.getHttpServer();
@@ -38,6 +41,14 @@ describe('File format (e2e)', () => {
     jobService = moduleFixture.get(JobService);
 
     await moduleFixture.get(MicroAppService).init(true);
+  });
+
+  afterAll(async () => {
+    console.log(await jobService.getAllJobsStatus());
+    await jobService.obliterateAll(true);
+    await app.close();
+    await moduleFixture.close();
+    await db.disconnect();
   });
 
   beforeEach(async () => {
@@ -66,6 +77,29 @@ describe('File format (e2e)', () => {
 
     const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
     expect(assets).toHaveLength(1);
+    console.log(assets);
+    const jpgAsset = assets[0];
+    expect(jpgAsset.type).toBe('image/jpeg');
+    expect(jpgAsset.originalFileName).toBe('el_torcal_rocks');
+    expect(jpgAsset.exifInfo?.exifImageHeight).toBe(341);
+    expect(jpgAsset.exifInfo?.exifImageWidth).toBe(512);
+  });
+
+  it('should import a jpeg file', async () => {
+    const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
+      type: LibraryType.EXTERNAL,
+      name: 'Library',
+      importPaths: [`${__dirname}/../assets/formats/jpeg`],
+      exclusionPatterns: [],
+    });
+
+    await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+
+    await waitForQueues(jobService);
+
+    const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+    expect(assets).toHaveLength(1);
+    console.log(assets);
   });
 
   it('should import a heic file', async () => {
@@ -82,14 +116,11 @@ describe('File format (e2e)', () => {
 
     const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
     expect(assets).toHaveLength(1);
-    console.log(assets);
-  });
-
-  afterAll(async () => {
-    console.log(await jobService.getAllJobsStatus());
-    await jobService.obliterateAll(true);
-    await app.close();
-    await moduleFixture.close();
-    await db.disconnect();
+    const heicAsset = assets[0];
+    console.log(heicAsset);
+    expect(heicAsset.type).toBe('image/heic');
+    expect(heicAsset.originalFileName).toBe('IMG_2682');
+    expect(heicAsset.duration).toBe(null);
+    expect(heicAsset.fileCreatedAt).toBe('2029-03-21T11:04:00.000Z');
   });
 });
