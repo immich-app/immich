@@ -84,6 +84,14 @@ export class MediaService {
       this.assetRepository.getAll(pagination),
     );
 
+    if (
+      (await this.jobRepository.getJobCounts(QueueName.MIGRATION)).active === 1 &&
+      (await this.jobRepository.getJobCounts(QueueName.MIGRATION)).waiting === 0
+    ) {
+      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    }
+
     for await (const assets of assetPagination) {
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
@@ -98,13 +106,6 @@ export class MediaService {
         data: { id: person.id },
       });
     }
-
-    while ((await this.jobRepository.getJobCounts(QueueName.MIGRATION)).waiting > 1) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-
-    await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
-    await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
 
     return true;
   }
