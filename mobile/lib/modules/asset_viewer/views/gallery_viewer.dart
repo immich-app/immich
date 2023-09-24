@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
@@ -77,8 +78,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isFromTrash = isTrashEnabled &&
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
+    final stackSelectedIndex = useState(0);
+    final stackChildren = ref.watch(assetStackStateProvider(currentAsset));
+    final displayedAsset = useState(currentAsset);
 
-    Asset asset() => currentAsset;
+    Asset asset() => displayedAsset.value;
 
     useEffect(
       () {
@@ -90,6 +94,15 @@ class GalleryViewerPage extends HookConsumerWidget {
         return null;
       },
       [],
+    );
+
+    useEffect(
+      () {
+        stackSelectedIndex.value = 0;
+        displayedAsset.value = currentAsset;
+        return null;
+      },
+      [currentIndex.value],
     );
 
     void toggleFavorite(Asset asset) => ref
@@ -165,7 +178,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: currentAsset),
+            child: ExifBottomSheet(asset: asset()),
           );
         },
       );
@@ -385,6 +398,52 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    Widget buildStackedChildren() {
+      return ListView.builder(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemCount: stackChildren.length + 1,
+        itemBuilder: (context, index) {
+          final actualIndex = index - 1;
+          final object = index == 0
+              ? loadAsset(currentIndex.value)
+              : stackChildren.elementAt(actualIndex);
+          final thumbnailRequestUrl =
+              '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${object.remoteId}';
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: GestureDetector(
+              onTap: () {
+                stackSelectedIndex.value = index;
+                displayedAsset.value = index == 0
+                    ? loadAsset(currentIndex.value)
+                    : stackChildren.elementAt(actualIndex);
+              },
+              child: Container(
+                width: 40,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white,
+                    width: index == stackSelectedIndex.value ? 3 : 1,
+                  ),
+                ),
+                child: CachedNetworkImage(
+                  fit: BoxFit.cover,
+                  imageUrl: thumbnailRequestUrl,
+                  httpHeaders: {
+                    "Authorization":
+                        "Bearer ${Store.get(StoreKey.accessToken)}",
+                  },
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.image_not_supported_outlined),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     buildBottomBar() {
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
@@ -410,6 +469,19 @@ class GalleryViewerPage extends HookConsumerWidget {
                         buildMuteButton(),
                       ],
                     ),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: stackChildren.isNotEmpty,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    bottom: 30,
+                  ),
+                  child: SizedBox(
+                    height: 40,
+                    child: buildStackedChildren(),
                   ),
                 ),
               ),
@@ -544,10 +616,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                     : webPThumbnail;
               },
               builder: (context, index) {
-                final asset = loadAsset(index);
-                final ImageProvider provider = finalImageProvider(asset);
+                final a = asset();
+                final ImageProvider provider = finalImageProvider(a);
 
-                if (asset.isImage && !isPlayingMotionVideo.value) {
+                if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
@@ -558,13 +630,13 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id + heroOffset,
+                      tag: a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
                     minScale: PhotoViewComputedScale.contained,
                     errorBuilder: (context, error, stackTrace) => ImmichImage(
-                      asset,
+                      a,
                       fit: BoxFit.contain,
                     ),
                   );
@@ -575,7 +647,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id + heroOffset,
+                      tag: a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
@@ -584,7 +656,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: VideoViewerPage(
                       onPlaying: () => isPlayingVideo.value = true,
                       onPaused: () => isPlayingVideo.value = false,
-                      asset: asset,
+                      asset: a,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,

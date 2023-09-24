@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -246,6 +248,44 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      void onStack() async {
+        if (!selectionEnabledHook.value || selection.value.length != 1) {
+          return;
+        }
+        processing.value = true;
+
+        final selectedAsset = selection.value.elementAt(0);
+        final stackChildren =
+            await ref.read(assetStackProvider(selectedAsset).future);
+        AssetSelectionPageResult? returnPayload =
+            await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+          AssetSelectionRoute(
+            existingAssets: stackChildren.toSet(),
+            canDeselect: true,
+            parentAsset: selectedAsset,
+          ),
+        );
+
+        if (returnPayload != null) {
+          Set<Asset> selectedAssets = returnPayload.selectedAssets;
+          // Do not add itself as its stack child
+          selectedAssets.remove(selectedAsset);
+          final currentChildren = stackChildren.toSet();
+          final removedChildren = currentChildren.difference(selectedAssets);
+          final addedChildren = selectedAssets.difference(currentChildren);
+          await ref
+              .read(assetStackStateProvider(selectedAsset).notifier)
+              .updateStack(
+                addedChildren.toList(),
+                removedChildren.toList(),
+              );
+          ref.invalidate(assetStackProvider(selectedAsset));
+        }
+
+        processing.value = false;
+        selectionEnabledHook.value = false;
+      }
+
       Future<void> refreshAssets() async {
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
@@ -328,18 +368,19 @@ class HomePage extends HookConsumerWidget {
                 ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
-                onShare: onShareAssets,
-                onFavorite: onFavoriteAssets,
-                onArchive: onArchiveAsset,
-                onDelete: onDelete,
-                onAddToAlbum: onAddToAlbum,
-                albums: albums,
-                sharedAlbums: sharedAlbums,
-                onCreateNewAlbum: onCreateNewAlbum,
-                onUpload: onUpload,
-                enabled: !processing.value,
-                selectionAssetState: selectionAssetState.value,
-              ),
+                  onShare: onShareAssets,
+                  onFavorite: onFavoriteAssets,
+                  onArchive: onArchiveAsset,
+                  onDelete: onDelete,
+                  onAddToAlbum: onAddToAlbum,
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onCreateNewAlbum: onCreateNewAlbum,
+                  onUpload: onUpload,
+                  enabled: !processing.value,
+                  selectionAssetState: selectionAssetState.value,
+                  onStack: onStack,
+                  showStack: selection.value.length == 1),
             if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],
         ),

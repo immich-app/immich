@@ -19,10 +19,12 @@ class ControlBottomAppBar extends ConsumerWidget {
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
+  final void Function() onStack;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
   final bool enabled;
+  final bool showStack;
   final AssetState selectionAssetState;
 
   const ControlBottomAppBar({
@@ -36,8 +38,10 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
+    required this.onStack,
     this.selectionAssetState = AssetState.remote,
     this.enabled = true,
+    this.showStack = false,
   }) : super(key: key);
 
   @override
@@ -48,7 +52,9 @@ class ControlBottomAppBar extends ConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     Widget renderActionButtons() {
-      return Row(
+      return Wrap(
+        spacing: 10,
+        runSpacing: 15,
         children: [
           ControlBoxButton(
             iconData: Platform.isAndroid
@@ -104,6 +110,12 @@ class ControlBottomAppBar extends ConsumerWidget {
                       )
                   : null,
             ),
+          if (showStack)
+            ControlBoxButton(
+              iconData: Icons.filter_none_rounded,
+              label: "Stack".tr(),
+              onPressed: enabled ? onStack : null,
+            ),
         ],
       );
     }
@@ -111,7 +123,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     return DraggableScrollableSheet(
       initialChildSize: hasRemote ? 0.30 : 0.18,
       minChildSize: 0.18,
-      maxChildSize: hasRemote ? 0.57 : 0.18,
+      maxChildSize: hasRemote ? 0.60 : 0.18,
       snap: true,
       builder: (
         BuildContext context,
