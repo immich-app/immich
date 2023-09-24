@@ -90,7 +90,13 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   void _deselectAssets(List<Asset> assets) {
     setState(() {
-      _selectedAssets.removeAll(assets);
+      _selectedAssets.removeAll(
+        assets.where(
+          (a) =>
+              widget.canDeselect ||
+              !(widget.preselectedAssets?.contains(a) ?? false),
+        ),
+      );
       _callSelectionListener(_selectedAssets.isNotEmpty);
     });
   }
@@ -376,10 +382,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (!widget.selectionActive) {
       setState(() {
         _selectedAssets.clear();
-      });
-    } else if (widget.preselectedAssets != null) {
-      setState(() {
-        _selectedAssets.addAll(widget.preselectedAssets!);
       });
     }
   }

@@ -8,22 +8,24 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
 
 class AssetSelectionPage extends HookConsumerWidget {
   const AssetSelectionPage({
     Key? key,
     required this.existingAssets,
     this.isNewAlbum = false,
+    this.canDeselect = false,
+    this.parentAsset,
   }) : super(key: key);
 
   final Set<Asset> existingAssets;
+  final Asset? parentAsset;
   final bool isNewAlbum;
+  final bool canDeselect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider);
-    final renderList = ref.watch(remoteAssetsProvider(currentUser?.isarId));
+    final renderList = ref.watch(remoteAssetsProvider(parentAsset?.remoteId));
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
@@ -40,7 +42,7 @@ class AssetSelectionPage extends HookConsumerWidget {
         },
         selectionActive: true,
         preselectedAssets: isNewAlbum ? selected.value : existingAssets,
-        canDeselect: isNewAlbum,
+        canDeselect: isNewAlbum || canDeselect,
         showMultiSelectIndicator: false,
       );
     }
@@ -65,7 +67,7 @@ class AssetSelectionPage extends HookConsumerWidget {
               ),
         centerTitle: false,
         actions: [
-          if (selected.value.isNotEmpty)
+          if (selected.value.isNotEmpty || canDeselect)
             TextButton(
               onPressed: () {
                 var payload =
@@ -74,7 +76,7 @@ class AssetSelectionPage extends HookConsumerWidget {
                     .popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
-                "share_add",
+                canDeselect ? "Done" : "share_add",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,

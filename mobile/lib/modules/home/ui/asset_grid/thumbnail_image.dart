@@ -113,9 +113,9 @@ class ThumbnailImage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: assetContainerColor,
+            color: onDeselect == null ? Colors.grey : assetContainerColor,
           ),
-          color: assetContainerColor,
+          color: onDeselect == null ? Colors.grey : assetContainerColor,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
