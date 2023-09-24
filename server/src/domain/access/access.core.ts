@@ -185,7 +185,7 @@ export class AccessCore {
         );
 
       case Permission.LIBRARY_WRITE:
-        return await this.repository.library.hasOwnerAccess(authUser.id, id);
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_UPDATE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);

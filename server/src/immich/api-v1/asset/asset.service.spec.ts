@@ -139,6 +139,7 @@ describe('AssetService', () => {
       const dto = _getCreateAssetDto();
 
       assetRepositoryMock.create.mockResolvedValue(assetEntity);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
@@ -158,6 +159,7 @@ describe('AssetService', () => {
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 
@@ -175,6 +177,7 @@ describe('AssetService', () => {
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(
         sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
@@ -367,6 +370,7 @@ describe('AssetService', () => {
     it('should handle a file import', async () => {
       assetRepositoryMock.create.mockResolvedValue(assetStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(
         sut.importFile(authStub.external1, {
@@ -387,6 +391,7 @@ describe('AssetService', () => {
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetStub.image]);
       storageMock.checkFileExists.mockResolvedValue(true);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
       cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
 
       await expect(
