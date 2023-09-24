@@ -91,6 +91,7 @@ export class AssetService {
 
     try {
       const libraryId = await this.getLibraryId(authUser, dto.libraryId);
+      await this.access.requirePermission(authUser, Permission.LIBRARY_WRITE, libraryId);
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
@@ -162,6 +163,7 @@ export class AssetService {
 
     try {
       const libraryId = await this.getLibraryId(authUser, dto.libraryId);
+      await this.access.requirePermission(authUser, Permission.LIBRARY_WRITE, libraryId);
       const asset = await this.assetCore.create(authUser, { ...dto, libraryId }, assetFile, undefined, dto.sidecarPath);
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
