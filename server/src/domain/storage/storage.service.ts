@@ -26,6 +26,8 @@ export class StorageService {
 
       try {
         await this.storageRepository.unlink(file);
+        // extracts the file's parent folder
+        // upload/thumbs/89/ab/89abcd.jpeg -> upload/thumbs/89
         const found = file.match(/(?<path>.*\/.*)\/.*\/.*\..*/);
         if (found?.groups) {
           await this.storageRepository.removeEmptyDirs(found.groups.path, true);
