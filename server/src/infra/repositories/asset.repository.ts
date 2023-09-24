@@ -429,6 +429,17 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
+    // can't use queryBuilder because of custom OFFSET clause
+    return this.repository.query(
+      `SELECT *
+       FROM assets
+       WHERE "ownerId" = $1
+       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - 1, 0) FROM ASSETS)) LIMIT $2`,
+      [ownerId, count],
+    );
+  }
+
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncateValue = truncateMap[options.size];
 

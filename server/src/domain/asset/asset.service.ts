@@ -284,6 +284,11 @@ export class AssetService {
     return mapStats(stats);
   }
 
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
+  }
+
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
 

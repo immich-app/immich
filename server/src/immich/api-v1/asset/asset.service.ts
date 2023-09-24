@@ -90,22 +90,19 @@ export class AssetService {
     let livePhotoAsset: AssetEntity | null = null;
 
     try {
+      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
       if (livePhotoFile) {
-        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
+        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      if (!dto.libraryId) {
-        // No library given, fall back to default upload library
-        const defaultUploadLibrary = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
-
-        if (!defaultUploadLibrary) {
-          throw new InternalServerErrorException('Cannot find default upload library for user ' + authUser.id);
-        }
-        dto.libraryId = defaultUploadLibrary.id;
-      }
-
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+      const asset = await this.assetCore.create(
+        authUser,
+        { ...dto, libraryId },
+        file,
+        livePhotoAsset?.id,
+        sidecarFile?.originalPath,
+      );
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -164,7 +161,8 @@ export class AssetService {
     };
 
     try {
-      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
+      const asset = await this.assetCore.create(authUser, { ...dto, libraryId }, assetFile, undefined, dto.sidecarPath);
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
@@ -504,5 +502,26 @@ export class AssetService {
         this.logger.error(`Unable to send file: ${error.name}`, error.stack);
       }
     });
+  }
+
+  private async getLibraryId(authUser: AuthUserDto, libraryId?: string) {
+    if (libraryId) {
+      return libraryId;
+    }
+
+    let library = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+    if (!library) {
+      library = await this.libraryRepository.create({
+        ownerId: authUser.id,
+        name: 'Default Library',
+        assets: [],
+        type: LibraryType.UPLOAD,
+        importPaths: [],
+        exclusionPatterns: [],
+        isVisible: true,
+      });
+    }
+
+    return library.id;
   }
 }

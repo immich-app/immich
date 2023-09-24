@@ -1510,6 +1510,50 @@
         ]
       }
     },
+    "/asset/random": {
+      "get": {
+        "operationId": "getRandom",
+        "parameters": [
+          {
+            "name": "count",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -5055,7 +5099,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.79.0",
+    "version": "1.79.1",
     "contact": {}
   },
   "tags": [],
