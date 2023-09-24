@@ -26,6 +26,7 @@ export enum Permission {
 
   LIBRARY_CREATE = 'library.create',
   LIBRARY_READ = 'library.read',
+  LIBRARY_WRITE = 'library.write',
   LIBRARY_UPDATE = 'library.update',
   LIBRARY_DELETE = 'library.delete',
   LIBRARY_DOWNLOAD = 'library.download',
@@ -182,6 +183,9 @@ export class AccessCore {
           (await this.repository.library.hasOwnerAccess(authUser.id, id)) ||
           (await this.repository.library.hasPartnerAccess(authUser.id, id))
         );
+
+      case Permission.LIBRARY_WRITE:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_UPDATE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);
