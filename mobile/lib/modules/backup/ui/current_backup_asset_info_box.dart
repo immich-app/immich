@@ -231,7 +231,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontFeatures: [
-                        FontFeature.tabularFigures()
+                        FontFeature.tabularFigures(),
                       ],
                       ),
                   ),
