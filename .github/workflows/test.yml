@@ -24,6 +24,12 @@ jobs:
       - name: Run npm install
         run: npm ci
 
+      - name: Checkout test assets (TODO: change org of this repo to immich)
+        uses: actions/checkout@v4
+        with:
+          repository: etnoy/immich-test-assets
+          path: ./server/test/assets
+
       - name: Run e2e tests
         run: npm run test:e2e
         if: ${{ !cancelled() }}
