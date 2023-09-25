@@ -71,8 +71,8 @@
       <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
     </SettingAccordion>
 
-    <SettingAccordion title="Map Settings" subtitle="Manage map settings">
-      <MapSettings disabled={$featureFlags.configFile} mapConfig={configs.map} />
+    <SettingAccordion title="Map & Reverse Geocoding Settings" subtitle="Manage map and reverse geocoding settings">
+      <MapSettings disabled={$featureFlags.configFile} config={configs} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

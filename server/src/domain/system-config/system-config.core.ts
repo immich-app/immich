@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  CitiesFile,
   Colorspace,
   SystemConfig,
   SystemConfigEntity,
@@ -81,6 +82,10 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
+  },
   oauth: {
     enabled: false,
     issuerUrl: '',
@@ -115,6 +120,7 @@ export enum FeatureFlag {
   FACIAL_RECOGNITION = 'facialRecognition',
   TAG_IMAGE = 'tagImage',
   MAP = 'map',
+  REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
   SEARCH = 'search',
   OAUTH = 'oauth',
@@ -177,6 +183,7 @@ export class SystemConfigCore {
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
+      [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
 
