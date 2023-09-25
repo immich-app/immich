@@ -5,11 +5,11 @@ import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { waitForQueues } from '@test/test-utils';
 import { AppService as MicroAppService } from 'src/microservices/app.service';
 
 import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
+import { DockerComposeEnvironment } from 'testcontainers';
 
 describe('File format (e2e)', () => {
   let app: INestApplication;
@@ -21,40 +21,13 @@ describe('File format (e2e)', () => {
   beforeEach(async () => {
     // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
 
-    await db.reset();
-
     jest.useRealTimers();
 
-    moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-      providers: [MetadataExtractionProcessor, MicroAppService],
-    })
-      // .setLogger(new Logger())
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-
-    app.useWebSocketAdapter(new RedisIoAdapter(app));
-
-    await app.init();
-    app.enableShutdownHooks();
-    server = app.getHttpServer();
-
-    jobService = moduleFixture.get(JobService);
-
-    await moduleFixture.get(MicroAppService).init(true);
     await jobService.obliterateAll(true);
 
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
     await api.userApi.update(server, admin.accessToken, { id: admin.userId, externalPath: '/' });
-  });
-
-  afterEach(async () => {
-    await jobService.obliterateAll(true);
-    await app.close();
-    await moduleFixture.close();
-    await db.disconnect();
   });
 
   describe('File format', () => {

@@ -17,6 +17,15 @@ export const libraryApi = {
     return body as LibraryResponseDto;
   },
 
+  setImportPaths: async (server: any, accessToken: string, id: string, importPaths: string[]) => {
+    const { body, status } = await request(server)
+      .put(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ importPaths });
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
+  },
+
   scanLibrary: async (server: any, accessToken: string, id: string, dto: ScanLibraryDto) => {
     const { status } = await request(server)
       .post(`/library/${id}/scan`)

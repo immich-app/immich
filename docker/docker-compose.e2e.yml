@@ -1,0 +1,146 @@
+version: "3.8"
+
+services:
+  immich-server:
+    container_name: immich_server-e2e
+    image: immich-server-dev:latest
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+      target: builder
+    command: npm run start:debug immich
+    volumes:
+      - ../server:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    ports:
+      - 3001:3001
+      - 9230:9230
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+      - database
+      - typesense
+
+  immich-machine-learning:
+    container_name: immich_machine_learning-e2e
+    image: immich-machine-learning-dev:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3003
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - model-cache:/cache
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+    restart: unless-stopped
+
+  immich-microservices:
+    container_name: immich_microservices-e2e
+    image: immich-microservices:latest
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+      target: builder
+    command: npm run start:debug microservices
+    volumes:
+      - ../server:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    ports:
+      - 9231:9230
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+      - immich-server
+      - typesense
+
+  immich-web:
+    container_name: immich_web-e2e
+    image: immich-web-dev:1.9.0
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      target: dev
+    command: npm run dev --host
+    env_file:
+      - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
+      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
+    ports:
+      - 3000:3000
+      - 24678:24678
+    volumes:
+      - ../web:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - immich-server
+
+  typesense:
+    container_name: immich_typesense-e2e
+    image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/data
+      # remove this to get debug messages
+      - GLOG_minloglevel=1
+    volumes:
+      - tsdata:/data
+
+  redis:
+    container_name: immich_redis-e2e
+    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
+
+  database:
+    container_name: immich_postgres-e2e
+    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  immich-proxy:
+    container_name: immich_proxy-e2e
+    image: immich-proxy-dev:latest
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile
+    ports:
+      - 2285:8080
+    depends_on:
+      - immich-server
+      - immich-web
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  model-cache:
+  tsdata:

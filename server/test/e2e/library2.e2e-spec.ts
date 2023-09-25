@@ -18,7 +18,7 @@ describe('Library queue e2e', () => {
   let moduleFixture: TestingModule;
   let admin: LoginResponseDto;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await db.reset();
 
     jest.useRealTimers();
@@ -41,60 +41,54 @@ describe('Library queue e2e', () => {
     jobService = moduleFixture.get(JobService);
 
     await moduleFixture.get(MicroAppService).init(true);
+
+    // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
+
+    await jobService.obliterateAll(true);
+
+    await api.authApi.adminSignUp(server);
+    admin = await api.authApi.adminLogin(server);
+    await api.userApi.update(server, admin.accessToken, { id: admin.userId, externalPath: '/' });
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await jobService.obliterateAll(true);
     await app.close();
     await moduleFixture.close();
     await db.disconnect();
   });
 
-  describe('can import library', () => {
-    beforeEach(async () => {
-      // We expect https://github.com/etnoy/immich-test-assets to be cloned into the e2e/assets folder
-
-      await db.reset();
-
-      await jobService.obliterateAll(true);
-
-      await api.authApi.adminSignUp(server);
-      admin = await api.authApi.adminLogin(server);
-      await api.userApi.update(server, admin.accessToken, { id: admin.userId, externalPath: '/' });
+  it('should scan the whole folder', async () => {
+    const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
+      type: LibraryType.EXTERNAL,
+      name: 'Library',
+      importPaths: [`${__dirname}/../assets/nature`],
+      exclusionPatterns: [],
     });
 
-    it('should scan the whole folder', async () => {
-      const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        name: 'Library',
-        importPaths: [`${__dirname}/../assets/nature`],
-        exclusionPatterns: [],
-      });
+    await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+    await waitForQueues(jobService);
 
-      await waitForQueues(jobService);
+    const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+    expect(assets).toHaveLength(7);
+  });
 
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(assets).toHaveLength(7);
+  it('scan with exclusions', async () => {
+    const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
+      type: LibraryType.EXTERNAL,
+      name: 'Library',
+      importPaths: [`${__dirname}/../assets/nature/`],
+      exclusionPatterns: ['**/*o*/**', '**/*c*/**'],
     });
 
-    it('scan with exclusions', async () => {
-      const library = await api.libraryApi.createLibrary(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        name: 'Library',
-        importPaths: [`${__dirname}/../assets/nature/`],
-        exclusionPatterns: ['**/*o*/**', '**/*c*/**'],
-      });
+    await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+    await waitForQueues(jobService);
 
-      await waitForQueues(jobService);
+    const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toHaveLength(1);
-      expect(assets[0].originalFileName).toBe('silver_fir');
-    });
+    expect(assets).toHaveLength(1);
+    expect(assets[0].originalFileName).toBe('silver_fir');
   });
 });
