@@ -1,3 +1,15 @@
+<script lang="ts" context="module">
+  // table is the text printed in the table and sortTitle is the text printed in the dropDow menu
+
+  export interface Sort {
+    table: string;
+    sortTitle: string;
+    sortDesc: boolean;
+    widthClass: string;
+    sortFn: (reverse: boolean, albums: AlbumResponseDto[]) => AlbumResponseDto[];
+  }
+</script>
+
 <script lang="ts">
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
@@ -5,7 +17,6 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
   import FormatListBulletedSquare from 'svelte-material-icons/FormatListBulletedSquare.svelte';
   import ViewGridOutline from 'svelte-material-icons/ViewGridOutline.svelte';
   import type { PageData } from './$types';
@@ -25,23 +36,69 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
-  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+  import TableHeader from '$lib/components/elements/table-header.svelte';
+  import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte';
+  import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte';
+  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import { orderBy } from 'lodash-es';
 
   export let data: PageData;
+  let shouldShowEditUserForm = false;
+  let selectedAlbum: AlbumResponseDto;
 
-  const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
-  const viewOptions = [
-    {
-      name: AlbumViewMode.Cover,
-      icon: ViewGridOutline,
+  let sortByOptions: Record<string, Sort> = {
+    albumTitle: {
+      table: 'Album title',
+      sortTitle: 'Album title',
+      sortDesc: true,
+      widthClass: 'w-8/12 text-left sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
+      sortFn: (reverse, albums) => {
+        return orderBy(albums, 'albumName', [reverse ? 'desc' : 'asc']);
+      },
     },
-    {
-      name: AlbumViewMode.List,
-      icon: FormatListBulletedSquare,
+    numberOfAssets: {
+      table: 'Assets',
+      sortTitle: 'Number of assets',
+      sortDesc: true,
+      widthClass: 'w-4/12 text-center sm:w-2/12 2xl:w-1/12',
+      sortFn: (reverse, albums) => {
+        return orderBy(albums, 'assetCount', [reverse ? 'desc' : 'asc']);
+      },
     },
-  ];
-  const viewOptionNames = viewOptions.map((option) => option.name);
-  const viewOptionIcons: (typeof Icon)[] = viewOptions.map((option) => option.icon);
+    lastModified: {
+      table: 'Updated date',
+      sortTitle: 'Last modified',
+      sortDesc: true,
+      widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
+      sortFn: (reverse, albums) => {
+        return orderBy(albums, [(album) => new Date(album.updatedAt)], [reverse ? 'desc' : 'asc']);
+      },
+    },
+    mostRecent: {
+      table: 'Created date',
+      sortTitle: 'Most recent photo',
+      sortDesc: true,
+      widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
+      sortFn: (reverse, albums) => {
+        return orderBy(
+          albums,
+          [
+            (album) =>
+              album.lastModifiedAssetTimestamp ? new Date(album.lastModifiedAssetTimestamp) : new Date(album.updatedAt),
+          ],
+          [reverse ? 'desc' : 'asc'],
+        );
+      },
+    },
+  };
+
+  const handleEdit = (album: AlbumResponseDto) => {
+    selectedAlbum = { ...album };
+    shouldShowEditUserForm = true;
+  };
 
   const {
     albums: unsortedAlbums,
@@ -56,6 +113,11 @@
 
   let albums = unsortedAlbums;
   let albumToDelete: AlbumResponseDto | null;
+
+  const chooseAlbumToDelete = (album: AlbumResponseDto) => {
+    $contextMenuTargetAlbum = album;
+    setAlbumToDelete();
+  };
 
   const setAlbumToDelete = () => {
     albumToDelete = $contextMenuTargetAlbum ?? null;
@@ -78,24 +140,13 @@
     }
   };
 
-  const sortByDate = (a: string, b: string) => {
-    const aDate = new Date(a);
-    const bDate = new Date(b);
-    return bDate.getTime() - aDate.getTime();
-  };
-
   $: {
     const { sortBy } = $albumViewSettings;
-    if (sortBy === 'Most recent photo') {
-      $albums = $unsortedAlbums.sort((a, b) =>
-        a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-          ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
-          : sortByDate(a.updatedAt, b.updatedAt),
-      );
-    } else if (sortBy === 'Last modified') {
-      $albums = $unsortedAlbums.sort((a, b) => sortByDate(a.updatedAt, b.updatedAt));
-    } else if (sortBy === 'Album title') {
-      $albums = $unsortedAlbums.sort((a, b) => a.albumName.localeCompare(b.albumName));
+    for (const key in sortByOptions) {
+      if (sortByOptions[key].sortTitle === sortBy) {
+        $albums = sortByOptions[key].sortFn(sortByOptions[key].sortDesc, $unsortedAlbums);
+        break;
+      }
     }
   }
 
@@ -125,7 +176,34 @@
       console.log(error);
     }
   };
+
+  const successModifyAlbum = () => {
+    shouldShowEditUserForm = false;
+    notificationController.show({
+      message: 'Album infos updated',
+      type: NotificationType.Info,
+    });
+    $albums[$albums.findIndex((x) => x.id === selectedAlbum.id)] = selectedAlbum;
+  };
+
+  const handleChangeListMode = () => {
+    if ($albumViewSettings.view === AlbumViewMode.Cover) {
+      $albumViewSettings.view = AlbumViewMode.List;
+    } else {
+      $albumViewSettings.view = AlbumViewMode.Cover;
+    }
+  };
 </script>
+
+{#if shouldShowEditUserForm}
+  <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
+    <EditAlbumForm
+      album={selectedAlbum}
+      on:edit-success={() => successModifyAlbum()}
+      on:cancel={() => (shouldShowEditUserForm = false)}
+    />
+  </FullScreenModal>
+{/if}
 
 <UserPageLayout user={data.user} title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
@@ -136,8 +214,30 @@
       </div>
     </LinkButton>
 
-    <Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} icons={[SwapVertical]} />
-    <Dropdown options={viewOptionNames} bind:value={$albumViewSettings.view} icons={viewOptionIcons} />
+    <Dropdown
+      options={Object.values(sortByOptions).map((CourseInfo) => CourseInfo.sortTitle)}
+      bind:value={$albumViewSettings.sortBy}
+      icons={Object.keys(sortByOptions).map((key) => (sortByOptions[key].sortDesc ? ArrowDownThin : ArrowUpThin))}
+      on:select={(event) => {
+        for (const key in sortByOptions) {
+          if (sortByOptions[key].sortTitle === event.detail) {
+            sortByOptions[key].sortDesc = !sortByOptions[key].sortDesc;
+          }
+        }
+      }}
+    />
+
+    <LinkButton on:click={() => handleChangeListMode()}>
+      <div class="flex place-items-center gap-2 text-sm">
+        {#if $albumViewSettings.view === AlbumViewMode.List}
+          <ViewGridOutline size="18" />
+          <p class="hidden sm:block">Cover</p>
+        {:else}
+          <FormatListBulletedSquare size="18" />
+          <p class="hidden sm:block">List</p>
+        {/if}
+      </div>
+    </LinkButton>
   </div>
 
   <!-- Album Card -->
@@ -154,11 +254,11 @@
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <tr class="flex w-full place-items-center p-5">
-          <th class="w-1/4 text-left text-sm font-medium">Album title</th>
-          <th class="w-1/4 text-right text-sm font-medium">Assets</th>
-          <th class="w-1/4 text-right text-sm font-medium">Updated date</th>
-          <th class="w-1/4 text-right text-sm font-medium">Created date</th>
+        <tr class="flex w-full place-items-center p-2 md:p-5">
+          {#each Object.keys(sortByOptions) as key (key)}
+            <TableHeader bind:albumViewSettings={$albumViewSettings.sortBy} bind:option={sortByOptions[key]} />
+          {/each}
+          <th class="hidden w-2/12 text-center text-sm font-medium lg:block 2xl:w-1/12">Action</th>
         </tr>
       </thead>
       <tbody
@@ -166,18 +266,36 @@
       >
         {#each $albums as album (album.id)}
           <tr
-            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-5 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+            class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
             on:click={() => goto(`albums/${album.id}`)}
             on:keydown={(event) => event.key === 'Enter' && goto(`albums/${album.id}`)}
             tabindex="0"
           >
-            <td class="text-md w-1/4 text-ellipsis text-left">{album.albumName}</td>
-            <td class="text-md w-1/4 text-ellipsis text-right">
+            <td class="text-md w-8/12 text-ellipsis text-left sm:w-4/12 md:w-4/12 2xl:w-6/12">{album.albumName}</td>
+            <td class="text-md w-4/12 text-ellipsis text-center sm:w-2/12 md:w-2/12 2xl:w-1/12">
               {album.assetCount}
               {album.assetCount == 1 ? `item` : `items`}
             </td>
-            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.updatedAt)}</td>
-            <td class="text-md w-1/4 text-ellipsis text-right">{dateLocaleString(album.createdAt)}</td>
+            <td class="text-md hidden w-3/12 text-ellipsis text-center sm:block lg:w-2/12"
+              >{dateLocaleString(album.updatedAt)}</td
+            >
+            <td class="text-md hidden w-3/12 text-ellipsis text-center sm:block lg:w-2/12"
+              >{dateLocaleString(album.createdAt)}</td
+            >
+            <td class="text-md hidden w-2/12 text-ellipsis text-center lg:block 2xl:w-1/12">
+              <button
+                on:click|stopPropagation={() => handleEdit(album)}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <PencilOutline size="16" />
+              </button>
+              <button
+                on:click|stopPropagation={() => chooseAlbumToDelete(album)}
+                class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+              >
+                <TrashCanOutline size="16" />
+              </button>
+            </td>
           </tr>
         {/each}
       </tbody>

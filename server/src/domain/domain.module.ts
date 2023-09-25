@@ -6,6 +6,7 @@ import { AuditService } from './audit';
 import { AuthService } from './auth';
 import { FacialRecognitionService } from './facial-recognition';
 import { JobService } from './job';
+import { LibraryService } from './library';
 import { MediaService } from './media';
 import { MetadataService } from './metadata';
 import { PartnerService } from './partner';
@@ -30,6 +31,7 @@ const providers: Provider[] = [
   JobService,
   MediaService,
   MetadataService,
+  LibraryService,
   PersonService,
   PartnerService,
   SearchService,

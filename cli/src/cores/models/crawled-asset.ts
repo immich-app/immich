@@ -25,7 +25,7 @@ export class CrawledAsset {
   async process() {
     const stats = await fs.promises.stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
-    this.fileCreatedAt = stats.ctime.toISOString();
+    this.fileCreatedAt = stats.mtime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileSize = stats.size;
 

@@ -147,7 +147,6 @@ export class MetadataExtractionProcessor {
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
-
     await this.assetRepository.upsertExif(exifData);
 
     let localDateTime = exifData.dateTimeOriginal ?? undefined;

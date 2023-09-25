@@ -11,6 +11,7 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import LibraryList from './library-list.svelte';
 
   export let user: UserResponseDto;
 
@@ -34,6 +35,10 @@
 
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
   <DeviceList bind:devices />
+</SettingAccordion>
+
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">

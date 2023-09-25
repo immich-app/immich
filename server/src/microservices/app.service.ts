@@ -4,6 +4,7 @@ import {
   IDeleteFilesJob,
   JobName,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
   PersonService,
@@ -14,6 +15,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+
 import { Injectable, Logger } from '@nestjs/common';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
@@ -37,6 +39,7 @@ export class AppService {
     private systemConfigService: SystemConfigService,
     private userService: UserService,
     private auditService: AuditService,
+    private libraryService: LibraryService,
   ) {}
 
   async init() {
@@ -77,6 +80,13 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
+      [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
+      [JobName.LIBRARY_MARK_ASSET_OFFLINE]: (data) => this.libraryService.handleOfflineAsset(data),
+      [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
+      [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
+      [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
+      [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
+      [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
     process.on('uncaughtException', (error: Error | any) => {

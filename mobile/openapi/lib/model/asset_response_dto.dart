@@ -22,7 +22,11 @@ class AssetResponseDto {
     required this.fileModifiedAt,
     required this.id,
     required this.isArchived,
+    required this.isExternal,
     required this.isFavorite,
+    required this.isOffline,
+    required this.isReadOnly,
+    required this.libraryId,
     this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
@@ -63,7 +67,15 @@ class AssetResponseDto {
 
   bool isArchived;
 
+  bool isExternal;
+
   bool isFavorite;
+
+  bool isOffline;
+
+  bool isReadOnly;
+
+  String libraryId;
 
   String? livePhotoVideoId;
 
@@ -115,7 +127,11 @@ class AssetResponseDto {
      other.fileModifiedAt == fileModifiedAt &&
      other.id == id &&
      other.isArchived == isArchived &&
+     other.isExternal == isExternal &&
      other.isFavorite == isFavorite &&
+     other.isOffline == isOffline &&
+     other.isReadOnly == isReadOnly &&
+     other.libraryId == libraryId &&
      other.livePhotoVideoId == livePhotoVideoId &&
      other.localDateTime == localDateTime &&
      other.originalFileName == originalFileName &&
@@ -142,7 +158,11 @@ class AssetResponseDto {
     (fileModifiedAt.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
+    (isExternal.hashCode) +
     (isFavorite.hashCode) +
+    (isOffline.hashCode) +
+    (isReadOnly.hashCode) +
+    (libraryId.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime.hashCode) +
     (originalFileName.hashCode) +
@@ -158,7 +178,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -175,7 +195,11 @@ class AssetResponseDto {
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
+      json[r'isExternal'] = this.isExternal;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isOffline'] = this.isOffline;
+      json[r'isReadOnly'] = this.isReadOnly;
+      json[r'libraryId'] = this.libraryId;
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
@@ -225,7 +249,11 @@ class AssetResponseDto {
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
+        isExternal: mapValueOfType<bool>(json, r'isExternal')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isOffline: mapValueOfType<bool>(json, r'isOffline')!,
+        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         localDateTime: mapDateTime(json, r'localDateTime', '')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
@@ -294,7 +322,11 @@ class AssetResponseDto {
     'fileModifiedAt',
     'id',
     'isArchived',
+    'isExternal',
     'isFavorite',
+    'isOffline',
+    'isReadOnly',
+    'libraryId',
     'localDateTime',
     'originalFileName',
     'originalPath',

@@ -70,4 +70,10 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.SIDECAR]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.LIBRARY]!: JobSettingsDto;
 }
