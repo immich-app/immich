@@ -1,6 +1,7 @@
 import {
   AssetType,
   Colorspace,
+  ExifEntity,
   SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
@@ -207,6 +208,25 @@ describe(MediaService.name, () => {
         size: 1440,
         format: 'jpeg',
         quality: 80,
+        colorspace: Colorspace.SRGB,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
+      });
+    });
+
+    it('should generate a P3 thumbnail for a wide gamut image', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+      ]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.jpeg', {
+        size: 1440,
+        format: 'jpeg',
+        quality: 80,
         colorspace: Colorspace.P3,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
@@ -287,13 +307,29 @@ describe(MediaService.name, () => {
         format: 'webp',
         size: 250,
         quality: 80,
-        colorspace: Colorspace.P3,
+        colorspace: Colorspace.SRGB,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
       });
     });
+  });
+
+  it('should generate a P3 thumbnail for a wide gamut image', async () => {
+    assetMock.getByIds.mockResolvedValue([
+      { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+    ]);
+    await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
+
+    expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+    expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.webp', {
+      format: 'webp',
+      size: 250,
+      quality: 80,
+      colorspace: Colorspace.P3,
+    });
+    expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: 'upload/thumbs/user-id/asset-id.webp' });
   });
 
   describe('handleGenerateThumbhashThumbnail', () => {
@@ -1538,5 +1574,52 @@ describe(MediaService.name, () => {
         twoPass: false,
       },
     );
+  });
+
+  describe('isSRGB', () => {
+    it('should return true for srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 8-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for image with no colorspace or bit depth metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: {} as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return false for non-srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for non-srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for 16-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return true for 16-bit image with sRGB colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 16-bit image with sRGB profile', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
   });
 });

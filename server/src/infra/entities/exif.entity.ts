@@ -81,6 +81,15 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   exposureTime!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  profileDescription!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  colorspace!: string | null;
+
+  @Column({ type: 'integer', nullable: true })
+  bitsPerSample!: number | null;
+
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
