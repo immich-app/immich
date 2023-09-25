@@ -153,9 +153,8 @@ class _$AppRouter extends RootStackRouter {
         child: AssetSelectionPage(
           key: args.key,
           existingAssets: args.existingAssets,
-          isNewAlbum: args.isNewAlbum,
           canDeselect: args.canDeselect,
-          parentAsset: args.parentAsset,
+          query: args.query,
         ),
         transitionsBuilder: TransitionsBuilders.slideBottom,
         opaque: true,
@@ -965,16 +964,15 @@ class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
     required Set<Asset> existingAssets,
     bool isNewAlbum = false,
     bool canDeselect = false,
-    Asset? parentAsset,
+    required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
   }) : super(
           AssetSelectionRoute.name,
           path: '/asset-selection-page',
           args: AssetSelectionRouteArgs(
             key: key,
             existingAssets: existingAssets,
-            isNewAlbum: isNewAlbum,
             canDeselect: canDeselect,
-            parentAsset: parentAsset,
+            query: query,
           ),
         );
 
@@ -985,24 +983,21 @@ class AssetSelectionRouteArgs {
   const AssetSelectionRouteArgs({
     this.key,
     required this.existingAssets,
-    this.isNewAlbum = false,
     this.canDeselect = false,
-    this.parentAsset,
+    required this.query,
   });
 
   final Key? key;
 
   final Set<Asset> existingAssets;
 
-  final Asset? parentAsset;
-
-  final bool isNewAlbum;
+  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
 
   final bool canDeselect;
 
   @override
   String toString() {
-    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, isNewAlbum: $isNewAlbum, canDeselect: $canDeselect}';
+    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect}';
   }
 }
 

@@ -227,17 +227,19 @@ final assetsProvider =
   }
 });
 
-final remoteAssetsProvider =
-    StreamProvider.family<RenderList, int?>((ref, userId) async* {
-  if (userId == null) return;
-  final query = ref
+QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
+  final userId = ref.watch(currentUserProvider)?.isarId;
+  if (userId == null) {
+    return null;
+  }
+  return ref
       .watch(dbProvider)
       .assets
       .where()
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
-      .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
@@ -245,5 +247,30 @@ final remoteAssetsProvider =
   yield await RenderList.fromQuery(query, groupBy);
   await for (final _ in query.watchLazy()) {
     yield await RenderList.fromQuery(query, groupBy);
+}
+
+QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
+  WidgetRef ref,
+  Asset parentAsset,
+) {
+  final userId = ref.watch(currentUserProvider)?.isarId;
+  if (userId == null || !parentAsset.isRemote) {
+    return null;
   }
 });
+  return ref
+      .watch(dbProvider)
+      .assets
+      .where()
+      .remoteIdIsNotNull()
+      .filter()
+      .ownerIdEqualTo(userId)
+      // Show existing stack children in selection page
+      .group(
+        (q) => q
+            .stackParentIdIsNull()
+            .or()
+            .stackParentIdEqualTo(parentAsset.remoteId),
+      )
+      .sortByFileCreatedAtDesc();
+}
