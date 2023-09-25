@@ -58,7 +58,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
-    "exiftool-vendored": "^23.0.0",
+    "exiftool-vendored": "^22.0.0",
     "exiftool-vendored.pl": "^12.62.0",
     "fluent-ffmpeg": "^2.1.2",
     "glob": "^10.3.3",
