@@ -15,6 +15,7 @@ import {
   MapMarkerResponseDto,
   MemoryLaneDto,
   MemoryLaneResponseDto,
+  RandomAssetsDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
@@ -54,6 +55,11 @@ export class AssetController {
   @Get('memory-lane')
   getMemoryLane(@AuthUser() authUser: AuthUserDto, @Query() dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     return this.service.getMemoryLane(authUser, dto);
+  }
+
+  @Get('random')
+  getRandom(@AuthUser() authUser: AuthUserDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
+    return this.service.getRandom(authUser, dto.count ?? 1);
   }
 
   @SharedLinkRoute()

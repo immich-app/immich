@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto migration
+    test('to test the property `migration`', () async {
+      // TODO
+    });
+
     // JobSettingsDto objectTagging
     test('to test the property `objectTagging`', () async {
       // TODO

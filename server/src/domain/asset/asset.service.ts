@@ -62,7 +62,7 @@ export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -73,6 +73,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.storageCore = new StorageCore(storageRepository);
     this.configCore = new SystemConfigCore(configRepository);
   }
 
@@ -291,6 +292,11 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

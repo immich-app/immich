@@ -43,6 +43,7 @@ export enum SystemConfigKey {
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
   JOB_SIDECAR_CONCURRENCY = 'job.sidecar.concurrency',
   JOB_LIBRARY_CONCURRENCY = 'job.library.concurrency',
+  JOB_MIGRATION_CONCURRENCY = 'job.migration.concurrency',
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',

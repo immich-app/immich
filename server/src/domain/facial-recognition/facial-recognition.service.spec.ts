@@ -307,14 +307,14 @@ describe(FacialRecognitionService.name, () => {
       await sut.handleGenerateFaceThumbnail(face.middle);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/pe/rs');
       expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
         left: 95,
         top: 95,
         width: 110,
         height: 110,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -323,7 +323,7 @@ describe(FacialRecognitionService.name, () => {
       expect(personMock.update).toHaveBeenCalledWith({
         faceAssetId: 'asset-1',
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/user-id/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/user-id/pe/rs/person-1.jpeg',
       });
     });
 
@@ -338,7 +338,7 @@ describe(FacialRecognitionService.name, () => {
         width: 510,
         height: 510,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -357,7 +357,7 @@ describe(FacialRecognitionService.name, () => {
         width: 202,
         height: 202,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,

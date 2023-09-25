@@ -10,14 +10,14 @@
   import Database from 'svelte-material-icons/Database.svelte';
   import Upload from 'svelte-material-icons/Upload.svelte';
   import Pulse from 'svelte-loading-spinners/Pulse.svelte';
-
   import { slide } from 'svelte/transition';
-  import { Dropdown, DropdownDivider, DropdownItem, Helper } from 'flowbite-svelte';
-  import { Icon } from 'flowbite-svelte-icons';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
   import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
   import LibraryRenameForm from '../forms/library-rename-form.svelte';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import Portal from '../shared-components/portal/portal.svelte';
+  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
+  import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -40,6 +40,9 @@
   let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
+  let showContextMenu = false;
+  let contextMenuPosition = { x: 0, y: 0 };
+  let libraryType: LibraryType;
 
   onMount(() => {
     readLibraryList();
@@ -50,12 +53,22 @@
     editScanSettings = null;
     renameLibrary = null;
     updateLibraryIndex = null;
+    showContextMenu = false;
 
     for (let i = 0; i < dropdownOpen.length; i++) {
       dropdownOpen[i] = false;
     }
   };
 
+  const showMenu = ({ x, y }: MouseEvent, type: LibraryType) => {
+    contextMenuPosition = { x, y };
+    showContextMenu = !showContextMenu;
+    libraryType = type;
+  };
+
+  const onMenuExit = () => {
+    showContextMenu = false;
+  };
   const refreshStats = async (listIndex: number) => {
     const { data } = await api.libraryApi.getLibraryStatistics({ id: libraries[listIndex].id });
     stats[listIndex] = data;
@@ -201,6 +214,59 @@
       handleError(error, 'Unable to remove offline files');
     }
   };
+
+  const onRenameClicked = (index: number) => {
+    closeAll();
+    renameLibrary = index;
+    updateLibraryIndex = index;
+  };
+
+  const onEditImportPathClicked = (index: number) => {
+    closeAll();
+    editImportPaths = index;
+    updateLibraryIndex = index;
+  };
+
+  const onScanNewLibraryClicked = (libraryId: string) => {
+    closeAll();
+    handleScan(libraryId);
+  };
+
+  const onScanSettingClicked = (index: number) => {
+    closeAll();
+    editScanSettings = index;
+    updateLibraryIndex = index;
+  };
+
+  const onScanAllLibraryFilesClicked = (libraryId: string) => {
+    closeAll();
+    handleScanChanges(libraryId);
+  };
+
+  const onForceScanAllLibraryFilesClicked = (libraryId: string) => {
+    closeAll();
+    handleForceScan(libraryId);
+  };
+
+  const onRemoveOfflineFilesClicked = (libraryId: string) => {
+    closeAll();
+    handleRemoveOffline(libraryId);
+  };
+
+  const onDeleteLibraryClicked = (index: number, library: LibraryResponseDto) => {
+    closeAll();
+
+    if (confirm(`Are you sure you want to delete ${library.name} library?`) == true) {
+      refreshStats(index);
+      if (totalCount[index] > 0) {
+        deleteAssetCount = totalCount[index];
+        confirmDeleteLibrary = library;
+      } else {
+        deleteLibrary = library;
+        handleDelete();
+      }
+    }
+  };
 </script>
 
 {#if confirmDeleteLibrary}
@@ -260,88 +326,46 @@
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
                   <button
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                    on:click|stopPropagation|preventDefault={(e) => showMenu(e, library.type)}
                   >
                     <DotsVertical size="16" />
                   </button>
 
-                  <Dropdown bind:open={dropdownOpen[index]}>
-                    <DropdownItem
-                      on:click={() => {
-                        closeAll();
-                        renameLibrary = index;
-                        updateLibraryIndex = index;
-                      }}>Rename</DropdownItem
-                    >
-                    {#if library.type === LibraryType.External}
-                      <DropdownItem
-                        on:click={function () {
-                          closeAll();
-                          handleScan(library.id);
-                        }}
-                      >
-                        Scan Library Files
-                        <Helper>Looks for new files</Helper>
-                      </DropdownItem>
-                      <DropdownItem
-                        on:click={() => {
-                          closeAll();
-                          editImportPaths = index;
-                          updateLibraryIndex = index;
-                        }}>Edit Import Paths</DropdownItem
-                      >
-                      <DropdownItem class="flex items-center justify-between">
-                        Manage<Icon name="chevron-right-solid" class="ml-2 h-3 w-3 text-primary-700 dark:text-white" />
-                      </DropdownItem>
-                      <Dropdown slot="footer" class="w-60" placement="right-start">
-                        <DropdownItem
-                          on:click={() => {
-                            closeAll();
-                            editScanSettings = index;
-                            updateLibraryIndex = index;
-                          }}>Scan Settings</DropdownItem
-                        >
-                        <DropdownDivider />
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleScanChanges(library.id);
-                          }}
-                          >Scan All Library Files
-                          <Helper>Rescan, but also refreshes modified files</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleForceScan(library.id);
-                          }}
-                          >Force Scan All Library Files
-                          <Helper>Rescan, but refreshes every file</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleRemoveOffline(library.id);
-                          }}
-                          >Remove Offline Files
-                          <Helper>Any offline files are removed from Immich</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            refreshStats(index);
+                  {#if showContextMenu}
+                    <Portal target="body">
+                      <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+                        <MenuOption on:click={() => onRenameClicked(index)} text="Rename" />
 
-                            if (totalCount[index] > 0) {
-                              deleteAssetCount = totalCount[index];
-                              confirmDeleteLibrary = library;
-                            } else {
-                              deleteLibrary = library;
-                              handleDelete();
-                            }
-                          }}>Delete Library</DropdownItem
-                        >
-                      </Dropdown>
-                    {/if}
-                  </Dropdown>
+                        {#if libraryType === LibraryType.External}
+                          <MenuOption on:click={() => onEditImportPathClicked(index)} text="Edit Import Paths" />
+                          <MenuOption on:click={() => onScanSettingClicked(index)} text="Scan Settings" />
+                          <hr />
+                          <MenuOption
+                            on:click={() => onScanNewLibraryClicked(library.id)}
+                            text="Scan New Library Files"
+                          />
+                          <MenuOption
+                            on:click={() => onScanAllLibraryFilesClicked(library.id)}
+                            text="Re-scan All Library Files"
+                            subtitle={'Only refreshes modified files'}
+                          />
+                          <MenuOption
+                            on:click={() => onForceScanAllLibraryFilesClicked(library.id)}
+                            text="Force Re-scan All Library Files"
+                            subtitle={'Refreshes every file'}
+                          />
+                          <hr />
+                          <MenuOption
+                            on:click={() => onRemoveOfflineFilesClicked(library.id)}
+                            text="Remove Offline Files"
+                          />
+                          <MenuOption on:click={() => onDeleteLibraryClicked(index, library)}>
+                            <p class="text-red-600">Delete library</p>
+                          </MenuOption>
+                        {/if}
+                      </ContextMenu>
+                    </Portal>
+                  {/if}
                 </td>
               </tr>
               {#if renameLibrary === index}

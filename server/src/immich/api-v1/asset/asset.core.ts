@@ -1,5 +1,5 @@
 import { AuthUserDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
-import { AssetEntity, LibraryEntity, UserEntity } from '@app/infra/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
@@ -12,14 +12,14 @@ export class AssetCore {
 
   async create(
     authUser: AuthUserDto,
-    dto: CreateAssetDto | ImportAssetDto,
+    dto: (CreateAssetDto | ImportAssetDto) & { libraryId: string },
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
-      owner: { id: authUser.id } as UserEntity,
-      library: { id: dto.libraryId } as LibraryEntity,
+      ownerId: authUser.id,
+      libraryId: dto.libraryId,
 
       checksum: file.checksum,
       originalPath: file.originalPath,

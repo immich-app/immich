@@ -249,7 +249,7 @@ export class LibraryService {
         originalPath: assetPath,
         deviceAssetId: deviceAssetId,
         deviceId: 'Library Import',
-        fileCreatedAt: stats.ctime,
+        fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
         type: assetType,
         originalFileName: parse(assetPath).name,
@@ -261,7 +261,7 @@ export class LibraryService {
     } else if (doRefresh && existingAssetEntity) {
       assetId = existingAssetEntity.id;
       await this.assetRepository.updateAll([existingAssetEntity.id], {
-        fileCreatedAt: stats.ctime,
+        fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
       });
     } else {

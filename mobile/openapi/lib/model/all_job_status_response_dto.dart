@@ -17,6 +17,7 @@ class AllJobStatusResponseDto {
     required this.clipEncoding,
     required this.library_,
     required this.metadataExtraction,
+    required this.migration,
     required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
@@ -33,6 +34,8 @@ class AllJobStatusResponseDto {
   JobStatusDto library_;
 
   JobStatusDto metadataExtraction;
+
+  JobStatusDto migration;
 
   JobStatusDto objectTagging;
 
@@ -54,6 +57,7 @@ class AllJobStatusResponseDto {
      other.clipEncoding == clipEncoding &&
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
+     other.migration == migration &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
@@ -69,6 +73,7 @@ class AllJobStatusResponseDto {
     (clipEncoding.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
+    (migration.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
@@ -78,7 +83,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +91,7 @@ class AllJobStatusResponseDto {
       json[r'clipEncoding'] = this.clipEncoding;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
@@ -108,6 +114,7 @@ class AllJobStatusResponseDto {
         clipEncoding: JobStatusDto.fromJson(json[r'clipEncoding'])!,
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobStatusDto.fromJson(json[r'migration'])!,
         objectTagging: JobStatusDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
@@ -166,6 +173,7 @@ class AllJobStatusResponseDto {
     'clipEncoding',
     'library',
     'metadataExtraction',
+    'migration',
     'objectTagging',
     'recognizeFaces',
     'search',
