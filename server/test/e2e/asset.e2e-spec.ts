@@ -2,8 +2,12 @@ import {
   AssetResponseDto,
   IAssetRepository,
   IFaceRepository,
+  IJobRepository,
   IPersonRepository,
+  JobItem,
+  JobItemHandler,
   LoginResponseDto,
+  QueueName,
   TimeBucketSize,
 } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
@@ -15,6 +19,8 @@ import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
+import { AppService } from '../../src/microservices/app.service';
+import { MetadataExtractionProcessor } from '../../src/microservices/processors/metadata-extraction.processor';
 
 const user1Dto = {
   email: 'user1@immich.app',
@@ -81,17 +87,38 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset3: AssetEntity;
   let asset4: AssetEntity;
 
+  let _handler: JobItemHandler = () => Promise.resolve();
+  let jobs = false;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+      providers: [MetadataExtractionProcessor, AppService],
+    })
+      .overrideProvider(IJobRepository)
+      .useValue({
+        addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
+        queue: (item: JobItem) => jobs && _handler(item),
+        resume: jest.fn(),
+        empty: jest.fn(),
+        setConcurrency: jest.fn(),
+        getQueueStatus: jest.fn(),
+        getJobCounts: jest.fn(),
+        pause: jest.fn(),
+      } as IJobRepository)
+      .compile();
 
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
+
+    const appService = app.get(AppService);
+    await appService.init();
   });
 
   beforeEach(async () => {
+    jobs = false;
+
     await db.reset();
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
