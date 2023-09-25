@@ -218,7 +218,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       final assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
         final assetList = await album.getAssetListPaged(page: 0, size: 1);
-        if (assetList.isEmpty) continue;
+
+        // Even though we check assetCountInAlbum to make sure that there are assets in album
+        // The `getAssetListPaged` method still return empty list and cause not assets get rendered
+        if (assetList.isEmpty) {
+          continue;
+        }
         final thumbnailAsset = assetList.first;
         try {
           final thumbnailData = await thumbnailAsset
