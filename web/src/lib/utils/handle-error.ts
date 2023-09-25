@@ -1,5 +1,5 @@
 import type { ApiError } from '@api';
-import * as axios from 'axios';
+import axios from 'axios';
 import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
 
 export async function getServerErrorMessage(error: unknown) {
@@ -17,7 +17,7 @@ export async function getServerErrorMessage(error: unknown) {
 }
 
 export async function handleError(error: unknown, message: string) {
-  if (error instanceof axios.CanceledError) {
+  if (axios.isCancel(error)) {
     return;
   }
 
