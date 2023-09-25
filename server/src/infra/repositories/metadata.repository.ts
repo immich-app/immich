@@ -74,7 +74,7 @@ export class MetadataRepository implements IMetadataRepository {
 
   getExifTags(path: string): Promise<ImmichTags | null> {
     return exiftool
-      .read<ImmichTags>(path, undefined, {
+      .read(path, undefined, {
         ...DefaultReadTaskOptions,
 
         defaultVideosToUTC: true,
@@ -87,6 +87,6 @@ export class MetadataRepository implements IMetadataRepository {
       .catch((error) => {
         this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
         return null;
-      });
+      }) as Promise<ImmichTags | null>;
   }
 }
