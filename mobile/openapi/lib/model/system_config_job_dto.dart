@@ -17,6 +17,7 @@ class SystemConfigJobDto {
     required this.clipEncoding,
     required this.library_,
     required this.metadataExtraction,
+    required this.migration,
     required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
@@ -33,6 +34,8 @@ class SystemConfigJobDto {
   JobSettingsDto library_;
 
   JobSettingsDto metadataExtraction;
+
+  JobSettingsDto migration;
 
   JobSettingsDto objectTagging;
 
@@ -54,6 +57,7 @@ class SystemConfigJobDto {
      other.clipEncoding == clipEncoding &&
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
+     other.migration == migration &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
@@ -69,6 +73,7 @@ class SystemConfigJobDto {
     (clipEncoding.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
+    (migration.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
@@ -78,7 +83,7 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +91,7 @@ class SystemConfigJobDto {
       json[r'clipEncoding'] = this.clipEncoding;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
@@ -108,6 +114,7 @@ class SystemConfigJobDto {
         clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobSettingsDto.fromJson(json[r'migration'])!,
         objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
@@ -166,6 +173,7 @@ class SystemConfigJobDto {
     'clipEncoding',
     'library',
     'metadataExtraction',
+    'migration',
     'objectTagging',
     'recognizeFaces',
     'search',

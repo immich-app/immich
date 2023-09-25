@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **clipEncoding** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **library_** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **metadataExtraction** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**migration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **objectTagging** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **recognizeFaces** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **search** | [**JobSettingsDto**](JobSettingsDto.md) |  | 

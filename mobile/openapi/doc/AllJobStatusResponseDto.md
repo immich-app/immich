@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **clipEncoding** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **library_** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **metadataExtraction** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**migration** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **objectTagging** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **recognizeFaces** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **search** | [**JobStatusDto**](JobStatusDto.md) |  | 

@@ -1,9 +1,8 @@
 import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
-import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { IPersonRepository } from '../person';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
@@ -14,8 +13,8 @@ import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIC
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -26,11 +25,10 @@ export class MediaService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(this.storageRepository);
   }
 
-  async handleQueueGenerateThumbnails(job: IBaseJob) {
-    const { force } = job;
-
+  async handleQueueGenerateThumbnails({ force }: IBaseJob) {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -76,6 +74,58 @@ export class MediaService {
           },
         });
       }
+    }
+
+    return true;
+  }
+
+  async handleQueueMigration() {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination),
+    );
+
+    const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
+    if (active === 1 && waiting === 0) {
+      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    }
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
+      }
+    }
+
+    const people = await this.personRepository.getAll();
+    for (const person of people) {
+      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+    }
+
+    return true;
+  }
+
+  async handleAssetMigration({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
+    const webpPath = this.ensureThumbnailPath(asset, 'webp');
+    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+
+    if (asset.resizePath && asset.resizePath !== resizePath) {
+      await this.storageRepository.moveFile(asset.resizePath, resizePath);
+      await this.assetRepository.save({ id: asset.id, resizePath });
+    }
+
+    if (asset.webpPath && asset.webpPath !== webpPath) {
+      await this.storageRepository.moveFile(asset.webpPath, webpPath);
+      await this.assetRepository.save({ id: asset.id, webpPath });
+    }
+
+    if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
+      await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
+      await this.assetRepository.save({ id: asset.id, encodedVideoPath });
     }
 
     return true;
@@ -184,9 +234,7 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-    const output = join(outputFolder, `${asset.id}.mp4`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.ensureEncodedVideoPath(asset, 'mp4');
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
     const mainVideoStream = this.getMainStream(videoStreams);
@@ -330,8 +378,10 @@ export class MediaService {
   }
 
   ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    this.storageRepository.mkdirSync(folderPath);
-    return join(folderPath, `${asset.id}.${extension}`);
+    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`);
+  }
+
+  ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
+    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
   }
 }

@@ -312,6 +312,12 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
+    'migration': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
     'objectTagging': JobStatusDto;
     /**
      * 
@@ -1779,6 +1785,7 @@ export const JobName = {
     ClipEncoding: 'clipEncoding',
     BackgroundTask: 'backgroundTask',
     StorageTemplateMigration: 'storageTemplateMigration',
+    Migration: 'migration',
     Search: 'search',
     Sidecar: 'sidecar',
     Library: 'library'
@@ -3240,6 +3247,12 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'metadataExtraction': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'migration': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}

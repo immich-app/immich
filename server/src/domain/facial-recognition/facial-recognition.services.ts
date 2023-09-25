@@ -1,5 +1,4 @@
 import { Inject, Logger } from '@nestjs/common';
-import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -13,8 +12,8 @@ import { AssetFaceId, IFaceRepository } from './face.repository';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -28,6 +27,7 @@ export class FacialRecognitionService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
@@ -117,6 +117,21 @@ export class FacialRecognitionService {
     return true;
   }
 
+  async handlePersonMigration({ id }: IEntityJob) {
+    const person = await this.personRepository.getById(id);
+    if (!person) {
+      return false;
+    }
+
+    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
+    if (person.thumbnailPath && person.thumbnailPath !== path) {
+      await this.storageRepository.moveFile(person.thumbnailPath, path);
+      await this.personRepository.update({ id, thumbnailPath: path });
+    }
+
+    return true;
+  }
+
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
@@ -132,9 +147,7 @@ export class FacialRecognitionService {
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
 
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${personId}.jpeg`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
 
     const { x1, y1, x2, y2 } = boundingBox;
 
