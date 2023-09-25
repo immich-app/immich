@@ -6,9 +6,11 @@ import { IStorageRepository } from './storage.repository';
 @Injectable()
 export class StorageService {
   private logger = new Logger(StorageService.name);
-  private storageCore = new StorageCore(this.storageRepository);
+  private storageCore: StorageCore;
 
-  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {}
+  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {
+    this.storageCore = new StorageCore(storageRepository);
+  }
 
   init() {
     const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
@@ -26,12 +28,6 @@ export class StorageService {
 
       try {
         await this.storageRepository.unlink(file);
-        // extracts the file's parent folder
-        // upload/thumbs/89/ab/89abcd.jpeg -> upload/thumbs/89
-        const found = file.match(/(?<path>.*\/.*)\/.*\/.*\..*/);
-        if (found?.groups) {
-          await this.storageRepository.removeEmptyDirs(found.groups.path, true);
-        }
       } catch (error: any) {
         this.logger.warn('Unable to remove file from disk', error);
       }

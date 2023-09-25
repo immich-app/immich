@@ -33,8 +33,11 @@ export class StorageCore {
     ownerId: string,
     fileName: string,
   ): string {
-    let folderPath = this.getFolderLocation(folder, ownerId);
-    folderPath = join(folderPath, fileName.substring(0, 2), fileName.substring(2, 4));
+    const folderPath = join(
+      this.getFolderLocation(folder, ownerId),
+      fileName.substring(0, 2),
+      fileName.substring(2, 4),
+    );
     this.repository.mkdirSync(folderPath);
     return join(folderPath, fileName);
   }

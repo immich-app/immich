@@ -17,11 +17,6 @@ export interface IFaceThumbnailJob extends IAssetFaceJob {
   personId: string;
 }
 
-export interface IPersonJob extends IBaseJob {
-  personId: string;
-  ownerId: string;
-}
-
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload';

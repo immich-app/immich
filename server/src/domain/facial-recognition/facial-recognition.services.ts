@@ -12,8 +12,8 @@ import { AssetFaceId, IFaceRepository } from './face.repository';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
-  private storageCore = new StorageCore(this.storageRepository);
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -27,6 +27,7 @@ export class FacialRecognitionService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
@@ -116,15 +117,13 @@ export class FacialRecognitionService {
     return true;
   }
 
-  async handlePersonThumbnailMigration({ id }: IEntityJob) {
+  async handlePersonMigration({ id }: IEntityJob) {
     const person = await this.personRepository.getById(id);
-
     if (!person) {
       return false;
     }
 
     const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
-
     if (person.thumbnailPath && person.thumbnailPath !== path) {
       await this.storageRepository.moveFile(person.thumbnailPath, path);
       await this.personRepository.update({ id, thumbnailPath: path });

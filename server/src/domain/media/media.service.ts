@@ -84,10 +84,8 @@ export class MediaService {
       this.assetRepository.getAll(pagination),
     );
 
-    if (
-      (await this.jobRepository.getJobCounts(QueueName.MIGRATION)).active === 1 &&
-      (await this.jobRepository.getJobCounts(QueueName.MIGRATION)).waiting === 0
-    ) {
+    const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
+    if (active === 1 && waiting === 0) {
       await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
       await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
     }
@@ -99,12 +97,8 @@ export class MediaService {
     }
 
     const people = await this.personRepository.getAll();
-
     for (const person of people) {
-      await this.jobRepository.queue({
-        name: JobName.MIGRATE_PERSON,
-        data: { id: person.id },
-      });
+      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
     }
 
     return true;
