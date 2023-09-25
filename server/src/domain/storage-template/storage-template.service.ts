@@ -30,7 +30,7 @@ export interface MoveAssetMetadata {
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
@@ -44,6 +44,7 @@ export class StorageTemplateService {
     this.configCore = new SystemConfigCore(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {

@@ -69,6 +69,9 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.MIGRATION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.BACKGROUND_TASK]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })

@@ -50,7 +50,7 @@ const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : 
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private reverseGeocodingEnabled: boolean;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -63,6 +63,7 @@ export class MetadataExtractionProcessor {
     configService: ConfigService,
   ) {
     this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async init(deleteCache = false) {
