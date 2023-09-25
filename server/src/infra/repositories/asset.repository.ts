@@ -17,7 +17,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Raw, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
@@ -370,8 +370,8 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isArchived: false,
         exifInfo: {
-          latitude: Not(IsNull()),
-          longitude: Not(IsNull()),
+          latitude: Raw((lat) => `${lat} is not null and ${lat} != 'NaN'`),
+          longitude: Raw((long) => `${long} is not null and ${long} != 'NaN'`),
         },
         isFavorite,
         fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
