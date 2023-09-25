@@ -223,6 +223,7 @@ export class MetadataExtractionProcessor {
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
         motionAsset = await this.assetRepository.save({
+          libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
           fileModifiedAt: asset.fileModifiedAt,
