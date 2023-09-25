@@ -53,6 +53,7 @@ export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
+  private oldCities?: string;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -65,6 +66,9 @@ export class MetadataExtractionProcessor {
   ) {
     this.storageCore = new StorageCore(storageRepository);
     this.configCore = new SystemConfigCore(configRepository);
+    this.configCore.config$.subscribe((value) =>
+      geocodingRepository.init({ citiesFileOverride: value.reverseGeocoding.citiesFileOverride }),
+    );
   }
 
   async init(deleteCache = false) {
@@ -82,7 +86,10 @@ export class MetadataExtractionProcessor {
     try {
       if (deleteCache) {
         await this.geocodingRepository.deleteCache();
+      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
+        return;
       }
+      this.oldCities = citiesFileOverride;
       this.logger.log('Initializing Reverse Geocoding');
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
