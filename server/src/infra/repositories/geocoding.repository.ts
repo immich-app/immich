@@ -28,7 +28,6 @@ export class GeocodingRepository implements IGeocodingRepository {
     return new Promise<void>((resolve) => {
       geocoder.init(
         {
-          citiesFileOverride: options.citiesFileOverride,
           load: {
             admin1: true,
             admin2: true,
@@ -37,6 +36,7 @@ export class GeocodingRepository implements IGeocodingRepository {
           },
           countries: [],
           dumpDirectory: REVERSE_GEOCODING_DUMP_DIRECTORY,
+          ...options,
         },
         resolve,
       );

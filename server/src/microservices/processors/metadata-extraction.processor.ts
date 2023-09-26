@@ -66,18 +66,12 @@ export class MetadataExtractionProcessor {
   ) {
     this.storageCore = new StorageCore(storageRepository);
     this.configCore = new SystemConfigCore(configRepository);
-    this.configCore.config$.subscribe((value) =>
-      geocodingRepository.init({ citiesFileOverride: value.reverseGeocoding.citiesFileOverride }),
-    );
+    this.configCore.config$.subscribe(() => this.init());
   }
 
   async init(deleteCache = false) {
     const { reverseGeocoding } = await this.configCore.getConfig();
     const { citiesFileOverride } = reverseGeocoding;
-
-    this.logger.log(
-      `Reverse geocoding is ${reverseGeocoding.enabled ? `enabled with ${citiesFileOverride}` : 'disabled'}`,
-    );
 
     if (!reverseGeocoding.enabled) {
       return;
@@ -89,15 +83,14 @@ export class MetadataExtractionProcessor {
       } else if (this.oldCities && this.oldCities === citiesFileOverride) {
         return;
       }
-      this.oldCities = citiesFileOverride;
-      this.logger.log('Initializing Reverse Geocoding');
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
       await this.geocodingRepository.init({ citiesFileOverride });
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log('Reverse Geocoding Initialized');
-    } catch (error: any) {
+      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
+      this.oldCities = citiesFileOverride;
+    } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
   }
