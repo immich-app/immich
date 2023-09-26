@@ -4,6 +4,7 @@ import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
+import path from 'path';
 import { AppService } from 'src/microservices/app.service';
 import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
 import request from 'supertest';
@@ -11,6 +12,9 @@ import { errorStub, uuidStub } from '../fixtures';
 import { db } from '../test-utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
+  const TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
+  const TEST_ASSET_TEMP_PATH = path.normalize(`${TEST_ASSET_PATH}/temp/`);
+
   let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
@@ -422,7 +426,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should scan external library with import paths', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${__dirname}/../assets/albums/nature`],
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -472,7 +476,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${__dirname}/../assets/albums/nature`],
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
         exclusionPatterns: ['**/el_corcal*'],
       });
 
@@ -513,7 +517,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should scan external library with import paths', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${__dirname}/../assets/albums/nature`],
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -564,7 +568,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       beforeEach(async () => {
         library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
-          importPaths: [`${__dirname}/../assets/albums/nature`],
+          importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
         });
       });
 
@@ -596,7 +600,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect(assets).toEqual([]);
       });
 
-      it.each([`${__dirname}/../assets/albums/nature`, `${__dirname}/../assets/albums/nature/`])(
+      it.each([`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_PATH}/albums/nature/`])(
         'should scan external library with external path %s',
         async (externalPath: string) => {
           await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, externalPath);
