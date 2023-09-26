@@ -1,25 +1,16 @@
-import { IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, LoginResponseDto, QueueName } from '@app/domain';
-import { AppModule, LibraryController } from '@app/immich';
+import { JobItemHandler, LibraryResponseDto, LoginResponseDto } from '@app/domain';
+import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
-import path from 'path';
-import { AppService } from 'src/microservices/app.service';
-import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
+import { TEST_ASSET_PATH, createTestApp, db, ensureTestAssets } from '@test/test-utils';
 import request from 'supertest';
 import { errorStub, uuidStub } from '../fixtures';
-import { db } from '../test-utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
-  const TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
-  const TEST_ASSET_TEMP_PATH = path.normalize(`${TEST_ASSET_PATH}/temp/`);
-
   let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
-
-  let _handler: JobItemHandler = () => Promise.resolve();
 
   const user1Dto = {
     email: 'user1@immich.app',
@@ -36,28 +27,9 @@ describe(`${LibraryController.name} (e2e)`, () => {
   };
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-      providers: [MetadataExtractionProcessor, AppService],
-    })
-      .overrideProvider(IJobRepository)
-      .useValue({
-        addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
-        queue: (item: JobItem) => _handler(item),
-        resume: jest.fn(),
-        empty: jest.fn(),
-        setConcurrency: jest.fn(),
-        getQueueStatus: jest.fn(),
-        getJobCounts: jest.fn(),
-        pause: jest.fn(),
-      } as IJobRepository)
-      .compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp(true);
     server = app.getHttpServer();
-
-    const appService = app.get(AppService);
-    await appService.init();
+    await ensureTestAssets();
   });
 
   beforeEach(async () => {
