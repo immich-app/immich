@@ -148,7 +148,10 @@
             on:reset={reset}
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            showResetToDefault={!isEqual(
+              { ...savedConfig.map, ...savedConfig.reverseGeocoding },
+              { ...defaultConfig.map, ...defaultConfig.reverseGeocoding },
+            )}
             {disabled}
           />
         </div>
