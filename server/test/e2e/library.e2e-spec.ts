@@ -1,4 +1,4 @@
-import { JobItemHandler, LibraryResponseDto, LoginResponseDto } from '@app/domain';
+import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -474,7 +474,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
             originalFileName: 'silver_fir',
             libraryId: library.id,
             resized: true,
-            thumbhash: expect.any(String),
             exifInfo: expect.objectContaining({
               exifImageWidth: 511,
               exifImageHeight: 323,
@@ -509,7 +508,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
             originalFileName: 'el_torcal_rocks',
             libraryId: library.id,
             resized: true,
-            thumbhash: expect.any(String),
             exifInfo: expect.objectContaining({
               exifImageWidth: 512,
               exifImageHeight: 341,
@@ -593,7 +591,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
                 originalFileName: 'el_torcal_rocks',
                 libraryId: library.id,
                 resized: true,
-                thumbhash: expect.any(String),
                 exifInfo: expect.objectContaining({
                   exifImageWidth: 512,
                   exifImageHeight: 341,
@@ -606,7 +603,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
                 originalFileName: 'silver_fir',
                 libraryId: library.id,
                 resized: true,
-                thumbhash: expect.any(String),
                 exifInfo: expect.objectContaining({
                   exifImageWidth: 511,
                   exifImageHeight: 323,

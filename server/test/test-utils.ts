@@ -70,9 +70,8 @@ export async function ensureTestAssets(): Promise<void> {
       .catch(() => false);
 
   if (!(await directoryExists(`${TEST_ASSET_PATH}/albums`))) {
-    throw new Error(
-      `Test assets not found. Please checkout https://github.com/etnoy/immich-test-assets/ into ${TEST_ASSET_PATH} first`,
-    );
+    const errorString = `Test assets not found. Please checkout https://github.com/etnoy/immich-test-assets/ into ${TEST_ASSET_PATH} first`;
+    throw new Error(errorString);
   }
   if (!(await directoryExists(`${TEST_ASSET_TEMP_PATH}`))) {
     await fs.promises.mkdir(TEST_ASSET_TEMP_PATH);

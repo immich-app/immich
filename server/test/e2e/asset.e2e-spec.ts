@@ -3,7 +3,6 @@ import {
   IAssetRepository,
   IFaceRepository,
   IPersonRepository,
-  JobItemHandler,
   LoginResponseDto,
   TimeBucketSize,
 } from '@app/domain';
