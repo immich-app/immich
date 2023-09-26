@@ -95,6 +95,7 @@ export class PersonService {
         throw new BadRequestException('Invalid assetId for feature face');
       }
 
+      person = await this.repository.update({ id, faceAssetId: assetId });
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
     }
 

@@ -249,6 +249,7 @@ describe(PersonService.name, () => {
 
     it("should update a person's thumbnailPath", async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
+      personMock.update.mockResolvedValue(personStub.withName);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
@@ -258,6 +259,7 @@ describe(PersonService.name, () => {
       ).resolves.toEqual(responseDto);
 
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.assetId });
       expect(personMock.getFaceById).toHaveBeenCalledWith({
         assetId: faceStub.face1.assetId,
         personId: 'person-1',
