@@ -567,6 +567,6 @@
   <EditDescriptionModal
     {album}
     on:close={() => (isEditingDescription = false)}
-    on:updated={({ detail: description }) => handleUpdateDescription(description)}
+    on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
