@@ -12,7 +12,6 @@ import {
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
-import { AssetFaceId, IFaceRepository } from '../facial-recognition';
 import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { ISearchRepository } from '../search';
@@ -28,7 +27,7 @@ import {
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
-import { IPersonRepository, UpdateFacesData } from './person.repository';
+import { AssetFaceId, IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
@@ -40,7 +39,6 @@ export class PersonService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
@@ -110,7 +108,7 @@ export class PersonService {
 
     if (assetId) {
       await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
-      const face = await this.repository.getFaceById({ personId: id, assetId });
+      const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
       }
@@ -223,7 +221,7 @@ export class PersonService {
       }
 
       const faceId: AssetFaceId = { assetId: asset.id, personId };
-      await this.faceRepository.create({
+      await this.repository.createFace({
         ...faceId,
         embedding,
         imageHeight: rest.imageHeight,
@@ -270,7 +268,7 @@ export class PersonService {
       return false;
     }
 
-    const [face] = await this.faceRepository.getByIds([{ personId: person.id, assetId: person.faceAssetId }]);
+    const [face] = await this.repository.getFacesByIds([{ personId: person.id, assetId: person.faceAssetId }]);
     if (!face) {
       return false;
     }
