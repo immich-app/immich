@@ -90,6 +90,7 @@ export class ServerFeaturesDto implements FeatureFlags {
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
+  reverseGeocoding!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;

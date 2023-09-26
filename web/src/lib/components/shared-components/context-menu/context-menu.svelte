@@ -28,6 +28,7 @@
   role="menu"
   use:clickOutside
   on:outclick
+  on:escape
 >
   <slot />
 </div>

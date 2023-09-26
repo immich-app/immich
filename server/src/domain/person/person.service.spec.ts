@@ -249,7 +249,9 @@ describe(PersonService.name, () => {
 
     it("should update a person's thumbnailPath", async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
+      personMock.update.mockResolvedValue(personStub.withName);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(
@@ -257,25 +259,12 @@ describe(PersonService.name, () => {
       ).resolves.toEqual(responseDto);
 
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.assetId });
       expect(personMock.getFaceById).toHaveBeenCalledWith({
         assetId: faceStub.face1.assetId,
         personId: 'person-1',
       });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: {
-          assetId: faceStub.face1.assetId,
-          personId: 'person-1',
-          boundingBox: {
-            x1: faceStub.face1.boundingBoxX1,
-            x2: faceStub.face1.boundingBoxX2,
-            y1: faceStub.face1.boundingBoxY1,
-            y2: faceStub.face1.boundingBoxY2,
-          },
-          imageHeight: faceStub.face1.imageHeight,
-          imageWidth: faceStub.face1.imageWidth,
-        },
-      });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: 'person-1' } });
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
 

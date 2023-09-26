@@ -85,6 +85,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         configFile: false,
         facialRecognition: false,
         map: true,
+        reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,

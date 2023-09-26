@@ -137,7 +137,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
+<BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <Link size={24} />

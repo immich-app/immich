@@ -77,8 +77,10 @@ export class PersonService {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
     let person = await this.findOrFail(id);
 
-    if (dto.name !== undefined || dto.birthDate !== undefined || dto.isHidden !== undefined) {
-      person = await this.repository.update({ id, name: dto.name, birthDate: dto.birthDate, isHidden: dto.isHidden });
+    const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
+
+    if (name !== undefined || birthDate !== undefined || isHidden !== undefined) {
+      person = await this.repository.update({ id, name, birthDate, isHidden });
       if (this.needsSearchIndexUpdate(dto)) {
         const assets = await this.repository.getAssets(id);
         const ids = assets.map((asset) => asset.id);
@@ -86,28 +88,15 @@ export class PersonService {
       }
     }
 
-    if (dto.featureFaceAssetId) {
-      const assetId = dto.featureFaceAssetId;
+    if (assetId) {
+      await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
       const face = await this.repository.getFaceById({ personId: id, assetId });
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
       }
 
-      await this.jobRepository.queue({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: {
-          personId: id,
-          assetId,
-          boundingBox: {
-            x1: face.boundingBoxX1,
-            x2: face.boundingBoxX2,
-            y1: face.boundingBoxY1,
-            y2: face.boundingBoxY2,
-          },
-          imageHeight: face.imageHeight,
-          imageWidth: face.imageWidth,
-        },
-      });
+      person = await this.repository.update({ id, faceAssetId: assetId });
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
     }
 
     return mapPerson(person);
