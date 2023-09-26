@@ -18,4 +18,7 @@ export default async () => {
 
   process.env.REDIS_PORT = String(redis.getMappedPort(6379));
   process.env.REDIS_HOSTNAME = redis.getHost();
+
+  process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
+  process.env.DISABLE_REVERSE_GEOCODING = 'true';
 };
