@@ -2,7 +2,7 @@
 
 :::caution
 
-This feature is being deprecated in favor of external libraries.
+This feature is being deprecated in favor of [Libraries](/docs/features/libraries.md).
 
 :::
 
