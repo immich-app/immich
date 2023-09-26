@@ -67,12 +67,12 @@
       <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
     </SettingAccordion>
 
-    <SettingAccordion title="Machine Learning Settings" subtitle="Manage model settings">
+    <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
       <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
     </SettingAccordion>
 
-    <SettingAccordion title="Map Settings" subtitle="Manage map settings">
-      <MapSettings disabled={$featureFlags.configFile} mapConfig={configs.map} />
+    <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
+      <MapSettings disabled={$featureFlags.configFile} config={configs} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

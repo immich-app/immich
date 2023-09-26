@@ -1,4 +1,5 @@
 import {
+  FeatureFlag,
   IAlbumRepository,
   IAssetRepository,
   IBaseJob,
@@ -7,17 +8,18 @@ import {
   IGeocodingRepository,
   IJobRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   JobName,
   JOBS_ASSET_PAGINATION_SIZE,
   QueueName,
   StorageCore,
   StorageFolder,
+  SystemConfigCore,
   usePagination,
   WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { DefaultReadTaskOptions, ExifDateTime, exiftool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import * as geotz from 'geo-tz';
@@ -51,8 +53,9 @@ const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : 
 
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
-  private reverseGeocodingEnabled: boolean;
   private storageCore: StorageCore;
+  private configCore: SystemConfigCore;
+  private oldCities?: string;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -61,31 +64,35 @@ export class MetadataExtractionProcessor {
     @Inject(IGeocodingRepository) private geocodingRepository: IGeocodingRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-
-    configService: ConfigService,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
-    this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
     this.storageCore = new StorageCore(storageRepository);
+    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore.config$.subscribe(() => this.init());
   }
 
   async init(deleteCache = false) {
-    this.logger.log(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
-    if (!this.reverseGeocodingEnabled) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    const { citiesFileOverride } = reverseGeocoding;
+
+    if (!reverseGeocoding.enabled) {
       return;
     }
 
     try {
       if (deleteCache) {
         await this.geocodingRepository.deleteCache();
+      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
+        return;
       }
-      this.logger.log('Initializing Reverse Geocoding');
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.geocodingRepository.init();
+      await this.geocodingRepository.init({ citiesFileOverride });
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log('Reverse Geocoding Initialized');
-    } catch (error: any) {
+      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
+      this.oldCities = citiesFileOverride;
+    } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
   }
@@ -161,7 +168,7 @@ export class MetadataExtractionProcessor {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntity) {
     const { latitude, longitude } = exifData;
-    if (!this.reverseGeocodingEnabled || !longitude || !latitude) {
+    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
       return;
     }
 

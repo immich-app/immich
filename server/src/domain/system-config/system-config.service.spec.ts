@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  CitiesFile,
   Colorspace,
   SystemConfig,
   SystemConfigEntity,
@@ -79,6 +80,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   map: {
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     autoLaunch: true,

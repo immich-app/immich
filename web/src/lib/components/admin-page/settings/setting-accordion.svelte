@@ -14,7 +14,9 @@
         {title}
       </h2>
 
-      <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+      <slot name="subtitle">
+        <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+      </slot>
     </div>
 
     <button
