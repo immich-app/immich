@@ -1,7 +1,8 @@
+import { PersonEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
@@ -89,18 +90,14 @@ export class FacialRecognitionService {
         personId = faceSearchResult.items[0].personId;
       }
 
+      let newPerson: PersonEntity | null = null;
       if (!personId) {
         this.logger.debug('No matches, creating a new person.');
-        const person = await this.personRepository.create({ ownerId: asset.ownerId });
-        personId = person.id;
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: { assetId: asset.id, personId, ...rest },
-        });
+        newPerson = await this.personRepository.create({ ownerId: asset.ownerId });
+        personId = newPerson.id;
       }
 
       const faceId: AssetFaceId = { assetId: asset.id, personId };
-
       await this.faceRepository.create({
         ...faceId,
         embedding,
@@ -112,6 +109,11 @@ export class FacialRecognitionService {
         boundingBoxY2: rest.boundingBox.y2,
       });
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
+
+      if (newPerson) {
+        await this.personRepository.update({ id: personId, faceAssetId: asset.id });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      }
     }
 
     return true;
@@ -132,24 +134,41 @@ export class FacialRecognitionService {
     return true;
   }
 
-  async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
-    const { machineLearning } = await this.configCore.getConfig();
+  async handleGeneratePersonThumbnail(data: IEntityJob) {
+    const { machineLearning, thumbnail } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
-    const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
+    const person = await this.personRepository.getById(data.id);
+    if (!person?.faceAssetId) {
+      return false;
+    }
+
+    const [face] = await this.faceRepository.getByIds([{ personId: person.id, assetId: person.faceAssetId }]);
+    if (!face) {
+      return false;
+    }
+
+    const {
+      assetId,
+      personId,
+      boundingBoxX1: x1,
+      boundingBoxX2: x2,
+      boundingBoxY1: y1,
+      boundingBoxY2: y2,
+      imageWidth,
+      imageHeight,
+    } = face;
 
     const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset || !asset.resizePath) {
+    if (!asset?.resizePath) {
       return false;
     }
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
 
-    const output = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
-
-    const { x1, y1, x2, y2 } = boundingBox;
+    const thumbnailPath = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
 
     const halfWidth = (x2 - x1) / 2;
     const halfHeight = (y2 - y1) / 2;
@@ -175,7 +194,6 @@ export class FacialRecognitionService {
       height: newHalfSize * 2,
     };
 
-    const { thumbnail } = await this.configCore.getConfig();
     const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
     const thumbnailOptions = {
       format: 'jpeg',
@@ -183,8 +201,9 @@ export class FacialRecognitionService {
       colorspace: thumbnail.colorspace,
       quality: thumbnail.quality,
     } as const;
-    await this.mediaRepository.resize(croppedOutput, output, thumbnailOptions);
-    await this.personRepository.update({ id: personId, thumbnailPath: output, faceAssetId: data.assetId });
+
+    await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
+    await this.personRepository.update({ id: personId, thumbnailPath });
 
     return true;
   }

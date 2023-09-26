@@ -6,7 +6,6 @@ import {
   IBulkEntityJob,
   IDeleteFilesJob,
   IEntityJob,
-  IFaceThumbnailJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
@@ -68,7 +67,7 @@ export type JobItem =
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
   | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
-  | { name: JobName.GENERATE_FACE_THUMBNAIL; data: IFaceThumbnailJob }
+  | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }

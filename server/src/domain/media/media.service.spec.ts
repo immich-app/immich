@@ -73,19 +73,8 @@ describe(MediaService.name, () => {
       expect(personMock.getAll).toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: {
-          imageWidth: faceStub.face1.imageWidth,
-          imageHeight: faceStub.face1.imageHeight,
-          boundingBox: {
-            x1: faceStub.face1.boundingBoxX1,
-            x2: faceStub.face1.boundingBoxX2,
-            y1: faceStub.face1.boundingBoxY1,
-            y2: faceStub.face1.boundingBoxY2,
-          },
-          assetId: faceStub.face1.assetId,
-          personId: personStub.newThumbnail.id,
-        },
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: personStub.newThumbnail.id },
       });
     });
 
@@ -106,18 +95,9 @@ describe(MediaService.name, () => {
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
       expect(personMock.getRandomFace).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
         data: {
-          imageWidth: faceStub.face1.imageWidth,
-          imageHeight: faceStub.face1.imageHeight,
-          boundingBox: {
-            x1: faceStub.face1.boundingBoxX1,
-            x2: faceStub.face1.boundingBoxX2,
-            y1: faceStub.face1.boundingBoxY1,
-            y2: faceStub.face1.boundingBoxY2,
-          },
-          assetId: faceStub.face1.assetId,
-          personId: personStub.newThumbnail.id,
+          id: personStub.newThumbnail.id,
         },
       });
     });

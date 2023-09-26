@@ -53,27 +53,16 @@ export class MediaService {
     const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
 
     for (const person of people) {
-      // use stored asset for generating thumbnail or pick a random one if not present
-      const face = person.faceAssetId
-        ? await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId })
-        : await this.personRepository.getRandomFace(person.id);
-      if (face) {
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: {
-            imageWidth: face.imageWidth,
-            imageHeight: face.imageHeight,
-            boundingBox: {
-              x1: face.boundingBoxX1,
-              x2: face.boundingBoxX2,
-              y1: face.boundingBoxY1,
-              y2: face.boundingBoxY2,
-            },
-            assetId: face.assetId,
-            personId: person.id,
-          },
-        });
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
+        }
+
+        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
       }
+
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
     return true;
