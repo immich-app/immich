@@ -30,7 +30,7 @@ export enum JobName {
   GENERATE_JPEG_THUMBNAIL = 'generate-jpeg-thumbnail',
   GENERATE_WEBP_THUMBNAIL = 'generate-webp-thumbnail',
   GENERATE_THUMBHASH_THUMBNAIL = 'generate-thumbhash-thumbnail',
-  GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
+  GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
 
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
@@ -113,7 +113,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.GENERATE_JPEG_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_WEBP_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_THUMBHASH_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_FACE_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
 
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,

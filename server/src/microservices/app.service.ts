@@ -78,7 +78,7 @@ export class AppService {
       [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataProcessor.handleLivePhotoLinking(data),
       [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
       [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
-      [JobName.GENERATE_FACE_THUMBNAIL]: (data) => this.facialRecognitionService.handleGenerateFaceThumbnail(data),
+      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.facialRecognitionService.handleGeneratePersonThumbnail(data),
       [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
