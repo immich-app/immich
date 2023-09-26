@@ -6,18 +6,17 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    updated: string;
+    save: string;
   }>();
   export let album: AlbumResponseDto;
 
   let description = album.description;
 
-  const handleSave = () => {
-    dispatch('updated', description);
-  };
+  const handleCancel = () => dispatch('close');
+  const handleSubmit = () => dispatch('save', description);
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal on:clickOutside={handleCancel} on:escape={handleCancel}>
   <div
     class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
@@ -27,7 +26,7 @@
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit description</h1>
     </div>
 
-    <form on:submit|preventDefault={handleSave} autocomplete="off">
+    <form on:submit|preventDefault={handleSubmit} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
         <label class="immich-form-label" for="name">Description</label>
         <!-- svelte-ignore a11y-autofocus -->
@@ -42,7 +41,7 @@
       </div>
 
       <div class="mt-8 flex w-full gap-4 px-4">
-        <Button color="gray" fullwidth on:click={() => dispatch('close')}>Cancel</Button>
+        <Button color="gray" fullwidth on:click={handleCancel}>Cancel</Button>
         <Button type="submit" fullwidth>Ok</Button>
       </div>
     </form>
