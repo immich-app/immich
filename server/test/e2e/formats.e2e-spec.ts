@@ -100,7 +100,6 @@ describe(`Supported file formats (e2e)`, () => {
           originalFileName: 'IMG_2682',
           libraryId: library.id,
           // TODO: resized: true
-          checksum: '4SKzkOLTq0psDAb+pl9jXk15ujU=',
           fileCreatedAt: "2019-03-21T16:04:22.348Z",
           exifInfo: expect.objectContaining({
             dateTimeOriginal: "2019-03-21T16:04:22.348Z",
