@@ -24,7 +24,6 @@ import { DefaultReadTaskOptions, ExifDateTime, exiftool, ReadTaskOptions, Tags }
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import * as geotz from 'geo-tz';
 import { Duration } from 'luxon';
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 interface DirectoryItem {
@@ -217,17 +216,20 @@ export class MetadataExtractionProcessor {
 
     this.logger.debug(`Starting motion photo video extraction (${asset.id})`);
 
-    let file = null;
     try {
-      const encodedFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-      const encodedFile = path.join(encodedFolder, path.parse(asset.originalPath).name + '.mp4');
-      this.storageRepository.mkdirSync(encodedFolder);
+      const encodedFile = this.storageCore.ensurePath(
+        StorageFolder.ENCODED_VIDEO,
+        asset.ownerId,
+        `${path.parse(asset.originalPath).name}.mp4`,
+      );
 
-      file = await fs.open(asset.originalPath);
-
-      const stat = await file.stat();
+      const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
-      const video = await file.read({ buffer: Buffer.alloc(length), position, length });
+      const video = await this.storageRepository.readFile(asset.originalPath, {
+        buffer: Buffer.alloc(length),
+        position,
+        length,
+      });
       const checksum = await this.cryptoRepository.hashSha1(video.buffer);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
@@ -247,7 +249,7 @@ export class MetadataExtractionProcessor {
           deviceId: 'NONE',
         });
 
-        await fs.writeFile(encodedFile, video.buffer);
+        await this.storageRepository.writeFile(asset.originalPath, video.buffer);
 
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
@@ -257,8 +259,6 @@ export class MetadataExtractionProcessor {
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
     } catch (error: Error | any) {
       this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
-    } finally {
-      await file?.close();
     }
   }
 
@@ -288,7 +288,7 @@ export class MetadataExtractionProcessor {
         })
       : null;
 
-    const stats = await fs.stat(asset.originalPath);
+    const stats = await this.storageRepository.stat(asset.originalPath);
 
     const tags = { ...mediaTags, ...sidecarTags };
 

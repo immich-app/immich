@@ -39,6 +39,17 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
+  async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<fs.FileReadResult<Buffer>> {
+    const file = await fs.open(filepath);
+    const buffer = await file.read(options);
+    await file.close();
+    return buffer;
+  }
+
+  writeFile(filepath: string, buffer: Buffer): Promise<void> {
+    return fs.writeFile(filepath, buffer);
+  }
+
   async moveFile(source: string, destination: string): Promise<void> {
     if (await this.checkFileExists(destination)) {
       throw new Error(`Destination file already exists: ${destination}`);
