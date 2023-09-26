@@ -1,21 +1,13 @@
-import {
-  AssetResponseDto,
-  IJobRepository,
-  JobItem,
-  JobItemHandler,
-  LibraryResponseDto,
-  LoginResponseDto,
-  QueueName,
-} from '@app/domain';
+import { IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, LoginResponseDto, QueueName } from '@app/domain';
 import { AppModule, LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { AppService } from 'src/microservices/app.service';
 import { MetadataExtractionProcessor } from 'src/microservices/processors/metadata-extraction.processor';
 import request from 'supertest';
-import { errorStub, userStub, uuidStub } from '../fixtures';
+import { errorStub, uuidStub } from '../fixtures';
 import { db } from '../test-utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
@@ -68,9 +60,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
     await db.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-
-    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
-    const defaultLibrary = libraries[0];
   });
 
   afterAll(async () => {
@@ -276,6 +265,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .put(`/library/${library.id}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ name: 'New Library Name' });
+
         expect(status).toBe(200);
         expect(body).toEqual(
           expect.objectContaining({

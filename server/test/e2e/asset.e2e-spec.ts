@@ -11,7 +11,7 @@ import {
   TimeBucketSize,
 } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
-import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';

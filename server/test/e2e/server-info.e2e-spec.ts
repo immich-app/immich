@@ -81,16 +81,16 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: true,
+        clipEncode: false,
         configFile: false,
-        facialRecognition: true,
+        facialRecognition: false,
         map: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
         search: false,
         sidecar: true,
-        tagImage: true,
+        tagImage: false,
       });
     });
   });
