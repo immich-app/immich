@@ -510,13 +510,12 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should not scan assets for user without external path', async () => {
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
-
+    it('should scan external library with import paths', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${__dirname}/../assets/albums/nature`],
       });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
       const { status, body } = await request(server)
         .post(`/library/${library.id}/scan`)
@@ -527,27 +526,173 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
-      expect(assets).toEqual([]);
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: AssetType.IMAGE,
+            originalFileName: 'el_torcal_rocks',
+            libraryId: library.id,
+            resized: true,
+            thumbhash: expect.any(String),
+            exifInfo: expect.objectContaining({
+              exifImageWidth: 512,
+              exifImageHeight: 341,
+              latitude: null,
+              longitude: null,
+            }),
+          }),
+          expect.objectContaining({
+            type: AssetType.IMAGE,
+            originalFileName: 'silver_fir',
+            libraryId: library.id,
+            resized: true,
+            thumbhash: expect.any(String),
+            exifInfo: expect.objectContaining({
+              exifImageWidth: 511,
+              exifImageHeight: 323,
+              latitude: null,
+              longitude: null,
+            }),
+          }),
+        ]),
+      );
     });
 
-    it("should not scan assets outside of user's external path", async () => {
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
+    describe('External path', () => {
+      let library: LibraryResponseDto;
 
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${__dirname}/../assets/albums/nature`],
+      beforeEach(async () => {
+        library = await api.libraryApi.create(server, admin.accessToken, {
+          type: LibraryType.EXTERNAL,
+          importPaths: [`${__dirname}/../assets/albums/nature`],
+        });
       });
 
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      it('should not scan assets for user without external path', async () => {
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(201);
-      expect(body).toEqual({});
+        expect(status).toBe(201);
+        expect(body).toEqual({});
 
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
-      expect(assets).toEqual([]);
+        expect(assets).toEqual([]);
+      });
+
+      it("should not import assets outside of user's external path", async () => {
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+        expect(assets).toEqual([]);
+      });
+
+      it('should scan external library with external path', async () => {
+        await api.userApi.setExternalPath(
+          server,
+          admin.accessToken,
+          admin.userId,
+          `${__dirname}/../assets/albums/nature/`,
+        );
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+        expect(assets).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              type: AssetType.IMAGE,
+              originalFileName: 'el_torcal_rocks',
+              libraryId: library.id,
+              resized: true,
+              thumbhash: expect.any(String),
+              exifInfo: expect.objectContaining({
+                exifImageWidth: 512,
+                exifImageHeight: 341,
+                latitude: null,
+                longitude: null,
+              }),
+            }),
+            expect.objectContaining({
+              type: AssetType.IMAGE,
+              originalFileName: 'silver_fir',
+              libraryId: library.id,
+              resized: true,
+              thumbhash: expect.any(String),
+              exifInfo: expect.objectContaining({
+                exifImageWidth: 511,
+                exifImageHeight: 323,
+                latitude: null,
+                longitude: null,
+              }),
+            }),
+          ]),
+        );
+      });
+
+      it('should scan external library with external path that has trailing slash', async () => {
+        await api.userApi.setExternalPath(
+          server,
+          admin.accessToken,
+          admin.userId,
+          `${__dirname}/../assets/albums/nature/`,
+        );
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+        expect(assets).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              type: AssetType.IMAGE,
+              originalFileName: 'el_torcal_rocks',
+              libraryId: library.id,
+              resized: true,
+              thumbhash: expect.any(String),
+              exifInfo: expect.objectContaining({
+                exifImageWidth: 512,
+                exifImageHeight: 341,
+                latitude: null,
+                longitude: null,
+              }),
+            }),
+            expect.objectContaining({
+              type: AssetType.IMAGE,
+              originalFileName: 'silver_fir',
+              libraryId: library.id,
+              resized: true,
+              thumbhash: expect.any(String),
+              exifInfo: expect.objectContaining({
+                exifImageWidth: 511,
+                exifImageHeight: 323,
+                latitude: null,
+                longitude: null,
+              }),
+            }),
+          ]),
+        );
+      });
     });
 
     it('should not scan an upload library', async () => {
