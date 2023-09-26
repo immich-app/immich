@@ -100,9 +100,9 @@ describe(`Supported file formats (e2e)`, () => {
           originalFileName: 'IMG_2682',
           libraryId: library.id,
           // TODO: resized: true
-          fileCreatedAt: "2019-03-21T16:04:22.348Z",
+          fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: expect.objectContaining({
-            dateTimeOriginal: "2019-03-21T16:04:22.348Z",
+            dateTimeOriginal: '2019-03-21T16:04:22.348Z',
             exifImageWidth: 4032,
             exifImageHeight: 3024,
             latitude: 41.2203,
