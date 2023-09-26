@@ -1,6 +1,5 @@
 import {
   AuditService,
-  FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
   JobService,
@@ -23,7 +22,6 @@ export class AppService {
   private logger = new Logger(AppService.name);
 
   constructor(
-    private facialRecognitionService: FacialRecognitionService,
     private jobService: JobService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
@@ -61,7 +59,7 @@ export class AppService {
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
       [JobName.MIGRATE_ASSET]: (data) => this.mediaService.handleAssetMigration(data),
-      [JobName.MIGRATE_PERSON]: (data) => this.facialRecognitionService.handlePersonMigration(data),
+      [JobName.MIGRATE_PERSON]: (data) => this.personService.handlePersonMigration(data),
       [JobName.SYSTEM_CONFIG_CHANGE]: () => this.systemConfigService.refreshConfig(),
       [JobName.QUEUE_GENERATE_THUMBNAILS]: (data) => this.mediaService.handleQueueGenerateThumbnails(data),
       [JobName.GENERATE_JPEG_THUMBNAIL]: (data) => this.mediaService.handleGenerateJpegThumbnail(data),
@@ -72,9 +70,9 @@ export class AppService {
       [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataService.handleQueueMetadataExtraction(data),
       [JobName.METADATA_EXTRACTION]: (data) => this.metadataService.handleMetadataExtraction(data),
       [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataService.handleLivePhotoLinking(data),
-      [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
-      [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
-      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.facialRecognitionService.handleGeneratePersonThumbnail(data),
+      [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.personService.handleQueueRecognizeFaces(data),
+      [JobName.RECOGNIZE_FACES]: (data) => this.personService.handleRecognizeFaces(data),
+      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.personService.handleGeneratePersonThumbnail(data),
       [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
