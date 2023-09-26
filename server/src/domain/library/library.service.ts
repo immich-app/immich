@@ -155,7 +155,7 @@ export class LibraryService {
       return false;
     }
 
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
+    if (!path.normalize(assetPath).match(new RegExp(`^${path.normalize(user.externalPath)}`))) {
       this.logger.error("Asset must be within the user's external path");
       return false;
     }
@@ -362,6 +362,8 @@ export class LibraryService {
       return false;
     }
 
+    const normalizedExternalPath = path.normalize(user.externalPath);
+
     this.logger.verbose(`Refreshing library: ${job.id}`);
     const crawledAssetPaths = (
       await this.storageRepository.crawl({
@@ -372,7 +374,7 @@ export class LibraryService {
       .map(path.normalize)
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
+        assetPath.match(new RegExp(`^${normalizedExternalPath}`)),
       );
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
