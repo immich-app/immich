@@ -15,12 +15,12 @@ import {
   searchStub,
 } from '@test';
 import { plainToInstance } from 'class-transformer';
-import { IPersonRepository } from '..';
 import { IAlbumRepository } from '../album/album.repository';
 import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
+import { IPersonRepository } from '../person/person.repository';
 import { IMachineLearningRepository } from '../smart-info';
 import { ISystemConfigRepository } from '../system-config';
 import { SearchDto } from './dto';
