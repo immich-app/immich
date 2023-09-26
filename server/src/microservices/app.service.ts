@@ -17,16 +17,12 @@ import {
 } from '@app/domain';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Injectable()
 export class AppService {
   private logger = new Logger(AppService.name);
 
   constructor(
-    // TODO refactor to domain
-    private metadataProcessor: MetadataExtractionProcessor,
-
     private facialRecognitionService: FacialRecognitionService,
     private jobService: JobService,
     private mediaService: MediaService,
@@ -73,9 +69,9 @@ export class AppService {
       [JobName.GENERATE_THUMBHASH_THUMBNAIL]: (data) => this.mediaService.handleGenerateThumbhashThumbnail(data),
       [JobName.QUEUE_VIDEO_CONVERSION]: (data) => this.mediaService.handleQueueVideoConversion(data),
       [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
-      [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleQueueMetadataExtraction(data),
-      [JobName.METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleMetadataExtraction(data),
-      [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataProcessor.handleLivePhotoLinking(data),
+      [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataService.handleQueueMetadataExtraction(data),
+      [JobName.METADATA_EXTRACTION]: (data) => this.metadataService.handleMetadataExtraction(data),
+      [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataService.handleLivePhotoLinking(data),
       [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
       [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
       [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.facialRecognitionService.handleGeneratePersonThumbnail(data),
@@ -99,10 +95,10 @@ export class AppService {
       }
 
       this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      this.metadataProcessor.init(true);
+      this.metadataService.init(true);
     });
 
-    await this.metadataProcessor.init();
+    await this.metadataService.init();
     await this.searchService.init();
   }
 }
