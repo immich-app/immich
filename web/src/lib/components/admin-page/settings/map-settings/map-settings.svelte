@@ -105,7 +105,17 @@
             </div></SettingAccordion
           >
 
-          <SettingAccordion title="Reverse Geocoding Settings" subtitle="Manage reverse geocoding settings">
+          <SettingAccordion title="Reverse Geocoding Settings">
+            <svelte:fragment slot="subtitle">
+              <p class="text-sm dark:text-immich-dark-fg">
+                Manage <a
+                  href="https://immich.app/docs/features/reverse-geocoding"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer">Reverse Geocoding</a
+                > settings
+              </p>
+            </svelte:fragment>
             <div class="ml-4 mt-4 flex flex-col gap-4">
               <SettingSwitch
                 title="ENABLED"
