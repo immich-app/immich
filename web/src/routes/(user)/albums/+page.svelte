@@ -314,7 +314,7 @@
 
 <!-- Context Menu -->
 {#if $isShowContextMenu}
-  <ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu}>
+  <ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu} on:escape={closeAlbumContextMenu}>
     <MenuOption on:click={() => setAlbumToDelete()}>
       <span class="flex place-content-center place-items-center gap-2">
         <DeleteOutline size="18" />

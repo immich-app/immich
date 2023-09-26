@@ -33,8 +33,11 @@
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let data: PageData;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
@@ -86,6 +89,18 @@
       viewMode = ViewMode.MERGE_FACES;
     }
   });
+  const handleEscape = () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    if ($isMultiSelectState) {
+      assetInteractionStore.clearMultiselect();
+      return;
+    } else {
+      goto(previousRoute);
+      return;
+    }
+  };
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {
@@ -337,6 +352,7 @@
       isSelectionMode={viewMode === ViewMode.SELECT_FACE}
       singleSelect={viewMode === ViewMode.SELECT_FACE}
       on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
+      on:escape={handleEscape}
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Face information block -->
@@ -344,7 +360,8 @@
           role="button"
           class="relative w-fit p-4 sm:px-6"
           use:clickOutside
-          on:outclick={() => handleCancelEditName()}
+          on:outclick={handleCancelEditName}
+          on:escape={handleCancelEditName}
         >
           <section class="flex w-96 place-items-center border-black">
             {#if isEditingName}

@@ -26,7 +26,7 @@ export interface IStorageRepository {
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
-  removeEmptyDirs(folder: string): Promise<void>;
+  removeEmptyDirs(folder: string, self?: boolean): Promise<void>;
   moveFile(source: string, target: string): Promise<void>;
   checkFileExists(filepath: string, mode?: number): Promise<boolean>;
   mkdirSync(filepath: string): void;

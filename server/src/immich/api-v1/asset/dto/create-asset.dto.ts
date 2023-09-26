@@ -77,6 +77,7 @@ export class ImportAssetDto extends CreateAssetBase {
   isReadOnly?: boolean = true;
 
   @ValidateUUID()
+  @Optional()
   libraryId?: string;
 
   @IsString()

@@ -1,3 +1,5 @@
+import { InitOptions } from 'local-reverse-geocoder';
+
 export const IGeocodingRepository = 'IGeocodingRepository';
 
 export interface GeoPoint {
@@ -12,7 +14,7 @@ export interface ReverseGeocodeResult {
 }
 
 export interface IGeocodingRepository {
-  init(): Promise<void>;
+  init(options: Partial<InitOptions>): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
   deleteCache(): Promise<void>;
 }

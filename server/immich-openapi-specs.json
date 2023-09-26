@@ -5342,6 +5342,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -5371,6 +5374,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
@@ -5913,6 +5917,15 @@
           "existingIds"
         ],
         "type": "object"
+      },
+      "CitiesFile": {
+        "enum": [
+          "cities15000",
+          "cities5000",
+          "cities1000",
+          "cities500"
+        ],
+        "type": "string"
       },
       "ClassificationConfig": {
         "properties": {
@@ -6539,6 +6552,7 @@
           "clipEncoding",
           "backgroundTask",
           "storageTemplateMigration",
+          "migration",
           "search",
           "sidecar",
           "library"
@@ -7228,6 +7242,9 @@
           "passwordLogin": {
             "type": "boolean"
           },
+          "reverseGeocoding": {
+            "type": "boolean"
+          },
           "search": {
             "type": "boolean"
           },
@@ -7243,6 +7260,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "reverseGeocoding",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin",
@@ -7589,6 +7607,9 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -7602,6 +7623,7 @@
           "map",
           "oauth",
           "passwordLogin",
+          "reverseGeocoding",
           "storageTemplate",
           "job",
           "thumbnail"
@@ -7697,6 +7719,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -7726,6 +7751,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
@@ -7834,6 +7860,21 @@
           }
         },
         "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigReverseGeocodingDto": {
+        "properties": {
+          "citiesFileOverride": {
+            "$ref": "#/components/schemas/CitiesFile"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "citiesFileOverride",
           "enabled"
         ],
         "type": "object"

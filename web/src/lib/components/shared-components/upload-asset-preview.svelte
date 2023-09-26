@@ -13,9 +13,6 @@
 
   export let uploadAsset: UploadAsset;
 
-  let showFallbackImage = uploadAsset.state === UploadState.PENDING;
-  const previewURL = URL.createObjectURL(uploadAsset.file);
-
   const handleRetry = (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeUploadAsset(uploadAsset.id);
     fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
@@ -29,27 +26,9 @@
 >
   <div class="grid grid-cols-[65px_auto_auto]">
     <div class="relative h-[65px]">
-      {#if showFallbackImage || true}
-        <div in:fade={{ duration: 250 }}>
-          <ImmichLogo class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
-        </div>
-      {:else}
-        <img
-          in:fade={{ duration: 250 }}
-          on:load={() => {
-            URL.revokeObjectURL(previewURL);
-          }}
-          on:error={() => {
-            URL.revokeObjectURL(previewURL);
-            showFallbackImage = true;
-          }}
-          src={previewURL}
-          alt="Preview of asset"
-          class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover"
-          draggable="false"
-        />
-      {/if}
-
+      <div in:fade={{ duration: 250 }}>
+        <ImmichLogo class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
+      </div>
       <div class="absolute bottom-0 left-0 h-[25px] w-full rounded-bl-md bg-immich-primary/30">
         <p
           class="absolute bottom-1 right-1 stroke-immich-primary object-right-bottom font-semibold uppercase text-white/95 dark:text-gray-100"

@@ -120,6 +120,10 @@
         isShowDeleteConfirmation = true;
         return;
       case 'Escape':
+        if (isShowDeleteConfirmation) {
+          isShowDeleteConfirmation = false;
+          return;
+        }
         closeViewer();
         return;
       case 'f':
