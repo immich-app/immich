@@ -21,8 +21,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v3
+
       - name: Run npm install
         run: npm ci
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "21.0.0-nightly20230921480ab8c3a4"
 
       - name: "Checkout test assets (TODO: change org of this repo to immich)"
         uses: actions/checkout@v4
