@@ -317,7 +317,7 @@ export class MetadataService {
         iso: validate(tags.ISO),
         latitude: validate(tags.GPSLatitude),
         lensModel: tags.LensModel ?? null,
-        livePhotoCID: (asset.type === AssetType.VIDEO ? tags.ContentIdentifier : tags.MediaGroupUUID) ?? null,
+        livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
         longitude: validate(tags.GPSLongitude),
         make: tags.Make ?? null,
         model: tags.Model ?? null,
