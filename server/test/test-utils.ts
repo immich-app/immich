@@ -70,7 +70,7 @@ export async function ensureTestAssets(): Promise<void> {
       .catch(() => false);
 
   if (!(await directoryExists(`${TEST_ASSET_PATH}/albums`))) {
-    const errorString = `Test assets not found. Please checkout https://github.com/etnoy/immich-test-assets/ into ${TEST_ASSET_PATH} first`;
+    const errorString = `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${TEST_ASSET_PATH} before testing`;
     throw new Error(errorString);
   }
   if (!(await directoryExists(`${TEST_ASSET_TEMP_PATH}`))) {
