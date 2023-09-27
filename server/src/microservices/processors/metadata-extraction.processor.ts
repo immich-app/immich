@@ -236,7 +236,7 @@ export class MetadataExtractionProcessor {
       newExif.projectionType = String(projectionType).toUpperCase();
     }
 
-    newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
+    // newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
 
     const rawDirectory = getExifProperty('Directory');
     await this.applyMotionPhotos(asset, {

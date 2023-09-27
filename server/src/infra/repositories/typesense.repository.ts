@@ -150,11 +150,16 @@ export class TypesenseRepository implements ISearchRepository {
   async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
     const common = {
       q: '*',
-      filter_by: this.buildFilterBy('ownerId', userId, true),
+      filter_by: [this.buildFilterBy('ownerId', userId, true),
+        this.buildFilterBy('isArchived', false)
+      ].join(' && '),
       per_page: 100,
     };
 
     const asset$ = this.client.collections<AssetEntity>(assetSchema.name).documents();
+    this.logger.log(asset$);
+    this.logger.log('beep beep boop boop');
+    this.logger.log(common)
 
     const { facet_counts: facets } = await asset$.search({
       ...common,
