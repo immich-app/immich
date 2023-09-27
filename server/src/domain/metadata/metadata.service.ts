@@ -1,8 +1,9 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { DefaultReadTaskOptions, ReadTaskOptions } from 'exiftool-vendored';
+import { ExifDateTime } from 'exiftool-vendored';
+import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
-import path from 'node:path';
+import { Duration } from 'luxon';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
 import { ICryptoRepository } from '../crypto';
@@ -22,6 +23,10 @@ interface DirectoryItem {
 interface DirectoryEntry {
   Item: DirectoryItem;
 }
+
+const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
+// exiftool returns strings when it fails to parse non-string values, so this is used where a string is not expected
+const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : value ?? null);
 
 @Injectable()
 export class MetadataService {
@@ -125,14 +130,14 @@ export class MetadataService {
       return false;
     }
 
-    const [exifData, tags] = await this.exifData(asset);
+    const { exifData, tags } = await this.exifData(asset);
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
     await this.assetRepository.save({
       id: asset.id,
-      duration: tags.Duration ? this.repository.getDuration(tags.Duration) : null,
+      duration: tags.Duration ? this.getDuration(tags.Duration) : null,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
@@ -231,12 +236,6 @@ export class MetadataService {
     this.logger.debug(`Starting motion photo video extraction (${asset.id})`);
 
     try {
-      const encodedFile = this.storageCore.ensurePath(
-        StorageFolder.ENCODED_VIDEO,
-        asset.ownerId,
-        `${path.parse(asset.originalPath).name}.mp4`,
-      );
-
       const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
       const video = await this.storageRepository.readFile(asset.originalPath, {
@@ -244,7 +243,7 @@ export class MetadataService {
         position,
         length,
       });
-      const checksum = await this.cryptoRepository.hashSha1(video.buffer);
+      const checksum = await this.cryptoRepository.hashSha1(video);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
@@ -255,7 +254,7 @@ export class MetadataService {
           fileModifiedAt: asset.fileModifiedAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: encodedFile,
+          originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
           originalFileName: asset.originalFileName,
           isVisible: false,
           isReadOnly: true,
@@ -263,7 +262,7 @@ export class MetadataService {
           deviceId: 'NONE',
         });
 
-        await this.storageRepository.writeFile(asset.originalPath, video.buffer);
+        await this.storageRepository.writeFile(asset.originalPath, video);
 
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
@@ -276,35 +275,64 @@ export class MetadataService {
     }
   }
 
-  private async exifData(asset: AssetEntity): Promise<[ExifEntity, ImmichTags]> {
-    const readTaskOptions: ReadTaskOptions = {
-      ...DefaultReadTaskOptions,
-
-      defaultVideosToUTC: true,
-      backfillTimezones: true,
-      inferTimezoneFromDatestamps: true,
-      useMWG: true,
-      numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
-      geoTz: this.repository.getTimezone,
-    };
-
-    const mediaTags = await this.repository.getExifTags(asset.originalPath, readTaskOptions).catch((error) => {
-      this.logger.warn(`error reading exif data (${asset.id} at ${asset.originalPath}): ${error}`, error?.stack);
-      return null;
-    });
-    const sidecarTags = asset.sidecarPath
-      ? await this.repository.getExifTags(asset.sidecarPath, readTaskOptions).catch((error: any) => {
-          this.logger.warn(`error reading exif data (${asset.id} at ${asset.sidecarPath}): ${error}`, error?.stack);
-          return null;
-        })
-      : null;
-
+  private async exifData(asset: AssetEntity): Promise<{ exifData: ExifEntity; tags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
-
+    const mediaTags = await this.repository.getExifTags(asset.originalPath);
+    const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
 
-    return [this.repository.mapExifEntity(asset, tags, stats.size), tags];
+    return {
+      exifData: <ExifEntity>{
+        // altitude: tags.GPSAltitude ?? null,
+        assetId: asset.id,
+        bitsPerSample: this.getBitsPerSample(tags),
+        colorspace: tags.ColorSpace ?? null,
+        dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
+        exifImageHeight: validate(tags.ImageHeight),
+        exifImageWidth: validate(tags.ImageWidth),
+        exposureTime: tags.ExposureTime ?? null,
+        fileSizeInByte: stats.size,
+        fNumber: validate(tags.FNumber),
+        focalLength: validate(tags.FocalLength),
+        fps: validate(tags.VideoFrameRate),
+        iso: validate(tags.ISO),
+        latitude: validate(tags.GPSLatitude),
+        lensModel: tags.LensModel ?? null,
+        livePhotoCID: (asset.type === AssetType.VIDEO ? tags.ContentIdentifier : tags.MediaGroupUUID) ?? null,
+        longitude: validate(tags.GPSLongitude),
+        make: tags.Make ?? null,
+        model: tags.Model ?? null,
+        modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
+        orientation: validate(tags.Orientation)?.toString() ?? null,
+        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+        projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
+        timeZone: tags.tz,
+      },
+      tags,
+    };
+  }
+
+  private getBitsPerSample(tags: ImmichTags): number | null {
+    const bitDepthTags = [
+      tags.BitsPerSample,
+      tags.ComponentBitDepth,
+      tags.ImagePixelDepth,
+      tags.BitDepth,
+      tags.ColorBitDepth,
+      // `numericTags` doesn't parse values like '12 12 12'
+    ].map((tag) => (typeof tag === 'string' ? Number.parseInt(tag) : tag));
+
+    let bitsPerSample = bitDepthTags.find((tag) => typeof tag === 'number' && !Number.isNaN(tag)) ?? null;
+    if (bitsPerSample && bitsPerSample >= 24 && bitsPerSample % 3 === 0) {
+      bitsPerSample /= 3; // converts per-pixel bit depth to per-channel
+    }
+
+    return bitsPerSample;
+  }
+
+  private getDuration(seconds?: number): string {
+    return Duration.fromObject({ seconds }).toFormat('hh:mm:ss.SSS');
   }
 }
