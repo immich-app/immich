@@ -21,4 +21,5 @@ export default async () => {
 
   process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
   process.env.DISABLE_REVERSE_GEOCODING = 'true';
+  process.env.TZ = 'Z';
 };

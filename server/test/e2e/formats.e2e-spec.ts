@@ -94,7 +94,7 @@ describe(`Supported file formats (e2e)`, () => {
         type: AssetType.IMAGE,
         originalFileName: 'glarus',
         resized: true,
-        fileCreatedAt: '2010-07-20T15:27:12.000Z',
+        fileCreatedAt: '2010-07-20T17:27:12.000Z',
         exifInfo: expect.objectContaining({
           make: 'NIKON CORPORATION',
           model: 'NIKON D80',
@@ -103,7 +103,7 @@ describe(`Supported file formats (e2e)`, () => {
           focalLength: 18,
           iso: 100,
           fileSizeInByte: 9057784,
-          dateTimeOriginal: '2010-07-20T15:27:12.000Z',
+          dateTimeOriginal: '2010-07-20T17:27:12.000Z',
           latitude: null,
           longitude: null,
           orientation: '1',
