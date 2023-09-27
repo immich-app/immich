@@ -3,7 +3,15 @@ import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { TEST_ASSET_PATH, createTestApp, db, ensureTestAssets } from '@test/test-utils';
+import {
+  TEST_ASSET_PATH,
+  TEST_ASSET_TEMP_PATH,
+  createTestApp,
+  db,
+  ensureTestAssets,
+  restoreTempFolder,
+} from '@test/test-utils';
+import * as fs from 'fs';
 import request from 'supertest';
 import { errorStub, uuidStub } from '../fixtures';
 
@@ -83,8 +91,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.EXTERNAL });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             ownerId: admin.userId,
@@ -103,8 +111,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.EXTERNAL, name: 'My Awesome Library' });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             name: 'My Awesome Library',
@@ -117,8 +125,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.EXTERNAL, importPaths: ['/path/to/import'] });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             importPaths: ['/path/to/import'],
@@ -131,8 +139,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.EXTERNAL, exclusionPatterns: ['**/Raw/**'] });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             exclusionPatterns: ['**/Raw/**'],
@@ -147,8 +155,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.UPLOAD });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             ownerId: admin.userId,
@@ -167,8 +175,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.UPLOAD, name: 'My Awesome Library' });
-        expect(status).toBe(201);
 
+        expect(status).toBe(201);
         expect(body).toEqual(
           expect.objectContaining({
             name: 'My Awesome Library',
@@ -181,8 +189,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.UPLOAD, importPaths: ['/path/to/import'] });
-        expect(status).toBe(400);
 
+        expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have import paths'));
       });
 
@@ -191,8 +199,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
           .post('/library')
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ type: LibraryType.UPLOAD, exclusionPatterns: ['**/Raw/**'] });
-        expect(status).toBe(400);
 
+        expect(status).toBe(400);
         expect(body).toEqual(errorStub.badRequest('Upload libraries cannot have exclusion patterns'));
       });
     });
@@ -530,6 +538,68 @@ describe(`${LibraryController.name} (e2e)`, () => {
           }),
         ]),
       );
+    });
+
+    it('should offline missing files', async () => {
+      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await restoreTempFolder();
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'el_torcal_rocks',
+          }),
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'silver_fir',
+          }),
+        ]),
+      );
+    });
+
+    it('should remvove offline files', async () => {
+      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await restoreTempFolder();
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+      await api.libraryApi.removeOfflineFiles(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual([]);
     });
 
     describe('External path', () => {

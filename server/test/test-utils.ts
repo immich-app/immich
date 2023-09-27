@@ -2,7 +2,7 @@ import { dataSource } from '@app/infra';
 
 import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import path from 'path';
@@ -37,8 +37,8 @@ export const db = {
 
 let _handler: JobItemHandler = () => Promise.resolve();
 
-export async function createTestApp(runJobs = false): Promise<INestApplication> {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+export async function createTestApp(runJobs = false, log = false): Promise<INestApplication> {
+  const moduleBuilder = await Test.createTestingModule({
     imports: [AppModule],
     providers: [MetadataExtractionProcessor, AppService],
   })
@@ -52,8 +52,13 @@ export async function createTestApp(runJobs = false): Promise<INestApplication> 
       getQueueStatus: jest.fn(),
       getJobCounts: jest.fn(),
       pause: jest.fn(),
-    } as IJobRepository)
-    .compile();
+    } as IJobRepository);
+
+  if (log) {
+    moduleBuilder.setLogger(new Logger());
+  }
+
+  const moduleFixture: TestingModule = await moduleBuilder.compile();
 
   const app = await moduleFixture.createNestApplication().init();
   const appService = app.get(AppService);
@@ -62,18 +67,26 @@ export async function createTestApp(runJobs = false): Promise<INestApplication> 
   return app;
 }
 
-export async function ensureTestAssets(): Promise<void> {
-  const directoryExists = async (dirPath: string) =>
-    await fs.promises
-      .access(dirPath)
-      .then(() => true)
-      .catch(() => false);
+const directoryExists = async (dirPath: string) =>
+  await fs.promises
+    .access(dirPath)
+    .then(() => true)
+    .catch(() => false);
 
+export async function ensureTestAssets(): Promise<void> {
   if (!(await directoryExists(`${TEST_ASSET_PATH}/albums`))) {
     const errorString = `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${TEST_ASSET_PATH} before testing`;
     throw new Error(errorString);
   }
-  if (!(await directoryExists(`${TEST_ASSET_TEMP_PATH}`))) {
-    await fs.promises.mkdir(TEST_ASSET_TEMP_PATH);
+
+  await restoreTempFolder();
+}
+
+export async function restoreTempFolder(): Promise<void> {
+  if (await directoryExists(`${TEST_ASSET_TEMP_PATH}`)) {
+    // Temp directory exists, delete all files inside it
+    await fs.promises.rm(TEST_ASSET_TEMP_PATH, { recursive: true });
   }
+  // Create temp folder
+  await fs.promises.mkdir(TEST_ASSET_TEMP_PATH);
 }

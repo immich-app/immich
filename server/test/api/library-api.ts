@@ -30,6 +30,13 @@ export const libraryApi = {
       .send(dto);
     expect(status).toBe(201);
   },
+  removeOfflineFiles: async (server: any, accessToken: string, id: string) => {
+    const { status } = await request(server)
+      .post(`/library/${id}/removeOffline`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send();
+    expect(status).toBe(201);
+  },
   getLibraryStatistics: async (server: any, accessToken: string, id: string): Promise<LibraryStatsResponseDto> => {
     const { body, status } = await request(server)
       .get(`/library/${id}/statistics`)
