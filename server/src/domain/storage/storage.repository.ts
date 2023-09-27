@@ -1,4 +1,5 @@
 import { Stats } from 'fs';
+import { FileReadOptions } from 'fs/promises';
 import { Readable } from 'stream';
 import { CrawlOptionsDto } from '../library';
 
@@ -24,6 +25,8 @@ export const IStorageRepository = 'IStorageRepository';
 export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
+  readFile(filepath: string, options?: FileReadOptions<Buffer>): Promise<Buffer>;
+  writeFile(filepath: string, buffer: Buffer): Promise<void>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string, self?: boolean): Promise<void>;

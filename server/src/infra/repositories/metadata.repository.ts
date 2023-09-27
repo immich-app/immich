@@ -1,7 +1,9 @@
-import { GeoPoint, IGeocodingRepository, ReverseGeocodeResult } from '@app/domain';
+import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from '@app/domain';
 import { REVERSE_GEOCODING_DUMP_DIRECTORY } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
+import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
 import { readdir, rm } from 'fs/promises';
+import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
 import geocoder, { AddressObject, InitOptions } from 'local-reverse-geocoder';
 import path from 'path';
@@ -21,8 +23,8 @@ export type GeoData = AddressObject & {
 const lookup = promisify<GeoPoint[], number, AddressObject[][]>(geocoder.lookUp).bind(geocoder);
 
 @Injectable()
-export class GeocodingRepository implements IGeocodingRepository {
-  private logger = new Logger(GeocodingRepository.name);
+export class MetadataRepository implements IMetadataRepository {
+  private logger = new Logger(MetadataRepository.name);
 
   async init(options: Partial<InitOptions>): Promise<void> {
     return new Promise<void>((resolve) => {
@@ -68,5 +70,23 @@ export class GeocodingRepository implements IGeocodingRepository {
     this.logger.debug(`Normalized: ${JSON.stringify({ country, state, city })}`);
 
     return { country, state, city };
+  }
+
+  getExifTags(path: string): Promise<ImmichTags | null> {
+    return exiftool
+      .read<ImmichTags>(path, undefined, {
+        ...DefaultReadTaskOptions,
+
+        defaultVideosToUTC: true,
+        backfillTimezones: true,
+        inferTimezoneFromDatestamps: true,
+        useMWG: true,
+        numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
+        geoTz: (lat, lon) => geotz.find(lat, lon)[0],
+      })
+      .catch((error) => {
+        this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
+        return null;
+      });
   }
 }
