@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ExifDateTime } from 'exiftool-vendored';
+import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
@@ -24,9 +24,25 @@ interface DirectoryEntry {
   Item: DirectoryItem;
 }
 
+type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
+  ExifEntity,
+  'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
+>;
+
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
-// exiftool returns strings when it fails to parse non-string values, so this is used where a string is not expected
-const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : value ?? null);
+
+const validate = <T>(value: T): NonNullable<T> | null => {
+  if (typeof value === 'string') {
+    // string means a failure to parse a number, throw out result
+    return null;
+  }
+
+  if (typeof value === 'number' && (isNaN(value) || !isFinite(value))) {
+    return null;
+  }
+
+  return value ?? null;
+};
 
 @Injectable()
 export class MetadataService {
@@ -184,7 +200,7 @@ export class MetadataService {
     return true;
   }
 
-  private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntity) {
+  private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
     if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
       return;
@@ -275,7 +291,9 @@ export class MetadataService {
     }
   }
 
-  private async exifData(asset: AssetEntity): Promise<{ exifData: ExifEntity; tags: ImmichTags }> {
+  private async exifData(
+    asset: AssetEntity,
+  ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
@@ -284,12 +302,12 @@ export class MetadataService {
     this.logger.verbose('Exif Tags', tags);
 
     return {
-      exifData: <ExifEntity>{
+      exifData: {
         // altitude: tags.GPSAltitude ?? null,
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
+        dateTimeOriginal: exifDate(firstDateTime(tags as Tags)) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
@@ -308,7 +326,7 @@ export class MetadataService {
         orientation: validate(tags.Orientation)?.toString() ?? null,
         profileDescription: tags.ProfileDescription || tags.ProfileName || null,
         projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
-        timeZone: tags.tz,
+        timeZone: tags.tz ?? null,
       },
       tags,
     };

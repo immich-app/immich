@@ -14,13 +14,14 @@ export interface ReverseGeocodeResult {
   city: string | null;
 }
 
-export interface ImmichTags extends Tags {
+export interface ImmichTags extends Omit<Tags, 'FocalLength'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
   MotionPhotoPresentationTimestampUs?: number;
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
+  FocalLength?: number;
 }
 
 export interface IMetadataRepository {
