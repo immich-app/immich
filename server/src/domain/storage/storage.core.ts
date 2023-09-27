@@ -1,4 +1,4 @@
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { IStorageRepository } from './storage.repository';
 
@@ -28,22 +28,17 @@ export class StorageCore {
     return join(APP_MEDIA_LOCATION, folder);
   }
 
-  getDirectory(filepath: string) {
-    return dirname(filepath);
-  }
-
   ensurePath(
     folder: StorageFolder.ENCODED_VIDEO | StorageFolder.UPLOAD | StorageFolder.PROFILE | StorageFolder.THUMBNAILS,
     ownerId: string,
     fileName: string,
-    create: boolean = true,
   ): string {
     const folderPath = join(
       this.getFolderLocation(folder, ownerId),
       fileName.substring(0, 2),
       fileName.substring(2, 4),
     );
-    create && this.repository.mkdirSync(folderPath);
+    this.repository.mkdirSync(folderPath);
     return join(folderPath, fileName);
   }
 
