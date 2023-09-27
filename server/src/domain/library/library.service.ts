@@ -1,25 +1,22 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { R_OK } from 'node:constants';
-import { Stats } from 'node:fs';
-import path from 'node:path';
 import { basename, parse } from 'path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository, WithProperty } from '../asset';
 import { AuthUserDto } from '../auth';
-import { usePagination } from '../domain.util';
-
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import {
   IBaseJob,
   IEntityJob,
   IJobRepository,
   ILibraryFileJob,
   ILibraryRefreshJob,
-  IOfflineLibraryFileJob,
-  JobName,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
 } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
@@ -27,9 +24,9 @@ import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   ScanLibraryDto,
   UpdateLibraryDto,
+  mapLibrary,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
 
@@ -147,70 +144,29 @@ export class LibraryService {
   }
 
   async handleAssetRefresh(job: ILibraryFileJob) {
-    const assetPath = path.normalize(job.assetPath);
-
-    const user = await this.userRepository.get(job.ownerId);
-    if (!user?.externalPath) {
-      this.logger.warn('User has no external path set, cannot import asset');
+    const { id, ownerId, assetPath, force } = job;
+    const user = await this.userRepository.get(ownerId);
+    if (!this.hasAccess(user, assetPath)) {
       return false;
     }
 
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
-      this.logger.error("Asset must be within the user's external path");
+    const library = await this.repository.get(id, true);
+    if (library?.deletedAt) {
+      this.logger.error(`${assetPath} - skipped (deleted library)`);
       return false;
     }
 
-    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, assetPath);
-
-    let stats: Stats;
-    try {
-      stats = await this.storageRepository.stat(assetPath);
-    } catch (error: Error | any) {
-      // Can't access file, probably offline
-      if (existingAssetEntity) {
-        // Mark asset as offline
-        this.logger.debug(`Marking asset as offline: ${assetPath}`);
-
-        await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
+    let asset = await this.assetRepository.getByLibraryIdAndOriginalPath(id, assetPath);
+    const stats = await this.storageRepository.stat(assetPath).catch(() => null);
+    if (!stats) {
+      if (asset) {
+        this.logger.debug(`${assetPath} - updating (offline)`);
+        await this.assetRepository.save({ id: asset.id, isOffline: true });
         return true;
-      } else {
-        // File can't be accessed and does not already exist in db
-        throw new BadRequestException("Can't access file", { cause: error });
       }
-    }
 
-    let doImport = false;
-    let doRefresh = false;
-
-    if (job.forceRefresh) {
-      doRefresh = true;
-    }
-
-    if (!existingAssetEntity) {
-      // This asset is new to us, read it from disk
-      this.logger.debug(`Importing new asset: ${assetPath}`);
-      doImport = true;
-    } else if (stats.mtime.toISOString() !== existingAssetEntity.fileModifiedAt.toISOString()) {
-      // File modification time has changed since last time we checked, re-read from disk
-      this.logger.debug(
-        `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
-      );
-      doRefresh = true;
-    } else if (!job.forceRefresh && stats && !existingAssetEntity.isOffline) {
-      // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
-      this.logger.debug(`Asset already exists in database and on disk, will not import: ${assetPath}`);
-    }
-
-    if (stats && existingAssetEntity?.isOffline) {
-      // File was previously offline but is now online
-      this.logger.debug(`Marking previously-offline asset as online: ${assetPath}`);
-      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: false });
-      doRefresh = true;
-    }
-
-    if (!doImport && !doRefresh) {
-      // If we don't import, exit here
-      return true;
+      this.logger.debug(`${assetPath} - skipping (not found)`);
+      return false;
     }
 
     let assetType: AssetType;
@@ -220,7 +176,8 @@ export class LibraryService {
     } else if (mimeTypes.isVideo(assetPath)) {
       assetType = AssetType.VIDEO;
     } else {
-      throw new BadRequestException(`Unsupported file type ${assetPath}`);
+      this.logger.warn(`${assetPath} - skipped (unsupported file type)`);
+      return false;
     }
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
@@ -229,25 +186,15 @@ export class LibraryService {
       sidecarPath = `${assetPath}.xmp`;
     }
 
-    const deviceAssetId = `${basename(assetPath)}`.replace(/\s+/g, '');
-
-    const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
-
-    let assetId;
-    if (doImport) {
-      const library = await this.repository.get(job.id, true);
-      if (library?.deletedAt) {
-        this.logger.error('Cannot import asset into deleted library');
-        return false;
-      }
-
-      // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
-      const addedAsset = await this.assetRepository.create({
-        ownerId: job.ownerId,
-        libraryId: job.id,
-        checksum: pathHash,
+    const isNew = !asset;
+    if (!asset) {
+      this.logger.debug(`${assetPath} - importing (new)`);
+      asset = await this.assetRepository.create({
+        ownerId: ownerId,
+        libraryId: id,
+        checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
         originalPath: assetPath,
-        deviceAssetId: deviceAssetId,
+        deviceAssetId: `${basename(assetPath)}`.replace(/\s+/g, ''),
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
@@ -257,24 +204,26 @@ export class LibraryService {
         isReadOnly: true,
         isExternal: true,
       });
-      assetId = addedAsset.id;
-    } else if (doRefresh && existingAssetEntity) {
-      assetId = existingAssetEntity.id;
-      await this.assetRepository.updateAll([existingAssetEntity.id], {
+    }
+
+    const isUpdated = asset && stats.mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    if (isUpdated) {
+      this.logger.debug(`${assetPath} - updating (changed)`);
+      await this.assetRepository.updateAll([asset.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
       });
-    } else {
-      // Not importing and not refreshing, do nothing
-      return true;
     }
 
-    this.logger.debug(`Queuing metadata extraction for: ${assetPath}`);
+    const isBackOnline = asset.isOffline;
+    if (isBackOnline) {
+      this.logger.debug(`${assetPath} - updating (online)`);
+      await this.assetRepository.save({ id: asset.id, isOffline: false });
+    }
 
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: assetId, source: 'upload' } });
-
-    if (assetType === AssetType.VIDEO) {
-      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: assetId } });
+    if (force || isNew || isUpdated) {
+      await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
+      await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
     }
 
     return true;
@@ -332,12 +281,11 @@ export class LibraryService {
   }
 
   async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
-    });
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+    );
 
     const assetIds: string[] = [];
-
     for await (const assets of assetPagination) {
       for (const asset of assets) {
         assetIds.push(asset.id);
@@ -350,81 +298,85 @@ export class LibraryService {
   }
 
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<boolean> {
+    const start = DateTime.now();
+
     const library = await this.repository.get(job.id);
-    if (!library || library.type !== LibraryType.EXTERNAL) {
-      this.logger.warn('Can only refresh external libraries');
+    if (!library || !library.owner || library.type !== LibraryType.EXTERNAL) {
       return false;
     }
 
-    const user = await this.userRepository.get(library.ownerId);
-    if (!user?.externalPath) {
+    const { id, name, owner, importPaths, exclusionPatterns } = library;
+
+    this.logger.log(`Starting library scan: ${name}`);
+
+    if (!owner.externalPath) {
       this.logger.warn('User has no external path set, cannot refresh library');
       return false;
     }
 
-    this.logger.verbose(`Refreshing library: ${job.id}`);
-    const crawledAssetPaths = (
-      await this.storageRepository.crawl({
-        pathsToCrawl: library.importPaths,
-        exclusionPatterns: library.exclusionPatterns,
-      })
-    )
-      .map(path.normalize)
-      .filter((assetPath) =>
-        // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
-      );
+    // scan files
+    const allFiles = new Set<string>();
+    const newFiles = new Set<string>();
+    const files = await this.storageRepository.crawl({
+      pathsToCrawl: importPaths,
+      exclusionPatterns: exclusionPatterns,
+    });
+    for (const file of files) {
+      if (!file.match(new RegExp(`^${owner.externalPath}`))) {
+        continue;
+      }
 
-    this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
-    const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
-    const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
-    this.logger.debug(`${offlineAssets.length} assets in library are not present on disk and will be marked offline`);
-
-    for (const offlineAsset of offlineAssets) {
-      const offlineJobData: IOfflineLibraryFileJob = {
-        id: job.id,
-        assetPath: offlineAsset.originalPath,
-      };
-
-      await this.jobRepository.queue({ name: JobName.LIBRARY_MARK_ASSET_OFFLINE, data: offlineJobData });
+      allFiles.add(file);
+      newFiles.add(file);
     }
 
-    if (crawledAssetPaths.length > 0) {
-      let filteredPaths: string[] = [];
-      if (job.refreshAllFiles || job.refreshModifiedFiles) {
-        filteredPaths = crawledAssetPaths;
+    // compare with library assets
+    const onlineAssets = new Map<string, AssetEntity>();
+    const offlineAssets = new Map<string, AssetEntity>();
+    const assets = await this.assetRepository.getByLibraryId([job.id]);
+    for (const asset of assets) {
+      if (allFiles.has(asset.originalPath)) {
+        onlineAssets.set(asset.id, asset);
+        newFiles.delete(asset.originalPath);
       } else {
-        const existingPaths = await this.repository.getOnlineAssetPaths(job.id);
-        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${job.id}`);
-
-        filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.includes(assetPath));
-        this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
+        offlineAssets.set(asset.id, asset);
       }
+    }
 
-      for (const assetPath of filteredPaths) {
-        const libraryJobData: ILibraryFileJob = {
-          id: job.id,
-          assetPath: path.normalize(assetPath),
-          ownerId: library.ownerId,
-          forceRefresh: job.refreshAllFiles ?? false,
-        };
-
-        await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
+    // mark assets as offline
+    if (offlineAssets.size > 0) {
+      for (const id of offlineAssets.keys()) {
+        await this.assetRepository.save({ id, isOffline: true });
       }
+    }
+
+    //  queue assets for potential refresh
+    const targetFiles = job.refreshAllFiles || job.refreshModifiedFiles ? allFiles : newFiles;
+    for (const assetPath of targetFiles) {
+      await this.jobRepository.queue({
+        name: JobName.LIBRARY_SCAN_ASSET,
+        data: {
+          id,
+          assetPath,
+          ownerId: owner.id,
+          force: job.refreshAllFiles ?? false,
+        },
+      });
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
-    return true;
-  }
-
-  async handleOfflineAsset(job: IOfflineLibraryFileJob): Promise<boolean> {
-    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, job.assetPath);
-
-    if (existingAssetEntity) {
-      this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
-      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
-    }
+    this.logger.log(`Finished library scan: ${name}`);
+    this.logger.debug({
+      id,
+      name,
+      importPaths,
+      total: allFiles.size,
+      new: newFiles.size,
+      online: onlineAssets.size,
+      offline: offlineAssets.size,
+      elapsedTime: DateTime.now().diff(start).toHuman(),
+    });
 
     return true;
   }
@@ -464,5 +416,23 @@ export class LibraryService {
         assetIds.push(asset.livePhotoVideoId);
       }
     }
+  }
+
+  private hasAccess(user: UserEntity | null, file: string): boolean {
+    if (!user) {
+      return false;
+    }
+
+    if (!user.externalPath) {
+      this.logger.warn('User has no external path set, skipping');
+      return false;
+    }
+
+    const matches = file.match(new RegExp(`^${user.externalPath}`));
+    if (!matches) {
+      this.logger.error("Asset must be within the user's external path");
+    }
+
+    return !!matches;
   }
 }

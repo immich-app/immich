@@ -12,7 +12,6 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     getStatistics: jest.fn(),
     getDefaultUploadLibrary: jest.fn(),
     getUploadLibraryCount: jest.fn(),
-    getOnlineAssetPaths: jest.fn(),
     getAssetIds: jest.fn(),
     existsByName: jest.fn(),
     getAllDeleted: jest.fn(),

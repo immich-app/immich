@@ -134,25 +134,6 @@ export class LibraryRepository implements ILibraryRepository {
     };
   }
 
-  async getOnlineAssetPaths(libraryId: string): Promise<string[]> {
-    // Return all non-offline asset paths for a given library
-    const rawResults = await this.repository
-      .createQueryBuilder('library')
-      .innerJoinAndSelect('library.assets', 'assets')
-      .where('library.id = :id', { id: libraryId })
-      .andWhere('assets.isOffline = false')
-      .select('assets.originalPath')
-      .getRawMany();
-
-    const results: string[] = [];
-
-    for (const rawPath of rawResults) {
-      results.push(rawPath.assets_originalPath);
-    }
-
-    return results;
-  }
-
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
     let query = await this.repository
       .createQueryBuilder('library')
