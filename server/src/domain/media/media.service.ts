@@ -98,21 +98,24 @@ export class MediaService {
     if (!asset) {
       return false;
     }
-    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
-    const webpPath = this.ensureThumbnailPath(asset, 'webp');
-    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+    const resizePath = this.ensureThumbnailPath(asset, 'jpeg', false);
+    const webpPath = this.ensureThumbnailPath(asset, 'webp', false);
+    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4', false);
 
     if (asset.resizePath && asset.resizePath !== resizePath) {
+      this.storageRepository.mkdirSync(this.storageCore.getDirectory(resizePath));
       await this.storageRepository.moveFile(asset.resizePath, resizePath);
       await this.assetRepository.save({ id: asset.id, resizePath });
     }
 
     if (asset.webpPath && asset.webpPath !== webpPath) {
+      this.storageRepository.mkdirSync(this.storageCore.getDirectory(webpPath));
       await this.storageRepository.moveFile(asset.webpPath, webpPath);
       await this.assetRepository.save({ id: asset.id, webpPath });
     }
 
     if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
+      this.storageRepository.mkdirSync(this.storageCore.getDirectory(encodedVideoPath));
       await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
       await this.assetRepository.save({ id: asset.id, encodedVideoPath });
     }
@@ -367,12 +370,12 @@ export class MediaService {
     return handler;
   }
 
-  ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`);
+  ensureThumbnailPath(asset: AssetEntity, extension: string, create: boolean = true): string {
+    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`, create);
   }
 
-  ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
-    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
+  ensureEncodedVideoPath(asset: AssetEntity, extension: string, create: boolean = true): string {
+    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`, create);
   }
 
   isSRGB(asset: AssetEntity): boolean {
