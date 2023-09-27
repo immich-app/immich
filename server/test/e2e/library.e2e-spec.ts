@@ -13,6 +13,7 @@ import {
 } from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
+import { utimes } from 'utimes';
 import { errorStub, uuidStub } from '../fixtures';
 
 describe(`${LibraryController.name} (e2e)`, () => {
@@ -42,6 +43,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
+    restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
   });
@@ -49,6 +51,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
+    restoreTempFolder();
   });
 
   describe('GET /library', () => {
@@ -551,14 +554,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(onlineAssets.length).toBeGreaterThan(1);
 
       await restoreTempFolder();
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -570,36 +573,204 @@ describe(`${LibraryController.name} (e2e)`, () => {
           }),
           expect.objectContaining({
             isOffline: true,
-            originalFileName: 'silver_fir',
+            originalFileName: 'tanners_ridge',
           }),
         ]),
       );
     });
 
-    it('should remvove offline files', async () => {
-      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
-        recursive: true,
-      });
-
+    it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${TEST_ASSET_TEMP_PATH}`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
+      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature/silver_fir.jpg`, `${TEST_ASSET_TEMP_PATH}/silver_fir.jpg`);
 
-      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(onlineAssets.length).toBeGreaterThan(1);
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
-      await restoreTempFolder();
+      await fs.promises.cp(
+        `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+      );
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
-      await api.libraryApi.removeOfflineFiles(server, admin.accessToken, library.id);
+      const { status, body } = await request(server)
+        .post(`/library/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(201);
+      expect(body).toEqual({});
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
-      expect(assets).toEqual([]);
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            originalFileName: 'el_torcal_rocks',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2012-08-05T00:00:59.000Z',
+            }),
+          }),
+          expect.objectContaining({
+            originalFileName: 'silver_fir',
+          }),
+        ]),
+      );
+    });
+
+    describe('with refreshModifiedFiles=true', () => {
+      it('should reimport modified files', async () => {
+        const library = await api.libraryApi.create(server, admin.accessToken, {
+          type: LibraryType.EXTERNAL,
+          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        });
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200001);
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ refreshModifiedFiles: true });
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        expect(assets.length).toBe(1);
+
+        expect(assets[0]).toEqual(
+          expect.objectContaining({
+            originalFileName: 'el_torcal_rocks',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2023-09-25T00:00:30.880Z',
+              exifImageHeight: 534,
+              exifImageWidth: 800,
+              exposureTime: '1/15',
+              fNumber: 22,
+              fileSizeInByte: 114225,
+              focalLength: 35,
+              iso: 1000,
+              make: 'NIKON CORPORATION',
+              model: 'NIKON D750',
+            }),
+          }),
+        );
+      });
+
+      it('should not reimport unmodified files', async () => {
+        const library = await api.libraryApi.create(server, admin.accessToken, {
+          type: LibraryType.EXTERNAL,
+          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        });
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ refreshModifiedFiles: true });
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        expect(assets.length).toBe(1);
+
+        expect(assets[0]).toEqual(
+          expect.objectContaining({
+            originalFileName: 'el_torcal_rocks',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2012-08-05T00:00:59.000Z',
+            }),
+          }),
+        );
+      });
+    });
+
+    describe('with refreshAllFiles=true', () => {
+      it('should reimport all files', async () => {
+        const library = await api.libraryApi.create(server, admin.accessToken, {
+          type: LibraryType.EXTERNAL,
+          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        });
+        await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+        await fs.promises.cp(
+          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        );
+
+        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+
+        const { status, body } = await request(server)
+          .post(`/library/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({ refreshAllFiles: true });
+
+        expect(status).toBe(201);
+        expect(body).toEqual({});
+
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        expect(assets.length).toBe(1);
+
+        expect(assets[0]).toEqual(
+          expect.objectContaining({
+            originalFileName: 'el_torcal_rocks',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2023-09-25T00:00:30.880Z',
+              exifImageHeight: 534,
+              exifImageWidth: 800,
+              exposureTime: '1/15',
+              fNumber: 22,
+              fileSizeInByte: 114225,
+              focalLength: 35,
+              iso: 1000,
+              make: 'NIKON CORPORATION',
+              model: 'NIKON D750',
+            }),
+          }),
+        );
+      });
     });
 
     describe('External path', () => {
@@ -706,6 +877,62 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should remvove offline files', async () => {
+      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
+        recursive: true,
+      });
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(onlineAssets.length).toBeGreaterThan(1);
+
+      await restoreTempFolder();
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const { status } = await request(server)
+        .post(`/library/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(201);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual([]);
+    });
+
+    it('should not remvove online files', async () => {
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const assetsBefore = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(assetsBefore.length).toBeGreaterThan(1);
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const { status } = await request(server)
+        .post(`/library/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(201);
+
+      const assetsAfter = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assetsAfter).toEqual(assetsBefore);
     });
   });
 });

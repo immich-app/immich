@@ -23,7 +23,7 @@ export const libraryApi = {
     expect(status).toBe(200);
     return body as LibraryResponseDto;
   },
-  scanLibrary: async (server: any, accessToken: string, id: string, dto: ScanLibraryDto) => {
+  scanLibrary: async (server: any, accessToken: string, id: string, dto: ScanLibraryDto = {}) => {
     const { status } = await request(server)
       .post(`/library/${id}/scan`)
       .set('Authorization', `Bearer ${accessToken}`)

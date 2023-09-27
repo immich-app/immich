@@ -61,8 +61,8 @@
     "exiftool-vendored": "^22.0.0",
     "exiftool-vendored.pl": "^12.62.0",
     "fluent-ffmpeg": "^2.1.2",
-    "glob": "^10.3.3",
     "geo-tz": "^7.0.7",
+    "glob": "^10.3.3",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "immich": "^0.41.0",
@@ -126,7 +126,8 @@
     "ts-loader": "^9.4.4",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "utimes": "^5.2.1"
   },
   "jest": {
     "clearMocks": true,
