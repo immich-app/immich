@@ -13,7 +13,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'fileCreatedAt', type: 'string', facet: false, sort: true },
     { name: 'fileModifiedAt', type: 'string', facet: false, sort: true },
     { name: 'isFavorite', type: 'bool', facet: true },
-    { name: 'isArchived', type: 'bool', facet: true, optional: true },
+    { name: 'isArchived', type: 'bool', facet: true },
     { name: 'originalFileName', type: 'string', facet: false, optional: true },
 
     // exif
