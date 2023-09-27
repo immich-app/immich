@@ -59,7 +59,7 @@ describe(MediaService.name, () => {
         hasNextPage: false,
       });
       personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 

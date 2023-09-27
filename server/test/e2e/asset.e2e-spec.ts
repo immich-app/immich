@@ -1,11 +1,4 @@
-import {
-  AssetResponseDto,
-  IAssetRepository,
-  IFaceRepository,
-  IPersonRepository,
-  LoginResponseDto,
-  TimeBucketSize,
-} from '@app/domain';
+import { AssetResponseDto, IAssetRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -254,8 +247,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
 
-      const faceRepository = app.get<IFaceRepository>(IFaceRepository);
-      await faceRepository.create({ assetId: asset1.id, personId: person.id });
+      await personRepository.createFace({ assetId: asset1.id, personId: person.id });
 
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)

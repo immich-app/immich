@@ -5,7 +5,6 @@ export * from './asset.repository';
 export * from './audit.repository';
 export * from './communication.repository';
 export * from './crypto.repository';
-export * from './face.repository';
 export * from './filesystem.provider';
 export * from './job.repository';
 export * from './library.repository';
