@@ -19,6 +19,7 @@ const user2NotShared = 'user2NotShared';
 describe(`${AlbumController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
+  let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user1Asset: AssetFileUploadResponseDto;
   let user1Albums: AlbumResponseDto[];
@@ -37,7 +38,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
   beforeEach(async () => {
     await db.reset();
     await api.authApi.adminSignUp(server);
-    const admin = await api.authApi.adminLogin(server);
+    admin = await api.authApi.adminLogin(server);
 
     await api.userApi.create(server, admin.accessToken, {
       email: 'user1@immich.app',
@@ -106,7 +107,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .get('/album?shared=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['shared must be a boolean value']));
     });
 
     it('should reject an invalid assetId param', async () => {
@@ -114,12 +115,27 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .get('/album?assetId=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['assetId must be a UUID']));
+    });
+
+    it('should not return shared albums with a deleted owner', async () => {
+      await api.userApi.delete(server, admin.accessToken, user1.userId);
+      const { status, body } = await request(server)
+        .get('/album?shared=true')
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownerId: user2.userId, albumName: user2SharedLink, shared: true }),
+        ]),
+      );
     });
 
     it('should return the album collection including owned and shared', async () => {
       const { status, body } = await request(server).get('/album').set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(3);
       expect(body).toEqual(
         expect.arrayContaining([
@@ -134,7 +150,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get('/album?shared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(3);
       expect(body).toEqual(
         expect.arrayContaining([
@@ -149,7 +165,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get('/album?shared=false')
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(1);
       expect(body).toEqual(
         expect.arrayContaining([
@@ -164,7 +180,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get(`/album?assetId=${asset.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(1);
     });
 
@@ -172,7 +188,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get(`/album?shared=true&assetId=${user1Asset.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(4);
     });
 
@@ -180,7 +196,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get(`/album?shared=false&assetId=${user1Asset.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(200);
+      expect(status).toBe(200);
       expect(body).toHaveLength(4);
     });
   });
@@ -390,15 +406,15 @@ describe(`${AlbumController.name} (e2e)`, () => {
       expect(body).toEqual(expect.objectContaining({ sharedUsers: [expect.objectContaining({ id: user2.userId })] }));
     });
 
-    // it('should not be able to share album with owner', async () => {
-    //   const { status, body } = await request(server)
-    //     .put(`/album/${album.id}/users`)
-    //     .set('Authorization', `Bearer ${user1.accessToken}`)
-    //     .send({ sharedUserIds: [user2.userId] });
+    it('should not be able to share album with owner', async () => {
+      const { status, body } = await request(server)
+        .put(`/album/${album.id}/users`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedUserIds: [user1.userId] });
 
-    //   expect(status).toBe(400);
-    //   expect(body).toEqual(errorStub.badRequest);
-    // });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Cannot be shared with owner'));
+    });
 
     it('should not be able to add existing user to shared album', async () => {
       await request(server)
@@ -412,7 +428,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .send({ sharedUserIds: [user2.userId] });
 
       expect(status).toBe(400);
-      expect(body).toEqual({ ...errorStub.badRequest, message: 'User already added' });
+      expect(body).toEqual(errorStub.badRequest('User already added'));
     });
   });
 });

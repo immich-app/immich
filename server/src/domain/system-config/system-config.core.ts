@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  CitiesFile,
   Colorspace,
   SystemConfig,
   SystemConfigEntity,
@@ -51,7 +52,9 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
+    [QueueName.LIBRARY]: { concurrency: 1 },
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
@@ -72,11 +75,16 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
+      minFaces: 1,
     },
   },
   map: {
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     enabled: false,
@@ -112,6 +120,7 @@ export enum FeatureFlag {
   FACIAL_RECOGNITION = 'facialRecognition',
   TAG_IMAGE = 'tagImage',
   MAP = 'map',
+  REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
   SEARCH = 'search',
   OAUTH = 'oauth',
@@ -174,6 +183,7 @@ export class SystemConfigCore {
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
+      [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
 

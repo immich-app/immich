@@ -30,7 +30,7 @@ export interface MoveAssetMetadata {
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
@@ -44,6 +44,7 @@ export class StorageTemplateService {
     this.configCore = new SystemConfigCore(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -90,8 +91,9 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly) {
-      this.logger.verbose(`Not moving read-only asset: ${asset.originalPath}`);
+    if (asset.isReadOnly || asset.isExternal) {
+      // External assets are not affected by storage template
+      // TODO: shouldn't this only apply to external assets?
       return;
     }
 

@@ -1,4 +1,11 @@
-import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  IFaceRepository,
+  IPersonRepository,
+  LoginResponseDto,
+  TimeBucketSize,
+} from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -45,6 +52,7 @@ let assetCount = 0;
 const createAsset = (
   repository: IAssetRepository,
   loginResponse: LoginResponseDto,
+  libraryId: string,
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
@@ -54,6 +62,7 @@ const createAsset = (
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
+    libraryId,
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
     type: AssetType.IMAGE,
@@ -87,15 +96,19 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
+    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+    const defaultLibrary = libraries[0];
+
     await api.userApi.create(server, admin.accessToken, user1Dto);
     user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
-    asset1 = await createAsset(assetRepository, user1, new Date('1970-01-01'));
-    asset2 = await createAsset(assetRepository, user1, new Date('1970-01-02'));
-    asset3 = await createAsset(assetRepository, user1, new Date('1970-02-01'));
+
+    asset1 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
+    asset2 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02'));
+    asset3 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01'));
 
     await api.userApi.create(server, admin.accessToken, user2Dto);
     user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset4 = await createAsset(assetRepository, user2, new Date('1970-01-01'));
+    asset4 = await createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01'));
   });
 
   afterAll(async () => {
@@ -139,7 +152,7 @@ describe(`${AssetController.name} (e2e)`, () => {
           .attach('assetData', randomBytes(32), 'example.jpg')
           .field(dto);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -192,7 +205,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .put(`/asset/${uuidStub.invalid}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
     });
 
     it('should require access', async () => {
@@ -316,7 +329,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/album/statistics');
+      const { status, body } = await request(server).get('/asset/statistics');
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
@@ -369,6 +382,58 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 3, videos: 0, total: 3 });
+    });
+  });
+
+  describe('GET /asset/random', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/random');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return 1 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(1);
+      expect(assets[0].ownerId).toBe(user1.userId);
+      // assets owned by user1
+      expect([asset1.id, asset2.id, asset3.id]).toContain(assets[0].id);
+      // assets owned by user2
+      expect(assets[0].id).not.toBe(asset4.id);
+    });
+
+    it('should return 2 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random?count=2')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(2);
+
+      for (const asset of assets) {
+        expect(asset.ownerId).toBe(user1.userId);
+        // assets owned by user1
+        expect([asset1.id, asset2.id, asset3.id]).toContain(asset.id);
+        // assets owned by user2
+        expect(asset.id).not.toBe(asset4.id);
+      }
+    });
+
+    it('should return error', async () => {
+      const { status } = await request(server)
+        .get('/asset/random?count=ABC')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(400);
     });
   });
 

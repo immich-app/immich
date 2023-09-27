@@ -36,7 +36,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'motion', type: 'bool', facet: true },
     { name: 'people', type: 'string[]', facet: true, optional: true },
   ],
-  token_separators: ['.'],
+  token_separators: ['.', '-', '_'],
   enable_nested_fields: true,
   default_sorting_field: 'fileCreatedAt',
 };

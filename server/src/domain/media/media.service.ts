@@ -1,9 +1,8 @@
-import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetEntity, AssetType, Colorspace, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
-import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { IPersonRepository } from '../person';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
@@ -14,8 +13,8 @@ import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIC
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -26,11 +25,10 @@ export class MediaService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(this.storageRepository);
   }
 
-  async handleQueueGenerateThumbnails(job: IBaseJob) {
-    const { force } = job;
-
+  async handleQueueGenerateThumbnails({ force }: IBaseJob) {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -55,27 +53,68 @@ export class MediaService {
     const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
 
     for (const person of people) {
-      // use stored asset for generating thumbnail or pick a random one if not present
-      const face = person.faceAssetId
-        ? await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId })
-        : await this.personRepository.getRandomFace(person.id);
-      if (face) {
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: {
-            imageWidth: face.imageWidth,
-            imageHeight: face.imageHeight,
-            boundingBox: {
-              x1: face.boundingBoxX1,
-              x2: face.boundingBoxX2,
-              y1: face.boundingBoxY1,
-              y2: face.boundingBoxY2,
-            },
-            assetId: face.assetId,
-            personId: person.id,
-          },
-        });
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
+        }
+
+        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
       }
+
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+    }
+
+    return true;
+  }
+
+  async handleQueueMigration() {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination),
+    );
+
+    const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
+    if (active === 1 && waiting === 0) {
+      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    }
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
+      }
+    }
+
+    const people = await this.personRepository.getAll();
+    for (const person of people) {
+      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+    }
+
+    return true;
+  }
+
+  async handleAssetMigration({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
+    const webpPath = this.ensureThumbnailPath(asset, 'webp');
+    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+
+    if (asset.resizePath && asset.resizePath !== resizePath) {
+      await this.storageRepository.moveFile(asset.resizePath, resizePath);
+      await this.assetRepository.save({ id: asset.id, resizePath });
+    }
+
+    if (asset.webpPath && asset.webpPath !== webpPath) {
+      await this.storageRepository.moveFile(asset.webpPath, webpPath);
+      await this.assetRepository.save({ id: asset.id, webpPath });
+    }
+
+    if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
+      await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
+      await this.assetRepository.save({ id: asset.id, encodedVideoPath });
     }
 
     return true;
@@ -113,8 +152,9 @@ export class MediaService {
   async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
     const { thumbnail } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
-    const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
     const path = this.ensureThumbnailPath(asset, format);
+    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
+    const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
     await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
     return path;
   }
@@ -184,9 +224,7 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-    const output = join(outputFolder, `${asset.id}.mp4`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.ensureEncodedVideoPath(asset, 'mp4');
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
     const mainVideoStream = this.getMainStream(videoStreams);
@@ -330,8 +368,23 @@ export class MediaService {
   }
 
   ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    const folderPath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    this.storageRepository.mkdirSync(folderPath);
-    return join(folderPath, `${asset.id}.${extension}`);
+    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`);
+  }
+
+  ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
+    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
+  }
+
+  isSRGB(asset: AssetEntity): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+    if (colorspace || profileDescription) {
+      return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
+    } else if (bitsPerSample) {
+      // assume sRGB for 8-bit images with no color profile or colorspace metadata
+      return bitsPerSample === 8;
+    } else {
+      // assume sRGB for images with no relevant metadata
+      return true;
+    }
   }
 }

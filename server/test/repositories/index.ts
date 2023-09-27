@@ -7,6 +7,7 @@ export * from './communication.repository.mock';
 export * from './crypto.repository.mock';
 export * from './face.repository.mock';
 export * from './job.repository.mock';
+export * from './library.repository.mock';
 export * from './machine-learning.repository.mock';
 export * from './media.repository.mock';
 export * from './partner.repository.mock';

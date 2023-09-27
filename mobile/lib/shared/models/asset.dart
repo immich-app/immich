@@ -178,6 +178,7 @@ class Asset {
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
+    if (identical(this, other)) return true;
     return id == other.id &&
         checksum == other.checksum &&
         remoteId == other.remoteId &&

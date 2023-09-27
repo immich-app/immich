@@ -7,8 +7,10 @@ export enum QueueName {
   CLIP_ENCODING = 'clipEncoding',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
+  MIGRATION = 'migration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  LIBRARY = 'library',
 }
 
 export enum JobCommand {
@@ -28,7 +30,7 @@ export enum JobName {
   GENERATE_JPEG_THUMBNAIL = 'generate-jpeg-thumbnail',
   GENERATE_WEBP_THUMBNAIL = 'generate-webp-thumbnail',
   GENERATE_THUMBHASH_THUMBNAIL = 'generate-thumbhash-thumbnail',
-  GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
+  GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
 
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
@@ -44,6 +46,11 @@ export enum JobName {
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
   SYSTEM_CONFIG_CHANGE = 'system-config-change',
 
+  // migration
+  QUEUE_MIGRATION = 'queue-migration',
+  MIGRATE_ASSET = 'migrate-asset',
+  MIGRATE_PERSON = 'migrate-person',
+
   // object tagging
   QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
   CLASSIFY_IMAGE = 'classify-image',
@@ -52,6 +59,15 @@ export enum JobName {
   QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
   RECOGNIZE_FACES = 'recognize-faces',
   PERSON_CLEANUP = 'person-cleanup',
+
+  // library managment
+  LIBRARY_SCAN = 'library-refresh',
+  LIBRARY_SCAN_ASSET = 'library-refresh-asset',
+  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
+  LIBRARY_MARK_ASSET_OFFLINE = 'library-mark-asset-offline',
+  LIBRARY_DELETE = 'library-delete',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
+  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -97,7 +113,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.GENERATE_JPEG_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_WEBP_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_THUMBHASH_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_FACE_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
 
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
@@ -108,6 +124,11 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,
   [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
   [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+
+  // migration
+  [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
+  [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
+  [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
 
   // object tagging
   [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
@@ -140,4 +161,13 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+
+  // Library managment
+  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_MARK_ASSET_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 };

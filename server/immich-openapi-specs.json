@@ -1510,6 +1510,50 @@
         ]
       }
     },
+    "/asset/random": {
+      "get": {
+        "operationId": "getRandom",
+        "parameters": [
+          {
+            "name": "count",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -2473,6 +2517,328 @@
         ],
         "tags": [
           "Job"
+        ]
+      }
+    },
+    "/library": {
+      "get": {
+        "operationId": "getAllForUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "post": {
+        "operationId": "createLibrary",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}": {
+      "delete": {
+        "operationId": "deleteLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "get": {
+        "operationId": "getLibraryInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      },
+      "put": {
+        "operationId": "updateLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/removeOffline": {
+      "post": {
+        "operationId": "removeOfflineFiles",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/scan": {
+      "post": {
+        "operationId": "scanLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
+        ]
+      }
+    },
+    "/library/{id}/statistics": {
+      "get": {
+        "operationId": "getLibraryStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Library"
         ]
       }
     },
@@ -4733,7 +5099,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.78.1",
+    "version": "1.79.1",
     "contact": {}
   },
   "tags": [],
@@ -4971,7 +5337,13 @@
           "clipEncoding": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "metadataExtraction": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "objectTagging": {
@@ -5003,10 +5375,12 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "object"
       },
@@ -5216,8 +5590,20 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isExternal": {
+            "type": "boolean"
+          },
           "isFavorite": {
             "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          },
+          "libraryId": {
+            "type": "string"
           },
           "livePhotoVideoId": {
             "nullable": true,
@@ -5272,6 +5658,7 @@
           "deviceAssetId",
           "deviceId",
           "ownerId",
+          "libraryId",
           "originalPath",
           "originalFileName",
           "resized",
@@ -5281,6 +5668,9 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "isOffline",
+          "isExternal",
+          "isReadOnly",
           "duration",
           "checksum"
         ],
@@ -5524,6 +5914,15 @@
         ],
         "type": "object"
       },
+      "CitiesFile": {
+        "enum": [
+          "cities15000",
+          "cities5000",
+          "cities1000",
+          "cities500"
+        ],
+        "type": "string"
+      },
       "ClassificationConfig": {
         "properties": {
           "enabled": {
@@ -5607,15 +6006,24 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isExternal": {
+            "type": "boolean"
+          },
           "isFavorite": {
             "type": "boolean"
           },
+          "isOffline": {
+            "type": "boolean"
+          },
           "isReadOnly": {
-            "default": false,
             "type": "boolean"
           },
           "isVisible": {
             "type": "boolean"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
           },
           "livePhotoData": {
             "format": "binary",
@@ -5633,6 +6041,35 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite"
+        ],
+        "type": "object"
+      },
+      "CreateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
+          }
+        },
+        "required": [
+          "type"
         ],
         "type": "object"
       },
@@ -6012,7 +6449,13 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isExternal": {
+            "type": "boolean"
+          },
           "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
             "type": "boolean"
           },
           "isReadOnly": {
@@ -6021,6 +6464,10 @@
           },
           "isVisible": {
             "type": "boolean"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "type": "string"
           },
           "sidecarPath": {
             "type": "string"
@@ -6101,8 +6548,10 @@
           "clipEncoding",
           "backgroundTask",
           "storageTemplateMigration",
+          "migration",
           "search",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "string"
       },
@@ -6131,6 +6580,98 @@
           "queueStatus"
         ],
         "type": "object"
+      },
+      "LibraryResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "refreshedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/LibraryType"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "assetCount",
+          "id",
+          "ownerId",
+          "name",
+          "importPaths",
+          "exclusionPatterns",
+          "createdAt",
+          "updatedAt",
+          "refreshedAt"
+        ],
+        "type": "object"
+      },
+      "LibraryStatsResponseDto": {
+        "properties": {
+          "photos": {
+            "default": 0,
+            "type": "integer"
+          },
+          "total": {
+            "default": 0,
+            "type": "integer"
+          },
+          "usage": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "videos": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "photos",
+          "videos",
+          "total",
+          "usage"
+        ],
+        "type": "object"
+      },
+      "LibraryType": {
+        "enum": [
+          "UPLOAD",
+          "EXTERNAL"
+        ],
+        "type": "string"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -6471,6 +7012,9 @@
           "maxDistance": {
             "type": "integer"
           },
+          "minFaces": {
+            "type": "integer"
+          },
           "minScore": {
             "type": "integer"
           },
@@ -6484,9 +7028,22 @@
         "required": [
           "minScore",
           "maxDistance",
+          "minFaces",
           "enabled",
           "modelName"
         ],
+        "type": "object"
+      },
+      "ScanLibraryDto": {
+        "properties": {
+          "refreshAllFiles": {
+            "default": false,
+            "type": "boolean"
+          },
+          "refreshModifiedFiles": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "SearchAlbumResponseDto": {
@@ -6681,6 +7238,9 @@
           "passwordLogin": {
             "type": "boolean"
           },
+          "reverseGeocoding": {
+            "type": "boolean"
+          },
           "search": {
             "type": "boolean"
           },
@@ -6696,6 +7256,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "reverseGeocoding",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin",
@@ -7042,6 +7603,9 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -7055,6 +7619,7 @@
           "map",
           "oauth",
           "passwordLogin",
+          "reverseGeocoding",
           "storageTemplate",
           "job",
           "thumbnail"
@@ -7144,7 +7709,13 @@
           "clipEncoding": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "metadataExtraction": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "migration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "objectTagging": {
@@ -7176,10 +7747,12 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ],
         "type": "object"
       },
@@ -7283,6 +7856,21 @@
           }
         },
         "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigReverseGeocodingDto": {
+        "properties": {
+          "citiesFileOverride": {
+            "$ref": "#/components/schemas/CitiesFile"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "citiesFileOverride",
           "enabled"
         ],
         "type": "object"
@@ -7489,6 +8077,29 @@
           },
           "isFavorite": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           }
         },
         "type": "object"

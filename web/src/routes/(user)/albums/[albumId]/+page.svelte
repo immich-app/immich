@@ -48,6 +48,8 @@
 
   export let data: PageData;
 
+  let { isViewing: showAssetViewer } = assetViewingStore;
+
   let album = data.album;
   $: album = data.album;
 
@@ -101,6 +103,30 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleEscape = () => {
+    if (viewMode === ViewMode.SELECT_USERS) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.CONFIRM_DELETE) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.SELECT_ASSETS) {
+      handleCloseSelectAssets();
+      return;
+    }
+    if ($showAssetViewer) {
+      return;
+    }
+    if ($isMultiSelectState) {
+      assetInteractionStore.clearMultiselect();
+      return;
+    }
+    goto(backUrl);
+    return;
+  };
 
   const refreshAlbum = async () => {
     const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
@@ -403,6 +429,7 @@
       isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
       singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
       on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
+      on:escape={handleEscape}
     >
       {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
         <!-- ALBUM TITLE -->
@@ -540,6 +567,6 @@
   <EditDescriptionModal
     {album}
     on:close={() => (isEditingDescription = false)}
-    on:updated={({ detail: description }) => handleUpdateDescription(description)}
+    on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}

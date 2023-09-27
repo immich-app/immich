@@ -1,4 +1,5 @@
 import {
+  FeatureFlag,
   IAlbumRepository,
   IAssetRepository,
   IBaseJob,
@@ -7,38 +8,24 @@ import {
   IGeocodingRepository,
   IJobRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   JobName,
   JOBS_ASSET_PAGINATION_SIZE,
   QueueName,
   StorageCore,
   StorageFolder,
+  SystemConfigCore,
   usePagination,
   WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import tz_lookup from '@photostructure/tz-lookup';
-import { exiftool, Tags } from 'exiftool-vendored';
-import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { DefaultReadTaskOptions, ExifDateTime, exiftool, ReadTaskOptions, Tags } from 'exiftool-vendored';
+import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
+import * as geotz from 'geo-tz';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import sharp from 'sharp';
-import { promisify } from 'util';
-import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
-import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
-import { parseISO } from '../utils/exif/iso';
-import { toNumberOrNull } from '../utils/numbers';
-
-const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
-
-interface MotionPhotosData {
-  isMotionPhoto: string | number | null;
-  isMicroVideo: string | number | null;
-  videoOffset: string | number | null;
-  directory: DirectoryEntry[] | null;
-}
 
 interface DirectoryItem {
   Length?: number;
@@ -56,12 +43,19 @@ interface ImmichTags extends Tags {
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
   MotionPhotoPresentationTimestampUs?: number;
+  MediaGroupUUID?: string;
+  ImagePixelDepth?: string;
 }
+
+const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
+// exiftool returns strings when it fails to parse non-string values, so this is used where a string is not expected
+const validate = <T>(value: T): T | null => (typeof value === 'string' ? null : value ?? null);
 
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
-  private reverseGeocodingEnabled: boolean;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
+  private configCore: SystemConfigCore;
+  private oldCities?: string;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -70,30 +64,35 @@ export class MetadataExtractionProcessor {
     @Inject(IGeocodingRepository) private geocodingRepository: IGeocodingRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-
-    configService: ConfigService,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
-    this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
+    this.storageCore = new StorageCore(storageRepository);
+    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore.config$.subscribe(() => this.init());
   }
 
   async init(deleteCache = false) {
-    this.logger.log(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
-    if (!this.reverseGeocodingEnabled) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    const { citiesFileOverride } = reverseGeocoding;
+
+    if (!reverseGeocoding.enabled) {
       return;
     }
 
     try {
       if (deleteCache) {
         await this.geocodingRepository.deleteCache();
+      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
+        return;
       }
-      this.logger.log('Initializing Reverse Geocoding');
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.geocodingRepository.init();
+      await this.geocodingRepository.init({ citiesFileOverride });
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log('Reverse Geocoding Initialized');
-    } catch (error: any) {
+      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
+      this.oldCities = citiesFileOverride;
+    } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
   }
@@ -153,249 +152,47 @@ export class MetadataExtractionProcessor {
       return false;
     }
 
-    if (asset.type === AssetType.VIDEO) {
-      return this.handleVideoMetadataExtraction(asset);
-    } else {
-      return this.handlePhotoMetadataExtraction(asset);
-    }
-  }
+    const [exifData, tags] = await this.exifData(asset);
 
-  private async handlePhotoMetadataExtraction(asset: AssetEntity) {
-    const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
-      this.logger.warn(
-        `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-        error?.stack,
-      );
-      return null;
-    });
-
-    const sidecarExifData = asset.sidecarPath
-      ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
-          this.logger.warn(
-            `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-            error?.stack,
-          );
-          return null;
-        })
-      : {};
-
-    const getExifProperty = <T extends keyof ImmichTags>(
-      ...properties: T[]
-    ): NonNullable<ImmichTags[T]> | string | null => {
-      for (const property of properties) {
-        const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
-        if (value !== null && value !== undefined) {
-          // Can also be string when the value cannot be parsed
-          return value;
-        }
-      }
-
-      return null;
-    };
-
-    const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
-    const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
-    const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
-    const fileStats = await fs.stat(asset.originalPath);
-    const fileSizeInBytes = fileStats.size;
-
-    const newExif = new ExifEntity();
-    newExif.assetId = asset.id;
-    newExif.fileSizeInByte = fileSizeInBytes;
-    newExif.make = getExifProperty('Make');
-    newExif.model = getExifProperty('Model');
-    newExif.exifImageHeight = toNumberOrNull(getExifProperty('ExifImageHeight', 'ImageHeight'));
-    newExif.exifImageWidth = toNumberOrNull(getExifProperty('ExifImageWidth', 'ImageWidth'));
-    newExif.exposureTime = getExifProperty('ExposureTime');
-    newExif.orientation = getExifProperty('Orientation')?.toString() ?? null;
-    newExif.dateTimeOriginal = fileCreatedAt;
-    newExif.modifyDate = fileModifiedAt;
-    newExif.timeZone = timeZone;
-    newExif.lensModel = getExifProperty('LensModel');
-    newExif.fNumber = toNumberOrNull(getExifProperty('FNumber'));
-    newExif.focalLength = toNumberOrNull(getExifProperty('FocalLength'));
-
-    // Handle array values by converting to string
-    const iso = getExifProperty('ISO')?.toString();
-    newExif.iso = iso ? parseISO(iso) : null;
-
-    const latitude = getExifProperty('GPSLatitude');
-    const longitude = getExifProperty('GPSLongitude');
-    const lat = parseLatitude(latitude);
-    const lon = parseLongitude(longitude);
-
-    if (lat === 0 && lon === 0) {
-      this.logger.warn(`Latitude & Longitude were on Null Island (${lat},${lon}), not assigning coordinates`);
-    } else {
-      newExif.latitude = lat;
-      newExif.longitude = lon;
-    }
-
-    const projectionType = getExifProperty('ProjectionType');
-    if (projectionType) {
-      newExif.projectionType = String(projectionType).toUpperCase();
-    }
-
-    // newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
-
-    const rawDirectory = getExifProperty('Directory');
-    await this.applyMotionPhotos(asset, {
-      isMotionPhoto: getExifProperty('MotionPhoto'),
-      isMicroVideo: getExifProperty('MicroVideo'),
-      videoOffset: getExifProperty('MicroVideoOffset'),
-      directory: Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null,
-    });
-
-    await this.applyReverseGeocoding(asset, newExif);
-
-    /**
-     * IF the EXIF doesn't contain the width and height of the image,
-     * We will use Sharpjs to get the information.
-     */
-    if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
-      const metadata = await sharp(asset.originalPath).metadata();
-
-      if (newExif.exifImageHeight === null) {
-        newExif.exifImageHeight = metadata.height || null;
-      }
-
-      if (newExif.exifImageWidth === null) {
-        newExif.exifImageWidth = metadata.width || null;
-      }
-
-      if (newExif.orientation === null) {
-        newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
-      }
-    }
-
-    await this.assetRepository.upsertExif(newExif);
+    await this.applyMotionPhotos(asset, tags);
+    await this.applyReverseGeocoding(asset, exifData);
+    await this.assetRepository.upsertExif(exifData);
     await this.assetRepository.save({
       id: asset.id,
-      fileCreatedAt: fileCreatedAt || undefined,
-      updatedAt: new Date(),
+      duration: tags.Duration ? Duration.fromObject({ seconds: tags.Duration }).toFormat('hh:mm:ss.SSS') : null,
+      fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
     return true;
   }
 
-  private async handleVideoMetadataExtraction(asset: AssetEntity) {
-    const data = await ffprobe(asset.originalPath);
-    const durationString = this.extractDuration(data.format.duration || asset.duration);
-    let fileCreatedAt = asset.fileCreatedAt;
-
-    const videoTags = data.format.tags;
-    if (videoTags) {
-      if (videoTags['com.apple.quicktime.creationdate']) {
-        fileCreatedAt = new Date(videoTags['com.apple.quicktime.creationdate']);
-      } else if (videoTags['creation_time']) {
-        fileCreatedAt = new Date(videoTags['creation_time']);
-      }
-    }
-
-    const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
-      this.logger.warn(
-        `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-        error?.stack,
-      );
-      return null;
-    });
-
-    const newExif = new ExifEntity();
-    newExif.assetId = asset.id;
-    newExif.fileSizeInByte = data.format.size || null;
-    newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
-    newExif.modifyDate = null;
-    newExif.timeZone = null;
-    newExif.latitude = null;
-    newExif.longitude = null;
-    newExif.city = null;
-    newExif.state = null;
-    newExif.country = null;
-    newExif.fps = null;
-    newExif.livePhotoCID = exifData?.ContentIdentifier || null;
-
-    if (videoTags && videoTags['location']) {
-      const location = videoTags['location'] as string;
-      const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
-      const match = location.match(locationRegex);
-
-      if (match?.length === 3) {
-        newExif.latitude = parseLatitude(match[1]);
-        newExif.longitude = parseLongitude(match[2]);
-      }
-    } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
-      const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
-      const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
-      const match = location.match(locationRegex);
-
-      if (match?.length === 4) {
-        newExif.latitude = parseLatitude(match[1]);
-        newExif.longitude = parseLongitude(match[2]);
-      }
-    }
-
-    if (newExif.longitude && newExif.latitude) {
-      try {
-        newExif.timeZone = tz_lookup(newExif.latitude, newExif.longitude);
-      } catch (error: any) {
-        this.logger.warn(`Error while calculating timezone from gps coordinates: ${error}`, error?.stack);
-      }
-    }
-
-    await this.applyReverseGeocoding(asset, newExif);
-
-    for (const stream of data.streams) {
-      if (stream.codec_type === 'video') {
-        newExif.exifImageWidth = stream.width || null;
-        newExif.exifImageHeight = stream.height || null;
-
-        if (typeof stream.rotation === 'string') {
-          newExif.orientation = stream.rotation;
-        } else if (typeof stream.rotation === 'number') {
-          newExif.orientation = `${stream.rotation}`;
-        } else {
-          newExif.orientation = null;
-        }
-
-        if (stream.r_frame_rate) {
-          const fpsParts = stream.r_frame_rate.split('/');
-
-          if (fpsParts.length === 2) {
-            newExif.fps = Math.round(parseInt(fpsParts[0]) / parseInt(fpsParts[1]));
-          }
-        }
-      }
-    }
-
-    await this.assetRepository.upsertExif(newExif);
-    await this.assetRepository.save({ id: asset.id, duration: durationString, fileCreatedAt });
-
-    return true;
-  }
-
-  private async applyReverseGeocoding(asset: AssetEntity, newExif: ExifEntity) {
-    const { latitude, longitude } = newExif;
-    if (this.reverseGeocodingEnabled && longitude && latitude) {
-      try {
-        const { country, state, city } = await this.geocodingRepository.reverseGeocode({ latitude, longitude });
-        newExif.country = country;
-        newExif.state = state;
-        newExif.city = city;
-      } catch (error: any) {
-        this.logger.warn(
-          `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-          error?.stack,
-        );
-      }
-    }
-  }
-
-  private async applyMotionPhotos(asset: AssetEntity, data: MotionPhotosData) {
-    if (asset.livePhotoVideoId) {
+  private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntity) {
+    const { latitude, longitude } = exifData;
+    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
       return;
     }
 
-    const { isMotionPhoto, isMicroVideo, directory, videoOffset } = data;
+    try {
+      const { city, state, country } = await this.geocodingRepository.reverseGeocode({ latitude, longitude });
+      Object.assign(exifData, { city, state, country });
+    } catch (error: Error | any) {
+      this.logger.warn(
+        `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+        error?.stack,
+      );
+    }
+  }
+
+  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
+    if (asset.type !== AssetType.IMAGE || asset.livePhotoVideoId) {
+      return;
+    }
+
+    const rawDirectory = tags.Directory;
+    const isMotionPhoto = tags.MotionPhoto;
+    const isMicroVideo = tags.MicroVideo;
+    const videoOffset = tags.MicroVideoOffset;
+    const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
 
     let length = 0;
     let padding = 0;
@@ -436,6 +233,7 @@ export class MetadataExtractionProcessor {
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
         motionAsset = await this.assetRepository.save({
+          libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
           fileModifiedAt: asset.fileModifiedAt,
@@ -464,12 +262,84 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  private extractDuration(duration: number | string | null) {
-    const videoDurationInSecond = Number(duration);
-    if (!videoDurationInSecond) {
-      return null;
+  private async exifData(asset: AssetEntity): Promise<[ExifEntity, ImmichTags]> {
+    const readTaskOptions: ReadTaskOptions = {
+      ...DefaultReadTaskOptions,
+
+      defaultVideosToUTC: true,
+      backfillTimezones: true,
+      inferTimezoneFromDatestamps: true,
+      useMWG: true,
+      numericTags: DefaultReadTaskOptions.numericTags.concat(['FocalLength']),
+      geoTz: (lat: number, lon: number): string => geotz.find(lat, lon)[0],
+    };
+
+    const mediaTags = await exiftool
+      .read<ImmichTags>(asset.originalPath, undefined, readTaskOptions)
+      .catch((error: any) => {
+        this.logger.warn(`error reading exif data (${asset.id} at ${asset.originalPath}): ${error}`, error?.stack);
+        return null;
+      });
+
+    const sidecarTags = asset.sidecarPath
+      ? await exiftool.read<ImmichTags>(asset.sidecarPath, undefined, readTaskOptions).catch((error: any) => {
+          this.logger.warn(`error reading exif data (${asset.id} at ${asset.sidecarPath}): ${error}`, error?.stack);
+          return null;
+        })
+      : null;
+
+    const stats = await fs.stat(asset.originalPath);
+
+    const tags = { ...mediaTags, ...sidecarTags };
+
+    this.logger.verbose('Exif Tags', tags);
+
+    return [
+      <ExifEntity>{
+        // altitude: tags.GPSAltitude ?? null,
+        assetId: asset.id,
+        bitsPerSample: this.getBitsPerSample(tags),
+        colorspace: tags.ColorSpace ?? null,
+        dateTimeOriginal: exifDate(firstDateTime(tags)) ?? asset.fileCreatedAt,
+        exifImageHeight: validate(tags.ImageHeight),
+        exifImageWidth: validate(tags.ImageWidth),
+        exposureTime: tags.ExposureTime ?? null,
+        fileSizeInByte: stats.size,
+        fNumber: validate(tags.FNumber),
+        focalLength: validate(tags.FocalLength),
+        fps: validate(tags.VideoFrameRate),
+        iso: validate(tags.ISO),
+        latitude: validate(tags.GPSLatitude),
+        lensModel: tags.LensModel ?? null,
+        livePhotoCID: (asset.type === AssetType.VIDEO ? tags.ContentIdentifier : tags.MediaGroupUUID) ?? null,
+        longitude: validate(tags.GPSLongitude),
+        make: tags.Make ?? null,
+        model: tags.Model ?? null,
+        modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
+        orientation: validate(tags.Orientation)?.toString() ?? null,
+        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+        projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
+        timeZone: tags.tz,
+      },
+      tags,
+    ];
+  }
+
+  getBitsPerSample(tags: ImmichTags): number | null {
+    const bitDepthTags = [
+      tags.BitsPerSample,
+      tags.ComponentBitDepth,
+      tags.ImagePixelDepth,
+      tags.BitDepth,
+      tags.ColorBitDepth,
+      // `numericTags` doesn't parse values like '12 12 12'
+    ].map((tag) => (typeof tag === 'string' ? Number.parseInt(tag) : tag));
+
+    let bitsPerSample = bitDepthTags.find((tag) => typeof tag === 'number' && !Number.isNaN(tag)) ?? null;
+    if (bitsPerSample && bitsPerSample >= 24 && bitsPerSample % 3 === 0) {
+      bitsPerSample /= 3; // converts per-pixel bit depth to per-channel
     }
 
-    return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
+    return bitsPerSample;
   }
 }

@@ -1,4 +1,3 @@
-import { describe, expect, it } from '@jest/globals';
 import { parseLatitude, parseLongitude } from './coordinates';
 
 describe('parsing latitude from string input', () => {

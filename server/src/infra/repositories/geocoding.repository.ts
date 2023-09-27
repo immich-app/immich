@@ -1,9 +1,9 @@
 import { GeoPoint, IGeocodingRepository, ReverseGeocodeResult } from '@app/domain';
-import { localGeocodingConfig } from '@app/infra';
+import { REVERSE_GEOCODING_DUMP_DIRECTORY } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
 import { readdir, rm } from 'fs/promises';
 import { getName } from 'i18n-iso-countries';
-import geocoder, { AddressObject } from 'local-reverse-geocoder';
+import geocoder, { AddressObject, InitOptions } from 'local-reverse-geocoder';
 import path from 'path';
 import { promisify } from 'util';
 
@@ -18,19 +18,33 @@ export type GeoData = AddressObject & {
   admin2Code?: AdminCode | string;
 };
 
-const init = (): Promise<void> => new Promise<void>((resolve) => geocoder.init(localGeocodingConfig, resolve));
 const lookup = promisify<GeoPoint[], number, AddressObject[][]>(geocoder.lookUp).bind(geocoder);
 
 @Injectable()
 export class GeocodingRepository implements IGeocodingRepository {
   private logger = new Logger(GeocodingRepository.name);
 
-  async init(): Promise<void> {
-    await init();
+  async init(options: Partial<InitOptions>): Promise<void> {
+    return new Promise<void>((resolve) => {
+      geocoder.init(
+        {
+          load: {
+            admin1: true,
+            admin2: true,
+            admin3And4: false,
+            alternateNames: false,
+          },
+          countries: [],
+          dumpDirectory: REVERSE_GEOCODING_DUMP_DIRECTORY,
+          ...options,
+        },
+        resolve,
+      );
+    });
   }
 
   async deleteCache() {
-    const dumpDirectory = localGeocodingConfig.dumpDirectory;
+    const dumpDirectory = REVERSE_GEOCODING_DUMP_DIRECTORY;
     if (dumpDirectory) {
       // delete contents
       const items = await readdir(dumpDirectory, { withFileTypes: true });

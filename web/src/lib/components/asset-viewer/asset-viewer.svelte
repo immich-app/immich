@@ -50,7 +50,7 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let canCopyImagesToClipboard: boolean;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
@@ -120,6 +120,10 @@
         isShowDeleteConfirmation = true;
         return;
       case 'Escape':
+        if (isShowDeleteConfirmation) {
+          isShowDeleteConfirmation = false;
+          return;
+        }
         closeViewer();
         return;
       case 'f':

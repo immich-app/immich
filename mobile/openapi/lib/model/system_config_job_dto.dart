@@ -15,7 +15,9 @@ class SystemConfigJobDto {
   SystemConfigJobDto({
     required this.backgroundTask,
     required this.clipEncoding,
+    required this.library_,
     required this.metadataExtraction,
+    required this.migration,
     required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
@@ -29,7 +31,11 @@ class SystemConfigJobDto {
 
   JobSettingsDto clipEncoding;
 
+  JobSettingsDto library_;
+
   JobSettingsDto metadataExtraction;
+
+  JobSettingsDto migration;
 
   JobSettingsDto objectTagging;
 
@@ -49,7 +55,9 @@ class SystemConfigJobDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
      other.backgroundTask == backgroundTask &&
      other.clipEncoding == clipEncoding &&
+     other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
+     other.migration == migration &&
      other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
@@ -63,7 +71,9 @@ class SystemConfigJobDto {
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
     (clipEncoding.hashCode) +
+    (library_.hashCode) +
     (metadataExtraction.hashCode) +
+    (migration.hashCode) +
     (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
@@ -73,13 +83,15 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, metadataExtraction=$metadataExtraction, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, clipEncoding=$clipEncoding, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'clipEncoding'] = this.clipEncoding;
+      json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
       json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
@@ -100,7 +112,9 @@ class SystemConfigJobDto {
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
         clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
+        library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobSettingsDto.fromJson(json[r'migration'])!,
         objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
@@ -157,7 +171,9 @@ class SystemConfigJobDto {
   static const requiredKeys = <String>{
     'backgroundTask',
     'clipEncoding',
+    'library',
     'metadataExtraction',
+    'migration',
     'objectTagging',
     'recognizeFaces',
     'search',

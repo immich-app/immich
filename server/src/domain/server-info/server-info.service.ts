@@ -16,8 +16,8 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
@@ -25,6 +25,7 @@ export class ServerInfoService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {

@@ -57,7 +57,7 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -67,6 +67,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -162,7 +163,7 @@ export class AssetService {
       if (dto.isArchived !== false) {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
-      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
     }
@@ -185,6 +186,10 @@ export class AssetService {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
     }
 
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
@@ -268,7 +273,7 @@ export class AssetService {
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
     }
 
@@ -278,6 +283,11 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

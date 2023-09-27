@@ -161,6 +161,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['sql'],
       },
       image: 'overview/img/feature-panel.png',
     }),

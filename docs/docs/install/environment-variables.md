@@ -49,11 +49,9 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Geocoding
 
-| Variable                           | Description                         |           Default            | Services      |
-| :--------------------------------- | :---------------------------------- | :--------------------------: | :------------ |
-| `DISABLE_REVERSE_GEOCODING`        | Disable Reverse Geocoding Precision |           `false`            | microservices |
-| `REVERSE_GEOCODING_PRECISION`      | Reverse Geocoding Precision         |             `3`              | microservices |
-| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory    | `./.reverse-geocoding-dump/` | microservices |
+| Variable                           | Description                      |           Default            | Services      |
+| :--------------------------------- | :------------------------------- | :--------------------------: | :------------ |
+| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices |
 
 ## Ports
 

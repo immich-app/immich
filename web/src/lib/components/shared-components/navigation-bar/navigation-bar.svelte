@@ -106,7 +106,11 @@
           </a>
         {/if}
 
-        <div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
+        <div
+          use:clickOutside
+          on:outclick={() => (shouldShowAccountInfoPanel = false)}
+          on:escape={() => (shouldShowAccountInfoPanel = false)}
+        >
           <button
             class="flex"
             on:mouseover={() => (shouldShowAccountInfo = true)}

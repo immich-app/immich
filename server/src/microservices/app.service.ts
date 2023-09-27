@@ -4,6 +4,7 @@ import {
   IDeleteFilesJob,
   JobName,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
   PersonService,
@@ -14,6 +15,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+
 import { Injectable, Logger } from '@nestjs/common';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
@@ -37,6 +39,7 @@ export class AppService {
     private systemConfigService: SystemConfigService,
     private userService: UserService,
     private auditService: AuditService,
+    private libraryService: LibraryService,
   ) {}
 
   async init() {
@@ -60,6 +63,9 @@ export class AppService {
       [JobName.SEARCH_REMOVE_FACE]: (data) => this.searchService.handleRemoveFace(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
+      [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
+      [JobName.MIGRATE_ASSET]: (data) => this.mediaService.handleAssetMigration(data),
+      [JobName.MIGRATE_PERSON]: (data) => this.facialRecognitionService.handlePersonMigration(data),
       [JobName.SYSTEM_CONFIG_CHANGE]: () => this.systemConfigService.refreshConfig(),
       [JobName.QUEUE_GENERATE_THUMBNAILS]: (data) => this.mediaService.handleQueueGenerateThumbnails(data),
       [JobName.GENERATE_JPEG_THUMBNAIL]: (data) => this.mediaService.handleGenerateJpegThumbnail(data),
@@ -72,11 +78,18 @@ export class AppService {
       [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataProcessor.handleLivePhotoLinking(data),
       [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
       [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
-      [JobName.GENERATE_FACE_THUMBNAIL]: (data) => this.facialRecognitionService.handleGenerateFaceThumbnail(data),
+      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.facialRecognitionService.handleGeneratePersonThumbnail(data),
       [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
+      [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
+      [JobName.LIBRARY_MARK_ASSET_OFFLINE]: (data) => this.libraryService.handleOfflineAsset(data),
+      [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
+      [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
+      [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
+      [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
+      [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
     process.on('uncaughtException', (error: Error | any) => {
