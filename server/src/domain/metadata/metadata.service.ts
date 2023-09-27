@@ -278,8 +278,7 @@ export class MetadataService {
           deviceId: 'NONE',
         });
 
-        await this.storageRepository.writeFile(asset.originalPath, video);
-
+        await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
 
