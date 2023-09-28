@@ -579,6 +579,33 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
+    it('should offline files outside of changed external path', async () => {
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/some/other/path');
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'el_torcal_rocks',
+          }),
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'tanners_ridge',
+          }),
+        ]),
+      );
+    });
+
     it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
