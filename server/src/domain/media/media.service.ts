@@ -98,23 +98,29 @@ export class MediaService {
     if (!asset) {
       return false;
     }
-    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
-    const webpPath = this.ensureThumbnailPath(asset, 'webp');
-    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
 
-    if (asset.resizePath && asset.resizePath !== resizePath) {
-      await this.storageRepository.moveFile(asset.resizePath, resizePath);
-      await this.assetRepository.save({ id: asset.id, resizePath });
+    if (asset.resizePath) {
+      const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
+      if (asset.resizePath !== resizePath) {
+        await this.storageRepository.moveFile(asset.resizePath, resizePath);
+        await this.assetRepository.save({ id: asset.id, resizePath });
+      }
     }
 
-    if (asset.webpPath && asset.webpPath !== webpPath) {
-      await this.storageRepository.moveFile(asset.webpPath, webpPath);
-      await this.assetRepository.save({ id: asset.id, webpPath });
+    if (asset.webpPath) {
+      const webpPath = this.ensureThumbnailPath(asset, 'webp');
+      if (asset.webpPath !== webpPath) {
+        await this.storageRepository.moveFile(asset.webpPath, webpPath);
+        await this.assetRepository.save({ id: asset.id, webpPath });
+      }
     }
 
-    if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
-      await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
-      await this.assetRepository.save({ id: asset.id, encodedVideoPath });
+    if (asset.encodedVideoPath) {
+      const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+      if (asset.encodedVideoPath !== encodedVideoPath) {
+        await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath });
+      }
     }
 
     return true;
