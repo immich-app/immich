@@ -19,6 +19,7 @@ class SystemConfigDto {
     required this.map,
     required this.oauth,
     required this.passwordLogin,
+    required this.reverseGeocoding,
     required this.storageTemplate,
     required this.thumbnail,
     required this.trash,
@@ -36,6 +37,8 @@ class SystemConfigDto {
 
   SystemConfigPasswordLoginDto passwordLogin;
 
+  SystemConfigReverseGeocodingDto reverseGeocoding;
+
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThumbnailDto thumbnail;
@@ -50,6 +53,7 @@ class SystemConfigDto {
      other.map == map &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
+     other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
      other.thumbnail == thumbnail &&
      other.trash == trash;
@@ -63,12 +67,13 @@ class SystemConfigDto {
     (map.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
+    (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
     (thumbnail.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +83,7 @@ class SystemConfigDto {
       json[r'map'] = this.map;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
+      json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
@@ -98,6 +104,7 @@ class SystemConfigDto {
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
+        reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
@@ -154,6 +161,7 @@ class SystemConfigDto {
     'map',
     'oauth',
     'passwordLogin',
+    'reverseGeocoding',
     'storageTemplate',
     'thumbnail',
     'trash',

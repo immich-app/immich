@@ -44,6 +44,14 @@ export interface AlbumViewSettings {
   view: string;
 }
 
+export interface SidebarSettings {
+  people: boolean;
+}
+
+export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings', {
+  people: false,
+});
+
 export enum AlbumViewMode {
   Cover = 'Cover',
   List = 'List',

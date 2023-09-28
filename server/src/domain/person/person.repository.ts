@@ -1,10 +1,14 @@
-import { AssetFaceId } from '@app/domain';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 export const IPersonRepository = 'IPersonRepository';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
   withHidden: boolean;
+}
+
+export interface AssetFaceId {
+  assetId: string;
+  personId: string;
 }
 
 export interface UpdateFacesData {
@@ -28,6 +32,8 @@ export interface IPersonRepository {
   delete(entity: PersonEntity): Promise<PersonEntity | null>;
   deleteAll(): Promise<number>;
 
-  getFaceById(payload: AssetFaceId): Promise<AssetFaceEntity | null>;
+  getAllFaces(): Promise<AssetFaceEntity[]>;
+  getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
+  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
 }

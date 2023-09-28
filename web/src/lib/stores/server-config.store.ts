@@ -10,6 +10,7 @@ export const featureFlags = writable<FeatureFlags>({
   sidecar: true,
   tagImage: true,
   map: true,
+  reverseGeocoding: true,
   search: true,
   oauth: false,
   oauthAutoLaunch: false,

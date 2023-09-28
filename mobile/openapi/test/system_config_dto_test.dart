@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigReverseGeocodingDto reverseGeocoding
+    test('to test the property `reverseGeocoding`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO

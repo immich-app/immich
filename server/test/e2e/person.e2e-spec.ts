@@ -1,4 +1,4 @@
-import { IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
+import { IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, PersonController } from '@app/immich';
 import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -14,7 +14,6 @@ describe(`${PersonController.name}`, () => {
   let loginResponse: LoginResponseDto;
   let accessToken: string;
   let personRepository: IPersonRepository;
-  let faceRepository: IFaceRepository;
   let visiblePerson: PersonEntity;
   let hiddenPerson: PersonEntity;
 
@@ -26,7 +25,6 @@ describe(`${PersonController.name}`, () => {
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
-    faceRepository = app.get<IFaceRepository>(IFaceRepository);
   });
 
   beforeEach(async () => {
@@ -41,7 +39,7 @@ describe(`${PersonController.name}`, () => {
       name: 'visible_person',
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await faceRepository.create({ assetId: faceAsset.id, personId: visiblePerson.id });
+    await personRepository.createFace({ assetId: faceAsset.id, personId: visiblePerson.id });
 
     hiddenPerson = await personRepository.create({
       ownerId: loginResponse.userId,
@@ -49,7 +47,7 @@ describe(`${PersonController.name}`, () => {
       isHidden: true,
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await faceRepository.create({ assetId: faceAsset.id, personId: hiddenPerson.id });
+    await personRepository.createFace({ assetId: faceAsset.id, personId: hiddenPerson.id });
   });
 
   afterAll(async () => {

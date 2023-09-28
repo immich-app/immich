@@ -27,6 +27,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
               sidecar: true,
               tagImage: true,
               trash: true,
+              reverseGeocoding: true,
             ),
             serverConfig: ServerConfigDto(
               loginPageMessage: "",
@@ -41,10 +42,10 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
   final ServerInfoService _serverInfoService;
 
-  getServerInfo() async {
-    await getServerVersion();
-    await getServerFeatures();
-    await getServerConfig();
+  getServerInfo() {
+    getServerVersion();
+    getServerFeatures();
+    getServerConfig();
   }
 
   getServerVersion() async {

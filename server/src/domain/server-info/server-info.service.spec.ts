@@ -151,6 +151,7 @@ describe(ServerInfoService.name, () => {
         clipEncode: true,
         facialRecognition: true,
         map: true,
+        reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,

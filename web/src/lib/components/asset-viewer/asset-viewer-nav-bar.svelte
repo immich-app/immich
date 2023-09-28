@@ -143,7 +143,7 @@
     {/if}
 
     {#if isOwner}
-      {#if !asset.isReadOnly && !asset.isExternal}
+      {#if !asset.isReadOnly || !asset.isExternal}
         <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       {/if}
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>

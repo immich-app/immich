@@ -1,6 +1,7 @@
 import {
   AssetType,
   Colorspace,
+  ExifEntity,
   SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
@@ -58,7 +59,7 @@ describe(MediaService.name, () => {
         hasNextPage: false,
       });
       personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -72,19 +73,8 @@ describe(MediaService.name, () => {
       expect(personMock.getAll).toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: {
-          imageWidth: faceStub.face1.imageWidth,
-          imageHeight: faceStub.face1.imageHeight,
-          boundingBox: {
-            x1: faceStub.face1.boundingBoxX1,
-            x2: faceStub.face1.boundingBoxX2,
-            y1: faceStub.face1.boundingBoxY1,
-            y2: faceStub.face1.boundingBoxY2,
-          },
-          assetId: faceStub.face1.assetId,
-          personId: personStub.newThumbnail.id,
-        },
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: personStub.newThumbnail.id },
       });
     });
 
@@ -105,18 +95,9 @@ describe(MediaService.name, () => {
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
       expect(personMock.getRandomFace).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
         data: {
-          imageWidth: faceStub.face1.imageWidth,
-          imageHeight: faceStub.face1.imageHeight,
-          boundingBox: {
-            x1: faceStub.face1.boundingBoxX1,
-            x2: faceStub.face1.boundingBoxX2,
-            y1: faceStub.face1.boundingBoxY1,
-            y2: faceStub.face1.boundingBoxY2,
-          },
-          assetId: faceStub.face1.assetId,
-          personId: personStub.newThumbnail.id,
+          id: personStub.newThumbnail.id,
         },
       });
     });
@@ -207,6 +188,25 @@ describe(MediaService.name, () => {
         size: 1440,
         format: 'jpeg',
         quality: 80,
+        colorspace: Colorspace.SRGB,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
+      });
+    });
+
+    it('should generate a P3 thumbnail for a wide gamut image', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+      ]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.jpeg', {
+        size: 1440,
+        format: 'jpeg',
+        quality: 80,
         colorspace: Colorspace.P3,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
@@ -265,6 +265,30 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should always generate video thumbnail in one pass', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '5000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id.jpeg',
+        {
+          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          outputOptions: [
+            '-frames:v 1',
+            '-v verbose',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should run successfully', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
@@ -287,12 +311,31 @@ describe(MediaService.name, () => {
         format: 'webp',
         size: 250,
         quality: 80,
-        colorspace: Colorspace.P3,
+        colorspace: Colorspace.SRGB,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
       });
+    });
+  });
+
+  it('should generate a P3 thumbnail for a wide gamut image', async () => {
+    assetMock.getByIds.mockResolvedValue([
+      { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+    ]);
+    await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
+
+    expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+    expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.webp', {
+      format: 'webp',
+      size: 250,
+      quality: 80,
+      colorspace: Colorspace.P3,
+    });
+    expect(assetMock.save).toHaveBeenCalledWith({
+      id: 'asset-id',
+      webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
     });
   });
 
@@ -1538,5 +1581,52 @@ describe(MediaService.name, () => {
         twoPass: false,
       },
     );
+  });
+
+  describe('isSRGB', () => {
+    it('should return true for srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 8-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for image with no colorspace or bit depth metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: {} as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return false for non-srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for non-srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for 16-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return true for 16-bit image with sRGB colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 16-bit image with sRGB profile', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
   });
 });

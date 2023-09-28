@@ -12,6 +12,7 @@
 
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
 
   export let onAssetDelete: OnAssetDelete;
@@ -19,6 +20,8 @@
   export let force = !$featureFlags.trash;
 
   const { getAssets, clearSelect } = getAssetControlContext();
+
+  const dispatch = createEventDispatcher();
 
   let isShowConfirmation = false;
   let loading = false;
@@ -57,6 +60,11 @@
       loading = false;
     }
   };
+
+  const escape = () => {
+    dispatch('escape');
+    isShowConfirmation = false;
+  };
 </script>
 
 {#if menuItem}
@@ -73,6 +81,7 @@
     confirmText="Delete"
     on:confirm={handleDelete}
     on:cancel={() => (isShowConfirmation = false)}
+    on:escape={escape}
   >
     <svelte:fragment slot="prompt">
       <p>

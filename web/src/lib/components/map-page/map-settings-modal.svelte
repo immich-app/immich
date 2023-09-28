@@ -16,9 +16,11 @@
     close: void;
     save: MapSettings;
   }>();
+
+  const handleClose = () => dispatch('close');
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal on:clickOutside={handleClose} on:escape={handleClose}>
   <div
     class="flex w-96 max-w-lg flex-col gap-8 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
@@ -105,7 +107,7 @@
       {/if}
 
       <div class="mt-4 flex w-full gap-4">
-        <Button color="gray" size="sm" fullwidth on:click={() => dispatch('close')}>Cancel</Button>
+        <Button color="gray" size="sm" fullwidth on:click={handleClose}>Cancel</Button>
         <Button type="submit" size="sm" fullwidth>Save</Button>
       </div>
     </form>

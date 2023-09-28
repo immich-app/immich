@@ -6,12 +6,13 @@
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
+  import LibraryList from './library-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import SidebarSettings from './sidebar-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-  import LibraryList from './library-list.svelte';
 
   export let user: UserResponseDto;
 
@@ -61,4 +62,8 @@
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
   <PartnerSettings {user} bind:partners />
+</SettingAccordion>
+
+<SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
+  <SidebarSettings />
 </SettingAccordion>

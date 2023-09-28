@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import { AssetEntity, AssetType, Colorspace, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
@@ -53,27 +53,16 @@ export class MediaService {
     const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
 
     for (const person of people) {
-      // use stored asset for generating thumbnail or pick a random one if not present
-      const face = person.faceAssetId
-        ? await this.personRepository.getFaceById({ personId: person.id, assetId: person.faceAssetId })
-        : await this.personRepository.getRandomFace(person.id);
-      if (face) {
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: {
-            imageWidth: face.imageWidth,
-            imageHeight: face.imageHeight,
-            boundingBox: {
-              x1: face.boundingBoxX1,
-              x2: face.boundingBoxX2,
-              y1: face.boundingBoxY1,
-              y2: face.boundingBoxY2,
-            },
-            assetId: face.assetId,
-            personId: person.id,
-          },
-        });
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
+        }
+
+        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
       }
+
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
     return true;
@@ -109,23 +98,29 @@ export class MediaService {
     if (!asset) {
       return false;
     }
-    const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
-    const webpPath = this.ensureThumbnailPath(asset, 'webp');
-    const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
 
-    if (asset.resizePath && asset.resizePath !== resizePath) {
-      await this.storageRepository.moveFile(asset.resizePath, resizePath);
-      await this.assetRepository.save({ id: asset.id, resizePath });
+    if (asset.resizePath) {
+      const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
+      if (asset.resizePath !== resizePath) {
+        await this.storageRepository.moveFile(asset.resizePath, resizePath);
+        await this.assetRepository.save({ id: asset.id, resizePath });
+      }
     }
 
-    if (asset.webpPath && asset.webpPath !== webpPath) {
-      await this.storageRepository.moveFile(asset.webpPath, webpPath);
-      await this.assetRepository.save({ id: asset.id, webpPath });
+    if (asset.webpPath) {
+      const webpPath = this.ensureThumbnailPath(asset, 'webp');
+      if (asset.webpPath !== webpPath) {
+        await this.storageRepository.moveFile(asset.webpPath, webpPath);
+        await this.assetRepository.save({ id: asset.id, webpPath });
+      }
     }
 
-    if (asset.encodedVideoPath && asset.encodedVideoPath !== encodedVideoPath) {
-      await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
-      await this.assetRepository.save({ id: asset.id, encodedVideoPath });
+    if (asset.encodedVideoPath) {
+      const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
+      if (asset.encodedVideoPath !== encodedVideoPath) {
+        await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath });
+      }
     }
 
     return true;
@@ -163,8 +158,9 @@ export class MediaService {
   async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
     const { thumbnail } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
-    const thumbnailOptions = { format, size, colorspace: thumbnail.colorspace, quality: thumbnail.quality };
     const path = this.ensureThumbnailPath(asset, format);
+    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
+    const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
     await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
     return path;
   }
@@ -383,5 +379,18 @@ export class MediaService {
 
   ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
     return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
+  }
+
+  isSRGB(asset: AssetEntity): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+    if (colorspace || profileDescription) {
+      return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
+    } else if (bitsPerSample) {
+      // assume sRGB for 8-bit images with no color profile or colorspace metadata
+      return bitsPerSample === 8;
+    } else {
+      // assume sRGB for images with no relevant metadata
+      return true;
+    }
   }
 }

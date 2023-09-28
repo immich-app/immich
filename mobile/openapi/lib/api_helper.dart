@@ -70,6 +70,9 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CitiesFile) {
+    return CitiesFileTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }

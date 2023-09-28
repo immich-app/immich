@@ -204,8 +204,9 @@ final assetsProvider =
   final query = ref
       .watch(dbProvider)
       .assets
+      .where()
+      .ownerIdEqualToAnyChecksum(userId)
       .filter()
-      .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .sortByFileCreatedAtDesc();

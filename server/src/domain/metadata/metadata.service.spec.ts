@@ -1,22 +1,43 @@
-import { assetStub, newAssetRepositoryMock, newJobRepositoryMock, newStorageRepositoryMock } from '@test';
+import {
+  assetStub,
+  newAlbumRepositoryMock,
+  newAssetRepositoryMock,
+  newCryptoRepositoryMock,
+  newJobRepositoryMock,
+  newMetadataRepositoryMock,
+  newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+} from '@test';
 import { constants } from 'fs/promises';
+import { IAlbumRepository } from '../album';
 import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
+import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
+import { IMetadataRepository } from './metadata.repository';
 import { MetadataService } from './metadata.service';
 
 describe(MetadataService.name, () => {
-  let sut: MetadataService;
+  let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
+  let cryptoRepository: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let metadataMock: jest.Mocked<IMetadataRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let sut: MetadataService;
 
   beforeEach(async () => {
+    albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
+    cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
+    metadataMock = newMetadataRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MetadataService(assetMock, jobMock, storageMock);
+    sut = new MetadataService(albumMock, assetMock, cryptoRepository, jobMock, metadataMock, storageMock, configMock);
   });
 
   it('should be defined', () => {
