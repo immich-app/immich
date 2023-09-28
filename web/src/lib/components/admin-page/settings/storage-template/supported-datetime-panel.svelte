@@ -16,7 +16,7 @@
 <div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
   <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
     <p>Asset's creation timestamp is used for the datetime information</p>
-    <p>Sample time 2022-02-01T20:03:05.250</p>
+    <p>Sample time 2022-02-03T04:56:05.250</p>
   </div>
   <div class="flex gap-[40px]">
     <div>
