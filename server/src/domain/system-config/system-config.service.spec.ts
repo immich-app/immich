@@ -221,8 +221,10 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
+          '{{y}}/{{y}}-{{WW}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
+        weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });
     });
