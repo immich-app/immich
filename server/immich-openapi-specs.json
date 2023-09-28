@@ -745,6 +745,14 @@
             }
           },
           {
+            "name": "includeArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1408,6 +1416,14 @@
         "parameters": [
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeArchived",
             "required": false,
             "in": "query",
             "schema": {

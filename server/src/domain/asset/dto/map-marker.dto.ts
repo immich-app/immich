@@ -10,6 +10,12 @@ export class MapMarkerDto {
   @Transform(toBoolean)
   isFavorite?: boolean;
 
+  @ApiProperty()
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  includeArchived?: boolean;
+
   @Optional()
   @IsDate()
   @Type(() => Date)

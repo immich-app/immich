@@ -355,7 +355,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
+    const { isFavorite, includeArchived, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
       select: {
@@ -368,7 +368,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         ownerId,
         isVisible: true,
-        isArchived: false,
+        isArchived: includeArchived ? undefined : false,
         exifInfo: {
           latitude: Not(IsNull()),
           longitude: Not(IsNull()),
