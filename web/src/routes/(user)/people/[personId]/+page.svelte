@@ -32,8 +32,12 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let data: PageData;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
@@ -43,7 +47,7 @@
     BIRTH_DATE = 'birth-date',
   }
 
-  const assetStore = new AssetStore({
+  let assetStore = new AssetStore({
     size: TimeBucketSize.Month,
     isArchived: false,
     personId: data.person.id,
@@ -54,14 +58,30 @@
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
+  let previousPersonId: string = data.person.id;
   let people = data.people.people;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
+  let potentialMergePeople: PersonResponseDto[] = [];
 
   let personName = '';
 
+  let name: string = data.person.name;
+  let suggestedPeople: PersonResponseDto[] = [];
+
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+
+  $: {
+    suggestedPeople = !name
+      ? []
+      : people
+          .filter(
+            (person: PersonResponseDto) =>
+              person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+          )
+          .slice(0, 5);
+  }
 
   onMount(() => {
     const action = $page.url.searchParams.get('action');
@@ -69,10 +89,30 @@
       viewMode = ViewMode.MERGE_FACES;
     }
   });
+  const handleEscape = () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    if ($isMultiSelectState) {
+      assetInteractionStore.clearMultiselect();
+      return;
+    } else {
+      goto(previousRoute);
+      return;
+    }
+  };
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
+    }
+    if (previousPersonId !== data.person.id) {
+      assetStore = new AssetStore({
+        size: TimeBucketSize.Month,
+        isArchived: false,
+        personId: data.person.id,
+      });
+      previousPersonId = data.person.id;
     }
   });
 
@@ -138,6 +178,14 @@
     }
   };
 
+  const handleSuggestPeople = (person: PersonResponseDto) => {
+    isEditingName = false;
+    potentialMergePeople = [];
+    personMerge1 = data.person;
+    personMerge2 = person;
+    viewMode = ViewMode.SUGGEST_MERGE;
+  };
+
   const changeName = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
     data.person.name = personName;
@@ -174,6 +222,7 @@
   };
 
   const handleNameChange = async (name: string) => {
+    potentialMergePeople = [];
     personName = name;
 
     if (data.person.name === personName) {
@@ -187,6 +236,15 @@
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
+      potentialMergePeople = people
+        .filter(
+          (person: PersonResponseDto) =>
+            personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
+            person.id !== personMerge2.id &&
+            person.id !== personMerge1.id &&
+            !person.isHidden,
+        )
+        .slice(0, 3);
       viewMode = ViewMode.SUGGEST_MERGE;
       return;
     }
@@ -215,13 +273,21 @@
       handleError(error, 'Unable to save date of birth');
     }
   };
+
+  const handleGoBack = () => {
+    viewMode = ViewMode.VIEW_ASSETS;
+    if ($page.url.searchParams.has('action')) {
+      $page.url.searchParams.delete('action');
+      goto($page.url);
+    }
+  };
 </script>
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
   <MergeSuggestionModal
     {personMerge1}
     {personMerge2}
-    {people}
+    {potentialMergePeople}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:reject={() => changeName()}
     on:confirm={(event) => handleMergeSameFace(event.detail)}
@@ -237,7 +303,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={() => (viewMode = ViewMode.VIEW_ASSETS)} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
 {/if}
 
 <header>
@@ -279,48 +345,83 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid
-    {assetStore}
-    {assetInteractionStore}
-    isSelectionMode={viewMode === ViewMode.SELECT_FACE}
-    singleSelect={viewMode === ViewMode.SELECT_FACE}
-    on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
-  >
-    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <!-- Face information block -->
-      <section class="flex place-items-center p-4 sm:px-6">
-        {#if isEditingName}
-          <EditNameInput
-            person={data.person}
-            on:change={(event) => handleNameChange(event.detail)}
-            on:cancel={() => handleCancelEditName()}
-          />
-        {:else}
-          <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(data.person.id)}
-              altText={data.person.name}
-              widthStyle="3.375rem"
-              heightStyle="3.375rem"
-            />
-          </button>
-
-          <button
-            title="Edit name"
-            class="px-4 text-immich-primary dark:text-immich-dark-primary"
-            on:click={() => (isEditingName = true)}
-          >
-            {#if data.person.name}
-              <p class="py-2 font-medium">{data.person.name}</p>
+  {#key previousPersonId}
+    <AssetGrid
+      {assetStore}
+      {assetInteractionStore}
+      isSelectionMode={viewMode === ViewMode.SELECT_FACE}
+      singleSelect={viewMode === ViewMode.SELECT_FACE}
+      on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
+      on:escape={handleEscape}
+    >
+      {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
+        <!-- Face information block -->
+        <div
+          role="button"
+          class="relative w-fit p-4 sm:px-6"
+          use:clickOutside
+          on:outclick={handleCancelEditName}
+          on:escape={handleCancelEditName}
+        >
+          <section class="flex w-96 place-items-center border-black">
+            {#if isEditingName}
+              <EditNameInput
+                person={data.person}
+                suggestedPeople={suggestedPeople.length > 0}
+                bind:name
+                on:change={(event) => handleNameChange(event.detail)}
+              />
             {:else}
-              <p class="w-fit font-medium">Add a name</p>
-              <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+              <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={api.getPeopleThumbnailUrl(data.person.id)}
+                  altText={data.person.name}
+                  widthStyle="3.375rem"
+                  heightStyle="3.375rem"
+                />
+              </button>
+
+              <button
+                title="Edit name"
+                class="px-4 text-immich-primary dark:text-immich-dark-primary"
+                on:click={() => (isEditingName = true)}
+              >
+                {#if data.person.name}
+                  <p class="py-2 font-medium">{data.person.name}</p>
+                {:else}
+                  <p class="w-fit font-medium">Add a name</p>
+                  <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+                {/if}
+              </button>
             {/if}
-          </button>
-        {/if}
-      </section>
-    {/if}
-  </AssetGrid>
+          </section>
+          {#if isEditingName}
+            <div class="absolute z-[999] w-96">
+              {#each suggestedPeople as person, index (person.id)}
+                <div
+                  class="flex {index === suggestedPeople.length - 1
+                    ? 'rounded-b-lg'
+                    : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                >
+                  <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="2rem"
+                      heightStyle="2rem"
+                    />
+                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                  </button>
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </AssetGrid>
+  {/key}
 </main>

@@ -6,9 +6,11 @@
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
+  import LibraryList from './library-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import SidebarSettings from './sidebar-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
 
@@ -36,6 +38,10 @@
   <DeviceList bind:devices />
 </SettingAccordion>
 
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
+</SettingAccordion>
+
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
   <MemoriesSettings {user} />
 </SettingAccordion>
@@ -56,4 +62,8 @@
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
   <PartnerSettings {user} bind:partners />
+</SettingAccordion>
+
+<SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
+  <SidebarSettings />
 </SettingAccordion>

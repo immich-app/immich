@@ -3,10 +3,10 @@
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { clickOutside } from '$lib/utils/click-outside';
 
   export let person: PersonResponseDto;
-  let name = person.name;
+  export let name: string;
+  export let suggestedPeople = false;
 
   const dispatch = createEventDispatcher<{
     change: string;
@@ -15,9 +15,9 @@
 </script>
 
 <div
-  class="flex max-w-lg place-items-center rounded-lg border bg-gray-100 p-2 dark:border-transparent dark:bg-gray-700"
-  use:clickOutside
-  on:outclick={() => dispatch('cancel')}
+  class="flex w-full place-items-center {suggestedPeople
+    ? 'rounded-t-lg border-b dark:border-immich-dark-gray'
+    : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
   <ImageThumbnail
     circle

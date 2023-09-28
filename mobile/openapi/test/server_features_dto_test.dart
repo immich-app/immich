@@ -51,6 +51,11 @@ void main() {
       // TODO
     });
 
+    // bool reverseGeocoding
+    test('to test the property `reverseGeocoding`', () async {
+      // TODO
+    });
+
     // bool search
     test('to test the property `search`', () async {
       // TODO

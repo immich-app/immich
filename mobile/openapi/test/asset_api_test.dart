@@ -112,6 +112,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getRandom({ num count }) async
+    test('test getRandom', () async {
+      // TODO
+    });
+
     //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
     test('test getTimeBuckets', () async {
       // TODO
@@ -154,7 +159,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isReadOnly, bool isVisible, MultipartFile livePhotoData, MultipartFile sidecarData }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isExternal, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO
     });

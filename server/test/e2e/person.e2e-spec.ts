@@ -1,4 +1,4 @@
-import { IFaceRepository, IPersonRepository, LoginResponseDto } from '@app/domain';
+import { IPersonRepository, LoginResponseDto } from '@app/domain';
 import { AppModule, PersonController } from '@app/immich';
 import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -14,7 +14,6 @@ describe(`${PersonController.name}`, () => {
   let loginResponse: LoginResponseDto;
   let accessToken: string;
   let personRepository: IPersonRepository;
-  let faceRepository: IFaceRepository;
   let visiblePerson: PersonEntity;
   let hiddenPerson: PersonEntity;
 
@@ -26,7 +25,6 @@ describe(`${PersonController.name}`, () => {
     app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
-    faceRepository = app.get<IFaceRepository>(IFaceRepository);
   });
 
   beforeEach(async () => {
@@ -41,7 +39,7 @@ describe(`${PersonController.name}`, () => {
       name: 'visible_person',
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await faceRepository.create({ assetId: faceAsset.id, personId: visiblePerson.id });
+    await personRepository.createFace({ assetId: faceAsset.id, personId: visiblePerson.id });
 
     hiddenPerson = await personRepository.create({
       ownerId: loginResponse.userId,
@@ -49,7 +47,7 @@ describe(`${PersonController.name}`, () => {
       isHidden: true,
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await faceRepository.create({ assetId: faceAsset.id, personId: hiddenPerson.id });
+    await personRepository.createFace({ assetId: faceAsset.id, personId: hiddenPerson.id });
   });
 
   afterAll(async () => {
@@ -110,7 +108,7 @@ describe(`${PersonController.name}`, () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest());
     });
 
     it('should return person information', async () => {
@@ -130,25 +128,34 @@ describe(`${PersonController.name}`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
-    for (const key of ['name', 'featureFaceAssetId', 'isHidden']) {
+    for (const { key, type } of [
+      { key: 'name', type: 'string' },
+      { key: 'featureFaceAssetId', type: 'string' },
+      { key: 'isHidden', type: 'boolean value' },
+    ]) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(server)
           .put(`/person/${visiblePerson.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest([`${key} must be a ${type}`]));
       });
     }
 
     it('should not accept invalid birth dates', async () => {
-      for (const birthDate of [false, 'false', '123567', 123456]) {
+      for (const { birthDate, response } of [
+        { birthDate: false, response: ['id must be a UUID'] },
+        { birthDate: 'false', response: ['birthDate must be a Date instance'] },
+        { birthDate: '123567', response: ['id must be a UUID'] },
+        { birthDate: 123456, response: ['id must be a UUID'] },
+      ]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ birthDate });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest(response));
       }
     });
 

@@ -6,9 +6,11 @@ import { IStorageRepository } from './storage.repository';
 @Injectable()
 export class StorageService {
   private logger = new Logger(StorageService.name);
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
-  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {}
+  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {
+    this.storageCore = new StorageCore(storageRepository);
+  }
 
   init() {
     const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);

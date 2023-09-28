@@ -220,7 +220,9 @@ class BackupService {
     final List<String> duplicatedAssetIds = [];
 
     // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
-    await PhotoManager.requestPermissionExtend();
+    if (Platform.isIOS) {
+      await PhotoManager.requestPermissionExtend();
+    }
 
     List<AssetEntity> assetsToUpload = sortAssets
         // Upload images before video assets

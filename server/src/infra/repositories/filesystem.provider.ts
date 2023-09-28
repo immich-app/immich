@@ -1,7 +1,15 @@
-import { DiskUsage, ImmichReadStream, ImmichZipStream, IStorageRepository } from '@app/domain';
+import {
+  CrawlOptionsDto,
+  DiskUsage,
+  ImmichReadStream,
+  ImmichZipStream,
+  IStorageRepository,
+  mimeTypes,
+} from '@app/domain';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { readdir } from 'fs/promises';
+import fs, { readdir, writeFile } from 'fs/promises';
+import { glob } from 'glob';
 import mv from 'mv';
 import { promisify } from 'node:util';
 import path from 'path';
@@ -31,6 +39,18 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
+  async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<Buffer> {
+    const file = await fs.open(filepath);
+    try {
+      const { buffer } = await file.read(options);
+      return buffer;
+    } finally {
+      await file.close();
+    }
+  }
+
+  writeFile = writeFile;
+
   async moveFile(source: string, destination: string): Promise<void> {
     if (await this.checkFileExists(destination)) {
       throw new Error(`Destination file already exists: ${destination}`);
@@ -52,15 +72,13 @@ export class FilesystemProvider implements IStorageRepository {
     await fs.unlink(file);
   }
 
+  stat = fs.stat;
+
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
     await fs.rm(folder, options);
   }
 
-  async removeEmptyDirs(directory: string) {
-    this._removeEmptyDirs(directory, false);
-  }
-
-  private async _removeEmptyDirs(directory: string, self: boolean) {
+  async removeEmptyDirs(directory: string, self: boolean = false) {
     // lstat does not follow symlinks (in contrast to stat)
     const stats = await fs.lstat(directory);
     if (!stats.isDirectory()) {
@@ -68,7 +86,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
 
     const files = await fs.readdir(directory);
-    await Promise.all(files.map((file) => this._removeEmptyDirs(path.join(directory, file), true)));
+    await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
     if (self) {
       const updated = await fs.readdir(directory);
@@ -91,6 +109,26 @@ export class FilesystemProvider implements IStorageRepository {
       free: stats.bfree * stats.bsize,
       total: stats.blocks * stats.bsize,
     };
+  }
+
+  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const pathsToCrawl = crawlOptions.pathsToCrawl;
+
+    let paths: string;
+    if (!pathsToCrawl) {
+      // No paths to crawl, return empty list
+      return [];
+    } else if (pathsToCrawl.length === 1) {
+      paths = pathsToCrawl[0];
+    } else {
+      paths = '{' + pathsToCrawl.join(',') + '}';
+    }
+
+    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
+
+    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
+      path.normalize(assetPath),
+    );
   }
 
   readdir = readdir;

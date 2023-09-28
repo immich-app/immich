@@ -37,7 +37,7 @@ describe(`${OAuthController.name} (e2e)`, () => {
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(server).post('/oauth/authorize').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['redirectUri must be a string', 'redirectUri should not be empty']));
     });
   });
 });

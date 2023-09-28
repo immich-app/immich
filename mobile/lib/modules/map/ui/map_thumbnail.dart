@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,8 +30,9 @@ class MapThumbnail extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tileLayer = TileLayer(
-      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      subdomains: const ['a', 'b', 'c'],
+      urlTemplate: ref.watch(
+        serverInfoProvider.select((v) => v.serverConfig.mapTileUrl),
+      ),
     );
 
     return SizedBox(

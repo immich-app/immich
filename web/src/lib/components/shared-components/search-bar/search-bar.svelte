@@ -32,6 +32,7 @@
     });
 
     showBigSearchBar = false;
+    $isSearchEnabled = false;
     goto(`${AppRoute.SEARCH}?${params}`);
   }
 
@@ -68,7 +69,7 @@
   };
 </script>
 
-<div role="button" class="w-full" use:clickOutside on:outclick={onFocusOut}>
+<div role="button" class="w-full" use:clickOutside on:outclick={onFocusOut} on:escape={onFocusOut}>
   <form
     draggable="false"
     autocomplete="off"
