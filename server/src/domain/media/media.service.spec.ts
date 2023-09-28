@@ -267,7 +267,10 @@ describe(MediaService.name, () => {
 
     it('should always generate video thumbnail in one pass', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TWO_PASS, value: true }]);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '5000k' },
+      ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
 
