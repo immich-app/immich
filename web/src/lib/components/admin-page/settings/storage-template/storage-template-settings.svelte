@@ -63,6 +63,7 @@
     const dateTokens = [
       ...templateOptions.yearOptions,
       ...templateOptions.monthOptions,
+      ...templateOptions.weekOptions,
       ...templateOptions.dayOptions,
       ...templateOptions.hourOptions,
       ...templateOptions.minuteOptions,
