@@ -16,9 +16,9 @@
 <div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
   <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
     <p>Asset's creation timestamp is used for the datetime information</p>
-    <p>Sample time 2022-09-04T20:03:05.250</p>
+    <p>Sample time 2022-02-03T04:56:05.250</p>
   </div>
-  <div class="flex gap-[50px]">
+  <div class="flex gap-[40px]">
     <div>
       <p class="font-medium text-immich-primary dark:text-immich-dark-primary">YEAR</p>
       <ul>
@@ -33,6 +33,15 @@
       <ul>
         {#each options.monthOptions as monthFormat}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
+        {/each}
+      </ul>
+    </div>
+
+    <div>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">WEEK</p>
+      <ul>
+        {#each options.weekOptions as weekFormat}
+          <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
         {/each}
       </ul>
     </div>

@@ -16,6 +16,7 @@ import {
   supportedMinuteTokens,
   supportedMonthTokens,
   supportedSecondTokens,
+  supportedWeekTokens,
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -239,6 +240,7 @@ export class StorageTemplateService {
     const dateTokens = [
       ...supportedYearTokens,
       ...supportedMonthTokens,
+      ...supportedWeekTokens,
       ...supportedDayTokens,
       ...supportedHourTokens,
       ...supportedMinuteTokens,
