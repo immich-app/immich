@@ -27,7 +27,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config test/e2e/jest-e2e.json --runInBand --detectOpenHandles --forceExit",
-    "test:e2e-docker": "NODE_OPTIONS='--experimental-vm-modules' jest --config test/e2e/jest-e2e-docker.json --runInBand --detectOpenHandles --forceExit",
+    "test:e2e-docker": "NODE_OPTIONS='--experimental-vm-modules --max_old_space_size=4096' jest --config test/e2e/jest-e2e-docker.json --runInBand --detectOpenHandles --forceExit",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
     "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./src/infra/database.config.ts",
