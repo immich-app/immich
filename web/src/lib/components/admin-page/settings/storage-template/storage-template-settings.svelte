@@ -58,7 +58,7 @@
       filetypefull: 'IMAGE',
     };
 
-    const dt = luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString());
+    const dt = luxon.DateTime.fromISO(new Date('2022-02-01T20:03:05.250').toISOString());
 
     const dateTokens = [
       ...templateOptions.yearOptions,
