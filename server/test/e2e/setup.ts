@@ -1,9 +1,5 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { GenericContainer } from 'testcontainers';
 export default async () => {
-  process.env.NODE_ENV = 'development';
-  process.env.TYPESENSE_ENABLED = 'false';
-
   const pg = await new PostgreSqlContainer('postgres')
     .withExposedPorts(5432)
     .withDatabase('immich')
@@ -12,14 +8,11 @@ export default async () => {
     .withReuse()
     .start();
 
-  process.env.DB_URL = pg.getConnectionUri();
-
-  const redis = await new GenericContainer('redis').withExposedPorts(6379).withReuse().start();
-
-  process.env.REDIS_PORT = String(redis.getMappedPort(6379));
-  process.env.REDIS_HOSTNAME = redis.getHost();
-
+  process.env.NODE_ENV = 'development';
+  process.env.TYPESENSE_ENABLED = 'false';
   process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
   process.env.DISABLE_REVERSE_GEOCODING = 'true';
+  process.env.IMMICH_REDIS_ENABLED = 'false';
+  process.env.DB_URL = pg.getConnectionUri();
   process.env.TZ = 'Z';
 };

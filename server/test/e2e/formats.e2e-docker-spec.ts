@@ -1,5 +1,5 @@
 import { AssetResponseDto, ExifResponseDto, LoginResponseDto } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { TEST_ASSET_PATH, createTestApp, db, ensureTestAssets } from '@test/test-utils';
@@ -66,7 +66,7 @@ describe(`Supported file formats (e2e)`, () => {
       {
         type: AssetType.IMAGE,
         originalFileName: 'IMG_2682',
-        // TODO: resized: true
+        resized: true,
         fileCreatedAt: '2019-03-21T16:04:22.348Z',
       },
       {

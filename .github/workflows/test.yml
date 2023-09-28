@@ -32,9 +32,6 @@ jobs:
         with:
           node-version: "21.0.0-nightly20230921480ab8c3a4"
 
-      - name: Build libvips
-        run: sudo apt update && sudo apt install -yqq build-essential ninja-build meson && mkdir build && cp bin/build-libvips.sh build-lock.json build && cd build && sudo ./build-libvips.sh
-
       - name: Checkout test assets
         uses: actions/checkout@v4
         with:

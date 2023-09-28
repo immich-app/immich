@@ -108,6 +108,12 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
 
+      - name: Run dockerized e2e tests
+        uses: isbang/compose-action@v1.5.1
+        with:
+          compose-file: "./docker/docker-compose.test.yml"
+          compose-flags: "--renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans"
+
   build_and_push_server_arm_64:
     runs-on: self-hosted
     strategy:
