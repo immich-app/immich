@@ -7,7 +7,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import path from 'path';
 import { AppService } from '../src/microservices/app.service';
-import { MetadataExtractionProcessor } from '../src/microservices/processors/metadata-extraction.processor';
 
 export const TEST_ASSET_PATH = path.normalize(`${__dirname}/../test/assets/`);
 export const TEST_ASSET_TEMP_PATH = path.normalize(`${TEST_ASSET_PATH}/temp/`);
@@ -40,7 +39,7 @@ let _handler: JobItemHandler = () => Promise.resolve();
 export async function createTestApp(runJobs = false, log = false): Promise<INestApplication> {
   const moduleBuilder = await Test.createTestingModule({
     imports: [AppModule],
-    providers: [MetadataExtractionProcessor, AppService],
+    providers: [AppService],
   })
     .overrideProvider(IJobRepository)
     .useValue({
