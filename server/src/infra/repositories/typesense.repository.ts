@@ -159,7 +159,7 @@ export class TypesenseRepository implements ISearchRepository {
     const { facet_counts: facets } = await asset$.search({
       ...common,
       query_by: 'originalFileName',
-      facet_by: 'exifInfo.city,smartInfo.objects',
+      facet_by: 'exifInfo.city,smartInfo.tags',
       max_facet_values: 12,
     });
 

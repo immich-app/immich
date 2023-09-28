@@ -16,7 +16,6 @@
   enum Field {
     CITY = 'exifInfo.city',
     TAGS = 'smartInfo.tags',
-    OBJECTS = 'smartInfo.objects',
   }
 
   const MAX_ITEMS = 12;
@@ -25,7 +24,7 @@
     return targetField?.items || [];
   };
 
-  $: things = getFieldItems(data.items, Field.OBJECTS);
+  $: things = getFieldItems(data.items, Field.TAGS);
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.response.people.slice(0, MAX_ITEMS);
   $: hasPeople = data.response.total > 0;
@@ -90,7 +89,7 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each things as item}
-          <a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
+          <a class="relative" href="/search?{Field.TAGS}={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
