@@ -109,10 +109,7 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
 
       - name: Run dockerized e2e tests
-        uses: adambirds/docker-compose-action@v1.3.0
-        with:
-          compose-file: "./docker/docker-compose.test.yml"
-          compose-flags: "--renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans"
+        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
 
   build_and_push_server_arm_64:
     runs-on: self-hosted
@@ -199,7 +196,4 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
 
       - name: Run dockerized e2e tests
-        uses: adambirds/docker-compose-action@v1.3.0
-        with:
-          compose-file: "./docker/docker-compose.test.yml"
-          compose-flags: "--renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans"
+        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
