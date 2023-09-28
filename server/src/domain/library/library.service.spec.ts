@@ -1169,7 +1169,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleEmptyTrash', () => {
+  describe('handleRemoveOfflineFiles', () => {
     it('can queue trash deletion jobs', async () => {
       assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       assetMock.getById.mockResolvedValue(assetStub.image1);

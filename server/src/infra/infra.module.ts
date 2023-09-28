@@ -89,7 +89,7 @@ const imports = [
 
 const moduleExports = [...providers];
 
-if (process.env.IMMICH_REDIS_ENABLED !== 'false') {
+if (process.env.IMMICH_TEST_ENV !== 'true') {
   imports.push(BullModule.forRoot(bullConfig));
   imports.push(BullModule.registerQueue(...bullQueues));
   moduleExports.push(BullModule);

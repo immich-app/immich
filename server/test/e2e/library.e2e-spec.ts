@@ -387,6 +387,57 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.noDeleteUploadLibrary);
     });
+
+    it('should delete an empty library', async () => {
+      const library = await api.libraryApi.create(server, admin.accessToken, { type: LibraryType.EXTERNAL });
+
+      const { status, body } = await request(server)
+        .delete(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({});
+
+      const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+      expect(libraries).toHaveLength(1);
+      expect(libraries).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: library.id,
+          }),
+        ]),
+      );
+    });
+
+    it('should delete an extnernal library with assets', async () => {
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+      });
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(assets.length).toBeGreaterThan(2);
+
+      const { status, body } = await request(server)
+        .delete(`/library/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({});
+
+      const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+      expect(libraries).toHaveLength(1);
+      expect(libraries).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: library.id,
+          }),
+        ]),
+      );
+    });
   });
 
   describe('GET /library/:id/statistics', () => {

@@ -5,7 +5,7 @@ import { RedisOptions } from 'ioredis';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
 
 function parseRedisConfig(): RedisOptions {
-  if (process.env.IMMICH_REDIS_ENABLED == 'false') {
+  if (process.env.IMMICH_TEST_ENV == 'true') {
     return {};
   }
 

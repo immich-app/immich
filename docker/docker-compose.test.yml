@@ -17,7 +17,7 @@ services:
       - NODE_ENV=development
       - TYPESENSE_ENABLED=false
       - IMMICH_MACHINE_LEARNING_ENABLED=false
-      - IMMICH_REDIS_ENABLED=false
+      - IMMICH_TEST_ENV=true
       - DB_HOSTNAME=immich-database-test
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
