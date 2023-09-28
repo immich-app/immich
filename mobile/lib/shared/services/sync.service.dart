@@ -123,7 +123,7 @@ class SyncService {
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
     final Asset? inDb =
-        await _db.assets.getByChecksumOwnerId(a.checksum, a.ownerId);
+        await _db.assets.getByOwnerIdChecksum(a.ownerId, a.checksum);
     if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
@@ -195,8 +195,8 @@ class SyncService {
       return false;
     }
     final List<Asset> inDb = await _db.assets
-        .filter()
-        .ownerIdEqualTo(user.isarId)
+        .where()
+        .ownerIdEqualToAnyChecksum(user.isarId)
         .sortByChecksum()
         .findAll();
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
@@ -638,9 +638,9 @@ class SyncService {
   ) async {
     if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
 
-    final List<Asset?> inDb = await _db.assets.getAllByChecksumOwnerId(
-      assets.map((a) => a.checksum).toList(growable: false),
+    final List<Asset?> inDb = await _db.assets.getAllByOwnerIdChecksum(
       assets.map((a) => a.ownerId).toInt64List(),
+      assets.map((a) => a.checksum).toList(growable: false),
     );
     assert(inDb.length == assets.length);
     final List<Asset> existing = [], toUpsert = [];
@@ -683,9 +683,9 @@ class SyncService {
       );
       // give details on the errors
       assets.sort(Asset.compareByOwnerChecksum);
-      final inDb = await _db.assets.getAllByChecksumOwnerId(
-        assets.map((e) => e.checksum).toList(growable: false),
+      final inDb = await _db.assets.getAllByOwnerIdChecksum(
         assets.map((e) => e.ownerId).toInt64List(),
+        assets.map((e) => e.checksum).toList(growable: false),
       );
       for (int i = 0; i < assets.length; i++) {
         final Asset a = assets[i];
