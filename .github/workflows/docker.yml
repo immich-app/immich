@@ -108,9 +108,6 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
 
-      - name: Run dockerized e2e tests
-        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
-
   build_and_push_server_arm_64:
     runs-on: self-hosted
     strategy:
@@ -194,6 +191,3 @@ jobs:
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
-
-      - name: Run dockerized e2e tests
-        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build

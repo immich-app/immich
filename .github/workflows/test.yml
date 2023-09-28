@@ -12,34 +12,14 @@ concurrency:
 jobs:
   e2e-tests:
     name: Run end-to-end test suites
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: ./server
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Initial nodejs setup
-        uses: actions/setup-node@v3
-
-      - name: Run npm install
-        run: npm ci
-
-      - name: Install nodejs v21 nightly
-        uses: actions/setup-node@v3
-        with:
-          node-version: "21.0.0-nightly20230921480ab8c3a4"
-
-      - name: Checkout test assets
-        uses: actions/checkout@v4
-        with:
-          repository: immich-app/test-assets
-          path: ./server/test/assets
-
       - name: Run e2e tests
-        run: npm run test:e2e -- --detectOpenHandles --forceExit
+        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks
