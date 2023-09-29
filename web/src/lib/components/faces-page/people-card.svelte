@@ -1,5 +1,6 @@
 <script lang="ts">
   import { PersonResponseDto, api } from '@api';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -21,8 +22,8 @@
   let showVerticalDots = false;
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
-  const showMenu = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
+  const showMenu = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event);
     showContextMenu = !showContextMenu;
   };
   const onMenuExit = () => {
