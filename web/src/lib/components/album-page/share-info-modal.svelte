@@ -10,7 +10,6 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { getMenuContext } from '../photos-page/asset-select-context-menu.svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
 
   export let album: AlbumResponseDto;
