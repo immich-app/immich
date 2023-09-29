@@ -10,6 +10,8 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import { getMenuContext } from '../photos-page/asset-select-context-menu.svelte';
+  import { getContextMenuPosition } from '../../utils/context-menu';
 
   export let album: AlbumResponseDto;
 
@@ -34,16 +36,8 @@
     }
   });
 
-  const showContextMenu = (user: UserResponseDto) => {
-    const iconButton = document.getElementById('icon-' + user.id);
-
-    if (iconButton) {
-      position = {
-        x: iconButton.getBoundingClientRect().left,
-        y: iconButton.getBoundingClientRect().bottom,
-      };
-    }
-
+  const showContextMenu = (event: MouseEvent, user: UserResponseDto) => {
+    position = getContextMenuPosition(event);
     selectedMenuUser = user;
     selectedRemoveUser = null;
   };
@@ -105,7 +99,7 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
-                  on:click={() => showContextMenu(user)}
+                  on:click={(event) => showContextMenu(event, user)}
                   logo={DotsVertical}
                   backgroundColor="transparent"
                   hoverColor="#e2e7e9"
