@@ -32,6 +32,11 @@ type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 
 const validate = <T>(value: T): NonNullable<T> | null => {
+  // handle lists of numbers
+  if (Array.isArray(value)) {
+    value = value[0];
+  }
+
   if (typeof value === 'string') {
     // string means a failure to parse a number, throw out result
     return null;
