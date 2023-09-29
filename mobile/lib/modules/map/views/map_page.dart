@@ -20,6 +20,7 @@ import 'package:immich_mobile/modules/map/ui/map_page_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
@@ -358,8 +359,9 @@ class MapPageState extends ConsumerState<MapPage> {
     }
 
     final tileLayer = TileLayer(
-      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      subdomains: const ['a', 'b', 'c'],
+      urlTemplate: ref.watch(
+        serverInfoProvider.select((v) => v.serverConfig.mapTileUrl),
+      ),
       maxNativeZoom: 19,
       maxZoom: 19,
     );

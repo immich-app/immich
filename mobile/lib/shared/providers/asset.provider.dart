@@ -186,8 +186,9 @@ final assetsProvider =
   final query = ref
       .watch(dbProvider)
       .assets
+      .where()
+      .ownerIdEqualToAnyChecksum(userId)
       .filter()
-      .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);

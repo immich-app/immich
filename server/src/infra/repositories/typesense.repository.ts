@@ -150,7 +150,7 @@ export class TypesenseRepository implements ISearchRepository {
   async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
     const common = {
       q: '*',
-      filter_by: this.buildFilterBy('ownerId', userId, true),
+      filter_by: [this.buildFilterBy('ownerId', userId, true), this.buildFilterBy('isArchived', false)].join(' && '),
       per_page: 100,
     };
 
@@ -172,10 +172,7 @@ export class TypesenseRepository implements ISearchRepository {
                 const config = {
                   ...common,
                   query_by: 'originalFileName',
-                  filter_by: [
-                    this.buildFilterBy('ownerId', userId, true),
-                    this.buildFilterBy(facet.field_name, count.value, true),
-                  ].join(' && '),
+                  filter_by: [common.filter_by, this.buildFilterBy(facet.field_name, count.value, true)].join(' && '),
                   per_page: 1,
                 };
 
@@ -468,7 +465,7 @@ export class TypesenseRepository implements ISearchRepository {
 
   private getAssetFilters(filters: SearchFilter) {
     const { userId } = filters;
-    const _filters = [this.buildFilterBy('ownerId', userId, true)];
+    const _filters = [this.buildFilterBy('ownerId', userId, true), this.buildFilterBy('isArchived', false)];
 
     if (filters.id) {
       _filters.push(this.buildFilterBy('id', filters.id, true));

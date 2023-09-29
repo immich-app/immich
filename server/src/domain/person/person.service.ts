@@ -1,10 +1,22 @@
+import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
-import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
+import {
+  AssetResponseDto,
+  BulkIdErrorReason,
+  BulkIdResponseDto,
+  IAssetRepository,
+  WithoutProperty,
+  mapAsset,
+} from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository, ImmichReadStream } from '../storage';
+import { usePagination } from '../domain.util';
+import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
+import { ISearchRepository } from '../search';
+import { IMachineLearningRepository } from '../smart-info';
+import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import {
   MergePersonDto,
@@ -15,22 +27,28 @@ import {
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
-import { IPersonRepository, UpdateFacesData } from './person.repository';
+import { AssetFaceId, IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
   readonly logger = new Logger(PersonService.name);
 
   constructor(
-    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
+    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.storageCore = new StorageCore(storageRepository);
     this.configCore = new SystemConfigCore(configRepository);
   }
 
@@ -90,7 +108,7 @@ export class PersonService {
 
     if (assetId) {
       await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
-      const face = await this.repository.getFaceById({ personId: id, assetId });
+      const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
       }
@@ -132,6 +150,183 @@ export class PersonService {
         this.logger.error(`Unable to delete person: ${error}`, error?.stack);
       }
     }
+
+    return true;
+  }
+
+  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination, { order: 'DESC' })
+        : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
+    });
+
+    if (force) {
+      const people = await this.repository.deleteAll();
+      const faces = await this.searchRepository.deleteAllFaces();
+      this.logger.debug(`Deleted ${people} people and ${faces} faces`);
+    }
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } });
+      }
+    }
+
+    return true;
+  }
+
+  async handleRecognizeFaces({ id }: IEntityJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset || !asset.resizePath) {
+      return false;
+    }
+
+    const faces = await this.machineLearningRepository.detectFaces(
+      machineLearning.url,
+      { imagePath: asset.resizePath },
+      machineLearning.facialRecognition,
+    );
+
+    this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
+    this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
+
+    for (const { embedding, ...rest } of faces) {
+      const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
+
+      let personId: string | null = null;
+
+      // try to find a matching face and link to the associated person
+      // The closer to 0, the better the match. Range is from 0 to 2
+      if (faceSearchResult.total && faceSearchResult.distances[0] <= machineLearning.facialRecognition.maxDistance) {
+        this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
+        personId = faceSearchResult.items[0].personId;
+      }
+
+      let newPerson: PersonEntity | null = null;
+      if (!personId) {
+        this.logger.debug('No matches, creating a new person.');
+        newPerson = await this.repository.create({ ownerId: asset.ownerId });
+        personId = newPerson.id;
+      }
+
+      const faceId: AssetFaceId = { assetId: asset.id, personId };
+      await this.repository.createFace({
+        ...faceId,
+        embedding,
+        imageHeight: rest.imageHeight,
+        imageWidth: rest.imageWidth,
+        boundingBoxX1: rest.boundingBox.x1,
+        boundingBoxX2: rest.boundingBox.x2,
+        boundingBoxY1: rest.boundingBox.y1,
+        boundingBoxY2: rest.boundingBox.y2,
+      });
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
+
+      if (newPerson) {
+        await this.repository.update({ id: personId, faceAssetId: asset.id });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      }
+    }
+
+    return true;
+  }
+
+  async handlePersonMigration({ id }: IEntityJob) {
+    const person = await this.repository.getById(id);
+    if (!person) {
+      return false;
+    }
+
+    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
+    if (person.thumbnailPath && person.thumbnailPath !== path) {
+      await this.storageRepository.moveFile(person.thumbnailPath, path);
+      await this.repository.update({ id, thumbnailPath: path });
+    }
+
+    return true;
+  }
+
+  async handleGeneratePersonThumbnail(data: IEntityJob) {
+    const { machineLearning, thumbnail } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const person = await this.repository.getById(data.id);
+    if (!person?.faceAssetId) {
+      return false;
+    }
+
+    const [face] = await this.repository.getFacesByIds([{ personId: person.id, assetId: person.faceAssetId }]);
+    if (!face) {
+      return false;
+    }
+
+    const {
+      assetId,
+      personId,
+      boundingBoxX1: x1,
+      boundingBoxX2: x2,
+      boundingBoxY1: y1,
+      boundingBoxY2: y2,
+      imageWidth,
+      imageHeight,
+    } = face;
+
+    const [asset] = await this.assetRepository.getByIds([assetId]);
+    if (!asset?.resizePath) {
+      return false;
+    }
+
+    this.logger.verbose(`Cropping face for person: ${personId}`);
+
+    const thumbnailPath = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
+
+    const halfWidth = (x2 - x1) / 2;
+    const halfHeight = (y2 - y1) / 2;
+
+    const middleX = Math.round(x1 + halfWidth);
+    const middleY = Math.round(y1 + halfHeight);
+
+    // zoom out 10%
+    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
+
+    // get the longest distance from the center of the image without overflowing
+    const newHalfSize = Math.min(
+      middleX - Math.max(0, middleX - targetHalfSize),
+      middleY - Math.max(0, middleY - targetHalfSize),
+      Math.min(imageWidth - 1, middleX + targetHalfSize) - middleX,
+      Math.min(imageHeight - 1, middleY + targetHalfSize) - middleY,
+    );
+
+    const cropOptions: CropOptions = {
+      left: middleX - newHalfSize,
+      top: middleY - newHalfSize,
+      width: newHalfSize * 2,
+      height: newHalfSize * 2,
+    };
+
+    const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
+    const thumbnailOptions = {
+      format: 'jpeg',
+      size: FACE_THUMBNAIL_SIZE,
+      colorspace: thumbnail.colorspace,
+      quality: thumbnail.quality,
+    } as const;
+
+    await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
+    await this.repository.update({ id: personId, thumbnailPath });
 
     return true;
   }

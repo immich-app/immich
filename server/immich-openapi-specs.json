@@ -7928,6 +7928,12 @@
             },
             "type": "array"
           },
+          "weekOptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "yearOptions": {
             "items": {
               "type": "string"
@@ -7938,6 +7944,7 @@
         "required": [
           "yearOptions",
           "monthOptions",
+          "weekOptions",
           "dayOptions",
           "hourOptions",
           "minuteOptions",

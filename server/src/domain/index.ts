@@ -10,7 +10,6 @@ export * from './domain.config';
 export * from './domain.constant';
 export * from './domain.module';
 export * from './domain.util';
-export * from './facial-recognition';
 export * from './job';
 export * from './library';
 export * from './media';

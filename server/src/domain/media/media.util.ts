@@ -278,6 +278,10 @@ export class ThumbnailConfig extends BaseConfig {
     return [];
   }
 
+  eligibleForTwoPass() {
+    return false;
+  }
+
   getScaling(videoStream: VideoStreamInfo) {
     let options = super.getScaling(videoStream);
     options += ':flags=lanczos+accurate_rnd+bitexact+full_chroma_int';
