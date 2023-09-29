@@ -304,6 +304,10 @@ export class AssetStore {
     return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
+  getRandomAsset(): AssetResponseDto | null {
+    return this.assets[Math.floor(Math.random() * this.assets.length)] || null;
+  }
+
   updateAsset(_asset: AssetResponseDto) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {

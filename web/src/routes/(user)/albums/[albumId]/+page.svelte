@@ -52,7 +52,7 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId, slideshow, slideshowShuffle } = assetViewingStore;
 
   let album = data.album;
   $: album = data.album;
@@ -107,6 +107,14 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleStartSlideshow = () => {
+    const asset = $slideshowShuffle ? assetStore.getRandomAsset() : assetStore.assets[0];
+    if (asset) {
+      setAssetId(asset.id);
+      $slideshow = true;
+    }
+  };
 
   const handleEscape = () => {
     if (viewMode === ViewMode.SELECT_USERS) {
@@ -365,6 +373,9 @@
                 <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                   {#if viewMode === ViewMode.ALBUM_OPTIONS}
                     <ContextMenu {...contextMenuPosition}>
+                      {#if album.assetCount !== 0}
+                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
+                      {/if}
                       <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
                     </ContextMenu>
                   {/if}

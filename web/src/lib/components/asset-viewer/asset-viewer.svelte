@@ -28,10 +28,11 @@
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetStore } from '$lib/stores/assets.store';
+  import { BucketPosition, type AssetStore } from '$lib/stores/assets.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
     mdiChevronLeft,
@@ -43,6 +44,8 @@
     mdiImageBrokenVariant,
     mdiPause,
     mdiPlay,
+    mdiShuffle,
+    mdiShuffleDisabled,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -61,6 +64,8 @@
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
+
+  const { slideshow, slideshowShuffle, setAssetId } = assetViewingStore;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -187,6 +192,8 @@
   });
 
   $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
+  $: $slideshow ? handlePlaySlideshow() : handleStopSlideshow();
+  $: $slideshowShuffle && preload();
 
   const getAllAlbums = async () => {
     if (api.isSharedLink) {
@@ -262,8 +269,26 @@
 
   const closeViewer = () => dispatch('close');
 
+  const navigateAssetRandom = async () => {
+    if (!assetStore) {
+      return;
+    }
+
+    const asset = assetStore.getRandomAsset();
+    if (!asset) {
+      return;
+    }
+
+    setAssetId(asset.id);
+    progressBar.restart(true);
+  };
+
   const navigateAssetForward = async (e?: Event) => {
-    if (isSlideshowMode && assetStore && progressBar) {
+    if ($slideshow && $slideshowShuffle) {
+      return navigateAssetRandom();
+    }
+
+    if ($slideshow && assetStore && progressBar) {
       const hasNext = await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
         progressBar.restart(true);
@@ -277,7 +302,11 @@
   };
 
   const navigateAssetBackward = (e?: Event) => {
-    if (isSlideshowMode && progressBar) {
+    if ($slideshow && $slideshowShuffle) {
+      return navigateAssetRandom();
+    }
+
+    if ($slideshow && progressBar) {
       progressBar.restart(true);
     }
 
@@ -426,40 +455,55 @@
    * Slide show mode
    */
 
-  let isSlideshowMode = false;
   let assetViewerHtmlElement: HTMLElement;
   let progressBar: ProgressBar;
   let progressBarStatus: ProgressBarStatus;
 
   const handleVideoStarted = () => {
-    if (isSlideshowMode) {
+    if ($slideshow) {
       progressBar.restart(false);
     }
   };
 
   const handleVideoEnded = async () => {
-    if (isSlideshowMode) {
+    if ($slideshow) {
       await navigateAssetForward();
     }
   };
 
+  const preload = async () => {
+    // load all the asset buckets
+    if (assetStore && $slideshowShuffle) {
+      for (const bucket of assetStore.buckets) {
+        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+      }
+    }
+  };
+
   const handlePlaySlideshow = async () => {
+    if ($slideshow) {
+      return;
+    }
+
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
       console.error('Error entering fullscreen', error);
-    } finally {
-      isSlideshowMode = true;
+      $slideshow = false;
     }
   };
 
   const handleStopSlideshow = async () => {
+    if (!$slideshow) {
+      return;
+    }
+
     try {
       await document.exitFullscreen();
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
-      isSlideshowMode = false;
+      $slideshow = false;
       progressBar.restart(false);
     }
   };
@@ -500,11 +544,20 @@
   bind:this={assetViewerHtmlElement}
 >
   <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    {#if isSlideshowMode}
+    {#if $slideshow}
       <!-- SlideShowController -->
       <div class="flex">
         <div class="m-4 flex gap-2">
-          <CircleIconButton icon={mdiClose} on:click={handleStopSlideshow} title="Exit Slideshow" />
+          <CircleIconButton icon={mdiClose} on:click={() => ($slideshow = false)} title="Exit Slideshow" />
+          {#if $slideshowShuffle}
+            <CircleIconButton icon={mdiShuffle} on:click={() => ($slideshowShuffle = false)} title="Shuffle" />
+          {:else}
+            <CircleIconButton
+              icon={mdiShuffleDisabled}
+              on:click={() => ($slideshowShuffle = true)}
+              title="No shuffle"
+            />
+          {/if}
           <CircleIconButton
             icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
             on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
@@ -544,13 +597,13 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={handlePlaySlideshow}
+        on:playSlideShow={() => ($slideshow = true)}
         on:unstack={handleUnstack}
       />
     {/if}
   </div>
 
-  {#if !isSlideshowMode && showNavigation}
+  {#if !$slideshow && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
     </div>
@@ -664,15 +717,13 @@
     {/if}
   </div>
 
-  <!-- Stack & Stack Controller -->
-
-  {#if !isSlideshowMode && showNavigation}
+  {#if !$slideshow && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
 
-  {#if !isSlideshowMode && $isShowDetail}
+  {#if !$slideshow && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
