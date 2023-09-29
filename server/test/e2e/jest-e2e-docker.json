@@ -2,6 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "modulePaths": ["<rootDir>"],
   "rootDir": "../..",
+  "globalSetup": "<rootDir>/test/e2e/setup-docker.ts",
   "testEnvironment": "node",
   "testRegex": [".e2e-spec.ts$", ".e2e-docker-spec.ts$"],
   "testTimeout": 60000,
