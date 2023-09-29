@@ -264,7 +264,7 @@ export class MetadataService {
         position,
         length,
       });
-      const checksum = await this.cryptoRepository.hashSha1(video);
+      const checksum = this.cryptoRepository.hashSha1(video);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
