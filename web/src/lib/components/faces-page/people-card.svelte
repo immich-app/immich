@@ -62,7 +62,7 @@
   </a>
 
   <button
-    class="absolute right-2 top-2 z-20"
+    class="absolute right-2 top-2"
     on:click|stopPropagation|preventDefault={showMenu}
     class:hidden={!showVerticalDots}
     data-testid="context-button-parent"
