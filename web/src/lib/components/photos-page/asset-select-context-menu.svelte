@@ -19,7 +19,7 @@
   let contextMenuPosition = { x: 0, y: 0 };
 
   const handleShowMenu = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event);
+    contextMenuPosition = getContextMenuPosition(event, 'top-left');
     showContextMenu = !showContextMenu;
   };
 
