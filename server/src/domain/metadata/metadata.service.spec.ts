@@ -100,7 +100,7 @@ describe(MetadataService.name, () => {
   });
 
   describe('handleLivePhotoLinking', () => {
-    it('should return false if asset could not be found', async () => {
+    it('should handle an asset that could not be found', async () => {
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(false);
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.findLivePhotoMatch).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe(MetadataService.name, () => {
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
     });
 
-    it('should return false if asset has no exif info', async () => {
+    it('should handle an asset without exif info', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, exifInfo: undefined }]);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(false);
@@ -118,7 +118,7 @@ describe(MetadataService.name, () => {
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
     });
 
-    it('should return true if livePhotoCID is not set', async () => {
+    it('should handle livePhotoCID not set', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image }]);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(true);
@@ -128,7 +128,7 @@ describe(MetadataService.name, () => {
       expect(albumMock.removeAsset).not.toHaveBeenCalled();
     });
 
-    it('should return true if a match could not be found', async () => {
+    it('should handle not finding a match', async () => {
       assetMock.getByIds.mockResolvedValue([
         {
           ...assetStub.livePhotoMotionAsset,
@@ -203,7 +203,7 @@ describe(MetadataService.name, () => {
       storageMock.stat.mockResolvedValue({ size: 123456 } as Stats);
     });
 
-    it('should return false if asset could not be found', async () => {
+    it('should handle an asset that could not be found', async () => {
       await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(false);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
@@ -211,7 +211,7 @@ describe(MetadataService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalled();
     });
 
-    it('should return false if asset has isVisible set to false', async () => {
+    it('should handle an asset with isVisible set to false', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, isVisible: false }]);
 
       await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(false);
