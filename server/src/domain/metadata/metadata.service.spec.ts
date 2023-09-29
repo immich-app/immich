@@ -122,4 +122,14 @@ describe(MetadataService.name, () => {
       });
     });
   });
+
+  describe('handleMetadataExtraction', () => {
+    it('should handle lists of numbers', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image1]);
+      storageMock.stat.mockResolvedValue({ size: 123456 } as any);
+      metadataMock.getExifTags.mockResolvedValue({ ISO: [160] as any });
+      await sut.handleMetadataExtraction({ id: assetStub.image1.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ iso: 160 }));
+    });
+  });
 });
