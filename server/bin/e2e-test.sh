@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-# We need node version 21 nightly for the e2e tests due to a bug that causes segfaults. Whenever this fix is merged into a stable release, we can remove this script.
+# We need node version at least 20.8 nightly for the e2e tests due to a bug that causes segfaults
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 . ~/.nvm/nvm.sh
-NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly/ nvm install v21.0.0-nightly20230921480ab8c3a4 && nvm use 21
+nvm install v20.8
+nvm use 20.8
 
 rm -rf /usr/src/app/test/assets
 mkdir /usr/src/app/test/assets
