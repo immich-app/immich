@@ -128,7 +128,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         isVisible: true,
         isFavorite: dto.isFavorite,
-        isArchived: dto.includeArchived ? undefined : dto.isArchived,
+        isArchived: dto.isArchived,
         updatedAt: dto.updatedAfter ? MoreThan(dto.updatedAfter) : undefined,
       },
       relations: {

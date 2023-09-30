@@ -14,7 +14,7 @@ export class MapMarkerDto {
   @Optional()
   @IsBoolean()
   @Transform(toBoolean)
-  includeArchived?: boolean;
+  isArchived?: boolean;
 
   @Optional()
   @IsDate()

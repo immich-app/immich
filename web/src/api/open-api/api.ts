@@ -6271,13 +6271,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {boolean} [isFavorite] 
-         * @param {boolean} [includeArchived]
+         * @param {boolean} [isArchived]
          * @param {string} [fileCreatedAfter]
          * @param {string} [fileCreatedBefore] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers: async (isFavorite?: boolean, includeArchived?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMapMarkers: async (isFavorite?: boolean, isArchived?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/map-marker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6303,8 +6303,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['isFavorite'] = isFavorite;
             }
 
-            if (includeArchived !== undefined) {
-                localVarQueryParameter['includeArchived'] = includeArchived;
+            if (isArchived !== undefined) {
+                localVarQueryParameter['isArchived'] = isArchived;
             }
 
             if (fileCreatedAfter !== undefined) {
@@ -7132,14 +7132,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {boolean} [isFavorite] 
-         * @param {boolean} [includeArchived]
+         * @param {boolean} [isArchived]
          * @param {string} [fileCreatedAfter]
          * @param {string} [fileCreatedBefore]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMapMarkers(isFavorite?: boolean, includeArchived?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, includeArchived, fileCreatedAfter, fileCreatedBefore, options);
+        async getMapMarkers(isFavorite?: boolean, isArchived?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, isArchived, fileCreatedAfter, fileCreatedBefore, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7426,7 +7426,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getMapMarkers(requestParameters: AssetApiGetMapMarkersRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<MapMarkerResponseDto>> {
-            return localVarFp.getMapMarkers(requestParameters.isFavorite, requestParameters.includeArchived, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(axios, basePath));
+            return localVarFp.getMapMarkers(requestParameters.isFavorite, requestParameters.isArchived, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7856,7 +7856,7 @@ export interface AssetApiGetMapMarkersRequest {
      * @type {boolean}
      * @memberof AssetApiGetMapMarkers
      */
-    readonly includeArchived?: boolean
+    readonly isArchived?: boolean
 
     /**
      * 
@@ -8379,7 +8379,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getMapMarkers(requestParameters: AssetApiGetMapMarkersRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getMapMarkers(requestParameters.isFavorite, requestParameters.includeArchived, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getMapMarkers(requestParameters.isFavorite, requestParameters.isArchived, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -11739,8 +11739,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {string} [query] 
          * @param {boolean} [clip] 
          * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
-         * @param {boolean} [isFavorite] 
-         * @param {boolean} [includeArchived]
+         * @param {boolean} [isFavorite]
          * @param {boolean} [isArchived]
          * @param {string} [exifInfoCity] 
          * @param {string} [exifInfoState] 
@@ -11755,7 +11754,7 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, includeArchived?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -11795,10 +11794,6 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
-            }
-
-            if (includeArchived !== undefined) {
-                localVarQueryParameter['includeArchived'] = includeArchived;
             }
 
             if (isArchived !== undefined) {
@@ -11894,8 +11889,8 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, includeArchived?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, isFavorite, includeArchived, isArchived, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, exifInfoProjectionType, smartInfoObjects, smartInfoTags, recent, motion, options);
+        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, isFavorite, isArchived, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, exifInfoProjectionType, smartInfoObjects, smartInfoTags, recent, motion, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -11923,7 +11918,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.includeArchived, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -11968,13 +11963,6 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly isFavorite?: boolean
-
-    /**
-     *
-     * @type {boolean}
-     * @memberof SearchApiSearch
-     */
-    readonly includeArchived?: boolean
 
     /**
      * 
@@ -12079,7 +12067,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.includeArchived, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

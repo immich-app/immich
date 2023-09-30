@@ -14,12 +14,6 @@ export class AssetSearchDto {
   @IsNotEmpty()
   @IsBoolean()
   @Transform(toBoolean)
-  includeArchived?: boolean;
-
-  @Optional()
-  @IsNotEmpty()
-  @IsBoolean()
-  @Transform(toBoolean)
   isArchived?: boolean;
 
   @Optional()

@@ -50,7 +50,7 @@
     const { data } = await api.assetApi.getMapMarkers(
       {
         isFavorite: onlyFavorites || undefined,
-        includeArchived: withArchived || undefined,
+        isArchived: withArchived || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
       },

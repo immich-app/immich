@@ -745,14 +745,6 @@
             }
           },
           {
-            "name": "includeArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isArchived",
             "required": false,
             "in": "query",
@@ -1423,7 +1415,7 @@
             }
           },
           {
-            "name": "includeArchived",
+            "name": "isArchived",
             "required": false,
             "in": "query",
             "schema": {
