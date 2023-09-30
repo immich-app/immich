@@ -66,33 +66,33 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 # 機能
 
-| 機能                                          | モバイル | Web |
-| -------------------------------------------- | ------ | --- |
-| Upload and view videos and photos            | はい    | はい |
-| Auto backup when the app is opened           | はい    | N/A |
-| Selective album(s) for backup                | はい    | N/A |
-| Download photos and videos to local device   | はい    | はい |
-| Multi-user support                           | はい    | はい |
-| Album and Shared albums                      | はい    | はい |
-| Scrubbable/draggable scrollbar               | はい    | はい |
-| Support raw formats                          | はい    | はい |
-| Metadata view (EXIF, map)                    | はい    | はい |
-| Search by metadata, objects, faces, and CLIP | はい    | はい |
-| Administrative functions (user management)   | いいえ     | はい |
-| Background backup                            | はい    | N/A |
-| Virtual scroll                               | はい    | はい |
-| OAuth support                                | はい    | はい |
-| API Keys                                     | N/A    | はい |
-| LivePhoto backup and playback                | iOS    | はい |
-| User-defined storage structure               | はい    | はい |
-| Public Sharing                               | いいえ     | はい |
-| Archive and Favorites                        | はい    | はい |
-| Global Map                                   | はい    | はい |
-| Partner Sharing                              | はい    | はい |
-| Facial recognition and clustering            | はい    | はい |
-| Memories (x years ago)                       | はい    | はい |
-| Offline support                              | はい    | いいえ  |
-| Read-only gallery                            | はい    | はい |
+| 機能                                        | モバイル | Web |
+| ------------------------------------------- | ------ | --- |
+| ビデオや写真のアップロードと表示                 | はい    | はい |
+| アプリを開いたとき自動バックアップ               | はい    | N/A |
+| バックアップ用アルバム選択                      | はい    | N/A |
+| 写真やビデオをローカルデバイスにダウンロード       | はい    | はい |
+| マルチユーザー対応                             | はい    | はい |
+| アルバムと共有アルバム                         | はい    | はい |
+| スクラブ可能/ドラッグ可能スクロールバ            | はい    | はい |
+| 生のフォーマットに対応                         | はい    | はい |
+| メタデータ表示（EXIF、地図）                   | はい    | はい |
+| メタデータ、オブジェクト、フェース、CLIPによる検索 | はい    | はい |
+| 管理機能（ユーザー管理）                       | いいえ     | はい |
+| バックグラウンドバックアップ                    | はい    | N/A |
+| 仮想スクロール                                | はい    | はい |
+| OAuth サポート                               | はい    | はい |
+| API キー                                    | N/A    | はい |
+| LivePhoto のバックアップと再生                | iOS    | はい |
+| ユーザー定義のストレージ構造                   | はい    | はい |
+| 公開シェアリング                             | いいえ     | はい |
+| アーカイブとお気に入り                        | はい    | はい |
+| グローバルマップ                             | はい    | はい |
+| パートナー共有                               | はい    | はい |
+| 思い出（x 年前）顔認識とクラスタリング           | はい    | はい |
+| 思い出（x 年前）                             | はい    | はい |
+| オフラインサポート                            | はい    | いいえ  |
+| 読み取り専用ギャラリー                        | はい    | はい |
 
 # プロジェクトのサポート
 
