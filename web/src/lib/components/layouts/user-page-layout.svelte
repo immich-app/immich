@@ -8,13 +8,25 @@
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
   export let scrollbar = true;
+  export function focusSearchInput() {
+    if (navigationBar) {
+      navigationBar.focusSearchInput();
+    }
+  }
+
+  let navigationBar: NavigationBar;
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-4 pb-8' : 'scrollbar-hidden pl-4';
 </script>
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    <NavigationBar
+      {user}
+      {showUploadButton}
+      on:uploadClicked={() => openFileUploadDialog()}
+      bind:this={navigationBar}
+    />
   {/if}
 
   <slot name="header" />

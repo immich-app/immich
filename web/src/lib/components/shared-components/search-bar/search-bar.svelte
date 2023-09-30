@@ -8,6 +8,11 @@
   import { clickOutside } from '$lib/utils/click-outside';
   export let value = '';
   export let grayTheme: boolean;
+  export function focus() {
+    // since onFocusIn is bound to the click event, we need to trigger it manually
+    input.click();
+    input.focus();
+  }
 
   let input: HTMLInputElement;
 

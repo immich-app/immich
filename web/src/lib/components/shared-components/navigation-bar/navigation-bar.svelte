@@ -19,9 +19,15 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   export let user: UserResponseDto;
   export let showUploadButton = true;
+  export function focusSearchInput() {
+    if (searchBar) {
+      searchBar.focus();
+    }
+  }
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
+  let searchBar: SearchBar;
 
   const dispatch = createEventDispatcher();
 
@@ -47,7 +53,7 @@
     <div class="flex justify-between gap-16 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
         {#if $featureFlags.search}
-          <SearchBar grayTheme={true} />
+          <SearchBar grayTheme={true} bind:this={searchBar} />
         {/if}
       </div>
 
