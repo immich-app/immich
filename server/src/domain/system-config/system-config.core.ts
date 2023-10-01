@@ -80,7 +80,8 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    lightStyle: '',
+    darkStyle: '',
   },
   reverseGeocoding: {
     enabled: true,

@@ -4867,6 +4867,47 @@
         ]
       }
     },
+    "/system-config/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Config"
+        ]
+      }
+    },
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
@@ -7438,6 +7479,13 @@
         ],
         "type": "object"
       },
+      "MapTheme": {
+        "enum": [
+          "light",
+          "dark"
+        ],
+        "type": "string"
+      },
       "MemoryLaneResponseDto": {
         "properties": {
           "assets": {
@@ -7907,9 +7955,6 @@
           "loginPageMessage": {
             "type": "string"
           },
-          "mapTileUrl": {
-            "type": "string"
-          },
           "oauthButtonText": {
             "type": "string"
           },
@@ -7921,7 +7966,6 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl",
           "isInitialized"
         ],
         "type": "object"
@@ -8572,16 +8616,20 @@
       },
       "SystemConfigMapDto": {
         "properties": {
+          "darkStyle": {
+            "type": "string"
+          },
           "enabled": {
             "type": "boolean"
           },
-          "tileUrl": {
+          "lightStyle": {
             "type": "string"
           }
         },
         "required": [
           "enabled",
-          "tileUrl"
+          "lightStyle",
+          "darkStyle"
         ],
         "type": "object"
       },

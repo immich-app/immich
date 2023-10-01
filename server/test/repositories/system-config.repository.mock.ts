@@ -6,6 +6,7 @@ export const newSystemConfigRepositoryMock = (reset = true): jest.Mocked<ISystem
   }
 
   return {
+    fetchStyle: jest.fn(),
     load: jest.fn().mockResolvedValue([]),
     readFile: jest.fn(),
     saveAll: jest.fn().mockResolvedValue([]),
