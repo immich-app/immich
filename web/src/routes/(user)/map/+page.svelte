@@ -44,11 +44,12 @@
     }
     abortController = new AbortController();
 
-    const { onlyFavorites } = $mapSettings;
+    const { isArchived, onlyFavorites } = $mapSettings;
     const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
     const { data } = await api.assetApi.getMapMarkers(
       {
+        isArchived: isArchived && undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
