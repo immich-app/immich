@@ -10,6 +10,8 @@ services:
     command: ["./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     depends_on:
@@ -29,7 +31,7 @@ services:
     env_file:
       - .env
     restart: always
-  
+
   immich-microservices:
     container_name: immich_microservices
     image: immich-microservices:latest
@@ -42,6 +44,8 @@ services:
     command: ["./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     depends_on:
