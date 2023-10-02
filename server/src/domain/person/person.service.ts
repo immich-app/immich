@@ -147,7 +147,7 @@ export class PersonService {
 
     try {
       await this.repository.delete(person);
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [person.thumbnailPath] } });
+      await this.storageRepository.unlink(person.thumbnailPath);
     } catch (error: Error | any) {
       this.logger.error(`Unable to delete person: ${error}`, error?.stack);
     }
