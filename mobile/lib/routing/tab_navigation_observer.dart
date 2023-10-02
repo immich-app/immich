@@ -64,10 +64,10 @@ class TabNavigationObserver extends AutoRouterObserver {
         }
 
         Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+        ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {
         debugPrint("Error refreshing user info $e");
       }
     }
-    ref.watch(serverInfoProvider.notifier).getServerVersion();
   }
 }
