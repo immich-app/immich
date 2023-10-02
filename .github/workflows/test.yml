@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run e2e tests
-        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
+        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks

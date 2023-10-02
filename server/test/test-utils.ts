@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { AppService } from '../src/microservices/app.service';
 
-export const TEST_ASSET_PATH = path.normalize(`${__dirname}/../test/assets/`);
+export const TEST_ASSET_PATH = process.env.TEST_ASSET_PATH;
 export const TEST_ASSET_TEMP_PATH = path.normalize(`${TEST_ASSET_PATH}/temp/`);
 
 export const db = {
@@ -66,20 +66,13 @@ export async function createTestApp(runJobs = false, log = false): Promise<INest
   return app;
 }
 
+export const allTests: boolean = process.env.ALL_TESTS === 'true';
+
 const directoryExists = async (dirPath: string) =>
   await fs.promises
     .access(dirPath)
     .then(() => true)
     .catch(() => false);
-
-export async function ensureTestAssets(): Promise<void> {
-  if (!(await directoryExists(`${TEST_ASSET_PATH}/albums`))) {
-    const errorString = `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${TEST_ASSET_PATH} before testing`;
-    throw new Error(errorString);
-  }
-
-  await restoreTempFolder();
-}
 
 export async function restoreTempFolder(): Promise<void> {
   if (await directoryExists(`${TEST_ASSET_TEMP_PATH}`)) {

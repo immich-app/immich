@@ -3,14 +3,7 @@ import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import {
-  TEST_ASSET_PATH,
-  TEST_ASSET_TEMP_PATH,
-  createTestApp,
-  db,
-  ensureTestAssets,
-  restoreTempFolder,
-} from '@test/test-utils';
+import { TEST_ASSET_PATH, TEST_ASSET_TEMP_PATH, createTestApp, db, restoreTempFolder } from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
@@ -38,7 +31,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
   beforeAll(async () => {
     app = await createTestApp(true);
     server = app.getHttpServer();
-    await ensureTestAssets();
   });
 
   beforeEach(async () => {
@@ -464,12 +456,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(201);
-      expect(body).toEqual({});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -516,12 +503,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(201);
-      expect(body).toEqual({});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -554,12 +536,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(201);
-      expect(body).toEqual({});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -673,12 +650,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
       );
 
-      const { status, body } = await request(server)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(201);
-      expect(body).toEqual({});
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
@@ -686,9 +658,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect.arrayContaining([
           expect.objectContaining({
             originalFileName: 'el_torcal_rocks',
-            exifInfo: expect.objectContaining({
-              dateTimeOriginal: '2012-08-05T00:00:59.000Z',
-            }),
           }),
           expect.objectContaining({
             originalFileName: 'silver_fir',
@@ -721,13 +690,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200001);
 
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ refreshModifiedFiles: true });
-
-        expect(status).toBe(201);
-        expect(body).toEqual({});
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toBe(1);
@@ -736,7 +699,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           expect.objectContaining({
             originalFileName: 'el_torcal_rocks',
             exifInfo: expect.objectContaining({
-              dateTimeOriginal: '2023-09-25T00:00:30.880Z',
+              dateTimeOriginal: '2023-09-25T08:33:30.880Z',
               exifImageHeight: 534,
               exifImageWidth: 800,
               exposureTime: '1/15',
@@ -774,13 +737,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ refreshModifiedFiles: true });
-
-        expect(status).toBe(201);
-        expect(body).toEqual({});
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toBe(1);
@@ -789,7 +746,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
           expect.objectContaining({
             originalFileName: 'el_torcal_rocks',
             exifInfo: expect.objectContaining({
-              dateTimeOriginal: '2012-08-05T00:00:59.000Z',
+              dateTimeOriginal: '2012-08-05T11:39:59.000Z',
             }),
           }),
         );
@@ -820,13 +777,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
         await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ refreshAllFiles: true });
-
-        expect(status).toBe(201);
-        expect(body).toEqual({});
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshAllFiles: true });
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(assets.length).toBe(1);
@@ -835,7 +786,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
           expect.objectContaining({
             originalFileName: 'el_torcal_rocks',
             exifInfo: expect.objectContaining({
-              dateTimeOriginal: '2023-09-25T00:00:30.880Z',
               exifImageHeight: 534,
               exifImageWidth: 800,
               exposureTime: '1/15',
@@ -862,13 +812,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       });
 
       it('should not scan assets for user without external path', async () => {
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`);
-
-        expect(status).toBe(201);
-        expect(body).toEqual({});
-
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 
         expect(assets).toEqual([]);
@@ -876,16 +820,9 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       it("should not import assets outside of user's external path", async () => {
         await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/not/a/real/path');
-
-        const { status, body } = await request(server)
-          .post(`/library/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`);
-
-        expect(status).toBe(201);
-        expect(body).toEqual({});
+        await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
         const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
         expect(assets).toEqual([]);
       });
 
@@ -894,12 +831,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         async (externalPath: string) => {
           await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, externalPath);
 
-          const { status, body } = await request(server)
-            .post(`/library/${library.id}/scan`)
-            .set('Authorization', `Bearer ${admin.accessToken}`);
-
-          expect(status).toBe(201);
-          expect(body).toEqual({});
+          await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
           const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
 

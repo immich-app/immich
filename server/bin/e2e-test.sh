@@ -6,8 +6,9 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 nvm install v20.8
 nvm use 20.8
 
+# Check out test assets from git
 rm -rf /usr/src/app/test/assets
 mkdir /usr/src/app/test/assets
 git clone https://github.com/immich-app/test-assets /usr/src/app/test/assets/
 
-npm run test:e2e-docker
+npm run test:e2e
