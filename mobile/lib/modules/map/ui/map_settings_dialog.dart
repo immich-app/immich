@@ -13,6 +13,7 @@ class MapSettingsDialog extends HookConsumerWidget {
     final mapSettings = ref.read(mapStateNotifier);
     final isDarkMode = useState(mapSettings.isDarkTheme);
     final showFavoriteOnly = useState(mapSettings.showFavoriteOnly);
+    final showIncludeArchived = useState(mapSettings.showIncludeArchived);
     final showRelativeDate = useState(mapSettings.relativeTime);
     final ThemeData theme = Theme.of(context);
 
@@ -42,6 +43,22 @@ class MapSettingsDialog extends HookConsumerWidget {
         dense: true,
         title: Text(
           "map_settings_only_show_favorites".tr(),
+          style:
+              theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    Widget buildIncludeArchivedSetting() {
+      return SwitchListTile.adaptive(
+        value: showIncludeArchived.value,
+        onChanged: (value) {
+          showIncludeArchived.value = value;
+        },
+        activeColor: theme.primaryColor,
+        dense: true,
+        title: Text(
+          "map_settings_include_show_archived".tr(),
           style:
               theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
@@ -166,6 +183,7 @@ class MapSettingsDialog extends HookConsumerWidget {
             children: [
               buildMapThemeSetting(),
               buildFavoriteOnlySetting(),
+              buildIncludeArchivedSetting(),
               const SizedBox(
                 height: 10,
               ),

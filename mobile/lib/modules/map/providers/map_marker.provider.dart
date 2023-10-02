@@ -10,6 +10,7 @@ final mapMarkersProvider =
   final mapState = ref.read(mapStateNotifier);
   DateTime? fileCreatedAfter;
   bool? isFavorite;
+  bool? isIncludeArchived;
 
   if (mapState.relativeTime != 0) {
     fileCreatedAfter =
@@ -22,6 +23,7 @@ final mapMarkersProvider =
 
   final markers = await service.getMapMarkers(
     isFavorite: isFavorite,
+    withArchived: isIncludeArchived,
     fileCreatedAfter: fileCreatedAfter,
   );
 

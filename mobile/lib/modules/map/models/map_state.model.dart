@@ -1,22 +1,26 @@
 class MapState {
   final bool isDarkTheme;
   final bool showFavoriteOnly;
+  final bool showIncludeArchived;
   final int relativeTime;
 
   MapState({
     this.isDarkTheme = false,
     this.showFavoriteOnly = false,
+    this.showIncludeArchived = false,
     this.relativeTime = 0,
   });
 
   MapState copyWith({
     bool? isDarkTheme,
     bool? showFavoriteOnly,
+    bool? showIncludeArchived,
     int? relativeTime,
   }) {
     return MapState(
       isDarkTheme: isDarkTheme ?? this.isDarkTheme,
       showFavoriteOnly: showFavoriteOnly ?? this.showFavoriteOnly,
+      showIncludeArchived: showIncludeArchived ?? this.showIncludeArchived,
       relativeTime: relativeTime ?? this.relativeTime,
     );
   }

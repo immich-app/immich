@@ -179,6 +179,7 @@ enum StoreKey<T> {
   mapShowFavoriteOnly<bool>(118, type: bool),
   mapRelativeDate<int>(119, type: int),
   selfSignedCert<bool>(120, type: bool),
+  mapIncludeArchived<bool>(121, type: bool),
   ;
 
   const StoreKey(
