@@ -18,6 +18,7 @@
   import Portal from '../shared-components/portal/portal.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -60,8 +61,8 @@
     }
   };
 
-  const showMenu = ({ x, y }: MouseEvent, type: LibraryType) => {
-    contextMenuPosition = { x, y };
+  const showMenu = (event: MouseEvent, type: LibraryType) => {
+    contextMenuPosition = getContextMenuPosition(event);
     showContextMenu = !showContextMenu;
     libraryType = type;
   };
