@@ -8,8 +8,8 @@ import * as fs from 'fs';
 import path from 'path';
 import { AppService } from '../src/microservices/app.service';
 
-export const TEST_ASSET_PATH = process.env.TEST_ASSET_PATH;
-export const TEST_ASSET_TEMP_PATH = path.normalize(`${TEST_ASSET_PATH}/temp/`);
+export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
+export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
 
 export const db = {
   reset: async () => {
@@ -66,7 +66,7 @@ export async function createTestApp(runJobs = false, log = false): Promise<INest
   return app;
 }
 
-export const allTests: boolean = process.env.ALL_TESTS === 'true';
+export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
 
 const directoryExists = async (dirPath: string) =>
   await fs.promises
@@ -75,10 +75,10 @@ const directoryExists = async (dirPath: string) =>
     .catch(() => false);
 
 export async function restoreTempFolder(): Promise<void> {
-  if (await directoryExists(`${TEST_ASSET_TEMP_PATH}`)) {
+  if (await directoryExists(`${IMMICH_TEST_ASSET_TEMP_PATH}`)) {
     // Temp directory exists, delete all files inside it
-    await fs.promises.rm(TEST_ASSET_TEMP_PATH, { recursive: true });
+    await fs.promises.rm(IMMICH_TEST_ASSET_TEMP_PATH, { recursive: true });
   }
   // Create temp folder
-  await fs.promises.mkdir(TEST_ASSET_TEMP_PATH);
+  await fs.promises.mkdir(IMMICH_TEST_ASSET_TEMP_PATH);
 }

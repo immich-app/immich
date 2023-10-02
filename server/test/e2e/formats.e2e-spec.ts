@@ -2,7 +2,7 @@ import { LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { TEST_ASSET_PATH, allTests, createTestApp, db } from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, createTestApp, db, runAllTests } from '@test/test-utils';
 
 describe(`Supported file formats (e2e)`, () => {
   let app: INestApplication;
@@ -71,7 +71,7 @@ describe(`Supported file formats (e2e)`, () => {
     {
       format: 'heic',
       path: 'heic',
-      runTest: allTests,
+      runTest: runAllTests,
       expectedAsset: {
         type: AssetType.IMAGE,
         originalFileName: 'IMG_2682',
@@ -189,7 +189,7 @@ describe(`Supported file formats (e2e)`, () => {
   it.each(testsToRun)('should import file of format $format', async (testedFormat) => {
     const library = await api.libraryApi.create(server, admin.accessToken, {
       type: LibraryType.EXTERNAL,
-      importPaths: [`${TEST_ASSET_PATH}/formats/${testedFormat.path}`],
+      importPaths: [`${IMMICH_TEST_ASSET_PATH}/formats/${testedFormat.path}`],
     });
 
     await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});

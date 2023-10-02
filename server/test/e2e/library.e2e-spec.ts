@@ -3,7 +3,13 @@ import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { TEST_ASSET_PATH, TEST_ASSET_TEMP_PATH, createTestApp, db, restoreTempFolder } from '@test/test-utils';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  createTestApp,
+  db,
+  restoreTempFolder,
+} from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
@@ -404,7 +410,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should delete an extnernal library with assets', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -452,7 +458,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should scan external library with import paths', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -497,7 +503,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
         exclusionPatterns: ['**/el_corcal*'],
       });
 
@@ -532,7 +538,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should scan external library with import paths', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -572,13 +578,13 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should offline missing files', async () => {
-      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -610,7 +616,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should offline files outside of changed external path', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
@@ -637,17 +643,20 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature/silver_fir.jpg`, `${TEST_ASSET_TEMP_PATH}/silver_fir.jpg`);
+      await fs.promises.cp(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/silver_fir.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/silver_fir.jpg`,
+      );
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       await fs.promises.cp(
-        `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-        `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
       );
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
@@ -670,25 +679,25 @@ describe(`${LibraryController.name} (e2e)`, () => {
       it('should reimport modified files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
-          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+          importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
         await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200001);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200001);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
@@ -717,25 +726,25 @@ describe(`${LibraryController.name} (e2e)`, () => {
       it('should not reimport unmodified files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
-          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+          importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
         await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshModifiedFiles: true });
 
@@ -757,25 +766,25 @@ describe(`${LibraryController.name} (e2e)`, () => {
       it('should reimport all files', async () => {
         const library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
-          importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+          importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
         await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
         await fs.promises.cp(
-          `${TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
-          `${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
+          `${IMMICH_TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`,
         );
 
-        await utimes(`${TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
+        await utimes(`${IMMICH_TEST_ASSET_TEMP_PATH}/el_torcal_rocks.jpg`, 447775200000);
 
         await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, { refreshAllFiles: true });
 
@@ -807,7 +816,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       beforeEach(async () => {
         library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
-          importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+          importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
         });
       });
 
@@ -826,7 +835,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
         expect(assets).toEqual([]);
       });
 
-      it.each([`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_PATH}/albums/nature/`])(
+      it.each([`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_PATH}/albums/nature/`])(
         'should scan external library with external path %s',
         async (externalPath: string) => {
           await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, externalPath);
@@ -890,13 +899,13 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should remvove offline files', async () => {
-      await fs.promises.cp(`${TEST_ASSET_PATH}/albums/nature`, `${TEST_ASSET_TEMP_PATH}/albums/nature`, {
+      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
         recursive: true,
       });
 
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_TEMP_PATH}`],
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
@@ -923,7 +932,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should not remvove online files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${TEST_ASSET_PATH}/albums/nature`],
+        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
       });
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 

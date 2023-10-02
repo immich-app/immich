@@ -3,21 +3,21 @@ import * as fs from 'fs';
 import path from 'path';
 
 export default async () => {
-  const allTests: boolean = process.env.ALL_TESTS === 'true';
+  const allTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
 
   if (!allTests) {
     console.warn(
-      "\n\n *** Not running all e2e tests. Set 'ALL_TESTS=true' to run all tests (requires dependencies to be installed) ***",
+      "\n\n *** Not running all e2e tests. Set 'IMMICH_RUN_ALL_TESTS=true' to run all tests (requires dependencies to be installed) ***",
     );
   }
 
-  let TEST_ASSET_PATH: string = '';
+  let IMMICH_TEST_ASSET_PATH: string = '';
 
-  if (process.env.TEST_ASSET_PATH === undefined) {
-    TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
-    process.env.TEST_ASSET_PATH = TEST_ASSET_PATH;
+  if (process.env.IMMICH_TEST_ASSET_PATH === undefined) {
+    IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
+    process.env.IMMICH_TEST_ASSET_PATH = IMMICH_TEST_ASSET_PATH;
   } else {
-    TEST_ASSET_PATH = process.env.TEST_ASSET_PATH;
+    IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
   }
 
   const directoryExists = async (dirPath: string) =>
@@ -26,9 +26,9 @@ export default async () => {
       .then(() => true)
       .catch(() => false);
 
-  if (!(await directoryExists(`${TEST_ASSET_PATH}/albums`))) {
+  if (!(await directoryExists(`${IMMICH_TEST_ASSET_PATH}/albums`))) {
     throw new Error(
-      `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${TEST_ASSET_PATH} before testing`,
+      `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${IMMICH_TEST_ASSET_PATH} before testing`,
     );
   }
 

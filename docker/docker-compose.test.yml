@@ -18,7 +18,7 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=e2e_test
-      - ALL_TESTS=true
+      - IMMICH_RUN_ALL_TESTS=true
     depends_on:
       - immich-database-test
     networks:
