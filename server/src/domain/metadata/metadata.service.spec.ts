@@ -231,6 +231,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.createdAt,
+        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
       });
     });
 
@@ -252,6 +253,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
+        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
       });
     });
 
@@ -379,6 +381,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: new Date('1970-01-01'),
+        localDateTime: new Date('1970-01-01'),
       });
     });
   });
