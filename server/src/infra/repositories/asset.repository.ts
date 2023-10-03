@@ -82,7 +82,7 @@ export class AssetRepository implements IAssetRepository {
     const month = DateTime.fromJSDate(date).toFormat('M');
     const day = DateTime.fromJSDate(date).toFormat('d');
 
-    const currentYear = DateTime.fromJSDate(date).toFormat('yyyy');
+    const currentDate = DateTime.fromJSDate(date).toFormat('yyyy-MM-dd');
 
     return this.repository
       .createQueryBuilder('entity')
@@ -93,12 +93,12 @@ export class AssetRepository implements IAssetRepository {
       AND entity.resizePath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime) = :day
       AND EXTRACT(MONTH FROM entity.localDateTime) = :month
-      AND EXTRACT(YEAR FROM entity.localDateTime) != :currentYear`,
+      AND entity.localDateTime < :currentDate`,
         {
           ownerId,
           day,
           month,
-          currentYear,
+          currentDate,
         },
       )
       .orderBy('entity.localDateTime', 'ASC')
