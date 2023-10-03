@@ -1,4 +1,4 @@
-FROM node:18-bookworm@sha256:c85dc4392f44f5de1d0d72dd20a088a542734445f99bed7aa8ac895c706d370d as builder
+FROM node:20.8-bookworm as builder
 
 WORKDIR /usr/src/app
 
@@ -29,7 +29,7 @@ FROM builder as prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM node:18-bookworm-slim@sha256:a0cca98f2896135d4c0386922211c1f90f98f27a58b8f2c07850d0fbe1c2104e
+FROM node:20.8-bookworm
 
 ENV NODE_ENV=production
 
