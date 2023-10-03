@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ExifDateTime, Tags, exiftool } from 'exiftool-vendored';
+import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
