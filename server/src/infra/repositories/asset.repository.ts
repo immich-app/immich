@@ -483,7 +483,7 @@ export class AssetRepository implements IAssetRepository {
     return this.getBuilder(options)
       .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
       .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
-      .addOrderBy('asset.localDateTime', 'DESC')
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
 
