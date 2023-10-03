@@ -11,7 +11,7 @@ services:
     command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
     ports:
       - 3001:3001
@@ -24,25 +24,6 @@ services:
       - redis
       - database
       - typesense
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning-dev:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    ports:
-      - 3003:3003
-    volumes:
-      - ../machine-learning:/usr/src/app
-      - model-cache:/cache
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - database
-    restart: unless-stopped
 
   immich-microservices:
     container_name: immich_microservices
@@ -57,7 +38,7 @@ services:
     command: npm run start:debug microservices
     volumes:
       - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
     env_file:
       - .env
@@ -94,6 +75,25 @@ services:
     depends_on:
       - immich-server
 
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning-dev:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3003
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - model-cache:/cache
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+    restart: unless-stopped
+
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
@@ -103,7 +103,7 @@ services:
       # remove this to get debug messages
       - GLOG_minloglevel=1
     volumes:
-      - tsdata:/data
+      - ${UPLOAD_LOCATION}/typesense:/data
 
   redis:
     container_name: immich_redis
@@ -119,7 +119,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres:/data
     ports:
       - 5432:5432
 
@@ -141,6 +141,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgdata:
   model-cache:
-  tsdata:
