@@ -79,21 +79,25 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getByDayOfYear(ownerId: string, date: Date): Promise<AssetEntity[]> {
-    const dayOfYear = DateTime.fromJSDate(date).toFormat('MM-dd');
+    const month = DateTime.fromJSDate(date).toFormat('M');
+    const day = DateTime.fromJSDate(date).toFormat('d');
+
     const currentYear = DateTime.fromJSDate(date).toFormat('yyyy');
 
     return this.repository
       .createQueryBuilder('entity')
       .where(
-        `entity.ownerId = :ownerId 
+        `entity.ownerId = :ownerId
       AND entity.isVisible = true 
       AND entity.isArchived = false 
       AND entity.resizePath IS NOT NULL
-      AND TO_CHAR(entity.localDateTime, 'MM-DD') = :dayOfYear
+      AND EXTRACT(DAY FROM entity.localDateTime) = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime) = :month
       AND EXTRACT(YEAR FROM entity.localDateTime) != :currentYear`,
         {
           ownerId,
-          dayOfYear,
+          day,
+          month,
           currentYear,
         },
       )

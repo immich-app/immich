@@ -251,6 +251,7 @@ export class LibraryService {
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        localDateTime: stats.mtime,
         type: assetType,
         originalFileName: parse(assetPath).name,
         sidecarPath,
