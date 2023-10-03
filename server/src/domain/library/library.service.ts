@@ -231,7 +231,7 @@ export class LibraryService {
 
     const deviceAssetId = `${basename(assetPath)}`.replace(/\s+/g, '');
 
-    const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
+    const pathHash = await this.cryptoRepository.hashFile(assetPath);
 
     let assetId;
     if (doImport) {
