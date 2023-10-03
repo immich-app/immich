@@ -74,6 +74,7 @@ export class AppService {
       [JobName.RECOGNIZE_FACES]: (data) => this.personService.handleRecognizeFaces(data),
       [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.personService.handleGeneratePersonThumbnail(data),
       [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
+      [JobName.PERSON_DELETE]: (data) => this.personService.handlePersonDelete(data),
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),

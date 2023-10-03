@@ -373,11 +373,7 @@ describe(PersonService.name, () => {
 
       await sut.handlePersonCleanup();
 
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.noName);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: { files: ['/path/to/thumbnail.jpg'] },
-      });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.PERSON_DELETE, data: { id: personStub.noName.id } });
     });
   });
 
@@ -409,7 +405,7 @@ describe(PersonService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.deleteAll.mockResolvedValue(5);
+      personMock.getAll.mockResolvedValue([personStub.withName]);
       searchMock.deleteAllFaces.mockResolvedValue(100);
 
       await sut.handleQueueRecognizeFaces({ force: true });
@@ -418,6 +414,10 @@ describe(PersonService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
         data: { id: assetStub.image.id },
+      });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.PERSON_DELETE,
+        data: { id: personStub.withName.id },
       });
     });
   });
@@ -650,7 +650,10 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.mergePerson.id,
       });
 
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.mergePerson);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.PERSON_DELETE,
+        data: { id: personStub.mergePerson.id },
+      });
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
 
