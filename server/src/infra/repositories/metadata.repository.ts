@@ -64,7 +64,7 @@ export class MetadataRepository implements IMetadataRepository {
     this.logger.verbose(`Raw: ${JSON.stringify(address, null, 2)}`);
 
     const { countryCode, name: city, admin1Code, admin2Code } = address[0] as GeoData;
-    const country = getName(countryCode, 'en');
+    const country = getName(countryCode, 'en') ?? null;
     const stateParts = [(admin2Code as AdminCode)?.name, (admin1Code as AdminCode)?.name].filter((name) => !!name);
     const state = stateParts.length > 0 ? stateParts.join(', ') : null;
     this.logger.debug(`Normalized: ${JSON.stringify({ country, state, city })}`);
