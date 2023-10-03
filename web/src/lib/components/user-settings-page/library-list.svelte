@@ -43,7 +43,8 @@
   let dropdownOpen: boolean[] = [];
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
-  let libraryType: LibraryType;
+  let selectedLibraryIndex = 0;
+  let selectedLibrary: LibraryResponseDto | null = null;
 
   onMount(() => {
     readLibraryList();
@@ -61,10 +62,12 @@
     }
   };
 
-  const showMenu = (event: MouseEvent, type: LibraryType) => {
+  const showMenu = (event: MouseEvent, library: LibraryResponseDto, index: number) => {
     contextMenuPosition = getContextMenuPosition(event);
     showContextMenu = !showContextMenu;
-    libraryType = type;
+
+    selectedLibraryIndex = index;
+    selectedLibrary = library;
   };
 
   const onMenuExit = () => {
@@ -216,54 +219,63 @@
     }
   };
 
-  const onRenameClicked = (index: number) => {
+  const onRenameClicked = () => {
     closeAll();
-    renameLibrary = index;
-    updateLibraryIndex = index;
+    renameLibrary = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onEditImportPathClicked = (index: number) => {
+  const onEditImportPathClicked = () => {
     closeAll();
-    editImportPaths = index;
-    updateLibraryIndex = index;
+    editImportPaths = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanNewLibraryClicked = (libraryId: string) => {
+  const onScanNewLibraryClicked = () => {
     closeAll();
-    handleScan(libraryId);
+
+    if (selectedLibrary) {
+      handleScan(selectedLibrary.id);
+    }
   };
 
-  const onScanSettingClicked = (index: number) => {
+  const onScanSettingClicked = () => {
     closeAll();
-    editScanSettings = index;
-    updateLibraryIndex = index;
+    editScanSettings = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
   };
 
-  const onScanAllLibraryFilesClicked = (libraryId: string) => {
+  const onScanAllLibraryFilesClicked = () => {
     closeAll();
-    handleScanChanges(libraryId);
+    if (selectedLibrary) {
+      handleScanChanges(selectedLibrary.id);
+    }
   };
 
-  const onForceScanAllLibraryFilesClicked = (libraryId: string) => {
+  const onForceScanAllLibraryFilesClicked = () => {
     closeAll();
-    handleForceScan(libraryId);
+    if (selectedLibrary) {
+      handleForceScan(selectedLibrary.id);
+    }
   };
 
-  const onRemoveOfflineFilesClicked = (libraryId: string) => {
+  const onRemoveOfflineFilesClicked = () => {
     closeAll();
-    handleRemoveOffline(libraryId);
+    if (selectedLibrary) {
+      handleRemoveOffline(selectedLibrary.id);
+    }
   };
 
-  const onDeleteLibraryClicked = (index: number, library: LibraryResponseDto) => {
+  const onDeleteLibraryClicked = () => {
     closeAll();
 
-    if (confirm(`Are you sure you want to delete ${library.name} library?`) == true) {
-      refreshStats(index);
-      if (totalCount[index] > 0) {
-        deleteAssetCount = totalCount[index];
-        confirmDeleteLibrary = library;
+    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
+      refreshStats(selectedLibraryIndex);
+      if (totalCount[selectedLibraryIndex] > 0) {
+        deleteAssetCount = totalCount[selectedLibraryIndex];
+        confirmDeleteLibrary = selectedLibrary;
       } else {
-        deleteLibrary = library;
+        deleteLibrary = selectedLibrary;
         handleDelete();
       }
     }
@@ -295,104 +307,92 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each libraries as library, index}
-            {#key library.id}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
+          {#each libraries as library, index (library.id)}
+            <tr
+              class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                index % 2 == 0
+                  ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                  : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+              }`}
+            >
+              <td class="w-1/6 px-10 text-sm">
+                {#if library.type === LibraryType.External}
+                  <Database size="40" title="External library (created on {library.createdAt})" />
+                {:else if library.type === LibraryType.Upload}
+                  <Upload size="40" title="Upload library (created on {library.createdAt})" />
+                {/if}</td
               >
-                <td class="w-1/6 px-10 text-sm">
-                  {#if library.type === LibraryType.External}
-                    <Database size="40" title="External library (created on {library.createdAt})" />
-                  {:else if library.type === LibraryType.Upload}
-                    <Upload size="40" title="Upload library (created on {library.createdAt})" />
-                  {/if}</td
-                >
 
-                <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
-                {#if totalCount[index] == undefined}
-                  <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
-                    <Pulse color="gray" size="40" unit="px" />
-                  </td>
-                {:else}
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">
-                    {totalCount[index]}
-                  </td>
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]} </td>
-                {/if}
-
-                <td class="w-1/6 text-ellipsis px-4 text-sm">
-                  <button
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                    on:click|stopPropagation|preventDefault={(e) => showMenu(e, library.type)}
-                  >
-                    <DotsVertical size="16" />
-                  </button>
-
-                  {#if showContextMenu}
-                    <Portal target="body">
-                      <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-                        <MenuOption on:click={() => onRenameClicked(index)} text="Rename" />
-
-                        {#if libraryType === LibraryType.External}
-                          <MenuOption on:click={() => onEditImportPathClicked(index)} text="Edit Import Paths" />
-                          <MenuOption on:click={() => onScanSettingClicked(index)} text="Scan Settings" />
-                          <hr />
-                          <MenuOption
-                            on:click={() => onScanNewLibraryClicked(library.id)}
-                            text="Scan New Library Files"
-                          />
-                          <MenuOption
-                            on:click={() => onScanAllLibraryFilesClicked(library.id)}
-                            text="Re-scan All Library Files"
-                            subtitle={'Only refreshes modified files'}
-                          />
-                          <MenuOption
-                            on:click={() => onForceScanAllLibraryFilesClicked(library.id)}
-                            text="Force Re-scan All Library Files"
-                            subtitle={'Refreshes every file'}
-                          />
-                          <hr />
-                          <MenuOption
-                            on:click={() => onRemoveOfflineFilesClicked(library.id)}
-                            text="Remove Offline Files"
-                          />
-                          <MenuOption on:click={() => onDeleteLibraryClicked(index, library)}>
-                            <p class="text-red-600">Delete library</p>
-                          </MenuOption>
-                        {/if}
-                      </ContextMenu>
-                    </Portal>
-                  {/if}
+              <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
+              {#if totalCount[index] == undefined}
+                <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
+                  <Pulse color="gray" size="40" unit="px" />
                 </td>
-              </tr>
-              {#if renameLibrary === index}
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
-                </div>
+              {:else}
+                <td class="w-1/6 text-ellipsis px-4 text-sm">
+                  {totalCount[index]}
+                </td>
+                <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
               {/if}
-              {#if editImportPaths === index}
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm
-                    {library}
-                    on:submit={handleUpdate}
-                    on:cancel={() => (editImportPaths = null)}
-                  />
-                </div>
-              {/if}
-              {#if editScanSettings === index}
-                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
-                  <LibraryScanSettingsForm
-                    {library}
-                    on:submit={handleUpdate}
-                    on:cancel={() => (editScanSettings = null)}
-                  />
-                </div>
-              {/if}
-            {/key}
+
+              <td class="w-1/6 text-ellipsis px-4 text-sm">
+                <button
+                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  on:click|stopPropagation|preventDefault={(e) => showMenu(e, library, index)}
+                >
+                  <DotsVertical size="16" />
+                </button>
+
+                {#if showContextMenu}
+                  <Portal target="body">
+                    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+                      <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+
+                      {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
+                        <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
+                        <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
+                        <hr />
+                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                        <MenuOption
+                          on:click={() => onScanAllLibraryFilesClicked()}
+                          text="Re-scan All Library Files"
+                          subtitle={'Only refreshes modified files'}
+                        />
+                        <MenuOption
+                          on:click={() => onForceScanAllLibraryFilesClicked()}
+                          text="Force Re-scan All Library Files"
+                          subtitle={'Refreshes every file'}
+                        />
+                        <hr />
+                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                        <MenuOption on:click={() => onDeleteLibraryClicked()}>
+                          <p class="text-red-600">Delete library</p>
+                        </MenuOption>
+                      {/if}
+                    </ContextMenu>
+                  </Portal>
+                {/if}
+              </td>
+            </tr>
+            {#if renameLibrary === index}
+              <div transition:slide={{ duration: 250 }}>
+                <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
+              </div>
+            {/if}
+            {#if editImportPaths === index}
+              <div transition:slide={{ duration: 250 }}>
+                <LibraryImportPathsForm {library} on:submit={handleUpdate} on:cancel={() => (editImportPaths = null)} />
+              </div>
+            {/if}
+            {#if editScanSettings === index}
+              <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
+                <LibraryScanSettingsForm
+                  {library}
+                  on:submit={handleUpdate}
+                  on:cancel={() => (editScanSettings = null)}
+                />
+              </div>
+            {/if}
           {/each}
         </tbody>
       </table>
