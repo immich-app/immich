@@ -5,7 +5,7 @@
   import type { PageData } from './$types';
 
   export let data: PageData;
-  let setIntervalHandler: NodeJS.Timer;
+  let setIntervalHandler: ReturnType<typeof setInterval>;
 
   onMount(async () => {
     setIntervalHandler = setInterval(async () => {

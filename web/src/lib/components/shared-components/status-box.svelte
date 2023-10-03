@@ -10,7 +10,7 @@
   let isServerOk = true;
   let serverVersion = '';
   let serverInfo: ServerInfoResponseDto;
-  let pingServerInterval: NodeJS.Timer;
+  let pingServerInterval: ReturnType<typeof setInterval>;
 
   onMount(async () => {
     try {
