@@ -13,6 +13,8 @@ services:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 3001:3001
       - 9230:9230
@@ -59,6 +61,8 @@ services:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     ports:
