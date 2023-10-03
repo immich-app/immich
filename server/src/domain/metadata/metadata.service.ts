@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ExifDateTime, Tags } from 'exiftool-vendored';
+import { ExifDateTime, Tags, exiftool } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
@@ -311,7 +311,19 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: exifDate(firstDateTime(tags as Tags)) ?? asset.fileCreatedAt,
+        dateTimeOriginal:
+          exifDate(
+            firstDateTime(tags as Tags, [
+              'SubSecDateTimeOriginal',
+              'DateTimeOriginal',
+              'SubSecCreateDate',
+              'CreationDate',
+              'CreateDate',
+              'SubSecMediaCreateDate',
+              'MediaCreateDate',
+              'DateTimeCreated',
+            ]),
+          ) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
