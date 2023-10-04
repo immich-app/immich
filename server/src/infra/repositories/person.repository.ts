@@ -102,6 +102,15 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
+  getPeopleWithoutThumbnail(): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .having('COUNT(face.assetId) != 0 AND person.faceAssetId IS NULL')
+      .groupBy('person.id')
+      .getMany();
+  }
+
   getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {

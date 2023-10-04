@@ -44,6 +44,21 @@ export class PeopleUpdateDto {
   people!: PeopleUpdateItem[];
 }
 
+export class AssetFaceUpdateDto {
+  @IsArray()
+  data!: AssetUpdateDto[];
+}
+
+export class AssetUpdateDto {
+  @IsString()
+  @IsNotEmpty()
+  personId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  assetId!: string;
+}
+
 export class PeopleUpdateItem extends PersonUpdateDto {
   /**
    * Person id.

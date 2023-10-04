@@ -1,3 +1,4 @@
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
@@ -7,6 +8,7 @@ import { IJobRepository, JobName } from '../job';
 import { IStorageRepository, ImmichReadStream } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import {
+  AssetFaceUpdateDto,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -147,45 +149,79 @@ export class PersonService {
     return true;
   }
 
-  async unMergePerson(authUser: AuthUserDto, personId: string, assetId: string): Promise<BulkIdResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+  async getFaceEntity(authUser: AuthUserDto, personId: string, assetId: string): Promise<AssetFaceEntity> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, personId);
+    const face = await this.repository.getFaceById({ personId, assetId });
+    if (!face) {
+      throw new BadRequestException('Invalid assetId for feature face');
+    }
+    return face;
+  }
 
-    const oldPerson = await this.findOrFail(personId);
+  async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonEntity> {
+    let hasGeneratedFaceThumbnail = false;
 
     const newPerson = await this.repository.create({ ownerId: authUser.id });
-    let result: BulkIdResponseDto;
-    try {
-      this.logger.log(`un-merging ${assetId} from ${oldPerson.id}`);
-      await this.repository.reassignFace(oldPerson.id, newPerson.id, assetId);
+    for (const data of dto.data) {
+      try {
+        await this.repository.reassignFace(data.personId, newPerson.id, data.assetId);
 
-      await this.repository.update({
-        id: newPerson.id,
-        faceAssetId: assetId,
-      });
-      const face = await this.repository.getFaceById({ personId: newPerson.id, assetId });
-      if (!face) {
-        throw new BadRequestException('Invalid assetId for feature face');
+        await this.repository.update({
+          id: newPerson.id,
+          faceAssetId: data.assetId,
+        });
+        const face = await this.repository.getFaceById({ personId: newPerson.id, assetId: data.assetId });
+        const oldPerson = await this.findOrFail(data.personId);
+        if (oldPerson.faceAssetId === face?.assetId) {
+          //TODO: create a new feature photo
+        }
+        if (!face) {
+          throw new BadRequestException('Invalid assetId for feature face');
+        }
+        if (!hasGeneratedFaceThumbnail) {
+          await this.jobRepository.queue({
+            name: JobName.GENERATE_FACE_THUMBNAIL,
+            data: {
+              personId: newPerson.id,
+              assetId: data.assetId,
+              boundingBox: {
+                x1: face.boundingBoxX1,
+                x2: face.boundingBoxX2,
+                y1: face.boundingBoxY1,
+                y2: face.boundingBoxY2,
+              },
+              imageHeight: face.imageHeight,
+              imageWidth: face.imageWidth,
+            },
+          });
+          hasGeneratedFaceThumbnail = true;
+        }
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to create a new person`, error?.stack);
       }
-      await this.jobRepository.queue({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: {
-          personId: newPerson.id,
-          assetId: assetId,
-          boundingBox: {
-            x1: face.boundingBoxX1,
-            x2: face.boundingBoxX2,
-            y1: face.boundingBoxY1,
-            y2: face.boundingBoxY2,
-          },
-          imageHeight: face.imageHeight,
-          imageWidth: face.imageWidth,
-        },
-      });
+    }
 
-      result = { id: oldPerson.id, success: true };
-    } catch (error: Error | any) {
-      this.logger.error(`Unable to un-merge asset ${assetId} from ${oldPerson.id}`, error?.stack);
-      result = { id: oldPerson.id, success: false, error: BulkIdErrorReason.UNKNOWN };
+    return newPerson;
+  }
+
+  async reassignFaces(authUser: AuthUserDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+
+    const result: PersonResponseDto[] = [];
+
+    for (const data of dto.data) {
+      try {
+        const face = await this.repository.getFaceById({ personId: data.personId, assetId: data.assetId });
+        const oldPerson = await this.findOrFail(data.personId);
+        if (oldPerson.faceAssetId === face?.assetId) {
+          //TODO: create a new feature photo
+        }
+        await this.repository.reassignFace(data.personId, personId, data.assetId);
+
+        result.push(await this.findOrFail(personId).then(mapPerson));
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to un-merge asset ${data.assetId} from ${data.personId}`, error?.stack);
+      }
     }
     return result;
   }

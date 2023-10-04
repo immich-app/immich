@@ -1,14 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import {
-    AlbumResponseDto,
-    api,
-    AssetJobName,
-    AssetResponseDto,
-    AssetTypeEnum,
-    PersonResponseDto,
-    SharedLinkResponseDto,
-  } from '@api';
+  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -36,8 +28,6 @@
   import Close from 'svelte-material-icons/Close.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -60,11 +50,8 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let showUnMergeModal = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let canCopyImagesToClipboard: boolean;
-
-  $: people = asset.people || [];
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
@@ -99,25 +86,6 @@
       appearsInAlbums = data;
     } catch (e) {
       console.error('Error getting album that asset belong to', e);
-    }
-  };
-
-  const handleUnMergePerson = async (person: PersonResponseDto) => {
-    try {
-      const { data } = await api.personApi.unMergePerson({ id: person.id, assetId: asset.id });
-      if (data.success) {
-        notificationController.show({
-          type: NotificationType.Info,
-          message: `Asset un-merged from ${person.name ? person.name : person.id}`,
-        });
-      }
-      people = people.filter((item) => item.id !== person.id);
-
-      if (people.length < 1) {
-        showUnMergeModal = false;
-      }
-    } catch (error) {
-      handleError(error, `Unable to un-merge asset for person ${person.name ? person.name : person.id}`);
     }
   };
 
@@ -367,7 +335,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-x-hidden overflow-y-hidden bg-black"
   bind:this={assetViewerHtmlElement}
 >
   <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
@@ -401,7 +369,6 @@
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
         showSlideshow={!!assetStore}
-        showUnmergeButton={people.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -415,48 +382,11 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
-        on:unMergePerson={() => (showUnMergeModal = true)}
       />
     {/if}
   </div>
-  {#if showUnMergeModal}
-    <FullScreenModal on:clickOutside={() => (showUnMergeModal = false)}>
-      <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
-        <div
-          class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[375px]"
-        >
-          <div class="relative flex items-center justify-between">
-            <h1 class=" px-4 font-medium text-immich-primary dark:text-immich-dark-primary">
-              Unmerge face{people.length == 1 ? '' : 's'}
-            </h1>
-            <div class="p-2">
-              <CircleIconButton logo={Close} on:click={() => (showUnMergeModal = false)} />
-            </div>
-          </div>
 
-          <div class="grid grid-cols-3 items-start justify-center p-4">
-            {#each people as person (person.id)}
-              <button class="w-fit justify-self-center px-2" on:click={() => handleUnMergePerson(person)}>
-                <ImageThumbnail
-                  curve
-                  shadow
-                  url={api.getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  title={person.name}
-                  widthStyle="90px"
-                  heightStyle="90px"
-                  thumbhash={null}
-                />
-                <p class="mt-1 font-medium" title={person.name}>{person.name}</p>
-              </button>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </FullScreenModal>
-  {/if}
-
-  {#if !isSlideshowMode && showNavigation && !showUnMergeModal}
+  {#if !isSlideshowMode && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
@@ -497,7 +427,7 @@
     {/key}
   </div>
 
-  {#if !isSlideshowMode && showNavigation && !showUnMergeModal}
+  {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>

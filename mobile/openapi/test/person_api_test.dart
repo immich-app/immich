@@ -17,8 +17,18 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
+    //Future<PersonEntity> createPerson(AssetFaceUpdateDto assetFaceUpdateDto) async
+    test('test createPerson', () async {
+      // TODO
+    });
+
     //Future<PeopleResponseDto> getAllPeople({ bool withHidden }) async
     test('test getAllPeople', () async {
+      // TODO
+    });
+
+    //Future<AssetFaceEntity> getAssetFace(String id, String assetId) async
+    test('test getAssetFace', () async {
       // TODO
     });
 
@@ -42,8 +52,8 @@ void main() {
       // TODO
     });
 
-    //Future<BulkIdResponseDto> unMergePerson(String id, String assetId) async
-    test('test unMergePerson', () async {
+    //Future<List<PersonResponseDto>> reassignFaces(String id, AssetFaceUpdateDto assetFaceUpdateDto) async
+    test('test reassignFaces', () async {
       // TODO
     });
 

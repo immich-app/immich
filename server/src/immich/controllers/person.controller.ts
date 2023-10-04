@@ -1,4 +1,5 @@
 import {
+  AssetFaceUpdateDto,
   AssetResponseDto,
   AuthUserDto,
   BulkIdResponseDto,
@@ -11,7 +12,8 @@ import {
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { AuthUser, Authenticated } from '../app.guard';
@@ -29,13 +31,27 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
 export class PersonController {
   constructor(private service: PersonService) {}
 
-  @Delete('/person/:id/asset/:assetId')
-  unMergePerson(
+  @Put(':id/reassign')
+  reassignFaces(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetFaceUpdateDto,
+  ): Promise<PersonResponseDto[]> {
+    return this.service.reassignFaces(authUser, id, dto);
+  }
+
+  @Get(':id/:assetId/faceasset')
+  getAssetFace(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Param('assetId', new ParseMeUUIDPipe({ version: '4' })) assetId: string,
-  ): Promise<BulkIdResponseDto> {
-    return this.service.unMergePerson(authUser, id, assetId);
+  ): Promise<AssetFaceEntity> {
+    return this.service.getFaceEntity(authUser, id, assetId);
+  }
+
+  @Post('')
+  createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonEntity> {
+    return this.service.createPerson(authUser, dto);
   }
 
   @Get()

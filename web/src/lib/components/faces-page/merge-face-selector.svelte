@@ -15,6 +15,7 @@
   import { goto, invalidateAll } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -123,9 +124,7 @@
             <span class="grid grid-cols-1"
               ><CallMerge size={48} class="rotate-90 dark:text-white" />
               {#if selectedPeople.length === 1}
-                <button class="flex justify-center" on:click={handleSwapPeople}
-                  ><SwapHorizontal size={24} class="dark:text-white" />
-                </button>
+                <CircleIconButton title="Swap" on:click={handleSwapPeople} logo={SwapHorizontal} />
               {/if}
             </span>
           {/if}

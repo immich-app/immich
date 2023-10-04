@@ -32,6 +32,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
+  import PeopleList from '$lib/components/photos-page/actions/people-list.svelte';
 
   export let data: PageData;
 
@@ -41,6 +42,7 @@
     MERGE_FACES = 'merge-faces',
     SUGGEST_MERGE = 'suggest-merge',
     BIRTH_DATE = 'birth-date',
+    UNASSIGN_ASSETS = 'unassign-faces',
   }
 
   let assetStore = new AssetStore({
@@ -101,6 +103,10 @@
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }
+  };
+
+  const handleReassignAssets = () => {
+    viewMode = ViewMode.UNASSIGN_ASSETS;
   };
 
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
@@ -245,6 +251,16 @@
   />
 {/if}
 
+{#if viewMode === ViewMode.UNASSIGN_ASSETS}
+  <PeopleList
+    {people}
+    personId={data.person.id}
+    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    on:reject={() => changeName()}
+    on:confirm={(event) => handleMergeSameFace(event.detail)}
+  />
+{/if}
+
 {#if viewMode === ViewMode.BIRTH_DATE}
   <SetBirthDateModal
     birthDate={data.person.birthDate ?? ''}
@@ -271,6 +287,7 @@
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <MenuOption text="Unmerge assets" on:click={handleReassignAssets} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
