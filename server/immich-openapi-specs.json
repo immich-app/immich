@@ -1407,6 +1407,14 @@
         "operationId": "getMapMarkers",
         "parameters": [
           {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -5105,7 +5113,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.81.0",
+    "version": "1.81.1",
     "contact": {}
   },
   "tags": [],

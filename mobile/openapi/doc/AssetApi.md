@@ -902,7 +902,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapMarkers**
-> List<MapMarkerResponseDto> getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore)
+> List<MapMarkerResponseDto> getMapMarkers(isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore)
 
 
 
@@ -925,12 +925,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
 final fileCreatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final fileCreatedBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
 
 try {
-    final result = api_instance.getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore);
+    final result = api_instance.getMapMarkers(isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMapMarkers: $e\n');
@@ -941,6 +942,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **fileCreatedAfter** | **DateTime**|  | [optional] 
  **fileCreatedBefore** | **DateTime**|  | [optional] 

@@ -155,7 +155,8 @@ class MapPageState extends ConsumerState<MapPage> {
     ref.listen(mapStateNotifier, (previous, next) {
       bool shouldRefetch =
           previous?.showFavoriteOnly != next.showFavoriteOnly ||
-              previous?.relativeTime != next.relativeTime;
+              previous?.relativeTime != next.relativeTime ||
+              previous?.includeArchived != next.includeArchived;
       if (shouldRefetch) {
         refetchMarkers.value = shouldRefetch;
         ref.invalidate(mapMarkersProvider);
