@@ -20,6 +20,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -52,8 +53,8 @@
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
 
-  const showOptionsMenu = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
+  const showOptionsMenu = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-right');
     isShowAssetOptions = !isShowAssetOptions;
   };
 
@@ -146,7 +147,9 @@
     {/if}
 
     {#if isOwner}
-      <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+      {#if !asset.isReadOnly || !asset.isExternal}
+        <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+      {/if}
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
         <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}

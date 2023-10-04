@@ -76,6 +76,9 @@ export class JobService {
       case QueueName.STORAGE_TEMPLATE_MIGRATION:
         return this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
 
+      case QueueName.MIGRATION:
+        return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
+
       case QueueName.OBJECT_TAGGING:
         await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
         return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });

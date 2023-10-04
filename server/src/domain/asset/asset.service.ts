@@ -57,7 +57,7 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -67,6 +67,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -284,6 +285,11 @@ export class AssetService {
     return mapStats(stats);
   }
 
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
+  }
+
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
 
@@ -300,6 +306,7 @@ export class AssetService {
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
     const { ids, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     await this.assetRepository.updateAll(ids, options);
   }
 

@@ -20,6 +20,7 @@ class ServerFeaturesDto {
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
+    required this.reverseGeocoding,
     required this.search,
     required this.sidecar,
     required this.tagImage,
@@ -39,6 +40,8 @@ class ServerFeaturesDto {
 
   bool passwordLogin;
 
+  bool reverseGeocoding;
+
   bool search;
 
   bool sidecar;
@@ -54,6 +57,7 @@ class ServerFeaturesDto {
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
+     other.reverseGeocoding == reverseGeocoding &&
      other.search == search &&
      other.sidecar == sidecar &&
      other.tagImage == tagImage;
@@ -68,12 +72,13 @@ class ServerFeaturesDto {
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
+    (reverseGeocoding.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (tagImage.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -84,6 +89,7 @@ class ServerFeaturesDto {
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
+      json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'tagImage'] = this.tagImage;
@@ -105,6 +111,7 @@ class ServerFeaturesDto {
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
+        reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
         search: mapValueOfType<bool>(json, r'search')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
         tagImage: mapValueOfType<bool>(json, r'tagImage')!,
@@ -162,6 +169,7 @@ class ServerFeaturesDto {
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',
+    'reverseGeocoding',
     'search',
     'sidecar',
     'tagImage',

@@ -1,6 +1,7 @@
 import {
   AudioCodec,
   CQMode,
+  CitiesFile,
   Colorspace,
   SystemConfig,
   SystemConfigEntity,
@@ -33,6 +34,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 1 },
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
@@ -78,6 +80,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   map: {
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     autoLaunch: true,
@@ -215,8 +221,10 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
+          '{{y}}/{{y}}-{{WW}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
+        weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });
     });

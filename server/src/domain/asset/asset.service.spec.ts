@@ -96,6 +96,7 @@ const validImages = [
   '.ori',
   '.pef',
   '.png',
+  '.psd',
   '.raf',
   '.raw',
   '.rwl',

@@ -10,14 +10,15 @@
   import Database from 'svelte-material-icons/Database.svelte';
   import Upload from 'svelte-material-icons/Upload.svelte';
   import Pulse from 'svelte-loading-spinners/Pulse.svelte';
-
   import { slide } from 'svelte/transition';
-  import { Dropdown, DropdownDivider, DropdownItem, Helper } from 'flowbite-svelte';
-  import { Icon } from 'flowbite-svelte-icons';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
   import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
   import LibraryRenameForm from '../forms/library-rename-form.svelte';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import Portal from '../shared-components/portal/portal.svelte';
+  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
+  import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -40,6 +41,10 @@
   let deleteAssetCount = 0;
 
   let dropdownOpen: boolean[] = [];
+  let showContextMenu = false;
+  let contextMenuPosition = { x: 0, y: 0 };
+  let selectedLibraryIndex = 0;
+  let selectedLibrary: LibraryResponseDto | null = null;
 
   onMount(() => {
     readLibraryList();
@@ -50,12 +55,24 @@
     editScanSettings = null;
     renameLibrary = null;
     updateLibraryIndex = null;
+    showContextMenu = false;
 
     for (let i = 0; i < dropdownOpen.length; i++) {
       dropdownOpen[i] = false;
     }
   };
 
+  const showMenu = (event: MouseEvent, library: LibraryResponseDto, index: number) => {
+    contextMenuPosition = getContextMenuPosition(event);
+    showContextMenu = !showContextMenu;
+
+    selectedLibraryIndex = index;
+    selectedLibrary = library;
+  };
+
+  const onMenuExit = () => {
+    showContextMenu = false;
+  };
   const refreshStats = async (listIndex: number) => {
     const { data } = await api.libraryApi.getLibraryStatistics({ id: libraries[listIndex].id });
     stats[listIndex] = data;
@@ -201,6 +218,68 @@
       handleError(error, 'Unable to remove offline files');
     }
   };
+
+  const onRenameClicked = () => {
+    closeAll();
+    renameLibrary = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
+  };
+
+  const onEditImportPathClicked = () => {
+    closeAll();
+    editImportPaths = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
+  };
+
+  const onScanNewLibraryClicked = () => {
+    closeAll();
+
+    if (selectedLibrary) {
+      handleScan(selectedLibrary.id);
+    }
+  };
+
+  const onScanSettingClicked = () => {
+    closeAll();
+    editScanSettings = selectedLibraryIndex;
+    updateLibraryIndex = selectedLibraryIndex;
+  };
+
+  const onScanAllLibraryFilesClicked = () => {
+    closeAll();
+    if (selectedLibrary) {
+      handleScanChanges(selectedLibrary.id);
+    }
+  };
+
+  const onForceScanAllLibraryFilesClicked = () => {
+    closeAll();
+    if (selectedLibrary) {
+      handleForceScan(selectedLibrary.id);
+    }
+  };
+
+  const onRemoveOfflineFilesClicked = () => {
+    closeAll();
+    if (selectedLibrary) {
+      handleRemoveOffline(selectedLibrary.id);
+    }
+  };
+
+  const onDeleteLibraryClicked = () => {
+    closeAll();
+
+    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
+      refreshStats(selectedLibraryIndex);
+      if (totalCount[selectedLibraryIndex] > 0) {
+        deleteAssetCount = totalCount[selectedLibraryIndex];
+        confirmDeleteLibrary = selectedLibrary;
+      } else {
+        deleteLibrary = selectedLibrary;
+        handleDelete();
+      }
+    }
+  };
 </script>
 
 {#if confirmDeleteLibrary}
@@ -228,146 +307,92 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each libraries as library, index}
-            {#key library.id}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
+          {#each libraries as library, index (library.id)}
+            <tr
+              class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                index % 2 == 0
+                  ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                  : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+              }`}
+            >
+              <td class="w-1/6 px-10 text-sm">
+                {#if library.type === LibraryType.External}
+                  <Database size="40" title="External library (created on {library.createdAt})" />
+                {:else if library.type === LibraryType.Upload}
+                  <Upload size="40" title="Upload library (created on {library.createdAt})" />
+                {/if}</td
               >
-                <td class="w-1/6 px-10 text-sm">
-                  {#if library.type === LibraryType.External}
-                    <Database size="40" title="External library (created on {library.createdAt})" />
-                  {:else if library.type === LibraryType.Upload}
-                    <Upload size="40" title="Upload library (created on {library.createdAt})" />
-                  {/if}</td
-                >
 
-                <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
-                {#if totalCount[index] == undefined}
-                  <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
-                    <Pulse color="gray" size="40" unit="px" />
-                  </td>
-                {:else}
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">
-                    {totalCount[index]}
-                  </td>
-                  <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]} </td>
-                {/if}
-
-                <td class="w-1/6 text-ellipsis px-4 text-sm">
-                  <button
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <DotsVertical size="16" />
-                  </button>
-
-                  <Dropdown bind:open={dropdownOpen[index]}>
-                    <DropdownItem
-                      on:click={() => {
-                        closeAll();
-                        renameLibrary = index;
-                        updateLibraryIndex = index;
-                      }}>Rename</DropdownItem
-                    >
-                    {#if library.type === LibraryType.External}
-                      <DropdownItem
-                        on:click={function () {
-                          closeAll();
-                          handleScan(library.id);
-                        }}
-                      >
-                        Scan Library Files
-                        <Helper>Looks for new files</Helper>
-                      </DropdownItem>
-                      <DropdownItem
-                        on:click={() => {
-                          closeAll();
-                          editImportPaths = index;
-                          updateLibraryIndex = index;
-                        }}>Edit Import Paths</DropdownItem
-                      >
-                      <DropdownItem class="flex items-center justify-between">
-                        Manage<Icon name="chevron-right-solid" class="ml-2 h-3 w-3 text-primary-700 dark:text-white" />
-                      </DropdownItem>
-                      <Dropdown slot="footer" class="w-60" placement="right-start">
-                        <DropdownItem
-                          on:click={() => {
-                            closeAll();
-                            editScanSettings = index;
-                            updateLibraryIndex = index;
-                          }}>Scan Settings</DropdownItem
-                        >
-                        <DropdownDivider />
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleScanChanges(library.id);
-                          }}
-                          >Scan All Library Files
-                          <Helper>Rescan, but also refreshes modified files</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleForceScan(library.id);
-                          }}
-                          >Force Scan All Library Files
-                          <Helper>Rescan, but refreshes every file</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            handleRemoveOffline(library.id);
-                          }}
-                          >Remove Offline Files
-                          <Helper>Any offline files are removed from Immich</Helper>
-                        </DropdownItem>
-                        <DropdownItem
-                          on:click={function () {
-                            closeAll();
-                            refreshStats(index);
-
-                            if (totalCount[index] > 0) {
-                              deleteAssetCount = totalCount[index];
-                              confirmDeleteLibrary = library;
-                            } else {
-                              deleteLibrary = library;
-                              handleDelete();
-                            }
-                          }}>Delete Library</DropdownItem
-                        >
-                      </Dropdown>
-                    {/if}
-                  </Dropdown>
+              <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
+              {#if totalCount[index] == undefined}
+                <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
+                  <Pulse color="gray" size="40" unit="px" />
                 </td>
-              </tr>
-              {#if renameLibrary === index}
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
-                </div>
+              {:else}
+                <td class="w-1/6 text-ellipsis px-4 text-sm">
+                  {totalCount[index]}
+                </td>
+                <td class="w-1/6 text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
               {/if}
-              {#if editImportPaths === index}
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm
-                    {library}
-                    on:submit={handleUpdate}
-                    on:cancel={() => (editImportPaths = null)}
-                  />
-                </div>
-              {/if}
-              {#if editScanSettings === index}
-                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
-                  <LibraryScanSettingsForm
-                    {library}
-                    on:submit={handleUpdate}
-                    on:cancel={() => (editScanSettings = null)}
-                  />
-                </div>
-              {/if}
-            {/key}
+
+              <td class="w-1/6 text-ellipsis px-4 text-sm">
+                <button
+                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                  on:click|stopPropagation|preventDefault={(e) => showMenu(e, library, index)}
+                >
+                  <DotsVertical size="16" />
+                </button>
+
+                {#if showContextMenu}
+                  <Portal target="body">
+                    <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+                      <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+
+                      {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
+                        <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
+                        <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
+                        <hr />
+                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                        <MenuOption
+                          on:click={() => onScanAllLibraryFilesClicked()}
+                          text="Re-scan All Library Files"
+                          subtitle={'Only refreshes modified files'}
+                        />
+                        <MenuOption
+                          on:click={() => onForceScanAllLibraryFilesClicked()}
+                          text="Force Re-scan All Library Files"
+                          subtitle={'Refreshes every file'}
+                        />
+                        <hr />
+                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                        <MenuOption on:click={() => onDeleteLibraryClicked()}>
+                          <p class="text-red-600">Delete library</p>
+                        </MenuOption>
+                      {/if}
+                    </ContextMenu>
+                  </Portal>
+                {/if}
+              </td>
+            </tr>
+            {#if renameLibrary === index}
+              <div transition:slide={{ duration: 250 }}>
+                <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
+              </div>
+            {/if}
+            {#if editImportPaths === index}
+              <div transition:slide={{ duration: 250 }}>
+                <LibraryImportPathsForm {library} on:submit={handleUpdate} on:cancel={() => (editImportPaths = null)} />
+              </div>
+            {/if}
+            {#if editScanSettings === index}
+              <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
+                <LibraryScanSettingsForm
+                  {library}
+                  on:submit={handleUpdate}
+                  on:cancel={() => (editScanSettings = null)}
+                />
+              </div>
+            {/if}
           {/each}
         </tbody>
       </table>

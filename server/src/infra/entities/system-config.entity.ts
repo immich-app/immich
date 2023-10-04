@@ -43,6 +43,7 @@ export enum SystemConfigKey {
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
   JOB_SIDECAR_CONCURRENCY = 'job.sidecar.concurrency',
   JOB_LIBRARY_CONCURRENCY = 'job.library.concurrency',
+  JOB_MIGRATION_CONCURRENCY = 'job.migration.concurrency',
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
@@ -62,6 +63,9 @@ export enum SystemConfigKey {
 
   MAP_ENABLED = 'map.enabled',
   MAP_TILE_URL = 'map.tileUrl',
+
+  REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
+  REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
 
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
@@ -129,6 +133,13 @@ export enum Colorspace {
   P3 = 'p3',
 }
 
+export enum CitiesFile {
+  CITIES_15000 = 'cities15000',
+  CITIES_5000 = 'cities5000',
+  CITIES_1000 = 'cities1000',
+  CITIES_500 = 'cities500',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -173,6 +184,10 @@ export interface SystemConfig {
   map: {
     enabled: boolean;
     tileUrl: string;
+  };
+  reverseGeocoding: {
+    enabled: boolean;
+    citiesFileOverride: CitiesFile;
   };
   oauth: {
     enabled: boolean;

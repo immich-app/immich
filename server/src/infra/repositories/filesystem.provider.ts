@@ -8,7 +8,7 @@ import {
 } from '@app/domain';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { readdir } from 'fs/promises';
+import fs, { readdir, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import mv from 'mv';
 import { promisify } from 'node:util';
@@ -39,6 +39,18 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
+  async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<Buffer> {
+    const file = await fs.open(filepath);
+    try {
+      const { buffer } = await file.read(options);
+      return buffer;
+    } finally {
+      await file.close();
+    }
+  }
+
+  writeFile = writeFile;
+
   async moveFile(source: string, destination: string): Promise<void> {
     if (await this.checkFileExists(destination)) {
       throw new Error(`Destination file already exists: ${destination}`);
@@ -66,11 +78,7 @@ export class FilesystemProvider implements IStorageRepository {
     await fs.rm(folder, options);
   }
 
-  async removeEmptyDirs(directory: string) {
-    this._removeEmptyDirs(directory, false);
-  }
-
-  private async _removeEmptyDirs(directory: string, self: boolean) {
+  async removeEmptyDirs(directory: string, self: boolean = false) {
     // lstat does not follow symlinks (in contrast to stat)
     const stats = await fs.lstat(directory);
     if (!stats.isDirectory()) {
@@ -78,7 +86,7 @@ export class FilesystemProvider implements IStorageRepository {
     }
 
     const files = await fs.readdir(directory);
-    await Promise.all(files.map((file) => this._removeEmptyDirs(path.join(directory, file), true)));
+    await Promise.all(files.map((file) => this.removeEmptyDirs(path.join(directory, file), true)));
 
     if (self) {
       const updated = await fs.readdir(directory);

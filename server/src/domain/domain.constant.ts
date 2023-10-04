@@ -53,6 +53,7 @@ const image: Record<string, string[]> = {
   '.ori': ['image/ori', 'image/x-olympus-ori'],
   '.pef': ['image/pef', 'image/x-pentax-pef'],
   '.png': ['image/png'],
+  '.psd': ['image/psd', 'image/vnd.adobe.photoshop'],
   '.raf': ['image/raf', 'image/x-fuji-raf'],
   '.raw': ['image/raw', 'image/x-panasonic-raw'],
   '.rwl': ['image/rwl', 'image/x-leica-rwl'],

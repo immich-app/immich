@@ -1510,6 +1510,50 @@
         ]
       }
     },
+    "/asset/random": {
+      "get": {
+        "operationId": "getRandom",
+        "parameters": [
+          {
+            "name": "count",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -5200,7 +5244,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.78.1",
+    "version": "1.81.0",
     "contact": {}
   },
   "tags": [],
@@ -5522,6 +5566,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -5551,6 +5598,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
@@ -6351,6 +6399,15 @@
         ],
         "type": "object"
       },
+      "CitiesFile": {
+        "enum": [
+          "cities15000",
+          "cities5000",
+          "cities1000",
+          "cities500"
+        ],
+        "type": "string"
+      },
       "ClassificationConfig": {
         "properties": {
           "enabled": {
@@ -7112,6 +7169,7 @@
           "clipEncoding",
           "backgroundTask",
           "storageTemplateMigration",
+          "migration",
           "search",
           "sidecar",
           "library"
@@ -7945,6 +8003,9 @@
           "passwordLogin": {
             "type": "boolean"
           },
+          "reverseGeocoding": {
+            "type": "boolean"
+          },
           "search": {
             "type": "boolean"
           },
@@ -7960,6 +8021,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "reverseGeocoding",
           "oauth",
           "oauthAutoLaunch",
           "passwordLogin",
@@ -8418,6 +8480,9 @@
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -8431,6 +8496,7 @@
           "map",
           "oauth",
           "passwordLogin",
+          "reverseGeocoding",
           "storageTemplate",
           "job",
           "thumbnail"
@@ -8526,6 +8592,9 @@
           "metadataExtraction": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "migration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "objectTagging": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -8555,6 +8624,7 @@
           "objectTagging",
           "clipEncoding",
           "storageTemplateMigration",
+          "migration",
           "backgroundTask",
           "search",
           "recognizeFaces",
@@ -8667,6 +8737,21 @@
         ],
         "type": "object"
       },
+      "SystemConfigReverseGeocodingDto": {
+        "properties": {
+          "citiesFileOverride": {
+            "$ref": "#/components/schemas/CitiesFile"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "citiesFileOverride",
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigStorageTemplateDto": {
         "properties": {
           "template": {
@@ -8716,6 +8801,12 @@
             },
             "type": "array"
           },
+          "weekOptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "yearOptions": {
             "items": {
               "type": "string"
@@ -8726,6 +8817,7 @@
         "required": [
           "yearOptions",
           "monthOptions",
+          "weekOptions",
           "dayOptions",
           "hourOptions",
           "minuteOptions",

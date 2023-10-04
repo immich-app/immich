@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **monthOptions** | **List<String>** |  | [default to const []]
 **presetOptions** | **List<String>** |  | [default to const []]
 **secondOptions** | **List<String>** |  | [default to const []]
+**weekOptions** | **List<String>** |  | [default to const []]
 **yearOptions** | **List<String>** |  | [default to const []]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

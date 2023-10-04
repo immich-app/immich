@@ -8,6 +8,7 @@ import { SystemConfigMachineLearningDto } from './system-config-machine-learning
 import { SystemConfigMapDto } from './system-config-map.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
+import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
 
 export class SystemConfigDto implements SystemConfig {
@@ -35,6 +36,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   passwordLogin!: SystemConfigPasswordLoginDto;
+
+  @Type(() => SystemConfigReverseGeocodingDto)
+  @ValidateNested()
+  @IsObject()
+  reverseGeocoding!: SystemConfigReverseGeocodingDto;
 
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()

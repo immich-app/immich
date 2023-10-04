@@ -16,6 +16,7 @@ import {
   supportedMinuteTokens,
   supportedMonthTokens,
   supportedSecondTokens,
+  supportedWeekTokens,
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -30,7 +31,7 @@ export interface MoveAssetMetadata {
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
@@ -44,6 +45,7 @@ export class StorageTemplateService {
     this.configCore = new SystemConfigCore(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -233,11 +235,14 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone: asset.exifInfo?.timeZone || undefined });
+    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const zone = asset.exifInfo?.timeZone || systemTimeZone;
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     const dateTokens = [
       ...supportedYearTokens,
       ...supportedMonthTokens,
+      ...supportedWeekTokens,
       ...supportedDayTokens,
       ...supportedHourTokens,
       ...supportedMinuteTokens,

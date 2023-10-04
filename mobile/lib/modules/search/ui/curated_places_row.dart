@@ -8,15 +8,21 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:latlong2/latlong.dart';
 
 class CuratedPlacesRow extends CuratedRow {
+  final bool isMapEnabled;
+
   const CuratedPlacesRow({
     super.key,
     required super.content,
+    this.isMapEnabled = true,
     super.imageSize,
     super.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Calculating the actual index of the content based on the whether map is enabled or not.
+    // If enabled, inject map as the first item in the list (index 0) and so the actual content will start from index 1
+    final int actualContentIndex = isMapEnabled ? 1 : 0;
     Widget buildMapThumbnail() {
       return GestureDetector(
         onTap: () => AutoRouter.of(context).push(
@@ -75,6 +81,24 @@ class CuratedPlacesRow extends CuratedRow {
       );
     }
 
+    // Return empty thumbnail
+    if (!isMapEnabled && content.isEmpty) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SizedBox(
+            width: imageSize,
+            height: imageSize,
+            child: ThumbnailWithInfo(
+              textInfo: '',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
@@ -82,11 +106,10 @@ class CuratedPlacesRow extends CuratedRow {
       ),
       itemBuilder: (context, index) {
         // Injecting Map thumbnail as the first element
-        if (index == 0) {
+        if (isMapEnabled && index == 0) {
           return buildMapThumbnail();
         }
-        // The actual index is 1 less than the virutal index since we inject map into the first position
-        final actualIndex = index - 1;
+        final actualIndex = index - actualContentIndex;
         final object = content[actualIndex];
         final thumbnailRequestUrl =
             '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${object.id}';
@@ -103,8 +126,7 @@ class CuratedPlacesRow extends CuratedRow {
           ),
         );
       },
-      // Adding 1 to inject map thumbnail as first element
-      itemCount: content.length + 1,
+      itemCount: content.length + actualContentIndex,
     );
   }
 }

@@ -4,13 +4,12 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
   import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  interface DropdownOption {
-    value: string;
-    icon?: Icon;
-  }
-
-  export let options: DropdownOption[] | string[] = [];
+  const dispatch = createEventDispatcher<{
+    select: string;
+  }>();
+  export let options: string[];
   export let value = options[0];
   export let icons: (typeof Icon)[] | undefined = undefined;
 
@@ -21,7 +20,12 @@
   };
 
   const handleSelectOption = (index: number) => {
-    value = options[index];
+    if (options[index] === value) {
+      dispatch('select', value);
+    } else {
+      value = options[index];
+    }
+
     showMenu = false;
   };
 
@@ -29,14 +33,14 @@
   $: icon = icons?.[index];
 </script>
 
-<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside}>
+<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
   <!-- BUTTON TITLE -->
   <LinkButton on:click={() => (showMenu = true)}>
     <div class="flex place-items-center gap-2 text-sm">
       {#if icon}
         <svelte:component this={icon} size="18" />
       {/if}
-      {value}
+      <p class="hidden sm:block">{value}</p>
     </div>
   </LinkButton>
 

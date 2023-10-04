@@ -25,8 +25,8 @@ import { IUserRepository } from './user.repository';
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
+  private storageCore: StorageCore;
   private userCore: UserCore;
-  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -37,6 +37,7 @@ export class UserService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
+    this.storageCore = new StorageCore(storageRepository);
     this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
