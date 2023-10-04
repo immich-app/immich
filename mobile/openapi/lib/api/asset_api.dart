@@ -984,10 +984,10 @@ class AssetApi {
   /// Performs an HTTP 'GET /asset/memory-lane' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [num] day (required):
+  /// * [int] day (required):
   ///
-  /// * [num] month (required):
-  Future<Response> getMemoryLaneWithHttpInfo(num day, num month,) async {
+  /// * [int] month (required):
+  Future<Response> getMemoryLaneWithHttpInfo(int day, int month,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/memory-lane';
 
@@ -1017,10 +1017,10 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [num] day (required):
+  /// * [int] day (required):
   ///
-  /// * [num] month (required):
-  Future<List<MemoryLaneResponseDto>?> getMemoryLane(num day, num month,) async {
+  /// * [int] month (required):
+  Future<List<MemoryLaneResponseDto>?> getMemoryLane(int day, int month,) async {
     final response = await getMemoryLaneWithHttpInfo(day, month,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

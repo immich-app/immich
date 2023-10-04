@@ -986,8 +986,8 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final day = 8.14; // num | 
-final month = 8.14; // num | 
+final day = 56; // int | 
+final month = 56; // int | 
 
 try {
     final result = api_instance.getMemoryLane(day, month);
@@ -1001,8 +1001,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **day** | **num**|  | 
- **month** | **num**|  | 
+ **day** | **int**|  | 
+ **month** | **int**|  | 
 
 ### Return type
 
