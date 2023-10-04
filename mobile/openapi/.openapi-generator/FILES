@@ -12,7 +12,6 @@ doc/AddUsersDto.md
 doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
 doc/AlbumCountResponseDto.md
-doc/AlbumEntity.md
 doc/AlbumResponseDto.md
 doc/AllJobStatusResponseDto.md
 doc/AssetApi.md
@@ -21,8 +20,7 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
-doc/AssetEntity.md
-doc/AssetFaceEntity.md
+doc/AssetFaceBoxDto.md
 doc/AssetFaceUpdateDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
@@ -65,7 +63,6 @@ doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
-doc/ExifEntity.md
 doc/ExifResponseDto.md
 doc/ImportAssetDto.md
 doc/JobApi.md
@@ -76,7 +73,6 @@ doc/JobName.md
 doc/JobSettingsDto.md
 doc/JobStatusDto.md
 doc/LibraryApi.md
-doc/LibraryEntity.md
 doc/LibraryResponseDto.md
 doc/LibraryStatsResponseDto.md
 doc/LibraryType.md
@@ -97,7 +93,6 @@ doc/PeopleResponseDto.md
 doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
 doc/PersonApi.md
-doc/PersonEntity.md
 doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
@@ -123,11 +118,9 @@ doc/ServerVersionResponseDto.md
 doc/SharedLinkApi.md
 doc/SharedLinkCreateDto.md
 doc/SharedLinkEditDto.md
-doc/SharedLinkEntity.md
 doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
-doc/SmartInfoEntity.md
 doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
@@ -142,7 +135,6 @@ doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThumbnailDto.md
 doc/TagApi.md
-doc/TagEntity.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
 doc/ThumbnailFormat.md
@@ -159,7 +151,6 @@ doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
 doc/UserCountResponseDto.md
-doc/UserEntity.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 doc/VideoCodec.md
@@ -192,7 +183,6 @@ lib/auth/oauth.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
-lib/model/album_entity.dart
 lib/model/album_response_dto.dart
 lib/model/all_job_status_response_dto.dart
 lib/model/api_key_create_dto.dart
@@ -204,8 +194,7 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
-lib/model/asset_entity.dart
-lib/model/asset_face_entity.dart
+lib/model/asset_face_box_dto.dart
 lib/model/asset_face_update_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
@@ -246,7 +235,6 @@ lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
-lib/model/exif_entity.dart
 lib/model/exif_response_dto.dart
 lib/model/import_asset_dto.dart
 lib/model/job_command.dart
@@ -255,7 +243,6 @@ lib/model/job_counts_dto.dart
 lib/model/job_name.dart
 lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
-lib/model/library_entity.dart
 lib/model/library_response_dto.dart
 lib/model/library_stats_response_dto.dart
 lib/model/library_type.dart
@@ -273,7 +260,6 @@ lib/model/o_auth_config_response_dto.dart
 lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
-lib/model/person_entity.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
@@ -296,11 +282,9 @@ lib/model/server_stats_response_dto.dart
 lib/model/server_version_response_dto.dart
 lib/model/shared_link_create_dto.dart
 lib/model/shared_link_edit_dto.dart
-lib/model/shared_link_entity.dart
 lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
-lib/model/smart_info_entity.dart
 lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
@@ -313,7 +297,6 @@ lib/model/system_config_reverse_geocoding_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_thumbnail_dto.dart
-lib/model/tag_entity.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
@@ -329,7 +312,6 @@ lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
-lib/model/user_entity.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
@@ -338,7 +320,6 @@ test/add_users_dto_test.dart
 test/admin_signup_response_dto_test.dart
 test/album_api_test.dart
 test/album_count_response_dto_test.dart
-test/album_entity_test.dart
 test/album_response_dto_test.dart
 test/all_job_status_response_dto_test.dart
 test/api_key_api_test.dart
@@ -352,8 +333,7 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
-test/asset_entity_test.dart
-test/asset_face_entity_test.dart
+test/asset_face_box_dto_test.dart
 test/asset_face_update_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
@@ -396,7 +376,6 @@ test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
-test/exif_entity_test.dart
 test/exif_response_dto_test.dart
 test/import_asset_dto_test.dart
 test/job_api_test.dart
@@ -407,7 +386,6 @@ test/job_name_test.dart
 test/job_settings_dto_test.dart
 test/job_status_dto_test.dart
 test/library_api_test.dart
-test/library_entity_test.dart
 test/library_response_dto_test.dart
 test/library_stats_response_dto_test.dart
 test/library_type_test.dart
@@ -428,7 +406,6 @@ test/people_response_dto_test.dart
 test/people_update_dto_test.dart
 test/people_update_item_test.dart
 test/person_api_test.dart
-test/person_entity_test.dart
 test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
@@ -454,11 +431,9 @@ test/server_version_response_dto_test.dart
 test/shared_link_api_test.dart
 test/shared_link_create_dto_test.dart
 test/shared_link_edit_dto_test.dart
-test/shared_link_entity_test.dart
 test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
-test/smart_info_entity_test.dart
 test/smart_info_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
@@ -473,7 +448,6 @@ test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
 test/tag_api_test.dart
-test/tag_entity_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
 test/thumbnail_format_test.dart
@@ -490,7 +464,6 @@ test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
 test/user_count_response_dto_test.dart
-test/user_entity_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
 test/video_codec_test.dart

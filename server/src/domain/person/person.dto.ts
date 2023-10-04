@@ -79,6 +79,26 @@ export class PersonSearchDto {
   withHidden?: boolean = false;
 }
 
+export class AssetFaceBoxDto {
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+}
+
 export class PersonResponseDto {
   id!: string;
   name!: string;

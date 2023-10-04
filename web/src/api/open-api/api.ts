@@ -177,91 +177,6 @@ export interface AlbumCountResponseDto {
 /**
  * 
  * @export
- * @interface AlbumEntity
- */
-export interface AlbumEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'albumName': string;
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof AlbumEntity
-     */
-    'albumThumbnailAsset': AssetEntity | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'albumThumbnailAssetId': string | null;
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof AlbumEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'deletedAt': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'description': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof AlbumEntity
-     */
-    'owner': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {Array<SharedLinkEntity>}
-     * @memberof AlbumEntity
-     */
-    'sharedLinks': Array<SharedLinkEntity>;
-    /**
-     * 
-     * @type {Array<UserEntity>}
-     * @memberof AlbumEntity
-     */
-    'sharedUsers': Array<UserEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof AlbumEntity
-     */
-    'updatedAt': string;
-}
-/**
- * 
- * @export
  * @interface AlbumResponseDto
  */
 export interface AlbumResponseDto {
@@ -559,302 +474,45 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 /**
  * 
  * @export
- * @interface AssetEntity
+ * @interface AssetFaceBoxDto
  */
-export interface AssetEntity {
-    /**
-     * 
-     * @type {Array<AlbumEntity>}
-     * @memberof AssetEntity
-     */
-    'albums'?: Array<AlbumEntity>;
-    /**
-     * 
-     * @type {object}
-     * @memberof AssetEntity
-     */
-    'checksum': object;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'deviceId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'duration': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'encodedVideoPath': string | null;
-    /**
-     * 
-     * @type {ExifEntity}
-     * @memberof AssetEntity
-     */
-    'exifInfo'?: ExifEntity;
-    /**
-     * 
-     * @type {Array<AssetFaceEntity>}
-     * @memberof AssetEntity
-     */
-    'faces': Array<AssetFaceEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'fileCreatedAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'fileModifiedAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isArchived': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isExternal': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isFavorite': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isOffline': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isReadOnly': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetEntity
-     */
-    'isVisible': boolean;
-    /**
-     * 
-     * @type {LibraryEntity}
-     * @memberof AssetEntity
-     */
-    'library': LibraryEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'libraryId': string;
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof AssetEntity
-     */
-    'livePhotoVideo': AssetEntity | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'livePhotoVideoId': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'originalFileName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'originalPath': string;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof AssetEntity
-     */
-    'owner': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'resizePath': string | null;
-    /**
-     * 
-     * @type {Array<SharedLinkEntity>}
-     * @memberof AssetEntity
-     */
-    'sharedLinks': Array<SharedLinkEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'sidecarPath': string | null;
-    /**
-     * 
-     * @type {SmartInfoEntity}
-     * @memberof AssetEntity
-     */
-    'smartInfo'?: SmartInfoEntity;
-    /**
-     * 
-     * @type {Array<TagEntity>}
-     * @memberof AssetEntity
-     */
-    'tags': Array<TagEntity>;
-    /**
-     * 
-     * @type {object}
-     * @memberof AssetEntity
-     */
-    'thumbhash': object | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'type': AssetEntityTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'updatedAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetEntity
-     */
-    'webpPath': string | null;
-}
-
-export const AssetEntityTypeEnum = {
-    Image: 'IMAGE',
-    Video: 'VIDEO',
-    Audio: 'AUDIO',
-    Other: 'OTHER'
-} as const;
-
-export type AssetEntityTypeEnum = typeof AssetEntityTypeEnum[keyof typeof AssetEntityTypeEnum];
-
-/**
- * 
- * @export
- * @interface AssetFaceEntity
- */
-export interface AssetFaceEntity {
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof AssetFaceEntity
-     */
-    'asset': AssetEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetFaceEntity
-     */
-    'assetId': string;
+export interface AssetFaceBoxDto {
     /**
      * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'boundingBoxX1': number;
     /**
      * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'boundingBoxX2': number;
     /**
      * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'boundingBoxY1': number;
     /**
      * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'boundingBoxY2': number;
     /**
      * 
-     * @type {Array<number>}
-     * @memberof AssetFaceEntity
-     */
-    'embedding': Array<number> | null;
-    /**
-     * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'imageHeight': number;
     /**
      * 
      * @type {number}
-     * @memberof AssetFaceEntity
+     * @memberof AssetFaceBoxDto
      */
     'imageWidth': number;
-    /**
-     * 
-     * @type {PersonEntity}
-     * @memberof AssetFaceEntity
-     */
-    'person': PersonEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetFaceEntity
-     */
-    'personId': string;
 }
 /**
  * 
@@ -1902,187 +1560,6 @@ export type EntityType = typeof EntityType[keyof typeof EntityType];
 /**
  * 
  * @export
- * @interface ExifEntity
- */
-export interface ExifEntity {
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof ExifEntity
-     */
-    'asset'?: AssetEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'assetId': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'bitsPerSample': number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'city': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'colorspace': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'country': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'dateTimeOriginal': string | null;
-    /**
-     * General info
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'description': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'exifImageHeight': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'exifImageWidth': number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'exifTextSearchableColumn': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'exposureTime': string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fNumber': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fileSizeInByte': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'focalLength': number | null;
-    /**
-     * Video info
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'fps'?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'iso': number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'latitude': number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'lensModel': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'livePhotoCID': string | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifEntity
-     */
-    'longitude': number | null;
-    /**
-     * Image info
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'make': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'model': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'modifyDate': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'orientation': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'profileDescription': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'projectionType': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'state': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifEntity
-     */
-    'timeZone': string | null;
-}
-/**
- * 
- * @export
  * @interface ExifResponseDto
  */
 export interface ExifResponseDto {
@@ -2440,99 +1917,6 @@ export interface JobStatusDto {
      */
     'queueStatus': QueueStatusDto;
 }
-/**
- * 
- * @export
- * @interface LibraryEntity
- */
-export interface LibraryEntity {
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof LibraryEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'deletedAt'?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof LibraryEntity
-     */
-    'exclusionPatterns': Array<string>;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof LibraryEntity
-     */
-    'importPaths': Array<string>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof LibraryEntity
-     */
-    'isVisible': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'name': string;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof LibraryEntity
-     */
-    'owner': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'refreshedAt': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'type': LibraryEntityTypeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof LibraryEntity
-     */
-    'updatedAt': string;
-}
-
-export const LibraryEntityTypeEnum = {
-    Upload: 'UPLOAD',
-    External: 'EXTERNAL'
-} as const;
-
-export type LibraryEntityTypeEnum = typeof LibraryEntityTypeEnum[keyof typeof LibraryEntityTypeEnum];
-
 /**
  * 
  * @export
@@ -2962,85 +2346,6 @@ export interface PeopleUpdateItem {
      * @memberof PeopleUpdateItem
      */
     'name'?: string;
-}
-/**
- * 
- * @export
- * @interface PersonEntity
- */
-export interface PersonEntity {
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'birthDate': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof PersonEntity
-     */
-    'faceAsset': AssetEntity | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'faceAssetId': string | null;
-    /**
-     * 
-     * @type {Array<AssetFaceEntity>}
-     * @memberof PersonEntity
-     */
-    'faces': Array<AssetFaceEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PersonEntity
-     */
-    'isHidden': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'name': string;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof PersonEntity
-     */
-    'owner': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'thumbnailPath': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonEntity
-     */
-    'updatedAt': string;
 }
 /**
  * 
@@ -3701,105 +3006,6 @@ export interface SharedLinkEditDto {
 /**
  * 
  * @export
- * @interface SharedLinkEntity
- */
-export interface SharedLinkEntity {
-    /**
-     * 
-     * @type {AlbumEntity}
-     * @memberof SharedLinkEntity
-     */
-    'album'?: AlbumEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'albumId': string | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkEntity
-     */
-    'allowDownload': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkEntity
-     */
-    'allowUpload': boolean;
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof SharedLinkEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'description': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'expiresAt': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {object}
-     * @memberof SharedLinkEntity
-     */
-    'key': object;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SharedLinkEntity
-     */
-    'showExif': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'type': SharedLinkEntityTypeEnum;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof SharedLinkEntity
-     */
-    'user': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkEntity
-     */
-    'userId': string;
-}
-
-export const SharedLinkEntityTypeEnum = {
-    Album: 'ALBUM',
-    Individual: 'INDIVIDUAL'
-} as const;
-
-export type SharedLinkEntityTypeEnum = typeof SharedLinkEntityTypeEnum[keyof typeof SharedLinkEntityTypeEnum];
-
-/**
- * 
- * @export
  * @interface SharedLinkResponseDto
  */
 export interface SharedLinkResponseDto {
@@ -3922,43 +3128,6 @@ export interface SignUpDto {
      * @memberof SignUpDto
      */
     'password': string;
-}
-/**
- * 
- * @export
- * @interface SmartInfoEntity
- */
-export interface SmartInfoEntity {
-    /**
-     * 
-     * @type {AssetEntity}
-     * @memberof SmartInfoEntity
-     */
-    'asset'?: AssetEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof SmartInfoEntity
-     */
-    'assetId': string;
-    /**
-     * 
-     * @type {Array<number>}
-     * @memberof SmartInfoEntity
-     */
-    'clipEmbedding': Array<number> | null;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SmartInfoEntity
-     */
-    'objects': Array<string> | null;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SmartInfoEntity
-     */
-    'tags': Array<string> | null;
 }
 /**
  * 
@@ -4497,64 +3666,6 @@ export interface SystemConfigThumbnailDto {
 /**
  * 
  * @export
- * @interface TagEntity
- */
-export interface TagEntity {
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof TagEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'name': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'renameTagId': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'type': TagEntityTypeEnum;
-    /**
-     * 
-     * @type {UserEntity}
-     * @memberof TagEntity
-     */
-    'user': UserEntity;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagEntity
-     */
-    'userId': string;
-}
-
-export const TagEntityTypeEnum = {
-    Object: 'OBJECT',
-    Face: 'FACE',
-    Custom: 'CUSTOM'
-} as const;
-
-export type TagEntityTypeEnum = typeof TagEntityTypeEnum[keyof typeof TagEntityTypeEnum];
-
-/**
- * 
- * @export
  * @interface TagResponseDto
  */
 export interface TagResponseDto {
@@ -4911,115 +4022,6 @@ export interface UserCountResponseDto {
      * @memberof UserCountResponseDto
      */
     'userCount': number;
-}
-/**
- * 
- * @export
- * @interface UserEntity
- */
-export interface UserEntity {
-    /**
-     * 
-     * @type {Array<AssetEntity>}
-     * @memberof UserEntity
-     */
-    'assets': Array<AssetEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'deletedAt': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'externalPath': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'id': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserEntity
-     */
-    'isAdmin': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'lastName': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserEntity
-     */
-    'memoriesEnabled': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'oauthId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'password'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'profileImagePath': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserEntity
-     */
-    'shouldChangePassword': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'storageLabel': string | null;
-    /**
-     * 
-     * @type {Array<TagEntity>}
-     * @memberof UserEntity
-     */
-    'tags': Array<TagEntity>;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserEntity
-     */
-    'updatedAt': string;
 }
 /**
  * 
@@ -12554,7 +11556,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createPerson(assetFaceUpdateDto: AssetFaceUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonEntity>> {
+        async createPerson(assetFaceUpdateDto: AssetFaceUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createPerson(assetFaceUpdateDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12575,7 +11577,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetFace(id: string, assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFaceEntity>> {
+        async getAssetFace(id: string, assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFaceBoxDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetFace(id, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12668,7 +11670,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createPerson(requestParameters: PersonApiCreatePersonRequest, options?: AxiosRequestConfig): AxiosPromise<PersonEntity> {
+        createPerson(requestParameters: PersonApiCreatePersonRequest, options?: AxiosRequestConfig): AxiosPromise<PersonResponseDto> {
             return localVarFp.createPerson(requestParameters.assetFaceUpdateDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -12686,7 +11688,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetFace(requestParameters: PersonApiGetAssetFaceRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFaceEntity> {
+        getAssetFace(requestParameters: PersonApiGetAssetFaceRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFaceBoxDto> {
             return localVarFp.getAssetFace(requestParameters.id, requestParameters.assetId, options).then((request) => request(axios, basePath));
         },
         /**

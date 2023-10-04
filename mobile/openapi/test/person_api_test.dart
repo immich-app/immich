@@ -17,7 +17,7 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
-    //Future<PersonEntity> createPerson(AssetFaceUpdateDto assetFaceUpdateDto) async
+    //Future<PersonResponseDto> createPerson(AssetFaceUpdateDto assetFaceUpdateDto) async
     test('test createPerson', () async {
       // TODO
     });
@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFaceEntity> getAssetFace(String id, String assetId) async
+    //Future<AssetFaceBoxDto> getAssetFace(String id, String assetId) async
     test('test getAssetFace', () async {
       // TODO
     });

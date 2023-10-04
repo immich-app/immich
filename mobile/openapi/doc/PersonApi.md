@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **createPerson**
-> PersonEntity createPerson(assetFaceUpdateDto)
+> PersonResponseDto createPerson(assetFaceUpdateDto)
 
 
 
@@ -63,7 +63,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**PersonEntity**](PersonEntity.md)
+[**PersonResponseDto**](PersonResponseDto.md)
 
 ### Authorization
 
@@ -132,7 +132,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetFace**
-> AssetFaceEntity getAssetFace(id, assetId)
+> AssetFaceBoxDto getAssetFace(id, assetId)
 
 
 
@@ -175,7 +175,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AssetFaceEntity**](AssetFaceEntity.md)
+[**AssetFaceBoxDto**](AssetFaceBoxDto.md)
 
 ### Authorization
 

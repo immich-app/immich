@@ -48,7 +48,7 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
-  Future<PersonEntity?> createPerson(AssetFaceUpdateDto assetFaceUpdateDto,) async {
+  Future<PersonResponseDto?> createPerson(AssetFaceUpdateDto assetFaceUpdateDto,) async {
     final response = await createPersonWithHttpInfo(assetFaceUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -57,7 +57,7 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonEntity',) as PersonEntity;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonResponseDto',) as PersonResponseDto;
     
     }
     return null;
@@ -152,7 +152,7 @@ class PersonApi {
   /// * [String] id (required):
   ///
   /// * [String] assetId (required):
-  Future<AssetFaceEntity?> getAssetFace(String id, String assetId,) async {
+  Future<AssetFaceBoxDto?> getAssetFace(String id, String assetId,) async {
     final response = await getAssetFaceWithHttpInfo(id, assetId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -161,7 +161,7 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetFaceEntity',) as AssetFaceEntity;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetFaceBoxDto',) as AssetFaceBoxDto;
     
     }
     return null;

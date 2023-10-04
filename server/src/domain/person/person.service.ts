@@ -1,4 +1,4 @@
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import {
@@ -19,6 +19,7 @@ import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
 import {
+  AssetFaceBoxDto,
   AssetFaceUpdateDto,
   MergePersonDto,
   PeopleResponseDto,
@@ -196,16 +197,24 @@ export class PersonService {
     return true;
   }
 
-  async getFaceEntity(authUser: AuthUserDto, personId: string, assetId: string): Promise<AssetFaceEntity> {
+  async getFaceEntity(authUser: AuthUserDto, personId: string, assetId: string): Promise<AssetFaceBoxDto> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, personId);
     const [face] = await this.repository.getFacesByIds([{ personId, assetId }]);
     if (!face) {
       throw new BadRequestException('Invalid assetId for feature face');
     }
-    return face;
+
+    return {
+      boundingBoxX1: face.boundingBoxX1,
+      boundingBoxX2: face.boundingBoxX2,
+      boundingBoxY1: face.boundingBoxY1,
+      boundingBoxY2: face.boundingBoxY2,
+      imageHeight: face.imageHeight,
+      imageWidth: face.imageWidth,
+    };
   }
 
-  async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonEntity> {
+  async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
     let hasGeneratedFaceThumbnail = false;
 
     const newPerson = await this.repository.create({ ownerId: authUser.id });

@@ -1,4 +1,5 @@
 import {
+  AssetFaceBoxDto,
   AssetFaceUpdateDto,
   AssetResponseDto,
   AuthUserDto,
@@ -12,7 +13,6 @@ import {
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
@@ -45,12 +45,12 @@ export class PersonController {
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Param('assetId', new ParseMeUUIDPipe({ version: '4' })) assetId: string,
-  ): Promise<AssetFaceEntity> {
+  ): Promise<AssetFaceBoxDto> {
     return this.service.getFaceEntity(authUser, id, assetId);
   }
 
   @Post('')
-  createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonEntity> {
+  createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
     return this.service.createPerson(authUser, dto);
   }
 
