@@ -519,17 +519,8 @@ describe(`${AssetController.name} (e2e)`, () => {
 
   describe('GET /asset/map-marker', () => {
     beforeEach(async () => {
-      await assetRepository.save({
-        id: asset1.id,
-        isArchived: true,
-        exifInfo: { latitude: 0, longitude: 0 } as ExifEntity,
-      });
+      await assetRepository.save({ id: asset1.id, isArchived: true });
       await assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 });
-
-      await assetRepository.save({
-        id: asset2.id,
-        exifInfo: { latitude: 0, longitude: 0 } as ExifEntity,
-      });
       await assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 });
     });
 
