@@ -977,8 +977,10 @@ class AssetApi {
   /// Performs an HTTP 'GET /asset/memory-lane' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [DateTime] timestamp (required):
-  Future<Response> getMemoryLaneWithHttpInfo(DateTime timestamp,) async {
+  /// * [num] month (required):
+  ///
+  /// * [num] day (required):
+  Future<Response> getMemoryLaneWithHttpInfo(num month, num day,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/memory-lane';
 
@@ -989,7 +991,8 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'timestamp', timestamp));
+      queryParams.addAll(_queryParams('', 'month', month));
+      queryParams.addAll(_queryParams('', 'day', day));
 
     const contentTypes = <String>[];
 
@@ -1007,9 +1010,11 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [DateTime] timestamp (required):
-  Future<List<MemoryLaneResponseDto>?> getMemoryLane(DateTime timestamp,) async {
-    final response = await getMemoryLaneWithHttpInfo(timestamp,);
+  /// * [num] month (required):
+  ///
+  /// * [num] day (required):
+  Future<List<MemoryLaneResponseDto>?> getMemoryLane(num month, num day,) async {
+    final response = await getMemoryLaneWithHttpInfo(month, day,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

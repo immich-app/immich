@@ -73,7 +73,8 @@ export interface IAssetRepository {
   create(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
-  getByDayOfYear(ownerId: string, date: Date): Promise<AssetEntity[]>;
+  // Get all assets that are taken at a specific day and month of any year
+  getByDayOfYear(ownerId: string, month: number, day: number): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity>;

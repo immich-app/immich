@@ -1,8 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsDate } from 'class-validator';
+import { IsInt, Max, Min } from 'class-validator';
 
 export class MemoryLaneDto {
-  @IsDate()
-  @Type(() => Date)
-  timestamp!: Date;
+  @IsInt()
+  @Type(() => Number)
+  @Max(12)
+  @Min(1)
+  month!: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @Max(31)
+  @Min(1)
+  day!: number;
 }

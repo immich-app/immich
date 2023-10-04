@@ -78,11 +78,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByDayOfYear(ownerId: string, date: Date): Promise<AssetEntity[]> {
-    const month = DateTime.fromJSDate(date).toFormat('M');
-    const day = DateTime.fromJSDate(date).toFormat('d');
-
-    const currentDate = DateTime.fromJSDate(date).toFormat('yyyy-MM-dd');
+  getByDayOfYear(ownerId: string, month: number, day: number): Promise<AssetEntity[]> {
 
     return this.repository
       .createQueryBuilder('entity')
@@ -92,16 +88,14 @@ export class AssetRepository implements IAssetRepository {
       AND entity.isArchived = false 
       AND entity.resizePath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime) = :day
-      AND EXTRACT(MONTH FROM entity.localDateTime) = :month
-      AND entity.localDateTime < :currentDate`,
+      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
         {
           ownerId,
           day,
           month,
-          currentDate,
         },
       )
-      .orderBy('entity.localDateTime', 'ASC')
+      .orderBy('entity.localDateTime', 'DESC')
       .getMany();
   }
 

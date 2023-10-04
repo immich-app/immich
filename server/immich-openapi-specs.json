@@ -1469,12 +1469,19 @@
         "operationId": "getMemoryLane",
         "parameters": [
           {
-            "name": "timestamp",
+            "name": "month",
             "required": true,
             "in": "query",
             "schema": {
-              "format": "date-time",
-              "type": "string"
+              "type": "number"
+            }
+          },
+          {
+            "name": "day",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
             }
           }
         ],

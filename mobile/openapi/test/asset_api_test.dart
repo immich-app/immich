@@ -107,7 +107,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<MemoryLaneResponseDto>> getMemoryLane(DateTime timestamp) async
+    //Future<List<MemoryLaneResponseDto>> getMemoryLane(num month, num day) async
     test('test getMemoryLane', () async {
       // TODO
     });

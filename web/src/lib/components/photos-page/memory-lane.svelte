@@ -11,9 +11,15 @@
   $: shouldRender = $memoryStore?.length > 0;
 
   onMount(async () => {
-    const { data } = await api.assetApi.getMemoryLane({
-      timestamp: DateTime.local().startOf('day').toISO() || '',
-    });
+    const localTime=new Date();
+    const a={
+      month: localTime.getMonth() + 1,
+      day: localTime.getDate(),
+    };
+    console.log(a);
+    
+
+    const { data } = await api.assetApi.getMemoryLane(a);
     $memoryStore = data;
   });
 
