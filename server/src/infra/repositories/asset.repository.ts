@@ -78,8 +78,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByDayOfYear(ownerId: string, month: number, day: number): Promise<AssetEntity[]> {
-
+  getByDayOfYear(ownerId: string, day: number, month: number): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
       .where(

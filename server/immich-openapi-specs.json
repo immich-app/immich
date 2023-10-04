@@ -1469,7 +1469,7 @@
         "operationId": "getMemoryLane",
         "parameters": [
           {
-            "name": "month",
+            "name": "day",
             "required": true,
             "in": "query",
             "schema": {
@@ -1477,7 +1477,7 @@
             }
           },
           {
-            "name": "day",
+            "name": "month",
             "required": true,
             "in": "query",
             "schema": {

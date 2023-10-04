@@ -961,7 +961,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMemoryLane**
-> List<MemoryLaneResponseDto> getMemoryLane(month, day)
+> List<MemoryLaneResponseDto> getMemoryLane(day, month)
 
 
 
@@ -984,11 +984,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final month = 8.14; // num | 
 final day = 8.14; // num | 
+final month = 8.14; // num | 
 
 try {
-    final result = api_instance.getMemoryLane(month, day);
+    final result = api_instance.getMemoryLane(day, month);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMemoryLane: $e\n');
@@ -999,8 +999,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **month** | **num**|  | 
  **day** | **num**|  | 
+ **month** | **num**|  | 
 
 ### Return type
 

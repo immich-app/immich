@@ -274,15 +274,24 @@ describe(AssetService.name, () => {
   });
 
   describe('getMemoryLane', () => {
+    beforeAll(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-01-15'));
+    });
+
+    afterAll(() => {
+      jest.useRealTimers();
+    });
+
     it('should set the title correctly', async () => {
       assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2024, 1, 15) })).resolves.toEqual([
+      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
         { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
       ]);
 
-      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, new Date('2024-02-15T00:00:00.000Z')]]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, 1, 15]]);
     });
   });
 
