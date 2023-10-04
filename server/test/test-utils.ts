@@ -37,7 +37,7 @@ export const db = {
 let _handler: JobItemHandler = () => Promise.resolve();
 
 export async function createTestApp(runJobs = false, log = false): Promise<INestApplication> {
-  const moduleBuilder = await Test.createTestingModule({
+  const moduleBuilder = Test.createTestingModule({
     imports: [AppModule],
     providers: [AppService],
   })
@@ -53,13 +53,15 @@ export async function createTestApp(runJobs = false, log = false): Promise<INest
       pause: jest.fn(),
     } as IJobRepository);
 
-  if (log) {
-    moduleBuilder.setLogger(new Logger());
-  }
-
   const moduleFixture: TestingModule = await moduleBuilder.compile();
 
-  const app = await moduleFixture.createNestApplication().init();
+  const app = moduleFixture.createNestApplication();
+  if (log) {
+    app.useLogger(new Logger());
+  } else {
+    app.useLogger(false);
+  }
+  await app.init();
   const appService = app.get(AppService);
   await appService.init();
 

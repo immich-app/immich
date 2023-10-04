@@ -199,7 +199,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .attach('assetData', content, 'example.jpg');
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest('Not found or no library.write access'));
+      expect(body).toEqual(errorStub.badRequest('Not found or no asset.upload access'));
     });
   });
 
