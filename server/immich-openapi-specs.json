@@ -1407,6 +1407,14 @@
         "operationId": "getMapMarkers",
         "parameters": [
           {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
