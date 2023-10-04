@@ -87,8 +87,10 @@
 
   onMount(async () => {
     if (!$memoryStore) {
+      const localTime = new Date();
       const { data } = await api.assetApi.getMemoryLane({
-        timestamp: DateTime.local().startOf('day').toISO() || '',
+        month: localTime.getMonth() + 1,
+        day: localTime.getDate(),
       });
       $memoryStore = data;
     }
