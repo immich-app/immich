@@ -7,7 +7,6 @@ services:
     command: ["start.sh", "immich"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -26,7 +25,6 @@ services:
     command: ["start.sh", "microservices"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
