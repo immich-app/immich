@@ -1,5 +1,6 @@
 export const supportedYearTokens = ['y', 'yy'];
 export const supportedMonthTokens = ['M', 'MM', 'MMM', 'MMMM'];
+export const supportedWeekTokens = ['W', 'WW'];
 export const supportedDayTokens = ['d', 'dd'];
 export const supportedHourTokens = ['h', 'hh', 'H', 'HH'];
 export const supportedMinuteTokens = ['m', 'mm'];
@@ -18,6 +19,7 @@ export const supportedPresetTokens = [
   '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
   '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{y}}-{{MM}}/{{filename}}',
+  '{{y}}/{{y}}-{{WW}}/{{filename}}',
 ];
 
 export const INITIAL_SYSTEM_CONFIG = 'INITIAL_SYSTEM_CONFIG';

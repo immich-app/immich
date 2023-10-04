@@ -32,6 +32,11 @@ type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 
 const validate = <T>(value: T): NonNullable<T> | null => {
+  // handle lists of numbers
+  if (Array.isArray(value)) {
+    value = value[0];
+  }
+
   if (typeof value === 'string') {
     // string means a failure to parse a number, throw out result
     return null;
@@ -259,7 +264,7 @@ export class MetadataService {
         position,
         length,
       });
-      const checksum = await this.cryptoRepository.hashSha1(video);
+      const checksum = this.cryptoRepository.hashSha1(video);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
@@ -306,7 +311,19 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: exifDate(firstDateTime(tags as Tags)) ?? asset.fileCreatedAt,
+        dateTimeOriginal:
+          exifDate(
+            firstDateTime(tags as Tags, [
+              'SubSecDateTimeOriginal',
+              'DateTimeOriginal',
+              'SubSecCreateDate',
+              'CreationDate',
+              'CreateDate',
+              'SubSecMediaCreateDate',
+              'MediaCreateDate',
+              'DateTimeCreated',
+            ]),
+          ) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,

@@ -139,16 +139,27 @@ export class PersonService {
     return results;
   }
 
+  async handlePersonDelete({ id }: IEntityJob) {
+    const person = await this.repository.getById(id);
+    if (!person) {
+      return false;
+    }
+
+    try {
+      await this.repository.delete(person);
+      await this.storageRepository.unlink(person.thumbnailPath);
+    } catch (error: Error | any) {
+      this.logger.error(`Unable to delete person: ${error}`, error?.stack);
+    }
+
+    return true;
+  }
+
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {
       this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
-      try {
-        await this.repository.delete(person);
-        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [person.thumbnailPath] } });
-      } catch (error: Error | any) {
-        this.logger.error(`Unable to delete person: ${error}`, error?.stack);
-      }
+      await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
     }
 
     return true;
@@ -167,7 +178,10 @@ export class PersonService {
     });
 
     if (force) {
-      const people = await this.repository.deleteAll();
+      const people = await this.repository.getAll();
+      for (const person of people) {
+        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
+      }
       const faces = await this.searchRepository.deleteAllFaces();
       this.logger.debug(`Deleted ${people} people and ${faces} faces`);
     }
@@ -363,7 +377,7 @@ export class PersonService {
           await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId: mergeId } });
         }
         await this.repository.reassignFaces(mergeData);
-        await this.repository.delete(mergePerson);
+        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: mergePerson.id } });
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
         results.push({ id: mergeId, success: true });
