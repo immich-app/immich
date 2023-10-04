@@ -1477,13 +1477,19 @@
         "operationId": "getMemoryLane",
         "parameters": [
           {
-            "name": "timestamp",
+            "name": "day",
             "required": true,
             "in": "query",
-            "description": "Get pictures for +24 hours from this time going back x years",
             "schema": {
-              "format": "date-time",
-              "type": "string"
+              "type": "integer"
+            }
+          },
+          {
+            "name": "month",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer"
             }
           }
         ],
@@ -5617,6 +5623,10 @@
             "nullable": true,
             "type": "string"
           },
+          "localDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
           "originalFileName": {
             "type": "string"
           },
@@ -5676,6 +5686,7 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "localDateTime",
           "isOffline",
           "isExternal",
           "isReadOnly",

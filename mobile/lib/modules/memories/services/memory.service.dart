@@ -22,9 +22,9 @@ class MemoryService {
   Future<List<Memory>?> getMemoryLane() async {
     try {
       final now = DateTime.now();
-      final beginningOfDate = DateTime(now.year, now.month, now.day);
       final data = await _apiService.assetApi.getMemoryLane(
-        beginningOfDate,
+        now.day,
+        now.month,
       );
 
       if (data == null) {

@@ -231,6 +231,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.createdAt,
+        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
       });
     });
 
@@ -252,6 +253,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
+        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
       });
     });
 
@@ -299,16 +301,13 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetMock.save.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
-      expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
-      });
-      expect(assetMock.save).toHaveBeenCalledWith(
+      expect(assetMock.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: AssetType.VIDEO,
           originalFileName: assetStub.livePhotoStillAsset.originalFileName,
@@ -316,6 +315,10 @@ describe(MetadataService.name, () => {
           isReadOnly: true,
         }),
       );
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
@@ -379,6 +382,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: new Date('1970-01-01'),
+        localDateTime: new Date('1970-01-01'),
       });
     });
   });

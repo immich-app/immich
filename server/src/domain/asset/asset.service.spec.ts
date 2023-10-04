@@ -274,60 +274,24 @@ describe(AssetService.name, () => {
   });
 
   describe('getMemoryLane', () => {
-    it('should get pictures for each year', async () => {
-      assetMock.getByDate.mockResolvedValue([]);
-
-      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 10 })).resolves.toEqual(
-        [],
-      );
-
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(10);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2020-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2019-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2018-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2017-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2016-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2015-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2014-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2013-06-15T00:00:00.000Z')],
-      ]);
+    beforeAll(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-01-15'));
     });
 
-    it('should keep hours from the date', async () => {
-      assetMock.getByDate.mockResolvedValue([]);
-
-      await expect(
-        sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15, 5), years: 2 }),
-      ).resolves.toEqual([]);
-
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T05:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T05:00:00.000Z')],
-      ]);
+    afterAll(() => {
+      jest.useRealTimers();
     });
 
     it('should set the title correctly', async () => {
-      when(assetMock.getByDate)
-        .calledWith(authStub.admin.id, new Date('2022-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetStub.image]);
-      when(assetMock.getByDate)
-        .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetStub.video]);
+      assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
+      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
-        { title: '2 years since...', assets: [mapAsset(assetStub.video)] },
+        { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
       ]);
 
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
-      ]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, { day: 15, month: 1 }]]);
     });
   });
 

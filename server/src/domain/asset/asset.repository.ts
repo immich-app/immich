@@ -68,12 +68,34 @@ export interface TimeBucketItem {
   count: number;
 }
 
+export type AssetCreate = Pick<
+  AssetEntity,
+  | 'deviceAssetId'
+  | 'ownerId'
+  | 'libraryId'
+  | 'deviceId'
+  | 'type'
+  | 'originalPath'
+  | 'fileCreatedAt'
+  | 'localDateTime'
+  | 'fileModifiedAt'
+  | 'checksum'
+  | 'originalFileName'
+> &
+  Partial<AssetEntity>;
+
+export interface MonthDay {
+  day: number;
+  month: number;
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
-  create(asset: Partial<AssetEntity>): Promise<AssetEntity>;
+  create(asset: AssetCreate): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
+  getByDayOfYear(ownerId: string, monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity>;
@@ -87,7 +109,7 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
-  save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
+  save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;

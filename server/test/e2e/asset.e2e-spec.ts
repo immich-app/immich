@@ -56,7 +56,7 @@ const createAsset = (
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
-  return repository.save({
+  return repository.create({
     ownerId: loginResponse.userId,
     checksum: randomBytes(20),
     originalPath: `/tests/test_${id}`,
@@ -66,6 +66,7 @@ const createAsset = (
     isVisible: true,
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
+    localDateTime: createdAt,
     type: AssetType.IMAGE,
     originalFileName: `test_${id}`,
   });

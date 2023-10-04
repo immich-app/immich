@@ -1,4 +1,5 @@
 import {
+  AssetCreate,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -6,6 +7,7 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
+  MonthDay,
   Paginated,
   PaginationOptions,
   TimeBucketItem,
@@ -38,9 +40,7 @@ export class AssetRepository implements IAssetRepository {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity> {
+  create(asset: AssetCreate): Promise<AssetEntity> {
     return this.repository.save(asset);
   }
 
@@ -76,6 +76,26 @@ export class AssetRepository implements IAssetRepository {
         fileCreatedAt: 'DESC',
       },
     });
+  }
+
+  getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
+    return this.repository
+      .createQueryBuilder('entity')
+      .where(
+        `entity.ownerId = :ownerId
+      AND entity.isVisible = true
+      AND entity.isArchived = false
+      AND entity.resizePath IS NOT NULL
+      AND EXTRACT(DAY FROM entity.localDateTime) = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
+        {
+          ownerId,
+          day,
+          month,
+        },
+      )
+      .orderBy('entity.localDateTime', 'DESC')
+      .getMany();
   }
 
   getByIds(ids: string[]): Promise<AssetEntity[]> {
@@ -454,8 +474,9 @@ export class AssetRepository implements IAssetRepository {
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
-      .orderBy('asset.fileCreatedAt', 'DESC')
+      .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
+      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
 
