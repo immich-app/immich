@@ -56,7 +56,7 @@ const createAsset = (
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
-  return repository.save({
+  return repository.create({
     ownerId: loginResponse.userId,
     checksum: randomBytes(20),
     originalPath: `/tests/test_${id}`,

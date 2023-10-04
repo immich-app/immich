@@ -1,4 +1,5 @@
 import {
+  AssetCreate,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -6,6 +7,7 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
+  MonthDay,
   Paginated,
   PaginationOptions,
   TimeBucketItem,
@@ -38,9 +40,7 @@ export class AssetRepository implements IAssetRepository {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity> {
+  create(asset: AssetCreate): Promise<AssetEntity> {
     return this.repository.save(asset);
   }
 
@@ -78,13 +78,13 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByDayOfYear(ownerId: string, day: number, month: number): Promise<AssetEntity[]> {
+  getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
       .where(
         `entity.ownerId = :ownerId
-      AND entity.isVisible = true 
-      AND entity.isArchived = false 
+      AND entity.isVisible = true
+      AND entity.isArchived = false
       AND entity.resizePath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime) = :day
       AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,

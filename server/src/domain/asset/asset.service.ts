@@ -139,24 +139,20 @@ export class AssetService {
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const currentYear = new Date().getFullYear();
-    const assets = (await this.assetRepository.getByDayOfYear(authUser.id, dto.month, dto.day))
+    const assets = await this.assetRepository.getByDayOfYear(authUser.id, dto);
+
+    return _.chain(assets)
+      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
       .map((asset) => {
-        const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+        const years = currentYear - asset.localDateTime.getFullYear();
 
         return {
-          yearsAgo,
-          title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+          title: `${years} year${years > 1 ? 's' : ''} since...`,
           asset: mapAsset(asset),
         };
       })
-      .filter((asset) => asset.yearsAgo > 0);
-
-    return _.chain(assets)
       .groupBy((asset) => asset.title)
-      .map((assets, title) => ({
-        title,
-        assets: assets.map((asset) => asset.asset),
-      }))
+      .map((items, title) => ({ title, assets: items.map(({ asset }) => asset) }))
       .value();
   }
 

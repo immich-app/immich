@@ -291,7 +291,7 @@ describe(AssetService.name, () => {
         { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
       ]);
 
-      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, 1, 15]]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, { day: 15, month: 1 }]]);
     });
   });
 

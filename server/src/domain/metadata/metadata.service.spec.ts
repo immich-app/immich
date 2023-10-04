@@ -301,12 +301,12 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.save.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
-      expect(assetMock.save).toHaveBeenCalledWith({
+      expect(assetMock.create).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });

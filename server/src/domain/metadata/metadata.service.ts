@@ -278,11 +278,13 @@ export class MetadataService {
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
-        motionAsset = await this.assetRepository.save({
+        const createdAt = asset.fileCreatedAt ?? asset.createdAt;
+        motionAsset = await this.assetRepository.create({
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
-          fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
+          fileCreatedAt: createdAt,
           fileModifiedAt: asset.fileModifiedAt,
+          localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
           originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),

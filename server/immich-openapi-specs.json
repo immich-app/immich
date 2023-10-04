@@ -1481,7 +1481,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -1489,7 +1489,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
