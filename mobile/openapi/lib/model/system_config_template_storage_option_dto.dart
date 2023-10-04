@@ -19,7 +19,6 @@ class SystemConfigTemplateStorageOptionDto {
     this.monthOptions = const [],
     this.presetOptions = const [],
     this.secondOptions = const [],
-    this.weekOptions = const [],
     this.yearOptions = const [],
   });
 
@@ -35,8 +34,6 @@ class SystemConfigTemplateStorageOptionDto {
 
   List<String> secondOptions;
 
-  List<String> weekOptions;
-
   List<String> yearOptions;
 
   @override
@@ -47,7 +44,6 @@ class SystemConfigTemplateStorageOptionDto {
      other.monthOptions == monthOptions &&
      other.presetOptions == presetOptions &&
      other.secondOptions == secondOptions &&
-     other.weekOptions == weekOptions &&
      other.yearOptions == yearOptions;
 
   @override
@@ -59,11 +55,10 @@ class SystemConfigTemplateStorageOptionDto {
     (monthOptions.hashCode) +
     (presetOptions.hashCode) +
     (secondOptions.hashCode) +
-    (weekOptions.hashCode) +
     (yearOptions.hashCode);
 
   @override
-  String toString() => 'SystemConfigTemplateStorageOptionDto[dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, weekOptions=$weekOptions, yearOptions=$yearOptions]';
+  String toString() => 'SystemConfigTemplateStorageOptionDto[dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, yearOptions=$yearOptions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -73,7 +68,6 @@ class SystemConfigTemplateStorageOptionDto {
       json[r'monthOptions'] = this.monthOptions;
       json[r'presetOptions'] = this.presetOptions;
       json[r'secondOptions'] = this.secondOptions;
-      json[r'weekOptions'] = this.weekOptions;
       json[r'yearOptions'] = this.yearOptions;
     return json;
   }
@@ -103,9 +97,6 @@ class SystemConfigTemplateStorageOptionDto {
             : const [],
         secondOptions: json[r'secondOptions'] is List
             ? (json[r'secondOptions'] as List).cast<String>()
-            : const [],
-        weekOptions: json[r'weekOptions'] is List
-            ? (json[r'weekOptions'] as List).cast<String>()
             : const [],
         yearOptions: json[r'yearOptions'] is List
             ? (json[r'yearOptions'] as List).cast<String>()
@@ -163,7 +154,6 @@ class SystemConfigTemplateStorageOptionDto {
     'monthOptions',
     'presetOptions',
     'secondOptions',
-    'weekOptions',
     'yearOptions',
   };
 }
