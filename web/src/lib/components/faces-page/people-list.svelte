@@ -1,23 +1,23 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import FaceThumbnail from '../../faces-page/face-thumbnail.svelte';
+  import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { api, AssetUpdateDto, type PersonResponseDto } from '@api';
-  import ControlAppBar from '../../shared-components/control-app-bar.svelte';
-  import Button from '../../elements/buttons/button.svelte';
+  import { api, AssetFaceUpdateItem, type PersonResponseDto } from '@api';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import Button from '../elements/buttons/button.svelte';
   import Merge from 'svelte-material-icons/Merge.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import LoadingSpinner from '../../shared-components/loading-spinner.svelte';
+
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
 
   export let people: PersonResponseDto[] = [];
+  export let assetIds: string[];
   export let personId: string;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
-  const assetIds = Array.from(getAssets()).map((a) => a.id);
-  const data: AssetUpdateDto[] = [];
+  const data: AssetFaceUpdateItem[] = [];
+
   for (const assetId of assetIds) {
     data.push({ assetId, personId });
   }
@@ -56,11 +56,10 @@
       await api.personApi.createPerson({
         assetFaceUpdateDto: { data },
       });
-      clearSelect();
     } catch (error) {
       handleError(error, 'Unable to reassign assets to a new person');
     }
-    dispatch('close');
+    dispatch('confirm');
   };
 
   const handleReassign = async () => {
@@ -73,11 +72,10 @@
           assetFaceUpdateDto: { data },
         });
       }
-      clearSelect();
     } catch (error) {
       handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
     }
-    dispatch('close');
+    dispatch('confirm');
   };
 </script>
 

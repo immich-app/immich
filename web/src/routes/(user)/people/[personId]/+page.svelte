@@ -32,7 +32,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
-  import PeopleList from '$lib/components/photos-page/actions/people-list.svelte';
+  import PeopleList from '$lib/components/faces-page/people-list.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
@@ -156,6 +156,12 @@
     assetInteractionStore.clearMultiselect();
     // scroll to top
 
+    viewMode = ViewMode.VIEW_ASSETS;
+  };
+
+  const handleUnmerge = () => {
+    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    assetInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW_ASSETS;
   };
 
@@ -303,10 +309,10 @@
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <PeopleList
     {people}
+    assetIds={Array.from($selectedAssets).map((a) => a.id)}
     personId={data.person.id}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSameFace(event.detail)}
+    on:confirm={handleUnmerge}
   />
 {/if}
 

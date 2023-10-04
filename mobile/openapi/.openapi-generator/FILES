@@ -22,6 +22,7 @@ doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
 doc/AssetFaceBoxDto.md
 doc/AssetFaceUpdateDto.md
+doc/AssetFaceUpdateItem.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
@@ -30,7 +31,6 @@ doc/AssetJobsDto.md
 doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
-doc/AssetUpdateDto.md
 doc/AudioCodec.md
 doc/AuditApi.md
 doc/AuditDeletesResponseDto.md
@@ -196,6 +196,7 @@ lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
 lib/model/asset_face_box_dto.dart
 lib/model/asset_face_update_dto.dart
+lib/model/asset_face_update_item.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
@@ -204,7 +205,6 @@ lib/model/asset_jobs_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
-lib/model/asset_update_dto.dart
 lib/model/audio_codec.dart
 lib/model/audit_deletes_response_dto.dart
 lib/model/auth_device_response_dto.dart
@@ -335,6 +335,7 @@ test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
 test/asset_face_box_dto_test.dart
 test/asset_face_update_dto_test.dart
+test/asset_face_update_item_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
@@ -343,7 +344,6 @@ test/asset_jobs_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
-test/asset_update_dto_test.dart
 test/audio_codec_test.dart
 test/audit_api_test.dart
 test/audit_deletes_response_dto_test.dart

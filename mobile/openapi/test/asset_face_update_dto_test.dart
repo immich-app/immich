@@ -16,7 +16,7 @@ void main() {
   // final instance = AssetFaceUpdateDto();
 
   group('test AssetFaceUpdateDto', () {
-    // List<AssetUpdateDto> data (default value: const [])
+    // List<AssetFaceUpdateItem> data (default value: const [])
     test('to test the property `data`', () async {
       // TODO
     });

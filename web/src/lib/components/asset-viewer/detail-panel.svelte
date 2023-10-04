@@ -26,11 +26,11 @@
   let previousId: string;
 
   $: {
-    console.log('test ', previousId, ' ', asset.id);
     if (!previousId) {
       previousId = asset.id;
     }
     if (asset.id !== previousId) {
+      customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
       showEditFaces = false;
       previousId = asset.id;
     }

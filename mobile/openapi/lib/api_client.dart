@@ -213,6 +213,8 @@ class ApiClient {
           return AssetFaceBoxDto.fromJson(value);
         case 'AssetFaceUpdateDto':
           return AssetFaceUpdateDto.fromJson(value);
+        case 'AssetFaceUpdateItem':
+          return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -229,8 +231,6 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
-        case 'AssetUpdateDto':
-          return AssetUpdateDto.fromJson(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
         case 'AuditDeletesResponseDto':

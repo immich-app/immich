@@ -16,7 +16,7 @@ class AssetFaceUpdateDto {
     this.data = const [],
   });
 
-  List<AssetUpdateDto> data;
+  List<AssetFaceUpdateItem> data;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceUpdateDto &&
@@ -44,7 +44,7 @@ class AssetFaceUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return AssetFaceUpdateDto(
-        data: AssetUpdateDto.listFromJson(json[r'data']),
+        data: AssetFaceUpdateItem.listFromJson(json[r'data']),
       );
     }
     return null;

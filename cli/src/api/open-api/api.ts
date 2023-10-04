@@ -522,10 +522,29 @@ export interface AssetFaceBoxDto {
 export interface AssetFaceUpdateDto {
     /**
      * 
-     * @type {Array<AssetUpdateDto>}
+     * @type {Array<AssetFaceUpdateItem>}
      * @memberof AssetFaceUpdateDto
      */
-    'data': Array<AssetUpdateDto>;
+    'data': Array<AssetFaceUpdateItem>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetFaceUpdateItem
+ */
+export interface AssetFaceUpdateItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'assetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'personId': string;
 }
 /**
  * 
@@ -835,25 +854,6 @@ export const AssetTypeEnum = {
 export type AssetTypeEnum = typeof AssetTypeEnum[keyof typeof AssetTypeEnum];
 
 
-/**
- * 
- * @export
- * @interface AssetUpdateDto
- */
-export interface AssetUpdateDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetUpdateDto
-     */
-    'assetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetUpdateDto
-     */
-    'personId': string;
-}
 /**
  * 
  * @export

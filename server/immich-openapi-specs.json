@@ -5658,13 +5658,28 @@
         "properties": {
           "data": {
             "items": {
-              "$ref": "#/components/schemas/AssetUpdateDto"
+              "$ref": "#/components/schemas/AssetFaceUpdateItem"
             },
             "type": "array"
           }
         },
         "required": [
           "data"
+        ],
+        "type": "object"
+      },
+      "AssetFaceUpdateItem": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId",
+          "assetId"
         ],
         "type": "object"
       },
@@ -5893,21 +5908,6 @@
           "OTHER"
         ],
         "type": "string"
-      },
-      "AssetUpdateDto": {
-        "properties": {
-          "assetId": {
-            "type": "string"
-          },
-          "personId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "personId",
-          "assetId"
-        ],
-        "type": "object"
       },
       "AudioCodec": {
         "enum": [

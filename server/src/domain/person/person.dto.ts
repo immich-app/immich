@@ -46,10 +46,12 @@ export class PeopleUpdateDto {
 
 export class AssetFaceUpdateDto {
   @IsArray()
-  data!: AssetUpdateDto[];
+  @ValidateNested({ each: true })
+  @Type(() => AssetFaceUpdateItem)
+  data!: AssetFaceUpdateItem[];
 }
 
-export class AssetUpdateDto {
+export class AssetFaceUpdateItem {
   @IsString()
   @IsNotEmpty()
   personId!: string;

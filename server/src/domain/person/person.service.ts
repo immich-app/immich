@@ -255,7 +255,6 @@ export class PersonService {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
 
     const result: PersonResponseDto[] = [];
-
     for (const data of dto.data) {
       try {
         const [face] = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
@@ -267,7 +266,10 @@ export class PersonService {
 
         result.push(await this.findOrFail(personId).then(mapPerson));
       } catch (error: Error | any) {
-        this.logger.error(`Unable to un-merge asset ${data.assetId} from ${data.personId}`, error?.stack);
+        this.logger.error(
+          `Unable to un-merge asset ${data.assetId} from ${data.personId} to ${personId}`,
+          error?.stack,
+        );
       }
     }
     return result;
