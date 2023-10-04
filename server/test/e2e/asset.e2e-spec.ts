@@ -1,4 +1,11 @@
-import { AssetResponseDto, IAssetRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  IPersonRepository,
+  LibraryResponseDto,
+  LoginResponseDto,
+  TimeBucketSize,
+} from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -68,6 +75,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
   let assetRepository: IAssetRepository;
+  let defaultLibrary: LibraryResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let asset1: AssetEntity;
@@ -96,7 +104,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       api.userApi.create(server, admin.accessToken, user2Dto),
     ]);
 
-    const defaultLibrary = libraries[0];
+    defaultLibrary = libraries[0];
 
     [user1, user2] = await Promise.all([
       api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
@@ -385,6 +393,16 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   describe('GET /asset/random', () => {
+    beforeAll(async () => {
+      await Promise.all([
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      ]);
+    });
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/asset/random');
 
@@ -426,6 +444,18 @@ describe(`${AssetController.name} (e2e)`, () => {
         expect(asset.id).not.toBe(asset4.id);
       }
     });
+
+    it.each(Array(10))(
+      'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
+      async () => {
+        const { status, body } = await request(server)
+          .get('/[]asset/random')
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expect.objectContaining({ id: asset4.id })]);
+      },
+    );
 
     it('should return error', async () => {
       const { status } = await request(server)

@@ -435,7 +435,7 @@ export class AssetRepository implements IAssetRepository {
       `SELECT *
        FROM assets
        WHERE "ownerId" = $1
-       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS)) LIMIT $2`,
+       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
       [ownerId, count],
     );
   }
