@@ -8,6 +8,12 @@ export class MapMarkerDto {
   @Optional()
   @IsBoolean()
   @Transform(toBoolean)
+  isArchived?: boolean;
+
+  @ApiProperty()
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
   isFavorite?: boolean;
 
   @Optional()

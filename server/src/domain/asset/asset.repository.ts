@@ -24,6 +24,7 @@ export interface LivePhotoSearchOptions {
 }
 
 export interface MapMarkerSearchOptions {
+  isArchived?: boolean;
   isFavorite?: boolean;
   fileCreatedBefore?: Date;
   fileCreatedAfter?: Date;

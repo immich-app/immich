@@ -13,7 +13,6 @@ services:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 3001:3001
@@ -42,7 +41,6 @@ services:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env

@@ -23,12 +23,14 @@ class MapSerivce {
 
   Future<List<MapMarkerResponseDto>> getMapMarkers({
     bool? isFavorite,
+    bool? withArchived,
     DateTime? fileCreatedAfter,
     DateTime? fileCreatedBefore,
   }) async {
     try {
       final markers = await _apiService.assetApi.getMapMarkers(
         isFavorite: isFavorite,
+        isArchived: withArchived,
         fileCreatedAfter: fileCreatedAfter,
         fileCreatedBefore: fileCreatedBefore,
       );
