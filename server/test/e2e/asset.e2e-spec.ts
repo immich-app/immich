@@ -1,6 +1,6 @@
 import { AssetResponseDto, IAssetRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
 import { AppModule, AssetController } from '@app/immich';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
@@ -90,19 +90,25 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
-    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
+    const [libraries] = await Promise.all([
+      api.libraryApi.getAll(server, admin.accessToken),
+      api.userApi.create(server, admin.accessToken, user1Dto),
+      api.userApi.create(server, admin.accessToken, user2Dto),
+    ]);
+
     const defaultLibrary = libraries[0];
 
-    await api.userApi.create(server, admin.accessToken, user1Dto);
-    user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
+    [user1, user2] = await Promise.all([
+      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
+      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
+    ]);
 
-    asset1 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
-    asset2 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02'));
-    asset3 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01'));
-
-    await api.userApi.create(server, admin.accessToken, user2Dto);
-    user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset4 = await createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01'));
+    [asset1, asset2, asset3, asset4] = await Promise.all([
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01')),
+    ]);
   });
 
   afterAll(async () => {
