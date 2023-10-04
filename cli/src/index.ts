@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import { program, Option } from 'commander';
 import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
