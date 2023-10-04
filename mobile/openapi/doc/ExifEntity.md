@@ -10,7 +10,9 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **asset** | [**AssetEntity**](AssetEntity.md) |  | [optional] 
 **assetId** | **String** |  | 
+**bitsPerSample** | **num** |  | 
 **city** | **String** |  | 
+**colorspace** | **String** |  | 
 **country** | **String** |  | 
 **dateTimeOriginal** | [**DateTime**](DateTime.md) |  | 
 **description** | **String** | General info | 
@@ -31,6 +33,7 @@ Name | Type | Description | Notes
 **model** | **String** |  | 
 **modifyDate** | [**DateTime**](DateTime.md) |  | 
 **orientation** | **String** |  | 
+**profileDescription** | **String** |  | 
 **projectionType** | **String** |  | 
 **state** | **String** |  | 
 **timeZone** | **String** |  | 

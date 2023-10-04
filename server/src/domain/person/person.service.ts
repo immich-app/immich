@@ -198,7 +198,7 @@ export class PersonService {
 
   async getFaceEntity(authUser: AuthUserDto, personId: string, assetId: string): Promise<AssetFaceEntity> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, personId);
-    const face = await this.repository.getFaceById({ personId, assetId });
+    const [face] = await this.repository.getFacesByIds([{ personId, assetId }]);
     if (!face) {
       throw new BadRequestException('Invalid assetId for feature face');
     }
@@ -217,7 +217,7 @@ export class PersonService {
           id: newPerson.id,
           faceAssetId: data.assetId,
         });
-        const face = await this.repository.getFaceById({ personId: newPerson.id, assetId: data.assetId });
+        const [face] = await this.repository.getFacesByIds([{ personId: newPerson.id, assetId: data.assetId }]);
         const oldPerson = await this.findOrFail(data.personId);
         if (oldPerson.faceAssetId === face?.assetId) {
           //TODO: create a new feature photo
@@ -227,18 +227,9 @@ export class PersonService {
         }
         if (!hasGeneratedFaceThumbnail) {
           await this.jobRepository.queue({
-            name: JobName.GENERATE_FACE_THUMBNAIL,
+            name: JobName.GENERATE_PERSON_THUMBNAIL,
             data: {
-              personId: newPerson.id,
-              assetId: data.assetId,
-              boundingBox: {
-                x1: face.boundingBoxX1,
-                x2: face.boundingBoxX2,
-                y1: face.boundingBoxY1,
-                y2: face.boundingBoxY2,
-              },
-              imageHeight: face.imageHeight,
-              imageWidth: face.imageWidth,
+              id: newPerson.id,
             },
           });
           hasGeneratedFaceThumbnail = true;
@@ -258,7 +249,7 @@ export class PersonService {
 
     for (const data of dto.data) {
       try {
-        const face = await this.repository.getFaceById({ personId: data.personId, assetId: data.assetId });
+        const [face] = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
         const oldPerson = await this.findOrFail(data.personId);
         if (oldPerson.faceAssetId === face?.assetId) {
           //TODO: create a new feature photo
@@ -271,6 +262,7 @@ export class PersonService {
       }
     }
     return result;
+  }
   async handleRecognizeFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {

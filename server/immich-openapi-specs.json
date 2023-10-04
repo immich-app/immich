@@ -6804,7 +6804,15 @@
           "assetId": {
             "type": "string"
           },
+          "bitsPerSample": {
+            "nullable": true,
+            "type": "number"
+          },
           "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "colorspace": {
             "nullable": true,
             "type": "string"
           },
@@ -6891,6 +6899,10 @@
             "nullable": true,
             "type": "string"
           },
+          "profileDescription": {
+            "nullable": true,
+            "type": "string"
+          },
           "projectionType": {
             "nullable": true,
             "type": "string"
@@ -6928,6 +6940,9 @@
           "focalLength",
           "iso",
           "exposureTime",
+          "profileDescription",
+          "colorspace",
+          "bitsPerSample",
           "exifTextSearchableColumn"
         ],
         "type": "object"

@@ -15,7 +15,9 @@ class ExifEntity {
   ExifEntity({
     this.asset,
     required this.assetId,
+    required this.bitsPerSample,
     required this.city,
+    required this.colorspace,
     required this.country,
     required this.dateTimeOriginal,
     required this.description,
@@ -36,6 +38,7 @@ class ExifEntity {
     required this.model,
     required this.modifyDate,
     required this.orientation,
+    required this.profileDescription,
     required this.projectionType,
     required this.state,
     required this.timeZone,
@@ -51,7 +54,11 @@ class ExifEntity {
 
   String assetId;
 
+  num? bitsPerSample;
+
   String? city;
+
+  String? colorspace;
 
   String? country;
 
@@ -96,6 +103,8 @@ class ExifEntity {
 
   String? orientation;
 
+  String? profileDescription;
+
   String? projectionType;
 
   String? state;
@@ -106,7 +115,9 @@ class ExifEntity {
   bool operator ==(Object other) => identical(this, other) || other is ExifEntity &&
      other.asset == asset &&
      other.assetId == assetId &&
+     other.bitsPerSample == bitsPerSample &&
      other.city == city &&
+     other.colorspace == colorspace &&
      other.country == country &&
      other.dateTimeOriginal == dateTimeOriginal &&
      other.description == description &&
@@ -127,6 +138,7 @@ class ExifEntity {
      other.model == model &&
      other.modifyDate == modifyDate &&
      other.orientation == orientation &&
+     other.profileDescription == profileDescription &&
      other.projectionType == projectionType &&
      other.state == state &&
      other.timeZone == timeZone;
@@ -136,7 +148,9 @@ class ExifEntity {
     // ignore: unnecessary_parenthesis
     (asset == null ? 0 : asset!.hashCode) +
     (assetId.hashCode) +
+    (bitsPerSample == null ? 0 : bitsPerSample!.hashCode) +
     (city == null ? 0 : city!.hashCode) +
+    (colorspace == null ? 0 : colorspace!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (description.hashCode) +
@@ -157,12 +171,13 @@ class ExifEntity {
     (model == null ? 0 : model!.hashCode) +
     (modifyDate == null ? 0 : modifyDate!.hashCode) +
     (orientation == null ? 0 : orientation!.hashCode) +
+    (profileDescription == null ? 0 : profileDescription!.hashCode) +
     (projectionType == null ? 0 : projectionType!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
-  String toString() => 'ExifEntity[asset=$asset, assetId=$assetId, city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exifTextSearchableColumn=$exifTextSearchableColumn, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, fps=$fps, iso=$iso, latitude=$latitude, lensModel=$lensModel, livePhotoCID=$livePhotoCID, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
+  String toString() => 'ExifEntity[asset=$asset, assetId=$assetId, bitsPerSample=$bitsPerSample, city=$city, colorspace=$colorspace, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exifTextSearchableColumn=$exifTextSearchableColumn, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, fps=$fps, iso=$iso, latitude=$latitude, lensModel=$lensModel, livePhotoCID=$livePhotoCID, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, profileDescription=$profileDescription, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -172,10 +187,20 @@ class ExifEntity {
     //  json[r'asset'] = null;
     }
       json[r'assetId'] = this.assetId;
+    if (this.bitsPerSample != null) {
+      json[r'bitsPerSample'] = this.bitsPerSample;
+    } else {
+    //  json[r'bitsPerSample'] = null;
+    }
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
     //  json[r'city'] = null;
+    }
+    if (this.colorspace != null) {
+      json[r'colorspace'] = this.colorspace;
+    } else {
+    //  json[r'colorspace'] = null;
     }
     if (this.country != null) {
       json[r'country'] = this.country;
@@ -269,6 +294,11 @@ class ExifEntity {
     } else {
     //  json[r'orientation'] = null;
     }
+    if (this.profileDescription != null) {
+      json[r'profileDescription'] = this.profileDescription;
+    } else {
+    //  json[r'profileDescription'] = null;
+    }
     if (this.projectionType != null) {
       json[r'projectionType'] = this.projectionType;
     } else {
@@ -297,7 +327,11 @@ class ExifEntity {
       return ExifEntity(
         asset: AssetEntity.fromJson(json[r'asset']),
         assetId: mapValueOfType<String>(json, r'assetId')!,
+        bitsPerSample: json[r'bitsPerSample'] == null
+            ? null
+            : num.parse(json[r'bitsPerSample'].toString()),
         city: mapValueOfType<String>(json, r'city'),
+        colorspace: mapValueOfType<String>(json, r'colorspace'),
         country: mapValueOfType<String>(json, r'country'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
         description: mapValueOfType<String>(json, r'description')!,
@@ -336,6 +370,7 @@ class ExifEntity {
         model: mapValueOfType<String>(json, r'model'),
         modifyDate: mapDateTime(json, r'modifyDate', ''),
         orientation: mapValueOfType<String>(json, r'orientation'),
+        profileDescription: mapValueOfType<String>(json, r'profileDescription'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
         state: mapValueOfType<String>(json, r'state'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
@@ -387,7 +422,9 @@ class ExifEntity {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetId',
+    'bitsPerSample',
     'city',
+    'colorspace',
     'country',
     'dateTimeOriginal',
     'description',
@@ -407,6 +444,7 @@ class ExifEntity {
     'model',
     'modifyDate',
     'orientation',
+    'profileDescription',
     'projectionType',
     'state',
     'timeZone',

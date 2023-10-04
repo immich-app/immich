@@ -26,8 +26,18 @@ void main() {
       // TODO
     });
 
+    // num bitsPerSample
+    test('to test the property `bitsPerSample`', () async {
+      // TODO
+    });
+
     // String city
     test('to test the property `city`', () async {
+      // TODO
+    });
+
+    // String colorspace
+    test('to test the property `colorspace`', () async {
       // TODO
     });
 
@@ -131,6 +141,11 @@ void main() {
 
     // String orientation
     test('to test the property `orientation`', () async {
+      // TODO
+    });
+
+    // String profileDescription
+    test('to test the property `profileDescription`', () async {
       // TODO
     });
 
