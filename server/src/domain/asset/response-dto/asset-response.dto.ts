@@ -27,6 +27,7 @@ export class AssetResponseDto {
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
+  localDateTime!: Date;
   isOffline!: boolean;
   isExternal!: boolean;
   isReadOnly!: boolean;
@@ -55,6 +56,7 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
+    localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,

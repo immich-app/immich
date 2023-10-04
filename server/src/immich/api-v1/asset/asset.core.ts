@@ -29,6 +29,7 @@ export class AssetCore {
 
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
+      localDateTime: dto.fileCreatedAt,
       deletedAt: null,
 
       type: mimeTypes.assetType(file.originalPath),

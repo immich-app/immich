@@ -87,8 +87,10 @@
 
   onMount(async () => {
     if (!$memoryStore) {
+      const localTime = new Date();
       const { data } = await api.assetApi.getMemoryLane({
-        timestamp: DateTime.local().startOf('day').toISO() || '',
+        month: localTime.getMonth() + 1,
+        day: localTime.getDate(),
       });
       $memoryStore = data;
     }
@@ -212,7 +214,7 @@
 
             <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>
-                {DateTime.fromISO(currentMemory.assets[0].fileCreatedAt).toLocaleString(DateTime.DATE_FULL)}
+                {DateTime.fromISO(currentMemory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
               </p>
               <p>
                 {currentAsset.exifInfo?.city || ''}

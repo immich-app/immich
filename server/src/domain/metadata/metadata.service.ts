@@ -30,6 +30,7 @@ type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
 >;
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
+const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -156,9 +157,18 @@ export class MetadataService {
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
+    let localDateTime = exifData.dateTimeOriginal ?? undefined;
+
+    const dateTimeOriginal = exifDate(firstDateTime(tags as Tags)) ?? exifData.dateTimeOriginal;
+    const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
+
+    if (dateTimeOriginal && timeZoneOffset) {
+      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
+    }
     await this.assetRepository.save({
       id: asset.id,
       duration: tags.Duration ? this.getDuration(tags.Duration) : null,
+      localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
@@ -268,11 +278,13 @@ export class MetadataService {
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
-        motionAsset = await this.assetRepository.save({
+        const createdAt = asset.fileCreatedAt ?? asset.createdAt;
+        motionAsset = await this.assetRepository.create({
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
-          fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
+          fileCreatedAt: createdAt,
           fileModifiedAt: asset.fileModifiedAt,
+          localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
           originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),

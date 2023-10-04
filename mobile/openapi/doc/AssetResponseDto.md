@@ -24,6 +24,7 @@ Name | Type | Description | Notes
 **isTrashed** | **bool** |  | 
 **libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 

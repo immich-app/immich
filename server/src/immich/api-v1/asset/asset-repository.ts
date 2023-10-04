@@ -1,3 +1,4 @@
+import { AssetCreate } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,11 +19,6 @@ export interface AssetCheck {
 export interface AssetOwnerCheck extends AssetCheck {
   ownerId: string;
 }
-
-export type AssetCreate = Omit<
-  AssetEntity,
-  'id' | 'createdAt' | 'updatedAt' | 'owner' | 'livePhotoVideoId' | 'library'
->;
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
