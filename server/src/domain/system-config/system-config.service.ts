@@ -10,6 +10,7 @@ import {
   supportedMonthTokens,
   supportedPresetTokens,
   supportedSecondTokens,
+  supportedWeekTokens,
   supportedYearTokens,
 } from './system-config.constants';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
@@ -57,6 +58,7 @@ export class SystemConfigService {
     const options = new SystemConfigTemplateStorageOptionDto();
 
     options.dayOptions = supportedDayTokens;
+    options.weekOptions = supportedWeekTokens;
     options.monthOptions = supportedMonthTokens;
     options.yearOptions = supportedYearTokens;
     options.hourOptions = supportedHourTokens;

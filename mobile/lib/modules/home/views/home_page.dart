@@ -54,7 +54,7 @@ class HomePage extends HookConsumerWidget {
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        ref.read(serverInfoProvider.notifier).getServerVersion();
+        ref.read(serverInfoProvider.notifier).getServerInfo();
 
         selectionEnabledHook.addListener(() {
           multiselectEnabled.state = selectionEnabledHook.value;

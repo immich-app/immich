@@ -5099,7 +5099,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.79.1",
+    "version": "1.81.0",
     "contact": {}
   },
   "tags": [],
@@ -7924,6 +7924,12 @@
             },
             "type": "array"
           },
+          "weekOptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "yearOptions": {
             "items": {
               "type": "string"
@@ -7934,6 +7940,7 @@
         "required": [
           "yearOptions",
           "monthOptions",
+          "weekOptions",
           "dayOptions",
           "hourOptions",
           "minuteOptions",

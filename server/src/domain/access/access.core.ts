@@ -10,6 +10,7 @@ export enum Permission {
   ASSET_SHARE = 'asset.share',
   ASSET_VIEW = 'asset.view',
   ASSET_DOWNLOAD = 'asset.download',
+  ASSET_UPLOAD = 'asset.upload',
 
   // ALBUM_CREATE = 'album.create',
   ALBUM_READ = 'album.read',
@@ -26,7 +27,6 @@ export enum Permission {
 
   LIBRARY_CREATE = 'library.create',
   LIBRARY_READ = 'library.read',
-  LIBRARY_WRITE = 'library.write',
   LIBRARY_UPDATE = 'library.update',
   LIBRARY_DELETE = 'library.delete',
   LIBRARY_DOWNLOAD = 'library.download',
@@ -95,6 +95,9 @@ export class AccessCore {
 
       case Permission.ASSET_DOWNLOAD:
         return !!authUser.isAllowDownload && (await this.repository.asset.hasSharedLinkAccess(sharedLinkId, id));
+
+      case Permission.ASSET_UPLOAD:
+        return authUser.isAllowUpload;
 
       case Permission.ASSET_SHARE:
         // TODO: fix this to not use authUser.id for shared link access control
@@ -166,6 +169,9 @@ export class AccessCore {
           (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
         );
 
+      case Permission.ASSET_UPLOAD:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
+
       case Permission.ALBUM_REMOVE_ASSET:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
 
@@ -183,9 +189,6 @@ export class AccessCore {
           (await this.repository.library.hasOwnerAccess(authUser.id, id)) ||
           (await this.repository.library.hasPartnerAccess(authUser.id, id))
         );
-
-      case Permission.LIBRARY_WRITE:
-        return this.repository.library.hasOwnerAccess(authUser.id, id);
 
       case Permission.LIBRARY_UPDATE:
         return this.repository.library.hasOwnerAccess(authUser.id, id);

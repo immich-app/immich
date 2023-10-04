@@ -8,7 +8,7 @@ import {
 } from '@app/domain';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { readdir } from 'fs/promises';
+import fs, { readdir, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import mv from 'mv';
 import { promisify } from 'node:util';
@@ -38,6 +38,18 @@ export class FilesystemProvider implements IStorageRepository {
       type: mimeType || undefined,
     };
   }
+
+  async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<Buffer> {
+    const file = await fs.open(filepath);
+    try {
+      const { buffer } = await file.read(options);
+      return buffer;
+    } finally {
+      await file.close();
+    }
+  }
+
+  writeFile = writeFile;
 
   async moveFile(source: string, destination: string): Promise<void> {
     if (await this.checkFileExists(destination)) {

@@ -16,6 +16,7 @@ import {
   supportedMinuteTokens,
   supportedMonthTokens,
   supportedSecondTokens,
+  supportedWeekTokens,
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -234,11 +235,14 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone: asset.exifInfo?.timeZone || undefined });
+    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const zone = asset.exifInfo?.timeZone || systemTimeZone;
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     const dateTokens = [
       ...supportedYearTokens,
       ...supportedMonthTokens,
+      ...supportedWeekTokens,
       ...supportedDayTokens,
       ...supportedHourTokens,
       ...supportedMinuteTokens,
