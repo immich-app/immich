@@ -8,9 +8,9 @@
   import Button from '../elements/buttons/button.svelte';
   import Merge from 'svelte-material-icons/Merge.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
-
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   export let people: PersonResponseDto[] = [];
   export let assetIds: string[];
@@ -56,6 +56,10 @@
       await api.personApi.createPerson({
         assetFaceUpdateDto: { data },
       });
+      notificationController.show({
+        message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to reassign assets to a new person');
     }
@@ -70,6 +74,12 @@
         await api.personApi.reassignFaces({
           id: selectedPerson.id,
           assetFaceUpdateDto: { data },
+        });
+        notificationController.show({
+          message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to ${
+            selectedPerson.name || 'an existing person'
+          }`,
+          type: NotificationType.Info,
         });
       }
     } catch (error) {
