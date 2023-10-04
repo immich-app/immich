@@ -302,15 +302,12 @@ describe(MetadataService.name, () => {
       storageMock.readFile.mockResolvedValue(video);
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.save.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
-      expect(assetMock.create).toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
-      });
-      expect(assetMock.save).toHaveBeenCalledWith(
+      expect(assetMock.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: AssetType.VIDEO,
           originalFileName: assetStub.livePhotoStillAsset.originalFileName,
@@ -318,6 +315,10 @@ describe(MetadataService.name, () => {
           isReadOnly: true,
         }),
       );
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
