@@ -11,7 +11,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
                 .getSetting<bool>(AppSettingsEnum.mapThemeMode),
             showFavoriteOnly: appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
-            showIncludeArchived: appSettingsProvider
+            includeArchived: appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapIncludeArchived),
             relativeTime: appSettingsProvider
                 .getSetting<int>(AppSettingsEnum.mapRelativeDate),
@@ -33,7 +33,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
   void switchFavoriteOnly(bool isFavoriteOnly) {
     appSettingsProvider.setSetting(
       AppSettingsEnum.mapShowFavoriteOnly,
-      appSettingsProvider,
+      isFavoriteOnly,
     );
     state = state.copyWith(showFavoriteOnly: isFavoriteOnly);
   }
@@ -41,9 +41,9 @@ class MapStateNotifier extends StateNotifier<MapState> {
   void switchIncludeArchived(bool isIncludeArchived) {
     appSettingsProvider.setSetting(
       AppSettingsEnum.mapIncludeArchived,
-      appSettingsProvider,
+      isIncludeArchived,
     );
-    state = state.copyWith(showIncludeArchived: isIncludeArchived);
+    state = state.copyWith(includeArchived: isIncludeArchived);
   }
 
   void setRelativeTime(int relativeTime) {

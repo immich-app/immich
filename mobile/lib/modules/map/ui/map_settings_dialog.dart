@@ -13,7 +13,7 @@ class MapSettingsDialog extends HookConsumerWidget {
     final mapSettings = ref.read(mapStateNotifier);
     final isDarkMode = useState(mapSettings.isDarkTheme);
     final showFavoriteOnly = useState(mapSettings.showFavoriteOnly);
-    final showIncludeArchived = useState(mapSettings.showIncludeArchived);
+    final showIncludeArchived = useState(mapSettings.includeArchived);
     final showRelativeDate = useState(mapSettings.relativeTime);
     final ThemeData theme = Theme.of(context);
 
@@ -144,6 +144,8 @@ class MapSettingsDialog extends HookConsumerWidget {
             mapSettingsNotifier.switchTheme(isDarkMode.value);
             mapSettingsNotifier.switchFavoriteOnly(showFavoriteOnly.value);
             mapSettingsNotifier.setRelativeTime(showRelativeDate.value);
+            mapSettingsNotifier
+                .switchIncludeArchived(showIncludeArchived.value);
             Navigator.of(context).pop();
           },
           style: TextButton.styleFrom(

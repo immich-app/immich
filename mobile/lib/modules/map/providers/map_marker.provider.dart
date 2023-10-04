@@ -21,6 +21,10 @@ final mapMarkersProvider =
     isFavorite = true;
   }
 
+  if (!mapState.includeArchived) {
+    isIncludeArchived = false;
+  }
+
   final markers = await service.getMapMarkers(
     isFavorite: isFavorite,
     withArchived: isIncludeArchived,

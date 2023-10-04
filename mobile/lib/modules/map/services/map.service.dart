@@ -30,7 +30,7 @@ class MapSerivce {
     try {
       final markers = await _apiService.assetApi.getMapMarkers(
         isFavorite: isFavorite,
-        isArchived: (withArchived ?? true) ? null : false,
+        isArchived: withArchived,
         fileCreatedAfter: fileCreatedAfter,
         fileCreatedBefore: fileCreatedBefore,
       );
