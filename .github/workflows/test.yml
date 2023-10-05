@@ -223,15 +223,27 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    defaults:
+      run:
+        working-directory: ./server
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install server dependencies
-        run: npm --prefix server ci
+        run: npm ci
+
+      - name: Build the
+        run: npm run build
+
       - name: Run existing migrations
-        run: npm --prefix server run typeorm:migrations:run
+        run: npm run typeorm:migrations:run
+
       - name: Generate new migrations
         continue-on-error: true
-        run: npm --prefix server run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+        run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
