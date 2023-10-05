@@ -130,9 +130,9 @@ class ProfileDrawer extends HookConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               const ProfileDrawerHeader(),
-              if (trashEnabled) buildTrashButton(),
               buildSettingButton(),
               buildAppLogButton(),
+              if (trashEnabled) buildTrashButton(),
               buildSignOutButton(),
             ],
           ),
