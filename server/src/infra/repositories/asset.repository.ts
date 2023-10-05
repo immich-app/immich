@@ -474,7 +474,7 @@ export class AssetRepository implements IAssetRepository {
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
+      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
       .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
       .addOrderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
