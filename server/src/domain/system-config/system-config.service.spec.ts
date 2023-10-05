@@ -12,7 +12,8 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { ICommunicationRepository } from '..';
 import { IJobRepository, JobName, QueueName } from '../job';
 import { SystemConfigValidator, defaults } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
@@ -120,13 +121,15 @@ const updatedConfig = Object.freeze<SystemConfig>({
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, jobMock);
+    sut = new SystemConfigService(configMock, communicationMock, jobMock);
   });
 
   it('should work', () => {
