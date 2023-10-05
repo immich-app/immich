@@ -34,6 +34,7 @@ const other = [
   'orf',
   'ori',
   'pef',
+  'psd',
   'raf',
   'raw',
   'rwl',

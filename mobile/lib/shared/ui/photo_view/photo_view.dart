@@ -235,6 +235,7 @@ class PhotoView extends StatefulWidget {
   const PhotoView({
     Key? key,
     required this.imageProvider,
+    required this.index,
     this.loadingBuilder,
     this.backgroundDecoration,
     this.wantKeepAlive = false,
@@ -304,6 +305,7 @@ class PhotoView extends StatefulWidget {
         imageProvider = null,
         gaplessPlayback = false,
         loadingBuilder = null,
+        index = 0,
         super(key: key);
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
@@ -418,6 +420,8 @@ class PhotoView extends StatefulWidget {
   /// Enable pan the widget even if it's smaller than the hole parent widget.
   /// Useful when you want to drag a widget without restrictions.
   final bool? enablePanAlways;
+
+  final int index;
 
   bool get _isCustomChild {
     return child != null;
@@ -571,6 +575,7 @@ class _PhotoViewState extends State<PhotoView>
                 disableGestures: widget.disableGestures,
                 errorBuilder: widget.errorBuilder,
                 enablePanAlways: widget.enablePanAlways,
+                index: widget.index,
               );
       },
     );
@@ -625,7 +630,7 @@ typedef PhotoViewImageDragStartCallback = Function(
   PhotoViewControllerValue controllerValue,
 );
 
-/// A type definition for a callback when the user drags 
+/// A type definition for a callback when the user drags
 typedef PhotoViewImageDragUpdateCallback = Function(
   BuildContext context,
   DragUpdateDetails details,
@@ -650,4 +655,5 @@ typedef PhotoViewImageScaleEndCallback = Function(
 typedef LoadingBuilder = Widget Function(
   BuildContext context,
   ImageChunkEvent? event,
+  int index,
 );

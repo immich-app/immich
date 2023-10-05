@@ -9,7 +9,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Response,
   UploadedFiles,
@@ -18,8 +17,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, mapToUploadFile, Route } from '../../app.interceptor';
+import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
@@ -33,7 +32,6 @@ import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
@@ -65,7 +63,7 @@ export class AssetController {
   async uploadFile(
     @AuthUser() authUser: AuthUserDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
-    @Body(new ValidationPipe()) dto: CreateAssetDto,
+    @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
@@ -92,7 +90,7 @@ export class AssetController {
   @Post('import')
   async importFile(
     @AuthUser() authUser: AuthUserDto,
-    @Body(new ValidationPipe()) dto: ImportAssetDto,
+    @Body(new ValidationPipe({ transform: true })) dto: ImportAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const responseDto = await this.assetService.importFile(authUser, dto);
@@ -192,18 +190,6 @@ export class AssetController {
   @Get('/assetById/:id')
   getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.assetService.getAssetById(authUser, id);
-  }
-
-  /**
-   * Update an asset
-   */
-  @Put('/:id')
-  updateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body(ValidationPipe) dto: UpdateAssetDto,
-  ): Promise<AssetResponseDto> {
-    return this.assetService.updateAsset(authUser, id, dto);
   }
 
   @Delete('/')

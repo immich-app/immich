@@ -16,6 +16,11 @@ void main() {
   // final instance = PersonResponseDto();
 
   group('test PersonResponseDto', () {
+    // DateTime birthDate
+    test('to test the property `birthDate`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

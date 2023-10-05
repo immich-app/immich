@@ -90,7 +90,7 @@ class BackgroundService {
           requireUnmetered,
           requireCharging,
           triggerUpdateDelay,
-          triggerMaxDelay
+          triggerMaxDelay,
         ],
       );
       return ok;
@@ -459,6 +459,7 @@ class BackgroundService {
       notifySingleProgress ? _onProgress : (sent, total) {},
       notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
       _onBackupError,
+      sortAssets: true,
     );
     if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(

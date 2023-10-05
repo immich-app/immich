@@ -1,13 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 
-class ThumbnailImage extends HookConsumerWidget {
+class ThumbnailImage extends StatelessWidget {
   final Asset asset;
   final int index;
   final Asset Function(int index) loadAsset;
@@ -36,7 +35,7 @@ class ThumbnailImage extends HookConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
@@ -61,8 +60,8 @@ class ThumbnailImage extends HookConsumerWidget {
       }
     }
 
-    Widget buildImage(Asset asset) {
-      var image = SizedBox(
+    Widget buildImage() {
+      final image = SizedBox(
         width: 300,
         height: 300,
         child: Hero(
@@ -133,7 +132,7 @@ class ThumbnailImage extends HookConsumerWidget {
                     )
                   : const Border(),
             ),
-            child: buildImage(asset),
+            child: buildImage(),
           ),
           if (multiselectEnabled)
             Padding(

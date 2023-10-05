@@ -4,6 +4,7 @@
   export let logo: typeof Icon;
   export let backgroundColor = 'transparent';
   export let hoverColor = '#e2e7e9';
+  export let padding = '3';
   export let size = '24';
   export let title = '';
   export let isOpacity = false;
@@ -16,7 +17,7 @@
   style:background-color={backgroundColor}
   style:--immich-icon-button-hover-color={hoverColor}
   class:dark:text-immich-dark-fg={!forceDark}
-  class="flex place-content-center place-items-center rounded-full p-3 transition-all
+  class="flex place-content-center place-items-center rounded-full p-{padding} transition-all
 	{isOpacity ? 'hover:bg-immich-bg/30' : 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}
   {forceDark && 'hover:text-black'}
   {hideMobile && 'hidden sm:flex'}"

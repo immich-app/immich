@@ -4,6 +4,6 @@
   "printWidth": 120,
   "semi": true,
   "organizeImportsSkipDestructiveCodeActions": true,
-  "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+  "plugins": ["prettier-plugin-svelte"],
   "pluginSearchDirs": false
 }

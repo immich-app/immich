@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { DateTime } from 'luxon';
   import { api } from '@api';
   import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
   import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
@@ -11,8 +10,10 @@
   $: shouldRender = $memoryStore?.length > 0;
 
   onMount(async () => {
+    const localTime = new Date();
     const { data } = await api.assetApi.getMemoryLane({
-      timestamp: DateTime.local().startOf('day').toISO() || '',
+      month: localTime.getMonth() + 1,
+      day: localTime.getDate(),
     });
     $memoryStore = data;
   });

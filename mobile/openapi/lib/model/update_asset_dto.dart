@@ -16,7 +16,6 @@ class UpdateAssetDto {
     this.description,
     this.isArchived,
     this.isFavorite,
-    this.tagIds = const [],
   });
 
   ///
@@ -43,25 +42,21 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
-  List<String> tagIds;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.description == description &&
      other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.tagIds == tagIds;
+     other.isFavorite == isFavorite;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (tagIds.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite, tagIds=$tagIds]';
+  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -80,7 +75,6 @@ class UpdateAssetDto {
     } else {
     //  json[r'isFavorite'] = null;
     }
-      json[r'tagIds'] = this.tagIds;
     return json;
   }
 
@@ -95,9 +89,6 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        tagIds: json[r'tagIds'] is List
-            ? (json[r'tagIds'] as List).cast<String>()
-            : const [],
       );
     }
     return null;

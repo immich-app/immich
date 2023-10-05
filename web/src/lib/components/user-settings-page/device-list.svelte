@@ -1,21 +1,16 @@
 <script lang="ts">
   import { api, AuthDeviceResponseDto } from '@api';
-  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
 
-  let devices: AuthDeviceResponseDto[] = [];
+  export let devices: AuthDeviceResponseDto[];
   let deleteDevice: AuthDeviceResponseDto | null = null;
   let deleteAll = false;
 
   const refresh = () => api.authenticationApi.getAuthDevices().then(({ data }) => (devices = data));
-
-  onMount(() => {
-    refresh();
-  });
 
   $: currentDevice = devices.find((device) => device.current);
   $: otherDevices = devices.filter((device) => !device.current);

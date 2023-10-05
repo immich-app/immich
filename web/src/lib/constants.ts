@@ -1,6 +1,3 @@
-import { env } from '$env/dynamic/public';
-export const loginPageMessage: string | undefined = env.PUBLIC_LOGIN_PAGE_MESSAGE;
-
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
@@ -15,6 +12,7 @@ export enum AppRoute {
   ADMIN_JOBS = '/admin/jobs-status',
 
   ALBUMS = '/albums',
+  LIBRARIES = '/libraries',
   ARCHIVE = '/archive',
   FAVORITES = '/favorites',
   PEOPLE = '/people',

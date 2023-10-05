@@ -1,4 +1,5 @@
 import {
+  AssetCreate,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -6,6 +7,7 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
+  MonthDay,
   Paginated,
   PaginationOptions,
   TimeBucketItem,
@@ -18,7 +20,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '../entities';
+import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -29,7 +31,18 @@ const truncateMap: Record<TimeBucketSize, string> = {
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+  ) {}
+
+  async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
+    await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
+  }
+
+  create(asset: AssetCreate): Promise<AssetEntity> {
+    return this.repository.save(asset);
+  }
 
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
@@ -65,6 +78,26 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
+    return this.repository
+      .createQueryBuilder('entity')
+      .where(
+        `entity.ownerId = :ownerId
+      AND entity.isVisible = true
+      AND entity.isArchived = false
+      AND entity.resizePath IS NOT NULL
+      AND EXTRACT(DAY FROM entity.localDateTime) = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
+        {
+          ownerId,
+          day,
+          month,
+        },
+      )
+      .orderBy('entity.localDateTime', 'DESC')
+      .getMany();
+  }
+
   getByIds(ids: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { id: In(ids) },
@@ -78,6 +111,7 @@ export class AssetRepository implements IAssetRepository {
       },
     });
   }
+
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -108,6 +142,39 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { library: { id: In(libraryIds) } },
+    });
+  }
+
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { library: { id: libraryId }, originalPath: originalPath },
+    });
+  }
+
+  getById(assetId: string): Promise<AssetEntity> {
+    return this.repository.findOneOrFail({
+      where: {
+        id: assetId,
+      },
+      relations: {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        faces: {
+          person: true,
+        },
+      },
+    });
+  }
+
+  remove(asset: AssetEntity): Promise<AssetEntity> {
+    return this.repository.remove(asset);
+  }
+
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
@@ -129,6 +196,10 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
+    await this.repository.update({ id: In(ids) }, options);
+  }
+
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
     const { id } = await this.repository.save(asset);
     return this.repository.findOneOrFail({
@@ -138,9 +209,15 @@ export class AssetRepository implements IAssetRepository {
         owner: true,
         smartInfo: true,
         tags: true,
-        faces: true,
+        faces: {
+          person: true,
+        },
       },
     });
+  }
+
+  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { ownerId: userId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
@@ -256,12 +333,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity> {
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
       case WithProperty.SIDECAR:
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
+        break;
+      case WithProperty.IS_OFFLINE:
+        if (!libraryId) {
+          throw new Error('Library id is required when finding offline assets');
+        }
+        where = [{ isOffline: true, libraryId: libraryId }];
         break;
 
       default:
@@ -292,7 +375,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
+    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
       select: {
@@ -305,7 +388,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         ownerId,
         isVisible: true,
-        isArchived: false,
+        isArchived,
         exifInfo: {
           latitude: Not(IsNull()),
           longitude: Not(IsNull()),
@@ -366,6 +449,17 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
+    // can't use queryBuilder because of custom OFFSET clause
+    return this.repository.query(
+      `SELECT *
+       FROM assets
+       WHERE "ownerId" = $1
+       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
+      [ownerId, count],
+    );
+  }
+
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncateValue = truncateMap[options.size];
 
@@ -381,7 +475,8 @@ export class AssetRepository implements IAssetRepository {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
       .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
-      .orderBy('asset.fileCreatedAt', 'DESC')
+      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
 

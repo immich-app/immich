@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import { Marker, Icon, type LatLngExpression, type Content } from 'leaflet';
+  import { Marker, Icon, type LatLngExpression } from 'leaflet';
   import { getMapContext } from './map.svelte';
   import iconUrl from 'leaflet/dist/images/marker-icon.png';
   import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
   import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
   export let latlng: LatLngExpression;
-  export let popupContent: Content | undefined = undefined;
+  let popupHTML: string;
   let marker: Marker;
 
   const defaultIcon = new Icon({
@@ -37,10 +37,14 @@
   $: if (marker) {
     marker.setLatLng(latlng);
 
-    if (popupContent) {
-      marker.bindPopup(popupContent);
+    if (popupHTML) {
+      marker.bindPopup(popupHTML);
     } else {
       marker.unbindPopup();
     }
   }
 </script>
+
+<span contenteditable="true" bind:innerHTML={popupHTML} class="hide">
+  <slot />
+</span>

@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
-[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download | 
+[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
 [**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -23,15 +23,18 @@ Method | HTTP request | Description
 [**getByTimeBucket**](AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
+[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
+[**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
+[**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
+[**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
@@ -378,7 +381,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch)
 
 
 
@@ -406,12 +409,12 @@ final api_instance = AssetApi();
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final isFavorite = true; // bool | 
 final isArchived = true; // bool | 
-final withoutThumbs = true; // bool | Include assets without thumbnails
 final skip = 8.14; // num | 
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch);
+    final result = api_instance.getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -425,8 +428,8 @@ Name | Type | Description  | Notes
  **userId** | **String**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
- **withoutThumbs** | **bool**| Include assets without thumbnails | [optional] 
  **skip** | **num**|  | [optional] 
+ **updatedAfter** | **DateTime**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type
@@ -842,7 +845,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getDownloadInfo**
-> DownloadResponseDto getDownloadInfo(assetIds, albumId, userId, archiveSize, key)
+> DownloadResponseDto getDownloadInfo(downloadInfoDto, key)
 
 
 
@@ -865,14 +868,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final assetIds = []; // List<String> | 
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final archiveSize = 8.14; // num | 
+final downloadInfoDto = DownloadInfoDto(); // DownloadInfoDto | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getDownloadInfo(assetIds, albumId, userId, archiveSize, key);
+    final result = api_instance.getDownloadInfo(downloadInfoDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getDownloadInfo: $e\n');
@@ -883,10 +883,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetIds** | [**List<String>**](String.md)|  | [optional] [default to const []]
- **albumId** | **String**|  | [optional] 
- **userId** | **String**|  | [optional] 
- **archiveSize** | **num**|  | [optional] 
+ **downloadInfoDto** | [**DownloadInfoDto**](DownloadInfoDto.md)|  | 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -899,13 +896,13 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapMarkers**
-> List<MapMarkerResponseDto> getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore)
+> List<MapMarkerResponseDto> getMapMarkers(isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore)
 
 
 
@@ -928,12 +925,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
 final fileCreatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final fileCreatedBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
 
 try {
-    final result = api_instance.getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore);
+    final result = api_instance.getMapMarkers(isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMapMarkers: $e\n');
@@ -944,6 +942,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **fileCreatedAfter** | **DateTime**|  | [optional] 
  **fileCreatedBefore** | **DateTime**|  | [optional] 
@@ -964,7 +963,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMemoryLane**
-> List<MemoryLaneResponseDto> getMemoryLane(timestamp)
+> List<MemoryLaneResponseDto> getMemoryLane(day, month)
 
 
 
@@ -987,10 +986,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final timestamp = 2013-10-20T19:20:30+01:00; // DateTime | Get pictures for +24 hours from this time going back x years
+final day = 56; // int | 
+final month = 56; // int | 
 
 try {
-    final result = api_instance.getMemoryLane(timestamp);
+    final result = api_instance.getMemoryLane(day, month);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMemoryLane: $e\n');
@@ -1001,11 +1001,67 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **timestamp** | **DateTime**| Get pictures for +24 hours from this time going back x years | 
+ **day** | **int**|  | 
+ **month** | **int**|  | 
 
 ### Return type
 
 [**List<MemoryLaneResponseDto>**](MemoryLaneResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getRandom**
+> List<AssetResponseDto> getRandom(count)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final count = 8.14; // num | 
+
+try {
+    final result = api_instance.getRandom(count);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getRandom: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **count** | **num**|  | [optional] 
+
+### Return type
+
+[**List<AssetResponseDto>**](AssetResponseDto.md)
 
 ### Authorization
 
@@ -1197,6 +1253,60 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **runAssetJobs**
+> runAssetJobs(assetJobsDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetJobsDto = AssetJobsDto(); // AssetJobsDto | 
+
+try {
+    api_instance.runAssetJobs(assetJobsDto);
+} catch (e) {
+    print('Exception when calling AssetApi->runAssetJobs: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetJobsDto** | [**AssetJobsDto**](AssetJobsDto.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **searchAsset**
 > List<AssetResponseDto> searchAsset(searchAssetDto)
 
@@ -1318,8 +1428,6 @@ Name | Type | Description  | Notes
 
 
 
-Update an asset
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -1372,8 +1480,62 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **updateAssets**
+> updateAssets(assetBulkUpdateDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetBulkUpdateDto = AssetBulkUpdateDto(); // AssetBulkUpdateDto | 
+
+try {
+    api_instance.updateAssets(assetBulkUpdateDto);
+} catch (e) {
+    print('Exception when calling AssetApi->updateAssets: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetBulkUpdateDto** | [**AssetBulkUpdateDto**](AssetBulkUpdateDto.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isReadOnly, isVisible, livePhotoData, sidecarData)
+> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isExternal, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData)
 
 
 
@@ -1405,13 +1567,16 @@ final isFavorite = true; // bool |
 final key = key_example; // String | 
 final duration = duration_example; // String | 
 final isArchived = true; // bool | 
+final isExternal = true; // bool | 
+final isOffline = true; // bool | 
 final isReadOnly = true; // bool | 
 final isVisible = true; // bool | 
+final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isReadOnly, isVisible, livePhotoData, sidecarData);
+    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isExternal, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1431,8 +1596,11 @@ Name | Type | Description  | Notes
  **key** | **String**|  | [optional] 
  **duration** | **String**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
- **isReadOnly** | **bool**|  | [optional] [default to false]
+ **isExternal** | **bool**|  | [optional] 
+ **isOffline** | **bool**|  | [optional] 
+ **isReadOnly** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
+ **libraryId** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
 

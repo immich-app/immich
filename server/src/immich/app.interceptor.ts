@@ -5,7 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { createHash } from 'crypto';
 import { NextFunction, RequestHandler } from 'express';
-import multer, { diskStorage, StorageEngine } from 'multer';
+import multer, { StorageEngine, diskStorage } from 'multer';
 import { Observable } from 'rxjs';
 import { AuthRequest } from './app.guard';
 
@@ -60,7 +60,10 @@ export class FileUploadInterceptor implements NestInterceptor {
   };
   private defaultStorage: StorageEngine;
 
-  constructor(private reflect: Reflector, private assetService: AssetService) {
+  constructor(
+    private reflect: Reflector,
+    private assetService: AssetService,
+  ) {
     this.defaultStorage = diskStorage({
       filename: this.filename.bind(this),
       destination: this.destination.bind(this),

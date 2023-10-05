@@ -8,6 +8,7 @@ class SettingsSwitchListTile extends StatelessWidget {
   final String title;
   final bool enabled;
   final String? subtitle;
+  final Function(bool)? onChanged;
 
   SettingsSwitchListTile({
     required this.appSettingService,
@@ -16,19 +17,26 @@ class SettingsSwitchListTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.enabled = true,
+    this.onChanged,
   }) : super(key: Key(settingsEnum.name));
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
+      selectedTileColor: enabled ? null : Theme.of(context).disabledColor,
       value: valueNotifier.value,
-      onChanged: !enabled
-          ? null
-          : (value) {
-              valueNotifier.value = value;
-              appSettingService.setSetting(settingsEnum, value);
-            },
-      activeColor: Theme.of(context).primaryColor,
+      onChanged: (bool value) {
+        if (enabled) {
+          valueNotifier.value = value;
+          appSettingService.setSetting(settingsEnum, value);
+        }
+        if (onChanged != null) {
+          onChanged!(value);
+        }
+      },
+      activeColor: enabled
+          ? Theme.of(context).primaryColor
+          : Theme.of(context).disabledColor,
       dense: true,
       title: Text(
         title,

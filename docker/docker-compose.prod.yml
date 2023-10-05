@@ -10,6 +10,7 @@ services:
     command: ["./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     depends_on:
@@ -29,7 +30,7 @@ services:
     env_file:
       - .env
     restart: always
-  
+
   immich-microservices:
     container_name: immich_microservices
     image: immich-microservices:latest
@@ -42,6 +43,7 @@ services:
     command: ["./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     depends_on:
@@ -68,8 +70,8 @@ services:
     environment:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
       - TYPESENSE_DATA_DIR=/data
-    logging:
-      driver: none
+      # remove this to get debug messages
+      - GLOG_minloglevel=1
     volumes:
       - tsdata:/data
     restart: always

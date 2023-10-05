@@ -20,6 +20,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
+  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let data: PageData;
   let selectHidden = false;
@@ -35,10 +37,12 @@
   let toggleVisibility = false;
 
   let showChangeNameModal = false;
+  let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
+  let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
 
   people.forEach((person: PersonResponseDto) => {
@@ -58,6 +62,9 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     switch (event.key) {
       case 'Escape':
         handleCloseClick();
@@ -194,17 +201,22 @@
     }
   };
 
-  const handleChangeName = ({ detail }: CustomEvent<PersonResponseDto>) => {
+  const handleChangeName = (detail: PersonResponseDto) => {
     showChangeNameModal = true;
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
   };
 
-  const handleHideFace = async (event: CustomEvent<PersonResponseDto>) => {
+  const handleSetBirthDate = (detail: PersonResponseDto) => {
+    showSetBirthDateModal = true;
+    edittingPerson = detail;
+  };
+
+  const handleHideFace = async (detail: PersonResponseDto) => {
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
-        id: event.detail.id,
+        id: detail.id,
         personUpdateDto: { isHidden: true },
       });
 
@@ -232,16 +244,14 @@
     }
   };
 
-  const handleMergeFaces = (event: CustomEvent<PersonResponseDto>) => {
-    goto(`${AppRoute.PEOPLE}/${event.detail.id}?action=merge`);
+  const handleMergeFaces = (detail: PersonResponseDto) => {
+    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge`);
   };
 
   const submitNameChange = async () => {
+    potentialMergePeople = [];
     showChangeNameModal = false;
-    if (!edittingPerson) {
-      return;
-    }
-    if (personName === edittingPerson.name) {
+    if (!edittingPerson || personName === edittingPerson.name) {
       return;
     }
     // We check if another person has the same name as the name entered by the user
@@ -256,9 +266,46 @@
     if (existingPerson) {
       personMerge2 = existingPerson;
       showMergeModal = true;
+      potentialMergePeople = people
+        .filter(
+          (person: PersonResponseDto) =>
+            personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
+            person.id !== personMerge2.id &&
+            person.id !== personMerge1.id &&
+            !person.isHidden,
+        )
+        .slice(0, 3);
       return;
     }
     changeName();
+  };
+
+  const submitBirthDateChange = async (value: string) => {
+    showSetBirthDateModal = false;
+    if (!edittingPerson || value === edittingPerson.birthDate) {
+      return;
+    }
+
+    try {
+      const { data: updatedPerson } = await api.personApi.updatePerson({
+        id: edittingPerson.id,
+        personUpdateDto: { birthDate: value.length > 0 ? value : null },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: 'Date of birth saved succesfully',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save name');
+    }
   };
 
   const changeName = async () => {
@@ -296,7 +343,7 @@
     <MergeSuggestionModal
       {personMerge1}
       {personMerge2}
-      {people}
+      {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
       on:reject={() => changeName()}
       on:confirm={(event) => handleMergeSameFace(event.detail)}
@@ -323,9 +370,10 @@
           {#if !person.isHidden}
             <PeopleCard
               {person}
-              on:change-name={handleChangeName}
-              on:merge-faces={handleMergeFaces}
-              on:hide-face={handleHideFace}
+              on:change-name={() => handleChangeName(person)}
+              on:set-birth-date={() => handleSetBirthDate(person)}
+              on:merge-faces={() => handleMergeFaces(person)}
+              on:hide-face={() => handleHideFace(person)}
             />
           {/if}
         {/each}
@@ -353,7 +401,7 @@
 
         <form on:submit|preventDefault={submitNameChange} autocomplete="off">
           <div class="m-4 flex flex-col gap-2">
-            <label class="immich-form-label" for="email">Name</label>
+            <label class="immich-form-label" for="name">Name</label>
             <!-- svelte-ignore a11y-autofocus -->
             <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
           </div>
@@ -371,6 +419,14 @@
         </form>
       </div>
     </FullScreenModal>
+  {/if}
+
+  {#if showSetBirthDateModal}
+    <SetBirthDateModal
+      birthDate={edittingPerson?.birthDate ?? ''}
+      on:close={() => (showSetBirthDateModal = false)}
+      on:updated={(event) => submitBirthDateChange(event.detail)}
+    />
   {/if}
 </UserPageLayout>
 {#if selectHidden}

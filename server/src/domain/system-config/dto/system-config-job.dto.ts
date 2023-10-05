@@ -51,6 +51,12 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
+  [QueueName.MIGRATION]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
   [QueueName.BACKGROUND_TASK]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
@@ -70,4 +76,10 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.SIDECAR]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.LIBRARY]!: JobSettingsDto;
 }

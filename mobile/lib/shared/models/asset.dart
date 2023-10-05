@@ -100,12 +100,6 @@ class Asset {
 
   /// stores the raw SHA1 bytes as a base64 String
   /// because Isar cannot sort lists of byte arrays
-  @Index(
-    unique: true,
-    replace: false,
-    type: IndexType.hash,
-    composite: [CompositeIndex("ownerId")],
-  )
   String checksum;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
@@ -114,6 +108,11 @@ class Asset {
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? localId;
 
+  @Index(
+    unique: true,
+    replace: false,
+    composite: [CompositeIndex("checksum", type: IndexType.hash)],
+  )
   int ownerId;
 
   DateTime fileCreatedAt;
@@ -178,6 +177,7 @@ class Asset {
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
+    if (identical(this, other)) return true;
     return id == other.id &&
         checksum == other.checksum &&
         remoteId == other.remoteId &&
@@ -417,17 +417,17 @@ enum AssetState {
 
 extension AssetsHelper on IsarCollection<Asset> {
   Future<int> deleteAllByRemoteId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value(0) : _remote(ids).deleteAll();
+      ids.isEmpty ? Future.value(0) : remote(ids).deleteAll();
   Future<int> deleteAllByLocalId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value(0) : _local(ids).deleteAll();
+      ids.isEmpty ? Future.value(0) : local(ids).deleteAll();
   Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value([]) : _remote(ids).findAll();
+      ids.isEmpty ? Future.value([]) : remote(ids).findAll();
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value([]) : _local(ids).findAll();
+      ids.isEmpty ? Future.value([]) : local(ids).findAll();
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> _remote(Iterable<String> ids) =>
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
-  QueryBuilder<Asset, Asset, QAfterWhereClause> _local(Iterable<String> ids) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
 }

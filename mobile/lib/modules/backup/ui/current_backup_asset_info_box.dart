@@ -212,7 +212,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   Text(
                     " ${uploadProgress.toStringAsFixed(0)}%",
                     style: const TextStyle(fontSize: 12),
-                  )
+                  ),
                 ],
               ),
             ),

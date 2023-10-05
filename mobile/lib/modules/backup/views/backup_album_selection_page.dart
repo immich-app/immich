@@ -247,7 +247,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   child: Wrap(
                     children: [
                       ...buildSelectedAlbumNameChip(),
-                      ...buildExcludedAlbumNameChip()
+                      ...buildExcludedAlbumNameChip(),
                     ],
                   ),
                 ),
@@ -301,7 +301,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                             .watch(backupProvider)
                             .availableAlbums
                             .length
-                            .toString()
+                            .toString(),
                       ],
                     ),
                     style: const TextStyle(

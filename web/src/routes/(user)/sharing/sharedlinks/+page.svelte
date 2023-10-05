@@ -1,7 +1,7 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import { api, SharedLinkResponseDto } from '@api';
+  import { api, copyToClipboard, SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import {
@@ -37,24 +37,19 @@
       await api.sharedLinkApi.removeSharedLink({ id: deleteLinkId });
       notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
       deleteLinkId = null;
-      refresh();
+      await refresh();
     } catch (error) {
-      handleError(error, 'Unable to delete shared link');
+      await handleError(error, 'Unable to delete shared link');
     }
   };
 
   const handleEditDone = async () => {
-    refresh();
+    await refresh();
     editSharedLink = null;
   };
 
   const handleCopyLink = async (key: string) => {
-    const link = `${window.location.origin}/share/${key}`;
-    await navigator.clipboard.writeText(link);
-    notificationController.show({
-      message: 'Link copied to clipboard',
-      type: NotificationType.Info,
-    });
+    await copyToClipboard(`${window.location.origin}/share/${key}`);
   };
 </script>
 

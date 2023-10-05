@@ -70,7 +70,7 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
-      case JobName.GENERATE_FACE_THUMBNAIL:
+      case JobName.GENERATE_PERSON_THUMBNAIL:
         return { priority: 1 };
 
       default:
@@ -78,7 +78,7 @@ export class JobRepository implements IJobRepository {
     }
   }
 
-  private getQueue(queue: QueueName) {
+  private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
   }
 }

@@ -3,8 +3,8 @@ import {
   AlbumResponseDto,
   AuthDeviceResponseDto,
   AuthUserDto,
-  CreateAlbumDto,
   CreateUserDto,
+  LibraryResponseDto,
   LoginCredentialDto,
   LoginResponseDto,
   SharedLinkCreateDto,
@@ -12,9 +12,11 @@ import {
   UpdateUserDto,
   UserResponseDto,
 } from '@app/domain';
+import { CreateAlbumDto } from '@app/domain/album/dto/album-create.dto';
 import { dataSource } from '@app/infra';
+import { UserEntity } from '@app/infra/entities';
 import request from 'supertest';
-import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';
+import { adminSignupStub, loginResponseStub, loginStub, signupResponseStub } from './fixtures';
 
 export const db = {
   reset: async () => {
@@ -49,7 +51,7 @@ export function getAuthUser(): AuthUserDto {
 
 export const api = {
   adminSignUp: async (server: any) => {
-    const { status, body } = await request(server).post('/auth/admin-sign-up').send(signupStub);
+    const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
     expect(status).toBe(201);
     expect(body).toEqual(signupResponseStub);
@@ -64,6 +66,16 @@ export const api = {
     expect(status).toBe(201);
 
     return body as LoginResponseDto;
+  },
+  userCreate: async (server: any, accessToken: string, user: Partial<UserEntity>) => {
+    const { status, body } = await request(server)
+      .post('/user')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(user);
+
+    expect(status).toBe(201);
+
+    return body as UserResponseDto;
   },
   login: async (server: any, dto: LoginCredentialDto) => {
     const { status, body } = await request(server).post('/auth/login').send(dto);
@@ -91,6 +103,14 @@ export const api = {
       const res = await request(server).post('/album').set('Authorization', `Bearer ${accessToken}`).send(dto);
       expect(res.status).toEqual(201);
       return res.body as AlbumResponseDto;
+    },
+  },
+  libraryApi: {
+    getAll: async (server: any, accessToken: string) => {
+      const res = await request(server).get('/library').set('Authorization', `Bearer ${accessToken}`);
+      expect(res.status).toEqual(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      return res.body as LibraryResponseDto[];
     },
   },
   sharedLinkApi: {

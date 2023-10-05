@@ -24,11 +24,29 @@ class ServerInfoService {
     }
   }
 
-  Future<ServerVersionReponseDto?> getServerVersion() async {
+  Future<ServerVersionResponseDto?> getServerVersion() async {
     try {
       return await _apiService.serverInfoApi.getServerVersion();
     } catch (e) {
-      debugPrint("Error getting server info");
+      debugPrint("Error [getServerVersion] ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<ServerFeaturesDto?> getServerFeatures() async {
+    try {
+      return await _apiService.serverInfoApi.getServerFeatures();
+    } catch (e) {
+      debugPrint("Error [getServerFeatures] ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<ServerConfigDto?> getServerConfig() async {
+    try {
+      return await _apiService.serverInfoApi.getServerConfig();
+    } catch (e) {
+      debugPrint("Error [getServerConfig] ${e.toString()}");
       return null;
     }
   }

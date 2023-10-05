@@ -155,7 +155,7 @@ class ControlBottomAppBar extends ConsumerWidget {
               if (hasRemote)
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 200),
-                )
+                ),
             ],
           ),
         );

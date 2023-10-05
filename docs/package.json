@@ -6,7 +6,7 @@
     "docusaurus": "docusaurus",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "start": "docusaurus start",
+    "start": "docusaurus start --port 3005",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",

@@ -21,8 +21,23 @@ void main() {
       // TODO
     });
 
+    // int bframes
+    test('to test the property `bframes`', () async {
+      // TODO
+    });
+
+    // CQMode cqMode
+    test('to test the property `cqMode`', () async {
+      // TODO
+    });
+
     // int crf
     test('to test the property `crf`', () async {
+      // TODO
+    });
+
+    // int gopSize
+    test('to test the property `gopSize`', () async {
       // TODO
     });
 
@@ -31,8 +46,18 @@ void main() {
       // TODO
     });
 
+    // int npl
+    test('to test the property `npl`', () async {
+      // TODO
+    });
+
     // String preset
     test('to test the property `preset`', () async {
+      // TODO
+    });
+
+    // int refs
+    test('to test the property `refs`', () async {
       // TODO
     });
 
@@ -48,6 +73,11 @@ void main() {
 
     // VideoCodec targetVideoCodec
     test('to test the property `targetVideoCodec`', () async {
+      // TODO
+    });
+
+    // bool temporalAQ
+    test('to test the property `temporalAQ`', () async {
       // TODO
     });
 

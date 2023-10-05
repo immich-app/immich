@@ -27,7 +27,6 @@
   export let selectionCandidate = false;
   export let disabled = false;
   export let readonly = false;
-  export let publicSharedKey: string | undefined = undefined;
   export let showArchiveIcon = false;
 
   let mouseOver = false;
@@ -118,13 +117,13 @@
         />
 
         <!-- Favorite asset star -->
-        {#if asset.isFavorite && !publicSharedKey}
+        {#if !api.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 left-2 z-10">
             <Heart size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if showArchiveIcon && asset.isArchived}
+        {#if !api.isSharedLink && showArchiveIcon && asset.isArchived}
           <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
             <ArchiveArrowDownOutline size="24" class="text-white" />
           </div>
@@ -140,7 +139,7 @@
 
         {#if asset.resized}
           <ImageThumbnail
-            url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
+            url={api.getAssetThumbnailUrl(asset.id, format)}
             altText={asset.originalFileName}
             widthStyle="{width}px"
             heightStyle="{height}px"
@@ -156,7 +155,7 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={api.getAssetFileUrl(asset.id, false, true, publicSharedKey)}
+              url={api.getAssetFileUrl(asset.id, false, true)}
               enablePlayback={mouseOver}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
@@ -167,7 +166,7 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey)}
+              url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true)}
               pauseIcon={MotionPauseOutline}
               playIcon={MotionPlayOutline}
               showTime={false}

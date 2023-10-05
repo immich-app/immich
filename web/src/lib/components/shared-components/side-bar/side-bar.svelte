@@ -9,14 +9,16 @@
   import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Map from 'svelte-material-icons/Map.svelte';
+  import Account from 'svelte-material-icons/Account.svelte';
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
   import { AppRoute } from '../../../constants';
   import LoadingSpinner from '../loading-spinner.svelte';
   import StatusBox from '../status-box.svelte';
   import SideBarButton from './side-bar-button.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import SideBarSection from './side-bar-section.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   const getStats = async (dto: AssetApiGetAssetStatsRequest) => {
     const { data: stats } = await api.assetApi.getAssetStats(dto);
@@ -56,12 +58,21 @@
       </svelte:fragment>
     </SideBarButton>
   </a>
-  <a data-sveltekit-preload-data="hover" data-sveltekit-noscroll href={AppRoute.EXPLORE} draggable="false">
-    <SideBarButton title="Explore" logo={Magnify} isSelected={$page.route.id === '/(user)/explore'} />
-  </a>
-  <a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
-    <SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
-  </a>
+  {#if $featureFlags.search}
+    <a data-sveltekit-preload-data="hover" data-sveltekit-noscroll href={AppRoute.EXPLORE} draggable="false">
+      <SideBarButton title="Explore" logo={Magnify} isSelected={$page.route.id === '/(user)/explore'} />
+    </a>
+  {/if}
+  {#if $featureFlags.map}
+    <a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
+      <SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
+    </a>
+  {/if}
+  {#if $sidebarSettings.people}
+    <a data-sveltekit-preload-data="hover" href={AppRoute.PEOPLE} draggable="false">
+      <SideBarButton title="People" logo={Account} isSelected={$page.route.id === '/(user)/people'} />
+    </a>
+  {/if}
   <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
     <SideBarButton
       title="Sharing"

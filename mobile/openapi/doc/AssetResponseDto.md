@@ -17,10 +17,16 @@ Name | Type | Description | Notes
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
+**isExternal** | **bool** |  | 
 **isFavorite** | **bool** |  | 
+**isOffline** | **bool** |  | 
+**isReadOnly** | **bool** |  | 
+**libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
+**owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
 **ownerId** | **String** |  | 
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
 **resized** | **bool** |  | 
