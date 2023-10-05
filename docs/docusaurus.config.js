@@ -96,6 +96,13 @@ const config = {
         },
         items: [
           {
+            label: 'Immich',
+            position: 'left',
+            text:"6xl", 
+            font:"bold mb-10",
+            dark:"text-immich-dark-primary"
+          },
+          {
             to: '/docs/overview/introduction',
             position: 'right',
             label: 'Docs',

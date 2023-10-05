@@ -1,0 +1,9 @@
+{
+  "name": "immich",
+  "version": "1.0.0",
+  "description": "a",
+  "main": "index.js",
+  "repository": "https://github.com/luv2027/immich.git",
+  "author": "Luv Patel <luvpatel2790.svmr@gmail.com>",
+  "license": "MIT"
+}
