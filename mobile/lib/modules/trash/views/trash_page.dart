@@ -190,7 +190,11 @@ class TrashPage extends HookConsumerWidget {
                       selection.value.isEmpty
                           ? 'trash_page_delete_all'.tr()
                           : 'trash_page_delete'.tr(),
-                      style: TextStyle(fontSize: 14, color: Colors.red[400]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.red[400],
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: processing.value
                         ? null
@@ -206,7 +210,10 @@ class TrashPage extends HookConsumerWidget {
                       selection.value.isEmpty
                           ? 'trash_page_restore_all'.tr()
                           : 'trash_page_restore'.tr(),
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: processing.value
                         ? null
