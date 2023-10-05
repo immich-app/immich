@@ -157,9 +157,10 @@ export class MetadataService {
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
-    let localDateTime = exifData.dateTimeOriginal ?? undefined;
 
     const dateTimeOriginal = exifDate(firstDateTime(tags as Tags)) ?? exifData.dateTimeOriginal;
+    let localDateTime = dateTimeOriginal ?? undefined;
+
     const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
 
     if (dateTimeOriginal && timeZoneOffset) {
