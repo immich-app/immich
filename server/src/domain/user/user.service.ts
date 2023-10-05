@@ -7,16 +7,17 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IEntityJob, IJobRepository, JobName } from '../job';
+import { ILibraryRepository } from '../library/library.repository';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
+  UserCountResponseDto,
+  UserResponseDto,
   mapCreateProfileImageResponse,
   mapUser,
   mapUserCountResponse,
-  UserCountResponseDto,
-  UserResponseDto,
 } from './response-dto';
 import { UserCore } from './user.core';
 import { IUserRepository } from './user.repository';
@@ -24,19 +25,20 @@ import { IUserRepository } from './user.repository';
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
+  private storageCore: StorageCore;
   private userCore: UserCore;
-  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.storageCore = new StorageCore(storageRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
   async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -91,6 +93,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    await this.albumRepository.softDeleteAll(userId);
     const deletedUser = await this.userCore.deleteUser(authUser, user);
     return mapUser(deletedUser);
   }
@@ -101,6 +104,7 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     const updatedUser = await this.userCore.restoreUser(authUser, user);
+    await this.albumRepository.restoreAll(userId);
     return mapUser(updatedUser);
   }
 

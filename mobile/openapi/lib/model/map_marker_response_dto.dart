@@ -57,8 +57,8 @@ class MapMarkerResponseDto {
 
       return MapMarkerResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
-        lat: mapValueOfType<double>(json, r'lat')!,
-        lon: mapValueOfType<double>(json, r'lon')!,
+        lat: (mapValueOfType<num>(json, r'lat')!).toDouble(),
+        lon: (mapValueOfType<num>(json, r'lon')!).toDouble(),
       );
     }
     return null;

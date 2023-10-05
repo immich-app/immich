@@ -22,7 +22,7 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
+<FullScreenModal on:clickOutside={() => dispatch('close')} on:escape={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
     <div
       class="w-[400px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[650px]"

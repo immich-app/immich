@@ -18,7 +18,7 @@
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 

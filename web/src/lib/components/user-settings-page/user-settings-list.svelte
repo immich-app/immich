@@ -1,31 +1,29 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { page } from '$app/stores';
-  import { oauth, UserResponseDto } from '@api';
-  import { onMount } from 'svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { APIKeyResponseDto, AuthDeviceResponseDto, oauth, UserResponseDto } from '@api';
   import SettingAccordion from '../admin-page/settings/setting-accordion.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
+  import LibraryList from './library-list.svelte';
   import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import SidebarSettings from './sidebar-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
 
   export let user: UserResponseDto;
 
-  let oauthEnabled = false;
+  export let keys: APIKeyResponseDto[] = [];
+  export let devices: AuthDeviceResponseDto[] = [];
+  export let partners: UserResponseDto[] = [];
+
   let oauthOpen = false;
-
-  onMount(async () => {
+  if (browser) {
     oauthOpen = oauth.isCallback(window.location);
-
-    try {
-      const { data } = await oauth.getConfig(window.location);
-      oauthEnabled = data.enabled;
-    } catch {
-      // noop
-    }
-  });
+  }
 </script>
 
 <SettingAccordion title="Account" subtitle="Manage your account">
@@ -33,18 +31,22 @@
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
-  <UserAPIKeyList />
+  <UserAPIKeyList bind:keys />
 </SettingAccordion>
 
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
-  <DeviceList />
+  <DeviceList bind:devices />
+</SettingAccordion>
+
+<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+  <LibraryList />
 </SettingAccordion>
 
 <SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
   <MemoriesSettings {user} />
 </SettingAccordion>
 
-{#if oauthEnabled}
+{#if $featureFlags.loaded && $featureFlags.oauth}
   <SettingAccordion
     title="OAuth"
     subtitle="Manage your OAuth connection"
@@ -59,5 +61,9 @@
 </SettingAccordion>
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-  <PartnerSettings {user} />
+  <PartnerSettings {user} bind:partners />
+</SettingAccordion>
+
+<SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
+  <SidebarSettings />
 </SettingAccordion>

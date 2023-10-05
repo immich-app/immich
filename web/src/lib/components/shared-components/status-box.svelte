@@ -97,9 +97,13 @@
 
       <div class="mt-2 flex justify-between justify-items-center">
         <p>Version</p>
-        <p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+        <a
+          href="https://github.com/immich-app/immich/releases"
+          class="font-medium text-immich-primary dark:text-immich-dark-primary"
+          target="_blank"
+        >
           {serverVersion}
-        </p>
+        </a>
       </div>
     </div>
   </div>

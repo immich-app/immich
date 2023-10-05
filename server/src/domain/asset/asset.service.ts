@@ -1,6 +1,6 @@
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
-import { DateTime } from 'luxon';
+import _ from 'lodash';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
@@ -8,22 +8,32 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IJobRepository, JobName } from '../job';
+import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobName,
+  AssetJobsDto,
+  AssetStatsDto,
   DownloadArchiveInfo,
-  DownloadDto,
+  DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
+  UpdateAssetDto,
+  mapStats,
 } from './dto';
-import { AssetStatsDto, mapStats } from './dto/asset-statistics.dto';
-import { MapMarkerDto } from './dto/map-marker.dto';
-import { AssetResponseDto, mapAsset, MapMarkerResponseDto } from './response-dto';
-import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
-import { TimeBucketResponseDto } from './response-dto/time-bucket-response.dto';
+import {
+  AssetResponseDto,
+  MapMarkerResponseDto,
+  MemoryLaneResponseDto,
+  TimeBucketResponseDto,
+  mapAsset,
+} from './response-dto';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -47,15 +57,17 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -126,29 +138,32 @@ export class AssetService {
   }
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const target = DateTime.fromJSDate(dto.timestamp);
+    const currentYear = new Date().getFullYear();
+    const assets = await this.assetRepository.getByDayOfYear(authUser.id, dto);
 
-    const onRequest = async (yearsAgo: number): Promise<MemoryLaneResponseDto> => {
-      const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: yearsAgo }).toJSDate());
-      return {
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
-        assets: assets.map((a) => mapAsset(a)),
-      };
-    };
+    return _.chain(assets)
+      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
+      .map((asset) => {
+        const years = currentYear - asset.localDateTime.getFullYear();
 
-    const requests: Promise<MemoryLaneResponseDto>[] = [];
-    for (let i = 1; i <= dto.years; i++) {
-      requests.push(onRequest(i));
-    }
-
-    return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
+        return {
+          title: `${years} year${years > 1 ? 's' : ''} since...`,
+          asset: mapAsset(asset),
+        };
+      })
+      .groupBy((asset) => asset.title)
+      .map((items, title) => ({ title, assets: items.map(({ asset }) => asset) }))
+      .value();
   }
 
   private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
     if (dto.albumId) {
       await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
     } else if (dto.userId) {
-      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
+      if (dto.isArchived !== false) {
+        await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
+      }
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
     } else {
       dto.userId = authUser.id;
     }
@@ -173,10 +188,14 @@ export class AssetService {
       throw new BadRequestException('Asset not found');
     }
 
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
+    }
+
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
   }
 
-  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {
+  async getDownloadInfo(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
@@ -234,7 +253,7 @@ export class AssetService {
     return { stream: zip.stream };
   }
 
-  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadDto): Promise<AsyncGenerator<AssetEntity[]>> {
+  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadInfoDto): Promise<AsyncGenerator<AssetEntity[]>> {
     const PAGINATION_SIZE = 2500;
 
     if (dto.assetIds) {
@@ -254,7 +273,7 @@ export class AssetService {
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
+      await this.access.requirePermission(authUser, Permission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
     }
 
@@ -264,5 +283,50 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
+
+    const { description, ...rest } = dto;
+    if (description !== undefined) {
+      await this.assetRepository.upsertExif({ assetId: id, description });
+    }
+
+    const asset = await this.assetRepository.save({ id, ...rest });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [id] } });
+    return mapAsset(asset);
+  }
+
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+    const { ids, ...options } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    await this.assetRepository.updateAll(ids, options);
+  }
+
+  async run(authUser: AuthUserDto, dto: AssetJobsDto) {
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, dto.assetIds);
+
+    for (const id of dto.assetIds) {
+      switch (dto.name) {
+        case AssetJobName.REFRESH_METADATA:
+          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          break;
+
+        case AssetJobName.REGENERATE_THUMBNAIL:
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          break;
+
+        case AssetJobName.TRANSCODE_VIDEO:
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          break;
+      }
+    }
   }
 }

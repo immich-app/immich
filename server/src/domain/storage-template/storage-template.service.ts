@@ -16,6 +16,7 @@ import {
   supportedMinuteTokens,
   supportedMonthTokens,
   supportedSecondTokens,
+  supportedWeekTokens,
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -30,7 +31,7 @@ export interface MoveAssetMetadata {
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
-  private storageCore = new StorageCore();
+  private storageCore: StorageCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
@@ -44,6 +45,7 @@ export class StorageTemplateService {
     this.configCore = new SystemConfigCore(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.storageCore = new StorageCore(storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -89,10 +91,10 @@ export class StorageTemplateService {
     return true;
   }
 
-  // TODO: use asset core (once in domain)
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly) {
-      this.logger.verbose(`Not moving read-only asset: ${asset.originalPath}`);
+    if (asset.isReadOnly || asset.isExternal) {
+      // External assets are not affected by storage template
+      // TODO: shouldn't this only apply to external assets?
       return;
     }
 
@@ -121,7 +123,7 @@ export class StorageTemplateService {
             error?.stack,
           );
 
-          // Either sidecar move failed or the save failed. Eithr way, move media back
+          // Either sidecar move failed or the save failed. Either way, move media back
           await this.storageRepository.moveFile(destination, source);
 
           if (asset.sidecarPath && sidecarDestination && sidecarMoved) {
@@ -233,11 +235,14 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone: asset.exifInfo?.timeZone || undefined });
+    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const zone = asset.exifInfo?.timeZone || systemTimeZone;
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     const dateTokens = [
       ...supportedYearTokens,
       ...supportedMonthTokens,
+      ...supportedWeekTokens,
       ...supportedDayTokens,
       ...supportedHourTokens,
       ...supportedMinuteTokens,

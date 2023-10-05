@@ -1,12 +1,17 @@
 <script lang="ts">
-  import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
   import Check from 'svelte-material-icons/Check.svelte';
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
+  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  export let options: string[] = [];
+  const dispatch = createEventDispatcher<{
+    select: string;
+  }>();
+  export let options: string[];
   export let value = options[0];
+  export let icons: (typeof Icon)[] | undefined = undefined;
 
   let showMenu = false;
 
@@ -15,17 +20,27 @@
   };
 
   const handleSelectOption = (index: number) => {
-    value = options[index];
+    if (options[index] === value) {
+      dispatch('select', value);
+    } else {
+      value = options[index];
+    }
+
     showMenu = false;
   };
+
+  $: index = options.findIndex((option) => option === value);
+  $: icon = icons?.[index];
 </script>
 
-<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside}>
+<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
   <!-- BUTTON TITLE -->
   <LinkButton on:click={() => (showMenu = true)}>
     <div class="flex place-items-center gap-2 text-sm">
-      <SwapVertical size="18" />
-      {value}
+      {#if icon}
+        <svelte:component this={icon} size="18" />
+      {/if}
+      <p class="hidden sm:block">{value}</p>
     </div>
   </LinkButton>
 

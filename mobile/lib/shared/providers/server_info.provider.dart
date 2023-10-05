@@ -10,10 +10,28 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   ServerInfoNotifier(this._serverInfoService)
       : super(
           ServerInfoState(
-            serverVersion: ServerVersionReponseDto(
+            serverVersion: ServerVersionResponseDto(
               major: 0,
               patch_: 0,
               minor: 0,
+            ),
+            serverFeatures: ServerFeaturesDto(
+              clipEncode: true,
+              configFile: false,
+              facialRecognition: true,
+              map: true,
+              oauth: false,
+              oauthAutoLaunch: false,
+              passwordLogin: true,
+              search: true,
+              sidecar: true,
+              tagImage: true,
+              reverseGeocoding: true,
+            ),
+            serverConfig: ServerConfigDto(
+              loginPageMessage: "",
+              mapTileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+              oauthButtonText: "",
             ),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",
@@ -22,8 +40,14 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 
   final ServerInfoService _serverInfoService;
 
+  getServerInfo() {
+    getServerVersion();
+    getServerFeatures();
+    getServerConfig();
+  }
+
   getServerVersion() async {
-    ServerVersionReponseDto? serverVersion =
+    ServerVersionResponseDto? serverVersion =
         await _serverInfoService.getServerVersion();
 
     if (serverVersion == null) {
@@ -64,6 +88,23 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
       isVersionMismatch: false,
       versionMismatchErrorMessage: "",
     );
+  }
+
+  getServerFeatures() async {
+    ServerFeaturesDto? serverFeatures =
+        await _serverInfoService.getServerFeatures();
+    if (serverFeatures == null) {
+      return;
+    }
+    state = state.copyWith(serverFeatures: serverFeatures);
+  }
+
+  getServerConfig() async {
+    ServerConfigDto? serverConfig = await _serverInfoService.getServerConfig();
+    if (serverConfig == null) {
+      return;
+    }
+    state = state.copyWith(serverConfig: serverConfig);
   }
 
   Map<String, int> _getDetailVersion(String version) {

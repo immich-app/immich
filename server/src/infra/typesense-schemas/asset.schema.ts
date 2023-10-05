@@ -1,6 +1,6 @@
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 
-export const assetSchemaVersion = 8;
+export const assetSchemaVersion = 10;
 export const assetSchema: CollectionCreateSchema = {
   name: `assets-v${assetSchemaVersion}`,
   fields: [
@@ -13,6 +13,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'fileCreatedAt', type: 'string', facet: false, sort: true },
     { name: 'fileModifiedAt', type: 'string', facet: false, sort: true },
     { name: 'isFavorite', type: 'bool', facet: true },
+    { name: 'isArchived', type: 'bool', facet: true },
     { name: 'originalFileName', type: 'string', facet: false, optional: true },
 
     // exif
@@ -35,7 +36,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'motion', type: 'bool', facet: true },
     { name: 'people', type: 'string[]', facet: true, optional: true },
   ],
-  token_separators: ['.'],
+  token_separators: ['.', '-', '_'],
   enable_nested_fields: true,
   default_sorting_field: 'fileCreatedAt',
 };

@@ -1,7 +1,7 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
-import { Module } from '@nestjs/common';
+import { AssetEntity } from '@app/infra/entities';
+import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,12 +12,14 @@ import { AppGuard } from './app.guard';
 import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
 import {
-  AlbumController,
   APIKeyController,
+  AlbumController,
   AppController,
   AssetController,
+  AuditController,
   AuthController,
   JobController,
+  LibraryController,
   OAuthController,
   PartnerController,
   PersonController,
@@ -34,7 +36,7 @@ import {
     //
     DomainModule.register({ imports: [InfraModule] }),
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
+    TypeOrmModule.forFeature([AssetEntity]),
   ],
   controllers: [
     AssetController,
@@ -42,8 +44,10 @@ import {
     AppController,
     AlbumController,
     APIKeyController,
+    AuditController,
     AuthController,
     JobController,
+    LibraryController,
     OAuthController,
     PartnerController,
     SearchController,
@@ -64,4 +68,14 @@ import {
     FileUploadInterceptor,
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit, OnModuleDestroy {
+  constructor(private appService: AppService) {}
+
+  async onModuleInit() {
+    await this.appService.init();
+  }
+
+  onModuleDestroy() {
+    this.appService.destroy();
+  }
+}

@@ -1,11 +1,14 @@
 import { JobName, QueueName } from './job.constants';
+
 import {
   IAssetFaceJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
   IEntityJob,
-  IFaceThumbnailJob,
+  ILibraryFileJob,
+  ILibraryRefreshJob,
+  IOfflineLibraryFileJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -42,9 +45,15 @@ export type JobItem =
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
   | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
+  // Migration
+  | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
+  | { name: JobName.MIGRATE_ASSET; data?: IEntityJob }
+  | { name: JobName.MIGRATE_PERSON; data?: IEntityJob }
+
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
+  | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
 
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
@@ -58,7 +67,8 @@ export type JobItem =
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
   | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
-  | { name: JobName.GENERATE_FACE_THUMBNAIL; data: IFaceThumbnailJob }
+  | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
+  | { name: JobName.PERSON_DELETE; data: IEntityJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
@@ -67,8 +77,20 @@ export type JobItem =
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
+  // Audit log cleanup
+  | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
+
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
+
+  // Library Managment
+  | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_MARK_ASSET_OFFLINE; data: IOfflineLibraryFileJob }
+  | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
+  | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

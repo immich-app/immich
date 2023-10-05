@@ -51,8 +51,18 @@ void main() {
       // TODO
     });
 
+    // bool isExternal
+    test('to test the property `isExternal`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
+      // TODO
+    });
+
+    // bool isOffline
+    test('to test the property `isOffline`', () async {
       // TODO
     });
 
@@ -63,6 +73,11 @@ void main() {
 
     // bool isVisible
     test('to test the property `isVisible`', () async {
+      // TODO
+    });
+
+    // String libraryId
+    test('to test the property `libraryId`', () async {
       // TODO
     });
 

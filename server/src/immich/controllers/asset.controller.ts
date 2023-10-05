@@ -1,24 +1,28 @@
 import {
+  AssetBulkUpdateDto,
   AssetIdsDto,
+  AssetJobsDto,
   AssetResponseDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
-  DownloadDto,
+  DownloadInfoDto,
   DownloadResponseDto,
+  MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
+  MemoryLaneResponseDto,
+  RandomAssetsDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
+  UpdateAssetDto as UpdateDto,
 } from '@app/domain';
-import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
-import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
-import { asStreamableFile, UseValidation } from '../app.utils';
+import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
+import { UseValidation, asStreamableFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
@@ -38,14 +42,19 @@ export class AssetController {
     return this.service.getMemoryLane(authUser, dto);
   }
 
+  @Get('random')
+  getRandom(@AuthUser() authUser: AuthUserDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
+    return this.service.getRandom(authUser, dto.count ?? 1);
+  }
+
   @SharedLinkRoute()
-  @Get('download')
-  getDownloadInfo(@AuthUser() authUser: AuthUserDto, @Query() dto: DownloadDto): Promise<DownloadResponseDto> {
+  @Post('download/info')
+  getDownloadInfo(@AuthUser() authUser: AuthUserDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     return this.service.getDownloadInfo(authUser, dto);
   }
 
   @SharedLinkRoute()
-  @Post('download')
+  @Post('download/archive')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   downloadArchive(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
@@ -75,5 +84,26 @@ export class AssetController {
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
     return this.service.getByTimeBucket(authUser, dto);
+  }
+
+  @Post('jobs')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  runAssetJobs(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetJobsDto): Promise<void> {
+    return this.service.run(authUser, dto);
+  }
+
+  @Put()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
+    return this.service.updateAll(authUser, dto);
+  }
+
+  @Put(':id')
+  updateAsset(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateDto,
+  ): Promise<AssetResponseDto> {
+    return this.service.update(authUser, id, dto);
   }
 }

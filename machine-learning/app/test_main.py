@@ -1,5 +1,7 @@
+import json
+import pickle
 from io import BytesIO
-from typing import TypeAlias
+from typing import Any, TypeAlias
 from unittest import mock
 
 import cv2
@@ -10,8 +12,9 @@ from PIL import Image
 from pytest_mock import MockerFixture
 
 from .config import settings
+from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
-from .models.clip import CLIPSTEncoder
+from .models.clip import CLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
@@ -27,23 +30,6 @@ class TestImageClassifier:
         {"label": "not sure", "score": 0.04},
         {"label": "probably a virus", "score": 0.01},
     ]
-
-    def test_eager_init(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(ImageClassifier, "download")
-        mock_load = mocker.patch.object(ImageClassifier, "load")
-        classifier = ImageClassifier("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
-
-        assert classifier.model_name == "test_model_name"
-        mock_load.assert_called_once_with(test_arg="test_arg")
-
-    def test_lazy_init(self, mocker: MockerFixture) -> None:
-        mock_download = mocker.patch.object(ImageClassifier, "download")
-        mock_load = mocker.patch.object(ImageClassifier, "load")
-        face_model = ImageClassifier("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
-
-        assert face_model.model_name == "test_model_name"
-        mock_download.assert_called_once_with(test_arg="test_arg")
-        mock_load.assert_not_called()
 
     def test_min_score(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
         mocker.patch.object(ImageClassifier, "load")
@@ -71,66 +57,34 @@ class TestImageClassifier:
 class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
 
-    def test_eager_init(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "download")
-        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
-        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
-
-        assert clip_model.model_name == "test_model_name"
-        mock_load.assert_called_once_with(test_arg="test_arg")
-
-    def test_lazy_init(self, mocker: MockerFixture) -> None:
-        mock_download = mocker.patch.object(CLIPSTEncoder, "download")
-        mock_load = mocker.patch.object(CLIPSTEncoder, "load")
-        clip_model = CLIPSTEncoder("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
-
-        assert clip_model.model_name == "test_model_name"
-        mock_download.assert_called_once_with(test_arg="test_arg")
-        mock_load.assert_not_called()
-
     def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "load")
-        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.model = mock.Mock()
-        clip_encoder.model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
+        assert clip_encoder.mode == "vision"
         embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.model.encode.assert_called_once()
+        clip_encoder.vision_model.run.assert_called_once()
 
     def test_basic_text(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPSTEncoder, "load")
-        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
-        clip_encoder.model = mock.Mock()
-        clip_encoder.model.encode.return_value = self.embedding
+        mocker.patch.object(CLIPEncoder, "download")
+        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
+        mocked.return_value.run.return_value = [[self.embedding]]
+        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
+        assert clip_encoder.mode == "text"
         embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
-        clip_encoder.model.encode.assert_called_once()
+        clip_encoder.text_model.run.assert_called_once()
 
 
 class TestFaceRecognition:
-    def test_eager_init(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(FaceRecognizer, "download")
-        mock_load = mocker.patch.object(FaceRecognizer, "load")
-        face_model = FaceRecognizer("test_model_name", cache_dir="test_cache", eager=True, test_arg="test_arg")
-
-        assert face_model.model_name == "test_model_name"
-        mock_load.assert_called_once_with(test_arg="test_arg")
-
-    def test_lazy_init(self, mocker: MockerFixture) -> None:
-        mock_download = mocker.patch.object(FaceRecognizer, "download")
-        mock_load = mocker.patch.object(FaceRecognizer, "load")
-        face_model = FaceRecognizer("test_model_name", cache_dir="test_cache", eager=False, test_arg="test_arg")
-
-        assert face_model.model_name == "test_model_name"
-        mock_download.assert_called_once_with(test_arg="test_arg")
-        mock_load.assert_not_called()
-
     def test_set_min_score(self, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("test_model_name", cache_dir="test_cache", min_score=0.5)
@@ -215,42 +169,71 @@ class TestCache:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
-    def test_tagging_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
+    def test_tagging_endpoint(
+        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
+    ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/jpg"}
         response = deployed_app.post(
-            "http://localhost:3003/image-classifier/tag-image",
-            content=byte_image.getvalue(),
-            headers=headers,
+            "http://localhost:3003/predict",
+            data={
+                "modelName": "microsoft/resnet-50",
+                "modelType": "image-classification",
+                "options": json.dumps({"minScore": 0.0}),
+            },
+            files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
+        assert response.json() == responses["image-classification"]
 
-    def test_clip_image_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
+    def test_clip_image_endpoint(
+        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
+    ) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/jpg"}
         response = deployed_app.post(
-            "http://localhost:3003/sentence-transformer/encode-image",
-            content=byte_image.getvalue(),
-            headers=headers,
+            "http://localhost:3003/predict",
+            data={"modelName": "ViT-B-32::openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
+            files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
+        assert response.json() == responses["clip"]["image"]
 
-    def test_clip_text_endpoint(self, deployed_app: TestClient) -> None:
+    def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         response = deployed_app.post(
-            "http://localhost:3003/sentence-transformer/encode-text",
-            json={"text": "test search query"},
+            "http://localhost:3003/predict",
+            data={
+                "modelName": "ViT-B-32::openai",
+                "modelType": "clip",
+                "text": "test search query",
+                "options": json.dumps({"mode": "text"}),
+            },
         )
         assert response.status_code == 200
+        assert response.json() == responses["clip"]["text"]
 
-    def test_face_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
+    def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/jpg"}
+
         response = deployed_app.post(
-            "http://localhost:3003/facial-recognition/detect-faces",
-            content=byte_image.getvalue(),
-            headers=headers,
+            "http://localhost:3003/predict",
+            data={
+                "modelName": "buffalo_l",
+                "modelType": "facial-recognition",
+                "options": json.dumps({"minScore": 0.034}),
+            },
+            files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
+        assert response.json() == responses["facial-recognition"]
+
+
+def test_sess_options() -> None:
+    sess_options = PicklableSessionOptions()
+    sess_options.intra_op_num_threads = 1
+    sess_options.inter_op_num_threads = 1
+    pickled = pickle.dumps(sess_options)
+    unpickled = pickle.loads(pickled)
+    assert unpickled.intra_op_num_threads == 1
+    assert unpickled.inter_op_num_threads == 1

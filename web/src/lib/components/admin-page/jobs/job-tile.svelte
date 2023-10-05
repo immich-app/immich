@@ -6,6 +6,7 @@
   import FastForward from 'svelte-material-icons/FastForward.svelte';
   import AllInclusive from 'svelte-material-icons/AllInclusive.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
+  import AlertCircle from 'svelte-material-icons/AlertCircle.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { createEventDispatcher } from 'svelte';
   import { JobCommand, JobCommandDto, JobCountsDto, QueueStatusDto } from '@api';
@@ -19,6 +20,7 @@
   export let queueStatus: QueueStatusDto;
   export let allowForceCommand = true;
   export let icon: typeof Icon;
+  export let disabled = false;
 
   export let allText: string;
   export let missingText: string;
@@ -94,7 +96,15 @@
     </div>
   </div>
   <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">
-    {#if !isIdle}
+    {#if disabled}
+      <JobTileButton
+        disabled={true}
+        color="light-gray"
+        on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
+      >
+        <AlertCircle size="36" /> DISABLED
+      </JobTileButton>
+    {:else if !isIdle}
       {#if waitingCount > 0}
         <JobTileButton color="gray" on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}>
           <Close size="24" /> CLEAR

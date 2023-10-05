@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
-  import { api, SystemConfigThumbnailDto } from '@api';
+  import { api, Colorspace, SystemConfigThumbnailDto } from '@api';
   import { fade } from 'svelte/transition';
   import { isEqual } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
@@ -8,8 +8,11 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import SettingSwitch from '../setting-switch.svelte';
 
   export let thumbnailConfig: SystemConfigThumbnailDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigThumbnailDto;
   let defaultConfig: SystemConfigThumbnailDto;
@@ -79,8 +82,8 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSelect
-            label="WEBP RESOLUTION"
-            desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+            label="SMALL THUMBNAIL RESOLUTION"
+            desc="Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
             number
             bind:value={thumbnailConfig.webpSize}
             options={[
@@ -90,12 +93,13 @@
               { value: 250, text: '250p' },
             ]}
             name="resolution"
-            isEdited={!(thumbnailConfig.webpSize === savedConfig.webpSize)}
+            isEdited={thumbnailConfig.webpSize !== savedConfig.webpSize}
+            {disabled}
           />
 
           <SettingSelect
-            label="JPEG RESOLUTION"
-            desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+            label="LARGE THUMBNAIL RESOLUTION"
+            desc="Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
             number
             bind:value={thumbnailConfig.jpegSize}
             options={[
@@ -103,7 +107,24 @@
               { value: 1440, text: '1440p' },
             ]}
             name="resolution"
-            isEdited={!(thumbnailConfig.jpegSize === savedConfig.jpegSize)}
+            isEdited={thumbnailConfig.jpegSize !== savedConfig.jpegSize}
+            {disabled}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label="QUALITY"
+            desc="Thumbnail quality from 1-100. Higher is better for quality but produces larger files."
+            bind:value={thumbnailConfig.quality}
+            isEdited={thumbnailConfig.quality !== savedConfig.quality}
+          />
+
+          <SettingSwitch
+            title="PREFER WIDE GAMUT"
+            subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
+            checked={thumbnailConfig.colorspace === Colorspace.P3}
+            on:toggle={(e) => (thumbnailConfig.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
+            isEdited={thumbnailConfig.colorspace !== savedConfig.colorspace}
           />
         </div>
 
@@ -113,6 +134,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </div>
       </form>

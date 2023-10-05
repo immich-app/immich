@@ -27,6 +27,7 @@
   import { browser } from '$app/environment';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let data: PageData;
 
@@ -51,9 +52,16 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
+          if (isMultiSelectionMode) {
+            selectedAssets = new Set();
+            return;
+          }
           if (!$preventRaceConditionSearchBar) {
             goto(previousRoute);
           }

@@ -45,14 +45,9 @@ class ImmichImage extends StatelessWidget {
       );
     }
     final Asset asset = this.asset!;
-    if (!asset.isRemote ||
-        (asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false))) {
+    if (useLocal(asset)) {
       return Image(
-        image: AssetEntityImageProvider(
-          asset.local!,
-          isOriginal: false,
-          thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
-        ),
+        image: localThumbnailProvider(asset),
         width: width,
         height: height,
         fit: fit,
@@ -148,45 +143,44 @@ class ImmichImage extends StatelessWidget {
     );
   }
 
+  static AssetEntityImageProvider localThumbnailProvider(Asset asset) =>
+      AssetEntityImageProvider(
+        asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+
+  static CachedNetworkImageProvider remoteThumbnailProvider(
+    Asset asset,
+    api.ThumbnailFormat type,
+    Map<String, String> authHeader,
+  ) =>
+      CachedNetworkImageProvider(
+        getThumbnailUrl(asset, type: type),
+        cacheKey: getThumbnailCacheKey(asset, type: type),
+        headers: authHeader,
+      );
+
   /// Precaches this asset for instant load the next time it is shown
   static Future<void> precacheAsset(
     Asset asset,
     BuildContext context, {
     type = api.ThumbnailFormat.WEBP,
   }) {
-    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
-
-    if (type == api.ThumbnailFormat.WEBP) {
-      final thumbnailUrl = getThumbnailUrl(asset);
-      final thumbnailCacheKey = getThumbnailCacheKey(asset);
-      final thumbnailProvider = CachedNetworkImageProvider(
-        thumbnailUrl,
-        cacheKey: thumbnailCacheKey,
-        headers: {"Authorization": authToken},
-      );
-      return precacheImage(thumbnailProvider, context);
-    }
-    // Precache the local image
-    if (!asset.isRemote &&
-        (asset.isLocal || !Store.get(StoreKey.preferRemoteImage, false))) {
-      final provider = AssetEntityImageProvider(
-        asset.local!,
-        isOriginal: false,
-        thumbnailSize: const ThumbnailSize.square(250), // like server thumbs
-      );
-      return precacheImage(provider, context);
+    if (useLocal(asset)) {
+      // Precache the local image
+      return precacheImage(localThumbnailProvider(asset), context);
     } else {
+      final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
       // Precache the remote image since we are not using local images
-      final url = getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG);
-      final cacheKey =
-          getThumbnailCacheKey(asset, type: api.ThumbnailFormat.JPEG);
-      final provider = CachedNetworkImageProvider(
-        url,
-        cacheKey: cacheKey,
-        headers: {"Authorization": authToken},
+      return precacheImage(
+        remoteThumbnailProvider(asset, type, {"Authorization": authToken}),
+        context,
       );
-
-      return precacheImage(provider, context);
     }
   }
+
+  static bool useLocal(Asset asset) =>
+      !asset.isRemote ||
+      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
 }

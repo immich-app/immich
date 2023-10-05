@@ -21,7 +21,7 @@ class UserResponseDto {
     required this.id,
     required this.isAdmin,
     required this.lastName,
-    required this.memoriesEnabled,
+    this.memoriesEnabled,
     required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
@@ -45,7 +45,13 @@ class UserResponseDto {
 
   String lastName;
 
-  bool memoriesEnabled;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? memoriesEnabled;
 
   String oauthId;
 
@@ -85,7 +91,7 @@ class UserResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (lastName.hashCode) +
-    (memoriesEnabled.hashCode) +
+    (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -113,7 +119,11 @@ class UserResponseDto {
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
       json[r'lastName'] = this.lastName;
+    if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
+    } else {
+    //  json[r'memoriesEnabled'] = null;
+    }
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -142,7 +152,7 @@ class UserResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
-        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled')!,
+        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -203,7 +213,6 @@ class UserResponseDto {
     'id',
     'isAdmin',
     'lastName',
-    'memoriesEnabled',
     'oauthId',
     'profileImagePath',
     'shouldChangePassword',

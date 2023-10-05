@@ -36,6 +36,7 @@
   <div
     use:clickOutside
     on:outclick={() => dispatch('close')}
+    on:escape={() => dispatch('escape')}
     class="max-h-[600px] min-h-[200px] w-[450px] rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
     <div class="flex place-items-center justify-between px-5 py-3">

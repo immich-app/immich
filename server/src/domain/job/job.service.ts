@@ -2,8 +2,7 @@ import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { assertMachineLearningEnabled } from '../domain.constant';
-import { ISystemConfigRepository } from '../system-config';
+import { FeatureFlag, ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
@@ -77,25 +76,33 @@ export class JobService {
       case QueueName.STORAGE_TEMPLATE_MIGRATION:
         return this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
 
+      case QueueName.MIGRATION:
+        return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
+
       case QueueName.OBJECT_TAGGING:
-        assertMachineLearningEnabled();
+        await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
         return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
 
       case QueueName.CLIP_ENCODING:
-        assertMachineLearningEnabled();
+        await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
         return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
 
       case QueueName.METADATA_EXTRACTION:
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
 
       case QueueName.SIDECAR:
+        await this.configCore.requireFeature(FeatureFlag.SIDECAR);
         return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
 
       case QueueName.THUMBNAIL_GENERATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
       case QueueName.RECOGNIZE_FACES:
+        await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
+
+      case QueueName.LIBRARY:
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
 
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
@@ -117,7 +124,7 @@ export class JobService {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
-          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+          this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         }
       });
     }
@@ -136,6 +143,8 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
+    await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
   }
 
   /**
@@ -149,6 +158,10 @@ export class JobService {
         break;
 
       case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
+        break;
+
+      case JobName.LINK_LIVE_PHOTOS:
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
 
@@ -186,7 +199,7 @@ export class JobService {
       case JobName.CLASSIFY_IMAGE:
       case JobName.ENCODE_CLIP:
       case JobName.RECOGNIZE_FACES:
-      case JobName.METADATA_EXTRACTION:
+      case JobName.LINK_LIVE_PHOTOS:
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
         break;
     }

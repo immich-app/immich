@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   albumStub,
   assetStub,
   authStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newSharedLinkRepositoryMock,

@@ -56,8 +56,6 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ---
 
-## Uploading existing libraries
-
 ### Run via Docker
 
 You can run the CLI inside of a docker container to avoid needing to install anything.
@@ -68,16 +66,16 @@ Be aware that as this runs inside a container, you need to mount the folder from
 
 ```bash title="Upload current directory"
 cd /DIRECTORY/WITH/IMAGES
-docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 ```bash title="Upload target directory"
-docker run -it --rm -v "/DIRECTORY/WITH/IMAGES:/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+docker run -it --rm -v "/DIRECTORY/WITH/IMAGES:/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 ```bash title="Create an alias"
 alias immich='docker run -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest'
-immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
+immich upload --recursive --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 ```
 
 :::tip Internal networking
@@ -88,7 +86,7 @@ If you are running the CLI container on the same machine as your Immich server, 
 3. Use `--server http://immich-server:3001` for the upload command instead of the external address.
 
 ```bash title="Upload to internal address"
-docker run --network immich_default -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://immich-server:3001
+docker run --network immich_default -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --recursive --key HFEJ38DNSDUEG --server http://immich-server:3001
 ```
 
 :::
@@ -168,6 +166,12 @@ The proper command for above would be as shown below. You should have access to 
 
 ```
 immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive /path/to/media --import
+```
+
+If you are running the import using the docker command, please note that the volumes should point to the `/path/to/media` exactly on the environment the CLI command is being run on
+
+```
+docker run -it --rm -v "/path/to/media:/path/to/media" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive /path/to/media --import
 ```
 
 :::

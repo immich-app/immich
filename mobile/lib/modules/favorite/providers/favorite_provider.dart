@@ -13,8 +13,9 @@ final favoriteAssetsProvider = StreamProvider<RenderList>((ref) async* {
   final query = ref
       .watch(dbProvider)
       .assets
+      .where()
+      .ownerIdEqualToAnyChecksum(user.isarId)
       .filter()
-      .ownerIdEqualTo(user.isarId)
       .isFavoriteEqualTo(true)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);

@@ -1,13 +1,17 @@
 import { VideoCodec } from '@app/infra/entities';
+import { Writable } from 'stream';
 
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
   size: number;
   format: 'webp' | 'jpeg';
+  colorspace: string;
+  quality: number;
 }
 
 export interface VideoStreamInfo {
+  index: number;
   height: number;
   width: number;
   rotation: number;
@@ -18,8 +22,10 @@ export interface VideoStreamInfo {
 }
 
 export interface AudioStreamInfo {
+  index: number;
   codecName?: string;
   codecType?: string;
+  frameCount: number;
 }
 
 export interface VideoFormat {
@@ -55,7 +61,7 @@ export interface BitrateDistribution {
 }
 
 export interface VideoCodecSWConfig {
-  getOptions(stream: VideoStreamInfo): TranscodeOptions;
+  getOptions(videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {
@@ -70,5 +76,5 @@ export interface IMediaRepository {
 
   // video
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void>;
 }

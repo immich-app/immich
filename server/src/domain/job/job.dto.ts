@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty } from 'class-validator';
+import { Optional } from '../domain.util';
 import { JobCommand, QueueName } from './job.constants';
 
 export class JobIdParamDto {
@@ -15,7 +16,7 @@ export class JobCommandDto {
   @ApiProperty({ type: 'string', enum: JobCommand, enumName: 'JobCommand' })
   command!: JobCommand;
 
-  @IsOptional()
+  @Optional()
   @IsBoolean()
   force!: boolean;
 }
@@ -68,6 +69,9 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.MIGRATION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.BACKGROUND_TASK]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
@@ -78,4 +82,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.SIDECAR]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.LIBRARY]!: JobStatusDto;
 }

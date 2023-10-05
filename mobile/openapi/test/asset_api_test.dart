@@ -55,7 +55,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, num skip, DateTime updatedAfter, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -97,18 +97,23 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfo({ List<String> assetIds, String albumId, String userId, num archiveSize, String key }) async
+    //Future<DownloadResponseDto> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String key }) async
     test('test getDownloadInfo', () async {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isArchived, bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
     test('test getMapMarkers', () async {
       // TODO
     });
 
-    //Future<List<MemoryLaneResponseDto>> getMemoryLane(DateTime timestamp) async
+    //Future<List<MemoryLaneResponseDto>> getMemoryLane(int day, int month) async
     test('test getMemoryLane', () async {
+      // TODO
+    });
+
+    //Future<List<AssetResponseDto>> getRandom({ num count }) async
+    test('test getRandom', () async {
       // TODO
     });
 
@@ -129,6 +134,11 @@ void main() {
       // TODO
     });
 
+    //Future runAssetJobs(AssetJobsDto assetJobsDto) async
+    test('test runAssetJobs', () async {
+      // TODO
+    });
+
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
@@ -139,14 +149,17 @@ void main() {
       // TODO
     });
 
-    // Update an asset
-    //
     //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isReadOnly, bool isVisible, MultipartFile livePhotoData, MultipartFile sidecarData }) async
+    //Future updateAssets(AssetBulkUpdateDto assetBulkUpdateDto) async
+    test('test updateAssets', () async {
+      // TODO
+    });
+
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isExternal, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO
     });

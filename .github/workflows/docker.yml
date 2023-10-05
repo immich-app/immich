@@ -36,13 +36,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2.2.0
+        uses: docker/setup-qemu-action@v3.0.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2.9.1
+        uses: docker/setup-buildx-action@v3.0.0
         # Workaround to fix error:
         # failed to push: failed to copy: io: read/write on closed pipe
         # See https://github.com/docker/build-push-action/issues/761
@@ -53,13 +53,13 @@ jobs:
       - name: Login to Docker Hub
         # Only push to Docker Hub when making a release
         if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
@@ -69,7 +69,7 @@ jobs:
 
       - name: Generate docker image tags
         id: metadata
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           flavor: |
             # Disable latest tag
@@ -97,7 +97,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v5.0.0
         with:
           context: ${{ matrix.context }}
           platforms: ${{ matrix.platforms }}
@@ -120,13 +120,13 @@ jobs:
             platforms: "linux/arm64,linux/amd64"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2.2.0
+        uses: docker/setup-qemu-action@v3.0.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2.9.1
+        uses: docker/setup-buildx-action@v3.0.0
         # Workaround to fix error:
         # failed to push: failed to copy: io: read/write on closed pipe
         # See https://github.com/docker/build-push-action/issues/761
@@ -137,13 +137,13 @@ jobs:
       - name: Login to Docker Hub
         # Only push to Docker Hub when making a release
         if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
@@ -153,7 +153,7 @@ jobs:
 
       - name: Generate docker image tags
         id: metadata
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           flavor: |
             # Disable latest tag
@@ -181,7 +181,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v5.0.0
         with:
           context: ${{ matrix.context }}
           platforms: ${{ matrix.platforms }}
