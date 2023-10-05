@@ -32,6 +32,7 @@
     >
       <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
       <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
+      <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">

@@ -1,4 +1,11 @@
-import { AssetResponseDto, IAssetRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  IPersonRepository,
+  LibraryResponseDto,
+  LoginResponseDto,
+  TimeBucketSize,
+} from '@app/domain';
 import { AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
@@ -48,15 +55,17 @@ const createAsset = (
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
-  return repository.save({
+  return repository.create({
     ownerId: loginResponse.userId,
     checksum: randomBytes(20),
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
     libraryId,
+    isVisible: true,
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
+    localDateTime: createdAt,
     type: AssetType.IMAGE,
     originalFileName: `test_${id}`,
   });
@@ -66,6 +75,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
   let assetRepository: IAssetRepository;
+  let defaultLibrary: LibraryResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let asset1: AssetEntity;
@@ -85,19 +95,25 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
-    const libraries = await api.libraryApi.getAll(server, admin.accessToken);
-    const defaultLibrary = libraries[0];
+    const [libraries] = await Promise.all([
+      api.libraryApi.getAll(server, admin.accessToken),
+      api.userApi.create(server, admin.accessToken, user1Dto),
+      api.userApi.create(server, admin.accessToken, user2Dto),
+    ]);
 
-    await api.userApi.create(server, admin.accessToken, user1Dto);
-    user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
+    defaultLibrary = libraries[0];
 
-    asset1 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
-    asset2 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02'));
-    asset3 = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01'));
+    [user1, user2] = await Promise.all([
+      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
+      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
+    ]);
 
-    await api.userApi.create(server, admin.accessToken, user2Dto);
-    user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset4 = await createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01'));
+    [asset1, asset2, asset3, asset4] = await Promise.all([
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01')),
+    ]);
   });
 
   afterAll(async () => {
@@ -395,6 +411,16 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   describe('GET /asset/random', () => {
+    beforeAll(async () => {
+      await Promise.all([
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      ]);
+    });
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/asset/random');
 
@@ -436,6 +462,18 @@ describe(`${AssetController.name} (e2e)`, () => {
         expect(asset.id).not.toBe(asset4.id);
       }
     });
+
+    it.each(Array(10))(
+      'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
+      async () => {
+        const { status, body } = await request(server)
+          .get('/[]asset/random')
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expect.objectContaining({ id: asset4.id })]);
+      },
+    );
 
     it('should return error', async () => {
       const { status } = await request(server)
@@ -530,6 +568,47 @@ describe(`${AssetController.name} (e2e)`, () => {
           expect.objectContaining({ id: asset2.id }),
         ]),
       );
+    });
+  });
+
+  describe('GET /asset/map-marker', () => {
+    beforeEach(async () => {
+      await assetRepository.save({ id: asset1.id, isArchived: true });
+      await assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 });
+      await assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/map-marker');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should get map markers for all non-archived assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset1.id }),
+          expect.objectContaining({ id: asset2.id }),
+        ]),
+      );
+    });
+
+    it('should get all map markers', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isArchived: false });
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+      expect(body).toEqual([expect.objectContaining({ id: asset2.id })]);
     });
   });
 });

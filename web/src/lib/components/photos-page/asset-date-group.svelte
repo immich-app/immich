@@ -126,7 +126,8 @@
 
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
-    {@const groupTitle = formatGroupTitle(DateTime.fromISO(groupAssets[0].fileCreatedAt).startOf('day'))}
+    {@const asset = groupAssets[0]}
+    {@const groupTitle = formatGroupTitle(DateTime.fromISO(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->

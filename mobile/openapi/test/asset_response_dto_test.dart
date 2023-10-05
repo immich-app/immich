@@ -92,6 +92,11 @@ void main() {
       // TODO
     });
 
+    // DateTime localDateTime
+    test('to test the property `localDateTime`', () async {
+      // TODO
+    });
+
     // String originalFileName
     test('to test the property `originalFileName`', () async {
       // TODO

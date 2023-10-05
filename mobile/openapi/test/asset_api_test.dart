@@ -102,12 +102,12 @@ void main() {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isArchived, bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
     test('test getMapMarkers', () async {
       // TODO
     });
 
-    //Future<List<MemoryLaneResponseDto>> getMemoryLane(DateTime timestamp) async
+    //Future<List<MemoryLaneResponseDto>> getMemoryLane(int day, int month) async
     test('test getMemoryLane', () async {
       // TODO
     });
