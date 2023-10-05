@@ -100,6 +100,9 @@
 
   let currentTranslateDirection: 'x' | 'y' | '' = '';
   let currentTranslate = { x: 0, y: 0 };
+  let currentZoom = 1;
+
+  const zoomSpeed = 0.1;
 
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
@@ -190,9 +193,28 @@
       console.log('imageElement.onload');
       initAngleSlider();
       initAssetDrag();
+      initZoom();
       setAspectRatio('original');
     };
   });
+
+  const initZoom = () => {
+    document.addEventListener("wheel", function (e) {
+    if (e.deltaY > 0) {
+      if (currentZoom <= 5) {
+        currentZoom += zoomSpeed;
+      }
+      
+    } else {
+      if (currentZoom > 1) {
+        currentZoom -= zoomSpeed;
+      }
+      
+    }
+    setImageWrapperTransform();
+  });
+  }
+
 
   const setPreset = (event: CustomEvent<string>) => {
     const preset = event.detail;
@@ -529,12 +551,12 @@
 
       const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
       const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
-      const maxY = (imageWrapper.offsetHeight - d) / 2;
+      const maxY = (imageWrapper.offsetHeight*currentZoom - d) / 2;
 
       // Calc max x translation
       const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
       const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
-      const maxX = (imageWrapper.offsetWidth - h3 - h4) / 2;
+      const maxX = (imageWrapper.offsetWidth*currentZoom - h3 - h4) / 2;
 
       if (currentTranslate.x - pos1 > maxX) {
         x = maxX;
@@ -551,6 +573,9 @@
       } else {
         y = currentTranslate.y - pos2;
       }
+
+      console.log("y:", Math.round(y));
+      console.log("x:", Math.round(x));
 
       // Decide which direction to translate
       if (currentTranslateDirection === 'y') {
@@ -682,6 +707,7 @@
   const resetCropAndRotate = async () => {
     currentFlipX = false;
     currentFlipY = false;
+    currentZoom = 1;
     rotate(0, 0);
     await setAspectRatio('original');
   };
@@ -724,15 +750,12 @@
   const setImageWrapperTransform = () => {
     let transformString = '';
     transformString += `rotate(${currentAngle - currentAngleOffset}deg)`;
-    if (currentFlipX) {
-      transformString += ' scaleX(-1)';
-    }
-    if (currentFlipY) {
-      transformString += ' scaleY(-1)';
-    }
+
     if (currentTranslate.x || currentTranslate.y) {
-      transformString += ` translate(${currentTranslate.x}px, ${currentTranslate.y}px)`;
+      transformString += ` translate(${currentTranslate.x * currentZoom}px, ${currentTranslate.y * currentZoom}px)`;
     }
+
+    transformString += ` scaleX(${ (currentFlipX ? -1 : 1) * currentZoom}) scaleY(${(currentFlipY ? -1 : 1) * currentZoom})`;
 
     imageWrapper.style.transform = transformString;
   };
