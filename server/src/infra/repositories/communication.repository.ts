@@ -38,6 +38,6 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
   }
 
   broadcast(event: CommunicationEvent, data: any) {
-    this.ws.server.emit(event, data);
+    this.server.emit(event, data);
   }
 }
