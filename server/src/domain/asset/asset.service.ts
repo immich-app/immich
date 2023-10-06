@@ -6,6 +6,7 @@ import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
+import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
@@ -72,6 +73,7 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
   ) {
     this.access = new AccessCore(accessRepository);
     this.storageCore = new StorageCore(storageRepository);
@@ -362,6 +364,7 @@ export class AssetService {
 
     await this.assetRepository.remove(asset);
     await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
+    this.communicationRepository.send(CommunicationEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
@@ -392,6 +395,7 @@ export class AssetService {
     } else {
       await this.assetRepository.softDeleteAll(ids);
       await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids } });
+      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, authUser.id, ids);
     }
   }
 

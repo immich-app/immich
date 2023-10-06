@@ -13,6 +13,7 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { flip } from 'svelte/animate';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -176,6 +177,7 @@
           <div
             class="absolute"
             style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+            animate:flip={{ duration: 350 }}
           >
             <Thumbnail
               {asset}

@@ -18,6 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
+  import { openWebsocketConnection } from '$lib/stores/websocket';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
@@ -36,6 +37,8 @@
   });
 
   onMount(async () => {
+    openWebsocketConnection();
+
     try {
       await loadConfig();
     } catch (error) {
