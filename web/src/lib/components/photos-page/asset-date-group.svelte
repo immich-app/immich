@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import justifiedLayout from 'justified-layout';
   import { DateTime } from 'luxon';
@@ -25,6 +25,8 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
 
+  const date = DateTime.fromISO('2023-10-06T00:00:00.414Z', { zone: 'UTC' });
+  console.log(date.startOf('day').toLocaleString());
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
@@ -127,7 +129,7 @@
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
-    {@const groupTitle = formatGroupTitle(DateTime.fromISO(asset.localDateTime).startOf('day'))}
+    {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
