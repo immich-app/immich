@@ -183,13 +183,13 @@ class AssetApi {
   /// Performs an HTTP 'DELETE /asset' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [DeleteAssetDto] deleteAssetDto (required):
-  Future<Response> deleteAssetWithHttpInfo(DeleteAssetDto deleteAssetDto,) async {
+  /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
+  Future<Response> deleteAssetsWithHttpInfo(AssetBulkDeleteDto assetBulkDeleteDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
     // ignore: prefer_final_locals
-    Object? postBody = deleteAssetDto;
+    Object? postBody = assetBulkDeleteDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -211,23 +211,12 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [DeleteAssetDto] deleteAssetDto (required):
-  Future<List<DeleteAssetResponseDto>?> deleteAsset(DeleteAssetDto deleteAssetDto,) async {
-    final response = await deleteAssetWithHttpInfo(deleteAssetDto,);
+  /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
+  Future<void> deleteAssets(AssetBulkDeleteDto assetBulkDeleteDto,) async {
+    final response = await deleteAssetsWithHttpInfo(assetBulkDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<DeleteAssetResponseDto>') as List)
-        .cast<DeleteAssetResponseDto>()
-        .toList();
-
-    }
-    return null;
   }
 
   /// Performs an HTTP 'POST /asset/download/archive' operation and returns the [Response].
@@ -339,6 +328,39 @@ class AssetApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'POST /asset/trash/empty' operation and returns the [Response].
+  Future<Response> emptyTrashWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/trash/empty';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> emptyTrash() async {
+    final response = await emptyTrashWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Get all AssetEntity belong to the user
@@ -549,7 +571,9 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, }) async {
+  ///
+  /// * [bool] isTrashed:
+  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/statistics';
 
@@ -565,6 +589,9 @@ class AssetApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
 
     const contentTypes = <String>[];
@@ -586,8 +613,10 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
-  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, }) async {
-    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, );
+  ///
+  /// * [bool] isTrashed:
+  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
+    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -681,8 +710,10 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isTrashed:
+  ///
   /// * [String] key:
-  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
+  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-bucket';
 
@@ -708,6 +739,9 @@ class AssetApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
       queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
     if (key != null) {
@@ -744,9 +778,11 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isTrashed:
+  ///
   /// * [String] key:
-  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
-    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
+  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
+    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1107,8 +1143,10 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isTrashed:
+  ///
   /// * [String] key:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-buckets';
 
@@ -1134,6 +1172,9 @@ class AssetApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
@@ -1167,9 +1208,11 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isTrashed:
+  ///
   /// * [String] key:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, String? key, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, key: key, );
+  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
+    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1287,6 +1330,78 @@ class AssetApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'POST /asset/restore' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> restoreAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/restore';
+
+    // ignore: prefer_final_locals
+    Object? postBody = bulkIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<void> restoreAssets(BulkIdsDto bulkIdsDto,) async {
+    final response = await restoreAssetsWithHttpInfo(bulkIdsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'POST /asset/trash/restore' operation and returns the [Response].
+  Future<Response> restoreTrashWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/trash/restore';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> restoreTrash() async {
+    final response = await restoreTrashWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'POST /asset/jobs' operation and returns the [Response].

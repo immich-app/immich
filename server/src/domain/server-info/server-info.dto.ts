@@ -83,6 +83,8 @@ export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
   mapTileUrl!: string;
+  @ApiProperty({ type: 'integer' })
+  trashDays!: number;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
@@ -90,6 +92,7 @@ export class ServerFeaturesDto implements FeatureFlags {
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
+  trash!: boolean;
   reverseGeocoding!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;

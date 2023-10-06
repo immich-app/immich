@@ -39,7 +39,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
@@ -54,7 +53,6 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 @Injectable()
 export class AssetService {

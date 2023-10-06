@@ -439,31 +439,17 @@ export class LibraryService {
   }
 
   private async deleteAssets(assetIds: string[]) {
-    // TODO: this should be refactored to a centralized asset deletion service
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.getById(assetId);
+      if (!asset) {
+        continue;
+      }
       this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
 
-      if (asset.faces) {
-        await Promise.all(
-          asset.faces.map(({ assetId, personId }) =>
-            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-          ),
-        );
-      }
-
-      await this.assetRepository.remove(asset);
-      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
-
       await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.id, fromExternal: true },
       });
-
-      // TODO refactor this to use cascades
-      if (asset.livePhotoVideoId && !assetIds.includes(asset.livePhotoVideoId)) {
-        assetIds.push(asset.livePhotoVideoId);
-      }
     }
   }
 }

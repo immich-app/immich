@@ -12,6 +12,10 @@ export interface IEntityJob extends IBaseJob {
   source?: 'upload';
 }
 
+export interface IAssetDeletionJob extends IEntityJob {
+  fromExternal?: boolean;
+}
+
 export interface IOfflineLibraryFileJob extends IEntityJob {
   assetPath: string;
 }

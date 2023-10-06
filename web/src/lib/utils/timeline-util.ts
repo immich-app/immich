@@ -2,6 +2,8 @@ import type { AssetResponseDto } from '@api';
 import lodash from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 
+export const fromLocalDateTime = (localDateTime: string) => DateTime.fromISO(localDateTime, { zone: 'UTC' });
+
 export const groupDateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',
   month: 'short',
@@ -45,7 +47,7 @@ export function splitBucketIntoDateGroups(
 ): AssetResponseDto[][] {
   return lodash
     .chain(assets)
-    .groupBy((asset) => new Date(asset.localDateTime).toLocaleDateString(locale, groupDateFormat))
+    .groupBy((asset) => fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }))
     .sortBy((group) => assets.indexOf(group[0]))
     .value();
 }

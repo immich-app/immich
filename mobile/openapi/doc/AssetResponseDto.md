@@ -21,6 +21,7 @@ Name | Type | Description | Notes
 **isFavorite** | **bool** |  | 
 **isOffline** | **bool** |  | 
 **isReadOnly** | **bool** |  | 
+**isTrashed** | **bool** |  | 
 **libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
 **localDateTime** | [**DateTime**](DateTime.md) |  | 
