@@ -19,7 +19,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
@@ -28,6 +28,8 @@ const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
   [TimeBucketSize.MONTH]: 'month',
 };
+
+const TIME_BUCKET_COLUMN = 'localDateTime';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -86,8 +88,8 @@ export class AssetRepository implements IAssetRepository {
       AND entity.isVisible = true
       AND entity.isArchived = false
       AND entity.resizePath IS NOT NULL
-      AND EXTRACT(DAY FROM entity.localDateTime) = :day
-      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
+      AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
           ownerId,
           day,
@@ -109,6 +111,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
 
@@ -130,15 +133,17 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         ownerId: userId,
-        isVisible: true,
+        isVisible: options.isVisible,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
       },
+      withDeleted: !!options.trashedBefore,
     });
   }
 
@@ -154,32 +159,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getById(assetId: string): Promise<AssetEntity> {
-    return this.repository.findOneOrFail({
-      where: {
-        id: assetId,
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        faces: {
-          person: true,
-        },
-      },
-    });
-  }
-
-  remove(asset: AssetEntity): Promise<AssetEntity> {
-    return this.repository.remove(asset);
-  }
-
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         isVisible: options.isVisible,
         type: options.type,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -189,6 +174,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -196,8 +182,30 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getById(id: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+        library: true,
+      },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
+    });
+  }
+
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids), isExternal: false });
+  }
+
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.repository.restore({ id: In(ids) });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
@@ -213,7 +221,12 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.repository.remove(asset);
   }
 
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
@@ -424,13 +437,17 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite } = options;
+    const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -465,23 +482,29 @@ export class AssetRepository implements IAssetRepository {
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
-      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
+      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
-    return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "localDateTime") = :timeBucket`, { timeBucket })
-      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
-      .addOrderBy('asset.fileCreatedAt', 'DESC')
-      .getMany();
+    return (
+      this.getBuilder(options)
+        .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
+          timeBucket,
+        })
+        // First sort by the day in localtime (put it in the right bucket)
+        .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+        // and then sort by the actual time
+        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .getMany()
+    );
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -502,6 +525,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {

@@ -1,10 +1,9 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import justifiedLayout from 'justified-layout';
-  import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
   import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
@@ -127,7 +126,7 @@
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
-    {@const groupTitle = formatGroupTitle(DateTime.fromISO(asset.localDateTime).startOf('day'))}
+    {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->

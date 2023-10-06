@@ -38,8 +38,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<DeleteAssetResponseDto>> deleteAsset(DeleteAssetDto deleteAssetDto) async
-    test('test deleteAsset', () async {
+    //Future deleteAssets(AssetBulkDeleteDto assetBulkDeleteDto) async
+    test('test deleteAssets', () async {
       // TODO
     });
 
@@ -50,6 +50,11 @@ void main() {
 
     //Future<MultipartFile> downloadFile(String id, { String key }) async
     test('test downloadFile', () async {
+      // TODO
+    });
+
+    //Future emptyTrash() async
+    test('test emptyTrash', () async {
       // TODO
     });
 
@@ -72,7 +77,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite }) async
+    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStats', () async {
       // TODO
     });
@@ -82,7 +87,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
+    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, String key }) async
     test('test getByTimeBucket', () async {
       // TODO
     });
@@ -117,7 +122,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, String key }) async
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, String key }) async
     test('test getTimeBuckets', () async {
       // TODO
     });
@@ -131,6 +136,16 @@ void main() {
 
     //Future<AssetFileUploadResponseDto> importFile(ImportAssetDto importAssetDto) async
     test('test importFile', () async {
+      // TODO
+    });
+
+    //Future restoreAssets(BulkIdsDto bulkIdsDto) async
+    test('test restoreAssets', () async {
+      // TODO
+    });
+
+    //Future restoreTrash() async
+    test('test restoreTrash', () async {
       // TODO
     });
 

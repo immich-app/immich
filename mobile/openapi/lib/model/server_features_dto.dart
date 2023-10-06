@@ -24,6 +24,7 @@ class ServerFeaturesDto {
     required this.search,
     required this.sidecar,
     required this.tagImage,
+    required this.trash,
   });
 
   bool clipEncode;
@@ -48,6 +49,8 @@ class ServerFeaturesDto {
 
   bool tagImage;
 
+  bool trash;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
      other.clipEncode == clipEncode &&
@@ -60,7 +63,8 @@ class ServerFeaturesDto {
      other.reverseGeocoding == reverseGeocoding &&
      other.search == search &&
      other.sidecar == sidecar &&
-     other.tagImage == tagImage;
+     other.tagImage == tagImage &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -75,10 +79,11 @@ class ServerFeaturesDto {
     (reverseGeocoding.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
-    (tagImage.hashCode);
+    (tagImage.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, tagImage=$tagImage]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, tagImage=$tagImage, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -93,6 +98,7 @@ class ServerFeaturesDto {
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'tagImage'] = this.tagImage;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -115,6 +121,7 @@ class ServerFeaturesDto {
         search: mapValueOfType<bool>(json, r'search')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
         tagImage: mapValueOfType<bool>(json, r'tagImage')!,
+        trash: mapValueOfType<bool>(json, r'trash')!,
       );
     }
     return null;
@@ -173,6 +180,7 @@ class ServerFeaturesDto {
     'search',
     'sidecar',
     'tagImage',
+    'trash',
   };
 }
 

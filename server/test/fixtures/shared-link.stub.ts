@@ -69,6 +69,7 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  isTrashed: false,
   libraryId: 'library-id',
 };
 
@@ -235,6 +236,7 @@ export const sharedLinkStub = {
           sharedLinks: [],
           faces: [],
           sidecarPath: null,
+          deletedAt: null,
         },
       ],
     },

@@ -5,6 +5,7 @@
   import { api } from '@api';
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import Play from 'svelte-material-icons/Play.svelte';
   import Pause from 'svelte-material-icons/Pause.svelte';
   import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
@@ -214,7 +215,7 @@
 
             <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>
-                {DateTime.fromISO(currentMemory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
+                {fromLocalDateTime(currentMemory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
               </p>
               <p>
                 {currentAsset.exifInfo?.city || ''}

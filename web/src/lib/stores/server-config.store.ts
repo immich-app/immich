@@ -16,6 +16,7 @@ export const featureFlags = writable<FeatureFlags>({
   oauthAutoLaunch: false,
   passwordLogin: true,
   configFile: false,
+  trash: true,
 });
 
 export type ServerConfig = ServerConfigDto & { loaded: boolean };
@@ -25,6 +26,7 @@ export const serverConfig = writable<ServerConfig>({
   oauthButtonText: '',
   mapTileUrl: '',
   loginPageMessage: '',
+  trashDays: 30,
 });
 
 export const loadConfig = async () => {

@@ -140,6 +140,7 @@ export class JobService {
   }
 
   async handleNightlyJobs() {
+    await this.jobRepository.queue({ name: JobName.ASSET_DELETION_CHECK });
     await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
