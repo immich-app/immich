@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { ServerInfoResponseDto, api } from '@api';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import Cloud from 'svelte-material-icons/Cloud.svelte';
   import Dns from 'svelte-material-icons/Dns.svelte';
   import { asByteUnitString } from '../../utils/byte-units';
@@ -15,6 +15,10 @@
 
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
   $: usedPercentage = Math.round((serverInfo?.diskUseRaw / serverInfo?.diskSizeRaw) * 100);
+
+  onMount(async () => {
+    await refresh();
+  });
 
   const refresh = async () => {
     try {

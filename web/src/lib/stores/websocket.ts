@@ -25,10 +25,7 @@ export const openWebsocketConnection = () => {
       .on('disconnect', () => websocketStore.connected.set(false))
       // .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(JSON.parse(data) as AssetResponseDto))
       .on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(JSON.parse(data) as string))
-      .on('on_person_thumbnail', (data) => {
-        console.log(data);
-        websocketStore.onPersonThumbnail.set(JSON.parse(data) as string);
-      })
+      .on('on_person_thumbnail', (data) => websocketStore.onPersonThumbnail.set(JSON.parse(data) as string))
       .on('on_server_version', (data) => websocketStore.serverVersion.set(JSON.parse(data) as ServerVersionResponseDto))
       .on('error', (e) => console.log('Websocket Error', e));
 
