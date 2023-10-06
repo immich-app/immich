@@ -14,6 +14,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { ICommunicationRepository } from '../communication';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobItem, JobName } from '../job';
 import { IStorageRepository } from '../storage';
@@ -153,6 +154,7 @@ describe(AssetService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
 
   it('should work', () => {
@@ -166,7 +168,7 @@ describe(AssetService.name, () => {
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock);
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock, communicationMock);
 
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)
