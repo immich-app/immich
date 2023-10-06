@@ -1,10 +1,10 @@
 import { LoginResponseDto } from '@app/domain';
-import { AppModule, ServerInfoController } from '@app/immich';
+import { ServerInfoController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
@@ -14,11 +14,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
   let loginResponse: LoginResponseDto;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
   });
 
@@ -81,9 +77,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: true,
+        clipEncode: false,
         configFile: false,
-        facialRecognition: true,
+        facialRecognition: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -91,7 +87,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         passwordLogin: true,
         search: false,
         sidecar: true,
-        tagImage: true,
+        tagImage: false,
         trash: true,
       });
     });

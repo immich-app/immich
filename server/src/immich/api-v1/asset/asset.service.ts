@@ -119,7 +119,7 @@ export class AssetService {
       }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
-      throw new BadRequestException(`Error uploading file`, `${error}`);
+      throw error;
     }
   }
 

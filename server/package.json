@@ -26,7 +26,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand",
+    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --max_old_space_size=4096' jest --config test/e2e/jest-e2e.json --runInBand --forceExit",
     "typeorm": "typeorm",
     "typeorm:migrations:create": "typeorm migration:create",
     "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/infra/database.config.js",
@@ -126,7 +126,8 @@
     "ts-loader": "^9.4.4",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "utimes": "^5.2.1"
   },
   "jest": {
     "clearMocks": true,

@@ -13,20 +13,15 @@ jobs:
   e2e-tests:
     name: Run end-to-end test suites
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
+        with:
+          submodules: "recursive"
 
       - name: Run e2e tests
-        run: npm run test:e2e
-        if: ${{ !cancelled() }}
+        run: docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks

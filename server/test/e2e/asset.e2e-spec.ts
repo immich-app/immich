@@ -6,13 +6,12 @@ import {
   LoginResponseDto,
   TimeBucketSize,
 } from '@app/domain';
-import { AppModule, AssetController } from '@app/immich';
+import { AssetController } from '@app/immich';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
+import { createTestApp, db } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
 
@@ -85,11 +84,8 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset4: AssetEntity;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    app = await createTestApp();
 
-    app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
   });
@@ -199,6 +195,27 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body.duplicate).toBe(true);
+    });
+
+    it("should not upload to another user's library", async () => {
+      const content = randomBytes(32);
+      const library = (await api.libraryApi.getAll(server, user2.accessToken))[0];
+      await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
+
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('libraryId', library.id)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', false)
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', content, 'example.jpg');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no asset.upload access'));
     });
   });
 

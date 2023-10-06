@@ -107,11 +107,12 @@ export type JobItem =
   | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
+export type JobItemHandler = (item: JobItem) => Promise<void>;
 
 export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
-  addHandler(queueName: QueueName, concurrency: number, handler: (job: JobItem) => Promise<void>): void;
+  addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   pause(name: QueueName): Promise<void>;
