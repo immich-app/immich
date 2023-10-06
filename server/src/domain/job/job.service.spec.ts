@@ -6,10 +6,12 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
+  newPersonRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
 import { IAssetRepository } from '../asset';
 import { ICommunicationRepository } from '../communication';
+import { IPersonRepository } from '../person';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
@@ -30,13 +32,15 @@ describe(JobService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new JobService(assetMock, communicationMock, jobMock, configMock);
+    personMock = newPersonRepositoryMock();
+    sut = new JobService(assetMock, communicationMock, jobMock, configMock, personMock);
   });
 
   it('should work', () => {

@@ -2,6 +2,7 @@ import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
+import { IPersonRepository } from '../person';
 import { FeatureFlag, ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
@@ -18,6 +19,7 @@ export class JobService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
     this.configCore = new SystemConfigCore(configRepository);
   }
@@ -171,11 +173,11 @@ export class JobService {
         }
         break;
 
-      case JobName.GENERATE_FACE_THUMBNAIL:
-        const { assetId, personId } = item.data;
-        const [asset] = await this.assetRepository.getByIds([assetId]);
-        if (asset) {
-          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, asset.ownerId, { personId, assetId });
+      case JobName.GENERATE_PERSON_THUMBNAIL:
+        const { id } = item.data;
+        const person = await this.personRepository.getById(id);
+        if (person) {
+          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, id);
         }
         break;
 

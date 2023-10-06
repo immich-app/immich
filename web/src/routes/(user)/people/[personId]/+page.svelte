@@ -74,7 +74,7 @@
 
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-  $: $onPersonThumbnail?.personId === data.person.id &&
+  $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
