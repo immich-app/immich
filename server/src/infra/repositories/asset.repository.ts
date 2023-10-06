@@ -29,6 +29,8 @@ const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.MONTH]: 'month',
 };
 
+const TIME_BUCKET_COLUMN = 'localDateTime';
+
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
@@ -86,8 +88,8 @@ export class AssetRepository implements IAssetRepository {
       AND entity.isVisible = true
       AND entity.isArchived = false
       AND entity.resizePath IS NOT NULL
-      AND EXTRACT(DAY FROM entity.localDateTime) = :day
-      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
+      AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
           ownerId,
           day,
@@ -480,19 +482,25 @@ export class AssetRepository implements IAssetRepository {
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
-      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
+      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
-    return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
-      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
-      .addOrderBy('asset.fileCreatedAt', 'DESC')
-      .getMany();
+    return (
+      this.getBuilder(options)
+        .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
+          timeBucket,
+        })
+        // First sort by the day in localtime (put it in the right bucket)
+        .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+        // and then sort by the actual time
+        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .getMany()
+    );
   }
 
   private getBuilder(options: TimeBucketOptions) {
