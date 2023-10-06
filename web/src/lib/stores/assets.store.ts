@@ -47,12 +47,17 @@ interface AddAsset {
   value: AssetResponseDto;
 }
 
-interface RemoveAsset {
-  type: 'remove';
+interface DeleteAsset {
+  type: 'delete';
   value: string;
 }
 
-type PendingChange = AddAsset | RemoveAsset;
+interface TrashAsset {
+  type: 'trash';
+  value: string;
+}
+
+type PendingChange = AddAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {
   private store$ = writable(this);
@@ -81,9 +86,19 @@ export class AssetStore {
         }
       }),
 
+      websocketStore.onAssetTrash.subscribe((ids) => {
+        console.log('onAssetTrash', ids);
+        if (ids) {
+          for (const id of ids) {
+            this.pendingChanges.push({ type: 'trash', value: id });
+          }
+          this.processPendingChanges();
+        }
+      }),
+
       websocketStore.onAssetDelete.subscribe((value) => {
         if (value) {
-          this.pendingChanges.push({ type: 'remove', value });
+          this.pendingChanges.push({ type: 'delete', value });
           this.processPendingChanges();
         }
       }),
@@ -102,7 +117,14 @@ export class AssetStore {
         case 'add':
           this.addAsset(value);
           break;
-        case 'remove':
+
+        case 'trash':
+          if (!this.options.isTrashed) {
+            this.removeAsset(value);
+          }
+          break;
+
+        case 'delete':
           this.removeAsset(value);
           break;
       }

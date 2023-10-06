@@ -395,6 +395,7 @@ export class AssetService {
     } else {
       await this.assetRepository.softDeleteAll(ids);
       await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids } });
+      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, authUser.id, ids);
     }
   }
 

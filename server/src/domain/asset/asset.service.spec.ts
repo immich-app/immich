@@ -7,6 +7,7 @@ import {
   faceStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
+  newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newStorageRepositoryMock,
@@ -164,6 +165,7 @@ describe(AssetService.name, () => {
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
