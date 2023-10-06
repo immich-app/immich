@@ -28,7 +28,7 @@ export const openWebsocketConnection = () => {
     websocket
       .on('connect', () => websocketStore.connected.set(true))
       .on('disconnect', () => websocketStore.connected.set(false))
-      .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(JSON.parse(data) as AssetResponseDto))
+      // .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(JSON.parse(data) as AssetResponseDto))
       .on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(JSON.parse(data) as string))
       .on('on_person_thumbnail', (data) => {
         console.log(data);

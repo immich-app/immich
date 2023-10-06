@@ -38,9 +38,9 @@
     on:outroend={() => {
       notificationController.show({
         message:
-          $errorCounter > 0
+          ($errorCounter > 0
             ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
-            : 'Upload success',
+            : 'Upload success') + ', refresh the page to see new upload assets.',
         type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
       });
 
