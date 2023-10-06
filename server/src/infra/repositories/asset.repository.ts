@@ -19,7 +19,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
+import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
@@ -109,6 +109,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
 
@@ -130,15 +131,17 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         ownerId: userId,
-        isVisible: true,
+        isVisible: options.isVisible,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
       },
+      withDeleted: !!options.trashedBefore,
     });
   }
 
@@ -154,32 +157,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getById(assetId: string): Promise<AssetEntity> {
-    return this.repository.findOneOrFail({
-      where: {
-        id: assetId,
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        faces: {
-          person: true,
-        },
-      },
-    });
-  }
-
-  remove(asset: AssetEntity): Promise<AssetEntity> {
-    return this.repository.remove(asset);
-  }
-
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         isVisible: options.isVisible,
         type: options.type,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -189,6 +172,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -196,8 +180,30 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getById(id: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+        library: true,
+      },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
+    });
+  }
+
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids), isExternal: false });
+  }
+
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.repository.restore({ id: In(ids) });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
@@ -213,7 +219,12 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.repository.remove(asset);
   }
 
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
@@ -424,13 +435,17 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite } = options;
+    const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -481,7 +496,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -502,6 +517,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {

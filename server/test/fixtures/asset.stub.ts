@@ -35,6 +35,7 @@ export const assetStub = {
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
+    deletedAt: null,
     isOffline: false,
     isExternal: false,
     libraryId: 'library-id',
@@ -77,6 +78,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 123_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -112,6 +114,7 @@ export const assetStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
+    deletedAt: null,
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -146,6 +149,7 @@ export const assetStub = {
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
+    deletedAt: null,
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5_000,
@@ -179,11 +183,12 @@ export const assetStub = {
     livePhotoVideoId: null,
     isOffline: false,
     libraryId: 'library-id',
-    library: libraryStub.uploadLibrary1,
+    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
+    deletedAt: null,
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5_000,
@@ -226,6 +231,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   image1: Object.freeze<AssetEntity>({
     id: 'asset-id-1',
@@ -244,6 +250,7 @@ export const assetStub = {
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    deletedAt: null,
     localDateTime: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: true,
     isArchived: false,
@@ -302,6 +309,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -340,6 +348,7 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 100_000,
     } as ExifEntity,
+    deletedAt: null,
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -411,6 +420,7 @@ export const assetStub = {
       longitude: 100,
       fileSizeInByte: 23_456,
     } as ExifEntity,
+    deletedAt: null,
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -446,5 +456,12 @@ export const assetStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: '/original/path.ext.xmp',
+    deletedAt: null,
+  }),
+  readOnly: Object.freeze({
+    id: 'read-only-asset',
+    isReadOnly: true,
+    libraryId: 'library-id',
+    library: libraryStub.uploadLibrary1,
   }),
 };

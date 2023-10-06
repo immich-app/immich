@@ -12,7 +12,8 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { ICommunicationRepository } from '..';
 import { IJobRepository, JobName, QueueName } from '../job';
 import { SystemConfigValidator, defaults } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
@@ -21,6 +22,7 @@ import { SystemConfigService } from './system-config.service';
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
+  { key: SystemConfigKey.TRASH_DAYS, value: 10 },
 ];
 
 const updatedConfig = Object.freeze<SystemConfig>({
@@ -110,18 +112,24 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  trash: {
+    enabled: true,
+    days: 10,
+  },
 });
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, jobMock);
+    sut = new SystemConfigService(configMock, communicationMock, jobMock);
   });
 
   it('should work', () => {
@@ -157,6 +165,7 @@ describe(SystemConfigService.name, () => {
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
         { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
+        { key: SystemConfigKey.TRASH_DAYS, value: 10 },
       ]);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -164,7 +173,7 @@ describe(SystemConfigService.name, () => {
 
     it('should load the config from a file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true } };
+      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true }, trash: { days: 10 } };
       configMock.readFile.mockResolvedValue(Buffer.from(JSON.stringify(partialConfig)));
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);

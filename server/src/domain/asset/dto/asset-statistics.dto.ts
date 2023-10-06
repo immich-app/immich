@@ -15,6 +15,11 @@ export class AssetStatsDto {
   @Transform(toBoolean)
   @Optional()
   isFavorite?: boolean;
+
+  @IsBoolean()
+  @Transform(toBoolean)
+  @Optional()
+  isTrashed?: boolean;
 }
 
 export class AssetStatsResponseDto {

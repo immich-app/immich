@@ -76,9 +76,6 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
-  if (value is DeleteAssetStatus) {
-    return DeleteAssetStatusTypeTransformer().encode(value).toString();
-  }
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
   }

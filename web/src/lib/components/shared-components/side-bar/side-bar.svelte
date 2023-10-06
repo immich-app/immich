@@ -10,6 +10,7 @@
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Map from 'svelte-material-icons/Map.svelte';
   import Account from 'svelte-material-icons/Account.svelte';
+  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
   import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
   import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
   import { AppRoute } from '../../../constants';
@@ -37,6 +38,7 @@
   const isFavoritesSelected = $page.route.id === '/(user)/favorites';
   const isPhotosSelected = $page.route.id === '/(user)/photos';
   const isSharingSelected = $page.route.id === '/(user)/sharing';
+  const isTrashSelected = $page.route.id === '/(user)/trash';
 </script>
 
 <SideBarSection>
@@ -139,6 +141,23 @@
         {/await}
       </svelte:fragment>
     </SideBarButton>
+
+    {#if $featureFlags.trash}
+      <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
+        <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={isTrashSelected}>
+          <svelte:fragment slot="moreInformation">
+            {#await getStats({ isTrashed: true })}
+              <LoadingSpinner />
+            {:then data}
+              <div>
+                <p>{data.videos.toLocaleString($locale)} Videos</p>
+                <p>{data.images.toLocaleString($locale)} Photos</p>
+              </div>
+            {/await}
+          </svelte:fragment>
+        </SideBarButton>
+      </a>
+    {/if}
   </a>
 
   <!-- Status Box -->

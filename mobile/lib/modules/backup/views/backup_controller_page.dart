@@ -81,7 +81,9 @@ class BackupControllerPage extends HookConsumerWidget {
           context: context,
           msg: "Deleting ${assets.length} assets on the server...",
         );
-        await ref.read(assetProvider.notifier).deleteAssets(assets);
+        await ref
+            .read(assetProvider.notifier)
+            .deleteAssets(assets, force: true);
         ImmichToast.show(
           context: context,
           msg: "Deleted ${assets.length} assets on the server. "

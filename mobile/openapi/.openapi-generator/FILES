@@ -15,6 +15,7 @@ doc/AlbumCountResponseDto.md
 doc/AlbumResponseDto.md
 doc/AllJobStatusResponseDto.md
 doc/AssetApi.md
+doc/AssetBulkDeleteDto.md
 doc/AssetBulkUpdateDto.md
 doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
@@ -53,9 +54,6 @@ doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
 doc/CuratedObjectsResponseDto.md
-doc/DeleteAssetDto.md
-doc/DeleteAssetResponseDto.md
-doc/DeleteAssetStatus.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
@@ -131,6 +129,7 @@ doc/SystemConfigReverseGeocodingDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
 doc/SystemConfigThumbnailDto.md
+doc/SystemConfigTrashDto.md
 doc/TagApi.md
 doc/TagResponseDto.md
 doc/TagTypeEnum.md
@@ -186,6 +185,7 @@ lib/model/api_key_create_dto.dart
 lib/model/api_key_create_response_dto.dart
 lib/model/api_key_response_dto.dart
 lib/model/api_key_update_dto.dart
+lib/model/asset_bulk_delete_dto.dart
 lib/model/asset_bulk_update_dto.dart
 lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
@@ -222,9 +222,6 @@ lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
 lib/model/curated_locations_response_dto.dart
 lib/model/curated_objects_response_dto.dart
-lib/model/delete_asset_dto.dart
-lib/model/delete_asset_response_dto.dart
-lib/model/delete_asset_status.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
@@ -291,6 +288,7 @@ lib/model/system_config_reverse_geocoding_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
 lib/model/system_config_thumbnail_dto.dart
+lib/model/system_config_trash_dto.dart
 lib/model/tag_response_dto.dart
 lib/model/tag_type_enum.dart
 lib/model/thumbnail_format.dart
@@ -322,6 +320,7 @@ test/api_key_create_response_dto_test.dart
 test/api_key_response_dto_test.dart
 test/api_key_update_dto_test.dart
 test/asset_api_test.dart
+test/asset_bulk_delete_dto_test.dart
 test/asset_bulk_update_dto_test.dart
 test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
@@ -360,9 +359,6 @@ test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
 test/curated_objects_response_dto_test.dart
-test/delete_asset_dto_test.dart
-test/delete_asset_response_dto_test.dart
-test/delete_asset_status_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
@@ -438,6 +434,7 @@ test/system_config_reverse_geocoding_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
+test/system_config_trash_dto_test.dart
 test/tag_api_test.dart
 test/tag_response_dto_test.dart
 test/tag_type_enum_test.dart
