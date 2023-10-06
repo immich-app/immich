@@ -25,8 +25,6 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
 
-  const date = DateTime.fromISO('2023-10-06T00:00:00.414Z', { zone: 'UTC' });
-  console.log(date.startOf('day').toLocaleString());
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
