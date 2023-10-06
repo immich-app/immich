@@ -155,7 +155,7 @@ export class LibraryService {
       return false;
     }
 
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
+    if (!path.normalize(assetPath).match(new RegExp(`^${path.normalize(user.externalPath)}`))) {
       this.logger.error("Asset must be within the user's external path");
       return false;
     }
