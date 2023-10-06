@@ -2,10 +2,8 @@ import {
   AccessCore,
   AssetResponseDto,
   AuthUserDto,
-  CommunicationEvent,
   getLivePhotoMotionFilename,
   IAccessRepository,
-  ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
@@ -64,7 +62,6 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
@@ -246,67 +243,6 @@ export class AssetService {
 
     await this.sendFile(res, filepath);
   }
-
-  // public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-  //   const deleteQueue: Array<string | null> = [];
-  //   const result: DeleteAssetResponseDto[] = [];
-
-  //   const ids = dto.ids.slice();
-  //   for (const id of ids) {
-  //     const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
-  //     if (!hasAccess) {
-  //       result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-  //       continue;
-  //     }
-
-  //     const asset = await this._assetRepository.get(id);
-  //     if (!asset || !asset.library || asset.library.type === LibraryType.EXTERNAL) {
-  //       // We don't allow deletions assets belong to an external library
-  //       result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-  //       continue;
-  //     }
-
-  //     try {
-  //       if (asset.faces) {
-  //         await Promise.all(
-  //           asset.faces.map(({ assetId, personId }) =>
-  //             this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-  //           ),
-  //         );
-  //       }
-
-  //       await this._assetRepository.remove(asset);
-  //       await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
-  //       this.communicationRepository.send(CommunicationEvent.ASSET_DELETE, asset.ownerId, id);
-
-  //       result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-
-  //       if (!asset.isReadOnly) {
-  //         deleteQueue.push(
-  //           asset.originalPath,
-  //           asset.webpPath,
-  //           asset.resizePath,
-  //           asset.encodedVideoPath,
-  //           asset.sidecarPath,
-  //         );
-  //       }
-
-  //       // TODO refactor this to use cascades
-  //       if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
-  //         ids.push(asset.livePhotoVideoId);
-  //       }
-  //     } catch (error) {
-  //       this.logger.error(`Error deleting asset ${id}`, error);
-  //       result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-  //     }
-  //   }
-
-  //   if (deleteQueue.length > 0) {
-  //     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: deleteQueue } });
-  //   }
-
-  //   return result;
-  // }
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
