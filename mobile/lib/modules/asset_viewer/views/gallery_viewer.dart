@@ -171,27 +171,32 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void handleDelete(Asset deleteAsset) {
-      onDelete(bool force) {
-        if (totalAssets == 1) {
-          // Handle only one asset
-          AutoRouter.of(context).pop();
-        } else {
-          // Go to next page otherwise
-          controller.nextPage(
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastLinearToSlowEaseIn,
-          );
-        }
-        ref.read(assetProvider.notifier).deleteAssets(
+    void handleDelete(Asset deleteAsset) async {
+      Future<bool> onDelete(bool force) async {
+        final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
           force: force,
         );
+        if (isDeleted) {
+          if (totalAssets == 1) {
+            // Handle only one asset
+            AutoRouter.of(context).pop();
+          } else {
+            // Go to next page otherwise
+            controller.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.fastLinearToSlowEaseIn,
+            );
+          }
+        }
+        return isDeleted;
       }
 
+      // Asset is trashed
       if (isTrashEnabled && !isFromTrash) {
-        onDelete(false);
-        if (context.mounted) {
+        final isDeleted = await onDelete(false);
+        // Can only trash assets stored in server. Local assets are always permanently removed for now
+        if (context.mounted && isDeleted && deleteAsset.isRemote) {
           ImmichToast.show(
             durationInSecond: 1,
             context: context,
@@ -201,6 +206,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         }
         return;
       }
+
+      // Asset is permanently removed
       showDialog(
         context: context,
         builder: (BuildContext _) {

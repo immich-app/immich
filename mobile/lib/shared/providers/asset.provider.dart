@@ -91,7 +91,7 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<void> deleteAssets(
+  Future<bool> deleteAssets(
     Iterable<Asset> deleteAssets, {
     bool? force = false,
   }) async {
@@ -123,11 +123,13 @@ class AssetNotifier extends StateNotifier<bool> {
           await _db.exifInfos.deleteAll(dbIds);
           await _db.assets.deleteAll(dbIds);
         });
+        return true;
       }
     } finally {
       _deleteInProgress = false;
       state = false;
     }
+    return false;
   }
 
   Future<List<String>> _deleteLocalAssets(
