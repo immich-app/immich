@@ -9,4 +9,8 @@ export class CommunicationRepository {
   send(event: CommunicationEvent, userId: string, data: any) {
     this.ws.server.to(userId).emit(event, JSON.stringify(data));
   }
+
+  broadcast(event: CommunicationEvent, data: any) {
+    this.ws.server.emit(event, data);
+  }
 }

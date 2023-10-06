@@ -30,7 +30,8 @@ class Asset {
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite,
-        isArchived = remote.isArchived;
+        isArchived = remote.isArchived,
+        isTrashed = remote.isTrashed;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -45,6 +46,7 @@ class Asset {
         updatedAt = local.modifiedDateTime,
         isFavorite = local.isFavorite,
         isArchived = false,
+        isTrashed = false,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -74,6 +76,7 @@ class Asset {
     this.exifInfo,
     required this.isFavorite,
     required this.isArchived,
+    required this.isTrashed,
   });
 
   @ignore
@@ -138,6 +141,8 @@ class Asset {
 
   bool isArchived;
 
+  bool isTrashed;
+
   @ignore
   ExifInfo? exifInfo;
 
@@ -194,7 +199,8 @@ class Asset {
         livePhotoVideoId == other.livePhotoVideoId &&
         isFavorite == other.isFavorite &&
         isLocal == other.isLocal &&
-        isArchived == other.isArchived;
+        isArchived == other.isArchived &&
+        isTrashed == other.isTrashed;
   }
 
   @override
@@ -216,7 +222,8 @@ class Asset {
       livePhotoVideoId.hashCode ^
       isFavorite.hashCode ^
       isLocal.hashCode ^
-      isArchived.hashCode;
+      isArchived.hashCode ^
+      isTrashed.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -229,8 +236,9 @@ class Asset {
         width == null && a.width != null ||
         height == null && a.height != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        !isRemote && a.isRemote && isFavorite != a.isFavorite ||
-        !isRemote && a.isRemote && isArchived != a.isArchived;
+        isFavorite != a.isFavorite ||
+        isArchived != a.isArchived ||
+        isTrashed != a.isTrashed;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -261,6 +269,7 @@ class Asset {
           livePhotoVideoId: livePhotoVideoId,
           isFavorite: isFavorite,
           isArchived: isArchived,
+          isTrashed: isTrashed,
         );
       }
     } else {
@@ -275,6 +284,7 @@ class Asset {
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
+          isTrashed: a.isTrashed,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
       } else {
@@ -306,6 +316,7 @@ class Asset {
     String? livePhotoVideoId,
     bool? isFavorite,
     bool? isArchived,
+    bool? isTrashed,
     ExifInfo? exifInfo,
   }) =>
       Asset(
@@ -325,6 +336,7 @@ class Asset {
         livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
+        isTrashed: isTrashed ?? this.isTrashed,
         exifInfo: exifInfo ?? this.exifInfo,
       );
 
@@ -378,7 +390,8 @@ class Asset {
   "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
-  "isArchived": $isArchived
+  "isArchived": $isArchived,
+  "isTrashed": $isTrashed,
 }""";
   }
 }

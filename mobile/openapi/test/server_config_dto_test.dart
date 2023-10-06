@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // int trashDays
+    test('to test the property `trashDays`', () async {
+      // TODO
+    });
+
 
   });
 

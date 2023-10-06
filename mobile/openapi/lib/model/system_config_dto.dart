@@ -22,6 +22,7 @@ class SystemConfigDto {
     required this.reverseGeocoding,
     required this.storageTemplate,
     required this.thumbnail,
+    required this.trash,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -42,6 +43,8 @@ class SystemConfigDto {
 
   SystemConfigThumbnailDto thumbnail;
 
+  SystemConfigTrashDto trash;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
@@ -52,7 +55,8 @@ class SystemConfigDto {
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
-     other.thumbnail == thumbnail;
+     other.thumbnail == thumbnail &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -65,10 +69,11 @@ class SystemConfigDto {
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
-    (thumbnail.hashCode);
+    (thumbnail.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,6 +86,7 @@ class SystemConfigDto {
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -101,6 +107,7 @@ class SystemConfigDto {
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
+        trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
       );
     }
     return null;
@@ -157,6 +164,7 @@ class SystemConfigDto {
     'reverseGeocoding',
     'storageTemplate',
     'thumbnail',
+    'trash',
   };
 }
 

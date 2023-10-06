@@ -100,6 +100,7 @@
         <a
           href="https://github.com/immich-app/immich/releases"
           class="font-medium text-immich-primary dark:text-immich-dark-primary"
+          target="_blank"
         >
           {serverVersion}
         </a>

@@ -1,20 +1,23 @@
-import { AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
   assetStub,
   authStub,
+  faceStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
 import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
+import { IJobRepository, JobItem, JobName } from '../job';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { AssetStats, IAssetRepository, TimeBucketSize } from './asset.repository';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
@@ -150,6 +153,7 @@ describe(AssetService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -161,7 +165,15 @@ describe(AssetService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, storageMock);
+    configMock = newSystemConfigRepositoryMock();
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock);
+
+    when(assetMock.getById)
+      .calledWith(assetStub.livePhotoStillAsset.id)
+      .mockResolvedValue(assetStub.livePhotoStillAsset as AssetEntity);
+    when(assetMock.getById)
+      .calledWith(assetStub.livePhotoMotionAsset.id)
+      .mockResolvedValue(assetStub.livePhotoMotionAsset as AssetEntity);
   });
 
   describe('canUpload', () => {
@@ -274,60 +286,24 @@ describe(AssetService.name, () => {
   });
 
   describe('getMemoryLane', () => {
-    it('should get pictures for each year', async () => {
-      assetMock.getByDate.mockResolvedValue([]);
-
-      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 10 })).resolves.toEqual(
-        [],
-      );
-
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(10);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2020-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2019-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2018-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2017-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2016-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2015-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2014-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2013-06-15T00:00:00.000Z')],
-      ]);
+    beforeAll(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-01-15'));
     });
 
-    it('should keep hours from the date', async () => {
-      assetMock.getByDate.mockResolvedValue([]);
-
-      await expect(
-        sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15, 5), years: 2 }),
-      ).resolves.toEqual([]);
-
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T05:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T05:00:00.000Z')],
-      ]);
+    afterAll(() => {
+      jest.useRealTimers();
     });
 
     it('should set the title correctly', async () => {
-      when(assetMock.getByDate)
-        .calledWith(authStub.admin.id, new Date('2022-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetStub.image]);
-      when(assetMock.getByDate)
-        .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
-        .mockResolvedValue([assetStub.video]);
+      assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
+      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
-        { title: '2 years since...', assets: [mapAsset(assetStub.video)] },
+        { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
       ]);
 
-      expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
-      expect(assetMock.getByDate.mock.calls).toEqual([
-        [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
-        [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
-      ]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[authStub.admin.id, { day: 15, month: 1 }]]);
     });
   });
 
@@ -512,7 +488,9 @@ describe(AssetService.name, () => {
         downloadResponse,
       );
 
-      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.id);
+      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.id, {
+        isVisible: true,
+      });
     });
 
     it('should split archives by size', async () => {
@@ -629,6 +607,203 @@ describe(AssetService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
       expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should required asset delete access for all ids', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(
+        sut.deleteAll(authStub.user1, {
+          ids: ['asset-1'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should force delete a batch of assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
+        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
+      ]);
+    });
+
+    it('should soft delete a batch of assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
+
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['asset1', 'asset2']);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_REMOVE_ASSET,
+            data: { ids: ['asset1', 'asset2'] },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('restoreAll', () => {
+    it('should required asset restore access for all ids', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      await expect(
+        sut.deleteAll(authStub.user1, {
+          ids: ['asset-1'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should restore a batch of assets', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      await sut.restoreAll(authStub.user1, { ids: ['asset1', 'asset2'] });
+
+      expect(assetMock.restoreAll).toHaveBeenCalledWith(['asset1', 'asset2']);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_INDEX_ASSET,
+            data: { ids: ['asset1', 'asset2'] },
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('handleAssetDeletion', () => {
+    beforeEach(() => {
+      when(jobMock.queue)
+        .calledWith(
+          expect.objectContaining({
+            name: JobName.ASSET_DELETION,
+          }),
+        )
+        .mockImplementation(async (item: JobItem) => {
+          const jobData = (item as { data?: any })?.data || {};
+          await sut.handleAssetDeletion(jobData);
+        });
+    });
+
+    it('should remove faces', async () => {
+      const assetWithFace = { ...(assetStub.image as AssetEntity), faces: [faceStub.face1, faceStub.mergeFace1] };
+
+      when(assetMock.getById).calledWith(assetWithFace.id).mockResolvedValue(assetWithFace);
+
+      await sut.handleAssetDeletion({ id: assetWithFace.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.SEARCH_REMOVE_FACE,
+            data: { assetId: faceStub.face1.assetId, personId: faceStub.face1.personId },
+          },
+        ],
+        [
+          {
+            name: JobName.SEARCH_REMOVE_FACE,
+            data: { assetId: faceStub.mergeFace1.assetId, personId: faceStub.mergeFace1.personId },
+          },
+        ],
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetWithFace.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetWithFace.webpPath,
+                assetWithFace.resizePath,
+                assetWithFace.encodedVideoPath,
+                assetWithFace.sidecarPath,
+                assetWithFace.originalPath,
+              ],
+            },
+          },
+        ],
+      ]);
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetWithFace);
+    });
+
+    it('should not schedule delete-files job for readonly assets', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.readOnly.id)
+        .mockResolvedValue(assetStub.readOnly as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.readOnly.id] } }],
+      ]);
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
+    });
+
+    it('should not process assets from external library without fromExternal flag', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.external.id)
+        .mockResolvedValue(assetStub.external as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.external.id });
+
+      expect(jobMock.queue).not.toBeCalled();
+      expect(assetMock.remove).not.toBeCalled();
+    });
+
+    it('should process assets from external library with fromExternal flag', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.external.id)
+        .mockResolvedValue(assetStub.external as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.external);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.external.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.external.webpPath,
+                assetStub.external.resizePath,
+                assetStub.external.encodedVideoPath,
+                assetStub.external.sidecarPath,
+              ],
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('should delete a live photo', async () => {
+      await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoStillAsset.id] } }],
+        [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [assetStub.livePhotoMotionAsset.id] } }],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.mp4'],
+            },
+          },
+        ],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+            },
+          },
+        ],
+      ]);
     });
   });
 
