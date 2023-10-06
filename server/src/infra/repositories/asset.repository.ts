@@ -482,17 +482,19 @@ export class AssetRepository implements IAssetRepository {
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}")`)
-      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
+      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
     return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}") = :timeBucket`, { timeBucket })
-      .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}")`, 'DESC')
+      .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
+        timeBucket,
+      })
+      .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
       .addOrderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
