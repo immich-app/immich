@@ -42,6 +42,7 @@ const image: Record<string, string[]> = {
   '.heif': ['image/heif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
   '.insp': ['image/jpeg'],
+  '.jpe': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
   '.jxl': ['image/jxl'],
