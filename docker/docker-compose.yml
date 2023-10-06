@@ -8,6 +8,8 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+    # Any external library import paths go here, for example:
+    # - /media/my/photos/:/data/import/photos/
     env_file:
       - .env
     depends_on:
@@ -26,6 +28,8 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+    # Any external library import paths go here, for example:
+    # - /media/my/photos/:/data/import/photos/
     env_file:
       - .env
     depends_on:
