@@ -34,6 +34,7 @@ void main() {
       fileName: localId ?? remoteId ?? "",
       isFavorite: false,
       isArchived: false,
+      isTrashed: false,
     );
   }
 

@@ -12,6 +12,7 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingSelect from '../setting-select.svelte';
+  import { loadConfig } from '$lib/stores/server-config.store';
 
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
@@ -47,6 +48,9 @@
       savedConfig = cloneDeep(updated);
 
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
+      // TODO: Use websockets to reload feature params instead once websocket for client is merged
+      // Reload feature params in the background
+      loadConfig();
     } catch (error) {
       handleError(error, 'Unable to save settings');
     }

@@ -87,6 +87,9 @@ export enum SystemConfigKey {
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
   THUMBNAIL_QUALITY = 'thumbnail.quality',
   THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
+
+  TRASH_ENABLED = 'trash.enabled',
+  TRASH_DAYS = 'trash.days',
 }
 
 export enum TranscodePolicy {
@@ -213,5 +216,9 @@ export interface SystemConfig {
     jpegSize: number;
     quality: number;
     colorspace: Colorspace;
+  };
+  trash: {
+    enabled: boolean;
+    days: number;
   };
 }

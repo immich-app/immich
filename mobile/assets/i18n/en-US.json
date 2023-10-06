@@ -322,5 +322,17 @@
   "map_no_location_permission_title": "Location Permission denied",
   "map_no_location_permission_content": "Location permission is needed to display assets from your current location. Do you want to allow it now?",
   "map_location_dialog_cancel": "Cancel",
-  "map_location_dialog_yes": "Yes"
+  "map_location_dialog_yes": "Yes",
+  "trash_page_title": "Trash ({})",
+  "trash_page_info": "Backed up items will be permanently deleted after {} days",
+  "trash_page_no_assets": "No trashed assets",
+  "trash_page_delete": "Delete",
+  "trash_page_delete_all": "Delete All",
+  "trash_page_restore": "Restore",
+  "trash_page_restore_all": "Restore All",
+  "trash_page_select_btn": "Select",
+  "trash_page_select_assets_btn": "Select assets",
+  "trash_page_empty_trash_btn": "Empty trash",
+  "trash_page_empty_trash_dialog_ok": "Ok",
+  "trash_page_empty_trash_dialog_content": "Do you want to empty your trashed assets? These items will be permanently removed from Immich"
 }

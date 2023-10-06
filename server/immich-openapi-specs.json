@@ -681,30 +681,20 @@
     },
     "/asset": {
       "delete": {
-        "operationId": "deleteAsset",
+        "operationId": "deleteAssets",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DeleteAssetDto"
+                "$ref": "#/components/schemas/AssetBulkDeleteDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/DeleteAssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
+          "204": {
             "description": ""
           }
         },
@@ -1568,6 +1558,41 @@
         ]
       }
     },
+    "/asset/restore": {
+      "post": {
+        "operationId": "restoreAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -1662,6 +1687,14 @@
           },
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
             "required": false,
             "in": "query",
             "schema": {
@@ -1818,6 +1851,14 @@
             }
           },
           {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "timeBucket",
             "required": true,
             "in": "query",
@@ -1930,6 +1971,14 @@
             }
           },
           {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -1963,6 +2012,56 @@
           {
             "api_key": []
           },
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/trash/empty": {
+      "post": {
+        "operationId": "emptyTrash",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/trash/restore": {
+      "post": {
+        "operationId": "restoreTrash",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
           {
             "bearer": []
           },
@@ -5398,6 +5497,24 @@
         ],
         "type": "object"
       },
+      "AssetBulkDeleteDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          },
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
       "AssetBulkUpdateDto": {
         "properties": {
           "ids": {
@@ -5616,6 +5733,9 @@
           "isReadOnly": {
             "type": "boolean"
           },
+          "isTrashed": {
+            "type": "boolean"
+          },
           "libraryId": {
             "type": "string"
           },
@@ -5686,6 +5806,7 @@
           "updatedAt",
           "isFavorite",
           "isArchived",
+          "isTrashed",
           "localDateTime",
           "isOffline",
           "isExternal",
@@ -6221,48 +6342,6 @@
           "deviceId"
         ],
         "type": "object"
-      },
-      "DeleteAssetDto": {
-        "properties": {
-          "ids": {
-            "example": [
-              "bf973405-3f2a-48d2-a687-2ed4167164be",
-              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
-              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "title": "Array of asset IDs to delete",
-            "type": "array"
-          }
-        },
-        "required": [
-          "ids"
-        ],
-        "type": "object"
-      },
-      "DeleteAssetResponseDto": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/DeleteAssetStatus"
-          }
-        },
-        "required": [
-          "status",
-          "id"
-        ],
-        "type": "object"
-      },
-      "DeleteAssetStatus": {
-        "enum": [
-          "SUCCESS",
-          "FAILED"
-        ],
-        "type": "string"
       },
       "DownloadArchiveInfo": {
         "properties": {
@@ -7225,9 +7304,13 @@
           },
           "oauthButtonText": {
             "type": "string"
+          },
+          "trashDays": {
+            "type": "integer"
           }
         },
         "required": [
+          "trashDays",
           "oauthButtonText",
           "loginPageMessage",
           "mapTileUrl"
@@ -7268,6 +7351,9 @@
           },
           "tagImage": {
             "type": "boolean"
+          },
+          "trash": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -7275,6 +7361,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "trash",
           "reverseGeocoding",
           "oauth",
           "oauthAutoLaunch",
@@ -7630,6 +7717,9 @@
           },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
+          },
+          "trash": {
+            "$ref": "#/components/schemas/SystemConfigTrashDto"
           }
         },
         "required": [
@@ -7641,7 +7731,8 @@
           "reverseGeocoding",
           "storageTemplate",
           "job",
-          "thumbnail"
+          "thumbnail",
+          "trash"
         ],
         "type": "object"
       },
@@ -7988,6 +8079,21 @@
           "jpegSize",
           "quality",
           "colorspace"
+        ],
+        "type": "object"
+      },
+      "SystemConfigTrashDto": {
+        "properties": {
+          "days": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "days",
+          "enabled"
         ],
         "type": "object"
       },

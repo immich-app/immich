@@ -17,6 +17,7 @@ final archiveProvider = StreamProvider<RenderList>((ref) async* {
       .ownerIdEqualToAnyChecksum(user.isarId)
       .filter()
       .isArchivedEqualTo(true)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

@@ -7,6 +7,7 @@ export enum Permission {
   ASSET_READ = 'asset.read',
   ASSET_UPDATE = 'asset.update',
   ASSET_DELETE = 'asset.delete',
+  ASSET_RESTORE = 'asset.restore',
   ASSET_SHARE = 'asset.share',
   ASSET_VIEW = 'asset.view',
   ASSET_DOWNLOAD = 'asset.download',
@@ -126,6 +127,9 @@ export class AccessCore {
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
       case Permission.ASSET_DELETE:
+        return this.repository.asset.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ASSET_RESTORE:
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
       case Permission.ASSET_SHARE:

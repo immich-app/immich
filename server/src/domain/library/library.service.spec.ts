@@ -1182,23 +1182,8 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.SEARCH_REMOVE_ASSET,
-            data: {
-              ids: [assetStub.image1.id],
-            },
-          },
-        ],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.image1.webpPath,
-                assetStub.image1.resizePath,
-                assetStub.image1.encodedVideoPath,
-                assetStub.image1.sidecarPath,
-              ],
-            },
+            name: JobName.ASSET_DELETION,
+            data: { id: assetStub.image1.id, fromExternal: true },
           },
         ],
       ]);

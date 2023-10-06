@@ -23,7 +23,6 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
-  remove(asset: AssetEntity): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -111,6 +110,8 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
     });
   }
 
@@ -135,6 +136,7 @@ export class AssetRepository implements IAssetRepository {
       order: {
         fileCreatedAt: 'DESC',
       },
+      withDeleted: true,
     });
   }
 
@@ -147,15 +149,12 @@ export class AssetRepository implements IAssetRepository {
         },
         library: true,
       },
+      withDeleted: true,
     });
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
-  }
-
-  async remove(asset: AssetEntity): Promise<void> {
-    await this.assetRepository.remove(asset);
   }
 
   /**
@@ -194,6 +193,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         checksum: In(checksums),
       },
+      withDeleted: true,
     });
   }
 

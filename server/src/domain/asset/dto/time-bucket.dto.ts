@@ -28,6 +28,11 @@ export class TimeBucketDto {
   @IsBoolean()
   @Transform(toBoolean)
   isFavorite?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  isTrashed?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
