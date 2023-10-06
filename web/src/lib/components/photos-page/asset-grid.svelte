@@ -44,6 +44,7 @@
   onMount(async () => {
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
+    assetStore.connect();
     await assetStore.init(viewport);
   });
 
@@ -55,6 +56,8 @@
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
+
+    assetStore.disconnect();
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {

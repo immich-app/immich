@@ -1,10 +1,19 @@
-import { io, Socket } from 'socket.io-client';
+import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
+import { io } from 'socket.io-client';
+import { writable } from 'svelte/store';
 
-let websocket: Socket;
+export const websocketStore = {
+  onUploadSuccess: writable<AssetResponseDto>(),
+  onAssetDelete: writable<string>(),
+  onAssetTrash: writable<string[]>(),
+  onPersonThumbnail: writable<string>(),
+  serverVersion: writable<ServerVersionResponseDto>(),
+  connected: writable<boolean>(false),
+};
 
 export const openWebsocketConnection = () => {
   try {
-    websocket = io('', {
+    const websocket = io('', {
       path: '/api/socket.io',
       transports: ['polling'],
       reconnection: true,
@@ -12,21 +21,18 @@ export const openWebsocketConnection = () => {
       autoConnect: true,
     });
 
-    listenToEvent(websocket);
+    websocket
+      .on('connect', () => websocketStore.connected.set(true))
+      .on('disconnect', () => websocketStore.connected.set(false))
+      // .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(JSON.parse(data) as AssetResponseDto))
+      .on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(JSON.parse(data) as string))
+      .on('on_asset_trash', (data) => websocketStore.onAssetTrash.set(JSON.parse(data) as string[]))
+      .on('on_person_thumbnail', (data) => websocketStore.onPersonThumbnail.set(JSON.parse(data) as string))
+      .on('on_server_version', (data) => websocketStore.serverVersion.set(JSON.parse(data) as ServerVersionResponseDto))
+      .on('error', (e) => console.log('Websocket Error', e));
+
+    return () => websocket?.close();
   } catch (e) {
     console.log('Cannot connect to websocket ', e);
   }
-};
-
-const listenToEvent = (socket: Socket) => {
-  //TODO: if we are not using this, we should probably remove it?
-  socket.on('on_upload_success', () => undefined);
-
-  socket.on('error', (e) => {
-    console.log('Websocket Error', e);
-  });
-};
-
-export const closeWebsocketConnection = () => {
-  websocket?.close();
 };
