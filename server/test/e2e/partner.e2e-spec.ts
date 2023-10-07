@@ -1,10 +1,10 @@
 import { IPartnerRepository, LoginResponseDto, PartnerDirection } from '@app/domain';
-import { AppModule, PartnerController } from '@app/immich';
+import { PartnerController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 const user1Dto = {
@@ -31,11 +31,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
   let user2: LoginResponseDto;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
     repository = app.get<IPartnerRepository>(IPartnerRepository);
   });

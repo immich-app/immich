@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AssetStore } from '$lib/stores/assets.store';
+  import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
 
   export let timelineY = 0;
@@ -92,9 +93,9 @@
     {/if}
     <!-- Time Segment -->
     {#each segments as segment, index (segment.timeGroup)}
-      {@const date = new Date(segment.timeGroup)}
-      {@const year = date.getFullYear()}
-      {@const label = `${date.toLocaleString('default', { month: 'short' })} ${year}`}
+      {@const date = fromLocalDateTime(segment.timeGroup)}
+      {@const year = date.year}
+      {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
 
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div

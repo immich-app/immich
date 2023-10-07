@@ -64,7 +64,9 @@ class AssetService {
   Future<List<Asset>?> _getRemoteAssets(User user) async {
     try {
       final List<AssetResponseDto>? assets =
-          await _apiService.assetApi.getAllAssets(userId: user.id);
+          await _apiService.assetApi.getAllAssets(
+        userId: user.id,
+      );
       if (assets == null) {
         return null;
       } else if (assets.isNotEmpty && assets.first.ownerId != user.id) {
@@ -84,9 +86,10 @@ class AssetService {
     }
   }
 
-  Future<List<DeleteAssetResponseDto>?> deleteAssets(
-    Iterable<Asset> deleteAssets,
-  ) async {
+  Future<bool> deleteAssets(
+    Iterable<Asset> deleteAssets, {
+    bool? force = false,
+  }) async {
     try {
       final List<String> payload = [];
 
@@ -94,12 +97,17 @@ class AssetService {
         payload.add(asset.remoteId!);
       }
 
-      return await _apiService.assetApi
-          .deleteAsset(DeleteAssetDto(ids: payload));
+      await _apiService.assetApi.deleteAssets(
+        AssetBulkDeleteDto(
+          ids: payload,
+          force: force,
+        ),
+      );
+      return true;
     } catch (error, stack) {
       log.severe("Error deleteAssets  ${error.toString()}", error, stack);
-      return null;
     }
+    return false;
   }
 
   /// Loads the exif information from the database. If there is none, loads

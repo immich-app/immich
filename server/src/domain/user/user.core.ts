@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ReadStream, constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
+import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
@@ -63,6 +64,8 @@ export class UserCore {
 
       if (dto.externalPath === '') {
         dto.externalPath = null;
+      } else if (dto.externalPath) {
+        dto.externalPath = path.normalize(dto.externalPath);
       }
 
       return this.userRepository.update(id, dto);

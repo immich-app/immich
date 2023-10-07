@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigTrashDto trash
+    test('to test the property `trash`', () async {
+      // TODO
+    });
+
 
   });
 

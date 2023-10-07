@@ -155,7 +155,7 @@ export class LibraryService {
       return false;
     }
 
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
+    if (!path.normalize(assetPath).match(new RegExp(`^${path.normalize(user.externalPath)}`))) {
       this.logger.error("Asset must be within the user's external path");
       return false;
     }
@@ -251,6 +251,7 @@ export class LibraryService {
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        localDateTime: stats.mtime,
         type: assetType,
         originalFileName: parse(assetPath).name,
         sidecarPath,
@@ -362,6 +363,8 @@ export class LibraryService {
       return false;
     }
 
+    const normalizedExternalPath = path.normalize(user.externalPath);
+
     this.logger.verbose(`Refreshing library: ${job.id}`);
     const crawledAssetPaths = (
       await this.storageRepository.crawl({
@@ -372,7 +375,7 @@ export class LibraryService {
       .map(path.normalize)
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
+        assetPath.match(new RegExp(`^${normalizedExternalPath}`)),
       );
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
@@ -438,31 +441,17 @@ export class LibraryService {
   }
 
   private async deleteAssets(assetIds: string[]) {
-    // TODO: this should be refactored to a centralized asset deletion service
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.getById(assetId);
+      if (!asset) {
+        continue;
+      }
       this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
 
-      if (asset.faces) {
-        await Promise.all(
-          asset.faces.map(({ assetId, personId }) =>
-            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-          ),
-        );
-      }
-
-      await this.assetRepository.remove(asset);
-      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
-
       await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.id, fromExternal: true },
       });
-
-      // TODO refactor this to use cascades
-      if (asset.livePhotoVideoId && !assetIds.includes(asset.livePhotoVideoId)) {
-        assetIds.push(asset.livePhotoVideoId);
-      }
     }
   }
 }

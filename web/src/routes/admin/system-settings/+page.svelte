@@ -19,6 +19,7 @@
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
+  import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
 
   export let data: PageData;
 
@@ -73,6 +74,10 @@
 
     <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
       <MapSettings disabled={$featureFlags.configFile} config={configs} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+      <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
     </SettingAccordion>
 
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

@@ -217,6 +217,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.IMAGE,
             originalFileName: 'photo',
             sidecarPath: null,
@@ -264,6 +265,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.IMAGE,
             originalFileName: 'photo',
             sidecarPath: '/data/user1/photo.jpg.xmp',
@@ -310,6 +312,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.VIDEO,
             originalFileName: 'video',
             sidecarPath: null,
@@ -1169,7 +1172,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleEmptyTrash', () => {
+  describe('handleRemoveOfflineFiles', () => {
     it('can queue trash deletion jobs', async () => {
       assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       assetMock.getById.mockResolvedValue(assetStub.image1);
@@ -1179,23 +1182,8 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.SEARCH_REMOVE_ASSET,
-            data: {
-              ids: [assetStub.image1.id],
-            },
-          },
-        ],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.image1.webpPath,
-                assetStub.image1.resizePath,
-                assetStub.image1.encodedVideoPath,
-                assetStub.image1.sidecarPath,
-              ],
-            },
+            name: JobName.ASSET_DELETION,
+            data: { id: assetStub.image1.id, fromExternal: true },
           },
         ],
       ]);

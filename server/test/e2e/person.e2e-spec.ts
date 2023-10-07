@@ -1,11 +1,11 @@
 import { IPersonRepository, LoginResponseDto } from '@app/domain';
-import { AppModule, PersonController } from '@app/immich';
+import { PersonController } from '@app/immich';
 import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${PersonController.name}`, () => {
@@ -18,11 +18,7 @@ describe(`${PersonController.name}`, () => {
   let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
   });
