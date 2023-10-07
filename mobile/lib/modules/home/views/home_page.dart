@@ -162,23 +162,13 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
-      void onUpload() async {
+      void onUpload() {
         processing.value = true;
+        selectionEnabledHook.value = false;
         try {
-          final Set<Asset> assets = selection.value;
-          if (assets.length > 30) {
-            ImmichToast.show(
-              context: context,
-              msg: 'home_page_upload_err_limit'.tr(),
-              gravity: ToastGravity.BOTTOM,
-            );
-          } else {
-            processing.value = false;
-            selectionEnabledHook.value = false;
-            await ref
-                .read(manualUploadProvider.notifier)
-                .uploadAssets(context, assets);
-          }
+          ref
+              .read(manualUploadProvider.notifier)
+              .uploadAssets(context, selection.value);
         } finally {
           processing.value = false;
         }
