@@ -40,6 +40,7 @@ import {
   TimeBucketDto,
   TrashAction,
   UpdateAssetDto,
+  UpdateAssetStackDto,
   mapStats,
 } from './dto';
 import {
@@ -442,6 +443,21 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+  }
+
+  async updateStack(authUser: AuthUserDto, dto: UpdateAssetStackDto): Promise<void> {
+    const { stackParentId, toAdd, toRemove } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, stackParentId);
+
+    if (!!toAdd && toAdd.length != 0) {
+      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toAdd);
+      await this.assetRepository.updateAll(toAdd, { stackParentId });
+    }
+
+    if (!!toRemove && toRemove.length != 0) {
+      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toRemove);
+      await this.assetRepository.updateAll(toRemove, { stackParentId: null });
+    }
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

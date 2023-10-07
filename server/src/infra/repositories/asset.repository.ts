@@ -538,6 +538,10 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
+    if (!isArchived && !isFavorite && !personId) {
+      builder = builder.andWhere('asset.stackParent IS NULL');
+    }
+
     return builder;
   }
 }

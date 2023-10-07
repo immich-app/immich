@@ -962,7 +962,6 @@ class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
   AssetSelectionRoute({
     Key? key,
     required Set<Asset> existingAssets,
-    bool isNewAlbum = false,
     bool canDeselect = false,
     required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
   }) : super(
@@ -991,13 +990,13 @@ class AssetSelectionRouteArgs {
 
   final Set<Asset> existingAssets;
 
-  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
-
   final bool canDeselect;
+
+  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
 
   @override
   String toString() {
-    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect}';
+    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect, query: $query}';
   }
 }
 

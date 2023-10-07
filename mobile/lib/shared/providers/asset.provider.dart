@@ -5,6 +5,7 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -217,6 +218,7 @@ final assetsProvider =
       .filter()
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
@@ -239,14 +241,9 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .isTrashedEqualTo(false)
       .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
-  final settings = ref.watch(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
-  yield await RenderList.fromQuery(query, groupBy);
-  await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(query, groupBy);
 }
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
@@ -257,7 +254,6 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
   if (userId == null || !parentAsset.isRemote) {
     return null;
   }
-});
   return ref
       .watch(dbProvider)
       .assets
@@ -265,6 +261,8 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .not()
+      .remoteIdEqualTo(parentAsset.remoteId)
       // Show existing stack children in selection page
       .group(
         (q) => q

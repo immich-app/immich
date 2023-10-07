@@ -137,6 +137,16 @@ void main() {
       // TODO
     });
 
+    // List<AssetResponseDto> stack (default value: const [])
+    test('to test the property `stack`', () async {
+      // TODO
+    });
+
+    // String stackParentId
+    test('to test the property `stackParentId`', () async {
+      // TODO
+    });
+
     // List<TagResponseDto> tags (default value: const [])
     test('to test the property `tags`', () async {
       // TODO

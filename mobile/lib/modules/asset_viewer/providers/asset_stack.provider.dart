@@ -17,7 +17,9 @@ class AssetStackNotifier extends StateNotifier<Set<Asset>> {
   }
 
   void fetchStackChildren() async {
-    state = await _ref.read(assetStackProvider(_asset).future);
+    if (mounted) {
+      state = await _ref.read(assetStackProvider(_asset).future);
+    }
   }
 
   updateStack(
@@ -52,7 +54,7 @@ class AssetStackNotifier extends StateNotifier<Set<Asset>> {
         );
 
     // sync assets
-    await _ref.read(assetProvider.notifier).getAllAsset();
+    _ref.read(assetProvider.notifier).getAllAsset();
   }
 }
 
