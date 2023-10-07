@@ -122,7 +122,7 @@
         personId: data.person.id,
       });
       previousPersonId = data.person.id;
-      personName = '';
+      name = data.person.name;
       refreshAssetGrid = !refreshAssetGrid;
     }
   });
