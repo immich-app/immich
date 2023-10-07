@@ -139,8 +139,10 @@ export class LibraryService {
     // TODO use pagination
     const assetIds = await this.repository.getAssetIds(job.id);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    // TODO queue a job for asset deletion
-    await this.deleteAssets(assetIds);
+    for (const assetId of assetIds) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
+    }
+
     this.logger.log(`Deleting library ${job.id}`);
     await this.repository.delete(job.id);
     return true;
@@ -333,20 +335,17 @@ export class LibraryService {
   }
 
   async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
-    });
-
-    const assetIds: string[] = [];
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+    );
 
     for await (const assets of assetPagination) {
+      this.logger.debug(`Removing ${assets.length} offline assets`);
       for (const asset of assets) {
-        assetIds.push(asset.id);
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
       }
     }
 
-    this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
-    await this.deleteAssets(assetIds);
     return true;
   }
 
@@ -438,20 +437,5 @@ export class LibraryService {
       throw new BadRequestException('Library not found');
     }
     return library;
-  }
-
-  private async deleteAssets(assetIds: string[]) {
-    for (const assetId of assetIds) {
-      const asset = await this.assetRepository.getById(assetId);
-      if (!asset) {
-        continue;
-      }
-      this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
-
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.id, fromExternal: true },
-      });
-    }
   }
 }
