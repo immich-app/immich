@@ -66,8 +66,10 @@
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
 
+  let refreshAssetGrid = false;
+
   let personName = '';
-  let thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
+  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
@@ -118,6 +120,7 @@
         personId: data.person.id,
       });
       previousPersonId = data.person.id;
+      refreshAssetGrid = !refreshAssetGrid;
     }
   });
 
@@ -137,6 +140,11 @@
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }
+  };
+
+  const handleMerge = () => {
+    handleGoBack();
+    refreshAssetGrid = !refreshAssetGrid;
   };
 
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
@@ -302,7 +310,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
+  <MergeFaceSelector person={data.person} bind:people on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
@@ -344,7 +352,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  {#key previousPersonId}
+  {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}
       {assetInteractionStore}
