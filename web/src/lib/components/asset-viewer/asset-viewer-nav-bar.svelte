@@ -29,7 +29,7 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
-  export let showEditButton: boolean;
+  export let showEditButton = true;
   export let showSlideshow = false;
 
   const isOwner = asset.ownerId === $page.data.user?.id;

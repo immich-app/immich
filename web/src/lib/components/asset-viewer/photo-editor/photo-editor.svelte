@@ -199,22 +199,19 @@
   });
 
   const initZoom = () => {
-    document.addEventListener("wheel", function (e) {
-    if (e.deltaY > 0) {
-      if (currentZoom <= 5) {
-        currentZoom += zoomSpeed;
+    document.addEventListener('wheel', function (e) {
+      if (e.deltaY > 0) {
+        if (currentZoom <= 5) {
+          currentZoom += zoomSpeed;
+        }
+      } else {
+        if (currentZoom > 1) {
+          currentZoom -= zoomSpeed;
+        }
       }
-      
-    } else {
-      if (currentZoom > 1) {
-        currentZoom -= zoomSpeed;
-      }
-      
-    }
-    setImageWrapperTransform();
-  });
-  }
-
+      setImageWrapperTransform();
+    });
+  };
 
   const setPreset = (event: CustomEvent<string>) => {
     const preset = event.detail;
@@ -549,14 +546,28 @@
         w1 = temp;
       }
 
-      const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
-      const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
-      const maxY = (imageWrapper.offsetHeight*currentZoom - d) / 2;
+      // const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
+      // const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
+
+      const a = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * w1;
+      const b = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * h1;
+      const d = a + b;
+
+      let maxY = (imageWrapper.offsetHeight * currentZoom - d) / 2;
+
+      maxY = maxY / currentZoom;
+
+      console.log('currentZoom', currentZoom);
+      console.log('offsetHeight', imageWrapper.offsetHeight);
+      console.log('realHight', imageWrapper.offsetHeight * currentZoom);
+      console.log('maxY', maxY);
 
       // Calc max x translation
       const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
       const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
-      const maxX = (imageWrapper.offsetWidth*currentZoom - h3 - h4) / 2;
+      let maxX = (imageWrapper.offsetWidth * currentZoom - h3 - h4) / 2;
+      maxX = maxX / currentZoom;
+      console.log('maxX', maxX);
 
       if (currentTranslate.x - pos1 > maxX) {
         x = maxX;
@@ -574,26 +585,30 @@
         y = currentTranslate.y - pos2;
       }
 
-      console.log("y:", Math.round(y));
-      console.log("x:", Math.round(x));
+      console.log('y:', Math.round(y));
+      console.log('x:', Math.round(x));
 
       // Decide which direction to translate
-      if (currentTranslateDirection === 'y') {
-        currentTranslate = {
-          x: 0,
-          y: y,
-        };
-      } else if (currentTranslateDirection === 'x') {
-        currentTranslate = {
-          x: x,
-          y: 0,
-        };
-      } else {
-        currentTranslate = {
-          x: 0,
-          y: 0,
-        };
-      }
+      // if (currentTranslateDirection === 'y') {
+      //   currentTranslate = {
+      //     x: 0,
+      //     y: y,
+      //   };
+      // } else if (currentTranslateDirection === 'x') {
+      //   currentTranslate = {
+      //     x: x,
+      //     y: 0,
+      //   };
+      // } else {
+      //   currentTranslate = {
+      //     x: 0,
+      //     y: 0,
+      //   };
+      // }
+      currentTranslate = {
+        x: x,
+        y: y,
+      };
       console.log('currentTranslateBefore', currentTranslate);
 
       console.log('currentTranslate', currentTranslate);
@@ -749,14 +764,14 @@
 
   const setImageWrapperTransform = () => {
     let transformString = '';
-    transformString += `rotate(${currentAngle - currentAngleOffset}deg)`;
 
+    transformString += `rotate(${currentAngle - currentAngleOffset}deg)`;
     if (currentTranslate.x || currentTranslate.y) {
       transformString += ` translate(${currentTranslate.x * currentZoom}px, ${currentTranslate.y * currentZoom}px)`;
     }
-
-    transformString += ` scaleX(${ (currentFlipX ? -1 : 1) * currentZoom}) scaleY(${(currentFlipY ? -1 : 1) * currentZoom})`;
-
+    transformString += ` scaleX(${(currentFlipX ? -1 : 1) * currentZoom}) scaleY(${
+      (currentFlipY ? -1 : 1) * currentZoom
+    })`;
     imageWrapper.style.transform = transformString;
   };
 </script>
