@@ -7,10 +7,10 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { usePagination } from '../domain.util';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { AssetFaceId, IPersonRepository } from '../person';
+import { AssetFaceId, IPersonRepository, PersonResponseDto } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { SearchDto } from './dto';
+import { SearchDto, SearchPeopleDto } from './dto';
 import { SearchResponseDto } from './response-dto';
 import {
   ISearchRepository,
@@ -153,6 +153,10 @@ export class SearchService {
           .map(mapAsset),
       },
     };
+  }
+
+  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return await this.personRepository.getByName(authUser.id, dto.name);
   }
 
   async handleIndexAlbums() {

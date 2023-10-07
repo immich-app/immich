@@ -35,6 +35,7 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { browser } from '$app/environment';
 
   export let data: PageData;
 
@@ -61,7 +62,7 @@
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let previousPersonId: string = data.person.id;
-  let people = data.people.people;
+  let people: PersonResponseDto[];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
@@ -74,20 +75,42 @@
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
+  let searchWord: string;
+  let maxpeople = false;
+
+  const searchPeople = async () => {
+    const { data } = await api.searchApi.searchPerson({ name });
+    people = data;
+    searchWord = name;
+    if (data.length < 20) {
+      maxpeople = false;
+    } else {
+      maxpeople = true;
+    }
+  };
+
+  $: {
+    if (name !== '' && browser) {
+      if (maxpeople === true || (!name.startsWith(searchWord) && maxpeople === false)) searchPeople();
+    }
+  }
+
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
-    suggestedPeople = !name
-      ? []
-      : people
-          .filter(
-            (person: PersonResponseDto) =>
-              person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
-          )
-          .slice(0, 5);
+    if (people) {
+      suggestedPeople = !name
+        ? []
+        : people
+            .filter(
+              (person: PersonResponseDto) =>
+                person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+            )
+            .slice(0, 5);
+    }
   }
 
   onMount(() => {
@@ -199,16 +222,9 @@
     try {
       isEditingName = false;
 
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      await api.personApi.updatePerson({
         id: data.person.id,
         personUpdateDto: { name: personName },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
       });
 
       notificationController.show({
@@ -235,15 +251,21 @@
     if (data.person.name === personName) {
       return;
     }
+    if (name === '') {
+      changeName();
+      return;
+    }
 
-    const existingPerson = people.find(
+    const result = await api.searchApi.searchPerson({ name: personName });
+
+    const existingPerson = result.data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      potentialMergePeople = people
+      potentialMergePeople = result.data
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
@@ -310,7 +332,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} bind:people on:go-back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
