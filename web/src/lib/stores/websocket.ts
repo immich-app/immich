@@ -1,6 +1,7 @@
 import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
 import { io } from 'socket.io-client';
 import { writable } from 'svelte/store';
+import { loadConfig } from './server-config.store';
 
 export const websocketStore = {
   onUploadSuccess: writable<AssetResponseDto>(),
@@ -29,6 +30,7 @@ export const openWebsocketConnection = () => {
       .on('on_asset_trash', (data) => websocketStore.onAssetTrash.set(JSON.parse(data) as string[]))
       .on('on_person_thumbnail', (data) => websocketStore.onPersonThumbnail.set(JSON.parse(data) as string))
       .on('on_server_version', (data) => websocketStore.serverVersion.set(JSON.parse(data) as ServerVersionResponseDto))
+      .on('on_config_update', () => loadConfig())
       .on('error', (e) => console.log('Websocket Error', e));
 
     return () => websocket?.close();
