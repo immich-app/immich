@@ -23,6 +23,9 @@ const config = {
     },
   },
   plugins: [sveltekit()],
+  optimizeDeps: {
+    entries: ['src/**/*.{svelte, ts, html}'],
+  },
 };
 
 export default config;
