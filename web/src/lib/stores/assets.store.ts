@@ -87,7 +87,6 @@ export class AssetStore {
       }),
 
       websocketStore.onAssetTrash.subscribe((ids) => {
-        console.log('onAssetTrash', ids);
         if (ids) {
           for (const id of ids) {
             this.pendingChanges.push({ type: 'trash', value: id });
