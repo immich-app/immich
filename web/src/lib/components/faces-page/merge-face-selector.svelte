@@ -32,10 +32,6 @@
     dispatch('go-back');
   };
 
-  const onMerge = () => {
-    dispatch('merge');
-  };
-
   const handleSwapPeople = () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     goto(`${AppRoute.PEOPLE}/${person.id}?action=merge`);
@@ -71,7 +67,7 @@
       });
       people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
       await invalidateAll();
-      onMerge();
+      dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge faces');
     } finally {
