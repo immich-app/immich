@@ -122,6 +122,7 @@
         personId: data.person.id,
       });
       previousPersonId = data.person.id;
+      personName = '';
       refreshAssetGrid = !refreshAssetGrid;
     }
   });
@@ -147,7 +148,7 @@
   const handleReassignAssets = () => {
     viewMode = ViewMode.UNASSIGN_ASSETS;
   };
-  
+
   const handleMerge = () => {
     handleGoBack();
     refreshAssetGrid = !refreshAssetGrid;
