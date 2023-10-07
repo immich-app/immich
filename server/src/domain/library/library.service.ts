@@ -137,14 +137,16 @@ export class LibraryService {
     }
 
     // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id);
+    const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
     for (const assetId of assetIds) {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
     }
 
-    this.logger.log(`Deleting library ${job.id}`);
-    await this.repository.delete(job.id);
+    if (assetIds.length === 0) {
+      this.logger.log(`Deleting library ${job.id}`);
+      await this.repository.delete(job.id);
+    }
     return true;
   }
 
