@@ -32,7 +32,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
-  import PeopleList from '$lib/components/faces-page/people-list.svelte';
+  import UnmergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
@@ -307,7 +307,7 @@
 {/if}
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
-  <PeopleList
+  <UnmergeFaceSelector
     {people}
     assetIds={Array.from($selectedAssets).map((a) => a.id)}
     personId={data.person.id}

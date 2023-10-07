@@ -16,6 +16,7 @@
   import { AppRoute } from '$lib/constants';
   import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import PeopleList from './people-list.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -131,16 +132,8 @@
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
-      <div
-        class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
-        style:max-height={screenHeight - 200 - 200 + 'px'}
-      >
-        <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
-          {#each unselectedPeople as person (person.id)}
-            <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
-          {/each}
-        </div>
-      </div>
+
+      <PeopleList people={unselectedPeople} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
     </section>
 
     {#if isShowConfirmation}
