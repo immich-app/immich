@@ -134,7 +134,7 @@ export enum FeatureFlag {
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
 
-let instance: SystemConfigCore;
+let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
@@ -148,6 +148,10 @@ export class SystemConfigCore {
 
   static get(repository: ISystemConfigRepository) {
     return instance || (instance = new this(repository));
+  }
+
+  static reset() {
+    instance = null;
   }
 
   async requireFeature(feature: FeatureFlag) {
