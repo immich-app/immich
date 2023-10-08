@@ -141,10 +141,15 @@ export class SystemConfigCore {
   private logger = new Logger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfig | null = null;
+  private static _instance: SystemConfigCore;
 
   public config$ = singleton;
 
-  constructor(private repository: ISystemConfigRepository) {}
+  private constructor(private repository: ISystemConfigRepository) {}
+
+  static get(repository: ISystemConfigRepository) {
+    return this._instance || (this._instance = new this(repository));
+  }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);

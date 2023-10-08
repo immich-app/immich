@@ -17,7 +17,7 @@ export class SmartInfoService {
     @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.get(configRepository);
   }
 
   async handleQueueObjectTagging({ force }: IBaseJob) {

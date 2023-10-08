@@ -223,7 +223,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.registerHandlers(makeMockHandlers(false));
 
-      const configCore = new SystemConfigCore(newSystemConfigRepositoryMock());
+      const configCore = SystemConfigCore.get(newSystemConfigRepositoryMock());
       configCore.config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
