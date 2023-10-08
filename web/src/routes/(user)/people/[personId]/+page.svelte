@@ -36,6 +36,7 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { browser } from '$app/environment';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
 
@@ -76,22 +77,30 @@
   let suggestedPeople: PersonResponseDto[] = [];
 
   let searchWord: string;
-  let maxpeople = false;
+  let maxPeople = false;
+  let showLoadingSpinnerSearch = false;
 
   const searchPeople = async () => {
-    const { data } = await api.searchApi.searchPerson({ name });
-    people = data;
-    searchWord = name;
-    if (data.length < 20) {
-      maxpeople = false;
-    } else {
-      maxpeople = true;
+    showLoadingSpinnerSearch = true;
+    try {
+      const { data } = await api.searchApi.searchPerson({ name });
+      people = data;
+      searchWord = name;
+      if (data.length < 20) {
+        maxPeople = false;
+      } else {
+        maxPeople = true;
+      }
+    } catch (error) {
+      handleError(error, "Can't search people");
     }
+
+    showLoadingSpinnerSearch = false;
   };
 
   $: {
     if (name !== '' && browser) {
-      if (maxpeople === true || (!name.startsWith(searchWord) && maxpeople === false)) searchPeople();
+      if (maxPeople === true || (!name.startsWith(searchWord) && maxPeople === false)) searchPeople();
     }
   }
 
@@ -396,7 +405,7 @@
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
-                suggestedPeople={suggestedPeople.length > 0}
+                suggestedPeople={suggestedPeople.length > 0 || showLoadingSpinnerSearch}
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
               />
@@ -428,25 +437,35 @@
           </section>
           {#if isEditingName}
             <div class="absolute z-[999] w-96">
-              {#each suggestedPeople as person, index (person.id)}
+              {#if showLoadingSpinnerSearch}
                 <div
-                  class="flex {index === suggestedPeople.length - 1
-                    ? 'rounded-b-lg'
-                    : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
                 >
-                  <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                  </button>
+                  <div class="flex w-full place-items-center">
+                    <LoadingSpinner />
+                  </div>
                 </div>
-              {/each}
+              {:else}
+                {#each suggestedPeople as person, index (person.id)}
+                  <div
+                    class="flex {index === suggestedPeople.length - 1
+                      ? 'rounded-b-lg'
+                      : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  >
+                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  </div>
+                {/each}
+              {/if}
             </div>
           {/if}
         </div>

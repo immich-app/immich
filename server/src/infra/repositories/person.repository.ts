@@ -96,7 +96,6 @@ export class PersonRepository implements IPersonRepository {
   }
 
   getByName(userId: string, personName: string): Promise<PersonEntity[]> {
-    console.log(userId, personName);
     return this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
