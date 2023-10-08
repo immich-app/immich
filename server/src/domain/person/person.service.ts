@@ -250,22 +250,7 @@ export class PersonService {
       }
     }
 
-    for (const personId of changeFeaturePhoto) {
-      const assetFace = await this.repository.getRandomFace(personId);
-      if (assetFace !== null) {
-        await this.repository.update({
-          id: personId,
-          faceAssetId: assetFace.assetId,
-        });
-
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_PERSON_THUMBNAIL,
-          data: {
-            id: personId,
-          },
-        });
-      }
-    }
+    await this.createNewFeaturePhoto(changeFeaturePhoto);
 
     return newPerson;
   }
@@ -294,6 +279,11 @@ export class PersonService {
       }
     }
 
+    await this.createNewFeaturePhoto(changeFeaturePhoto);
+    return result;
+  }
+
+  async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);
       if (assetFace !== null) {
@@ -310,8 +300,8 @@ export class PersonService {
         });
       }
     }
-    return result;
   }
+
   async handleRecognizeFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
