@@ -134,21 +134,20 @@ export enum FeatureFlag {
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
 
-const singleton = new Subject<SystemConfig>();
+let instance: SystemConfigCore;
 
 @Injectable()
 export class SystemConfigCore {
   private logger = new Logger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfig | null = null;
-  private static _instance: SystemConfigCore;
 
-  public config$ = singleton;
+  public config$ = new Subject<SystemConfig>();
 
   private constructor(private repository: ISystemConfigRepository) {}
 
   static get(repository: ISystemConfigRepository) {
-    return this._instance || (this._instance = new this(repository));
+    return instance || (instance = new this(repository));
   }
 
   async requireFeature(feature: FeatureFlag) {
