@@ -76,12 +76,19 @@
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
+  /**
+   * Save the word used to search people name: for example,
+   * if searching 'r' and the server returns 15 people with names starting with 'r',
+   * there's no need to search again people with name starting with 'ri'.
+   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+   * or if the new search word starts with another word / letter
+   **/
   let searchWord: string;
   let maxPeople = false;
-  let showLoadingSpinnerSearch = false;
+  let isSearchingPeople = false;
 
   const searchPeople = async () => {
-    showLoadingSpinnerSearch = true;
+    isSearchingPeople = true;
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
@@ -92,10 +99,11 @@
         maxPeople = true;
       }
     } catch (error) {
+      people = [];
       handleError(error, "Can't search people");
     }
 
-    showLoadingSpinnerSearch = false;
+    isSearchingPeople = false;
   };
 
   $: {
@@ -405,7 +413,7 @@
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
-                suggestedPeople={suggestedPeople.length > 0 || showLoadingSpinnerSearch}
+                suggestedPeople={suggestedPeople.length > 0 || isSearchingPeople}
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
               />
@@ -437,7 +445,7 @@
           </section>
           {#if isEditingName}
             <div class="absolute z-[999] w-96">
-              {#if showLoadingSpinnerSearch}
+              {#if isSearchingPeople}
                 <div
                   class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
                 >
