@@ -217,6 +217,8 @@ export class PersonService {
   async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
     let hasGeneratedFaceThumbnail = false;
 
+    const changeFeaturePhoto: string[] = [];
+
     const newPerson = await this.repository.create({ ownerId: authUser.id });
     for (const data of dto.data) {
       try {
@@ -229,7 +231,7 @@ export class PersonService {
         const [face] = await this.repository.getFacesByIds([{ personId: newPerson.id, assetId: data.assetId }]);
         const oldPerson = await this.findOrFail(data.personId);
         if (oldPerson.faceAssetId === face?.assetId) {
-          //TODO: create a new feature photo
+          changeFeaturePhoto.push(oldPerson.id);
         }
         if (!face) {
           throw new BadRequestException('Invalid assetId for feature face');
@@ -248,6 +250,23 @@ export class PersonService {
       }
     }
 
+    for (const personId of changeFeaturePhoto) {
+      const assetFace = await this.repository.getRandomFace(personId);
+      if (assetFace !== null) {
+        await this.repository.update({
+          id: personId,
+          faceAssetId: assetFace.assetId,
+        });
+
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: {
+            id: personId,
+          },
+        });
+      }
+    }
+
     return newPerson;
   }
 
@@ -255,12 +274,14 @@ export class PersonService {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
 
     const result: PersonResponseDto[] = [];
+    const changeFeaturePhoto: string[] = [];
+
     for (const data of dto.data) {
       try {
         const [face] = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
         const oldPerson = await this.findOrFail(data.personId);
         if (oldPerson.faceAssetId === face?.assetId) {
-          //TODO: create a new feature photo
+          changeFeaturePhoto.push(oldPerson.id);
         }
         await this.repository.reassignFace(data.personId, personId, data.assetId);
 
@@ -270,6 +291,23 @@ export class PersonService {
           `Unable to un-merge asset ${data.assetId} from ${data.personId} to ${personId}`,
           error?.stack,
         );
+      }
+    }
+
+    for (const personId of changeFeaturePhoto) {
+      const assetFace = await this.repository.getRandomFace(personId);
+      if (assetFace !== null) {
+        await this.repository.update({
+          id: personId,
+          faceAssetId: assetFace.assetId,
+        });
+
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: {
+            id: personId,
+          },
+        });
       }
     }
     return result;
