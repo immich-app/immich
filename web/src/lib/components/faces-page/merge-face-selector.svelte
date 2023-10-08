@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { api, type PersonResponseDto } from '@api';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
@@ -17,7 +17,7 @@
   import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
 
   export let person: PersonResponseDto;
-  let people: PersonResponseDto[] = [];
+  export let people: PersonResponseDto[];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
   let isShowConfirmation = false;
@@ -27,10 +27,6 @@
   $: unselectedPeople = people.filter(
     (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
   );
-  onMount(async () => {
-    const { data } = await api.personApi.getAllPeople({ withHidden: false });
-    people = data.people;
-  });
 
   const onClose = () => {
     dispatch('go-back');
@@ -69,8 +65,9 @@
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
+      people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
       await invalidateAll();
-      onClose();
+      dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge faces');
     } finally {

@@ -163,7 +163,6 @@
   "home_page_building_timeline": "Building the timeline",
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
-  "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
   "image_viewer_page_state_provider_download_error": "Download Error",
   "image_viewer_page_state_provider_download_success": "Download Success",
   "library_page_albums": "Albums",
