@@ -1,5 +1,6 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { CronJob, CronTime } from 'cron';
 import { mapAsset } from '../asset';
 import {
   CommunicationEvent,
@@ -28,6 +29,24 @@ export class JobService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
+    this.initPeriodicLibraryScan();
+  }
+
+  async initPeriodicLibraryScan() {
+    const config = await this.configCore.getConfig();
+    const libraryScanJob = new CronJob(
+      config.libraryScan.cronExpression,
+      async () => {
+        await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
+      },
+      undefined,
+      config.libraryScan.enabled,
+    );
+
+    this.configCore.config$.subscribe((config) => {
+      libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
+      config.libraryScan.enabled ? libraryScanJob.start() : libraryScanJob.stop();
+    });
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
@@ -153,7 +172,6 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
   }
 
   /**

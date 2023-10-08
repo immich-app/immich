@@ -94,6 +94,9 @@ export enum SystemConfigKey {
   TRASH_DAYS = 'trash.days',
 
   THEME_CUSTOM_CSS = 'theme.customCss',
+
+  LIBRARY_SCAN_ENABLED = 'libraryScan.enabled',
+  LIBRARY_SCAN_CRON_EXPRESSION = 'libraryScan.cronExpression',
 }
 
 export enum TranscodePolicy {
@@ -230,5 +233,9 @@ export interface SystemConfig {
   };
   theme: {
     customCss: string;
+  };
+  libraryScan: {
+    enabled: boolean;
+    cronExpression: string;
   };
 }

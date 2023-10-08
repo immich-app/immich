@@ -120,6 +120,10 @@ export const defaults = Object.freeze<SystemConfig>({
   theme: {
     customCss: '',
   },
+  libraryScan: {
+    enabled: true,
+    cronExpression: '0 0 * * *',
+  },
 });
 
 export enum FeatureFlag {

@@ -21,6 +21,7 @@
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
+  import LibraryScanSettings from '$lib/components/admin-page/settings/library-scan/library-scan-settings.svelte';
 
   export let data: PageData;
 
@@ -67,6 +68,10 @@
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
       >
         <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Library scanning" subtitle="Manage the settings for the automatic library scanning job">
+        <LibraryScanSettings disabled={$featureFlags.configFile} libraryScanConfig={configs.libraryScan} />
       </SettingAccordion>
 
       <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
