@@ -290,7 +290,6 @@ export class LibraryService {
       this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
     );
 
-    const assetIds: string[] = [];
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
       for (const asset of assets) {
