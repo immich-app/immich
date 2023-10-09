@@ -19,8 +19,8 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
-  UpdateAssetStackDto,
   TrashAction,
+  UpdateAssetStackDto,
   UpdateAssetDto as UpdateDto,
 } from '@app/domain';
 import {
