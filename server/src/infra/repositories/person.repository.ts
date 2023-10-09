@@ -50,6 +50,10 @@ export class PersonRepository implements IPersonRepository {
     return people.length;
   }
 
+  getAllFaces(): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ relations: { asset: true } });
+  }
+
   getAll(): Promise<PersonEntity[]> {
     return this.personRepository.find();
   }
@@ -63,6 +67,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
+      .innerJoin('face.asset', 'asset')
       .orderBy('person.isHidden', 'ASC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
@@ -117,13 +122,17 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
+  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.save(entity);
+  }
+
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     const { id } = await this.personRepository.save(entity);
     return this.personRepository.findOneByOrFail({ id });
   }
 
-  async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository.findOneBy({ assetId, personId });
+  async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ where: ids, relations: { asset: true } });
   }
 
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {

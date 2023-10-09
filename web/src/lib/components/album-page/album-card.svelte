@@ -6,6 +6,7 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import type { OnClick, OnShowContextMenu } from './album-card';
+  import { getContextMenuPosition } from '../../utils/context-menu';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
@@ -41,12 +42,8 @@
     }
   };
 
-  const showAlbumContextMenu = (e: MouseEvent) => {
-    dispatchShowContextMenu('showalbumcontextmenu', {
-      x: e.clientX,
-      y: e.clientY,
-    });
-  };
+  const showAlbumContextMenu = (e: MouseEvent) =>
+    dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
     imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;

@@ -41,6 +41,10 @@ export enum JobName {
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
 
+  // asset
+  ASSET_DELETION = 'asset-deletion',
+  ASSET_DELETION_CHECK = 'asset-deletion-check',
+
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
@@ -56,9 +60,10 @@ export enum JobName {
   CLASSIFY_IMAGE = 'classify-image',
 
   // facial recognition
+  PERSON_CLEANUP = 'person-cleanup',
+  PERSON_DELETE = 'person-delete',
   QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
   RECOGNIZE_FACES = 'recognize-faces',
-  PERSON_CLEANUP = 'person-cleanup',
 
   // library managment
   LIBRARY_SCAN = 'library-refresh',
@@ -97,11 +102,14 @@ export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
+  [JobName.ASSET_DELETION]: QueueName.BACKGROUND_TASK,
+  [JobName.ASSET_DELETION_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
+  [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,

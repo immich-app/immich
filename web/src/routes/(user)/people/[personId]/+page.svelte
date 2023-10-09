@@ -25,6 +25,7 @@
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
+  import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, PersonResponseDto, TimeBucketSize, api } from '@api';
   import { onMount } from 'svelte';
@@ -54,6 +55,7 @@
   });
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
+  const { onPersonThumbnail } = websocketStore;
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
@@ -64,13 +66,18 @@
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
 
+  let refreshAssetGrid = false;
+
   let personName = '';
+  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: $onPersonThumbnail === data.person.id &&
+    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
     suggestedPeople = !name
@@ -113,6 +120,7 @@
         personId: data.person.id,
       });
       previousPersonId = data.person.id;
+      refreshAssetGrid = !refreshAssetGrid;
     }
   });
 
@@ -134,6 +142,11 @@
     }
   };
 
+  const handleMerge = () => {
+    handleGoBack();
+    refreshAssetGrid = !refreshAssetGrid;
+  };
+
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
     if (viewMode !== ViewMode.SELECT_FACE) {
       return;
@@ -141,14 +154,8 @@
 
     await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
-    // TODO: Replace by Websocket in the future
-    notificationController.show({
-      message: 'Feature photo updated, refresh page to see changes',
-      type: NotificationType.Info,
-    });
-
+    notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
-    // scroll to top
 
     viewMode = ViewMode.VIEW_ASSETS;
   };
@@ -303,7 +310,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
+  <MergeFaceSelector person={data.person} bind:people on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
@@ -345,7 +352,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  {#key previousPersonId}
+  {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}
       {assetInteractionStore}
@@ -376,7 +383,7 @@
                 <ImageThumbnail
                   circle
                   shadow
-                  url={api.getPeopleThumbnailUrl(data.person.id)}
+                  url={thumbnailData}
                   altText={data.person.name}
                   widthStyle="3.375rem"
                   heightStyle="3.375rem"

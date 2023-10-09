@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // List<String> weekOptions (default value: const [])
+    test('to test the property `weekOptions`', () async {
+      // TODO
+    });
+
     // List<String> yearOptions (default value: const [])
     test('to test the property `yearOptions`', () async {
       // TODO

@@ -36,15 +36,12 @@
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
-      const errorInfo =
-        $errorCounter > 0
-          ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
-          : 'Upload success';
-      const type = $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info;
-
       notificationController.show({
-        message: `${errorInfo}, refresh the page to see new upload assets`,
-        type,
+        message:
+          ($errorCounter > 0
+            ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
+            : 'Upload success') + ', refresh the page to see new upload assets.',
+        type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
       });
 
       if ($duplicateCounter > 0) {

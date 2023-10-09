@@ -45,6 +45,7 @@
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   export let data: PageData;
 
@@ -193,9 +194,8 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = ({ x }: MouseEvent) => {
-    const navigationBarHeight = 75;
-    contextMenuPosition = { x: x, y: navigationBarHeight };
+  const handleOpenAlbumOptions = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-left');
     viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
   };
 

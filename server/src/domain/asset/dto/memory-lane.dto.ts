@@ -1,14 +1,19 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsNumber, IsPositive } from 'class-validator';
+import { IsInt, Max, Min } from 'class-validator';
 
 export class MemoryLaneDto {
-  /** Get pictures for +24 hours from this time going back x years */
-  @IsDate()
-  @Type(() => Date)
-  timestamp!: Date;
-
-  @IsNumber()
-  @IsPositive()
+  @IsInt()
   @Type(() => Number)
-  years = 30;
+  @Max(31)
+  @Min(1)
+  @ApiProperty({ type: 'integer' })
+  day!: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @Max(12)
+  @Min(1)
+  @ApiProperty({ type: 'integer' })
+  month!: number;
 }

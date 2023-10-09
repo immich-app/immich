@@ -134,12 +134,16 @@ export class LibraryService {
     }
 
     // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id);
+    const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    // TODO queue a job for asset deletion
-    await this.deleteAssets(assetIds);
-    this.logger.log(`Deleting library ${job.id}`);
-    await this.repository.delete(job.id);
+    for (const assetId of assetIds) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
+    }
+
+    if (assetIds.length === 0) {
+      this.logger.log(`Deleting library ${job.id}`);
+      await this.repository.delete(job.id);
+    }
     return true;
   }
 
@@ -198,6 +202,7 @@ export class LibraryService {
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        localDateTime: stats.mtime,
         type: assetType,
         originalFileName: parse(assetPath).name,
         sidecarPath,
@@ -287,13 +292,12 @@ export class LibraryService {
 
     const assetIds: string[] = [];
     for await (const assets of assetPagination) {
+      this.logger.debug(`Removing ${assets.length} offline assets`);
       for (const asset of assets) {
-        assetIds.push(asset.id);
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
       }
     }
 
-    this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
-    await this.deleteAssets(assetIds);
     return true;
   }
 
@@ -393,6 +397,11 @@ export class LibraryService {
     // TODO: this should be refactored to a centralized asset deletion service
     for (const assetId of assetIds) {
       const asset = await this.assetRepository.getById(assetId);
+      if (!asset) {
+        this.logger.warn(`Asset not found: ${assetId}`);
+        continue;
+      }
+
       this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
 
       if (asset.faces) {

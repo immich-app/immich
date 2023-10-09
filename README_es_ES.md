@@ -23,6 +23,7 @@
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_fr_FR.md">Français</a>
+  <a href="README_ja_JP.md">日本語</a>
 </p>
 
 ## Descargo de responsabilidad

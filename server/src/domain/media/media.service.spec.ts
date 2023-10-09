@@ -59,7 +59,7 @@ describe(MediaService.name, () => {
         hasNextPage: false,
       });
       personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -263,6 +263,30 @@ describe(MediaService.name, () => {
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
+    });
+
+    it('should always generate video thumbnail in one pass', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '5000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id.jpeg',
+        {
+          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          outputOptions: [
+            '-frames:v 1',
+            '-v verbose',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+          ],
+          twoPass: false,
+        },
+      );
     });
 
     it('should run successfully', async () => {

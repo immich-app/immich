@@ -1,6 +1,6 @@
 import {
+  AssetService,
   AuditService,
-  FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
   JobService,
@@ -17,18 +17,14 @@ import {
 } from '@app/domain';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Injectable()
 export class AppService {
   private logger = new Logger(AppService.name);
 
   constructor(
-    // TODO refactor to domain
-    private metadataProcessor: MetadataExtractionProcessor,
-
-    private facialRecognitionService: FacialRecognitionService,
     private jobService: JobService,
+    private assetService: AssetService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
@@ -44,6 +40,8 @@ export class AppService {
 
   async init() {
     await this.jobService.registerHandlers({
+      [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
+      [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
@@ -65,7 +63,7 @@ export class AppService {
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
       [JobName.MIGRATE_ASSET]: (data) => this.mediaService.handleAssetMigration(data),
-      [JobName.MIGRATE_PERSON]: (data) => this.facialRecognitionService.handlePersonMigration(data),
+      [JobName.MIGRATE_PERSON]: (data) => this.personService.handlePersonMigration(data),
       [JobName.SYSTEM_CONFIG_CHANGE]: () => this.systemConfigService.refreshConfig(),
       [JobName.QUEUE_GENERATE_THUMBNAILS]: (data) => this.mediaService.handleQueueGenerateThumbnails(data),
       [JobName.GENERATE_JPEG_THUMBNAIL]: (data) => this.mediaService.handleGenerateJpegThumbnail(data),
@@ -73,13 +71,14 @@ export class AppService {
       [JobName.GENERATE_THUMBHASH_THUMBNAIL]: (data) => this.mediaService.handleGenerateThumbhashThumbnail(data),
       [JobName.QUEUE_VIDEO_CONVERSION]: (data) => this.mediaService.handleQueueVideoConversion(data),
       [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
-      [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleQueueMetadataExtraction(data),
-      [JobName.METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleMetadataExtraction(data),
-      [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataProcessor.handleLivePhotoLinking(data),
-      [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
-      [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
-      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.facialRecognitionService.handleGeneratePersonThumbnail(data),
+      [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataService.handleQueueMetadataExtraction(data),
+      [JobName.METADATA_EXTRACTION]: (data) => this.metadataService.handleMetadataExtraction(data),
+      [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataService.handleLivePhotoLinking(data),
+      [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.personService.handleQueueRecognizeFaces(data),
+      [JobName.RECOGNIZE_FACES]: (data) => this.personService.handleRecognizeFaces(data),
+      [JobName.GENERATE_PERSON_THUMBNAIL]: (data) => this.personService.handleGeneratePersonThumbnail(data),
       [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
+      [JobName.PERSON_DELETE]: (data) => this.personService.handlePersonDelete(data),
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
@@ -98,10 +97,10 @@ export class AppService {
       }
 
       this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      this.metadataProcessor.init(true);
+      this.metadataService.init(true);
     });
 
-    await this.metadataProcessor.init();
+    await this.metadataService.init();
     await this.searchService.init();
   }
 }

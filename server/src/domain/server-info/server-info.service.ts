@@ -24,7 +24,7 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = new StorageCore(storageRepository);
   }
 
@@ -66,6 +66,7 @@ export class ServerInfoService {
     return {
       loginPageMessage,
       mapTileUrl: config.map.tileUrl,
+      trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
     };
   }
