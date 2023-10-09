@@ -111,24 +111,21 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
-  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl = crawlOptions.pathsToCrawl;
-
-    let paths: string;
+  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const { pathsToCrawl, exclusionPatterns } = crawlOptions;
     if (!pathsToCrawl) {
-      // No paths to crawl, return empty list
-      return [];
-    } else if (pathsToCrawl.length === 1) {
-      paths = pathsToCrawl[0];
-    } else {
-      paths = '{' + pathsToCrawl.join(',') + '}';
+      return Promise.resolve([]);
     }
 
-    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
 
-    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
-      path.normalize(assetPath),
-    );
+    return glob(`${base}/**/${extensions}`, {
+      absolute: true,
+      nocase: true,
+      nodir: true,
+      ignore: exclusionPatterns,
+    });
   }
 
   readdir = readdir;
