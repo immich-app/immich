@@ -4,14 +4,22 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
 
 interface DirectoryItem {
   Length?: number;

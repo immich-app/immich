@@ -20,12 +20,16 @@ import {
   personStub,
   probeStub,
 } from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IPersonRepository } from '../person';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMediaRepository } from './media.repository';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMediaRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { MediaService } from './media.service';
 
 describe(MediaService.name, () => {

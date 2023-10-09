@@ -16,15 +16,20 @@ import {
   newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
-import { BulkIdErrorReason, IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IMediaRepository } from '../media';
-import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
+import { BulkIdErrorReason } from '../asset';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IMediaRepository,
+  IPersonRepository,
+  ISearchRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { PersonResponseDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {

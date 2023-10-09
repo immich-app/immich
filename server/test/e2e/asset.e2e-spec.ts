@@ -4,10 +4,11 @@ import {
   IPersonRepository,
   LibraryResponseDto,
   LoginResponseDto,
+  SharedLinkResponseDto,
   TimeBucketSize,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
@@ -76,6 +77,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let server: any;
   let assetRepository: IAssetRepository;
   let defaultLibrary: LibraryResponseDto;
+  let sharedLink: SharedLinkResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let asset1: AssetEntity;
@@ -114,6 +116,11 @@ describe(`${AssetController.name} (e2e)`, () => {
       createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
       createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01')),
     ]);
+
+    sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+      type: SharedLinkType.INDIVIDUAL,
+      assetIds: [asset1.id, asset2.id],
+    });
   });
 
   afterAll(async () => {
@@ -505,6 +512,15 @@ describe(`${AssetController.name} (e2e)`, () => {
           { count: 2, timeBucket: asset1.fileCreatedAt.toISOString() },
         ]),
       );
+    });
+
+    it('should not allow access for unrelated shared links', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-buckets')
+        .query({ key: sharedLink.key, size: TimeBucketSize.MONTH });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
     });
 
     it('should get time buckets by day', async () => {

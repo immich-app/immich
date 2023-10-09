@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, keyStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '@test';
-import { ICryptoRepository } from '../crypto';
-import { IKeyRepository } from './api-key.repository';
+import { ICryptoRepository, IKeyRepository } from '../repositories';
 import { APIKeyService } from './api-key.service';
 
 describe(APIKeyService.name, () => {

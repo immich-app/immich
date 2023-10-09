@@ -4,13 +4,12 @@ import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IAssetRepository } from '../asset/asset.repository';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IAssetRepository, IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
 import {
   INITIAL_SYSTEM_CONFIG,
-  ISystemConfigRepository,
   supportedDayTokens,
   supportedHourTokens,
   supportedMinuteTokens,
@@ -20,7 +19,6 @@ import {
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository } from '../user/user.repository';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;

@@ -11,9 +11,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { ILibraryRepository } from '../library/library.repository';
-import { IUserRepository, UserListFilter } from './user.repository';
+import { ICryptoRepository, ILibraryRepository, IUserRepository, UserListFilter } from '../repositories';
 
 const SALT_ROUNDS = 10;
 

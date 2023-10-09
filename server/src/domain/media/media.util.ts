@@ -1,5 +1,4 @@
 import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
-import { SystemConfigFFmpegDto } from '../system-config/dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -7,7 +6,8 @@ import {
   VideoCodecHWConfig,
   VideoCodecSWConfig,
   VideoStreamInfo,
-} from './media.repository';
+} from '../repositories';
+import { SystemConfigFFmpegDto } from '../system-config/dto';
 class BaseConfig implements VideoCodecSWConfig {
   presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   constructor(protected config: SystemConfigFFmpegDto) {}

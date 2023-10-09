@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   ServerConfigDto,
   ServerFeaturesDto,

@@ -1,10 +1,17 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository } from '../asset';
+import { AccessCore, Permission } from '../access';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthUserDto } from '../auth';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
+import { JobName } from '../job';
+import {
+  AlbumInfoOptions,
+  IAccessRepository,
+  IAlbumRepository,
+  IAssetRepository,
+  IJobRepository,
+  IUserRepository,
+} from '../repositories';
 import {
   AlbumCountResponseDto,
   AlbumResponseDto,
@@ -12,7 +19,6 @@ import {
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
 } from './album-response.dto';
-import { AlbumInfoOptions, IAlbumRepository } from './album.repository';
 import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 
 @Injectable()
