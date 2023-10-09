@@ -177,13 +177,15 @@ export class AssetService {
   private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
     if (dto.albumId) {
       await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
-    } else if (dto.userId) {
+    } else {
+      dto.userId = dto.userId || authUser.id;
+    }
+
+    if (dto.userId) {
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
       if (dto.isArchived !== false) {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
-      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
-    } else {
-      dto.userId = authUser.id;
     }
   }
 
