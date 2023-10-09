@@ -2,14 +2,18 @@ import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { IAlbumRepository } from '../album/album.repository';
-import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { IEntityJob, IJobRepository, JobName } from '../job';
-import { ILibraryRepository } from '../library/library.repository';
+import { IEntityJob, JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
@@ -20,7 +24,6 @@ import {
   mapUserCountResponse,
 } from './response-dto';
 import { UserCore } from './user.core';
-import { IUserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {

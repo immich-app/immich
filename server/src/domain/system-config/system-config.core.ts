@@ -19,8 +19,8 @@ import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
+import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
-import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 

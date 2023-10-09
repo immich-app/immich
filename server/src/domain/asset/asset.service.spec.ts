@@ -15,12 +15,18 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
-import { ICommunicationRepository } from '../communication';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobItem, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { AssetStats, IAssetRepository, TimeBucketSize } from './asset.repository';
+import { JobName } from '../job';
+import {
+  AssetStats,
+  IAssetRepository,
+  ICommunicationRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  JobItem,
+  TimeBucketSize,
+} from '../repositories';
 import { AssetService, UploadFieldName } from './asset.service';
 import { AssetJobName, AssetStatsResponseDto, DownloadResponseDto } from './dto';
 import { mapAsset } from './response-dto';

@@ -1,5 +1,5 @@
 import { newStorageRepositoryMock } from '@test';
-import { IStorageRepository } from '.';
+import { IStorageRepository } from '../repositories';
 import { StorageService } from './storage.service';
 
 describe(StorageService.name, () => {

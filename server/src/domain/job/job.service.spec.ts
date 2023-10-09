@@ -9,13 +9,17 @@ import {
   newPersonRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IAssetRepository } from '../asset';
-import { ICommunicationRepository } from '../communication';
-import { IPersonRepository } from '../person';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  IAssetRepository,
+  ICommunicationRepository,
+  IJobRepository,
+  IPersonRepository,
+  ISystemConfigRepository,
+  JobHandler,
+  JobItem,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
 import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {

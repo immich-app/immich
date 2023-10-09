@@ -4,16 +4,24 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IAssetDeletionJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IAssetRepository } from './asset.repository';
+import { IAssetDeletionJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import {
+  CommunicationEvent,
+  IAccessRepository,
+  IAssetRepository,
+  ICommunicationRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichReadStream,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,

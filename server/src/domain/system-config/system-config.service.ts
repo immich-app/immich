@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ISystemConfigRepository } from '.';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { IJobRepository, JobName } from '../job';
+import { JobName } from '../job';
+import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
