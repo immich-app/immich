@@ -291,7 +291,7 @@ export class MetadataService {
           originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
           originalFileName: asset.originalFileName,
           isVisible: false,
-          isReadOnly: true,
+          isReadOnly: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
