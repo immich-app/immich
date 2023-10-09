@@ -11,13 +11,17 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ILibraryRepository } from '../library';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import { UserCore, UserResponseDto } from '../user';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -38,7 +42,6 @@ import {
   mapLoginResponse,
   mapUserToken,
 } from './response-dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 export interface LoginDetails {
   isSecure: boolean;

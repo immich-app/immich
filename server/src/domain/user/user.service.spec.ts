@@ -16,16 +16,19 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
-import { ILibraryRepository } from '../library';
-import { IStorageRepository } from '../storage';
+import { JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto, mapUser } from './response-dto';
-import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
 const makeDeletedAt = (daysAgo: number) => {

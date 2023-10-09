@@ -1,23 +1,30 @@
 import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import {
-  AssetResponseDto,
-  BulkIdErrorReason,
-  BulkIdResponseDto,
-  IAssetRepository,
-  WithoutProperty,
-  mapAsset,
-} from '../asset';
+import { AccessCore, Permission } from '../access';
+import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
-import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { FACE_THUMBNAIL_SIZE } from '../media';
+import {
+  AssetFaceId,
+  CropOptions,
+  IAccessRepository,
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IMediaRepository,
+  IPersonRepository,
+  ISearchRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichReadStream,
+  UpdateFacesData,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   MergePersonDto,
   PeopleResponseDto,
@@ -27,7 +34,6 @@ import {
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
-import { AssetFaceId, IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {

@@ -1,13 +1,19 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { IAssetRepository, mapAsset } from '../asset';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { IPersonRepository } from '../person';
-import { FeatureFlag, ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { mapAsset } from '../asset';
+import {
+  CommunicationEvent,
+  IAssetRepository,
+  ICommunicationRepository,
+  IJobRepository,
+  IPersonRepository,
+  ISystemConfigRepository,
+  JobHandler,
+  JobItem,
+} from '../repositories';
+import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
 
 @Injectable()
 export class JobService {

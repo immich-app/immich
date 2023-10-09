@@ -1,6 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IAccessRepository } from './access.repository';
+import { IAccessRepository } from '../repositories';
 
 export enum Permission {
   // ASSET_CREATE = 'asset.create',

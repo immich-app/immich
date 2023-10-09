@@ -4,24 +4,29 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { IAssetRepository, WithProperty } from '../asset';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import {
   IBaseJob,
   IEntityJob,
-  IJobRepository,
   ILibraryFileJob,
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,
 } from '../job';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import {
+  IAccessRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+  WithProperty,
+} from '../repositories';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -30,7 +35,6 @@ import {
   UpdateLibraryDto,
   mapLibrary,
 } from './library.dto';
-import { ILibraryRepository } from './library.repository';
 
 @Injectable()
 export class LibraryService {

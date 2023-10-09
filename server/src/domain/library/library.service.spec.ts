@@ -16,10 +16,15 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
-
-import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
-import { ILibraryRepository } from './library.repository';
+import { ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
+import {
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { LibraryService } from './library.service';
 
 describe(LibraryService.name, () => {

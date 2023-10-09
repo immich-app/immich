@@ -15,16 +15,18 @@ import {
   searchStub,
 } from '@test';
 import { plainToInstance } from 'class-transformer';
-import { IAlbumRepository } from '../album/album.repository';
 import { mapAsset } from '../asset';
-import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
-import { IJobRepository } from '../job/job.repository';
-import { IPersonRepository } from '../person/person.repository';
-import { IMachineLearningRepository } from '../smart-info';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IPersonRepository,
+  ISearchRepository,
+  ISystemConfigRepository,
+} from '../repositories';
 import { SearchDto } from './dto';
-import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
 
 jest.useFakeTimers();

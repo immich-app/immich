@@ -12,13 +12,19 @@ import {
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
 import { constants } from 'fs/promises';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName, QueueName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { JobName, QueueName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
 import { MetadataService } from './metadata.service';
 
 describe(MetadataService.name, () => {
