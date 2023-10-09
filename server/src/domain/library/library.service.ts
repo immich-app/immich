@@ -7,10 +7,9 @@ import { basename, parse } from 'path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository, WithProperty } from '../asset';
 import { AuthUserDto } from '../auth';
-import { usePagination } from '../domain.util';
-
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import {
   IBaseJob,
   IEntityJob,
@@ -18,8 +17,8 @@ import {
   ILibraryFileJob,
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
-  JobName,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
 } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
@@ -27,9 +26,9 @@ import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   ScanLibraryDto,
   UpdateLibraryDto,
+  mapLibrary,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
 
