@@ -5,6 +5,7 @@ import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { usePagination } from '../domain.util';
 import { IAssetFaceJob, IBulkEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { PersonResponseDto } from '../person/person.dto';
 import {
   AssetFaceId,
   IAlbumRepository,
@@ -23,7 +24,6 @@ import {
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 import { SearchDto, SearchPeopleDto } from './dto';
 import { SearchResponseDto } from './response-dto';
-import { PersonResponseDto } from '../person/person.dto';
 
 interface SyncQueue {
   upsert: Set<string>;
