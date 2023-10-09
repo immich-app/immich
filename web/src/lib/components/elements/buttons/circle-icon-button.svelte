@@ -14,7 +14,6 @@
 
 <button
   {title}
-  style:background-color={backgroundColor}
   style:--immich-icon-button-hover-color={hoverColor}
   class:dark:text-immich-dark-fg={!forceDark}
   class="flex place-content-center place-items-center rounded-full p-{padding} transition-all
