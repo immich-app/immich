@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ffmpeg** | [**SystemConfigFFmpegDto**](SystemConfigFFmpegDto.md) |  | 
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
+**libraryScan** | [**SystemConfigLibraryScanDto**](SystemConfigLibraryScanDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
 **newVersionCheck** | [**SystemConfigNewVersionCheckDto**](SystemConfigNewVersionCheckDto.md) |  | 
