@@ -45,6 +45,7 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int totalAssets;
   final int initialIndex;
   final int heroOffset;
+  final bool showStack;
 
   GalleryViewerPage({
     super.key,
@@ -52,6 +53,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.loadAsset,
     required this.totalAssets,
     this.heroOffset = 0,
+    this.showStack = false,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -78,11 +80,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isFromTrash = isTrashEnabled &&
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
-    final stackSelectedIndex = useState(0);
-    final stackChildren = ref.watch(assetStackStateProvider(currentAsset));
-    final displayedAsset = useState(currentAsset);
+    final stackIndex = useState(-1);
+    final stack = showStack
+        ? ref.watch(assetStackStateProvider(currentAsset))
+        : <Asset>{};
+    final stackElements = showStack ? {currentAsset, ...stack} : <Asset>{};
 
-    Asset asset() => displayedAsset.value;
+    Asset asset() => stackIndex.value == -1
+        ? currentAsset
+        : stackElements.elementAt(stackIndex.value);
 
     useEffect(
       () {
@@ -94,15 +100,6 @@ class GalleryViewerPage extends HookConsumerWidget {
         return null;
       },
       [],
-    );
-
-    useEffect(
-      () {
-        stackSelectedIndex.value = 0;
-        displayedAsset.value = currentAsset;
-        return null;
-      },
-      [currentIndex.value],
     );
 
     void toggleFavorite(Asset asset) => ref
@@ -402,29 +399,21 @@ class GalleryViewerPage extends HookConsumerWidget {
       return ListView.builder(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
-        itemCount: stackChildren.length + 1,
+        itemCount: stackElements.length,
         itemBuilder: (context, index) {
-          final actualIndex = index - 1;
-          final object = index == 0
-              ? loadAsset(currentIndex.value)
-              : stackChildren.elementAt(actualIndex);
+          final asset = stackElements.elementAt(index);
           final thumbnailRequestUrl =
-              '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${object.remoteId}';
+              '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${asset.remoteId}';
           return Padding(
             padding: const EdgeInsets.only(right: 10),
             child: GestureDetector(
-              onTap: () {
-                stackSelectedIndex.value = index;
-                displayedAsset.value = index == 0
-                    ? loadAsset(currentIndex.value)
-                    : stackChildren.elementAt(actualIndex);
-              },
+              onTap: () => stackIndex.value = index,
               child: Container(
                 width: 40,
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: Colors.white,
-                    width: index == stackSelectedIndex.value ? 3 : 1,
+                    width: index == stackIndex.value ? 3 : 1,
                   ),
                 ),
                 child: CachedNetworkImage(
@@ -473,7 +462,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ),
               ),
               Visibility(
-                visible: stackChildren.isNotEmpty,
+                visible: stack.isNotEmpty,
                 child: Padding(
                   padding: const EdgeInsets.only(
                     left: 10,
@@ -576,6 +565,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
                 precacheNextImage(next);
                 currentIndex.value = value;
+                stackIndex.value = -1;
                 HapticFeedback.selectionClick();
               },
               loadingBuilder: (context, event, index) {

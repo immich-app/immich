@@ -260,7 +260,7 @@ class HomePage extends HookConsumerWidget {
         AssetSelectionPageResult? returnPayload =
             await AutoRouter.of(context).push<AssetSelectionPageResult?>(
           AssetSelectionRoute(
-            existingAssets: stackChildren.toSet(),
+            existingAssets: stackChildren,
             canDeselect: true,
             query: getAssetStackSelectionQuery(ref, selectedAsset),
           ),
@@ -270,9 +270,8 @@ class HomePage extends HookConsumerWidget {
           Set<Asset> selectedAssets = returnPayload.selectedAssets;
           // Do not add itself as its stack child
           selectedAssets.remove(selectedAsset);
-          final currentChildren = stackChildren.toSet();
-          final removedChildren = currentChildren.difference(selectedAssets);
-          final addedChildren = selectedAssets.difference(currentChildren);
+          final removedChildren = stackChildren.difference(selectedAssets);
+          final addedChildren = selectedAssets.difference(stackChildren);
           await ref
               .read(assetStackStateProvider(selectedAsset).notifier)
               .updateStack(
@@ -362,6 +361,7 @@ class HomePage extends HookConsumerWidget {
                                   currentUser.memoryEnabled!)
                               ? const MemoryLane()
                               : const SizedBox(),
+                          showStack: true,
                         ),
                   error: (error, _) => Center(child: Text(error.toString())),
                   loading: buildLoadingIndicator,

@@ -37,6 +37,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final int heroOffset;
   final bool shrinkWrap;
   final bool showDragScroll;
+  final bool showStack;
 
   const ImmichAssetGridView({
     super.key,
@@ -56,6 +57,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.heroOffset = 0,
     this.shrinkWrap = false,
     this.showDragScroll = true,
+    this.showStack = false,
   });
 
   @override
@@ -135,6 +137,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       useGrayBoxPlaceholder: true,
       showStorageIndicator: widget.showStorageIndicator,
       heroOffset: widget.heroOffset,
+      showStack: widget.showStack,
     );
   }
 

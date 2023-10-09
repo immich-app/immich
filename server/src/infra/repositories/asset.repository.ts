@@ -190,6 +190,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         library: true,
+        stack: true,
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
@@ -538,7 +539,8 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
-    if (!isArchived && !isFavorite && !personId) {
+    // Hide stack children only in main timeline
+    if (!isArchived && !isFavorite && !personId && !albumId) {
       builder = builder.andWhere('asset.stackParent IS NULL');
     }
 

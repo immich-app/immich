@@ -127,9 +127,7 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal) buildDownloadButton(),
-        // Only allow top level assets to be added to the album
-        if (asset.isRemote && asset.stackParentId == null)
-          buildAddToAlbumButtom(),
+        if (asset.isRemote) buildAddToAlbumButtom(),
         buildMoreInfoButton(),
       ],
     );

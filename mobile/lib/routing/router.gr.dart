@@ -71,6 +71,7 @@ class _$AppRouter extends RootStackRouter {
           loadAsset: args.loadAsset,
           totalAssets: args.totalAssets,
           heroOffset: args.heroOffset,
+          showStack: args.showStack,
         ),
       );
     },
@@ -712,6 +713,7 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
     required Asset Function(int) loadAsset,
     required int totalAssets,
     int heroOffset = 0,
+    bool showStack = false,
   }) : super(
           GalleryViewerRoute.name,
           path: '/gallery-viewer-page',
@@ -721,6 +723,7 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
             loadAsset: loadAsset,
             totalAssets: totalAssets,
             heroOffset: heroOffset,
+            showStack: showStack,
           ),
         );
 
@@ -734,11 +737,14 @@ class GalleryViewerRouteArgs {
     required this.loadAsset,
     required this.totalAssets,
     this.heroOffset = 0,
+    this.showStack = false,
   });
 
   final Key? key;
 
   final int initialIndex;
+
+  final bool showStack;
 
   final Asset Function(int) loadAsset;
 
@@ -748,7 +754,7 @@ class GalleryViewerRouteArgs {
 
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset}';
+    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset, showStack: $showStack}';
   }
 }
 
