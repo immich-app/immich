@@ -42,11 +42,19 @@ export class JobService {
       },
       undefined,
       config.libraryScan.enabled,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      // prevents memory leaking by automatically stopping when the node process finishes
+      true,
     );
 
     this.configCore.config$.subscribe((config) => {
-      libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
-      config.libraryScan.enabled ? libraryScanJob.start() : libraryScanJob.stop();
+      if (config.libraryScan?.cronExpression) {
+        libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
+      }
+      config.libraryScan?.enabled ? libraryScanJob.start() : libraryScanJob.stop();
     });
   }
 

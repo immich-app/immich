@@ -121,6 +121,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   theme: {
     customCss: '',
   },
+  libraryScan: {
+    enabled: true,
+    cronExpression: '0 0 * * *',
+  },
 });
 
 describe(SystemConfigService.name, () => {
