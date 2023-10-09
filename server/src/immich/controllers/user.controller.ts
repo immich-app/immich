@@ -59,7 +59,7 @@ export class UserController {
     return this.service.create(createUserDto);
   }
 
-  @PublicRoute()
+  @AdminRoute()
   @Get('count')
   getUserCount(@Query() dto: CountDto): Promise<UserCountResponseDto> {
     return this.service.getCount(dto);

@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<SystemConfigDto> updateConfig(SystemConfigDto systemConfigDto) async
+    //Future<SystemConfigDto> updateConfig() async
     test('test updateConfig', () async {
       // TODO
     });

@@ -4357,16 +4357,6 @@
       "put": {
         "operationId": "updateConfig",
         "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SystemConfigDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -4960,6 +4950,17 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -7296,6 +7297,9 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "isInitialized": {
+            "type": "boolean"
+          },
           "loginPageMessage": {
             "type": "string"
           },
@@ -7313,7 +7317,8 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl"
+          "mapTileUrl",
+          "isInitialized"
         ],
         "type": "object"
       },

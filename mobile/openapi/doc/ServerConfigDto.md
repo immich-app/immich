@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**isInitialized** | **bool** |  | 
 **loginPageMessage** | **String** |  | 
 **mapTileUrl** | **String** |  | 
 **oauthButtonText** | **String** |  | 
