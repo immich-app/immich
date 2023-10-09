@@ -21,7 +21,7 @@ export class JobService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

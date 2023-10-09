@@ -71,7 +71,7 @@ export class AuthService {
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30000 });

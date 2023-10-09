@@ -23,7 +23,6 @@ export interface IOfflineLibraryFileJob extends IEntityJob {
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
-  forceRefresh: boolean;
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
