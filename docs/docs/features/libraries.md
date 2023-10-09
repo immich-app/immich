@@ -42,7 +42,25 @@ Finally, files can be deleted from Immich via the `Remove Offline Files` job. An
 
 External libraries use import paths to determine which files to scan. Each library can have multiple import paths so that files from different locations can be added to the same library. Import paths are scanned recursively, and if a file is in multiple import paths, it will only be added once. If the import paths are edited in a way that an external file is no longer in any import path, it will be removed from the library in the same way a deleted file would. If the file is moved back to an import path, it will be added again as if it was a new file.
 
+### Troubleshooting
+
+Sometimes, an external library will not scan correctly. This can happen if the immich_server or immich_microservices can't access the files. Here are some things to check:
+
+- Is the external path set correctly?
+- In the docker-compose file, are the volumes mounted correctly?
+- Are the volumes identical between the `server` and `microservices` container?
+- Are the import paths set correctly, and do they match the path set in docker-compose file?
+- Are the permissions set correctly?
+
+If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
+
 ### Security Considerations
+
+:::caution
+
+Please read and understand this section before setting external paths, as there are important security considerations.
+
+:::
 
 For security purposes, each Immich user is disallowed to add external files by default. This is to prevent devastating [path traversal attacks](https://owasp.org/www-community/attacks/Path_Traversal). An admin can allow individual users to use external path feature via the `external path` setting found in the admin panel. Without the external path restriction, a user can add any image or video file on the Immich host filesystem to be imported into Immich, potentially allowing sensitive data to be accessed. If you are running Immich as root in your Docker setup (which is the default), all external file reads are done with root privileges. This is particularly dangerous if the Immich host is a shared server.
 
@@ -58,6 +76,10 @@ Some basic examples:
 - `hidden.jpg` will exclude all files named `hidden.jpg`
 - `**/Raw/**` will exclude all files in any directory named `Raw`
 - `*.(tif,jpg)` will exclude all files with the extension `.tif` or `.jpg`
+
+### Nightly job
+
+There is an automatic job that's run once a day and refreshes all modified files in all libraries as well as cleans up any libraries stuck in deletion.
 
 ## Usage
 
