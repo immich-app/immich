@@ -34,6 +34,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
               mapTileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
               oauthButtonText: "",
               trashDays: 30,
+              isInitialized: false,
             ),
             isVersionMismatch: false,
             versionMismatchErrorMessage: "",
