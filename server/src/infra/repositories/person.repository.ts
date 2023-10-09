@@ -100,7 +100,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
-      .andWhere('person.name like :name', { name: `${personName.toLowerCase()}%` })
+      .andWhere('person.name ILIKE :name', { name: `${personName}%` })
       .limit(20)
       .getMany();
   }
