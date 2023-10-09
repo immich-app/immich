@@ -29,6 +29,7 @@ export class JobService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore.addValidator((config) => this.validateCronExpression(config.libraryScan.cronExpression));
     this.initPeriodicLibraryScan();
   }
 
@@ -244,6 +245,14 @@ export class JobService {
       case JobName.LINK_LIVE_PHOTOS:
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
         break;
+    }
+  }
+
+  private validateCronExpression(cronExpression: string) {
+    try {
+      new CronJob(cronExpression, () => {});
+    } catch (error) {
+      throw new Error(`Invalid cron expression ${cronExpression}`);
     }
   }
 }

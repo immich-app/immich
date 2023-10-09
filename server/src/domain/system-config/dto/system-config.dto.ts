@@ -77,6 +77,7 @@ export class SystemConfigDto implements SystemConfig {
   theme!: SystemConfigThemeDto;
 
   @Type(() => SystemConfigLibraryScanDto)
+  @ValidateNested()
   @IsObject()
   libraryScan!: SystemConfigLibraryScanDto;
 }
