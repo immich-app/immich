@@ -24,7 +24,7 @@ export class SystemConfigService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.core = SystemConfigCore.get(repository);
+    this.core = SystemConfigCore.create(repository);
   }
 
   get config$() {

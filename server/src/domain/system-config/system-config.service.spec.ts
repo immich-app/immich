@@ -13,9 +13,10 @@ import {
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { ICommunicationRepository, ISystemConfigRepository } from '..';
+import { ICommunicationRepository } from '../communication';
 import { IJobRepository, JobName, QueueName } from '../job';
-import { SystemConfigCore, SystemConfigValidator, defaults } from './system-config.core';
+import { SystemConfigValidator, defaults } from './system-config.core';
+import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
@@ -128,8 +129,6 @@ describe(SystemConfigService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-
-    SystemConfigCore.reset();
     sut = new SystemConfigService(configMock, communicationMock, jobMock);
   });
 

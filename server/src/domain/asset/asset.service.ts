@@ -77,7 +77,7 @@ export class AssetService {
   ) {
     this.access = new AccessCore(accessRepository);
     this.storageCore = new StorageCore(storageRepository);
-    this.configCore = SystemConfigCore.get(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {

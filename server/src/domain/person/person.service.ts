@@ -49,7 +49,7 @@ export class PersonService {
   ) {
     this.access = new AccessCore(accessRepository);
     this.storageCore = new StorageCore(storageRepository);
-    this.configCore = SystemConfigCore.get(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {

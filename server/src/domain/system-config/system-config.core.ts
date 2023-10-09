@@ -146,8 +146,11 @@ export class SystemConfigCore {
 
   private constructor(private repository: ISystemConfigRepository) {}
 
-  static get(repository: ISystemConfigRepository) {
-    return instance || (instance = new this(repository));
+  static create(repository: ISystemConfigRepository) {
+    if (!instance) {
+      instance = new SystemConfigCore(repository);
+    }
+    return instance;
   }
 
   static reset() {

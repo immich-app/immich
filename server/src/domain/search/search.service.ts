@@ -57,7 +57,7 @@ export class SearchService {
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
-    this.configCore = SystemConfigCore.get(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   teardown() {
