@@ -89,6 +89,7 @@
 
   const searchPeople = async () => {
     isSearchingPeople = true;
+    people = [];
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
@@ -99,7 +100,6 @@
         maxPeople = true;
       }
     } catch (error) {
-      people = [];
       handleError(error, "Can't search people");
     }
 
