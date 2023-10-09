@@ -42,7 +42,7 @@ export class StorageTemplateService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.storageTemplate = this.compile(config.storageTemplate.template);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = new StorageCore(storageRepository);

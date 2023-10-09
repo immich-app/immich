@@ -312,7 +312,7 @@ describe(MetadataService.name, () => {
           type: AssetType.VIDEO,
           originalFileName: assetStub.livePhotoStillAsset.originalFileName,
           isVisible: false,
-          isReadOnly: true,
+          isReadOnly: false,
         }),
       );
       expect(assetMock.save).toHaveBeenCalledWith({

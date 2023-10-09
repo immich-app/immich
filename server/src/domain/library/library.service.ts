@@ -7,10 +7,9 @@ import { basename, parse } from 'path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository, WithProperty } from '../asset';
 import { AuthUserDto } from '../auth';
-import { usePagination } from '../domain.util';
-
 import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import {
   IBaseJob,
   IEntityJob,
@@ -18,8 +17,8 @@ import {
   ILibraryFileJob,
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
-  JobName,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
 } from '../job';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
@@ -27,9 +26,9 @@ import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   ScanLibraryDto,
   UpdateLibraryDto,
+  mapLibrary,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
 
@@ -186,7 +185,7 @@ export class LibraryService {
     let doImport = false;
     let doRefresh = false;
 
-    if (job.forceRefresh) {
+    if (job.force) {
       doRefresh = true;
     }
 
@@ -200,7 +199,7 @@ export class LibraryService {
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
       );
       doRefresh = true;
-    } else if (!job.forceRefresh && stats && !existingAssetEntity.isOffline) {
+    } else if (!job.force && stats && !existingAssetEntity.isOffline) {
       // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
       this.logger.debug(`Asset already exists in database and on disk, will not import: ${assetPath}`);
     }
@@ -410,7 +409,7 @@ export class LibraryService {
           id: job.id,
           assetPath: path.normalize(assetPath),
           ownerId: library.ownerId,
-          forceRefresh: job.refreshAllFiles ?? false,
+          force: job.refreshAllFiles ?? false,
         };
 
         await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
