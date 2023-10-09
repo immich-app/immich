@@ -67,7 +67,7 @@ export class MetadataService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.storageCore = new StorageCore(storageRepository);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.config$.subscribe(() => this.init());
   }
 

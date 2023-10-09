@@ -134,7 +134,7 @@ export enum FeatureFlag {
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
 
-const singleton = new Subject<SystemConfig>();
+let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
@@ -142,9 +142,20 @@ export class SystemConfigCore {
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfig | null = null;
 
-  public config$ = singleton;
+  public config$ = new Subject<SystemConfig>();
 
-  constructor(private repository: ISystemConfigRepository) {}
+  private constructor(private repository: ISystemConfigRepository) {}
+
+  static create(repository: ISystemConfigRepository) {
+    if (!instance) {
+      instance = new SystemConfigCore(repository);
+    }
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
