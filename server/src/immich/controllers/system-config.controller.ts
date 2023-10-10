@@ -1,6 +1,6 @@
 import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
@@ -22,6 +22,7 @@ export class SystemConfigController {
   }
 
   @Put()
+  @ApiBody({ type: SystemConfigDto, schema: { $ref: '#/components/schemas/SystemConfigDto' } })
   updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.service.updateConfig(dto);
   }
