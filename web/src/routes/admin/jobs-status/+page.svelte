@@ -3,7 +3,7 @@
   import { AllJobStatusResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
 
-  let timer: NodeJS.Timer;
+  let timer: ReturnType<typeof setInterval>;
 
   let jobs: AllJobStatusResponseDto;
 
