@@ -8,15 +8,7 @@ import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
-import {
-  IBaseJob,
-  IEntityJob,
-  ILibraryFileJob,
-  ILibraryRefreshJob,
-  IOfflineLibraryFileJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-} from '../job';
+import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import {
   IAccessRepository,

@@ -16,7 +16,7 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
+import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,

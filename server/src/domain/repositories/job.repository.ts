@@ -9,7 +9,6 @@ import {
   IEntityJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
-  IOfflineLibraryFileJob,
 } from '../job/job.interface';
 
 export interface JobCounts {
