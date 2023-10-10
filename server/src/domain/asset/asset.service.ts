@@ -474,6 +474,14 @@ export class AssetService {
 
     if (!!toAdd && toAdd.length != 0) {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toAdd);
+      const assets = await this.assetRepository.getByIds(toAdd);
+      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
+      // Merge stacks
+      for (const asset of assetsWithChildren) {
+        const stackIds = asset.stack!.map((a) => a.id);
+        toAdd.push(...stackIds);
+      }
+
       await this.assetRepository.updateAll(toAdd, { stackParentId });
     }
 
