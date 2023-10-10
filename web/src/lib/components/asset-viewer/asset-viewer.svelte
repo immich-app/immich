@@ -1,75 +1,74 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
-  import { fly } from 'svelte/transition';
-  import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
-  import DetailPanel from './detail-panel.svelte';
-  import PhotoViewer from './photo-viewer.svelte';
-  import VideoViewer from './video-viewer.svelte';
-  import PanoramaViewer from './panorama-viewer.svelte';
-  import { ProjectionType } from '$lib/constants';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import Pause from 'svelte-material-icons/Pause.svelte';
-  import Play from 'svelte-material-icons/Play.svelte';
-  import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
-  import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
-  import { handleError } from '$lib/utils/handle-error';
-  import type { AssetStore } from '$lib/stores/assets.store';
+  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { locale } from '$lib/stores/preferences.store';
+  import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { TimeBucketSize, type AlbumResponseDto, type SharedLinkResponseDto } from '@api';
+  import { onDestroy, onMount } from 'svelte';
+  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
+  import { dateFormats } from '../../constants';
+  import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
+  import { AssetStore } from '../../stores/assets.store';
+  import { isMobile } from '$lib/stores/device.store.ts';
+  import { downloadArchive } from '../../utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
+  import DownloadAction from '../photos-page/actions/download-action.svelte';
+  import AssetGrid from '../photos-page/asset-grid.svelte';
+  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import ThemeButton from '../shared-components/theme-button.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { featureFlags } from '$lib/stores/server-config.store';
 
-  export let assetStore: AssetStore | null = null;
-  export let asset: AssetResponseDto;
-  export let showNavigation = true;
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
-  $: isTrashEnabled = $featureFlags.trash;
-  export let force = false;
+  export let sharedLink: SharedLinkResponseDto;
 
-  const dispatch = createEventDispatcher<{
-    archived: AssetResponseDto;
-    unarchived: AssetResponseDto;
-    favorite: AssetResponseDto;
-    unfavorite: AssetResponseDto;
-    close: void;
-    next: void;
-    previous: void;
-  }>();
+  const album = sharedLink.album as AlbumResponseDto;
 
-  let appearsInAlbums: AlbumResponseDto[] = [];
-  let isShowAlbumPicker = false;
-  let isShowDeleteConfirmation = false;
-  let addToSharedAlbum = true;
-  let shouldPlayMotionPhoto = false;
-  let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
-  let canCopyImagesToClipboard: boolean;
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
+  const assetInteractionStore = createAssetInteractionStore();
+  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+
+  dragAndDropFilesStore.subscribe((value) => {
+    if (value.isDragging && value.files.length > 0) {
+      fileUploadHandler(value.files, album.id);
+      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+    }
+  });
+
+  const getDateRange = () => {
+    const { startDate, endDate } = album;
+
+    let start = '';
+    let end = '';
+
+    if (startDate) {
+      start = new Date(startDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (endDate) {
+      end = new Date(endDate).toLocaleDateString($locale, dateFormats.album);
+    }
+
+    if (startDate && endDate && start !== end) {
+      return `${start} - ${end}`;
+    }
+
+    if (start) {
+      return start;
+    }
+
+    return '';
+  };
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
-
-    if (!sharedLink) {
-      await getAllAlbums();
-    }
-
-    // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-    // TODO: Move to regular import once the package correctly supports ESM.
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
   });
 
   onDestroy(() => {
@@ -78,441 +77,91 @@
     }
   });
 
-  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
-
-  const getAllAlbums = async () => {
-    if (api.isSharedLink) {
-      return;
-    }
-
-    try {
-      const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
-      appearsInAlbums = data;
-    } catch (e) {
-      console.error('Error getting album that asset belong to', e);
-    }
-  };
-
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
     }
-
-    const key = event.key;
-    const shiftKey = event.shiftKey;
-
-    switch (key) {
-      case 'a':
-      case 'A':
-        if (shiftKey) {
-          toggleArchive();
-        }
-        return;
-      case 'ArrowLeft':
-        navigateAssetBackward();
-        return;
-      case 'ArrowRight':
-        navigateAssetForward();
-        return;
-      case 'd':
-      case 'D':
-        if (shiftKey) {
-          downloadFile(asset);
-        }
-        return;
-      case 'Delete':
-        trashOrDelete();
-        return;
-      case 'Escape':
-        if (isShowDeleteConfirmation) {
-          isShowDeleteConfirmation = false;
+    if (!$showAssetViewer) {
+      switch (event.key) {
+        case 'Escape':
+          if ($isMultiSelectState) {
+            assetInteractionStore.clearMultiselect();
+          }
           return;
-        }
-        closeViewer();
-        return;
-      case 'f':
-        toggleFavorite();
-        return;
-      case 'i':
-        $isShowDetail = !$isShowDetail;
-        return;
-    }
-  };
-
-  const handleCloseViewer = () => {
-    $isShowDetail = false;
-    closeViewer();
-  };
-
-  const closeViewer = () => dispatch('close');
-
-  const navigateAssetForward = async (e?: Event) => {
-    if (isSlideshowMode && assetStore && progressBar) {
-      const hasNext = await assetStore.getNextAssetId(asset.id);
-      if (hasNext) {
-        progressBar.restart(true);
-      } else {
-        await handleStopSlideshow();
       }
     }
-
-    e?.stopPropagation();
-    dispatch('next');
   };
 
-  const navigateAssetBackward = (e?: Event) => {
-    if (isSlideshowMode && progressBar) {
-      progressBar.restart(true);
-    }
-
-    e?.stopPropagation();
-    dispatch('previous');
-  };
-
-  const showDetailInfoHandler = () => {
-    $isShowDetail = !$isShowDetail;
-  };
-
-  $: trashOrDelete = !(force || !isTrashEnabled)
-    ? trashAsset
-    : () => {
-        isShowDeleteConfirmation = true;
-      };
-
-  const trashAsset = async () => {
-    try {
-      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
-
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
-
-      notificationController.show({
-        message: 'Moved to trash',
-        type: NotificationType.Info,
-      });
-    } catch (e) {
-      handleError(e, 'Unable to trash asset');
-    }
-  };
-
-  const deleteAsset = async () => {
-    try {
-      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
-
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
-
-      notificationController.show({
-        message: 'Permanently deleted asset',
-        type: NotificationType.Info,
-      });
-    } catch (e) {
-      handleError(e, 'Unable to delete asset');
-    } finally {
-      isShowDeleteConfirmation = false;
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      const { data } = await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          isFavorite: !asset.isFavorite,
-        },
-      });
-
-      asset.isFavorite = data.isFavorite;
-      assetStore?.updateAsset(data);
-      dispatch(data.isFavorite ? 'favorite' : 'unfavorite', data);
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
-      });
-    } catch (error) {
-      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
-    }
-  };
-
-  const openAlbumPicker = (shared: boolean) => {
-    isShowAlbumPicker = true;
-    addToSharedAlbum = shared;
-  };
-
-  const handleAddToNewAlbum = (event: CustomEvent) => {
-    isShowAlbumPicker = false;
-
-    const { albumName }: { albumName: string } = event.detail;
-    api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
-      const album = response.data;
-      goto('/albums/' + album.id);
-    });
-  };
-
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
-    isShowAlbumPicker = false;
-    const album = event.detail.album;
-
-    await addAssetsToAlbum(album.id, [asset.id]);
-    await getAllAlbums();
-  };
-
-  const disableKeyDownEvent = () => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  };
-
-  const enableKeyDownEvent = () => {
-    if (browser) {
-      document.addEventListener('keydown', onKeyboardPress);
-    }
-  };
-
-  const toggleArchive = async () => {
-    try {
-      const { data } = await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          isArchived: !asset.isArchived,
-        },
-      });
-
-      asset.isArchived = data.isArchived;
-      assetStore?.updateAsset(data);
-      dispatch(data.isArchived ? 'archived' : 'unarchived', data);
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: asset.isArchived ? `Added to archive` : `Removed from archive`,
-      });
-    } catch (error) {
-      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
-    }
-  };
-
-  const getAssetType = () => {
-    switch (asset.type) {
-      case 'IMAGE':
-        return 'Photo';
-      case 'VIDEO':
-        return 'Video';
-      default:
-        return 'Asset';
-    }
-  };
-
-  const handleRunJob = async (name: AssetJobName) => {
-    try {
-      await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
-    } catch (error) {
-      await handleError(error, `Unable to submit job`);
-    }
-  };
-
-  /**
-   * Slide show mode
-   */
-
-  let isSlideshowMode = false;
-  let assetViewerHtmlElement: HTMLElement;
-  let progressBar: ProgressBar;
-  let progressBarStatus: ProgressBarStatus;
-
-  const handleVideoStarted = () => {
-    if (isSlideshowMode) {
-      progressBar.restart(false);
-    }
-  };
-
-  const handleVideoEnded = async () => {
-    if (isSlideshowMode) {
-      await navigateAssetForward();
-    }
-  };
-
-  const handlePlaySlideshow = async () => {
-    try {
-      await assetViewerHtmlElement.requestFullscreen();
-    } catch (error) {
-      console.error('Error entering fullscreen', error);
-    } finally {
-      isSlideshowMode = true;
-    }
-  };
-
-  const handleStopSlideshow = async () => {
-    try {
-      await document.exitFullscreen();
-    } catch (error) {
-      console.error('Error exiting fullscreen', error);
-    } finally {
-      isSlideshowMode = false;
-      progressBar.restart(false);
-    }
+  const downloadAlbum = async () => {
+    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
   };
 </script>
 
-<section
-  id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
-  bind:this={assetViewerHtmlElement}
->
-  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    {#if isSlideshowMode}
-      <!-- SlideShowController -->
-      <div class="flex">
-        <div class="m-4 flex gap-2">
-          <CircleIconButton logo={Close} on:click={handleStopSlideshow} title="Exit Slideshow" />
-          <CircleIconButton
-            logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
-            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-          />
-          <CircleIconButton logo={ChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton logo={ChevronRight} on:click={navigateAssetForward} title="Next" />
-        </div>
-        <ProgressBar
-          autoplay
-          bind:this={progressBar}
-          bind:status={progressBarStatus}
-          on:done={navigateAssetForward}
-          duration={5000}
-        />
-      </div>
-    {:else}
-      <AssetViewerNavBar
-        {asset}
-        isMotionPhotoPlaying={shouldPlayMotionPhoto}
-        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-        showZoomButton={asset.type === AssetTypeEnum.Image}
-        showMotionPlayButton={!!asset.livePhotoVideoId}
-        showDownloadButton={shouldShowDownloadButton}
-        showSlideshow={!!assetStore}
-        on:goBack={closeViewer}
-        on:showDetail={showDetailInfoHandler}
-        on:download={() => downloadFile(asset)}
-        on:delete={trashOrDelete}
-        on:favorite={toggleFavorite}
-        on:addToAlbum={() => openAlbumPicker(false)}
-        on:addToSharedAlbum={() => openAlbumPicker(true)}
-        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-        on:toggleArchive={toggleArchive}
-        on:asProfileImage={() => (isShowProfileImageCrop = true)}
-        on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={handlePlaySlideshow}
-      />
-    {/if}
-  </div>
-
-  {#if !isSlideshowMode && showNavigation}
-    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
-    </div>
-  {/if}
-
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    {#key asset.id}
-      {#if !asset.resized}
-        <div class="flex h-full w-full justify-center">
-          <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-          >
-            <ImageBrokenVariant size="25%" />
-          </div>
-        </div>
-      {:else if asset.type === AssetTypeEnum.Image}
-        {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-          <VideoViewer
-            assetId={asset.livePhotoVideoId}
-            on:close={closeViewer}
-            on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-          />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
-            .toLowerCase()
-            .endsWith('.insp')}
-          <PanoramaViewer {asset} />
-        {:else}
-          <PhotoViewer {asset} on:close={closeViewer} />
-        {/if}
-      {:else}
-        <VideoViewer
-          assetId={asset.id}
-          on:close={closeViewer}
-          on:onVideoEnded={handleVideoEnded}
-          on:onVideoStarted={handleVideoStarted}
-        />
+<header>
+  {#if $isMultiSelectState}
+    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+      <SelectAllAssets {assetStore} {assetInteractionStore} />
+      {#if sharedLink.allowDownload}
+        <DownloadAction filename="{album.albumName}.zip" />
       {/if}
-    {/key}
-  </div>
-
-  {#if !isSlideshowMode && showNavigation}
-    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
-    </div>
-  {/if}
-
-  {#if !isSlideshowMode && $isShowDetail}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="detail-panel"
-      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <DetailPanel
-        {asset}
-        albums={appearsInAlbums}
-        on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
-      />
-    </div>
-  {/if}
-
-  {#if isShowAlbumPicker}
-    <AlbumSelectionModal
-      shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
-      on:close={() => (isShowAlbumPicker = false)}
-    />
-  {/if}
-
-  {#if isShowDeleteConfirmation}
-    <ConfirmDialogue
-      title="Delete {getAssetType()}"
-      confirmText="Delete"
-      on:confirm={deleteAsset}
-      on:cancel={() => (isShowDeleteConfirmation = false)}
-    >
-      <svelte:fragment slot="prompt">
-        <p>
-          Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from its
-          album(s).
-        </p>
-        <p><b>You cannot undo this action!</b></p>
+    </AssetSelectControlBar>
+  {:else}
+    <ControlAppBar showBackButton={false}>
+      <svelte:fragment slot="leading">
+        <a
+          data-sveltekit-preload-data="hover"
+          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
+          href="https://immich.app"
+        >
+          <ImmichLogo height={30} width={30} />
+          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        </a>
       </svelte:fragment>
-    </ConfirmDialogue>
-  {/if}
 
-  {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
-  {/if}
-</section>
+      <svelte:fragment slot="trailing">
+        {#if sharedLink.allowUpload}
+          <CircleIconButton
+            title="Add Photos"
+            on:click={() => openFileUploadDialog(album.id)}
+            logo={FileImagePlusOutline}
+          />
+        {/if}
 
-<style>
-  #immich-asset-viewer {
-    contain: layout;
-  }
-</style>
+        {#if album.assetCount > 0 && sharedLink.allowDownload && !$isMobile}
+          <CircleIconButton title="Download" on:click={() => downloadAlbum()} logo={FolderDownloadOutline} />
+        {/if}
+
+        <ThemeButton />
+      </svelte:fragment>
+    </ControlAppBar>
+  {/if}
+</header>
+
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+>
+  <AssetGrid {assetStore} {assetInteractionStore}>
+    <section class="pt-24">
+      <!-- ALBUM TITLE -->
+      <p
+        class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+      >
+        {album.albumName}
+      </p>
+
+      <!-- ALBUM SUMMARY -->
+      {#if album.assetCount > 0}
+        <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+          <p class="">{getDateRange()}</p>
+          <p>·</p>
+          <p>{album.assetCount} items</p>
+        </span>
+      {/if}
+
+      <!-- ALBUM DESCRIPTION -->
+      <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
+        {album.description}
+      </p>
+    </section>
+  </AssetGrid>
+</main>

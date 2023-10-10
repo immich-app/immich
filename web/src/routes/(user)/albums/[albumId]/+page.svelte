@@ -31,6 +31,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { isMobile } from '$lib/stores/device.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -354,7 +355,7 @@
             />
           {/if}
 
-          {#if album.assetCount > 0}
+          {#if album.assetCount > 0 && !$isMobile}
             <CircleIconButton title="Download" on:click={handleDownloadAlbum} logo={FolderDownloadOutline} />
 
             {#if isOwned}
