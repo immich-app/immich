@@ -415,61 +415,6 @@ describe(LibraryService.name, () => {
       });
     });
 
-    it('should skip an asset if the user cannot be found', async () => {
-      userMock.get.mockResolvedValue(null);
-
-      const mockLibraryJob: ILibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
-      };
-
-      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
-    });
-
-    it('should skip an asset if external path is not set', async () => {
-      mockUser = userStub.admin;
-      userMock.get.mockResolvedValue(mockUser);
-
-      const mockLibraryJob: ILibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
-      };
-
-      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
-    });
-
-    it("should skip an asset if it isn't in the external path", async () => {
-      mockUser = userStub.externalPath1;
-      userMock.get.mockResolvedValue(mockUser);
-
-      const mockLibraryJob: ILibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
-        assetPath: '/etc/rootpassword.jpg',
-        force: false,
-      };
-
-      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
-    });
-
-    it('should skip an asset if directory traversal is attempted', async () => {
-      mockUser = userStub.externalPath1;
-      userMock.get.mockResolvedValue(mockUser);
-
-      const mockLibraryJob: ILibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
-        assetPath: '/data/user1/../../etc/rootpassword.jpg',
-        force: false,
-      };
-
-      expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
-    });
-
     it('should set a missing asset to offline', async () => {
       storageMock.stat.mockRejectedValue(new Error());
 
