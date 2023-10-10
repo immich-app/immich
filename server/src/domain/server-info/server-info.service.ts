@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -24,7 +24,7 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = new StorageCore(storageRepository);
   }
 
@@ -66,6 +66,7 @@ export class ServerInfoService {
     return {
       loginPageMessage,
       mapTileUrl: config.map.tileUrl,
+      trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
     };
   }

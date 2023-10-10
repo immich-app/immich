@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
@@ -19,11 +20,14 @@ import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart'
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/cache/original_image_provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
@@ -67,6 +71,12 @@ class GalleryViewerPage extends HookConsumerWidget {
     final header = {"Authorization": authToken};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
+    final isTrashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final navStack = AutoRouter.of(context).stackData;
+    final isFromTrash = isTrashEnabled &&
+        navStack.length > 2 &&
+        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
 
     Asset asset() => currentAsset;
 
@@ -161,25 +171,47 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void handleDelete(Asset deleteAsset) {
+    void handleDelete(Asset deleteAsset) async {
+      Future<bool> onDelete(bool force) async {
+        final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
+          {deleteAsset},
+          force: force,
+        );
+        if (isDeleted) {
+          if (totalAssets == 1) {
+            // Handle only one asset
+            AutoRouter.of(context).pop();
+          } else {
+            // Go to next page otherwise
+            controller.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.fastLinearToSlowEaseIn,
+            );
+          }
+        }
+        return isDeleted;
+      }
+
+      // Asset is trashed
+      if (isTrashEnabled && !isFromTrash) {
+        final isDeleted = await onDelete(false);
+        // Can only trash assets stored in server. Local assets are always permanently removed for now
+        if (context.mounted && isDeleted && deleteAsset.isRemote) {
+          ImmichToast.show(
+            durationInSecond: 1,
+            context: context,
+            msg: 'Asset trashed',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+        return;
+      }
+
+      // Asset is permanently removed
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return DeleteDialog(
-            onDelete: () {
-              if (totalAssets == 1) {
-                // Handle only one asset
-                AutoRouter.of(context).pop();
-              } else {
-                // Go to next page otherwise
-                controller.nextPage(
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.fastLinearToSlowEaseIn,
-                );
-              }
-              ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
-            },
-          );
+          return DeleteDialog(onDelete: () => onDelete(true));
         },
       );
     }

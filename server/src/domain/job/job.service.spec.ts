@@ -6,14 +6,20 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
+  newPersonRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IAssetRepository } from '../asset';
-import { ICommunicationRepository } from '../communication';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  IAssetRepository,
+  ICommunicationRepository,
+  IJobRepository,
+  IPersonRepository,
+  ISystemConfigRepository,
+  JobHandler,
+  JobItem,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
 import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {
@@ -30,13 +36,15 @@ describe(JobService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new JobService(assetMock, communicationMock, jobMock, configMock);
+    personMock = newPersonRepositoryMock();
+    sut = new JobService(assetMock, communicationMock, jobMock, configMock, personMock);
   });
 
   it('should work', () => {
@@ -48,6 +56,7 @@ describe(JobService.name, () => {
       await sut.handleNightlyJobs();
 
       expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.ASSET_DELETION_CHECK }],
         [{ name: JobName.USER_DELETE_CHECK }],
         [{ name: JobName.PERSON_CLEANUP }],
         [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
@@ -218,8 +227,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.registerHandlers(makeMockHandlers(false));
 
-      const configCore = new SystemConfigCore(newSystemConfigRepositoryMock());
-      configCore.config$.next({
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.CLIP_ENCODING]: { concurrency: 10 },

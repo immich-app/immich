@@ -1,7 +1,7 @@
 import { PartnerEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from '.';
 import { AuthUserDto } from '../auth';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
 import { UserResponseDto, mapUser } from '../user';
 
 @Injectable()

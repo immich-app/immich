@@ -7,12 +7,9 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { StorageTemplateService } from '.';
-import { IAssetRepository } from '../asset';
-import { IStorageRepository } from '../storage/storage.repository';
-import { ISystemConfigRepository } from '../system-config';
+import { IAssetRepository, IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
 import { defaults } from '../system-config/system-config.core';
-import { IUserRepository } from '../user';
+import { StorageTemplateService } from './storage-template.service';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;

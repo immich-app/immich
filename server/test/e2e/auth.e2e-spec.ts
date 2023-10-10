@@ -1,6 +1,5 @@
-import { AppModule, AuthController } from '@app/immich';
+import { AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import {
@@ -13,6 +12,7 @@ import {
   signupResponseStub,
   uuidStub,
 } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 const firstName = 'Immich';
@@ -26,11 +26,7 @@ describe(`${AuthController.name} (e2e)`, () => {
   let accessToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
   });
 

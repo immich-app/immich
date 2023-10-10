@@ -1,4 +1,4 @@
-import { ClassificationConfig, CLIPConfig, RecognitionConfig } from './dto';
+import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '../smart-info/dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 

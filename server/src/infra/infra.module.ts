@@ -27,7 +27,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommunicationGateway } from './communication.gateway';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
@@ -81,16 +80,24 @@ const providers: Provider[] = [
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
 ];
 
+const imports = [
+  ConfigModule.forRoot(immichAppConfig),
+  TypeOrmModule.forRoot(databaseConfig),
+  TypeOrmModule.forFeature(databaseEntities),
+];
+
+const moduleExports = [...providers];
+
+if (process.env.IMMICH_TEST_ENV !== 'true') {
+  imports.push(BullModule.forRoot(bullConfig));
+  imports.push(BullModule.registerQueue(...bullQueues));
+  moduleExports.push(BullModule);
+}
+
 @Global()
 @Module({
-  imports: [
-    ConfigModule.forRoot(immichAppConfig),
-    TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature(databaseEntities),
-    BullModule.forRoot(bullConfig),
-    BullModule.registerQueue(...bullQueues),
-  ],
-  providers: [...providers, CommunicationGateway],
-  exports: [...providers, BullModule],
+  imports,
+  providers: [...providers],
+  exports: moduleExports,
 })
 export class InfraModule {}

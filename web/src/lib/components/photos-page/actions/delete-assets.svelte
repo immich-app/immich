@@ -9,12 +9,16 @@
   import { api } from '@api';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
+
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;
+  export let force = !$featureFlags.trash;
+
   const { getAssets, clearSelect } = getAssetControlContext();
 
   const dispatch = createEventDispatcher();
@@ -22,27 +26,29 @@
   let isShowConfirmation = false;
   let loading = false;
 
+  const handleTrash = async () => {
+    if (force) {
+      isShowConfirmation = true;
+      return;
+    }
+
+    await handleDelete();
+  };
+
   const handleDelete = async () => {
     loading = true;
 
     try {
-      let count = 0;
-
-      const { data: deletedAssets } = await api.assetApi.deleteAsset({
-        deleteAssetDto: {
-          ids: Array.from(getAssets()).map((a) => a.id),
-        },
-      });
-
-      for (const asset of deletedAssets) {
-        if (asset.status === 'SUCCESS') {
-          onAssetDelete(asset.id);
-          count++;
-        }
+      const ids = Array.from(getAssets())
+        .filter((a) => !a.isExternal)
+        .map((a) => a.id);
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids, force } });
+      for (const id of ids) {
+        onAssetDelete(id);
       }
 
       notificationController.show({
-        message: `Deleted ${count}`,
+        message: `${force ? 'Permanently deleted' : 'Trashed'} ${ids.length} assets`,
         type: NotificationType.Info,
       });
 
@@ -62,20 +68,16 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Delete" on:click={() => (isShowConfirmation = true)} />
-{/if}
-
-{#if !menuItem}
-  {#if loading}
-    <CircleIconButton title="Loading" logo={TimerSand} />
-  {:else}
-    <CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
-  {/if}
+  <MenuOption text={force ? 'Permanently Delete' : 'Delete'} on:click={handleTrash} />
+{:else if loading}
+  <CircleIconButton title="Loading" logo={TimerSand} />
+{:else}
+  <CircleIconButton title="Delete" logo={DeleteOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Delete Asset{getAssets().size > 1 ? 's' : ''}"
+    title="Permanently Delete Asset{getAssets().size > 1 ? 's' : ''}"
     confirmText="Delete"
     on:confirm={handleDelete}
     on:cancel={() => (isShowConfirmation = false)}
@@ -83,7 +85,7 @@
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to delete
+        Are you sure you want to permanently delete
         {#if getAssets().size > 1}
           these <b>{getAssets().size}</b> assets? This will also remove them from their album(s).
         {:else}

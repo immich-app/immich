@@ -7,12 +7,17 @@ import request from 'supertest';
 type UploadDto = Partial<CreateAssetDto> & { content?: Buffer };
 
 export const assetApi = {
-  get: async (server: any, accessToken: string, id: string) => {
+  get: async (server: any, accessToken: string, id: string): Promise<AssetResponseDto> => {
     const { body, status } = await request(server)
       .get(`/asset/assetById/${id}`)
       .set('Authorization', `Bearer ${accessToken}`);
     expect(status).toBe(200);
     return body as AssetResponseDto;
+  },
+  getAllAssets: async (server: any, accessToken: string) => {
+    const { body, status } = await request(server).get(`/asset/`).set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body as AssetResponseDto[];
   },
   upload: async (server: any, accessToken: string, id: string, dto: UploadDto = {}) => {
     const { content, isFavorite = false, isArchived = false } = dto;

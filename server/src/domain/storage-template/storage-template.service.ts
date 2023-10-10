@@ -4,13 +4,12 @@ import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IAssetRepository } from '../asset/asset.repository';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IAssetRepository, IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
 import {
   INITIAL_SYSTEM_CONFIG,
-  ISystemConfigRepository,
   supportedDayTokens,
   supportedHourTokens,
   supportedMinuteTokens,
@@ -20,7 +19,6 @@ import {
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository } from '../user/user.repository';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;
@@ -42,7 +40,7 @@ export class StorageTemplateService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.storageTemplate = this.compile(config.storageTemplate.template);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = new StorageCore(storageRepository);
@@ -235,7 +233,9 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone: asset.exifInfo?.timeZone || undefined });
+    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const zone = asset.exifInfo?.timeZone || systemTimeZone;
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     const dateTokens = [
       ...supportedYearTokens,

@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
-import { IStorageRepository } from './storage.repository';
+import { IStorageRepository } from '../repositories';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',

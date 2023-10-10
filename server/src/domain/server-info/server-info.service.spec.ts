@@ -1,8 +1,6 @@
 import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
 import { serverVersion } from '../domain.constant';
-import { ISystemConfigRepository } from '../index';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
@@ -159,6 +157,7 @@ describe(ServerInfoService.name, () => {
         sidecar: true,
         tagImage: true,
         configFile: false,
+        trash: true,
       });
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -169,6 +168,7 @@ describe(ServerInfoService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
+        trashDays: 30,
         mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       });
       expect(configMock.load).toHaveBeenCalled();

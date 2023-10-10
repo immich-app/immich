@@ -4,34 +4,37 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { IAssetRepository, WithProperty } from '../asset';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { usePagination } from '../domain.util';
-
-import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import {
   IBaseJob,
   IEntityJob,
-  IJobRepository,
   ILibraryFileJob,
   ILibraryRefreshJob,
   IOfflineLibraryFileJob,
-  JobName,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobName,
 } from '../job';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import {
+  IAccessRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+  WithProperty,
+} from '../repositories';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   ScanLibraryDto,
   UpdateLibraryDto,
+  mapLibrary,
 } from './library.dto';
-import { ILibraryRepository } from './library.repository';
 
 @Injectable()
 export class LibraryService {
@@ -137,12 +140,16 @@ export class LibraryService {
     }
 
     // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id);
+    const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    // TODO queue a job for asset deletion
-    await this.deleteAssets(assetIds);
-    this.logger.log(`Deleting library ${job.id}`);
-    await this.repository.delete(job.id);
+    for (const assetId of assetIds) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
+    }
+
+    if (assetIds.length === 0) {
+      this.logger.log(`Deleting library ${job.id}`);
+      await this.repository.delete(job.id);
+    }
     return true;
   }
 
@@ -155,7 +162,7 @@ export class LibraryService {
       return false;
     }
 
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
+    if (!path.normalize(assetPath).match(new RegExp(`^${path.normalize(user.externalPath)}`))) {
       this.logger.error("Asset must be within the user's external path");
       return false;
     }
@@ -182,7 +189,7 @@ export class LibraryService {
     let doImport = false;
     let doRefresh = false;
 
-    if (job.forceRefresh) {
+    if (job.force) {
       doRefresh = true;
     }
 
@@ -196,7 +203,7 @@ export class LibraryService {
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
       );
       doRefresh = true;
-    } else if (!job.forceRefresh && stats && !existingAssetEntity.isOffline) {
+    } else if (!job.force && stats && !existingAssetEntity.isOffline) {
       // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
       this.logger.debug(`Asset already exists in database and on disk, will not import: ${assetPath}`);
     }
@@ -251,6 +258,7 @@ export class LibraryService {
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        localDateTime: stats.mtime,
         type: assetType,
         originalFileName: parse(assetPath).name,
         sidecarPath,
@@ -332,20 +340,17 @@ export class LibraryService {
   }
 
   async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
-    });
-
-    const assetIds: string[] = [];
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+    );
 
     for await (const assets of assetPagination) {
+      this.logger.debug(`Removing ${assets.length} offline assets`);
       for (const asset of assets) {
-        assetIds.push(asset.id);
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
       }
     }
 
-    this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
-    await this.deleteAssets(assetIds);
     return true;
   }
 
@@ -362,6 +367,8 @@ export class LibraryService {
       return false;
     }
 
+    const normalizedExternalPath = path.normalize(user.externalPath);
+
     this.logger.verbose(`Refreshing library: ${job.id}`);
     const crawledAssetPaths = (
       await this.storageRepository.crawl({
@@ -372,7 +379,7 @@ export class LibraryService {
       .map(path.normalize)
       .filter((assetPath) =>
         // Filter out paths that are not within the user's external path
-        assetPath.match(new RegExp(`^${user.externalPath}`)),
+        assetPath.match(new RegExp(`^${normalizedExternalPath}`)),
       );
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
@@ -406,7 +413,7 @@ export class LibraryService {
           id: job.id,
           assetPath: path.normalize(assetPath),
           ownerId: library.ownerId,
-          forceRefresh: job.refreshAllFiles ?? false,
+          force: job.refreshAllFiles ?? false,
         };
 
         await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
@@ -435,34 +442,5 @@ export class LibraryService {
       throw new BadRequestException('Library not found');
     }
     return library;
-  }
-
-  private async deleteAssets(assetIds: string[]) {
-    // TODO: this should be refactored to a centralized asset deletion service
-    for (const assetId of assetIds) {
-      const asset = await this.assetRepository.getById(assetId);
-      this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
-
-      if (asset.faces) {
-        await Promise.all(
-          asset.faces.map(({ assetId, personId }) =>
-            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-          ),
-        );
-      }
-
-      await this.assetRepository.remove(asset);
-      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
-
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
-      });
-
-      // TODO refactor this to use cascades
-      if (asset.livePhotoVideoId && !assetIds.includes(asset.livePhotoVideoId)) {
-        assetIds.push(asset.livePhotoVideoId);
-      }
-    }
   }
 }

@@ -82,6 +82,11 @@ void main() {
       // TODO
     });
 
+    // bool isTrashed
+    test('to test the property `isTrashed`', () async {
+      // TODO
+    });
+
     // String libraryId
     test('to test the property `libraryId`', () async {
       // TODO
@@ -89,6 +94,11 @@ void main() {
 
     // String livePhotoVideoId
     test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
+    // DateTime localDateTime
+    test('to test the property `localDateTime`', () async {
       // TODO
     });
 

@@ -16,10 +16,15 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
-
-import { IAssetRepository, ICryptoRepository, IStorageRepository, IUserRepository } from '..';
-import { ILibraryRepository } from './library.repository';
+import { ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
+import {
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { LibraryService } from './library.service';
 
 describe(LibraryService.name, () => {
@@ -99,7 +104,7 @@ describe(LibraryService.name, () => {
               id: libraryStub.externalLibrary1.id,
               ownerId: libraryStub.externalLibrary1.owner.id,
               assetPath: '/data/user1/photo.jpg',
-              forceRefresh: false,
+              force: false,
             },
           },
         ],
@@ -174,7 +179,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -187,7 +192,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
-        forceRefresh: false,
+        force: false,
       };
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
@@ -198,7 +203,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -217,6 +222,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.IMAGE,
             originalFileName: 'photo',
             sidecarPath: null,
@@ -244,7 +250,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -264,6 +270,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.IMAGE,
             originalFileName: 'photo',
             sidecarPath: '/data/user1/photo.jpg.xmp',
@@ -291,7 +298,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -310,6 +317,7 @@ describe(LibraryService.name, () => {
             deviceId: 'Library Import',
             fileCreatedAt: expect.any(Date),
             fileModifiedAt: expect.any(Date),
+            localDateTime: expect.any(Date),
             type: AssetType.VIDEO,
             originalFileName: 'video',
             sidecarPath: null,
@@ -345,7 +353,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -362,7 +370,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       storageMock.stat.mockResolvedValue({
@@ -383,7 +391,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -414,7 +422,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -428,7 +436,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -442,7 +450,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/etc/rootpassword.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -456,7 +464,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/../../etc/rootpassword.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(false);
@@ -469,7 +477,7 @@ describe(LibraryService.name, () => {
         id: assetStub.image.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -486,7 +494,7 @@ describe(LibraryService.name, () => {
         id: assetStub.offline.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offline);
@@ -517,7 +525,7 @@ describe(LibraryService.name, () => {
         id: assetStub.image.id,
         ownerId: assetStub.image.ownerId,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -533,7 +541,7 @@ describe(LibraryService.name, () => {
         id: assetStub.image.id,
         ownerId: assetStub.image.ownerId,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: true,
+        force: true,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -555,7 +563,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       storageMock.stat.mockResolvedValue({
@@ -582,7 +590,7 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
-        forceRefresh: false,
+        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -1169,7 +1177,7 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleEmptyTrash', () => {
+  describe('handleRemoveOfflineFiles', () => {
     it('can queue trash deletion jobs', async () => {
       assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       assetMock.getById.mockResolvedValue(assetStub.image1);
@@ -1179,23 +1187,8 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.SEARCH_REMOVE_ASSET,
-            data: {
-              ids: [assetStub.image1.id],
-            },
-          },
-        ],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.image1.webpPath,
-                assetStub.image1.resizePath,
-                assetStub.image1.encodedVideoPath,
-                assetStub.image1.sidecarPath,
-              ],
-            },
+            name: JobName.ASSET_DELETION,
+            data: { id: assetStub.image1.id, fromExternal: true },
           },
         ],
       ]);

@@ -12,6 +12,10 @@ export interface IEntityJob extends IBaseJob {
   source?: 'upload';
 }
 
+export interface IAssetDeletionJob extends IEntityJob {
+  fromExternal?: boolean;
+}
+
 export interface IOfflineLibraryFileJob extends IEntityJob {
   assetPath: string;
 }
@@ -19,7 +23,6 @@ export interface IOfflineLibraryFileJob extends IEntityJob {
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
-  forceRefresh: boolean;
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
