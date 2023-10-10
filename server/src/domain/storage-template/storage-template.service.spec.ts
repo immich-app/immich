@@ -1,13 +1,23 @@
+import { AssetPathType } from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { IAssetRepository, IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
+import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { defaults } from '../system-config/system-config.core';
 import { StorageTemplateService } from './storage-template.service';
 
@@ -15,6 +25,8 @@ describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
@@ -25,10 +37,12 @@ describe(StorageTemplateService.name, () => {
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new StorageTemplateService(assetMock, configMock, defaults, storageMock, userMock);
+    sut = new StorageTemplateService(assetMock, configMock, defaults, moveMock, personMock, storageMock, userMock);
   });
 
   describe('handleMigrationSingle', () => {
@@ -86,6 +100,13 @@ describe(StorageTemplateService.name, () => {
       });
       assetMock.save.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.user1]);
+      moveMock.create.mockResolvedValue({
+        id: '123',
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: assetStub.image.originalPath,
+        newPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
+      });
 
       when(storageMock.checkFileExists)
         .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.jpg')
@@ -153,6 +174,13 @@ describe(StorageTemplateService.name, () => {
       });
       assetMock.save.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.user1]);
+      moveMock.create.mockResolvedValue({
+        id: '123',
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: assetStub.image.originalPath,
+        newPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
+      });
 
       await sut.handleMigration();
 
@@ -174,6 +202,13 @@ describe(StorageTemplateService.name, () => {
       });
       assetMock.save.mockResolvedValue(assetStub.image);
       userMock.getList.mockResolvedValue([userStub.storageLabel]);
+      moveMock.create.mockResolvedValue({
+        id: '123',
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: assetStub.image.originalPath,
+        newPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
+      });
 
       await sut.handleMigration();
 
@@ -194,6 +229,13 @@ describe(StorageTemplateService.name, () => {
         hasNextPage: false,
       });
       storageMock.moveFile.mockRejectedValue(new Error('Read only system'));
+      moveMock.create.mockResolvedValue({
+        id: 'move-123',
+        entityId: '123',
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: assetStub.image.originalPath,
+        newPath: '',
+      });
       userMock.getList.mockResolvedValue([userStub.user1]);
 
       await sut.handleMigration();
@@ -204,27 +246,6 @@ describe(StorageTemplateService.name, () => {
         'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
       );
       expect(assetMock.save).not.toHaveBeenCalled();
-    });
-
-    it('should move the asset back if the database fails', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
-      assetMock.save.mockRejectedValue('Connection Error!');
-      userMock.getList.mockResolvedValue([userStub.user1]);
-
-      await sut.handleMigration();
-
-      expect(assetMock.getAll).toHaveBeenCalled();
-      expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetStub.image.id,
-        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
-      });
-      expect(storageMock.moveFile.mock.calls).toEqual([
-        ['/original/path.jpg', 'upload/library/user-id/2023/2023-02-23/asset-id.jpg'],
-        ['upload/library/user-id/2023/2023-02-23/asset-id.jpg', '/original/path.jpg'],
-      ]);
     });
 
     it('should not move read-only asset', async () => {

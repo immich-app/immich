@@ -12,13 +12,15 @@ import {
   ICryptoRepository,
   IJobRepository,
   IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichTags,
   WithProperty,
   WithoutProperty,
 } from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
+import { StorageCore } from '../storage';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 
 interface DirectoryItem {
@@ -73,9 +75,11 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
     this.configCore.config$.subscribe(() => this.init());
   }
 
@@ -296,7 +300,7 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
+          originalPath: this.storageCore.getAndroidMotionPath(asset),
           originalFileName: asset.originalFileName,
           isVisible: false,
           isReadOnly: false,

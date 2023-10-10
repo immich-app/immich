@@ -1,14 +1,25 @@
-import { newStorageRepositoryMock } from '@test';
-import { IStorageRepository } from '../repositories';
+import {
+  newAssetRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
+  newStorageRepositoryMock,
+} from '@test';
+import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
 import { StorageService } from './storage.service';
 
 describe(StorageService.name, () => {
   let sut: StorageService;
+  let assetMock: jest.Mocked<IAssetRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
+    assetMock = newAssetRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new StorageService(storageMock);
+    sut = new StorageService(assetMock, moveMock, personMock, storageMock);
   });
 
   it('should work', () => {

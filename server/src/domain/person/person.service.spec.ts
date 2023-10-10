@@ -10,6 +10,7 @@ import {
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newMediaRepositoryMock,
+  newMoveRepositoryMock,
   newPersonRepositoryMock,
   newSearchRepositoryMock,
   newStorageRepositoryMock,
@@ -23,6 +24,7 @@ import {
   IJobRepository,
   IMachineLearningRepository,
   IMediaRepository,
+  IMoveRepository,
   IPersonRepository,
   ISearchRepository,
   IStorageRepository,
@@ -91,6 +93,7 @@ describe(PersonService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let machineLearningMock: jest.Mocked<IMachineLearningRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -102,6 +105,7 @@ describe(PersonService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
+    moveMock = newMoveRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
@@ -110,6 +114,7 @@ describe(PersonService.name, () => {
       accessMock,
       assetMock,
       machineLearningMock,
+      moveMock,
       mediaMock,
       personMock,
       searchMock,
@@ -547,19 +552,19 @@ describe(PersonService.name, () => {
     it('should generate a thumbnail', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
       personMock.getFacesByIds.mockResolvedValue([faceStub.middle]);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([faceStub.middle.assetId]);
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/pe/rs');
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
         left: 95,
         top: 95,
         width: 110,
         height: 110,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -567,7 +572,7 @@ describe(PersonService.name, () => {
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/user-id/pe/rs/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       });
     });
 
@@ -584,7 +589,7 @@ describe(PersonService.name, () => {
         width: 510,
         height: 510,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -595,17 +600,17 @@ describe(PersonService.name, () => {
     it('should generate a thumbnail without overflowing', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
       personMock.getFacesByIds.mockResolvedValue([faceStub.end]);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
         left: 297,
         top: 297,
         width: 202,
         height: 202,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
