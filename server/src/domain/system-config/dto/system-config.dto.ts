@@ -1,4 +1,3 @@
-import { SystemConfigThumbnailDto, SystemConfigTrashDto } from '@app/domain/system-config';
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
@@ -10,6 +9,8 @@ import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
+import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
+import { SystemConfigTrashDto } from './system-config-trash.dto';
 
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)
