@@ -140,18 +140,21 @@ class SystemConfigApi {
   }
 
   /// Performs an HTTP 'PUT /system-config' operation and returns the [Response].
-  Future<Response> updateConfigWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/system-config';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = systemConfigDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -165,8 +168,11 @@ class SystemConfigApi {
     );
   }
 
-  Future<SystemConfigDto?> updateConfig() async {
-    final response = await updateConfigWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [SystemConfigDto] systemConfigDto (required):
+  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
+    final response = await updateConfigWithHttpInfo(systemConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

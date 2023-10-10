@@ -13723,10 +13723,13 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {SystemConfigDto} systemConfigDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateConfig: async (systemConfigDto: SystemConfigDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'systemConfigDto' is not null or undefined
+            assertParamExists('updateConfig', 'systemConfigDto', systemConfigDto)
             const localVarPath = `/system-config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -13750,9 +13753,12 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(systemConfigDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -13798,11 +13804,12 @@ export const SystemConfigApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {SystemConfigDto} systemConfigDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(options);
+        async updateConfig(systemConfigDto: SystemConfigDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateConfig(systemConfigDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -13841,14 +13848,29 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
+         * @param {SystemConfigApiUpdateConfigRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateConfig(options?: AxiosRequestConfig): AxiosPromise<SystemConfigDto> {
-            return localVarFp.updateConfig(options).then((request) => request(axios, basePath));
+        updateConfig(requestParameters: SystemConfigApiUpdateConfigRequest, options?: AxiosRequestConfig): AxiosPromise<SystemConfigDto> {
+            return localVarFp.updateConfig(requestParameters.systemConfigDto, options).then((request) => request(axios, basePath));
         },
     };
 };
+
+/**
+ * Request parameters for updateConfig operation in SystemConfigApi.
+ * @export
+ * @interface SystemConfigApiUpdateConfigRequest
+ */
+export interface SystemConfigApiUpdateConfigRequest {
+    /**
+     * 
+     * @type {SystemConfigDto}
+     * @memberof SystemConfigApiUpdateConfig
+     */
+    readonly systemConfigDto: SystemConfigDto
+}
 
 /**
  * SystemConfigApi - object-oriented interface
@@ -13889,12 +13911,13 @@ export class SystemConfigApi extends BaseAPI {
 
     /**
      * 
+     * @param {SystemConfigApiUpdateConfigRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SystemConfigApi
      */
-    public updateConfig(options?: AxiosRequestConfig) {
-        return SystemConfigApiFp(this.configuration).updateConfig(options).then((request) => request(this.axios, this.basePath));
+    public updateConfig(requestParameters: SystemConfigApiUpdateConfigRequest, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).updateConfig(requestParameters.systemConfigDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

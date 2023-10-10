@@ -169,7 +169,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateConfig**
-> SystemConfigDto updateConfig()
+> SystemConfigDto updateConfig(systemConfigDto)
 
 
 
@@ -192,9 +192,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SystemConfigApi();
+final systemConfigDto = SystemConfigDto(); // SystemConfigDto | 
 
 try {
-    final result = api_instance.updateConfig();
+    final result = api_instance.updateConfig(systemConfigDto);
     print(result);
 } catch (e) {
     print('Exception when calling SystemConfigApi->updateConfig: $e\n');
@@ -202,7 +203,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **systemConfigDto** | [**SystemConfigDto**](SystemConfigDto.md)|  | 
 
 ### Return type
 
@@ -214,7 +218,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
