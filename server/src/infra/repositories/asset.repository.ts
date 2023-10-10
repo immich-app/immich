@@ -110,6 +110,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        stack: true,
       },
       withDeleted: true,
     });
