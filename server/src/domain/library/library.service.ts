@@ -10,6 +10,7 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { filter } from 'lodash';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -378,11 +379,12 @@ export class LibraryService {
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const existingPaths = new Set(await this.repository.getOnlineAssetPaths(job.id));
-        this.logger.debug(`Found ${existingPaths.size} existing asset(s) in library ${job.id}`);
+        const onlinePathsInLibrary = new Set(
+          assetsInLibrary.filter((asset) => !asset.isOffline).map((asset) => asset.originalPath),
+        );
+        filteredPaths = crawledAssetPaths.filter((assetPath) => !onlinePathsInLibrary.has(assetPath));
 
-        filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.has(assetPath));
-        this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
+        this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
 
       for (const assetPath of filteredPaths) {

@@ -147,7 +147,7 @@ describe(LibraryService.name, () => {
 
       userMock.get.mockResolvedValue(userStub.user1);
 
-      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
     it('should not scan upload libraries', async () => {
@@ -159,7 +159,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
 
-      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
   });
 

@@ -41,7 +41,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    restoreTempFolder();
+    await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
   });
@@ -49,7 +49,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
-    restoreTempFolder();
+    await restoreTempFolder();
   });
 
   describe('GET /library', () => {
