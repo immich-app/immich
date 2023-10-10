@@ -2,7 +2,7 @@
   import type Icon from 'svelte-material-icons/AbTesting.svelte';
 
   export let logo: typeof Icon;
-  export let backgroundColor = 'transparent';
+  export let backgroundColor = '';
   export let hoverColor = '#e2e7e9';
   export let padding = '3';
   export let size = '24';
@@ -14,6 +14,7 @@
 
 <button
   {title}
+  style:background-color={backgroundColor}
   style:--immich-icon-button-hover-color={hoverColor}
   class:dark:text-immich-dark-fg={!forceDark}
   class="flex place-content-center place-items-center rounded-full p-{padding} transition-all
