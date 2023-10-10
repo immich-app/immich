@@ -12,6 +12,7 @@
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
+  import { isMobile } from '$lib/stores/device.store.ts';
   import { downloadArchive } from '../../utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -126,7 +127,7 @@
           />
         {/if}
 
-        {#if album.assetCount > 0 && sharedLink.allowDownload}
+        {#if album.assetCount > 0 && sharedLink.allowDownload && !$isMobile}
           <CircleIconButton title="Download" on:click={() => downloadAlbum()} logo={FolderDownloadOutline} />
         {/if}
 
