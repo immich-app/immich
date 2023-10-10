@@ -10,7 +10,6 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
-import { filter } from 'lodash';
 import {
   IAccessRepository,
   IAssetRepository,
