@@ -16,7 +16,7 @@ import {
   userStub,
 } from '@test';
 import { Stats } from 'fs';
-import { ILibraryFileJob, ILibraryRefreshJob, IOfflineLibraryFileJob, JobName } from '../job';
+import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,
   ICryptoRepository,
@@ -126,14 +126,11 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(jobMock.queue.mock.calls).toEqual([
+      expect(assetMock.updateAll.mock.calls).toEqual([
         [
+          [assetStub.external.id],
           {
-            name: JobName.LIBRARY_MARK_ASSET_OFFLINE,
-            data: {
-              id: libraryStub.externalLibrary1.id,
-              assetPath: '/data/user1/photo.jpg',
-            },
+            isOffline: true,
           },
         ],
       ]);
@@ -150,7 +147,7 @@ describe(LibraryService.name, () => {
 
       userMock.get.mockResolvedValue(userStub.user1);
 
-      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
 
     it('should not scan upload libraries', async () => {
@@ -162,7 +159,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.uploadLibrary1);
 
-      expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(false);
     });
   });
 
@@ -542,24 +539,6 @@ describe(LibraryService.name, () => {
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
-    });
-  });
-
-  describe('handleOfflineAsset', () => {
-    it('should mark an asset as offline', async () => {
-      const offlineJob: IOfflineLibraryFileJob = {
-        id: libraryStub.externalLibrary1.id,
-        assetPath: '/data/user1/photo.jpg',
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-
-      await expect(sut.handleOfflineAsset(offlineJob)).resolves.toBe(true);
-
-      expect(assetMock.save).toHaveBeenCalledWith({
-        id: assetStub.image.id,
-        isOffline: true,
-      });
     });
   });
 
