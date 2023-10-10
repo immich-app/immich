@@ -378,10 +378,10 @@ export class LibraryService {
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const existingPaths = await this.repository.getOnlineAssetPaths(job.id);
-        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${job.id}`);
+        const existingPaths = new Set(await this.repository.getOnlineAssetPaths(job.id));
+        this.logger.debug(`Found ${existingPaths.size} existing asset(s) in library ${job.id}`);
 
-        filteredPaths = crawledAssetPaths.filter((assetPath) => !onlineFiles.has(assetPath));
+        filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.has(assetPath));
         this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
       }
 
