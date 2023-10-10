@@ -377,8 +377,9 @@ export class LibraryService {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
+    const onlineFiles = new Set(crawledAssetPaths);
     const offlineAssetIds = assetsInLibrary
-      .filter((asset) => !crawledAssetPaths.includes(asset.originalPath))
+      .filter((asset) => !onlineFiles.has(asset.originalPath))
       .map((asset) => asset.id);
     this.logger.debug(`Marking ${offlineAssetIds.length} assets as offline`);
 
