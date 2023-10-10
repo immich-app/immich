@@ -17,6 +17,7 @@ import {
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,
 } from '../job';
+
 import {
   IAccessRepository,
   IAssetRepository,
@@ -384,17 +385,12 @@ export class LibraryService {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
-    const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
-    this.logger.debug(`${offlineAssets.length} assets in library are not present on disk and will be marked offline`);
+    const offlineAssetIds = assetsInLibrary
+      .filter((asset) => !crawledAssetPaths.includes(asset.originalPath))
+      .map((asset) => asset.id);
+    this.logger.debug(`${offlineAssetIds.length} assets in library are not present on disk and will be marked offline`);
 
-    for (const offlineAsset of offlineAssets) {
-      const offlineJobData: IOfflineLibraryFileJob = {
-        id: job.id,
-        assetPath: offlineAsset.originalPath,
-      };
-
-      await this.jobRepository.queue({ name: JobName.LIBRARY_MARK_ASSET_OFFLINE, data: offlineJobData });
-    }
+    await this.assetRepository.updateAll(offlineAssetIds, { isOffline: true });
 
     if (crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
@@ -421,17 +417,6 @@ export class LibraryService {
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
-
-    return true;
-  }
-
-  async handleOfflineAsset(job: IOfflineLibraryFileJob): Promise<boolean> {
-    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, job.assetPath);
-
-    if (existingAssetEntity) {
-      this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
-      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
-    }
 
     return true;
   }

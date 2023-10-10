@@ -182,8 +182,6 @@ const tests: Test[] = [
 describe(FilesystemProvider.name, () => {
   const sut = new FilesystemProvider();
 
-  console.log(process.cwd());
-
   afterEach(() => {
     mockfs.restore();
   });
