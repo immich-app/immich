@@ -27,5 +27,10 @@ void main() {
       // TODO
     });
 
+    //Future<List<PersonResponseDto>> searchPerson(String name) async
+    test('test searchPerson', () async {
+      // TODO
+    });
+
   });
 }

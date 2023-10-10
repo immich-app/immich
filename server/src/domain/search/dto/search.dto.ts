@@ -85,3 +85,9 @@ export class SearchDto {
   @Transform(toBoolean)
   motion?: boolean;
 }
+
+export class SearchPeopleDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+}

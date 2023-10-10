@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  photo_manager: ^2.5.0
+  photo_manager: ^2.7.2
   flutter_hooks: ^0.18.6
   hooks_riverpod: ^2.2.0
   cached_network_image: ^3.2.2
