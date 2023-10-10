@@ -401,32 +401,43 @@ class GalleryViewerPage extends HookConsumerWidget {
         scrollDirection: Axis.horizontal,
         itemCount: stackElements.length,
         itemBuilder: (context, index) {
-          final asset = stackElements.elementAt(index);
-          final thumbnailRequestUrl =
-              '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${asset.remoteId}';
+          final assetId = stackElements.elementAt(index).remoteId;
+          final thumbnail = ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: CachedNetworkImage(
+              fit: BoxFit.cover,
+              imageUrl:
+                  '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
+              httpHeaders: {
+                "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+              },
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.image_not_supported_outlined),
+            ),
+          );
+          Widget container = SizedBox(
+            width: 40,
+            child: thumbnail,
+          );
+          if (index == stackIndex.value) {
+            container = Container(
+              width: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: Colors.white,
+                  width: 2,
+                ),
+              ),
+              child: thumbnail,
+            );
+          }
           return Padding(
             padding: const EdgeInsets.only(right: 10),
             child: GestureDetector(
               onTap: () => stackIndex.value = index,
-              child: Container(
-                width: 40,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white,
-                    width: index == stackIndex.value ? 3 : 1,
-                  ),
-                ),
-                child: CachedNetworkImage(
-                  fit: BoxFit.cover,
-                  imageUrl: thumbnailRequestUrl,
-                  httpHeaders: {
-                    "Authorization":
-                        "Bearer ${Store.get(StoreKey.accessToken)}",
-                  },
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.image_not_supported_outlined),
-                ),
-              ),
+              child: container,
             ),
           );
         },
@@ -441,6 +452,19 @@ class GalleryViewerPage extends HookConsumerWidget {
           opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
           child: Column(
             children: [
+              Visibility(
+                visible: stack.isNotEmpty,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    bottom: 30,
+                  ),
+                  child: SizedBox(
+                    height: 40,
+                    child: buildStackedChildren(),
+                  ),
+                ),
+              ),
               Visibility(
                 visible: !asset().isImage && !isPlayingMotionVideo.value,
                 child: Container(
@@ -458,19 +482,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                         buildMuteButton(),
                       ],
                     ),
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: stack.isNotEmpty,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 10,
-                    bottom: 30,
-                  ),
-                  child: SizedBox(
-                    height: 40,
-                    child: buildStackedChildren(),
                   ),
                 ),
               ),
