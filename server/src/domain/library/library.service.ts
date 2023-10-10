@@ -388,7 +388,7 @@ export class LibraryService {
     const offlineAssetIds = assetsInLibrary
       .filter((asset) => !crawledAssetPaths.includes(asset.originalPath))
       .map((asset) => asset.id);
-    this.logger.debug(`${offlineAssetIds.length} assets in library are not present on disk and will be marked offline`);
+    this.logger.debug(`Marking ${offlineAssetIds.length} assets as offline`);
 
     await this.assetRepository.updateAll(offlineAssetIds, { isOffline: true });
 
