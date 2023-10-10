@@ -95,6 +95,16 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
+  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
+      .limit(20)
+      .getMany();
+  }
+
   getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
