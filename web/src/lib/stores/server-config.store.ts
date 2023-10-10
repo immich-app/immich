@@ -27,6 +27,7 @@ export const serverConfig = writable<ServerConfig>({
   mapTileUrl: '',
   loginPageMessage: '',
   trashDays: 30,
+  isInitialized: false,
 });
 
 export const loadConfig = async () => {
