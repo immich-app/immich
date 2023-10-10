@@ -367,6 +367,7 @@ export class LibraryService {
     const onlineFiles = new Set(crawledAssetPaths);
     const offlineAssetIds = assetsInLibrary
       .filter((asset) => !onlineFiles.has(asset.originalPath))
+      .filter((asset) => !asset.isOffline)
       .map((asset) => asset.id);
     this.logger.debug(`Marking ${offlineAssetIds.length} assets as offline`);
 
