@@ -62,4 +62,18 @@ export const assetApi = {
     expect(status).toBe(201);
     return body as AssetFileUploadResponseDto;
   },
+  getWebpThumbnail: async (server: any, accessToken: string, assetId: string) => {
+    const { body, status } = await request(server)
+      .get(`/asset/thumbnail/${assetId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body;
+  },
+  getJpegThumbnail: async (server: any, accessToken: string, assetId: string) => {
+    const { body, status } = await request(server)
+      .get(`/asset/thumbnail/${assetId}?format=JPEG`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body;
+  },
 };
