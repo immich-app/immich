@@ -184,10 +184,6 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showExif} title={'Show metadata'} />
-        </div>
-
-        <div class="my-3">
           <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
         </div>
 
