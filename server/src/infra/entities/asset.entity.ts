@@ -31,6 +31,7 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 })
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
+@Index('IDX_originalPath_libraryId', ['originalPath', 'libraryId'])
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')

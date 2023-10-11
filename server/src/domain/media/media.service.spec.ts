@@ -14,6 +14,7 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
+  newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
@@ -25,6 +26,7 @@ import {
   IAssetRepository,
   IJobRepository,
   IMediaRepository,
+  IMoveRepository,
   IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
@@ -38,6 +40,7 @@ describe(MediaService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
@@ -46,10 +49,11 @@ describe(MediaService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
+    moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
   });
 
   it('should be defined', () => {

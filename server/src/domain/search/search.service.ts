@@ -5,6 +5,7 @@ import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { usePagination } from '../domain.util';
 import { IAssetFaceJob, IBulkEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { PersonResponseDto } from '../person/person.dto';
 import {
   AssetFaceId,
   IAlbumRepository,
@@ -21,7 +22,7 @@ import {
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { SearchDto } from './dto';
+import { SearchDto, SearchPeopleDto } from './dto';
 import { SearchResponseDto } from './response-dto';
 
 interface SyncQueue {
@@ -156,6 +157,10 @@ export class SearchService {
           .map(mapAsset),
       },
     };
+  }
+
+  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return await this.personRepository.getByName(authUser.id, dto.name);
   }
 
   async handleIndexAlbums() {

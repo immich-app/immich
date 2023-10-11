@@ -9,12 +9,10 @@ export const load = (async ({ locals, parent, params }) => {
   }
 
   const { data: person } = await locals.api.personApi.getPerson({ id: params.personId });
-  const { data: people } = await locals.api.personApi.getAllPeople({ withHidden: false });
 
   return {
     user,
     person,
-    people,
     meta: {
       title: person.name || 'Person',
     },

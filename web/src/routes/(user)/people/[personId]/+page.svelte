@@ -35,6 +35,8 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { browser } from '$app/environment';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
 
@@ -61,7 +63,7 @@
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let previousPersonId: string = data.person.id;
-  let people = data.people.people;
+  let people: PersonResponseDto[];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
@@ -74,20 +76,58 @@
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
+  /**
+   * Save the word used to search people name: for example,
+   * if searching 'r' and the server returns 15 people with names starting with 'r',
+   * there's no need to search again people with name starting with 'ri'.
+   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+   * or if the new search word starts with another word / letter
+   **/
+  let searchWord: string;
+  let maxPeople = false;
+  let isSearchingPeople = false;
+
+  const searchPeople = async () => {
+    isSearchingPeople = true;
+    people = [];
+    try {
+      const { data } = await api.searchApi.searchPerson({ name });
+      people = data;
+      searchWord = name;
+      if (data.length < 20) {
+        maxPeople = false;
+      } else {
+        maxPeople = true;
+      }
+    } catch (error) {
+      handleError(error, "Can't search people");
+    }
+
+    isSearchingPeople = false;
+  };
+
+  $: {
+    if (name !== '' && browser) {
+      if (maxPeople === true || (!name.startsWith(searchWord) && maxPeople === false)) searchPeople();
+    }
+  }
+
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
   $: {
-    suggestedPeople = !name
-      ? []
-      : people
-          .filter(
-            (person: PersonResponseDto) =>
-              person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
-          )
-          .slice(0, 5);
+    if (people) {
+      suggestedPeople = !name
+        ? []
+        : people
+            .filter(
+              (person: PersonResponseDto) =>
+                person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+            )
+            .slice(0, 5);
+    }
   }
 
   onMount(() => {
@@ -199,16 +239,9 @@
     try {
       isEditingName = false;
 
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      await api.personApi.updatePerson({
         id: data.person.id,
         personUpdateDto: { name: personName },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
       });
 
       notificationController.show({
@@ -235,15 +268,21 @@
     if (data.person.name === personName) {
       return;
     }
+    if (name === '') {
+      changeName();
+      return;
+    }
 
-    const existingPerson = people.find(
+    const result = await api.searchApi.searchPerson({ name: personName });
+
+    const existingPerson = result.data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      potentialMergePeople = people
+      potentialMergePeople = result.data
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
@@ -310,7 +349,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} bind:people on:go-back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
@@ -374,7 +413,7 @@
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
-                suggestedPeople={suggestedPeople.length > 0}
+                suggestedPeople={suggestedPeople.length > 0 || isSearchingPeople}
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
               />
@@ -406,25 +445,35 @@
           </section>
           {#if isEditingName}
             <div class="absolute z-[999] w-96">
-              {#each suggestedPeople as person, index (person.id)}
+              {#if isSearchingPeople}
                 <div
-                  class="flex {index === suggestedPeople.length - 1
-                    ? 'rounded-b-lg'
-                    : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
                 >
-                  <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                  </button>
+                  <div class="flex w-full place-items-center">
+                    <LoadingSpinner />
+                  </div>
                 </div>
-              {/each}
+              {:else}
+                {#each suggestedPeople as person, index (person.id)}
+                  <div
+                    class="flex {index === suggestedPeople.length - 1
+                      ? 'rounded-b-lg'
+                      : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  >
+                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  </div>
+                {/each}
+              {/if}
             </div>
           {/if}
         </div>

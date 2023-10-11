@@ -154,6 +154,7 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
+*SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 

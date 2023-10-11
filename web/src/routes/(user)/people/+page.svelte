@@ -254,9 +254,15 @@
     if (!edittingPerson || personName === edittingPerson.name) {
       return;
     }
+    if (personName === '') {
+      changeName();
+      return;
+    }
+    const { data } = await api.searchApi.searchPerson({ name: personName });
+
     // We check if another person has the same name as the name entered by the user
 
-    const existingPerson = people.find(
+    const existingPerson = data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() &&
         edittingPerson &&

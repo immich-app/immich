@@ -1,7 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
+import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  UserStatsQueryResponse,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
@@ -20,12 +28,15 @@ export class ServerInfoService {
   private storageCore: StorageCore;
 
   constructor(
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {

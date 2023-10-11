@@ -22,6 +22,7 @@ export interface IPersonRepository {
   getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
+  getByName(userId: string, personName: string): Promise<PersonEntity[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
