@@ -16,6 +16,8 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IMoveRepository,
+  IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
@@ -80,12 +82,14 @@ export class AssetService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
   ) {
     this.access = new AccessCore(accessRepository);
-    this.storageCore = new StorageCore(storageRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {

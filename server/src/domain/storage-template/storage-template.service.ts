@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities';
+import { AssetEntity, AssetPathType, AssetType, SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
@@ -6,7 +6,14 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IAssetRepository, IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
+import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import {
   INITIAL_SYSTEM_CONFIG,
@@ -36,6 +43,8 @@ export class StorageTemplateService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
@@ -43,7 +52,7 @@ export class StorageTemplateService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
-    this.storageCore = new StorageCore(storageRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -90,51 +99,29 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly || asset.isExternal) {
+    if (asset.isReadOnly || asset.isExternal || this.storageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;
     }
 
-    const destination = await this.getTemplatePath(asset, metadata);
-    if (asset.originalPath !== destination) {
-      const source = asset.originalPath;
+    const { id, sidecarPath, originalPath } = asset;
+    const oldPath = originalPath;
+    const newPath = await this.getTemplatePath(asset, metadata);
 
-      let sidecarMoved = false;
-      try {
-        await this.storageRepository.moveFile(asset.originalPath, destination);
-
-        let sidecarDestination;
-        try {
-          if (asset.sidecarPath) {
-            sidecarDestination = `${destination}.xmp`;
-            await this.storageRepository.moveFile(asset.sidecarPath, sidecarDestination);
-            sidecarMoved = true;
-          }
-
-          await this.assetRepository.save({ id: asset.id, originalPath: destination, sidecarPath: sidecarDestination });
-          asset.originalPath = destination;
-          asset.sidecarPath = sidecarDestination || null;
-        } catch (error: any) {
-          this.logger.warn(
-            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName} - id ${asset.id}`,
-            error?.stack,
-          );
-
-          // Either sidecar move failed or the save failed. Either way, move media back
-          await this.storageRepository.moveFile(destination, source);
-
-          if (asset.sidecarPath && sidecarDestination && sidecarMoved) {
-            // If the sidecar was moved, that means the saved failed. So move both the sidecar and the
-            // media back into their original positions
-            await this.storageRepository.moveFile(sidecarDestination, asset.sidecarPath);
-          }
-        }
-      } catch (error: any) {
-        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
+    try {
+      await this.storageCore.moveFile({ entityId: id, pathType: AssetPathType.ORIGINAL, oldPath, newPath });
+      if (sidecarPath) {
+        await this.storageCore.moveFile({
+          entityId: id,
+          pathType: AssetPathType.SIDECAR,
+          oldPath: sidecarPath,
+          newPath: `${newPath}.xmp`,
+        });
       }
+    } catch (error: any) {
+      this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
     }
-    return asset;
   }
 
   private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {

@@ -1,4 +1,5 @@
 import { PersonEntity } from '@app/infra/entities';
+import { PersonPathType } from '@app/infra/entities/move.entity';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
@@ -15,6 +16,7 @@ import {
   IJobRepository,
   IMachineLearningRepository,
   IMediaRepository,
+  IMoveRepository,
   IPersonRepository,
   ISearchRepository,
   IStorageRepository,
@@ -23,7 +25,7 @@ import {
   UpdateFacesData,
   WithoutProperty,
 } from '../repositories';
-import { StorageCore, StorageFolder } from '../storage';
+import { StorageCore } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
   MergePersonDto,
@@ -46,6 +48,7 @@ export class PersonService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
@@ -54,8 +57,8 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = new AccessCore(accessRepository);
-    this.storageCore = new StorageCore(storageRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, repository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -268,11 +271,7 @@ export class PersonService {
       return false;
     }
 
-    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
-    if (person.thumbnailPath && person.thumbnailPath !== path) {
-      await this.storageRepository.moveFile(person.thumbnailPath, path);
-      await this.repository.update({ id, thumbnailPath: path });
-    }
+    await this.storageCore.movePersonFile(person, PersonPathType.FACE);
 
     return true;
   }
@@ -310,8 +309,8 @@ export class PersonService {
     }
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
-
-    const thumbnailPath = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
+    const thumbnailPath = this.storageCore.getPersonThumbnailPath(person);
+    this.storageCore.ensureFolders(thumbnailPath);
 
     const halfWidth = (x2 - x1) / 2;
     const halfHeight = (y2 - y1) / 2;

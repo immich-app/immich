@@ -66,6 +66,10 @@ ORDER BY
   "users"."email";
 ```
 
+```sql title="Failed file movements"
+SELECT * FROM "move_history";
+```
+
 ## Users
 
 ```sql title="List"
