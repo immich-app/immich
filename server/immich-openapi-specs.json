@@ -3934,6 +3934,50 @@
         ]
       }
     },
+    "/search/person": {
+      "get": {
+        "operationId": "searchPerson",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
@@ -5105,6 +5149,17 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -7501,6 +7556,9 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "isInitialized": {
+            "type": "boolean"
+          },
           "loginPageMessage": {
             "type": "string"
           },
@@ -7518,7 +7576,8 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl"
+          "mapTileUrl",
+          "isInitialized"
         ],
         "type": "object"
       },

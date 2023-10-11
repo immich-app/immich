@@ -1,22 +1,40 @@
-import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
+import {
+  newAssetRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
+  newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
+} from '@test';
 import { serverVersion } from '../domain.constant';
-import { ISystemConfigRepository } from '../index';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
+  let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
+    assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(configMock, userMock, storageMock);
+    sut = new ServerInfoService(assetMock, configMock, moveMock, personMock, userMock, storageMock);
   });
 
   it('should work', () => {

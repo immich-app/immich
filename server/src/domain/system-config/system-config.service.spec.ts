@@ -13,10 +13,9 @@ import {
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { ICommunicationRepository } from '../communication';
-import { IJobRepository, JobName, QueueName } from '../job';
+import { JobName, QueueName } from '../job';
+import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
 import { SystemConfigValidator, defaults } from './system-config.core';
-import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
@@ -34,7 +33,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
-    [QueueName.LIBRARY]: { concurrency: 1 },
+    [QueueName.LIBRARY]: { concurrency: 5 },
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },

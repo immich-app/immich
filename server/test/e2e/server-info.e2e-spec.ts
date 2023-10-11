@@ -102,6 +102,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         oauthButtonText: 'Login with OAuth',
         mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         trashDays: 30,
+        isInitialized: true,
       });
     });
   });

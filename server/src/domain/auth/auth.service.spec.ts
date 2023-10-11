@@ -19,16 +19,18 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ILibraryRepository } from '../library';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
 import { AuthUserDto, SignUpDto } from './dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 

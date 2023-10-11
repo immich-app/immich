@@ -70,6 +70,8 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+        return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
         return { priority: 1 };
 

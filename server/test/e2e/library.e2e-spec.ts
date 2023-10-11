@@ -41,7 +41,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   beforeEach(async () => {
     await db.reset();
-    restoreTempFolder();
+    await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
   });
@@ -49,7 +49,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
-    restoreTempFolder();
+    await restoreTempFolder();
   });
 
   describe('GET /library', () => {
@@ -407,7 +407,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
       );
     });
 
-    it('should delete an extnernal library with assets', async () => {
+    it('should delete an external library with assets', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],

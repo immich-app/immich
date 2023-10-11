@@ -1,4 +1,4 @@
-import { JobName, QueueName } from './job.constants';
+import { JobName, QueueName } from '../job/job.constants';
 
 import {
   IAssetDeletionJob,
@@ -9,8 +9,7 @@ import {
   IEntityJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
-  IOfflineLibraryFileJob,
-} from './job.interface';
+} from '../job/job.interface';
 
 export interface JobCounts {
   active: number;
@@ -88,7 +87,6 @@ export type JobItem =
 
   // Library Managment
   | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
-  | { name: JobName.LIBRARY_MARK_ASSET_OFFLINE; data: IOfflineLibraryFileJob }
   | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }

@@ -10,6 +10,7 @@ export * from './library.repository.mock';
 export * from './machine-learning.repository.mock';
 export * from './media.repository.mock';
 export * from './metadata.repository.mock';
+export * from './move.repository.mock';
 export * from './partner.repository.mock';
 export * from './person.repository.mock';
 export * from './search.repository.mock';

@@ -16,6 +16,11 @@ void main() {
   // final instance = ServerConfigDto();
 
   group('test ServerConfigDto', () {
+    // bool isInitialized
+    test('to test the property `isInitialized`', () async {
+      // TODO
+    });
+
     // String loginPageMessage
     test('to test the property `loginPageMessage`', () async {
       // TODO

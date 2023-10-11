@@ -4,14 +4,24 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore } from '../storage';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
 
 interface DirectoryItem {
   Length?: number;
@@ -65,9 +75,11 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
     this.configCore.config$.subscribe(() => this.init());
   }
 
@@ -288,7 +300,7 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
+          originalPath: this.storageCore.getAndroidMotionPath(asset),
           originalFileName: asset.originalFileName,
           isVisible: false,
           isReadOnly: false,

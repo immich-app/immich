@@ -16,10 +16,6 @@ export interface IAssetDeletionJob extends IEntityJob {
   fromExternal?: boolean;
 }
 
-export interface IOfflineLibraryFileJob extends IEntityJob {
-  assetPath: string;
-}
-
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { api, type PersonResponseDto } from '@api';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
@@ -19,7 +19,7 @@
   import PeopleList from './people-list.svelte';
 
   export let person: PersonResponseDto;
-  export let people: PersonResponseDto[];
+  let people: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
   let isShowConfirmation = false;
@@ -29,6 +29,11 @@
   $: unselectedPeople = people.filter(
     (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
   );
+
+  onMount(async () => {
+    const { data } = await api.personApi.getAllPeople({ withHidden: false });
+    people = data.people;
+  });
 
   const onClose = () => {
     dispatch('go-back');

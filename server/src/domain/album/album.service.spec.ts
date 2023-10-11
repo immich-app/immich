@@ -12,10 +12,9 @@ import {
   userStub,
 } from '@test';
 import _ from 'lodash';
-import { BulkIdErrorReason, IAssetRepository } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
-import { IAlbumRepository } from './album.repository';
+import { BulkIdErrorReason } from '../asset';
+import { JobName } from '../job';
+import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
 import { AlbumService } from './album.service';
 
 describe(AlbumService.name, () => {

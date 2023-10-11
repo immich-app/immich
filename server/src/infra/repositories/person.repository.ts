@@ -107,12 +107,13 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getPeopleWithoutThumbnail(): Promise<PersonEntity[]> {
+  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
     return this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
-      .having('COUNT(face.assetId) != 0 AND person.faceAssetId IS NULL')
-      .groupBy('person.id')
+      .where('person.ownerId = :userId', { userId })
+      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
+      .limit(20)
       .getMany();
   }
 

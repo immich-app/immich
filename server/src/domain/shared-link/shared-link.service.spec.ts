@@ -1,3 +1,4 @@
+import { SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -12,9 +13,8 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import _ from 'lodash';
-import { SharedLinkType } from '../../infra/entities/shared-link.entity';
-import { AssetIdErrorReason, ICryptoRepository } from '../index';
-import { ISharedLinkRepository } from './shared-link.repository';
+import { AssetIdErrorReason } from '../asset';
+import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkService } from './shared-link.service';
 
 describe(SharedLinkService.name, () => {

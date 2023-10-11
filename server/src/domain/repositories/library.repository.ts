@@ -1,5 +1,5 @@
 import { LibraryEntity, LibraryType } from '@app/infra/entities';
-import { LibraryStatsResponseDto } from './library.dto';
+import { LibraryStatsResponseDto } from '../library/library.dto';
 
 export const ILibraryRepository = 'ILibraryRepository';
 

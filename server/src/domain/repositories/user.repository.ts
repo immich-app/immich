@@ -18,6 +18,7 @@ export const IUserRepository = 'IUserRepository';
 export interface IUserRepository {
   get(id: string, withDeleted?: boolean): Promise<UserEntity | null>;
   getAdmin(): Promise<UserEntity | null>;
+  hasAdmin(): Promise<boolean>;
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
   getByStorageLabel(storageLabel: string): Promise<UserEntity | null>;
   getByOAuthId(oauthId: string): Promise<UserEntity | null>;

@@ -6,19 +6,29 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMetadataRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
 import { constants } from 'fs/promises';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName, QueueName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { JobName, QueueName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
 import { MetadataService } from './metadata.service';
 
 describe(MetadataService.name, () => {
@@ -28,6 +38,8 @@ describe(MetadataService.name, () => {
   let cryptoRepository: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let metadataMock: jest.Mocked<IMetadataRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let sut: MetadataService;
 
@@ -38,9 +50,21 @@ describe(MetadataService.name, () => {
     cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MetadataService(albumMock, assetMock, cryptoRepository, jobMock, metadataMock, storageMock, configMock);
+    sut = new MetadataService(
+      albumMock,
+      assetMock,
+      cryptoRepository,
+      jobMock,
+      metadataMock,
+      storageMock,
+      configMock,
+      moveMock,
+      personMock,
+    );
   });
 
   it('should be defined', () => {

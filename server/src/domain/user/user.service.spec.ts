@@ -11,21 +11,28 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
-import { ILibraryRepository } from '../library';
-import { IStorageRepository } from '../storage';
+import { JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto, mapUser } from './response-dto';
-import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
 
 const makeDeletedAt = (daysAgo: number) => {
@@ -132,18 +139,32 @@ describe(UserService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
-    cryptoRepositoryMock = newCryptoRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(userMock, cryptoRepositoryMock, libraryMock, albumMock, assetMock, jobMock, storageMock);
+    sut = new UserService(
+      albumMock,
+      assetMock,
+      cryptoRepositoryMock,
+      jobMock,
+      libraryMock,
+      moveMock,
+      personMock,
+      storageMock,
+      userMock,
+    );
 
     when(userMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
