@@ -35,6 +35,5 @@ module.exports = {
         varsIgnorePattern: '^_$',
       },
     ],
-    '@typescript-eslint/no-floating-promises': 'error',
   },
 };
