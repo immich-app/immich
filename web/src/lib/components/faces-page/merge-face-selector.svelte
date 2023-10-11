@@ -17,7 +17,7 @@
   import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
 
   export let person: PersonResponseDto;
-  let people: PersonResponseDto[];
+  let people: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
   let isShowConfirmation = false;
