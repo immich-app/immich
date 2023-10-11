@@ -224,8 +224,6 @@ export class PersonService {
   }
 
   async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
-    let hasGeneratedFaceThumbnail = false;
-
     const changeFeaturePhoto: string[] = [];
 
     const newPerson = await this.repository.create({ ownerId: authUser.id });
@@ -245,18 +243,24 @@ export class PersonService {
         if (!face) {
           throw new BadRequestException('Invalid assetId for feature face');
         }
-        if (!hasGeneratedFaceThumbnail) {
-          await this.jobRepository.queue({
-            name: JobName.GENERATE_PERSON_THUMBNAIL,
-            data: {
-              id: newPerson.id,
-            },
-          });
-          hasGeneratedFaceThumbnail = true;
-        }
       } catch (error: Error | any) {
         this.logger.error(`Unable to create a new person`, error?.stack);
       }
+    }
+
+    const newPersonFeaturePhoto = await this.repository.getRandomFace(newPerson.id);
+    if (newPersonFeaturePhoto) {
+      await this.repository.update({
+        id: newPerson.id,
+        faceAssetId: newPersonFeaturePhoto.assetId,
+      });
+
+      await this.jobRepository.queue({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: {
+          id: newPerson.id,
+        },
+      });
     }
 
     await this.createNewFeaturePhoto(changeFeaturePhoto);

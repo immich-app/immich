@@ -16,12 +16,12 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import Pencil from 'svelte-material-icons/Pencil.svelte';
-  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
 
-  let customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+  let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
 
   let previousId: string;
 
@@ -30,7 +30,7 @@
       previousId = asset.id;
     }
     if (asset.id !== previousId) {
-      customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+      customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
       showEditFaces = false;
       previousId = asset.id;
     }
@@ -160,7 +160,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={customFeaturePhoto[index] || api.getPeopleThumbnailUrl(person.id)}
+                  url={customFeaturePhoto[index]?.thumbnail || api.getPeopleThumbnailUrl(person.id)}
                   altText={person.name}
                   title={person.name}
                   widthStyle="90px"

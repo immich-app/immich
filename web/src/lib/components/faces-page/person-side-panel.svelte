@@ -1,3 +1,10 @@
+<script lang="ts" context="module">
+  export type PersonToCreate = {
+    thumbnail: string;
+    canEdit: boolean;
+  };
+</script>
+
 <script lang="ts">
   import { blur, fly } from 'svelte/transition';
   import ArrowLeftThin from 'svelte-material-icons/ArrowLeftThin.svelte';
@@ -13,20 +20,29 @@
   import Restart from 'svelte-material-icons/Restart.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { browser } from '$app/environment';
 
   export let people: PersonResponseDto[];
   export let assetId: string;
 
+  let searchedPeople: PersonResponseDto[] = [];
+  let searchWord: string;
+  let maxPeople = false;
+
   const dispatch = createEventDispatcher();
 
-  let searchFaces = false;
-  let searchName: string;
+  type PersonToCreate = {
+    thumbnail: string;
+    canEdit: boolean;
+  };
 
-  let searchPeople: PersonResponseDto[];
-  let allPeople: PersonResponseDto[];
+  let searchFaces = false;
+  let searchName = '';
+
+  let allPeople: PersonResponseDto[] = [];
   let editedPerson: PersonResponseDto;
   let selectedPersonToReassign: (PersonResponseDto | null)[] = new Array<PersonResponseDto | null>(people.length);
-  export let selectedPersonToCreate: (string | null)[] = new Array<string | null>(people.length);
+  export let selectedPersonToCreate: (PersonToCreate | null)[] = new Array<PersonToCreate | null>(people.length);
 
   let showSeletecFaces = false;
   let showLoadingSpinner = false;
@@ -38,8 +54,30 @@
     allPeople = data.people;
   });
 
+  const searchPeople = async () => {
+    searchedPeople = [];
+    try {
+      const { data } = await api.searchApi.searchPerson({ name: searchName });
+      searchedPeople = data;
+      searchWord = searchName;
+      if (data.length < 20) {
+        maxPeople = false;
+      } else {
+        maxPeople = true;
+      }
+    } catch (error) {
+      handleError(error, "Can't search people");
+    }
+  };
+
   $: {
-    searchPeople = !searchName
+    if (searchName !== '' && browser) {
+      if (maxPeople === true || (!searchName.startsWith(searchWord) && maxPeople === false)) searchPeople();
+    }
+  }
+
+  $: {
+    searchedPeople = !searchName
       ? allPeople
       : allPeople
           .filter((person: PersonResponseDto) => person.name.toLowerCase().startsWith(searchName.toLowerCase()))
@@ -51,7 +89,9 @@
   }
 
   const handleBackButton = () => {
+    searchName = '';
     searchFaces = false;
+    selectedPersonToCreate = new Array<PersonToCreate | null>(people.length);
     if (showSeletecFaces) {
       showSeletecFaces = false;
     } else {
@@ -80,9 +120,9 @@
       img.onerror = () => resolve(null); // Handle image load errors
     });
 
-    // Calculate the new width and height after zooming out by 10%
-    const newWidth = width;
-    const newHeight = height;
+    // Calculate the new width and height after zooming out
+    const newWidth = width * 1.5;
+    const newHeight = height * 1.5;
 
     // Create a canvas element to draw the zoomed-out image
     const canvas = document.createElement('canvas');
@@ -125,7 +165,7 @@
 
   const handleEditFaces = async () => {
     const numberOfChanges =
-      selectedPersonToCreate.filter((person) => person !== null).length +
+      selectedPersonToCreate.filter((person) => person !== null && person.canEdit !== false).length +
       selectedPersonToReassign.filter((person) => person !== null).length;
     if (numberOfChanges > 0) {
       showLoadingSpinner = true;
@@ -141,11 +181,13 @@
           }
         }
         for (let i = 0; i < selectedPersonToCreate.length; i++) {
-          if (selectedPersonToCreate[i]) {
+          const personToCreate = selectedPersonToCreate[i];
+          if (personToCreate && personToCreate.canEdit !== false) {
             const { data } = await api.personApi.createPerson({
               assetFaceUpdateDto: { data: [{ assetId: assetId, personId: people[i].id }] },
             });
             people[i] = data;
+            selectedPersonToCreate[i] = personToCreate;
           }
         }
         notificationController.show({
@@ -175,7 +217,7 @@
         );
 
         if (newFeaturePhoto) {
-          selectedPersonToCreate[i] = newFeaturePhoto;
+          selectedPersonToCreate[i] = { canEdit: true, thumbnail: data };
         }
         break;
       }
@@ -196,7 +238,7 @@
 
   const handlePersonPicker = async (person: PersonResponseDto) => {
     editedPerson = person;
-    searchPeople = allPeople.filter((item) => item.id !== person.id);
+    searchedPeople = allPeople.filter((item) => item.id !== person.id);
     showSeletecFaces = true;
   };
 </script>
@@ -230,44 +272,29 @@
     <div class="mt-4 flex flex-wrap gap-2">
       {#each editedPeople as person, index}
         <div class="relative h-[115px] w-[95px]">
-          {#if !selectedPersonToCreate[index]}
-            <a href="/people/{person.id}">
-              <div class="absolute left-0 top-0 h-[90px] w-[90px]">
-                <ImageThumbnail
-                  curve
-                  shadow
-                  url={selectedPersonToCreate[index] || api.getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  title={person.name}
-                  widthStyle="90px"
-                  heightStyle="90px"
-                  thumbhash={null}
-                />
-                <p class="relative mt-1 truncate font-medium" title={person.name}>
-                  {person.name}
-                </p>
-              </div>
-            </a>
-          {:else}
+          <a href="/people/{person.id}">
             <div class="absolute left-0 top-0 h-[90px] w-[90px]">
               <ImageThumbnail
                 curve
                 shadow
-                url={selectedPersonToCreate[index] || api.getPeopleThumbnailUrl(person.id)}
+                url={selectedPersonToCreate[index]?.thumbnail || api.getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
                 title={person.name}
                 widthStyle="90px"
                 heightStyle="90px"
                 thumbhash={null}
               />
+              <p class="relative mt-1 truncate font-medium" title={person.name}>
+                {person.name}
+              </p>
             </div>
-          {/if}
+          </a>
 
           <div
             transition:blur={{ amount: 10, duration: 50 }}
             class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700"
           >
-            {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
+            {#if (selectedPersonToCreate[index] && selectedPersonToCreate[index]?.canEdit !== false) || selectedPersonToReassign[index]}
               <button on:click={() => handleReset(index)} class="flex h-full w-full">
                 <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
                   <Restart size={18} />
@@ -346,27 +373,25 @@
     </div>
     <div class="px-4 py-4 text-sm">
       <h2 class="mb-8 mt-4 uppercase">All people</h2>
-      <div>
-        <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
-          {#each searchPeople as person (person.id)}
-            <div class="w-fit">
-              <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
-                <ImageThumbnail
-                  curve
-                  shadow
-                  url={api.getPeopleThumbnailUrl(person.id)}
-                  altText={person.name}
-                  title={person.name}
-                  widthStyle="90px"
-                  heightStyle="90px"
-                  thumbhash={null}
-                />
+      <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
+        {#each searchName == '' ? allPeople : searchedPeople as person (person.id)}
+          <div class="w-fit">
+            <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
+              <ImageThumbnail
+                curve
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="90px"
+                heightStyle="90px"
+                thumbhash={null}
+              />
 
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-              </button>
-            </div>
-          {/each}
-        </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+            </button>
+          </div>
+        {/each}
       </div>
     </div>
   </section>

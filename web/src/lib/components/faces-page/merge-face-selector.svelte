@@ -72,7 +72,6 @@
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
-      people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
       await invalidateAll();
       dispatch('merge');
     } catch (error) {
