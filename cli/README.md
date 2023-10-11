@@ -18,11 +18,11 @@ NOTE: This will store your api key under ~/.config/immich/auth.yml
 
 Next, you can run commands:
 
-    $ immich cli/src server-info
+    $ immich server-info
 
 When you're done, log out to remove the credentials from your filesystem
 
-    $ immich cli/src logout
+    $ immich logout
 
 # Usage
 
