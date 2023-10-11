@@ -272,7 +272,7 @@ export class AssetService {
       zip.addFile(originalPath, filename);
     }
 
-    zip.finalize();
+    await zip.finalize();
 
     return { stream: zip.stream };
   }

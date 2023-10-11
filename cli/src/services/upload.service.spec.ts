@@ -22,7 +22,7 @@ describe('UploadService', () => {
   it('should upload a single file', async () => {
     const data = new FormData();
 
-    uploadService.upload(data);
+    await uploadService.upload(data);
 
     mockAxios.mockResponse();
     expect(axios).toHaveBeenCalled();
