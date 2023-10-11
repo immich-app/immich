@@ -311,10 +311,10 @@ describe(`${UserController.name}`, () => {
   });
 
   describe('GET /user/count', () => {
-    it('should not require authentication', async () => {
+    it('should require authentication', async () => {
       const { status, body } = await request(server).get(`/user/count`);
-      expect(status).toBe(200);
-      expect(body).toEqual({ userCount: 1 });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
 
     it('should start with just the admin', async () => {

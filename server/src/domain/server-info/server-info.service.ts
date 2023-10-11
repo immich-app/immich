@@ -74,11 +74,14 @@ export class ServerInfoService {
     // TODO move to system config
     const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
 
+    const isInitialized = await this.userRepository.hasAdmin();
+
     return {
       loginPageMessage,
       mapTileUrl: config.map.tileUrl,
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
+      isInitialized,
     };
   }
 

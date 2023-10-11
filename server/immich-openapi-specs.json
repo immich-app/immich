@@ -5004,6 +5004,17 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -7340,6 +7351,9 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "isInitialized": {
+            "type": "boolean"
+          },
           "loginPageMessage": {
             "type": "string"
           },
@@ -7357,7 +7371,8 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl"
+          "mapTileUrl",
+          "isInitialized"
         ],
         "type": "object"
       },

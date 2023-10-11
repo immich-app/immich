@@ -85,6 +85,7 @@ export class ServerConfigDto {
   mapTileUrl!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
+  isInitialized!: boolean;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {

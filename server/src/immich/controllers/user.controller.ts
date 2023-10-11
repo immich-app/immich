@@ -26,7 +26,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { AdminRoute, AuthUser, Authenticated, PublicRoute } from '../app.guard';
+import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
 import { FileUploadInterceptor, Route } from '../app.interceptor';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -59,7 +59,7 @@ export class UserController {
     return this.service.create(createUserDto);
   }
 
-  @PublicRoute()
+  @AdminRoute()
   @Get('count')
   getUserCount(@Query() dto: CountDto): Promise<UserCountResponseDto> {
     return this.service.getCount(dto);
