@@ -11,6 +11,7 @@ export * from './library.repository';
 export * from './machine-learning.repository';
 export * from './media.repository';
 export * from './metadata.repository';
+export * from './move.repository';
 export * from './partner.repository';
 export * from './person.repository';
 export * from './shared-link.repository';

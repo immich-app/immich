@@ -163,7 +163,6 @@
   "home_page_building_timeline": "Building the timeline",
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
-  "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
   "image_viewer_page_state_provider_download_error": "Download Error",
   "image_viewer_page_state_provider_download_success": "Download Success",
   "library_page_albums": "Albums",
@@ -322,5 +321,17 @@
   "map_no_location_permission_title": "Location Permission denied",
   "map_no_location_permission_content": "Location permission is needed to display assets from your current location. Do you want to allow it now?",
   "map_location_dialog_cancel": "Cancel",
-  "map_location_dialog_yes": "Yes"
+  "map_location_dialog_yes": "Yes",
+  "trash_page_title": "Trash ({})",
+  "trash_page_info": "Backed up items will be permanently deleted after {} days",
+  "trash_page_no_assets": "No trashed assets",
+  "trash_page_delete": "Delete",
+  "trash_page_delete_all": "Delete All",
+  "trash_page_restore": "Restore",
+  "trash_page_restore_all": "Restore All",
+  "trash_page_select_btn": "Select",
+  "trash_page_select_assets_btn": "Select assets",
+  "trash_page_empty_trash_btn": "Empty trash",
+  "trash_page_empty_trash_dialog_ok": "Ok",
+  "trash_page_empty_trash_dialog_content": "Do you want to empty your trashed assets? These items will be permanently removed from Immich"
 }

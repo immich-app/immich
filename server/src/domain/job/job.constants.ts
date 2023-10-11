@@ -41,6 +41,10 @@ export enum JobName {
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
 
+  // asset
+  ASSET_DELETION = 'asset-deletion',
+  ASSET_DELETION_CHECK = 'asset-deletion-check',
+
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
@@ -65,7 +69,6 @@ export enum JobName {
   LIBRARY_SCAN = 'library-refresh',
   LIBRARY_SCAN_ASSET = 'library-refresh-asset',
   LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
-  LIBRARY_MARK_ASSET_OFFLINE = 'library-mark-asset-offline',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
@@ -99,6 +102,8 @@ export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
+  [JobName.ASSET_DELETION]: QueueName.BACKGROUND_TASK,
+  [JobName.ASSET_DELETION_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
@@ -166,7 +171,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Library managment
   [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
-  [JobName.LIBRARY_MARK_ASSET_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,

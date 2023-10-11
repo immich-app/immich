@@ -53,7 +53,7 @@
     albumTitle: {
       table: 'Album title',
       sortTitle: 'Album title',
-      sortDesc: true,
+      sortDesc: $albumViewSettings.sortDesc, // Load Sort Direction
       widthClass: 'w-8/12 text-left sm:w-4/12 md:w-4/12 md:w-4/12 2xl:w-6/12',
       sortFn: (reverse, albums) => {
         return orderBy(albums, 'albumName', [reverse ? 'desc' : 'asc']);
@@ -62,7 +62,7 @@
     numberOfAssets: {
       table: 'Assets',
       sortTitle: 'Number of assets',
-      sortDesc: true,
+      sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'w-4/12 text-center sm:w-2/12 2xl:w-1/12',
       sortFn: (reverse, albums) => {
         return orderBy(albums, 'assetCount', [reverse ? 'desc' : 'asc']);
@@ -71,7 +71,7 @@
     lastModified: {
       table: 'Updated date',
       sortTitle: 'Last modified',
-      sortDesc: true,
+      sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return orderBy(albums, [(album) => new Date(album.updatedAt)], [reverse ? 'desc' : 'asc']);
@@ -80,7 +80,7 @@
     mostRecent: {
       table: 'Created date',
       sortTitle: 'Most recent photo',
-      sortDesc: true,
+      sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden sm:block w-3/12 lg:w-2/12',
       sortFn: (reverse, albums) => {
         return orderBy(
@@ -145,6 +145,7 @@
     for (const key in sortByOptions) {
       if (sortByOptions[key].sortTitle === sortBy) {
         $albums = sortByOptions[key].sortFn(sortByOptions[key].sortDesc, $unsortedAlbums);
+        $albumViewSettings.sortDesc = sortByOptions[key].sortDesc; // "Save" sortDesc
         break;
       }
     }

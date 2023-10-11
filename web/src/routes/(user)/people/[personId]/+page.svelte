@@ -25,6 +25,7 @@
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
+  import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, PersonResponseDto, TimeBucketSize, api } from '@api';
   import { onMount } from 'svelte';
@@ -34,6 +35,8 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { browser } from '$app/environment';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
 
@@ -54,33 +57,77 @@
   });
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
+  const { onPersonThumbnail } = websocketStore;
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let previousPersonId: string = data.person.id;
-  let people = data.people.people;
+  let people: PersonResponseDto[];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
 
+  let refreshAssetGrid = false;
+
   let personName = '';
+  $: thumbnailData = api.getPeopleThumbnailUrl(data.person.id);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  /**
+   * Save the word used to search people name: for example,
+   * if searching 'r' and the server returns 15 people with names starting with 'r',
+   * there's no need to search again people with name starting with 'ri'.
+   * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
+   * or if the new search word starts with another word / letter
+   **/
+  let searchWord: string;
+  let maxPeople = false;
+  let isSearchingPeople = false;
+
+  const searchPeople = async () => {
+    isSearchingPeople = true;
+    people = [];
+    try {
+      const { data } = await api.searchApi.searchPerson({ name });
+      people = data;
+      searchWord = name;
+      if (data.length < 20) {
+        maxPeople = false;
+      } else {
+        maxPeople = true;
+      }
+    } catch (error) {
+      handleError(error, "Can't search people");
+    }
+
+    isSearchingPeople = false;
+  };
 
   $: {
-    suggestedPeople = !name
-      ? []
-      : people
-          .filter(
-            (person: PersonResponseDto) =>
-              person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
-          )
-          .slice(0, 5);
+    if (name !== '' && browser) {
+      if (maxPeople === true || (!name.startsWith(searchWord) && maxPeople === false)) searchPeople();
+    }
+  }
+
+  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: $onPersonThumbnail === data.person.id &&
+    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
+
+  $: {
+    if (people) {
+      suggestedPeople = !name
+        ? []
+        : people
+            .filter(
+              (person: PersonResponseDto) =>
+                person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+            )
+            .slice(0, 5);
+    }
   }
 
   onMount(() => {
@@ -113,6 +160,7 @@
         personId: data.person.id,
       });
       previousPersonId = data.person.id;
+      refreshAssetGrid = !refreshAssetGrid;
     }
   });
 
@@ -134,6 +182,11 @@
     }
   };
 
+  const handleMerge = () => {
+    handleGoBack();
+    refreshAssetGrid = !refreshAssetGrid;
+  };
+
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
     if (viewMode !== ViewMode.SELECT_FACE) {
       return;
@@ -141,14 +194,8 @@
 
     await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
-    // TODO: Replace by Websocket in the future
-    notificationController.show({
-      message: 'Feature photo updated, refresh page to see changes',
-      type: NotificationType.Info,
-    });
-
+    notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
-    // scroll to top
 
     viewMode = ViewMode.VIEW_ASSETS;
   };
@@ -192,16 +239,9 @@
     try {
       isEditingName = false;
 
-      const { data: updatedPerson } = await api.personApi.updatePerson({
+      await api.personApi.updatePerson({
         id: data.person.id,
         personUpdateDto: { name: personName },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
       });
 
       notificationController.show({
@@ -228,15 +268,21 @@
     if (data.person.name === personName) {
       return;
     }
+    if (name === '') {
+      changeName();
+      return;
+    }
 
-    const existingPerson = people.find(
+    const result = await api.searchApi.searchPerson({ name: personName });
+
+    const existingPerson = result.data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = data.person;
-      potentialMergePeople = people
+      potentialMergePeople = result.data
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
@@ -303,7 +349,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_FACES}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} />
+  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
@@ -345,7 +391,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  {#key previousPersonId}
+  {#key refreshAssetGrid}
     <AssetGrid
       {assetStore}
       {assetInteractionStore}
@@ -367,7 +413,7 @@
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
-                suggestedPeople={suggestedPeople.length > 0}
+                suggestedPeople={suggestedPeople.length > 0 || isSearchingPeople}
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
               />
@@ -376,7 +422,7 @@
                 <ImageThumbnail
                   circle
                   shadow
-                  url={api.getPeopleThumbnailUrl(data.person.id)}
+                  url={thumbnailData}
                   altText={data.person.name}
                   widthStyle="3.375rem"
                   heightStyle="3.375rem"
@@ -399,25 +445,35 @@
           </section>
           {#if isEditingName}
             <div class="absolute z-[999] w-96">
-              {#each suggestedPeople as person, index (person.id)}
+              {#if isSearchingPeople}
                 <div
-                  class="flex {index === suggestedPeople.length - 1
-                    ? 'rounded-b-lg'
-                    : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
                 >
-                  <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(person.id)}
-                      altText={person.name}
-                      widthStyle="2rem"
-                      heightStyle="2rem"
-                    />
-                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                  </button>
+                  <div class="flex w-full place-items-center">
+                    <LoadingSpinner />
+                  </div>
                 </div>
-              {/each}
+              {:else}
+                {#each suggestedPeople as person, index (person.id)}
+                  <div
+                    class="flex {index === suggestedPeople.length - 1
+                      ? 'rounded-b-lg'
+                      : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  >
+                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(person.id)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  </div>
+                {/each}
+              {/if}
             </div>
           {/if}
         </div>

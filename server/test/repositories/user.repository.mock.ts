@@ -14,5 +14,6 @@ export const newUserRepositoryMock = (): jest.Mocked<IUserRepository> => {
     delete: jest.fn(),
     getDeletedUsers: jest.fn(),
     restore: jest.fn(),
+    hasAdmin: jest.fn(),
   };
 };

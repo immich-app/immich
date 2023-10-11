@@ -55,6 +55,7 @@ const assetResponse: AssetResponseDto = {
   isReadOnly: false,
   isOffline: false,
   fileCreatedAt: today,
+  localDateTime: today,
   updatedAt: today,
   isFavorite: false,
   isArchived: false,
@@ -68,6 +69,7 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  isTrashed: false,
   libraryId: 'library-id',
 };
 
@@ -174,6 +176,7 @@ export const sharedLinkStub = {
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
+          localDateTime: today,
           createdAt: today,
           updatedAt: today,
           isFavorite: false,
@@ -233,6 +236,7 @@ export const sharedLinkStub = {
           sharedLinks: [],
           faces: [],
           sidecarPath: null,
+          deletedAt: null,
         },
       ],
     },

@@ -2,10 +2,10 @@ import { LoginResponseDto, UserResponseDto, UserService } from '@app/domain';
 import { AppModule, UserController } from '@app/immich';
 import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, userSignupStub, userStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 import { Repository } from 'typeorm';
 
@@ -18,12 +18,9 @@ describe(`${UserController.name}`, () => {
   let userRepository: Repository<UserEntity>;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    app = await createTestApp();
+    userRepository = app.select(AppModule).get('UserEntityRepository');
 
-    app = await moduleFixture.createNestApplication().init();
-    userRepository = moduleFixture.get('UserEntityRepository');
     server = app.getHttpServer();
   });
 
@@ -314,10 +311,10 @@ describe(`${UserController.name}`, () => {
   });
 
   describe('GET /user/count', () => {
-    it('should not require authentication', async () => {
+    it('should require authentication', async () => {
       const { status, body } = await request(server).get(`/user/count`);
-      expect(status).toBe(200);
-      expect(body).toEqual({ userCount: 1 });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
 
     it('should start with just the admin', async () => {

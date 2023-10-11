@@ -1,12 +1,12 @@
 import { AlbumResponseDto, LoginResponseDto } from '@app/domain';
-import { AlbumController, AppModule } from '@app/immich';
+import { AlbumController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 const user1SharedUser = 'user1SharedUser';
@@ -27,11 +27,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
   let user2Albums: AlbumResponseDto[];
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    app = await createTestApp();
 
-    app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
   });
 

@@ -1,9 +1,9 @@
-import { AppModule, OAuthController } from '@app/immich';
+import { OAuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${OAuthController.name} (e2e)`, () => {
@@ -11,11 +11,7 @@ describe(`${OAuthController.name} (e2e)`, () => {
   let server: any;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
   });
 

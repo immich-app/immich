@@ -1,4 +1,5 @@
 import {
+  AssetService,
   AuditService,
   IDeleteFilesJob,
   JobName,
@@ -23,6 +24,7 @@ export class AppService {
 
   constructor(
     private jobService: JobService,
+    private assetService: AssetService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
@@ -38,6 +40,8 @@ export class AppService {
 
   async init() {
     await this.jobService.registerHandlers({
+      [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
+      [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
@@ -79,7 +83,6 @@ export class AppService {
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
       [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
-      [JobName.LIBRARY_MARK_ASSET_OFFLINE]: (data) => this.libraryService.handleOfflineAsset(data),
       [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),

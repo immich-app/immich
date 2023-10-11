@@ -67,6 +67,7 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
+      .innerJoin('face.asset', 'asset')
       .orderBy('person.isHidden', 'ASC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
@@ -92,6 +93,16 @@ export class PersonRepository implements IPersonRepository {
 
   getById(personId: string): Promise<PersonEntity | null> {
     return this.personRepository.findOne({ where: { id: personId } });
+  }
+
+  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
+      .limit(20)
+      .getMany();
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {

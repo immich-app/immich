@@ -7,11 +7,15 @@ import {
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { ISystemConfigRepository } from '../system-config';
-import { IMachineLearningRepository } from './machine-learning.interface';
-import { ISmartInfoRepository } from './smart-info.repository';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  ISmartInfoRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { SmartInfoService } from './smart-info.service';
 
 const asset = {

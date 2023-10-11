@@ -1,23 +1,32 @@
 import { PersonEntity } from '@app/infra/entities';
+import { PersonPathType } from '@app/infra/entities/move.entity';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import {
-  AssetResponseDto,
-  BulkIdErrorReason,
-  BulkIdResponseDto,
-  IAssetRepository,
-  WithoutProperty,
-  mapAsset,
-} from '../asset';
+import { AccessCore, Permission } from '../access';
+import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
-import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { FACE_THUMBNAIL_SIZE } from '../media';
+import {
+  AssetFaceId,
+  CropOptions,
+  IAccessRepository,
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  ISearchRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichReadStream,
+  UpdateFacesData,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   MergePersonDto,
   PeopleResponseDto,
@@ -27,7 +36,6 @@ import {
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
-import { AssetFaceId, IPersonRepository, UpdateFacesData } from './person.repository';
 
 @Injectable()
 export class PersonService {
@@ -40,6 +48,7 @@ export class PersonService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
@@ -48,8 +57,8 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = new AccessCore(accessRepository);
-    this.storageCore = new StorageCore(storageRepository);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, repository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -262,11 +271,7 @@ export class PersonService {
       return false;
     }
 
-    const path = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, person.ownerId, `${id}.jpeg`);
-    if (person.thumbnailPath && person.thumbnailPath !== path) {
-      await this.storageRepository.moveFile(person.thumbnailPath, path);
-      await this.repository.update({ id, thumbnailPath: path });
-    }
+    await this.storageCore.movePersonFile(person, PersonPathType.FACE);
 
     return true;
   }
@@ -304,8 +309,8 @@ export class PersonService {
     }
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
-
-    const thumbnailPath = this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${personId}.jpeg`);
+    const thumbnailPath = this.storageCore.getPersonThumbnailPath(person);
+    this.storageCore.ensureFolders(thumbnailPath);
 
     const halfWidth = (x2 - x1) / 2;
     const halfHeight = (y2 - y1) / 2;

@@ -4,14 +4,24 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore } from '../storage';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
 
 interface DirectoryItem {
   Length?: number;
@@ -30,6 +40,7 @@ type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
 >;
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
+const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -64,9 +75,11 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
     this.configCore.config$.subscribe(() => this.init());
   }
 
@@ -156,9 +169,19 @@ export class MetadataService {
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
+
+    const dateTimeOriginal = exifDate(firstDateTime(tags as Tags)) ?? exifData.dateTimeOriginal;
+    let localDateTime = dateTimeOriginal ?? undefined;
+
+    const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
+
+    if (dateTimeOriginal && timeZoneOffset) {
+      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60000);
+    }
     await this.assetRepository.save({
       id: asset.id,
       duration: tags.Duration ? this.getDuration(tags.Duration) : null,
+      localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
@@ -268,17 +291,19 @@ export class MetadataService {
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
-        motionAsset = await this.assetRepository.save({
+        const createdAt = asset.fileCreatedAt ?? asset.createdAt;
+        motionAsset = await this.assetRepository.create({
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
-          fileCreatedAt: asset.fileCreatedAt ?? asset.createdAt,
+          fileCreatedAt: createdAt,
           fileModifiedAt: asset.fileModifiedAt,
+          localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
+          originalPath: this.storageCore.getAndroidMotionPath(asset),
           originalFileName: asset.originalFileName,
           isVisible: false,
-          isReadOnly: true,
+          isReadOnly: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });

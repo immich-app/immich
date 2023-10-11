@@ -1,11 +1,11 @@
 import { DatabaseAction } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
+import { IAccessRepository, IAuditRepository } from '../repositories';
 import { AuditDeletesDto, AuditDeletesResponseDto } from './audit.dto';
-import { IAuditRepository } from './audit.repository';
 
 @Injectable()
 export class AuditService {

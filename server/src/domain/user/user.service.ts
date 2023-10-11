@@ -2,14 +2,20 @@ import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { IAlbumRepository } from '../album/album.repository';
-import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { IEntityJob, IJobRepository, JobName } from '../job';
-import { ILibraryRepository } from '../library/library.repository';
+import { IEntityJob, JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
@@ -20,7 +26,6 @@ import {
   mapUserCountResponse,
 } from './response-dto';
 import { UserCore } from './user.core';
-import { IUserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
@@ -29,15 +34,17 @@ export class UserService {
   private userCore: UserCore;
 
   constructor(
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
     this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
