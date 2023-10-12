@@ -617,7 +617,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                     : webPThumbnail;
               },
               builder: (context, index) {
-                final a = asset();
+                final a =
+                    index == currentIndex.value ? asset() : loadAsset(index);
                 final ImageProvider provider = finalImageProvider(a);
 
                 if (a.isImage && !isPlayingMotionVideo.value) {

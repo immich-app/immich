@@ -541,7 +541,7 @@ export class AssetRepository implements IAssetRepository {
     }
 
     // Hide stack children only in main timeline
-    if (!isArchived && !isFavorite && !personId && !albumId) {
+    if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
       builder = builder.andWhere('asset.stackParent IS NULL');
     }
 
