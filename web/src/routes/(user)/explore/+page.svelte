@@ -10,8 +10,12 @@
   import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
   import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
   import type { PageData } from './$types';
+  import { onMount } from 'svelte';
+  import { fromShortcut } from '$lib/stores/explore.store';
 
   export let data: PageData;
+
+  let pageLayout: UserPageLayout;
 
   enum Field {
     CITY = 'exifInfo.city',
@@ -29,9 +33,16 @@
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.response.people.slice(0, MAX_ITEMS);
   $: hasPeople = data.response.total > 0;
+
+  onMount(async () => {
+    if ($fromShortcut) {
+      $fromShortcut = false;
+      pageLayout.focusSearchInput();
+    }
+  });
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout user={data.user} title={data.meta.title} bind:this={pageLayout}>
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">

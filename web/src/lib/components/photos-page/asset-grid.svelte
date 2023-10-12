@@ -19,6 +19,7 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { fromShortcut } from '$lib/stores/explore.store';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -78,6 +79,7 @@
           return;
         case '/':
           event.preventDefault();
+          $fromShortcut = true;
           goto(AppRoute.EXPLORE);
           return;
       }
