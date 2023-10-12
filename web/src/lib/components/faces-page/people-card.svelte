@@ -8,6 +8,7 @@
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let person: PersonResponseDto;
 
@@ -42,7 +43,7 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="/people/{person.id}" draggable="false">
+  <a href="/people/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow

@@ -245,7 +245,7 @@
   };
 
   const handleMergeFaces = (detail: PersonResponseDto) => {
-    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge`);
+    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
   };
 
   const submitNameChange = async () => {
