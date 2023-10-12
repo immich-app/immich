@@ -15,7 +15,6 @@ import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
@@ -27,6 +26,7 @@ class AssetNotifier extends StateNotifier<bool> {
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
+  bool _getPartnerAssetsInProgress = false;
 
   AssetNotifier(
     this._assetService,
@@ -49,19 +49,35 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
-      await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
-      final List<User> partners =
-          await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
-      for (User u in partners) {
-        await _assetService.refreshRemoteAssets(u);
-      }
+
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
       state = false;
+    }
+  }
+
+  Future<void> getPartnerAssets([User? partner]) async {
+    if (_getPartnerAssetsInProgress) return;
+    try {
+      final stopwatch = Stopwatch()..start();
+      _getPartnerAssetsInProgress = true;
+      if (partner == null) {
+        await _userService.refreshUsers();
+        final List<User> partners =
+            await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
+        for (User u in partners) {
+          await _assetService.refreshRemoteAssets(u);
+        }
+      } else {
+        await _assetService.refreshRemoteAssets(partner);
+      }
+      log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
+    } finally {
+      _getPartnerAssetsInProgress = false;
     }
   }
 
@@ -75,23 +91,45 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<void> deleteAssets(Iterable<Asset> deleteAssets) async {
+  Future<bool> deleteAssets(
+    Iterable<Asset> deleteAssets, {
+    bool? force = false,
+  }) async {
     _deleteInProgress = true;
     state = true;
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
+      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        final dbIds = deleteAssets.map((e) => e.id).toList();
+        List<Asset>? assetsToUpdate;
+        // Local only assets are permanently deleted for now. So always remove them from db
+        final dbIds = deleteAssets
+            .where((a) => a.isLocal && !a.isRemote)
+            .map((e) => e.id)
+            .toList();
+        if (force == null || !force) {
+          assetsToUpdate = remoteDeleted.map((e) {
+            e.isTrashed = true;
+            return e;
+          }).toList();
+        } else {
+          // Add all remote assets to be deleted from isar as since they are permanently deleted
+          dbIds.addAll(remoteDeleted.map((e) => e.id));
+        }
         await _db.writeTxn(() async {
+          if (assetsToUpdate != null) {
+            await _db.assets.putAll(assetsToUpdate);
+          }
           await _db.exifInfos.deleteAll(dbIds);
           await _db.assets.deleteAll(dbIds);
         });
+        return true;
       }
     } finally {
       _deleteInProgress = false;
       state = false;
     }
+    return false;
   }
 
   Future<List<String>> _deleteLocalAssets(
@@ -110,15 +148,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return [];
   }
 
-  Future<Iterable<String>> _deleteRemoteAssets(
+  Future<Iterable<Asset>> _deleteRemoteAssets(
     Iterable<Asset> assetsToDelete,
+    bool? force,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
-    final List<DeleteAssetResponseDto> deleteAssetResult =
-        await _assetService.deleteAssets(remote) ?? [];
-    return deleteAssetResult
-        .where((a) => a.status == DeleteAssetStatus.SUCCESS)
-        .map((a) => a.id);
+
+    final isSuccess = await _assetService.deleteAssets(remote, force: force);
+    return isSuccess ? remote : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, bool status) async {
@@ -163,15 +200,23 @@ final assetDetailProvider =
   }
 });
 
+final assetWatcher =
+    StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
+  final db = ref.watch(dbProvider);
+  return db.assets.watchObject(asset.id, fireImmediately: true);
+});
+
 final assetsProvider =
     StreamProvider.family<RenderList, int?>((ref, userId) async* {
   if (userId == null) return;
   final query = ref
       .watch(dbProvider)
       .assets
+      .where()
+      .ownerIdEqualToAnyChecksum(userId)
       .filter()
-      .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
@@ -192,6 +237,7 @@ final remoteAssetsProvider =
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

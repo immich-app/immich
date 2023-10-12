@@ -50,7 +50,10 @@ export class AlbumRepository implements IAlbumRepository {
 
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      where: { ownerId, assets: { id: assetId } },
+      where: [
+        { ownerId, assets: { id: assetId } },
+        { sharedUsers: { id: ownerId }, assets: { id: assetId } },
+      ],
       relations: { owner: true, sharedUsers: true },
       order: { createdAt: 'DESC' },
     });
@@ -137,6 +140,14 @@ export class AlbumRepository implements IAlbumRepository {
       where: { ownerId, sharedUsers: { id: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async restoreAll(userId: string): Promise<void> {
+    await this.repository.restore({ ownerId: userId });
+  }
+
+  async softDeleteAll(userId: string): Promise<void> {
+    await this.repository.softDelete({ ownerId: userId });
   }
 
   async deleteAll(userId: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { IServerVersion } from '@app/domain';
+import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 
 export class ServerPingResponse {
@@ -79,11 +79,26 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
-export class ServerFeaturesDto {
-  machineLearning!: boolean;
-  search!: boolean;
+export class ServerConfigDto {
+  oauthButtonText!: string;
+  loginPageMessage!: string;
+  mapTileUrl!: string;
+  @ApiProperty({ type: 'integer' })
+  trashDays!: number;
+  isInitialized!: boolean;
+}
 
+export class ServerFeaturesDto implements FeatureFlags {
+  clipEncode!: boolean;
+  configFile!: boolean;
+  facialRecognition!: boolean;
+  map!: boolean;
+  trash!: boolean;
+  reverseGeocoding!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;
+  sidecar!: boolean;
+  search!: boolean;
+  tagImage!: boolean;
 }

@@ -17,7 +17,7 @@ class ModelCache:
         revalidate: bool = False,
         timeout: int | None = None,
         profiling: bool = False,
-    ):
+    ) -> None:
         """
         Args:
             ttl: Unloads model after this duration. Disabled if None. Defaults to None.
@@ -46,7 +46,7 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = self.cache.build_key(model_name, model_type.value)
+        key = f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
         async with OptimisticLock(self.cache, key) as lock:
             model = await self.cache.get(key)
             if model is None:

@@ -6,7 +6,6 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   export let filename = 'immich.zip';
-  export let sharedLinkKey: string | undefined = undefined;
   export let menuItem = false;
 
   const { getAssets, clearSelect } = getAssetControlContext();
@@ -15,12 +14,12 @@
     const assets = Array.from(getAssets());
     if (assets.length === 1) {
       clearSelect();
-      await downloadFile(assets[0], sharedLinkKey);
+      await downloadFile(assets[0]);
       return;
     }
 
     clearSelect();
-    await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) }, sharedLinkKey);
+    await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) });
   };
 </script>
 

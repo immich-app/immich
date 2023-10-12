@@ -1,13 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 
-class ThumbnailImage extends HookConsumerWidget {
+class ThumbnailImage extends StatelessWidget {
   final Asset asset;
   final int index;
   final Asset Function(int index) loadAsset;
@@ -36,7 +35,7 @@ class ThumbnailImage extends HookConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
@@ -61,8 +60,41 @@ class ThumbnailImage extends HookConsumerWidget {
       }
     }
 
-    Widget buildImage(Asset asset) {
-      var image = SizedBox(
+    Widget buildVideoIcon() {
+      final minutes = asset.duration.inMinutes;
+      final durationString = asset.duration.toString();
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: Row(
+          children: [
+            Text(
+              minutes > 59
+                  ? durationString.substring(0, 7) // h:mm:ss
+                  : minutes > 0
+                      ? durationString.substring(2, 7) // mm:ss
+                      : durationString.substring(3, 7), // m:ss
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              width: 3,
+            ),
+            const Icon(
+              Icons.play_circle_fill_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildImage() {
+      final image = SizedBox(
         width: 300,
         height: 300,
         child: Hero(
@@ -133,7 +165,7 @@ class ThumbnailImage extends HookConsumerWidget {
                     )
                   : const Border(),
             ),
-            child: buildImage(asset),
+            child: buildImage(),
           ),
           if (multiselectEnabled)
             Padding(
@@ -163,26 +195,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 size: 18,
               ),
             ),
-          if (!asset.isImage)
-            Positioned(
-              top: 5,
-              right: 5,
-              child: Row(
-                children: [
-                  Text(
-                    asset.duration.toString().substring(0, 7),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.play_circle_outline_rounded,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
+          if (!asset.isImage) buildVideoIcon(),
         ],
       ),
     );

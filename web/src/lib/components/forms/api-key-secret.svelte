@@ -1,10 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
-  import { handleError } from '../../utils/handle-error';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { copyToClipboard } from '@api';
   import Button from '../elements/buttons/button.svelte';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   export let secret = '';
 
@@ -16,17 +15,6 @@
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
   });
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(secret);
-      notificationController.show({
-        message: 'Copied to clipboard!',
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, 'Unable to copy to clipboard');
-    }
-  };
 </script>
 
 <FullScreenModal>
@@ -51,7 +39,7 @@
 
     <div class="mt-8 flex w-full gap-4 px-4">
       {#if canCopyImagesToClipboard}
-        <Button on:click={() => handleCopy()} fullwidth>Copy to Clipboard</Button>
+        <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
       {/if}
       <Button on:click={() => handleDone()} fullwidth>Done</Button>
     </div>

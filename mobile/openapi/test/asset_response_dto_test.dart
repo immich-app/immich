@@ -62,13 +62,43 @@ void main() {
       // TODO
     });
 
+    // bool isExternal
+    test('to test the property `isExternal`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
     });
 
+    // bool isOffline
+    test('to test the property `isOffline`', () async {
+      // TODO
+    });
+
+    // bool isReadOnly
+    test('to test the property `isReadOnly`', () async {
+      // TODO
+    });
+
+    // bool isTrashed
+    test('to test the property `isTrashed`', () async {
+      // TODO
+    });
+
+    // String libraryId
+    test('to test the property `libraryId`', () async {
+      // TODO
+    });
+
     // String livePhotoVideoId
     test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
+    // DateTime localDateTime
+    test('to test the property `localDateTime`', () async {
       // TODO
     });
 
@@ -79,6 +109,11 @@ void main() {
 
     // String originalPath
     test('to test the property `originalPath`', () async {
+      // TODO
+    });
+
+    // UserResponseDto owner
+    test('to test the property `owner`', () async {
       // TODO
     });
 

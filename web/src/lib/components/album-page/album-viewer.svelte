@@ -20,6 +20,7 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -27,13 +28,13 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id, key: sharedLink.key });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      fileUploadHandler(value.files, album.id, sharedLink.key);
+      fileUploadHandler(value.files, album.id);
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -76,6 +77,9 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
@@ -88,7 +92,7 @@
   };
 
   const downloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id }, sharedLink.key);
+    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
   };
 </script>
 
@@ -97,7 +101,7 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <SelectAllAssets {assetStore} {assetInteractionStore} />
       {#if sharedLink.allowDownload}
-        <DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink.key} />
+        <DownloadAction filename="{album.albumName}.zip" />
       {/if}
     </AssetSelectControlBar>
   {:else}
@@ -117,7 +121,7 @@
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title="Add Photos"
-            on:click={() => openFileUploadDialog(album.id, sharedLink.key)}
+            on:click={() => openFileUploadDialog(album.id)}
             logo={FileImagePlusOutline}
           />
         {/if}
@@ -135,7 +139,7 @@
 <main
   class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
 >
-  <AssetGrid {assetStore} {assetInteractionStore} publicSharedKey={sharedLink.key}>
+  <AssetGrid {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
       <p

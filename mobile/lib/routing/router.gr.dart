@@ -296,6 +296,12 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    MapRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const MapPage(),
+      );
+    },
     AlbumOptionsRoute.name: (routeData) {
       final args = routeData.argsAs<AlbumOptionsRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -304,6 +310,12 @@ class _$AppRouter extends RootStackRouter {
           key: args.key,
           album: args.album,
         ),
+      );
+    },
+    TrashRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const TrashPage(),
       );
     },
     HomeRoute.name: (routeData) {
@@ -544,10 +556,7 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           SettingsRoute.name,
           path: '/settings-page',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
+          guards: [duplicateGuard],
         ),
         RouteConfig(
           AppLogRoute.name,
@@ -606,8 +615,24 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
+          MapRoute.name,
+          path: '/map-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
           AlbumOptionsRoute.name,
           path: '/album-options-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          TrashRoute.name,
+          path: '/trash-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1338,6 +1363,18 @@ class MemoryRouteArgs {
 }
 
 /// generated route for
+/// [MapPage]
+class MapRoute extends PageRouteInfo<void> {
+  const MapRoute()
+      : super(
+          MapRoute.name,
+          path: '/map-page',
+        );
+
+  static const String name = 'MapRoute';
+}
+
+/// generated route for
 /// [AlbumOptionsPage]
 class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
   AlbumOptionsRoute({
@@ -1369,6 +1406,18 @@ class AlbumOptionsRouteArgs {
   String toString() {
     return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
   }
+}
+
+/// generated route for
+/// [TrashPage]
+class TrashRoute extends PageRouteInfo<void> {
+  const TrashRoute()
+      : super(
+          TrashRoute.name,
+          path: '/trash-page',
+        );
+
+  static const String name = 'TrashRoute';
 }
 
 /// generated route for

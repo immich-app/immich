@@ -1,27 +1,32 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
+  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
   import Calendar from 'svelte-material-icons/Calendar.svelte';
   import CameraIris from 'svelte-material-icons/CameraIris.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
   import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
   import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+
   let textarea: HTMLTextAreaElement;
   let description: string;
 
+  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+
   $: {
     // Get latest description from server
-    if (asset.id) {
+    if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
@@ -34,9 +39,12 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [lat, lng] as LatLngTuple;
+      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
     }
   })();
+
+  $: lat = latlng ? latlng[0] : undefined;
+  $: lng = latlng ? latlng[1] : undefined;
 
   $: people = asset.people || [];
 
@@ -89,22 +97,35 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
-  <section class="mx-4 mt-10">
+  {#if asset.isOffline}
+    <section class="px-4 py-4">
+      <div role="alert">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">Asset offline</div>
+        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+          <p>
+            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
+            then rescan the library.
+          </p>
+        </div>
+      </div>
+    </section>
+  {/if}
+
+  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
     <textarea
       bind:this={textarea}
       class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
-      style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == '' ? 'none' : 'block'}
+      placeholder={!isOwner ? '' : 'Add a description'}
       on:focusin={handleFocusIn}
       on:focusout={handleFocusOut}
       on:input={autoGrowHeight}
       bind:value={description}
-      disabled={$page?.data?.user?.id !== asset.ownerId}
+      disabled={!isOwner}
     />
   </section>
 
-  {#if people.length > 0}
+  {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <h2>PEOPLE</h2>
 
@@ -116,18 +137,28 @@
               shadow
               url={api.getPeopleThumbnailUrl(person.id)}
               altText={person.name}
+              title={person.name}
               widthStyle="90px"
               heightStyle="90px"
               thumbhash={null}
             />
-            <p class="mt-1 truncate font-medium">{person.name}</p>
-            <p class="font-light">
-              {#if person.birthDate}
-                Age {Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(DateTime.fromISO(person.birthDate), 'years').years,
+            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+            {#if person.birthDate}
+              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+              <p
+                class="font-light"
+                title={personBirthDate.toLocaleString(
+                  {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  },
+                  { locale: $locale },
                 )}
-              {/if}
-            </p>
+              >
+                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+              </p>
+            {/if}
           </a>
         {/each}
       </div>
@@ -135,8 +166,16 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo}
+    {#if !asset.exifInfo && !asset.isExternal}
       <p class="text-sm">NO EXIF INFO AVAILABLE</p>
+    {:else if !asset.exifInfo && asset.isExternal}
+      <div class="flex gap-4 py-4">
+        <div>
+          <p class="break-all">
+            Metadata not loaded for {asset.originalPath}
+          </p>
+        </div>
+      </div>
     {:else}
       <p class="text-sm">DETAILS</p>
     {/if}
@@ -201,14 +240,16 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
         <div><CameraIris size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
-            <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+            {#if asset.exifInfo?.fNumber}
+              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+            {/if}
 
             {#if asset.exifInfo.exposureTime}
               <p>{`${asset.exifInfo.exposureTime}`}</p>
@@ -220,7 +261,7 @@
 
             {#if asset.exifInfo.iso}
               <p>
-                {`ISO${asset.exifInfo.iso}`}
+                {`ISO ${asset.exifInfo.iso}`}
               </p>
             {/if}
           </div>
@@ -234,39 +275,66 @@
 
         <div>
           <p>{asset.exifInfo.city}</p>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.state}</p>
-          </div>
-          <div class="flex gap-2 text-sm">
-            <p>{asset.exifInfo.country}</p>
-          </div>
+          {#if asset.exifInfo?.state}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.state}</p>
+            </div>
+          {/if}
+          {#if asset.exifInfo?.country}
+            <div class="flex gap-2 text-sm">
+              <p>{asset.exifInfo.country}</p>
+            </div>
+          {/if}
         </div>
       </div>
     {/if}
   </div>
 </section>
 
-{#if latlng}
+{#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
     {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
       <Map center={latlng} zoom={14}>
         <TileLayer
-          urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+          urlTemplate={$serverConfig.mapTileUrl}
           options={{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           }}
         />
-        <Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+        <Marker {latlng}>
+          <p>
+            {lat}, {lng}
+          </p>
+          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+            Open in OpenStreetMap
+          </a>
+        </Marker>
       </Map>
     {/await}
   </div>
 {/if}
 
-<section class="p-2 dark:text-immich-dark-fg">
-  <div class="px-4 py-4">
-    {#if albums.length > 0}
-      <p class="pb-4 text-sm">APPEARS IN</p>
-    {/if}
+{#if asset.owner && !isOwner}
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+    <p class="text-sm">SHARED BY</p>
+    <div class="flex gap-4 pt-4">
+      <div>
+        <UserAvatar user={asset.owner} size="md" autoColor />
+      </div>
+
+      <div class="mb-auto mt-auto">
+        <p>
+          {asset.owner.firstName}
+          {asset.owner.lastName}
+        </p>
+      </div>
+    </div>
+  </section>
+{/if}
+
+{#if albums.length > 0}
+  <section class="p-6 dark:text-immich-dark-fg">
+    <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -297,5 +365,5 @@
         </div>
       </a>
     {/each}
-  </div>
-</section>
+  </section>
+{/if}

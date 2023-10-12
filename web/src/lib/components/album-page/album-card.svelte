@@ -6,12 +6,14 @@
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import type { OnClick, OnShowContextMenu } from './album-card';
+  import { getContextMenuPosition } from '../../utils/context-menu';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
   export let user: UserResponseDto;
   export let showItemCount = true;
   export let showContextMenu = true;
+  let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
     ? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
@@ -40,12 +42,8 @@
     }
   };
 
-  const showAlbumContextMenu = (e: MouseEvent) => {
-    dispatchShowContextMenu('showalbumcontextmenu', {
-      x: e.clientX,
-      y: e.clientY,
-    });
-  };
+  const showAlbumContextMenu = (e: MouseEvent) =>
+    dispatchShowContextMenu('showalbumcontextmenu', getContextMenuPosition(e));
 
   onMount(async () => {
     imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
@@ -63,6 +61,8 @@
   class="group relative mt-4 rounded-3xl border-[3px] border-transparent p-5 hover:cursor-pointer hover:border-immich-primary/75 dark:hover:border-immich-dark-primary/75"
   on:click={() => dispatchClick('click', album)}
   on:keydown={() => dispatchClick('click', album)}
+  on:mouseenter={() => (showVerticalDots = true)}
+  on:mouseleave={() => (showVerticalDots = false)}
   data-testid="album-card"
 >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -71,10 +71,11 @@
       id={`icon-${album.id}`}
       class="absolute right-6 top-6 z-10"
       on:click|stopPropagation|preventDefault={showAlbumContextMenu}
+      class:hidden={!showVerticalDots}
       data-testid="context-button-parent"
     >
-      <IconButton color="overlay-primary">
-        <DotsVertical size="20" />
+      <IconButton color="transparent-primary">
+        <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
       </IconButton>
     </div>
   {/if}
@@ -96,7 +97,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full truncate text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
+      class="w-full truncate text-lg font-semibold text-immich-primary dark:text-immich-dark-primary"
       data-testid="album-name"
       title={album.albumName}
     >

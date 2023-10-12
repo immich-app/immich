@@ -1,24 +1,26 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { AssetJobName, AssetResponseDto, AssetTypeEnum, api } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+  import AlertOutline from 'svelte-material-icons/AlertOutline.svelte';
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import Heart from 'svelte-material-icons/Heart.svelte';
   import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
   import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-  import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
   import MagnifyMinusOutline from 'svelte-material-icons/MagnifyMinusOutline.svelte';
+  import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
   import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -26,10 +28,11 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
+  export let showSlideshow = false;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob';
+  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -44,13 +47,14 @@
     addToSharedAlbum: void;
     asProfileImage: void;
     runJob: AssetJobName;
+    playSlideShow: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
 
-  const showOptionsMenu = ({ x, y }: MouseEvent) => {
-    contextMenuPosition = { x, y };
+  const showOptionsMenu = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-right');
     isShowAssetOptions = !isShowAssetOptions;
   };
 
@@ -72,6 +76,14 @@
     <CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+    {#if asset.isOffline}
+      <CircleIconButton
+        isOpacity={true}
+        logo={AlertOutline}
+        on:click={() => dispatch('showDetail')}
+        title="Asset Offline"
+      />
+    {/if}
     {#if showMotionPlayButton}
       {#if isMotionPhotoPlaying}
         <CircleIconButton
@@ -132,11 +144,16 @@
     {/if}
 
     {#if isOwner}
-      <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+      {#if !asset.isReadOnly || !asset.isExternal}
+        <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+      {/if}
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
         <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
+            {#if showSlideshow}
+              <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+            {/if}
             <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
             <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
 

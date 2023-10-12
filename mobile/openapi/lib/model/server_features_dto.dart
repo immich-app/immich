@@ -13,14 +13,27 @@ part of openapi.api;
 class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
-    required this.machineLearning,
+    required this.clipEncode,
+    required this.configFile,
+    required this.facialRecognition,
+    required this.map,
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
+    required this.reverseGeocoding,
     required this.search,
+    required this.sidecar,
+    required this.tagImage,
+    required this.trash,
   });
 
-  bool machineLearning;
+  bool clipEncode;
+
+  bool configFile;
+
+  bool facialRecognition;
+
+  bool map;
 
   bool oauth;
 
@@ -28,35 +41,64 @@ class ServerFeaturesDto {
 
   bool passwordLogin;
 
+  bool reverseGeocoding;
+
   bool search;
+
+  bool sidecar;
+
+  bool tagImage;
+
+  bool trash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
-     other.machineLearning == machineLearning &&
+     other.clipEncode == clipEncode &&
+     other.configFile == configFile &&
+     other.facialRecognition == facialRecognition &&
+     other.map == map &&
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
-     other.search == search;
+     other.reverseGeocoding == reverseGeocoding &&
+     other.search == search &&
+     other.sidecar == sidecar &&
+     other.tagImage == tagImage &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (machineLearning.hashCode) +
+    (clipEncode.hashCode) +
+    (configFile.hashCode) +
+    (facialRecognition.hashCode) +
+    (map.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
-    (search.hashCode);
+    (reverseGeocoding.hashCode) +
+    (search.hashCode) +
+    (sidecar.hashCode) +
+    (tagImage.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[machineLearning=$machineLearning, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, search=$search]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, tagImage=$tagImage, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'machineLearning'] = this.machineLearning;
+      json[r'clipEncode'] = this.clipEncode;
+      json[r'configFile'] = this.configFile;
+      json[r'facialRecognition'] = this.facialRecognition;
+      json[r'map'] = this.map;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
+      json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'search'] = this.search;
+      json[r'sidecar'] = this.sidecar;
+      json[r'tagImage'] = this.tagImage;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -68,11 +110,18 @@ class ServerFeaturesDto {
       final json = value.cast<String, dynamic>();
 
       return ServerFeaturesDto(
-        machineLearning: mapValueOfType<bool>(json, r'machineLearning')!,
+        clipEncode: mapValueOfType<bool>(json, r'clipEncode')!,
+        configFile: mapValueOfType<bool>(json, r'configFile')!,
+        facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
+        map: mapValueOfType<bool>(json, r'map')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
+        reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
         search: mapValueOfType<bool>(json, r'search')!,
+        sidecar: mapValueOfType<bool>(json, r'sidecar')!,
+        tagImage: mapValueOfType<bool>(json, r'tagImage')!,
+        trash: mapValueOfType<bool>(json, r'trash')!,
       );
     }
     return null;
@@ -120,11 +169,18 @@ class ServerFeaturesDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'machineLearning',
+    'clipEncode',
+    'configFile',
+    'facialRecognition',
+    'map',
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',
+    'reverseGeocoding',
     'search',
+    'sidecar',
+    'tagImage',
+    'trash',
   };
 }
 

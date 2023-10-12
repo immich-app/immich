@@ -16,19 +16,27 @@
   import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-
+  import Pause from 'svelte-material-icons/Pause.svelte';
+  import Play from 'svelte-material-icons/Play.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import Close from 'svelte-material-icons/Close.svelte';
+
+  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
-  export let publicSharedKey = '';
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  $: isTrashEnabled = $featureFlags.trash;
+  export let force = false;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -46,14 +54,17 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let canCopyImagesToClipboard: boolean;
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
+
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
-    getAllAlbums();
+    if (!sharedLink) {
+      await getAllAlbums();
+    }
 
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
@@ -67,9 +78,13 @@
     }
   });
 
-  $: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+  $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
 
   const getAllAlbums = async () => {
+    if (api.isSharedLink) {
+      return;
+    }
+
     try {
       const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
       appearsInAlbums = data;
@@ -78,11 +93,20 @@
     }
   };
 
-  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
+
+    const key = event.key;
+    const shiftKey = event.shiftKey;
+
     switch (key) {
       case 'a':
       case 'A':
-        if (shiftKey) toggleArchive();
+        if (shiftKey) {
+          toggleArchive();
+        }
         return;
       case 'ArrowLeft':
         navigateAssetBackward();
@@ -92,12 +116,18 @@
         return;
       case 'd':
       case 'D':
-        if (shiftKey) downloadFile(asset, publicSharedKey);
+        if (shiftKey) {
+          downloadFile(asset);
+        }
         return;
       case 'Delete':
-        isShowDeleteConfirmation = true;
+        trashOrDelete();
         return;
       case 'Escape':
+        if (isShowDeleteConfirmation) {
+          isShowDeleteConfirmation = false;
+          return;
+        }
         closeViewer();
         return;
       case 'f':
@@ -116,12 +146,25 @@
 
   const closeViewer = () => dispatch('close');
 
-  const navigateAssetForward = (e?: Event) => {
+  const navigateAssetForward = async (e?: Event) => {
+    if (isSlideshowMode && assetStore && progressBar) {
+      const hasNext = await assetStore.getNextAssetId(asset.id);
+      if (hasNext) {
+        progressBar.restart(true);
+      } else {
+        await handleStopSlideshow();
+      }
+    }
+
     e?.stopPropagation();
     dispatch('next');
   };
 
   const navigateAssetBackward = (e?: Event) => {
+    if (isSlideshowMode && progressBar) {
+      progressBar.restart(true);
+    }
+
     e?.stopPropagation();
     dispatch('previous');
   };
@@ -130,27 +173,43 @@
     $isShowDetail = !$isShowDetail;
   };
 
+  $: trashOrDelete = !(force || !isTrashEnabled)
+    ? trashAsset
+    : () => {
+        isShowDeleteConfirmation = true;
+      };
+
+  const trashAsset = async () => {
+    try {
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
+
+      await navigateAssetForward();
+
+      assetStore?.removeAsset(asset.id);
+
+      notificationController.show({
+        message: 'Moved to trash',
+        type: NotificationType.Info,
+      });
+    } catch (e) {
+      handleError(e, 'Unable to trash asset');
+    }
+  };
+
   const deleteAsset = async () => {
     try {
-      const { data: deletedAssets } = await api.assetApi.deleteAsset({
-        deleteAssetDto: {
-          ids: [asset.id],
-        },
-      });
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
 
-      navigateAssetForward();
+      await navigateAssetForward();
 
-      for (const asset of deletedAssets) {
-        if (asset.status == 'SUCCESS') {
-          assetStore?.removeAsset(asset.id);
-        }
-      }
-    } catch (e) {
+      assetStore?.removeAsset(asset.id);
+
       notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error deleting this asset, check console for more details',
+        message: 'Permanently deleted asset',
+        type: NotificationType.Info,
       });
-      console.error('Error deleteAsset', e);
+    } catch (e) {
+      handleError(e, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -174,7 +233,7 @@
         message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
     }
   };
 
@@ -231,7 +290,7 @@
         message: asset.isArchived ? `Added to archive` : `Removed from archive`,
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
     }
   };
 
@@ -251,7 +310,49 @@
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
     } catch (error) {
-      handleError(error, `Unable to submit job`);
+      await handleError(error, `Unable to submit job`);
+    }
+  };
+
+  /**
+   * Slide show mode
+   */
+
+  let isSlideshowMode = false;
+  let assetViewerHtmlElement: HTMLElement;
+  let progressBar: ProgressBar;
+  let progressBarStatus: ProgressBarStatus;
+
+  const handleVideoStarted = () => {
+    if (isSlideshowMode) {
+      progressBar.restart(false);
+    }
+  };
+
+  const handleVideoEnded = async () => {
+    if (isSlideshowMode) {
+      await navigateAssetForward();
+    }
+  };
+
+  const handlePlaySlideshow = async () => {
+    try {
+      await assetViewerHtmlElement.requestFullscreen();
+    } catch (error) {
+      console.error('Error entering fullscreen', error);
+    } finally {
+      isSlideshowMode = true;
+    }
+  };
+
+  const handleStopSlideshow = async () => {
+    try {
+      await document.exitFullscreen();
+    } catch (error) {
+      console.error('Error exiting fullscreen', error);
+    } finally {
+      isSlideshowMode = false;
+      progressBar.restart(false);
     }
   };
 </script>
@@ -259,31 +360,57 @@
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  bind:this={assetViewerHtmlElement}
 >
   <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    <AssetViewerNavBar
-      {asset}
-      isMotionPhotoPlaying={shouldPlayMotionPhoto}
-      showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-      showZoomButton={asset.type === AssetTypeEnum.Image}
-      showMotionPlayButton={!!asset.livePhotoVideoId}
-      showDownloadButton={shouldShowDownloadButton}
-      on:goBack={closeViewer}
-      on:showDetail={showDetailInfoHandler}
-      on:download={() => downloadFile(asset, publicSharedKey)}
-      on:delete={() => (isShowDeleteConfirmation = true)}
-      on:favorite={toggleFavorite}
-      on:addToAlbum={() => openAlbumPicker(false)}
-      on:addToSharedAlbum={() => openAlbumPicker(true)}
-      on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-      on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-      on:toggleArchive={toggleArchive}
-      on:asProfileImage={() => (isShowProfileImageCrop = true)}
-      on:runJob={({ detail: job }) => handleRunJob(job)}
-    />
+    {#if isSlideshowMode}
+      <!-- SlideShowController -->
+      <div class="flex">
+        <div class="m-4 flex gap-2">
+          <CircleIconButton logo={Close} on:click={handleStopSlideshow} title="Exit Slideshow" />
+          <CircleIconButton
+            logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
+            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
+            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
+          />
+          <CircleIconButton logo={ChevronLeft} on:click={navigateAssetBackward} title="Previous" />
+          <CircleIconButton logo={ChevronRight} on:click={navigateAssetForward} title="Next" />
+        </div>
+        <ProgressBar
+          autoplay
+          bind:this={progressBar}
+          bind:status={progressBarStatus}
+          on:done={navigateAssetForward}
+          duration={5000}
+        />
+      </div>
+    {:else}
+      <AssetViewerNavBar
+        {asset}
+        isMotionPhotoPlaying={shouldPlayMotionPhoto}
+        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+        showZoomButton={asset.type === AssetTypeEnum.Image}
+        showMotionPlayButton={!!asset.livePhotoVideoId}
+        showDownloadButton={shouldShowDownloadButton}
+        showSlideshow={!!assetStore}
+        on:goBack={closeViewer}
+        on:showDetail={showDetailInfoHandler}
+        on:download={() => downloadFile(asset)}
+        on:delete={trashOrDelete}
+        on:favorite={toggleFavorite}
+        on:addToAlbum={() => openAlbumPicker(false)}
+        on:addToSharedAlbum={() => openAlbumPicker(true)}
+        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+        on:toggleArchive={toggleArchive}
+        on:asProfileImage={() => (isShowProfileImageCrop = true)}
+        on:runJob={({ detail: job }) => handleRunJob(job)}
+        on:playSlideShow={handlePlaySlideshow}
+      />
+    {/if}
   </div>
 
-  {#if showNavigation}
+  {#if !isSlideshowMode && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
     </div>
@@ -302,7 +429,6 @@
       {:else if asset.type === AssetTypeEnum.Image}
         {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
           <VideoViewer
-            {publicSharedKey}
             assetId={asset.livePhotoVideoId}
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
@@ -310,23 +436,28 @@
         {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
             .toLowerCase()
             .endsWith('.insp')}
-          <PanoramaViewer {publicSharedKey} {asset} />
+          <PanoramaViewer {asset} />
         {:else}
-          <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
+          <PhotoViewer {asset} on:close={closeViewer} />
         {/if}
       {:else}
-        <VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
+        <VideoViewer
+          assetId={asset.id}
+          on:close={closeViewer}
+          on:onVideoEnded={handleVideoEnded}
+          on:onVideoStarted={handleVideoStarted}
+        />
       {/if}
     {/key}
   </div>
 
-  {#if showNavigation}
+  {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
     </div>
   {/if}
 
-  {#if $isShowDetail}
+  {#if !isSlideshowMode && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"

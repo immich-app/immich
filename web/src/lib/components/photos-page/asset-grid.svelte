@@ -17,13 +17,16 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
-  export let publicSharedKey: string | undefined = undefined;
+  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
+  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -31,14 +34,17 @@
   let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
   let element: HTMLElement;
   let showShortcuts = false;
+  let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-  const dispatch = createEventDispatcher<{ select: AssetResponseDto }>();
+  const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   onMount(async () => {
+    showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
+    assetStore.connect();
     await assetStore.init(viewport);
   });
 
@@ -50,17 +56,19 @@
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
+
+    assetStore.disconnect();
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
 
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
-          assetInteractionStore.clearMultiselect();
+          dispatch('escape');
           return;
         case '?':
           if (event.shiftKey) {
@@ -323,8 +331,25 @@
   bind:this={element}
   on:scroll={handleTimelineScroll}
 >
+  <!-- skeleton -->
+  {#if showSkeleton}
+    <div class="mt-8 animate-pulse">
+      <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+      <div class="flex w-[120%] flex-wrap">
+        {#each Array(100) as _}
+          <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   {#if element}
     <slot />
+
+    <!-- (optional) empty placeholder -->
+    {#if $assetStore.initialized && $assetStore.buckets.length === 0}
+      <slot name="empty" />
+    {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
       {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver
@@ -350,7 +375,6 @@
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}
                 {viewport}
-                {publicSharedKey}
               />
             {/if}
           </div>
@@ -365,6 +389,7 @@
     <AssetViewer
       {assetStore}
       asset={$viewingAsset}
+      force={forceDelete || !isTrashEnabled}
       on:previous={() => handlePrevious()}
       on:next={() => handleNext()}
       on:close={() => handleClose()}

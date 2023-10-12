@@ -30,9 +30,9 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
         backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
     AuthenticationState authState = ref.watch(authenticationProvider);
-    final user = Store.get(StoreKey.currentUser);
+    final user = Store.tryGet(StoreKey.currentUser);
     buildProfilePhoto() {
-      if (authState.profileImagePath.isEmpty) {
+      if (authState.profileImagePath.isEmpty || user == null) {
         return IconButton(
           splashRadius: 25,
           icon: const Icon(

@@ -7,17 +7,20 @@ String getThumbnailUrl(
   final Asset asset, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  return _getThumbnailUrl(asset.remoteId!, type: type);
+  return getThumbnailUrlForRemoteId(asset.remoteId!, type: type);
 }
 
 String getThumbnailCacheKey(
   final Asset asset, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  return _getThumbnailCacheKey(asset.remoteId!, type);
+  return getThumbnailCacheKeyForRemoteId(asset.remoteId!, type: type);
 }
 
-String _getThumbnailCacheKey(final String id, final ThumbnailFormat type) {
+String getThumbnailCacheKeyForRemoteId(
+  final String id, {
+  ThumbnailFormat type = ThumbnailFormat.WEBP,
+}) {
   if (type == ThumbnailFormat.WEBP) {
     return 'thumbnail-image-$id';
   } else {
@@ -32,7 +35,8 @@ String getAlbumThumbnailUrl(
   if (album.thumbnail.value?.remoteId == null) {
     return '';
   }
-  return _getThumbnailUrl(album.thumbnail.value!.remoteId!, type: type);
+  return getThumbnailUrlForRemoteId(album.thumbnail.value!.remoteId!,
+      type: type,);
 }
 
 String getAlbumThumbNailCacheKey(
@@ -42,7 +46,10 @@ String getAlbumThumbNailCacheKey(
   if (album.thumbnail.value?.remoteId == null) {
     return '';
   }
-  return _getThumbnailCacheKey(album.thumbnail.value!.remoteId!, type);
+  return getThumbnailCacheKeyForRemoteId(
+    album.thumbnail.value!.remoteId!,
+    type: type,
+  );
 }
 
 String getImageUrl(final Asset asset) {
@@ -53,7 +60,7 @@ String getImageCacheKey(final Asset asset) {
   return '${asset.id}_fullStage';
 }
 
-String _getThumbnailUrl(
+String getThumbnailUrlForRemoteId(
   final String id, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {

@@ -113,7 +113,17 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.delete(StoreKey.accessToken),
       ]);
 
-      state = state.copyWith(isAuthenticated: false);
+      state = state.copyWith(
+        deviceId: "",
+        userId: "",
+        userEmail: "",
+        firstName: '',
+        lastName: '',
+        profileImagePath: '',
+        isAdmin: false,
+        shouldChangePassword: false,
+        isAuthenticated: false,
+      );
     } catch (e) {
       log.severe("Error logging out $e");
     }

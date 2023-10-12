@@ -3,22 +3,24 @@ import { downloadManager } from '$lib/stores/download';
 import { api, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto, DownloadInfoDto } from '@api';
 import { handleError } from './handle-error';
 
-export const addAssetsToAlbum = async (
-  albumId: string,
-  assetIds: Array<string>,
-  key: string | undefined = undefined,
-): Promise<BulkIdResponseDto[]> =>
-  api.albumApi.addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetIds }, key }).then(({ data: results }) => {
-    const count = results.filter(({ success }) => success).length;
-    notificationController.show({
-      type: NotificationType.Info,
-      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
+  api.albumApi
+    .addAssetsToAlbum({
+      id: albumId,
+      bulkIdsDto: { ids: assetIds },
+      key: api.getKey(),
+    })
+    .then(({ data: results }) => {
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+      });
+
+      return results;
     });
 
-    return results;
-  });
-
-const downloadBlob = (data: Blob, filename: string) => {
+export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
 
   const anchor = document.createElement('a');
@@ -32,11 +34,11 @@ const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export const downloadArchive = async (fileName: string, options: DownloadInfoDto, key?: string) => {
+export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key });
+    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
@@ -61,7 +63,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 
     try {
       const { data } = await api.assetApi.downloadArchive(
-        { assetIdsDto: { assetIds: archive.assetIds }, key },
+        { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
         {
           responseType: 'blob',
           signal: abort.signal,
@@ -80,7 +82,14 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   }
 };
 
-export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
+export const downloadFile = async (asset: AssetResponseDto) => {
+  if (asset.isOffline) {
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Asset ${asset.originalFileName} is offline`,
+    });
+    return;
+  }
   const assets = [
     {
       filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
@@ -104,7 +113,7 @@ export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
       downloadManager.add(downloadKey, size, abort);
 
       const { data } = await api.assetApi.downloadFile(
-        { id, key },
+        { id, key: api.getKey() },
         {
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {
@@ -150,11 +159,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation == 6 || orientation == 90;
+  return orientation === 5 || orientation === 6 || orientation === 90;
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation == 8 || orientation == -90;
+  return orientation === 7 || orientation === 8 || orientation === -90;
 }
 
 /**
@@ -170,4 +179,16 @@ export function getAssetRatio(asset: AssetResponseDto) {
     }
   }
   return { width, height };
+}
+
+// list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
+const supportedImageExtensions = new Set(['apng', 'avif', 'gif', 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'webp']);
+
+/**
+ * Returns true if the asset is an image supported by web browsers, false otherwise
+ */
+export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
+  const imgExtension = getFilenameExtension(asset.originalPath);
+
+  return supportedImageExtensions.has(imgExtension);
 }

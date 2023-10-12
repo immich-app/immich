@@ -132,7 +132,6 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 
 IMMICH_WEB_URL=http://immich-web:3000
 IMMICH_SERVER_URL=http://immich-server:3001
-IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 
 ####################################################################################
 # Alternative API's External Address - Optional

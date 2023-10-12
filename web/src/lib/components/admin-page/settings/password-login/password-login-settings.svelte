@@ -12,6 +12,7 @@
   import SettingSwitch from '../setting-switch.svelte';
 
   export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigPasswordLoginDto;
   let defaultConfig: SystemConfigPasswordLoginDto;
@@ -100,6 +101,7 @@
           <div class="ml-4">
             <SettingSwitch
               title="ENABLED"
+              {disabled}
               subtitle="Login with email and password"
               bind:checked={passwordLoginConfig.enabled}
             />
@@ -109,6 +111,7 @@
               on:save={saveSetting}
               on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+              {disabled}
             />
           </div>
         </div>

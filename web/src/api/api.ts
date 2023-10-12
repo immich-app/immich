@@ -1,5 +1,6 @@
 import {
   AlbumApi,
+  LibraryApi,
   APIKeyApi,
   AssetApi,
   AssetApiFp,
@@ -25,6 +26,7 @@ import type { ApiParams } from './types';
 
 export class ImmichApi {
   public albumApi: AlbumApi;
+  public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public authenticationApi: AuthenticationApi;
   public jobApi: JobApi;
@@ -39,11 +41,17 @@ export class ImmichApi {
   public userApi: UserApi;
 
   private config: Configuration;
+  private key?: string;
+
+  get isSharedLink() {
+    return !!this.key;
+  }
 
   constructor(params: ConfigurationParameters) {
     this.config = new Configuration(params);
 
     this.albumApi = new AlbumApi(this.config);
+    this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
     this.jobApi = new JobApi(this.config);
@@ -73,6 +81,14 @@ export class ImmichApi {
     return (this.config.basePath || BASE_PATH) + toPathString(url);
   }
 
+  public setKey(key: string) {
+    this.key = key;
+  }
+
+  public getKey(): string | undefined {
+    return this.key;
+  }
+
   public setAccessToken(accessToken: string) {
     this.config.accessToken = accessToken;
   }
@@ -85,14 +101,14 @@ export class ImmichApi {
     this.config.basePath = baseUrl;
   }
 
-  public getAssetFileUrl(...[assetId, isThumb, isWeb, key]: ApiParams<typeof AssetApiFp, 'serveFile'>) {
+  public getAssetFileUrl(...[assetId, isThumb, isWeb]: ApiParams<typeof AssetApiFp, 'serveFile'>) {
     const path = `/asset/file/${assetId}`;
-    return this.createUrl(path, { isThumb, isWeb, key });
+    return this.createUrl(path, { isThumb, isWeb, key: this.getKey() });
   }
 
-  public getAssetThumbnailUrl(...[assetId, format, key]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>) {
+  public getAssetThumbnailUrl(...[assetId, format]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>) {
     const path = `/asset/thumbnail/${assetId}`;
-    return this.createUrl(path, { format, key });
+    return this.createUrl(path, { format, key: this.getKey() });
   }
 
   public getProfileImageUrl(...[userId]: ApiParams<typeof UserApiFp, 'getProfileImage'>) {
@@ -115,8 +131,10 @@ export class ImmichApi {
       [JobName.RecognizeFaces]: 'Recognize Faces',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
+      [JobName.Migration]: 'Migration',
       [JobName.BackgroundTask]: 'Background Tasks',
       [JobName.Search]: 'Search',
+      [JobName.Library]: 'Library',
     };
 
     return names[jobName];

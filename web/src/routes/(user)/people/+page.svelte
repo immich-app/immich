@@ -21,6 +21,7 @@
   import { browser } from '$app/environment';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let data: PageData;
   let selectHidden = false;
@@ -41,6 +42,7 @@
   let personName = '';
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
+  let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
 
   people.forEach((person: PersonResponseDto) => {
@@ -60,6 +62,9 @@
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     switch (event.key) {
       case 'Escape':
         handleCloseClick();
@@ -240,17 +245,24 @@
   };
 
   const handleMergeFaces = (detail: PersonResponseDto) => {
-    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge`);
+    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
   };
 
   const submitNameChange = async () => {
+    potentialMergePeople = [];
     showChangeNameModal = false;
     if (!edittingPerson || personName === edittingPerson.name) {
       return;
     }
+    if (personName === '') {
+      changeName();
+      return;
+    }
+    const { data } = await api.searchApi.searchPerson({ name: personName });
+
     // We check if another person has the same name as the name entered by the user
 
-    const existingPerson = people.find(
+    const existingPerson = data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() &&
         edittingPerson &&
@@ -260,6 +272,15 @@
     if (existingPerson) {
       personMerge2 = existingPerson;
       showMergeModal = true;
+      potentialMergePeople = people
+        .filter(
+          (person: PersonResponseDto) =>
+            personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
+            person.id !== personMerge2.id &&
+            person.id !== personMerge1.id &&
+            !person.isHidden,
+        )
+        .slice(0, 3);
       return;
     }
     changeName();
@@ -328,7 +349,7 @@
     <MergeSuggestionModal
       {personMerge1}
       {personMerge2}
-      {people}
+      {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
       on:reject={() => changeName()}
       on:confirm={(event) => handleMergeSameFace(event.detail)}

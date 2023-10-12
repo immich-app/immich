@@ -3,6 +3,8 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import type { AxiosError, AxiosResponse } from 'axios';
 import { ImmichApi } from './api/api';
 
+const LOG_PREFIX = '[hooks.server.ts]';
+
 export const handle = (async ({ event, resolve }) => {
   const basePath = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
   const accessToken = event.cookies.get('immich_access_token');
@@ -16,11 +18,14 @@ export const handle = (async ({ event, resolve }) => {
       const { data: user } = await api.userApi.getMyUserInfo();
       event.locals.user = user;
     } catch (err) {
-      const apiError = err as AxiosError;
+      console.log(`${LOG_PREFIX} Unable to get my user`, parseError(err));
 
+      const apiError = err as AxiosError;
       // Ignore 401 unauthorized errors and log all others.
-      if (apiError.response?.status !== 401) {
-        console.error('[ERROR] hooks.server.ts [handle]:', err);
+      if (apiError.response?.status && apiError.response?.status !== 401) {
+        console.error(`${LOG_PREFIX}:handle`, err);
+      } else if (!apiError.response?.status) {
+        console.error(`${LOG_PREFIX}:handle`, apiError?.message);
       }
     }
   }
@@ -36,8 +41,9 @@ export const handle = (async ({ event, resolve }) => {
 
 const DEFAULT_MESSAGE = 'Hmm, not sure about that. Check the logs or open a ticket?';
 
-export const handleError: HandleServerError = async ({ error }) => {
+const parseError = (error: unknown) => {
   const httpError = error as AxiosError;
+  const request = httpError?.request as Request & { path: string };
   const response = httpError?.response as AxiosResponse<{
     message: string;
     statusCode: number;
@@ -49,9 +55,23 @@ export const handleError: HandleServerError = async ({ error }) => {
     code += ` - ${response.data?.error || response.statusText}`;
   }
 
+  if (request && response) {
+    console.log({
+      status: response.status,
+      url: `${request.method} ${request.path}`,
+      response: response.data || 'No data',
+    });
+  }
+
   return {
     message: response?.data?.message || httpError?.message || DEFAULT_MESSAGE,
     code,
     stack: httpError?.stack,
   };
+};
+
+export const handleError: HandleServerError = ({ error }) => {
+  const result = parseError(error);
+  console.error(`${LOG_PREFIX}:handleError ${result.message}`);
+  return result;
 };

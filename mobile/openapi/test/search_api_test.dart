@@ -22,13 +22,13 @@ void main() {
       // TODO
     });
 
-    //Future<SearchConfigResponseDto> getSearchConfig() async
-    test('test getSearchConfig', () async {
+    //Future<SearchResponseDto> search({ String q, String query, bool clip, String type, bool isFavorite, bool isArchived, String exifInfoPeriodCity, String exifInfoPeriodState, String exifInfoPeriodCountry, String exifInfoPeriodMake, String exifInfoPeriodModel, String exifInfoPeriodProjectionType, List<String> smartInfoPeriodObjects, List<String> smartInfoPeriodTags, bool recent, bool motion }) async
+    test('test search', () async {
       // TODO
     });
 
-    //Future<SearchResponseDto> search({ String q, String query, bool clip, String type, bool isFavorite, bool isArchived, String exifInfoPeriodCity, String exifInfoPeriodState, String exifInfoPeriodCountry, String exifInfoPeriodMake, String exifInfoPeriodModel, String exifInfoPeriodProjectionType, List<String> smartInfoPeriodObjects, List<String> smartInfoPeriodTags, bool recent, bool motion }) async
-    test('test search', () async {
+    //Future<List<PersonResponseDto>> searchPerson(String name) async
+    test('test searchPerson', () async {
       // TODO
     });
 

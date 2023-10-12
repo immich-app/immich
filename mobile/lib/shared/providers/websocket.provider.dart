@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -92,6 +93,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         });
 
         socket.on('on_upload_success', _handleOnUploadSuccess);
+        socket.on('on_config_update', _handleOnConfigUpdate);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -125,6 +127,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       final newAsset = Asset.remote(dto);
       ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
     }
+  }
+
+  _handleOnConfigUpdate(dynamic data) {
+    ref.read(serverInfoProvider.notifier).getServerFeatures();
+    ref.read(serverInfoProvider.notifier).getServerConfig();
   }
 }
 

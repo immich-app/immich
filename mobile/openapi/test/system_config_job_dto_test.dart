@@ -26,8 +26,18 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto library_
+    test('to test the property `library_`', () async {
+      // TODO
+    });
+
     // JobSettingsDto metadataExtraction
     test('to test the property `metadataExtraction`', () async {
+      // TODO
+    });
+
+    // JobSettingsDto migration
+    test('to test the property `migration`', () async {
       // TODO
     });
 

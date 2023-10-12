@@ -16,20 +16,53 @@ To run a command, [connect](/docs/guides/docker-help.md#attach-to-a-container) t
 
 ## Examples
 
-Note that the commands below should begin with `immich-admin`.
-
 Reset Admin Password
 
-![Reset Admin Password](./img/reset-admin-password.png)
+```
+immich-admin reset-admin-password
+Found Admin:
+- ID=e65e6f88-2a30-4dbe-8dd9-1885f4889b53
+- OAuth ID=
+- Email=admin@example.com
+- Name=Immich Admin
+? Please choose a new password (optional) immich-is-cool
+The admin password has been updated.
+```
 
 Disable Password Login
 
-![Disable Password Login](./img/disable-password-login.png)
+```
+immich-admin disable-password-login
+Password login has been disabled.
+```
 
 Enabled Password Login
 
-![Enable Password Login](./img/enable-password-login.png)
+```
+immich-admin enable-password-login
+Password login has been enabled.
+```
 
 List Users
 
-![List Users](./img/list-users.png)
+```
+immich-admin list-users
+[
+  {
+    id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',
+    email: 'immich@example.com.com',
+    firstName: 'Immich',
+    lastName: 'Admin',
+    storageLabel: 'admin',
+    externalPath: null,
+    profileImagePath: 'upload/profile/e65e6f88-2a30-4dbe-8dd9-1885f4889b53/e65e6f88-2a30-4dbe-8dd9-1885f4889b53.jpg',
+    shouldChangePassword: true,
+    isAdmin: true,
+    createdAt: 2023-07-11T20:12:20.602Z,
+    deletedAt: null,
+    updatedAt: 2023-09-21T15:42:28.129Z,
+    oauthId: '',
+    memoriesEnabled: true
+  }
+]
+```

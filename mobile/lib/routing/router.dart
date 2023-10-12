@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
+import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/views/memory_page.dart';
 import 'package:immich_mobile/modules/partner/views/partner_detail_page.dart';
@@ -27,6 +28,7 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/trash/views/trash_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
@@ -124,7 +126,6 @@ part 'router.gr.dart';
     AutoRoute(
       page: SettingsPage,
       guards: [
-        AuthGuard,
         DuplicateGuard,
       ],
     ),
@@ -153,7 +154,9 @@ part 'router.gr.dart';
     ),
     AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: MemoryPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: MapPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: TrashPage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {

@@ -21,6 +21,7 @@ export const locale = persisted<string | undefined>('locale', undefined, {
 
 export interface MapSettings {
   allowDarkMode: boolean;
+  includeArchived: boolean;
   onlyFavorites: boolean;
   relativeDate: string;
   dateAfter: string;
@@ -29,6 +30,7 @@ export interface MapSettings {
 
 export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
+  includeArchived: false,
   onlyFavorites: false,
   relativeDate: '',
   dateAfter: '',
@@ -41,8 +43,17 @@ export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
   sortBy: string;
+  sortDesc: boolean;
   view: string;
 }
+
+export interface SidebarSettings {
+  people: boolean;
+}
+
+export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings', {
+  people: false,
+});
 
 export enum AlbumViewMode {
   Cover = 'Cover',
@@ -51,5 +62,6 @@ export enum AlbumViewMode {
 
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
+  sortDesc: true,
   view: AlbumViewMode.Cover,
 });

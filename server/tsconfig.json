@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "Node16",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -15,6 +15,7 @@
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "preserveWatchOutput": true,
     "baseUrl": "./",
     "paths": {
       "@test": ["test"],

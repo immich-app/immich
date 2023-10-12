@@ -92,7 +92,7 @@
   "backup_controller_page_uploading_file_info": "Uploading file info",
   "backup_err_only_album": "ไม่สามารถนำอัลบั้มสุดท้ายออกได้",
   "backup_info_card_assets": "ทรัพยากร",
-  "backup_manual_cancelled": "Cancelled",
+  "backup_manual_cancelled": "ถูกยกเลิก",
   "backup_manual_failed": "ล้มเหลว",
   "backup_manual_in_progress": "อัปโหลดกำลังดำเนินการอยู่ โปรดลองใหม่ในสักพัก",
   "backup_manual_success": "สำเร็จ",

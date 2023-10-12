@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
 import { UserResponseDto } from '../index';
-import { IPartnerRepository, PartnerDirection } from './partner.repository';
+import { IPartnerRepository, PartnerDirection } from '../repositories';
 import { PartnerService } from './partner.service';
 
 const responseDto = {

@@ -1,12 +1,11 @@
 import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './shared-link-response.dto';
+import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
+import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithNoExif } from './shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto';
-import { ISharedLinkRepository } from './shared-link.repository';
 
 @Injectable()
 export class SharedLinkService {
@@ -65,7 +64,7 @@ export class SharedLinkService {
       userId: authUser.id,
       type: dto.type,
       albumId: dto.albumId || null,
-      assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
+      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       description: dto.description || null,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,

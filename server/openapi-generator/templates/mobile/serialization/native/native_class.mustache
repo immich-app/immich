@@ -204,6 +204,10 @@ class {{{classname}}} {
             ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
             : {{{datatypeWithEnum}}}.parse(json[r'{{{baseName}}}'].toString()),
               {{/isNumber}}
+              {{#isDouble}}
+        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(),
+              {{/isDouble}}
+              {{^isDouble}}
               {{^isNumber}}
                 {{^isEnum}}
         {{{name}}}: mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
@@ -212,6 +216,7 @@ class {{{classname}}} {
         {{{name}}}: {{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
                 {{/isEnum}}
               {{/isNumber}}
+              {{/isDouble}}
             {{/isMap}}
           {{/isArray}}
         {{/complexType}}

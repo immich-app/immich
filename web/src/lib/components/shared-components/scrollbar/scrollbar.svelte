@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AssetStore } from '$lib/stores/assets.store';
+  import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
 
   export let timelineY = 0;
@@ -59,7 +60,7 @@
 {#if $assetStore.timelineHeight > height}
   <div
     id="immich-scrubbable-scrollbar"
-    class="fixed right-0 z-[100] select-none bg-immich-bg hover:cursor-row-resize"
+    class="fixed right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
     style:width={isDragging ? '100vw' : '60px'}
     style:height={height + 'px'}
     style:background-color={isDragging ? 'transparent' : 'transparent'}
@@ -92,9 +93,9 @@
     {/if}
     <!-- Time Segment -->
     {#each segments as segment, index (segment.timeGroup)}
-      {@const date = new Date(segment.timeGroup)}
-      {@const year = date.getFullYear()}
-      {@const label = `${date.toLocaleString('default', { month: 'short' })} ${year}`}
+      {@const date = fromLocalDateTime(segment.timeGroup)}
+      {@const year = date.year}
+      {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
 
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div

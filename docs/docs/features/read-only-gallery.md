@@ -1,22 +1,16 @@
-# Read-only Gallery [Experimental]
+# Read-only Gallery [Deprecated]
+
+:::caution
+
+This feature is being deprecated in favor of [Libraries](/docs/features/libraries.md).
+
+:::
 
 ## Overview
 
 This feature enables users to use an existing gallery without uploading the assets to Immich.
 
 Upon syncing the file information, it will be read by Immich to generate supported files.
-
-:::caution
-
-This feature is still in an experimental stage. And this is an initial implementation and will receive improvements in the future.
-
-The current limitations of this feature are:
-
-- Assets are not automatically synced and must instead be manually synced with the CLI tool.
-- Only new files that are added to the gallery will be detected.
-- Deleted and moved files will not be detected.
-
-:::
 
 ## Usage
 

@@ -16,6 +16,7 @@
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let user: UserResponseDto;
+  export let disabled = false;
 
   let savedConfig: SystemConfigStorageTemplateDto;
   let defaultConfig: SystemConfigStorageTemplateDto;
@@ -57,11 +58,12 @@
       filetypefull: 'IMAGE',
     };
 
-    const dt = luxon.DateTime.fromISO(new Date('2022-09-04T20:03:05.250').toISOString());
+    const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
 
     const dateTokens = [
       ...templateOptions.yearOptions,
       ...templateOptions.monthOptions,
+      ...templateOptions.weekOptions,
       ...templateOptions.dayOptions,
       ...templateOptions.hourOptions,
       ...templateOptions.minuteOptions,
@@ -178,6 +180,7 @@
             <label class="text-xs" for="preset-select">PRESET</label>
             <select
               class="mt-2 rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
+              {disabled}
               name="presets"
               id="preset-select"
               bind:value={selectedPreset}
@@ -191,6 +194,7 @@
           <div class="flex gap-2 align-bottom">
             <SettingInputField
               label="TEMPLATE"
+              {disabled}
               required
               inputType={SettingInputFieldType.TEXT}
               bind:value={storageConfig.template}
@@ -216,6 +220,7 @@
             on:save={saveSetting}
             on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            {disabled}
           />
         </form>
       </div>

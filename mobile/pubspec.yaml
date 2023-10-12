@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.74.0+97
+version: 1.81.1+105
 isar_version: &isar_version 3.1.0+1
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  photo_manager: ^2.5.0
+  photo_manager: ^2.7.2
   flutter_hooks: ^0.18.6
   hooks_riverpod: ^2.2.0
   cached_network_image: ^3.2.2
@@ -26,6 +26,8 @@ dependencies:
   badges: ^2.0.2
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   flutter_map: ^4.0.0
+  flutter_map_heatmap: ^0.0.4
+  geolocator: ^10.0.0 # used to move to current location in map view
   flutter_udid: ^2.0.0
   package_info_plus: ^4.1.0
   url_launcher: ^6.1.3
@@ -57,6 +59,15 @@ dependencies:
   # easy to remove packages:
   image_picker: ^0.8.5+3 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
   logging: ^1.1.0
+
+# This is uncommented in F-Droid build script
+# Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
+#fdependency_overrides:
+#f  geolocator_android:
+#f    git:
+#f      url: https://github.com/Zverik/flutter-geolocator.git
+#f      ref: floss
+#f      path: geolocator_android
 
 dev_dependencies:
   flutter_test:

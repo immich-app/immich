@@ -1,13 +1,13 @@
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
+import { AssetCreate } from '@app/domain';
+import { AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not } from 'typeorm';
+import { MoreThan } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
@@ -22,11 +22,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity>;
-  remove(asset: AssetEntity): Promise<void>;
-  update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  create(asset: AssetCreate): Promise<AssetEntity>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -42,10 +38,7 @@ export const IAssetRepository = 'IAssetRepository';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-  ) {}
+  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository
@@ -112,10 +105,13 @@ export class AssetRepository implements IAssetRepository {
         tags: true,
         sharedLinks: true,
         smartInfo: true,
+        owner: true,
         faces: {
           person: true,
         },
       },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
     });
   }
 
@@ -127,10 +123,10 @@ export class AssetRepository implements IAssetRepository {
     return this.assetRepository.find({
       where: {
         ownerId,
-        resizePath: dto.withoutThumbs ? undefined : Not(IsNull()),
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,
+        updatedAt: dto.updatedAfter ? MoreThan(dto.updatedAfter) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -140,6 +136,7 @@ export class AssetRepository implements IAssetRepository {
       order: {
         fileCreatedAt: 'DESC',
       },
+      withDeleted: true,
     });
   }
 
@@ -150,52 +147,14 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        library: true,
       },
+      withDeleted: true,
     });
   }
 
-  create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
-  ): Promise<AssetEntity> {
+  create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
-  }
-
-  async remove(asset: AssetEntity): Promise<void> {
-    await this.assetRepository.remove(asset);
-  }
-
-  /**
-   * Update asset
-   */
-  async update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
-    asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
-    asset.isArchived = dto.isArchived ?? asset.isArchived;
-
-    if (asset.exifInfo != null) {
-      if (dto.description !== undefined) {
-        asset.exifInfo.description = dto.description;
-      }
-      await this.exifRepository.save(asset.exifInfo);
-    } else {
-      const exifInfo = new ExifEntity();
-      if (dto.description !== undefined) {
-        exifInfo.description = dto.description;
-      }
-      exifInfo.asset = asset;
-      await this.exifRepository.save(exifInfo);
-      asset.exifInfo = exifInfo;
-    }
-
-    await this.assetRepository.update(asset.id, {
-      isFavorite: asset.isFavorite,
-      isArchived: asset.isArchived,
-    });
-
-    return this.assetRepository.findOneOrFail({
-      where: {
-        id: asset.id,
-      },
-    });
   }
 
   /**
@@ -234,6 +193,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         checksum: In(checksums),
       },
+      withDeleted: true,
     });
   }
 

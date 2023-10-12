@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
@@ -18,11 +19,15 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
+import 'package:immich_mobile/shared/cache/original_image_provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
@@ -31,8 +36,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:openapi/api.dart' as api;
+import 'package:openapi/api.dart' show ThumbnailFormat;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -51,6 +55,9 @@ class GalleryViewerPage extends HookConsumerWidget {
 
   final PageController controller;
 
+  static const jpeg = ThumbnailFormat.JPEG;
+  static const webp = ThumbnailFormat.WEBP;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsServiceProvider);
@@ -59,14 +66,19 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isZoomed = useState<bool>(false);
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
-    final progressValue = useState(0.0);
     Offset? localPosition;
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
+    final header = {"Authorization": authToken};
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-    final watchedAsset = ref.watch(assetDetailProvider(currentAsset));
+    final isTrashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final navStack = AutoRouter.of(context).stackData;
+    final isFromTrash = isTrashEnabled &&
+        navStack.length > 2 &&
+        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
 
-    Asset asset() => watchedAsset.value ?? currentAsset;
+    Asset asset() => currentAsset;
 
     useEffect(
       () {
@@ -84,93 +96,52 @@ class GalleryViewerPage extends HookConsumerWidget {
         .watch(assetProvider.notifier)
         .toggleFavorite([asset], !asset.isFavorite);
 
-    /// Thumbnail image of a remote asset. Required asset.isRemote
-    ImageProvider remoteThumbnailImageProvider(
-      Asset asset,
-      api.ThumbnailFormat type,
-    ) {
-      return CachedNetworkImageProvider(
-        getThumbnailUrl(
-          asset,
-          type: type,
-        ),
-        cacheKey: getThumbnailCacheKey(
-          asset,
-          type: type,
-        ),
-        headers: {"Authorization": authToken},
-      );
-    }
-
     /// Original (large) image of a remote asset. Required asset.isRemote
-    ImageProvider originalImageProvider(Asset asset) {
-      return CachedNetworkImageProvider(
-        getImageUrl(asset),
-        cacheKey: getImageCacheKey(asset),
-        headers: {"Authorization": authToken},
-      );
-    }
-
-    /// Thumbnail image of a local asset. Required asset.isLocal
-    ImageProvider localThumbnailImageProvider(Asset asset) {
-      return AssetEntityImageProvider(
-        asset.local!,
-        isOriginal: false,
-        thumbnailSize: ThumbnailSize(
-          MediaQuery.of(context).size.width.floor(),
-          MediaQuery.of(context).size.height.floor(),
-        ),
-      );
-    }
+    ImageProvider remoteOriginalProvider(Asset asset) =>
+        CachedNetworkImageProvider(
+          getImageUrl(asset),
+          cacheKey: getImageCacheKey(asset),
+          headers: header,
+        );
 
     /// Original (large) image of a local asset. Required asset.isLocal
-    ImageProvider localImageProvider(Asset asset) {
-      return AssetEntityImageProvider(
-        isOriginal: true,
-        asset.local!,
-      );
+    ImageProvider localOriginalProvider(Asset asset) =>
+        OriginalImageProvider(asset);
+
+    ImageProvider finalImageProvider(Asset asset) {
+      if (ImmichImage.useLocal(asset)) {
+        return localOriginalProvider(asset);
+      } else if (isLoadOriginal.value) {
+        return remoteOriginalProvider(asset);
+      } else if (isLoadPreview.value) {
+        return ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
+      }
+      return ImmichImage.remoteThumbnailProvider(asset, webp, header);
+    }
+
+    Iterable<ImageProvider> allImageProviders(Asset asset) sync* {
+      if (ImmichImage.useLocal(asset)) {
+        yield ImmichImage.localThumbnailProvider(asset);
+        yield localOriginalProvider(asset);
+      } else {
+        yield ImmichImage.remoteThumbnailProvider(asset, webp, header);
+        if (isLoadPreview.value) {
+          yield ImmichImage.remoteThumbnailProvider(asset, jpeg, header);
+        }
+        if (isLoadOriginal.value) {
+          yield remoteOriginalProvider(asset);
+        }
+      }
     }
 
     void precacheNextImage(int index) {
+      void onError(Object exception, StackTrace? stackTrace) {
+        // swallow error silently
+      }
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
-
-        if (!asset.isRemote ||
-            asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
-          // Preload the local asset
-          precacheImage(localImageProvider(asset), context);
-        } else {
-          onError(Object exception, StackTrace? stackTrace) {
-            // swallow error silently
-          }
-          // Probably load WEBP either way
-          precacheImage(
-            remoteThumbnailImageProvider(
-              asset,
-              api.ThumbnailFormat.WEBP,
-            ),
-            context,
-            onError: onError,
-          );
-          if (isLoadPreview.value) {
-            // Precache the JPEG thumbnail
-            precacheImage(
-              remoteThumbnailImageProvider(
-                asset,
-                api.ThumbnailFormat.JPEG,
-              ),
-              context,
-              onError: onError,
-            );
-          }
-          if (isLoadOriginal.value) {
-            // Preload the original asset
-            precacheImage(
-              originalImageProvider(asset),
-              context,
-              onError: onError,
-            );
-          }
+        for (final imageProvider in allImageProviders(asset)) {
+          precacheImage(imageProvider, context, onError: onError);
         }
       }
     }
@@ -194,31 +165,53 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: asset()),
+            child: ExifBottomSheet(asset: currentAsset),
           );
         },
       );
     }
 
-    void handleDelete(Asset deleteAsset) {
+    void handleDelete(Asset deleteAsset) async {
+      Future<bool> onDelete(bool force) async {
+        final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
+          {deleteAsset},
+          force: force,
+        );
+        if (isDeleted) {
+          if (totalAssets == 1) {
+            // Handle only one asset
+            AutoRouter.of(context).pop();
+          } else {
+            // Go to next page otherwise
+            controller.nextPage(
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.fastLinearToSlowEaseIn,
+            );
+          }
+        }
+        return isDeleted;
+      }
+
+      // Asset is trashed
+      if (isTrashEnabled && !isFromTrash) {
+        final isDeleted = await onDelete(false);
+        // Can only trash assets stored in server. Local assets are always permanently removed for now
+        if (context.mounted && isDeleted && deleteAsset.isRemote) {
+          ImmichToast.show(
+            durationInSecond: 1,
+            context: context,
+            msg: 'Asset trashed',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+        return;
+      }
+
+      // Asset is permanently removed
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return DeleteDialog(
-            onDelete: () {
-              if (totalAssets == 1) {
-                // Handle only one asset
-                AutoRouter.of(context).pop();
-              } else {
-                // Go to next page otherwise
-                controller.nextPage(
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.fastLinearToSlowEaseIn,
-                );
-              }
-              ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
-            },
-          );
+          return DeleteDialog(onDelete: () => onDelete(true));
         },
       );
     }
@@ -304,10 +297,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             child: TopControlAppBar(
               isPlayingMotionVideo: isPlayingMotionVideo.value,
               asset: asset(),
-              isFavorite: asset().isFavorite,
               onMoreInfoPressed: showInfo,
-              onFavorite:
-                  asset().isRemote ? () => toggleFavorite(asset()) : null,
+              onFavorite: toggleFavorite,
               onUploadPressed:
                   asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
@@ -347,7 +338,6 @@ class GalleryViewerPage extends HookConsumerWidget {
           activeColor: Colors.white,
           inactiveColor: Colors.white.withOpacity(0.75),
           onChanged: (position) {
-            progressValue.value = position;
             ref.read(videoPlayerControlsProvider.notifier).position = position;
           },
         ),
@@ -486,27 +476,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-    ImageProvider imageProvider(Asset asset) {
-      if (!asset.isRemote ||
-          asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false)) {
-        return localImageProvider(asset);
-      } else {
-        if (isLoadOriginal.value) {
-          return originalImageProvider(asset);
-        } else if (isLoadPreview.value) {
-          return remoteThumbnailImageProvider(
-            asset,
-            api.ThumbnailFormat.JPEG,
-          );
-        } else {
-          return remoteThumbnailImageProvider(
-            asset,
-            api.ThumbnailFormat.WEBP,
-          );
-        }
-      }
-    }
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: WillPopScope(
@@ -532,79 +501,51 @@ class GalleryViewerPage extends HookConsumerWidget {
               itemCount: totalAssets,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) {
-                // Precache image
-                if (currentIndex.value < value) {
-                  // Moving forwards, so precache the next asset
-                  precacheNextImage(value + 1);
-                } else {
-                  // Moving backwards, so precache previous asset
-                  precacheNextImage(value - 1);
-                }
+                final next = currentIndex.value < value ? value + 1 : value - 1;
+                precacheNextImage(next);
                 currentIndex.value = value;
-                progressValue.value = 0.0;
-
                 HapticFeedback.selectionClick();
               },
-              loadingBuilder: isLoadPreview.value
-                  ? (context, event) {
-                      final a = asset();
-                      if (!a.isLocal ||
-                          (a.isRemote &&
-                              Store.get(StoreKey.preferRemoteImage, false))) {
-                        // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
-                        // Three-Stage Loading (WEBP -> JPEG -> Original)
-                        final webPThumbnail = CachedNetworkImage(
-                          imageUrl: getThumbnailUrl(
-                            a,
-                            type: api.ThumbnailFormat.WEBP,
-                          ),
-                          cacheKey: getThumbnailCacheKey(
-                            a,
-                            type: api.ThumbnailFormat.WEBP,
-                          ),
-                          httpHeaders: {'Authorization': authToken},
-                          progressIndicatorBuilder: (_, __, ___) =>
-                              const Center(
-                            child: ImmichLoadingIndicator(),
-                          ),
-                          fadeInDuration: const Duration(milliseconds: 0),
-                          fit: BoxFit.contain,
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.image_not_supported_outlined),
-                        );
+              loadingBuilder: (context, event, index) {
+                final a = loadAsset(index);
+                if (ImmichImage.useLocal(a)) {
+                  return Image(
+                    image: ImmichImage.localThumbnailProvider(a),
+                    fit: BoxFit.contain,
+                  );
+                }
+                // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
+                // Three-Stage Loading (WEBP -> JPEG -> Original)
+                final webPThumbnail = CachedNetworkImage(
+                  imageUrl: getThumbnailUrl(a, type: webp),
+                  cacheKey: getThumbnailCacheKey(a, type: webp),
+                  httpHeaders: header,
+                  progressIndicatorBuilder: (_, __, ___) => const Center(
+                    child: ImmichLoadingIndicator(),
+                  ),
+                  fadeInDuration: const Duration(milliseconds: 0),
+                  fit: BoxFit.contain,
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.image_not_supported_outlined),
+                );
 
-                        if (isLoadOriginal.value) {
-                          // loading the preview in the loadingBuilder only
-                          // makes sense if the original is loaded in the builder
-                          return CachedNetworkImage(
-                            imageUrl: getThumbnailUrl(
-                              a,
-                              type: api.ThumbnailFormat.JPEG,
-                            ),
-                            cacheKey: getThumbnailCacheKey(
-                              a,
-                              type: api.ThumbnailFormat.JPEG,
-                            ),
-                            httpHeaders: {'Authorization': authToken},
-                            fit: BoxFit.contain,
-                            fadeInDuration: const Duration(milliseconds: 0),
-                            placeholder: (_, __) => webPThumbnail,
-                            errorWidget: (_, __, ___) => webPThumbnail,
-                          );
-                        } else {
-                          return webPThumbnail;
-                        }
-                      } else {
-                        return Image(
-                          image: localThumbnailImageProvider(a),
-                          fit: BoxFit.contain,
-                        );
-                      }
-                    }
-                  : null,
+                // loading the preview in the loadingBuilder only
+                // makes sense if the original is loaded in the builder
+                return isLoadPreview.value && isLoadOriginal.value
+                    ? CachedNetworkImage(
+                        imageUrl: getThumbnailUrl(a, type: jpeg),
+                        cacheKey: getThumbnailCacheKey(a, type: jpeg),
+                        httpHeaders: header,
+                        fit: BoxFit.contain,
+                        fadeInDuration: const Duration(milliseconds: 0),
+                        placeholder: (_, __) => webPThumbnail,
+                        errorWidget: (_, __, ___) => webPThumbnail,
+                      )
+                    : webPThumbnail;
+              },
               builder: (context, index) {
                 final asset = loadAsset(index);
-                final ImageProvider provider = imageProvider(asset);
+                final ImageProvider provider = finalImageProvider(asset);
 
                 if (asset.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(

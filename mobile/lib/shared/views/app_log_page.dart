@@ -148,7 +148,7 @@ class AppLogPage extends HookConsumerWidget {
                     ),
                   ),
                   TextSpan(
-                    text: logMessage.message,
+                    text: truncateLogMessage(logMessage.message, 4),
                     style: const TextStyle(
                       fontSize: 14.0,
                     ),
@@ -169,5 +169,15 @@ class AppLogPage extends HookConsumerWidget {
         },
       ),
     );
+  }
+  
+  /// Truncate the log message to a certain number of lines
+  /// @param int maxLines - Max number of lines to truncate
+  String truncateLogMessage(String message, int maxLines) {
+    List<String> messageLines = message.split("\n");
+    if (messageLines.length < maxLines) {
+      return message;
+    }
+    return "${messageLines.sublist(0, maxLines).join("\n")} ...";
   }
 }

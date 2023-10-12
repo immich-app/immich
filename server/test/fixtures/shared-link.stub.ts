@@ -1,7 +1,8 @@
 import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetType, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
+import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
+import { libraryStub } from './library.stub';
 import { userStub } from './user.stub';
 
 const today = new Date();
@@ -50,7 +51,11 @@ const assetResponse: AssetResponseDto = {
   resized: false,
   thumbhash: null,
   fileModifiedAt: today,
+  isExternal: false,
+  isReadOnly: false,
+  isOffline: false,
   fileCreatedAt: today,
+  localDateTime: today,
   updatedAt: today,
   isFavorite: false,
   isArchived: false,
@@ -64,6 +69,8 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  isTrashed: false,
+  libraryId: 'library-id',
 };
 
 const albumResponse: AlbumResponseDto = {
@@ -151,6 +158,7 @@ export const sharedLinkStub = {
       description: '',
       createdAt: today,
       updatedAt: today,
+      deletedAt: null,
       albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
       sharedUsers: [],
@@ -158,7 +166,7 @@ export const sharedLinkStub = {
       assets: [
         {
           id: 'id_1',
-          owner: userStub.user1,
+          owner: undefined as unknown as UserEntity,
           ownerId: 'user_id_1',
           deviceAssetId: 'device_asset_id_1',
           deviceId: 'device_id_1',
@@ -168,11 +176,16 @@ export const sharedLinkStub = {
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
+          localDateTime: today,
           createdAt: today,
           updatedAt: today,
           isFavorite: false,
           isArchived: false,
+          isExternal: false,
           isReadOnly: false,
+          isOffline: false,
+          libraryId: 'library-id',
+          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],
@@ -215,11 +228,15 @@ export const sharedLinkStub = {
             fps: 100,
             asset: null as any,
             exifTextSearchableColumn: '',
+            profileDescription: 'sRGB',
+            bitsPerSample: 8,
+            colorspace: 'sRGB',
           },
           tags: [],
           sharedLinks: [],
           faces: [],
           sidecarPath: null,
+          deletedAt: null,
         },
       ],
     },

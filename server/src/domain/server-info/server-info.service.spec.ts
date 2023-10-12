@@ -1,22 +1,40 @@
-import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
+import {
+  newAssetRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
+  newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
+} from '@test';
 import { serverVersion } from '../domain.constant';
-import { ISystemConfigRepository } from '../index';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
+  let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
+    assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(configMock, userMock, storageMock);
+    sut = new ServerInfoService(assetMock, configMock, moveMock, personMock, userMock, storageMock);
   });
 
   it('should work', () => {
@@ -143,18 +161,37 @@ describe(ServerInfoService.name, () => {
     it('should respond the server version', () => {
       expect(sut.getVersion()).toEqual(serverVersion);
     });
+  });
 
-    describe('getFeatures', () => {
-      it('should respond the server features', async () => {
-        await expect(sut.getFeatures()).resolves.toEqual({
-          machineLearning: true,
-          oauth: false,
-          oauthAutoLaunch: false,
-          passwordLogin: true,
-          search: true,
-        });
-        expect(configMock.load).toHaveBeenCalled();
+  describe('getFeatures', () => {
+    it('should respond the server features', async () => {
+      await expect(sut.getFeatures()).resolves.toEqual({
+        clipEncode: true,
+        facialRecognition: true,
+        map: true,
+        reverseGeocoding: true,
+        oauth: false,
+        oauthAutoLaunch: false,
+        passwordLogin: true,
+        search: true,
+        sidecar: true,
+        tagImage: true,
+        configFile: false,
+        trash: true,
       });
+      expect(configMock.load).toHaveBeenCalled();
+    });
+  });
+
+  describe('getConfig', () => {
+    it('should respond the server configuration', async () => {
+      await expect(sut.getConfig()).resolves.toEqual({
+        loginPageMessage: '',
+        oauthButtonText: 'Login with OAuth',
+        trashDays: 30,
+        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      });
+      expect(configMock.load).toHaveBeenCalled();
     });
   });
 

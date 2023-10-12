@@ -1,11 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MACHINE_LEARNING_ENABLED, mimeTypes, SEARCH_ENABLED, serverVersion } from '../domain.constant';
+import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
 import {
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  UserStatsQueryResponse,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
+import {
+  ServerConfigDto,
   ServerFeaturesDto,
   ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
@@ -16,15 +24,19 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -52,17 +64,24 @@ export class ServerInfoService {
     return serverVersion;
   }
 
-  async getFeatures(): Promise<ServerFeaturesDto> {
+  getFeatures(): Promise<ServerFeaturesDto> {
+    return this.configCore.getFeatures();
+  }
+
+  async getConfig(): Promise<ServerConfigDto> {
     const config = await this.configCore.getConfig();
 
-    return {
-      machineLearning: MACHINE_LEARNING_ENABLED,
-      search: SEARCH_ENABLED,
+    // TODO move to system config
+    const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
 
-      // TODO: use these instead of `POST oauth/config`
-      oauth: config.oauth.enabled,
-      oauthAutoLaunch: config.oauth.autoLaunch,
-      passwordLogin: config.passwordLogin.enabled,
+    const isInitialized = await this.userRepository.hasAdmin();
+
+    return {
+      loginPageMessage,
+      mapTileUrl: config.map.tileUrl,
+      trashDays: config.trash.days,
+      oauthButtonText: config.oauth.buttonText,
+      isInitialized,
     };
   }
 

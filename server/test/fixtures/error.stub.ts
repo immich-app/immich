@@ -4,6 +4,11 @@ export const errorStub = {
     statusCode: 401,
     message: 'Authentication required',
   },
+  forbidden: {
+    error: 'Forbidden',
+    statusCode: 403,
+    message: expect.any(String),
+  },
   wrongPassword: {
     error: 'Bad Request',
     statusCode: 400,
@@ -14,10 +19,20 @@ export const errorStub = {
     statusCode: 401,
     message: 'Invalid user token',
   },
-  badRequest: {
+  invalidShareKey: {
+    error: 'Unauthorized',
+    statusCode: 401,
+    message: 'Invalid share key',
+  },
+  badRequest: (message: any = null) => ({
     error: 'Bad Request',
     statusCode: 400,
-    message: expect.any(Array),
+    message: message ?? expect.anything(),
+  }),
+  noPermission: {
+    error: 'Bad Request',
+    statusCode: 400,
+    message: expect.stringContaining('Not found or no'),
   },
   incorrectLogin: {
     error: 'Unauthorized',
@@ -28,5 +43,10 @@ export const errorStub = {
     error: 'Bad Request',
     statusCode: 400,
     message: 'The server already has an admin',
+  },
+  noDeleteUploadLibrary: {
+    error: 'Bad Request',
+    statusCode: 400,
+    message: 'Cannot delete the last upload library',
   },
 };

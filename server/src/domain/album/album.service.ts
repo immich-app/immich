@@ -1,10 +1,17 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto, IAssetRepository } from '../asset';
+import { AccessCore, Permission } from '../access';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthUserDto } from '../auth';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
+import { JobName } from '../job';
+import {
+  AlbumInfoOptions,
+  IAccessRepository,
+  IAlbumRepository,
+  IAssetRepository,
+  IJobRepository,
+  IUserRepository,
+} from '../repositories';
 import {
   AlbumCountResponseDto,
   AlbumResponseDto,
@@ -12,7 +19,6 @@ import {
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
 } from './album-response.dto';
-import { AlbumInfoOptions, IAlbumRepository } from './album.repository';
 import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 
 @Injectable()
@@ -99,8 +105,8 @@ export class AlbumService {
       ownerId: authUser.id,
       albumName: dto.albumName,
       description: dto.description,
-      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
-      assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
+      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value }) as UserEntity) ?? [],
+      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
     });
 
@@ -136,9 +142,6 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_DELETE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });
-    if (!album) {
-      throw new BadRequestException('Album not found');
-    }
 
     await this.albumRepository.delete(album);
     await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
@@ -228,6 +231,10 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: false });
 
     for (const userId of dto.sharedUserIds) {
+      if (album.ownerId === userId) {
+        throw new BadRequestException('Cannot be shared with owner');
+      }
+
       const exists = album.sharedUsers.find((user) => user.id === userId);
       if (exists) {
         throw new BadRequestException('User already added');

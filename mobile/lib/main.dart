@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/cache/widgets_binding.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -29,6 +30,7 @@ import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
@@ -36,11 +38,12 @@ import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  ImmichWidgetsBinding();
 
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
+  HttpOverrides.global = HttpSSLCertOverride();
   runApp(getMainWidget(db));
 }
 
@@ -63,11 +66,15 @@ Future<void> initApp() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    log.severe(details.toString(), details, details.stack);
+    log.severe(
+      'Catch all error: ${details.toString()} - ${details.exception} - ${details.library} - ${details.context} - ${details.stack}',
+      details,
+      details.stack,
+    );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    log.severe(error.toString(), error, stack);
+    log.severe('Catch all error: ${error.toString()} - $error', error, stack);
     return true;
   };
 }

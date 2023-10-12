@@ -1,5 +1,7 @@
 version: "3.8"
 
+# Compose file for dockerized end-to-end testing of the backend
+
 services:
   immich-server-test:
     image: immich-server-test
@@ -8,39 +10,31 @@ services:
       dockerfile: Dockerfile
       target: builder
     command: npm run test:e2e
-    expose:
-      - "3000"
     volumes:
       - ../server:/usr/src/app
       - /usr/src/app/node_modules
-    env_file:
-      - .env.test
     environment:
-      - NODE_ENV=development
-      - TYPESENSE_ENABLED=false
+      - DB_HOSTNAME=immich-database-test
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE_NAME=e2e_test
+      - IMMICH_RUN_ALL_TESTS=true
     depends_on:
-      - immich-redis-test
       - immich-database-test
     networks:
       - immich-test-network
-  immich-redis-test:
-    container_name: immich-redis-test
-    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
-    networks:
-      - immich-test-network
+
   immich-database-test:
     container_name: immich-database-test
     image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
-    env_file:
-      - .env.test
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-    volumes:
-      - /var/lib/postgresql/data
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: e2e_test
     networks:
       - immich-test-network
+    logging:
+      driver: none
 
 networks:
   immich-test-network:

@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 
@@ -43,6 +44,8 @@ class ControlBottomAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var hasRemote = selectionAssetState == AssetState.remote;
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     Widget renderActionButtons() {
       return Row(
@@ -70,14 +73,20 @@ class ControlBottomAppBar extends ConsumerWidget {
             iconData: Icons.delete_outline_rounded,
             label: "control_bottom_app_bar_delete".tr(),
             onPressed: enabled
-                ? () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return DeleteDialog(
-                          onDelete: onDelete,
-                        );
-                      },
-                    )
+                ? () {
+                    if (!trashEnabled) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return DeleteDialog(
+                            onDelete: onDelete,
+                          );
+                        },
+                      );
+                    } else {
+                      onDelete();
+                    }
+                  }
                 : null,
           ),
           if (!hasRemote)

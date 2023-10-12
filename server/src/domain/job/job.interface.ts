@@ -1,5 +1,3 @@
-import { BoundingBox } from '../smart-info';
-
 export interface IBaseJob {
   force?: boolean;
 }
@@ -9,17 +7,23 @@ export interface IAssetFaceJob extends IBaseJob {
   personId: string;
 }
 
-export interface IFaceThumbnailJob extends IAssetFaceJob {
-  imageWidth: number;
-  imageHeight: number;
-  boundingBox: BoundingBox;
-  assetId: string;
-  personId: string;
-}
-
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload';
+}
+
+export interface IAssetDeletionJob extends IEntityJob {
+  fromExternal?: boolean;
+}
+
+export interface ILibraryFileJob extends IEntityJob {
+  ownerId: string;
+  assetPath: string;
+}
+
+export interface ILibraryRefreshJob extends IEntityJob {
+  refreshModifiedFiles: boolean;
+  refreshAllFiles: boolean;
 }
 
 export interface IBulkEntityJob extends IBaseJob {

@@ -9,12 +9,54 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**authorizeOAuth**](OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
 [**callback**](OAuthApi.md#callback) | **POST** /oauth/callback | 
 [**generateConfig**](OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 [**link**](OAuthApi.md#link) | **POST** /oauth/link | 
 [**mobileRedirect**](OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 [**unlink**](OAuthApi.md#unlink) | **POST** /oauth/unlink | 
 
+
+# **authorizeOAuth**
+> OAuthAuthorizeResponseDto authorizeOAuth(oAuthConfigDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = OAuthApi();
+final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
+
+try {
+    final result = api_instance.authorizeOAuth(oAuthConfigDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling OAuthApi->authorizeOAuth: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **oAuthConfigDto** | [**OAuthConfigDto**](OAuthConfigDto.md)|  | 
+
+### Return type
+
+[**OAuthAuthorizeResponseDto**](OAuthAuthorizeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **callback**
 > LoginResponseDto callback(oAuthCallbackDto)
@@ -61,6 +103,8 @@ No authorization required
 > OAuthConfigResponseDto generateConfig(oAuthConfigDto)
 
 
+
+@deprecated use feature flags and /oauth/authorize
 
 ### Example
 ```dart

@@ -14,13 +14,19 @@
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
   import { onMount } from 'svelte';
-  import { loadFeatureFlags } from '$lib/stores/feature-flags.store';
+  import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { api } from '@api';
+  import { openWebsocketConnection } from '$lib/stores/websocket';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
   let albumId: string | undefined;
+
+  if ($page.route.id?.startsWith('/(user)/share/[key]')) {
+    api.setKey($page.params.key);
+  }
 
   beforeNavigate(() => {
     showNavigationLoadingBar = true;
@@ -31,10 +37,12 @@
   });
 
   onMount(async () => {
+    openWebsocketConnection();
+
     try {
-      await loadFeatureFlags();
+      await loadConfig();
     } catch (error) {
-      handleError(error, 'Unable to load feature flags');
+      handleError(error, 'Unable to connect to server');
     }
   });
 

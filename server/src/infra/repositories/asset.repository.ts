@@ -1,4 +1,5 @@
 import {
+  AssetCreate,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -6,6 +7,7 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
+  MonthDay,
   Paginated,
   PaginationOptions,
   TimeBucketItem,
@@ -17,8 +19,8 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '../entities';
+import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
+import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -27,9 +29,22 @@ const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.MONTH]: 'month',
 };
 
+const TIME_BUCKET_COLUMN = 'localDateTime';
+
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+  ) {}
+
+  async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
+    await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
+  }
+
+  create(asset: AssetCreate): Promise<AssetEntity> {
+    return this.repository.save(asset);
+  }
 
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
@@ -65,6 +80,26 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
+    return this.repository
+      .createQueryBuilder('entity')
+      .where(
+        `entity.ownerId = :ownerId
+      AND entity.isVisible = true
+      AND entity.isArchived = false
+      AND entity.resizePath IS NOT NULL
+      AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
+        {
+          ownerId,
+          day,
+          month,
+        },
+      )
+      .orderBy('entity.localDateTime', 'DESC')
+      .getMany();
+  }
+
   getByIds(ids: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { id: In(ids) },
@@ -76,8 +111,10 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
   }
+
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -96,15 +133,29 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         ownerId: userId,
-        isVisible: true,
+        isVisible: options.isVisible,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
       },
+      withDeleted: !!options.trashedBefore,
+    });
+  }
+
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { library: { id: In(libraryIds) } },
+    });
+  }
+
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { library: { id: libraryId }, originalPath: originalPath },
     });
   }
 
@@ -113,6 +164,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         isVisible: options.isVisible,
         type: options.type,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -122,6 +174,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -129,8 +182,30 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getById(id: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+        library: true,
+      },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
+    });
+  }
+
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids), isExternal: false });
+  }
+
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.repository.restore({ id: In(ids) });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
@@ -142,9 +217,20 @@ export class AssetRepository implements IAssetRepository {
         owner: true,
         smartInfo: true,
         tags: true,
-        faces: true,
+        faces: {
+          person: true,
+        },
       },
+      withDeleted: true,
     });
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.repository.remove(asset);
+  }
+
+  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { ownerId: userId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
@@ -260,12 +346,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity> {
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
       case WithProperty.SIDECAR:
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
+        break;
+      case WithProperty.IS_OFFLINE:
+        if (!libraryId) {
+          throw new Error('Library id is required when finding offline assets');
+        }
+        where = [{ isOffline: true, libraryId: libraryId }];
         break;
 
       default:
@@ -296,7 +388,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
+    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
       select: {
@@ -309,7 +401,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         ownerId,
         isVisible: true,
-        isArchived: false,
+        isArchived,
         exifInfo: {
           latitude: Not(IsNull()),
           longitude: Not(IsNull()),
@@ -345,13 +437,17 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite } = options;
+    const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -370,27 +466,45 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
+    // can't use queryBuilder because of custom OFFSET clause
+    return this.repository.query(
+      `SELECT *
+       FROM assets
+       WHERE "ownerId" = $1
+       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
+      [ownerId, count],
+    );
+  }
+
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncateValue = truncateMap[options.size];
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
-      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
+      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
+      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncateValue = truncateMap[options.size];
-    return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
-      .orderBy('asset.fileCreatedAt', 'DESC')
-      .getMany();
+    return (
+      this.getBuilder(options)
+        .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
+          timeBucket,
+        })
+        // First sort by the day in localtime (put it in the right bucket)
+        .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+        // and then sort by the actual time
+        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .getMany()
+    );
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -411,6 +525,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {

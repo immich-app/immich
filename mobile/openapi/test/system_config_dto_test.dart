@@ -26,6 +26,16 @@ void main() {
       // TODO
     });
 
+    // SystemConfigMachineLearningDto machineLearning
+    test('to test the property `machineLearning`', () async {
+      // TODO
+    });
+
+    // SystemConfigMapDto map
+    test('to test the property `map`', () async {
+      // TODO
+    });
+
     // SystemConfigOAuthDto oauth
     test('to test the property `oauth`', () async {
       // TODO
@@ -36,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigReverseGeocodingDto reverseGeocoding
+    test('to test the property `reverseGeocoding`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO
@@ -43,6 +58,11 @@ void main() {
 
     // SystemConfigThumbnailDto thumbnail
     test('to test the property `thumbnail`', () async {
+      // TODO
+    });
+
+    // SystemConfigTrashDto trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 

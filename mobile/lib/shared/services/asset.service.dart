@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -11,7 +10,6 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
-import 'package:immich_mobile/utils/openapi_extensions.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -39,37 +37,35 @@ class AssetService {
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets([User? user]) async {
-    user ??= Store.get(StoreKey.currentUser);
+    user ??= Store.get<User>(StoreKey.currentUser);
     final Stopwatch sw = Stopwatch()..start();
-    final int numOwnedRemoteAssets = await _db.assets
-        .where()
-        .remoteIdIsNotNull()
-        .filter()
-        .ownerIdEqualTo(user!.isarId)
-        .count();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       user,
-      () async => (await _getRemoteAssets(
-        hasCache: numOwnedRemoteAssets > 0,
-        user: user!,
-      )),
+      _getRemoteAssetChanges,
+      _getRemoteAssets,
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 
+  /// Returns `(null, null)` if changes are invalid -> requires full sync
+  Future<(List<Asset>? toUpsert, List<String>? toDelete)>
+      _getRemoteAssetChanges(User user, DateTime since) async {
+    final deleted = await _apiService.auditApi
+        .getAuditDeletes(EntityType.ASSET, since, userId: user.id);
+    if (deleted == null || deleted.needsFullSync) return (null, null);
+    final assetDto = await _apiService.assetApi
+        .getAllAssets(userId: user.id, updatedAfter: since);
+    if (assetDto == null) return (null, null);
+    return (assetDto.map(Asset.remote).toList(), deleted.ids);
+  }
+
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets({
-    required bool hasCache,
-    required User user,
-  }) async {
+  Future<List<Asset>?> _getRemoteAssets(User user) async {
     try {
-      final etag = hasCache ? _db.eTags.getByIdSync(user.id)?.value : null;
-      final (List<AssetResponseDto>? assets, String? newETag) =
-          await _apiService.assetApi.getAllAssetsWithETag(
-        eTag: etag,
+      final List<AssetResponseDto>? assets =
+          await _apiService.assetApi.getAllAssets(
         userId: user.id,
-        withoutThumbs: true,
       );
       if (assets == null) {
         return null;
@@ -78,8 +74,6 @@ class AssetService {
             " The server returned assets for user ${assets.first.ownerId}"
             " while requesting assets of user ${user.id}");
         return null;
-      } else if (newETag != etag) {
-        _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, value: newETag)));
       }
       return assets.map(Asset.remote).toList();
     } catch (error, stack) {
@@ -92,9 +86,10 @@ class AssetService {
     }
   }
 
-  Future<List<DeleteAssetResponseDto>?> deleteAssets(
-    Iterable<Asset> deleteAssets,
-  ) async {
+  Future<bool> deleteAssets(
+    Iterable<Asset> deleteAssets, {
+    bool? force = false,
+  }) async {
     try {
       final List<String> payload = [];
 
@@ -102,12 +97,17 @@ class AssetService {
         payload.add(asset.remoteId!);
       }
 
-      return await _apiService.assetApi
-          .deleteAsset(DeleteAssetDto(ids: payload));
+      await _apiService.assetApi.deleteAssets(
+        AssetBulkDeleteDto(
+          ids: payload,
+          force: force,
+        ),
+      );
+      return true;
     } catch (error, stack) {
       log.severe("Error deleteAssets  ${error.toString()}", error, stack);
-      return null;
     }
+    return false;
   }
 
   /// Loads the exif information from the database. If there is none, loads
