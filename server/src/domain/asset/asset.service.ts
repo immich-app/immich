@@ -47,8 +47,10 @@ import {
   BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
+  SanitizedAssetResponseDto,
   TimeBucketResponseDto,
   mapAsset,
+  mapAssetWithoutMetadata,
 } from './response-dto';
 
 export enum UploadFieldName {
@@ -198,10 +200,18 @@ export class AssetService {
     return this.assetRepository.getTimeBuckets(dto);
   }
 
-  async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+  async getByTimeBucket(
+    authUser: AuthUserDto,
+    dto: TimeBucketAssetDto,
+  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
-    return assets.map(mapAsset);
+    console.log(authUser);
+    if (authUser.isShowMetadata) {
+      return assets.map(mapAsset);
+    } else {
+      return assets.map(mapAssetWithoutMetadata);
+    }
   }
 
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {

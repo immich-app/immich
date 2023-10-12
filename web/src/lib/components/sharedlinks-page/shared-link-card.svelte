@@ -136,7 +136,7 @@
         </div>
       {/if}
 
-      {#if link.showExif}
+      {#if link.showMetadata}
         <div
           class="flex w-[60px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >

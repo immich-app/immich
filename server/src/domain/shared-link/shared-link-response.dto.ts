@@ -2,7 +2,7 @@ import { SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import _ from 'lodash';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from '../album';
-import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '../asset';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset, mapAssetWithoutMetadata } from '../asset';
 
 export class SharedLinkResponseDto {
   id!: string;
@@ -14,11 +14,12 @@ export class SharedLinkResponseDto {
   type!: SharedLinkType;
   createdAt!: Date;
   expiresAt!: Date | null;
-  assets!: AssetResponseDto[];
+  assets!: AssetResponseDto[] | SanitizedAssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;
+
   allowDownload!: boolean;
-  showExif!: boolean;
+  showMetadata!: boolean;
 }
 
 export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -39,7 +40,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
-    showExif: sharedLink.showExif,
+    showMetadata: sharedLink.showExif,
   };
 }
 
@@ -57,10 +58,10 @@ export function mapSharedLinkWithNoExif(sharedLink: SharedLinkEntity): SharedLin
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map(mapAssetWithoutExif),
+    assets: assets.map(mapAssetWithoutMetadata),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
-    showExif: sharedLink.showExif,
+    showMetadata: sharedLink.showExif,
   };
 }

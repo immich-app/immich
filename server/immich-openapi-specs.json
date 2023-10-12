@@ -861,7 +861,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetResponseDto"
+                  "type": "object"
                 }
               }
             },
@@ -1880,10 +1880,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
+                  "type": "object"
                 }
               }
             },
@@ -5780,6 +5777,7 @@
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "base64 encoded thumbhash",
             "type": "boolean"
           },
           "isOffline": {
@@ -5847,7 +5845,6 @@
         },
         "required": [
           "type",
-          "id",
           "deviceAssetId",
           "deviceId",
           "ownerId",
@@ -5855,19 +5852,20 @@
           "originalPath",
           "originalFileName",
           "resized",
+          "isFavorite",
+          "isArchived",
+          "isTrashed",
+          "isOffline",
+          "isExternal",
+          "isReadOnly",
+          "checksum",
+          "id",
           "thumbhash",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
-          "isFavorite",
-          "isArchived",
-          "isTrashed",
           "localDateTime",
-          "isOffline",
-          "isExternal",
-          "isReadOnly",
-          "duration",
-          "checksum"
+          "duration"
         ],
         "type": "object"
       },
@@ -7628,7 +7626,7 @@
             "nullable": true,
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "type": "boolean"
           }
         },
@@ -7646,10 +7644,7 @@
             "type": "boolean"
           },
           "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
+            "type": "object"
           },
           "createdAt": {
             "format": "date-time",
@@ -7670,7 +7665,7 @@
           "key": {
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "type": "boolean"
           },
           "type": {
@@ -7691,7 +7686,7 @@
           "assets",
           "allowUpload",
           "allowDownload",
-          "showExif"
+          "showMetadata"
         ],
         "type": "object"
       },

@@ -24,7 +24,7 @@ export class SharedLinkService {
   }
 
   async getMine(authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
-    const { sharedLinkId: id, isPublicUser, isShowExif } = authUser;
+    const { sharedLinkId: id, isPublicUser, isShowMetadata: isShowExif } = authUser;
 
     if (!isPublicUser || !id) {
       throw new ForbiddenException();
@@ -84,7 +84,7 @@ export class SharedLinkService {
       expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
-      showExif: dto.showExif,
+      showExif: dto.showMetadata,
     });
     return this.map(sharedLink, { withExif: true });
   }

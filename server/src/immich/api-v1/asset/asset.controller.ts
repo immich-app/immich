@@ -1,4 +1,4 @@
-import { AssetResponseDto, AuthUserDto } from '@app/domain';
+import { AssetResponseDto, AuthUserDto, SanitizedAssetResponseDto } from '@app/domain';
 import {
   Body,
   Controller,
@@ -185,7 +185,10 @@ export class AssetController {
    */
   @SharedLinkRoute()
   @Get('/assetById/:id')
-  getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+  getAssetById(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     return this.assetService.getAssetById(authUser, id);
   }
 

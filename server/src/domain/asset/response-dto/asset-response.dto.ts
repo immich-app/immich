@@ -6,42 +6,46 @@ import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.
 import { ExifResponseDto, mapExif } from './exif-response.dto';
 import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
-export class AssetResponseDto {
+export class SanitizedAssetResponseDto {
   id!: string;
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  type!: AssetType;
+  /**base64 encoded thumbhash */
+  thumbhash!: string | null;
+  fileCreatedAt!: Date;
+  fileModifiedAt!: Date;
+  updatedAt!: Date;
+  localDateTime!: Date;
+  duration!: string;
+  livePhotoVideoId?: string | null;
+}
+
+export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceAssetId!: string;
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
   libraryId!: string;
 
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
-  type!: AssetType;
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
   /**base64 encoded thumbhash */
-  thumbhash!: string | null;
-  fileCreatedAt!: Date;
-  fileModifiedAt!: Date;
-  updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
-  localDateTime!: Date;
   isOffline!: boolean;
   isExternal!: boolean;
   isReadOnly!: boolean;
-  duration!: string;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
-  livePhotoVideoId?: string | null;
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
 }
 
-function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
+export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
@@ -62,7 +66,7 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     isArchived: entity.isArchived,
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
-    exifInfo: withExif ? (entity.exifInfo ? mapExif(entity.exifInfo) : undefined) : undefined,
+    exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
@@ -74,12 +78,18 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
   };
 }
 
-export function mapAsset(entity: AssetEntity): AssetResponseDto {
-  return _map(entity, true);
-}
-
-export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
-  return _map(entity, false);
+export function mapAssetWithoutMetadata(entity: AssetEntity): SanitizedAssetResponseDto {
+  return {
+    id: entity.id,
+    type: entity.type,
+    thumbhash: entity.thumbhash?.toString('base64') ?? null,
+    fileCreatedAt: entity.fileCreatedAt,
+    fileModifiedAt: entity.fileModifiedAt,
+    localDateTime: entity.localDateTime,
+    updatedAt: entity.updatedAt,
+    duration: entity.duration ?? '0:00:00.00000',
+    livePhotoVideoId: entity.livePhotoVideoId,
+  };
 }
 
 export class MemoryLaneResponseDto {

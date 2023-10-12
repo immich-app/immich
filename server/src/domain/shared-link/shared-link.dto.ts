@@ -51,5 +51,5 @@ export class SharedLinkEditDto {
   allowDownload?: boolean;
 
   @Optional()
-  showExif?: boolean;
+  showMetadata?: boolean;
 }

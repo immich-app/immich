@@ -380,7 +380,7 @@ export class AuthService {
             sharedLinkId: link.id,
             isAllowUpload: link.allowUpload,
             isAllowDownload: link.allowDownload,
-            isShowExif: link.showExif,
+            isShowMetadata: link.showExif,
           };
         }
       }
@@ -431,7 +431,7 @@ export class AuthService {
         isPublicUser: false,
         isAllowUpload: true,
         isAllowDownload: true,
-        isShowExif: true,
+        isShowMetadata: true,
         accessTokenId: token.id,
       };
     }
