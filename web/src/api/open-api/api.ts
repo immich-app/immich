@@ -744,6 +744,18 @@ export interface AssetResponseDto {
     'smartInfo'?: SmartInfoResponseDto;
     /**
      * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'stack'?: Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'stackParentId'?: string | null;
+    /**
+     * 
      * @type {Array<TagResponseDto>}
      * @memberof AssetResponseDto
      */
@@ -3806,6 +3818,31 @@ export interface UpdateAssetDto {
      * @memberof UpdateAssetDto
      */
     'isFavorite'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateAssetStackDto
+ */
+export interface UpdateAssetStackDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateAssetStackDto
+     */
+    'stackParentId': string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateAssetStackDto
+     */
+    'toAdd'?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateAssetStackDto
+     */
+    'toRemove'?: Array<string>;
 }
 /**
  * 
@@ -6994,6 +7031,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {UpdateAssetStackDto} updateAssetStackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStack: async (updateAssetStackDto: UpdateAssetStackDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateAssetStackDto' is not null or undefined
+            assertParamExists('updateStack', 'updateAssetStackDto', updateAssetStackDto)
+            const localVarPath = `/asset/stack`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateAssetStackDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7460,6 +7541,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {UpdateAssetStackDto} updateAssetStackDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateStack(updateAssetStackDto: UpdateAssetStackDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateStack(updateAssetStackDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7748,6 +7839,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUpdateStackRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStack(requestParameters: AssetApiUpdateStackRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.updateStack(requestParameters.updateAssetStackDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8357,6 +8457,20 @@ export interface AssetApiUpdateAssetsRequest {
 }
 
 /**
+ * Request parameters for updateStack operation in AssetApi.
+ * @export
+ * @interface AssetApiUpdateStackRequest
+ */
+export interface AssetApiUpdateStackRequest {
+    /**
+     * 
+     * @type {UpdateAssetStackDto}
+     * @memberof AssetApiUpdateStack
+     */
+    readonly updateAssetStackDto: UpdateAssetStackDto
+}
+
+/**
  * Request parameters for uploadFile operation in AssetApi.
  * @export
  * @interface AssetApiUploadFileRequest
@@ -8794,6 +8908,17 @@ export class AssetApi extends BaseAPI {
      */
     public updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUpdateStackRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public updateStack(requestParameters: AssetApiUpdateStackRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).updateStack(requestParameters.updateAssetStackDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
