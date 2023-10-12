@@ -31,16 +31,11 @@
 
   const dispatch = createEventDispatcher();
 
-  type PersonToCreate = {
-    thumbnail: string;
-    canEdit: boolean;
-  };
-
   let searchFaces = false;
   let searchName = '';
 
   let allPeople: PersonResponseDto[] = [];
-  let editedPerson: PersonResponseDto;
+  let editedPerson: number;
   let selectedPersonToReassign: (PersonResponseDto | null)[] = new Array<PersonResponseDto | null>(people.length);
   export let selectedPersonToCreate: (PersonToCreate | null)[] = new Array<PersonToCreate | null>(people.length);
 
@@ -58,7 +53,7 @@
     searchedPeople = [];
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName });
-      searchedPeople = data;
+      searchedPeople = data.filter((item) => item.id !== people[editedPerson].id);
       searchWord = searchName;
       if (data.length < 20) {
         maxPeople = false;
@@ -203,10 +198,10 @@
   };
 
   const handleCreatePerson = async () => {
-    const { data } = await api.personApi.getAssetFace({ id: editedPerson.id, assetId });
+    const { data } = await api.personApi.getAssetFace({ id: people[editedPerson].id, assetId });
     const assetFace = data;
     for (let i = 0; i < people.length; i++) {
-      if (people[i].id === editedPerson.id) {
+      if (people[i].id === people[editedPerson].id) {
         const data = await api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg);
         const newFeaturePhoto = await zoomImageToBase64(
           data,
@@ -226,19 +221,15 @@
   };
 
   const handleReassignFace = (person: PersonResponseDto) => {
-    for (let i = 0; i < editedPeople.length; i++) {
-      if (editedPeople[i].id === editedPerson.id) {
-        editedPeople[i] = person;
-        selectedPersonToReassign[i] = person;
-        break;
-      }
-    }
+    selectedPersonToReassign[editedPerson] = person;
+    editedPeople[editedPerson] = person;
+    console.log(selectedPersonToReassign);
     showSeletecFaces = false;
   };
 
-  const handlePersonPicker = async (person: PersonResponseDto) => {
-    editedPerson = person;
-    searchedPeople = allPeople.filter((item) => item.id !== person.id);
+  const handlePersonPicker = async (index: number) => {
+    editedPerson = index;
+    searchedPeople = allPeople.filter((item) => item.id !== people[index].id);
     showSeletecFaces = true;
   };
 </script>
@@ -301,7 +292,7 @@
                 </div>
               </button>
             {:else}
-              <button on:click={() => handlePersonPicker(person)} class="flex h-full w-full">
+              <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
                 <div
                   class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
                 />
