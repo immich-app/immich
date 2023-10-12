@@ -376,7 +376,6 @@ class ExifBottomSheet extends HookConsumerWidget {
                         child: CircularProgressIndicator.adaptive(),
                       ),
                     ),
-                    Text(exifInfo?.description ?? ""),
                     const SizedBox(height: 8.0),
                     buildLocation(),
                     SizedBox(height: hasCoordinates(exifInfo) ? 16.0 : 0.0),
