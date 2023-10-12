@@ -364,7 +364,19 @@ class ExifBottomSheet extends HookConsumerWidget {
                   children: [
                     buildDragHeader(),
                     buildDate(),
-                    if (asset.isRemote) DescriptionInput(asset: asset),
+                    assetWithExif.when(
+                      data: (data) => DescriptionInput(asset: data),
+                      error: (error, stackTrace) => Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      loading: () => const SizedBox(
+                        width: 75,
+                        height: 75,
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    ),
+                    Text(exifInfo?.description ?? ""),
                     const SizedBox(height: 8.0),
                     buildLocation(),
                     SizedBox(height: hasCoordinates(exifInfo) ? 16.0 : 0.0),
