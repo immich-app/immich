@@ -297,10 +297,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             child: TopControlAppBar(
               isPlayingMotionVideo: isPlayingMotionVideo.value,
               asset: asset(),
-              isFavorite: asset().isFavorite,
               onMoreInfoPressed: showInfo,
-              onFavorite:
-                  asset().isRemote ? () => toggleFavorite(asset()) : null,
+              onFavorite: toggleFavorite,
               onUploadPressed:
                   asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
