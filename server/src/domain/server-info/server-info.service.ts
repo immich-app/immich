@@ -52,7 +52,7 @@ export class ServerInfoService {
   async latestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
     return {
       isAvailable: this.systemConfigService.availableVersion !== null,
-      dateCheckAvailbleVersion: this.systemConfigService.dateCheckAvailbleVersion,
+      dateCheckAvailableVersion: this.systemConfigService.dateCheckAvailableVersion,
       currentVersion: serverVersion,
       releaseVersion: this.systemConfigService.availableVersion,
     };

@@ -2,7 +2,7 @@ import { ServerVersion } from '../domain.constant';
 
 export function compareVersions(remoteVersionString: string, serverVersion: ServerVersion): boolean {
   const remoteVersion = stringToVersion(remoteVersionString);
-  return remoteVersion.toString().localeCompare(serverVersion.toString(), undefined, { numeric: true }) === 1;
+  return !!remoteVersion.toString().localeCompare(serverVersion.toString(), undefined, { numeric: true });
 }
 
 export function stringToVersion(version: string): ServerVersion {

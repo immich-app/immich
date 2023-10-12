@@ -47,7 +47,7 @@ export class AppService {
     ) {
       this.logger.verbose('Removed check-available-version interval');
       this.systemConfigService.availableVersion = null;
-      this.systemConfigService.dateCheckAvailbleVersion = null;
+      this.systemConfigService.dateCheckAvailableVersion = null;
       this.serverService.schedulerRegistry.deleteInterval('check-available-version');
     }
   }

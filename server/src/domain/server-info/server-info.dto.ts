@@ -101,7 +101,7 @@ export class ServerFeaturesDto implements FeatureFlags {
 export class AvailableVersionResponseDto {
   isAvailable!: boolean;
   @ApiProperty({ type: 'integer' })
-  dateCheckAvailbleVersion!: number | null;
+  dateCheckAvailableVersion!: number | null;
   currentVersion!: SystemConfigImmichVersion;
   releaseVersion!: SystemConfigImmichVersion | null;
 }
