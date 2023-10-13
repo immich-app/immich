@@ -196,7 +196,7 @@
               </tr>
             </thead>
             <tbody
-              class="w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+              class="w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg max-h-[500px] block overflow-x-hidden"
             >
               {#each matches as match (match.extra.filename)}
                 <tr
@@ -204,11 +204,11 @@
                   tabindex="0"
                   on:click={() => handleSplit(match)}
                 >
-                  <td class="text-md text-ellipsis flex flex-col gap-1">
+                  <td class="text-sm text-ellipsis flex flex-col gap-1 font-mono">
                     <span>{match.orphan.pathValue} =></span>
                     <span>{match.extra.filename}</span>
                   </td>
-                  <td class="text-md text-ellipsis d-flex">
+                  <td class="text-sm text-ellipsis d-flex font-mono">
                     <span>({match.orphan.entityType}/{match.orphan.pathType})</span>
                   </td>
                 </tr>
@@ -226,7 +226,9 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg">
+            <tbody
+              class="w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg overflow-y-auto max-h-[500px] block overflow-x-hidden"
+            >
               {#each orphans as orphan, index (index)}
                 <tr
                   class="w-full h-[50px] place-items-center border-[3px] border-transparent odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 flex justify-between"
@@ -235,10 +237,10 @@
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
                     <CircleIconButton logo={ContentCopy} size="18" />
                   </td>
-                  <td class="text-md truncate" title={orphan.pathValue}>
+                  <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
                   </td>
-                  <td class="text-md">
+                  <td class="text-sm font-mono">
                     <span>({orphan.entityType})</span>
                   </td>
                 </tr>
@@ -246,7 +248,7 @@
             </tbody>
           </table>
 
-          <table class="table-fixed mt-5 w-full text-left">
+          <table class="table-fixed mt-5 w-full text-left max-h-[300px]">
             <thead
               class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -257,7 +259,7 @@
               </tr>
             </thead>
             <tbody
-              class="w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg overflow-y-scroll"
+              class="w-full rounded-md border-2 dark:border-immich-dark-gray dark:text-immich-dark-fg overflow-y-auto max-h-[500px] block overflow-x-hidden"
             >
               {#each extras as extra (extra.filename)}
                 <tr
@@ -268,11 +270,11 @@
                     <CircleIconButton logo={ContentCopy} size="18" />
                   </td>
                   <td
-                    class="w-full text-md text-ellipsis flex justify-between"
+                    class="w-full text-md text-ellipsis flex justify-between pr-5"
                     on:click={() => handleCheckOne(extra.filename)}
                   >
-                    <span class="text-ellipsis grow truncate">{extra.filename}</span>
-                    <span>
+                    <span class="text-ellipsis grow truncate font-mono text-sm pr-5">{extra.filename}</span>
+                    <span class="text-sm font-mono dark:text-immich-dark-primary text-immich-primary pr-5">
                       {#if extra.checksum}
                         [sha1:{extra.checksum}]
                       {/if}
