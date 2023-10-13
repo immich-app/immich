@@ -2961,10 +2961,10 @@ export interface SharedLinkResponseDto {
     'allowUpload': boolean;
     /**
      * 
-     * @type {object}
+     * @type {Array<AssetResponseDto>}
      * @memberof SharedLinkResponseDto
      */
-    'assets': object;
+    'assets': Array<AssetResponseDto>;
     /**
      * 
      * @type {string}

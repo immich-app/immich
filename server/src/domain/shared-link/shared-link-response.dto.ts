@@ -14,7 +14,7 @@ export class SharedLinkResponseDto {
   type!: SharedLinkType;
   createdAt!: Date;
   expiresAt!: Date | null;
-  assets!: AssetResponseDto[] | SanitizedAssetResponseDto[];
+  assets!: AssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;
 
@@ -44,7 +44,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
   };
 }
 
-export function mapSharedLinkWithNoExif(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
+export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
   const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
 
@@ -58,7 +58,7 @@ export function mapSharedLinkWithNoExif(sharedLink: SharedLinkEntity): SharedLin
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map(mapAssetWithoutMetadata),
+    assets: assets.map(mapAssetWithoutMetadata) as AssetResponseDto[],
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,

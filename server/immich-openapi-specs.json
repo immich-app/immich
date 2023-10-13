@@ -5853,10 +5853,10 @@
           "deviceId",
           "ownerId",
           "libraryId",
-          "fileCreatedAt",
           "originalPath",
           "originalFileName",
           "resized",
+          "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
           "isFavorite",
@@ -7649,7 +7649,10 @@
             "type": "boolean"
           },
           "assets": {
-            "type": "object"
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
           },
           "createdAt": {
             "format": "date-time",

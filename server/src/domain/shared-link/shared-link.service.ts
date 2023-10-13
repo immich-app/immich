@@ -4,7 +4,7 @@ import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
-import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithNoExif } from './shared-link-response.dto';
+import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto';
 
 @Injectable()
@@ -157,6 +157,6 @@ export class SharedLinkService {
   }
 
   private map(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
-    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithNoExif(sharedLink);
+    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 }

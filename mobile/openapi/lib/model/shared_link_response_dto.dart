@@ -16,7 +16,7 @@ class SharedLinkResponseDto {
     this.album,
     required this.allowDownload,
     required this.allowUpload,
-    required this.assets,
+    this.assets = const [],
     required this.createdAt,
     required this.description,
     required this.expiresAt,
@@ -39,7 +39,7 @@ class SharedLinkResponseDto {
 
   bool allowUpload;
 
-  Object assets;
+  List<AssetResponseDto> assets;
 
   DateTime createdAt;
 
@@ -131,7 +131,7 @@ class SharedLinkResponseDto {
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
-        assets: mapValueOfType<Object>(json, r'assets')!,
+        assets: AssetResponseDto.listFromJson(json[r'assets']),
         createdAt: mapDateTime(json, r'createdAt', '')!,
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', ''),

@@ -24,10 +24,10 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   ownerId!: string;
   owner?: UserResponseDto;
   libraryId!: string;
-  fileCreatedAt!: Date;
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
+  fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
   isFavorite!: boolean;
@@ -36,12 +36,12 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isOffline!: boolean;
   isExternal!: boolean;
   isReadOnly!: boolean;
+  exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
-  exifInfo?: ExifResponseDto;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -78,8 +78,8 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
   };
 }
 
-export function mapAssetWithoutMetadata(entity: AssetEntity): SanitizedAssetResponseDto {
-  return {
+export function mapAssetWithoutMetadata(entity: AssetEntity) {
+  const sanitizedAssetResponse: SanitizedAssetResponseDto = {
     id: entity.id,
     type: entity.type,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
@@ -89,6 +89,8 @@ export function mapAssetWithoutMetadata(entity: AssetEntity): SanitizedAssetResp
     livePhotoVideoId: entity.livePhotoVideoId,
     hasMetadata: false,
   };
+
+  return sanitizedAssetResponse as AssetResponseDto;
 }
 
 export class MemoryLaneResponseDto {

@@ -119,9 +119,9 @@
         sharedLinkEditDto: {
           description,
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-          allowUpload: allowUpload,
-          allowDownload: allowDownload,
-          showExif: showMetadata,
+          allowUpload,
+          allowDownload,
+          showMetadata,
         },
       });
 
