@@ -11,8 +11,7 @@ import {
   createTestApp,
   restoreTempFolder,
 } from '@test/test-utils';
-import * as fs from 'fs';
-
+import { cp } from 'fs/promises';
 import request from 'supertest';
 
 const user1Dto = {
@@ -263,7 +262,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
     beforeEach(async () => {
       await restoreTempFolder();
 
-      await fs.promises.cp(
+      await cp(
         `${IMMICH_TEST_ASSET_PATH}/metadata/gps-position/thompson-springs.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/thompson-springs.jpg`,
       );
