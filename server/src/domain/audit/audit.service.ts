@@ -142,8 +142,11 @@ export class AuditService {
       this.assetRepository.getAll(options, { withDeleted: true }),
     );
 
+    let assetCount = 0;
+
     const orphans: FileReportItemDto[] = [];
     for await (const assets of pagination) {
+      assetCount += assets.length;
       for (const { id, originalPath, resizePath, encodedVideoPath, webpPath, isExternal, checksum } of assets) {
         for (const file of [originalPath, resizePath, encodedVideoPath, webpPath]) {
           track(file);
@@ -191,6 +194,8 @@ export class AuditService {
         orphans.push({ ...entity, pathType: PersonPathType.FACE, pathValue: thumbnailPath });
       }
     }
+
+    this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${people.length} people`);
 
     const extras: string[] = [];
     for (const file of allFiles) {

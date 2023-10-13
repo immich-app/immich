@@ -127,6 +127,7 @@
       const extra = extras.find((extra) => extra.filename === filename);
       if (extra) {
         extra.checksum = checksum;
+        extras = [...extras];
       }
 
       const orphan = orphans.find((orphan) => orphan.checksum === checksum);
