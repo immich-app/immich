@@ -216,11 +216,14 @@
         <div class="gap-2">
           <table class="table-fixed mt-5 w-full text-left">
             <thead
-              class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+              class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
-                  <span>Matches (via checksum)</span>
+                  <div class="px-3">
+                    <p>MATCHES {matches.length ? `(${matches.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -247,11 +250,16 @@
 
           <table class="table-fixed mt-5 w-full text-left">
             <thead
-              class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+              class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
-                  <span>Offline Paths</span>
+                  <div class="px-3">
+                    <p>OFFLINE PATHS {orphans.length ? `(${orphans.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">
+                      These files are the results of manually deletion of the default upload library
+                    </p>
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -262,6 +270,7 @@
                 <tr
                   class="w-full h-[50px] place-items-center border-[3px] border-transparent odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 flex justify-between"
                   tabindex="0"
+                  title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
                     <CircleIconButton logo={ContentCopy} size="18" />
@@ -279,11 +288,17 @@
 
           <table class="table-fixed mt-5 w-full text-left max-h-[300px]">
             <thead
-              class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+              class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
-                  <span>Untracked Files</span>
+                  <div class="px-3">
+                    <p>UNTRACKS FILES {extras.length ? `(${extras.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">
+                      These files are not tracked by the application. They can be the results of failed moves,
+                      interrupted uploads, or left behind due to a bug
+                    </p>
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -295,6 +310,7 @@
                   class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-1 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 justify-between"
                   tabindex="0"
                   on:click={() => handleCheckOne(extra.filename)}
+                  title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
                     <CircleIconButton logo={ContentCopy} size="18" />
