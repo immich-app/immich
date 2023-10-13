@@ -73,7 +73,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
-      HashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
+      LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
 
   Set<Asset> _getSelectedAssets() {
     return Set.from(_selectedAssets);
