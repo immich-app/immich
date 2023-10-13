@@ -142,7 +142,6 @@ void main() {
       // TODO
     });
 
-    // base64 encoded thumbhash
     // String thumbhash
     test('to test the property `thumbhash`', () async {
       // TODO

@@ -28,7 +28,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id, showMetadata: sharedLink.showMetadata });
+  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 

@@ -67,7 +67,7 @@ void main() {
 
     // Get a single asset's information
     //
-    //Future<AssetResponseDto> getAssetById(String id, { String key }) async
+    //Future<Object> getAssetById(String id, { String key }) async
     test('test getAssetById', () async {
       // TODO
     });
@@ -87,7 +87,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool showMetadata, String key }) async
+    //Future<Object> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, String key }) async
     test('test getByTimeBucket', () async {
       // TODO
     });
@@ -122,7 +122,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool showMetadata, String key }) async
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, String key }) async
     test('test getTimeBuckets', () async {
       // TODO
     });

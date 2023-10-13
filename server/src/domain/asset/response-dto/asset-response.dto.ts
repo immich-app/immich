@@ -1,5 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
+import path from 'node:path';
 import { PersonResponseDto, mapFace } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
@@ -10,11 +11,9 @@ export class SanitizedAssetResponseDto {
   id!: string;
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
-  /**base64 encoded thumbhash */
   thumbhash!: string | null;
   fileCreatedAt!: Date;
-  fileModifiedAt!: Date;
-  updatedAt!: Date;
+  resized!: boolean;
   localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
@@ -26,11 +25,11 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   ownerId!: string;
   owner?: UserResponseDto;
   libraryId!: string;
-
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
-  /**base64 encoded thumbhash */
+  fileModifiedAt!: Date;
+  updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
@@ -84,9 +83,8 @@ export function mapAssetWithoutMetadata(entity: AssetEntity): SanitizedAssetResp
     type: entity.type,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
-    fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
-    updatedAt: entity.updatedAt,
+    resized: !!entity.resizePath,
     duration: entity.duration ?? '0:00:00.00000',
     livePhotoVideoId: entity.livePhotoVideoId,
   };

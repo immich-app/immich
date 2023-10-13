@@ -112,7 +112,6 @@ class AssetResponseDto {
 
   List<TagResponseDto> tags;
 
-  /// base64 encoded thumbhash
   String? thumbhash;
 
   AssetTypeEnum type;
