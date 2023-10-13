@@ -2888,7 +2888,7 @@ export interface SharedLinkCreateDto {
      * @type {boolean}
      * @memberof SharedLinkCreateDto
      */
-    'showExif'?: boolean;
+    'showMetadata'?: boolean;
     /**
      * 
      * @type {SharedLinkType}

@@ -46,8 +46,8 @@ void main() {
       // TODO
     });
 
-    // bool showExif (default value: true)
-    test('to test the property `showExif`', () async {
+    // bool showMetadata (default value: true)
+    test('to test the property `showMetadata`', () async {
       // TODO
     });
 
