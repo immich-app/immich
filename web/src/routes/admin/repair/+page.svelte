@@ -1,22 +1,18 @@
 <script lang="ts">
-  import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import empty4Url from '$lib/assets/empty-4.svg';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { FileReportItemDto, api } from '@api';
-  import CogIcon from 'svelte-material-icons/Cog.svelte';
+  import CheckAll from 'svelte-material-icons/CheckAll.svelte';
   import Refresh from 'svelte-material-icons/Refresh.svelte';
+  import Wrench from 'svelte-material-icons/Wrench.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -34,6 +30,8 @@
   const normalize = (filenames: string[]) => filenames.map((filename) => ({ filename, checksum: null }));
 
   let checking = false;
+  let repairing = false;
+
   let orphans: FileReportItemDto[] = data.orphans;
   let extras: UntrackedFile[] = normalize(data.extras);
   let matches: Match[] = [];
@@ -42,6 +40,8 @@
     if (matches.length === 0) {
       return;
     }
+
+    repairing = true;
 
     try {
       await api.auditApi.fixAuditFiles({
@@ -63,6 +63,8 @@
       matches = [];
     } catch (error) {
       handleError(error, 'Unable to repair items');
+    } finally {
+      repairing = false;
     }
   };
 
@@ -148,16 +150,27 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title} admin>
-  <!-- <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
-      <LinkButton>
-        <div class="flex place-items-center gap-2 text-sm">
-          <CogIcon size="18" />
-          Manage Concurrency
-        </div>
-      </LinkButton>
-    </a>
-  </div> -->
+  <svelte:fragment slot="sidebar" />
+  <div class="flex justify-end gap-2" slot="buttons">
+    <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Wrench size="18" />
+        Repair All
+      </div>
+    </LinkButton>
+    <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <CheckAll size="18" />
+        Check All
+      </div>
+    </LinkButton>
+    <LinkButton on:click={() => handleRefresh()}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Refresh size="18" />
+        Refresh
+      </div>
+    </LinkButton>
+  </div>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
@@ -178,7 +191,6 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <span>Matches (via checksum)</span>
-                  <Button disabled={matches.length === 0} size="sm" on:click={() => handleRepair()}>Repair All</Button>
                 </th>
               </tr>
             </thead>
@@ -240,9 +252,6 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <span>Untracked Files</span>
-                  <Button disabled={extras.length === 0 || checking} size="sm" on:click={() => handleCheckAll()}
-                    >Check All</Button
-                  >
                 </th>
               </tr>
             </thead>
