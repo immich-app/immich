@@ -265,14 +265,12 @@
                 <tr
                   class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-1 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 justify-between"
                   tabindex="0"
+                  on:click={() => handleCheckOne(extra.filename)}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
                     <CircleIconButton logo={ContentCopy} size="18" />
                   </td>
-                  <td
-                    class="w-full text-md text-ellipsis flex justify-between pr-5"
-                    on:click={() => handleCheckOne(extra.filename)}
-                  >
+                  <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5">{extra.filename}</span>
                     <span class="text-sm font-mono dark:text-immich-dark-primary text-immich-primary pr-5">
                       {#if extra.checksum}
