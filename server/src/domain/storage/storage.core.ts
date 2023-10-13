@@ -1,6 +1,6 @@
 import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
 import { Logger } from '@nestjs/common';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
 
@@ -65,6 +65,10 @@ export class StorageCore {
 
   isAndroidMotionPath(originalPath: string) {
     return originalPath.startsWith(StorageCore.getBaseFolder(StorageFolder.ENCODED_VIDEO));
+  }
+
+  static isImmichPath(path: string) {
+    return resolve(path).startsWith(resolve(APP_MEDIA_LOCATION));
   }
 
   async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {

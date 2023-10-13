@@ -1,11 +1,12 @@
 import { AssetPathType, DatabaseAction, PersonPathType, UserPathType } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
-import { JOBS_ASSET_PAGINATION_SIZE, usePagination } from '..';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
+import { usePagination } from '../domain.util';
+import { JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -68,7 +69,12 @@ export class AuditService {
   async getChecksums(dto: FileChecksumDto) {
     const results: FileChecksumResponseDto[] = [];
     for (const filename of dto.filenames) {
-      // TODO: security?
+      if (!StorageCore.isImmichPath(filename)) {
+        throw new BadRequestException(
+          `Could not get the checksum of ${filename} because the file isn't accessible by Immich`,
+        );
+      }
+
       const checksum = await this.cryptoRepository.hashFile(filename);
       results.push({ filename, checksum: checksum.toString('base64') });
     }
@@ -77,6 +83,12 @@ export class AuditService {
 
   async fixItems(items: FileReportItemDto[]) {
     for (const { entityId: id, pathType, pathValue } of items) {
+      if (!StorageCore.isImmichPath(pathValue)) {
+        throw new BadRequestException(
+          `Could not fix item ${id} with path ${pathValue} because the file isn't accessible by Immich`,
+        );
+      }
+
       switch (pathType) {
         case AssetPathType.ENCODED_VIDEO:
           await this.assetRepository.save({ id, encodedVideoPath: pathValue });
