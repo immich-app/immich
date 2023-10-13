@@ -10,7 +10,6 @@ import {
   IStorageRepository,
   JobName,
   mapAsset,
-  mapAssetWithoutMetadata,
   mimeTypes,
   Permission,
   SanitizedAssetResponseDto,
@@ -209,7 +208,7 @@ export class AssetService {
 
       return data;
     } else {
-      return mapAssetWithoutMetadata(asset);
+      return mapAsset(asset, true);
     }
   }
 

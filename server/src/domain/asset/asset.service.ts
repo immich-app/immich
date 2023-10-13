@@ -50,7 +50,6 @@ import {
   SanitizedAssetResponseDto,
   TimeBucketResponseDto,
   mapAsset,
-  mapAssetWithoutMetadata,
 } from './response-dto';
 
 export enum UploadFieldName {
@@ -207,9 +206,9 @@ export class AssetService {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
     if (authUser.isShowMetadata) {
-      return assets.map(mapAsset);
+      return assets.map((asset) => mapAsset(asset));
     } else {
-      return assets.map(mapAssetWithoutMetadata);
+      return assets.map((asset) => mapAsset(asset, true));
     }
   }
 
