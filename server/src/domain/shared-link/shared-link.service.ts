@@ -69,7 +69,7 @@ export class SharedLinkService {
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.allowDownload ?? true,
-      showExif: dto.showExif ?? true,
+      showExif: dto.showMetadata ?? true,
     });
 
     return this.map(sharedLink, { withExif: true });

@@ -7602,7 +7602,7 @@
             "nullable": true,
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "default": true,
             "type": "boolean"
           },

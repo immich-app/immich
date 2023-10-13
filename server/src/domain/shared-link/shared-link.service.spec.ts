@@ -137,7 +137,7 @@ describe(SharedLinkService.name, () => {
       await sut.create(authStub.admin, {
         type: SharedLinkType.INDIVIDUAL,
         assetIds: [assetStub.image.id],
-        showExif: true,
+        showMetadata: true,
         allowDownload: true,
         allowUpload: true,
       });
