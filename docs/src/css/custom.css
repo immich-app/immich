@@ -42,5 +42,5 @@ button {
 }
 
 .navbar__brand .navbar__title {
-  @apply font-immich-title text-2xl font-normal;
+  @apply font-immich-title text-2xl font-normal text-immich-primary dark:text-immich-dark-primary;
 }
