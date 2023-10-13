@@ -47,6 +47,7 @@ class LibraryPage extends HookConsumerWidget {
         useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
 
     List<Album> sortedAlbums() {
+      // Created.
       if (selectedAlbumSortOrder.value == 0) {
         return albums
             .where((a) => a.isRemote)
@@ -54,6 +55,34 @@ class LibraryPage extends HookConsumerWidget {
             .reversed
             .toList();
       }
+      // Album title.
+      if (selectedAlbumSortOrder.value == 1) {
+        return albums.where((a) => a.isRemote).sortedBy((album) => album.name);
+      }
+      // Most recent photo, if unset (e.g. empty album, use modifiedAt / updatedAt).
+      if (selectedAlbumSortOrder.value == 2) {
+        return albums
+            .where((a) => a.isRemote)
+            .sorted(
+              (a, b) => a.lastModifiedAssetTimestamp != null &&
+                      b.lastModifiedAssetTimestamp != null
+                  ? a.lastModifiedAssetTimestamp!
+                      .compareTo(b.lastModifiedAssetTimestamp!)
+                  : a.modifiedAt.compareTo(b.modifiedAt),
+            )
+            .reversed
+            .toList();
+      }
+      // Last modified.
+      if (selectedAlbumSortOrder.value == 3) {
+        return albums
+            .where((a) => a.isRemote)
+            .sortedBy((album) => album.modifiedAt)
+            .reversed
+            .toList();
+      }
+
+      // Fallback: Album title.
       return albums.where((a) => a.isRemote).sortedBy((album) => album.name);
     }
 
@@ -61,6 +90,8 @@ class LibraryPage extends HookConsumerWidget {
       final options = [
         "library_page_sort_created".tr(),
         "library_page_sort_title".tr(),
+        "library_page_sort_most_recent_photo".tr(),
+        "library_page_sort_last_modified".tr(),
       ];
 
       return PopupMenuButton(

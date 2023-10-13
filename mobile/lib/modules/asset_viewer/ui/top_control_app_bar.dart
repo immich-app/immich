@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -14,7 +15,6 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.isPlayingMotionVideo,
     required this.onFavorite,
     required this.onUploadPressed,
-    required this.isFavorite,
   }) : super(key: key);
 
   final Asset asset;
@@ -23,19 +23,19 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
-  final VoidCallback? onFavorite;
+  final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
-  final bool isFavorite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const double iconSize = 22.0;
+    final a = ref.watch(assetWatcher(asset)).value ?? asset;
 
-    Widget buildFavoriteButton() {
+    Widget buildFavoriteButton(a) {
       return IconButton(
-        onPressed: onFavorite,
+        onPressed: () => onFavorite(a),
         icon: Icon(
-          isFavorite ? Icons.favorite : Icons.favorite_border,
+          a.isFavorite ? Icons.favorite : Icons.favorite_border,
           color: Colors.grey[200],
         ),
       );
@@ -123,7 +123,7 @@ class TopControlAppBar extends HookConsumerWidget {
         size: iconSize,
       ),
       actions: [
-        if (asset.isRemote) buildFavoriteButton(),
+        if (asset.isRemote) buildFavoriteButton(a),
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal) buildDownloadButton(),

@@ -75,7 +75,7 @@ export class AppModule implements OnModuleInit, OnModuleDestroy {
     await this.appService.init();
   }
 
-  onModuleDestroy() {
-    this.appService.destroy();
+  async onModuleDestroy() {
+    await this.appService.destroy();
   }
 }

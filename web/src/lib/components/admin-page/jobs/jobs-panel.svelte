@@ -3,7 +3,6 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
@@ -14,7 +13,6 @@
   import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
   import LibraryShelves from 'svelte-material-icons/LibraryShelves.svelte';
   import FolderMove from 'svelte-material-icons/FolderMove.svelte';
-  import CogIcon from 'svelte-material-icons/Cog.svelte';
   import Table from 'svelte-material-icons/Table.svelte';
   import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
   import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
@@ -22,7 +20,6 @@
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
-  import Button from '../../elements/buttons/button.svelte';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -149,14 +146,6 @@
 {/if}
 
 <div class="flex flex-col gap-7">
-  <div class="flex justify-end">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
-      <Button size="sm">
-        <CogIcon size="18" />
-        <span class="pl-2">Manage Concurrency</span>
-      </Button>
-    </a>
-  </div>
   {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile

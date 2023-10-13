@@ -200,6 +200,12 @@ final assetDetailProvider =
   }
 });
 
+final assetWatcher =
+    StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
+  final db = ref.watch(dbProvider);
+  return db.assets.watchObject(asset.id, fireImmediately: true);
+});
+
 final assetsProvider =
     StreamProvider.family<RenderList, int?>((ref, userId) async* {
   if (userId == null) return;

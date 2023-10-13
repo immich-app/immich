@@ -267,9 +267,9 @@ describe(SearchService.name, () => {
   });
 
   describe('handleIndexAlbums', () => {
-    it('should skip if search is disabled', () => {
+    it('should skip if search is disabled', async () => {
       sut['enabled'] = false;
-      sut.handleIndexAlbums();
+      await sut.handleIndexAlbums();
     });
 
     it('should index all the albums', async () => {
@@ -355,18 +355,18 @@ describe(SearchService.name, () => {
   });
 
   describe('handleIndexAsset', () => {
-    it('should skip if search is disabled', () => {
+    it('should skip if search is disabled', async () => {
       sut['enabled'] = false;
-      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
 
       expect(searchMock.importFaces).not.toHaveBeenCalled();
       expect(personMock.getFacesByIds).not.toHaveBeenCalled();
     });
 
-    it('should index the face', () => {
+    it('should index the face', async () => {
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
-      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
 
       expect(personMock.getFacesByIds).toHaveBeenCalledWith([{ assetId: 'asset-1', personId: 'person-1' }]);
     });
