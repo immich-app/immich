@@ -8,11 +8,14 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { downloadManager } from '$lib/stores/download';
+  import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { FileReportItemDto, api, copyToClipboard } from '@api';
   import CheckAll from 'svelte-material-icons/CheckAll.svelte';
-  import Refresh from 'svelte-material-icons/Refresh.svelte';
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
+  import Download from 'svelte-material-icons/Download.svelte';
+  import Refresh from 'svelte-material-icons/Refresh.svelte';
   import Wrench from 'svelte-material-icons/Wrench.svelte';
   import type { PageData } from './$types';
 
@@ -36,6 +39,26 @@
   let orphans: FileReportItemDto[] = data.orphans;
   let extras: UntrackedFile[] = normalize(data.extras);
   let matches: Match[] = [];
+
+  const handleDownload = () => {
+    if (extras.length > 0) {
+      const blob = new Blob([extras.map(({ filename }) => filename).join('\n')], { type: 'text/plain' });
+      const downloadKey = 'untracked.txt';
+      downloadManager.add(downloadKey, blob.size);
+      downloadManager.update(downloadKey, blob.size);
+      downloadBlob(blob, downloadKey);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+    }
+
+    if (orphans.length > 0) {
+      const blob = new Blob([JSON.stringify(orphans, null, 4)], { type: 'application/json' });
+      const downloadKey = 'orphans.json';
+      downloadManager.add(downloadKey, blob.size);
+      downloadManager.update(downloadKey, blob.size);
+      downloadBlob(blob, downloadKey);
+      setTimeout(() => downloadManager.clear(downloadKey), 5_000);
+    }
+  };
 
   const handleRepair = async () => {
     if (matches.length === 0) {
@@ -163,6 +186,12 @@
       <div class="flex place-items-center gap-2 text-sm">
         <CheckAll size="18" />
         Check All
+      </div>
+    </LinkButton>
+    <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Download size="18" />
+        Export
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleRefresh()}>
