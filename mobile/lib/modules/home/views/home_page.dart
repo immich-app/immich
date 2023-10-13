@@ -256,7 +256,7 @@ class HomePage extends HookConsumerWidget {
 
         final selectedAsset = selection.value.elementAt(0);
         final stackChildren =
-            await ref.read(assetStackProvider(selectedAsset).future);
+            (await ref.read(assetStackProvider(selectedAsset).future)).toSet();
         AssetSelectionPageResult? returnPayload =
             await AutoRouter.of(context).push<AssetSelectionPageResult?>(
           AssetSelectionRoute(

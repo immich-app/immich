@@ -83,8 +83,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     final stackIndex = useState(-1);
     final stack = showStack
         ? ref.watch(assetStackStateProvider(currentAsset))
-        : <Asset>{};
-    final stackElements = showStack ? {currentAsset, ...stack} : <Asset>{};
+        : <Asset>[];
+    final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
 
     Asset asset() => stackIndex.value == -1
         ? currentAsset
@@ -181,13 +181,23 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    void removeAssetFromStack() {
+      if (stackIndex.value > 0 && showStack) {
+        ref
+            .watch(assetStackStateProvider(currentAsset).notifier)
+            .removeChild(stackIndex.value - 1);
+        stackIndex.value = stackIndex.value - 1;
+      }
+    }
+
     void handleDelete(Asset deleteAsset) async {
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
           force: force,
         );
-        if (isDeleted) {
+        // Handle only for parent asset
+        if (isDeleted && (stackIndex.value == -1 || stackIndex.value == 0)) {
           if (totalAssets == 1) {
             // Handle only one asset
             AutoRouter.of(context).pop();
@@ -205,14 +215,17 @@ class GalleryViewerPage extends HookConsumerWidget {
       // Asset is trashed
       if (isTrashEnabled && !isFromTrash) {
         final isDeleted = await onDelete(false);
-        // Can only trash assets stored in server. Local assets are always permanently removed for now
-        if (context.mounted && isDeleted && deleteAsset.isRemote) {
-          ImmichToast.show(
-            durationInSecond: 1,
-            context: context,
-            msg: 'Asset trashed',
-            gravity: ToastGravity.BOTTOM,
-          );
+        if (isDeleted) {
+          // Can only trash assets stored in server. Local assets are always permanently removed for now
+          if (context.mounted && deleteAsset.isRemote && stackIndex.value < 1) {
+            ImmichToast.show(
+              durationInSecond: 1,
+              context: context,
+              msg: 'Asset trashed',
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+          removeAssetFromStack();
         }
         return;
       }
@@ -221,7 +234,14 @@ class GalleryViewerPage extends HookConsumerWidget {
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return DeleteDialog(onDelete: () => onDelete(true));
+          return DeleteDialog(
+            onDelete: () async {
+              final isDeleted = await onDelete(true);
+              if (isDeleted) {
+                removeAssetFromStack();
+              }
+            },
+          );
         },
       );
     }
@@ -278,7 +298,12 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
-      AutoRouter.of(context).pop();
+      // Parent asset
+      if (stackIndex.value == 0 || stackIndex.value == -1) {
+        AutoRouter.of(context).pop();
+        return;
+      }
+      removeAssetFromStack();
     }
 
     handleUpload(Asset asset) {
