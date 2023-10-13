@@ -1,7 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
@@ -22,42 +20,7 @@ class AssetStackNotifier extends StateNotifier<List<Asset>> {
     }
   }
 
-  updateStack(
-    List<Asset>? childrenToAdd,
-    List<Asset>? childrenToRemove,
-  ) async {
-    // Guard [local asset]
-    if (_asset.remoteId == null) {
-      return;
-    }
-
-    List<String> toAdd = [];
-    if (childrenToAdd != null) {
-      toAdd = childrenToAdd
-          .where((e) => e.isRemote)
-          .map((e) => e.remoteId!)
-          .toList();
-    }
-
-    List<String> toRemove = [];
-    if (childrenToRemove != null) {
-      toRemove = childrenToRemove
-          .where((e) => e.isRemote)
-          .map((e) => e.remoteId!)
-          .toList();
-    }
-
-    await _ref.read(assetStackServiceProvider).updateStack(
-          _asset,
-          childrenToAdd: toAdd,
-          childrenToRemove: toRemove,
-        );
-
-    // sync assets
-    _ref.read(assetProvider.notifier).getAllAsset();
-  }
-
-  void removeChild(int index) {
+  removeChild(int index) {
     if (index < state.length) {
       state.removeAt(index);
     }

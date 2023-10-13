@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -272,11 +273,10 @@ class HomePage extends HookConsumerWidget {
           selectedAssets.remove(selectedAsset);
           final removedChildren = stackChildren.difference(selectedAssets);
           final addedChildren = selectedAssets.difference(stackChildren);
-          await ref
-              .read(assetStackStateProvider(selectedAsset).notifier)
-              .updateStack(
-                addedChildren.toList(),
-                removedChildren.toList(),
+          await ref.read(assetStackServiceProvider).updateStack(
+                selectedAsset,
+                childrenToAdd: addedChildren.toList(),
+                childrenToRemove: removedChildren.toList(),
               );
           ref.invalidate(assetStackProvider(selectedAsset));
         }

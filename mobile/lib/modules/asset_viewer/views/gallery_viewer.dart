@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/video_player_contro
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
@@ -89,6 +90,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     Asset asset() => stackIndex.value == -1
         ? currentAsset
         : stackElements.elementAt(stackIndex.value);
+
+    bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
 
     useEffect(
       () {
@@ -184,7 +187,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     void removeAssetFromStack() {
       if (stackIndex.value > 0 && showStack) {
         ref
-            .watch(assetStackStateProvider(currentAsset).notifier)
+            .read(assetStackStateProvider(currentAsset).notifier)
             .removeChild(stackIndex.value - 1);
         stackIndex.value = stackIndex.value - 1;
       }
@@ -196,8 +199,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           {deleteAsset},
           force: force,
         );
-        // Handle only for parent asset
-        if (isDeleted && (stackIndex.value == -1 || stackIndex.value == 0)) {
+        if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
             AutoRouter.of(context).pop();
@@ -217,7 +219,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         final isDeleted = await onDelete(false);
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
-          if (context.mounted && deleteAsset.isRemote && stackIndex.value < 1) {
+          if (context.mounted && deleteAsset.isRemote && isParent) {
             ImmichToast.show(
               durationInSecond: 1,
               context: context,
@@ -298,8 +300,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
-      // Parent asset
-      if (stackIndex.value == 0 || stackIndex.value == -1) {
+      if (isParent) {
         AutoRouter.of(context).pop();
         return;
       }
@@ -469,7 +470,119 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    buildBottomBar() {
+    void showBurstActionItems() {
+      showModalBottomSheet<void>(
+        context: context,
+        enableDrag: false,
+        builder: (BuildContext ctx) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isParent)
+                    ListTile(
+                      leading: const Icon(Icons.bookmark_border_outlined),
+                      onTap: () async {
+                        await ref
+                            .read(assetStackServiceProvider)
+                            .updateStackParent(
+                              currentAsset,
+                              stackElements.elementAt(stackIndex.value),
+                            );
+                        // sync assets
+                        ref.read(assetProvider.notifier).getAllAsset();
+                        Navigator.pop(ctx);
+                        AutoRouter.of(context).pop();
+                      },
+                      title: const Text(
+                        "Use as main asset",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ).tr(),
+                    ),
+                  ListTile(
+                    leading: const Icon(Icons.copy_all_outlined),
+                    onTap: () async {
+                      if (isParent) {
+                        await ref
+                            .read(assetStackServiceProvider)
+                            .updateStackParent(
+                              currentAsset,
+                              stackElements
+                                  .elementAt(1), // Next asset as parent
+                            );
+                        // Remove itself from stack
+                        await ref.read(assetStackServiceProvider).updateStack(
+                          stackElements.elementAt(1),
+                          childrenToRemove: [currentAsset],
+                        );
+                        Navigator.pop(ctx);
+                        AutoRouter.of(context).pop();
+                      } else {
+                        await ref.read(assetStackServiceProvider).updateStack(
+                          currentAsset,
+                          childrenToRemove: [
+                            stackElements.elementAt(stackIndex.value),
+                          ],
+                        );
+                        removeAssetFromStack();
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    title: const Text(
+                      "Remove from Stack",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    Widget buildBottomBar() {
+      final itemsList = [
+        BottomNavigationBarItem(
+          icon: Icon(
+            Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
+          ),
+          label: 'control_bottom_app_bar_share'.tr(),
+          tooltip: 'control_bottom_app_bar_share'.tr(),
+        ),
+        asset().isArchived
+            ? BottomNavigationBarItem(
+                icon: const Icon(Icons.unarchive_rounded),
+                label: 'control_bottom_app_bar_unarchive'.tr(),
+                tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+              )
+            : BottomNavigationBarItem(
+                icon: const Icon(Icons.archive_outlined),
+                label: 'control_bottom_app_bar_archive'.tr(),
+                tooltip: 'control_bottom_app_bar_archive'.tr(),
+              ),
+        if (stack.isNotEmpty)
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.burst_mode_outlined),
+            label: 'Burst'.tr(),
+            tooltip: 'Burst'.tr(),
+          ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.delete_outline),
+          label: 'control_bottom_app_bar_delete'.tr(),
+          tooltip: 'control_bottom_app_bar_delete'.tr(),
+        ),
+      ];
+
+      List<Function(int)> actionlist = [
+        (_) => shareAsset(),
+        (_) => handleArchive(asset()),
+        if (stack.isNotEmpty) (_) => showBurstActionItems(),
+        (_) => handleDelete(asset()),
+      ];
+
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
         child: AnimatedOpacity(
@@ -518,44 +631,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 selectedLabelStyle: const TextStyle(color: Colors.black),
                 showSelectedLabels: false,
                 showUnselectedLabels: false,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: Icon(
-                      Platform.isAndroid
-                          ? Icons.share_rounded
-                          : Icons.ios_share_rounded,
-                    ),
-                    label: 'control_bottom_app_bar_share'.tr(),
-                    tooltip: 'control_bottom_app_bar_share'.tr(),
-                  ),
-                  asset().isArchived
-                      ? BottomNavigationBarItem(
-                          icon: const Icon(Icons.unarchive_rounded),
-                          label: 'control_bottom_app_bar_unarchive'.tr(),
-                          tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-                        )
-                      : BottomNavigationBarItem(
-                          icon: const Icon(Icons.archive_outlined),
-                          label: 'control_bottom_app_bar_archive'.tr(),
-                          tooltip: 'control_bottom_app_bar_archive'.tr(),
-                        ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.delete_outline),
-                    label: 'control_bottom_app_bar_delete'.tr(),
-                    tooltip: 'control_bottom_app_bar_delete'.tr(),
-                  ),
-                ],
+                items: itemsList,
                 onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      shareAsset();
-                      break;
-                    case 1:
-                      handleArchive(asset());
-                      break;
-                    case 2:
-                      handleDelete(asset());
-                      break;
+                  if (index < actionlist.length) {
+                    actionlist[index].call(index);
                   }
                 },
               ),

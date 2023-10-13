@@ -117,6 +117,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**updateStack**](doc//AssetApi.md#updatestack) | **POST** /asset/stack | 
+*AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **POST** /asset/stack/parent | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
@@ -322,6 +323,7 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateAssetStackDto](doc//UpdateAssetStackDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
+ - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)

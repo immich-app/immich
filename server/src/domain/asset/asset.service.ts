@@ -41,6 +41,7 @@ import {
   TrashAction,
   UpdateAssetDto,
   UpdateAssetStackDto,
+  UpdateStackParentDto,
   mapStats,
 } from './dto';
 import {
@@ -489,6 +490,24 @@ export class AssetService {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toRemove);
       await this.assetRepository.updateAll(toRemove, { stackParentId: null });
     }
+  }
+
+  async updateStackParent(authUser: AuthUserDto, dto: UpdateStackParentDto): Promise<void> {
+    const { oldParentId, newParentId } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, oldParentId);
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, newParentId);
+
+    const childIds: string[] = [];
+    const oldParent = await this.assetRepository.getById(oldParentId);
+    if (oldParent != null) {
+      childIds.push(oldParent.id);
+      // Get all children of old parent
+      childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
+    }
+
+    await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
+    // Remove ParentId of New parent if this was previously a child of some other asset
+    return this.assetRepository.updateAll([newParentId], { stackParentId: null });
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

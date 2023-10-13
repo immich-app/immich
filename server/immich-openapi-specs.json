@@ -1708,6 +1708,41 @@
         ]
       }
     },
+    "/asset/stack/parent": {
+      "post": {
+        "operationId": "updateStackParent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStackParentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/statistics": {
       "get": {
         "operationId": "getAssetStats",
@@ -8364,6 +8399,23 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateStackParentDto": {
+        "properties": {
+          "newParentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "oldParentId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldParentId",
+          "newParentId"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

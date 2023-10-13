@@ -22,6 +22,7 @@ import {
   TrashAction,
   UpdateAssetStackDto,
   UpdateAssetDto as UpdateDto,
+  UpdateStackParentDto,
 } from '@app/domain';
 import {
   Body,
@@ -151,5 +152,11 @@ export class AssetController {
   @HttpCode(HttpStatus.OK)
   updateStack(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateAssetStackDto): Promise<void> {
     return this.service.updateStack(authUser, dto);
+  }
+
+  @Post('stack/parent')
+  @HttpCode(HttpStatus.OK)
+  updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
+    return this.service.updateStackParent(authUser, dto);
   }
 }
