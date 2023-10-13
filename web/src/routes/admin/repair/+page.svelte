@@ -9,9 +9,10 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { FileReportItemDto, api } from '@api';
+  import { FileReportItemDto, api, copyToClipboard } from '@api';
   import CheckAll from 'svelte-material-icons/CheckAll.svelte';
   import Refresh from 'svelte-material-icons/Refresh.svelte';
+  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Wrench from 'svelte-material-icons/Wrench.svelte';
   import type { PageData } from './$types';
 
@@ -183,8 +184,8 @@
           />
         </div>
       {:else}
-        <div class="flex flex-col gap-2">
-          <table class="mt-5 w-full text-left">
+        <div class="gap-2">
+          <table class="table-fixed mt-5 w-full text-left">
             <thead
               class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -195,7 +196,7 @@
               </tr>
             </thead>
             <tbody
-              class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+              class="w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
             >
               {#each matches as match (match.extra.filename)}
                 <tr
@@ -215,29 +216,29 @@
             </tbody>
           </table>
 
-          <table class="mt-5 w-full text-left">
+          <table class="table-fixed mt-5 w-full text-left">
             <thead
               class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
-              <tr class="flex w-full place-items-center p-2 md:p-5">
+              <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <span>Offline Paths</span>
-                  <CircleIconButton logo={Refresh} on:click={() => handleRefresh()} />
                 </th>
               </tr>
             </thead>
-            <tbody
-              class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
-            >
+            <tbody class="w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg">
               {#each orphans as orphan, index (index)}
                 <tr
-                  class="w-full h-[50px] place-items-center border-[3px] border-transparent p-2 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 flex justify-between"
+                  class="w-full h-[50px] place-items-center border-[3px] border-transparent odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 flex justify-between"
                   tabindex="0"
                 >
-                  <td class="text-md text-ellipsis">
-                    <span>{orphan.pathValue}</span>
+                  <td on:click={() => copyToClipboard(orphan.pathValue)}>
+                    <CircleIconButton logo={ContentCopy} size="18" />
                   </td>
-                  <td class="text-md text-ellipsis">
+                  <td class="text-md truncate" title={orphan.pathValue}>
+                    {orphan.pathValue}
+                  </td>
+                  <td class="text-md">
                     <span>({orphan.entityType})</span>
                   </td>
                 </tr>
@@ -245,7 +246,7 @@
             </tbody>
           </table>
 
-          <table class="mt-5 w-full text-left">
+          <table class="table-fixed mt-5 w-full text-left">
             <thead
               class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -256,19 +257,26 @@
               </tr>
             </thead>
             <tbody
-              class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+              class="w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg overflow-y-scroll"
             >
               {#each extras as extra (extra.filename)}
                 <tr
-                  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 justify-between"
+                  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-1 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 justify-between"
                   tabindex="0"
-                  on:click={() => handleCheckOne(extra.filename)}
                 >
-                  <td class="text-md text-ellipsis">{extra.filename}</td>
-                  <td class="text-md text-ellipsis">
-                    {#if extra.checksum}
-                      [sha1:{extra.checksum}]
-                    {/if}
+                  <td on:click={() => copyToClipboard(extra.filename)}>
+                    <CircleIconButton logo={ContentCopy} size="18" />
+                  </td>
+                  <td
+                    class="w-full text-md text-ellipsis flex justify-between"
+                    on:click={() => handleCheckOne(extra.filename)}
+                  >
+                    <span class="text-ellipsis grow truncate">{extra.filename}</span>
+                    <span>
+                      {#if extra.checksum}
+                        [sha1:{extra.checksum}]
+                      {/if}
+                    </span>
                   </td>
                 </tr>
               {/each}
