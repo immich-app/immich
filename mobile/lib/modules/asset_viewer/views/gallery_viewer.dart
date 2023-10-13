@@ -428,42 +428,35 @@ class GalleryViewerPage extends HookConsumerWidget {
         itemCount: stackElements.length,
         itemBuilder: (context, index) {
           final assetId = stackElements.elementAt(index).remoteId;
-          final thumbnail = ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: CachedNetworkImage(
-              fit: BoxFit.cover,
-              imageUrl:
-                  '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
-              httpHeaders: {
-                "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
-              },
-              errorWidget: (context, url, error) =>
-                  const Icon(Icons.image_not_supported_outlined),
-            ),
-          );
-          Widget container = SizedBox(
-            width: 40,
-            child: thumbnail,
-          );
-          if (index == stackIndex.value) {
-            container = Container(
-              width: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
-              ),
-              child: thumbnail,
-            );
-          }
           return Padding(
             padding: const EdgeInsets.only(right: 10),
             child: GestureDetector(
               onTap: () => stackIndex.value = index,
-              child: container,
+              child: Container(
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: index == stackIndex.value ? 2 : 0,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl:
+                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
+                    httpHeaders: {
+                      "Authorization":
+                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                    },
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.image_not_supported_outlined),
+                  ),
+                ),
+              ),
             ),
           );
         },
