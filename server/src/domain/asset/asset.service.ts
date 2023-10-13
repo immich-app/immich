@@ -417,21 +417,6 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
       }
     } else {
-      const assets = await this.assetRepository.getByIds(ids);
-      // Replace stack with new parent
-      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
-      for (const asset of assetsWithChildren) {
-        const stackIds = asset.stack!.map((a) => a.id);
-        // Filter out stack parent candidates if they are already in the to be trashed list
-        const newParentIndex = stackIds.findIndex((id) => !ids.includes(id));
-        if (newParentIndex !== -1) {
-          const newParentId = stackIds.at(newParentIndex);
-          // Remove parent from  stack list
-          stackIds.splice(newParentIndex, 1);
-          await this.assetRepository.updateAll(stackIds, { stackParentId: newParentId });
-          await this.assetRepository.updateAll([newParentId!], { stackParentId: null });
-        }
-      }
       await this.assetRepository.softDeleteAll(ids);
       await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids } });
       this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, authUser.id, ids);
