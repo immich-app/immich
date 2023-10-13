@@ -76,10 +76,6 @@
       <MapSettings disabled={$featureFlags.configFile} config={configs} />
     </SettingAccordion>
 
-    <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
-      <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
-    </SettingAccordion>
-
     <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
       <OAuthSettings disabled={$featureFlags.configFile} oauthConfig={configs.oauth} />
     </SettingAccordion>
@@ -102,6 +98,10 @@
 
     <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
       <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
+    </SettingAccordion>
+
+    <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+      <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
     </SettingAccordion>
 
     <SettingAccordion
