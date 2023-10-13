@@ -34,7 +34,7 @@
   const normalize = (filenames: string[]) => filenames.map((filename) => ({ filename, checksum: null }));
 
   let checking = false;
-  let orphans = data.orphans;
+  let orphans: FileReportItemDto[] = data.orphans;
   let extras: UntrackedFile[] = normalize(data.extras);
   let matches: Match[] = [];
 
@@ -101,7 +101,7 @@
   };
 
   const handleCheckAll = async () => {
-    let checking = true;
+    checking = true;
 
     let count = 0;
 
