@@ -52,6 +52,11 @@ void main() {
       // TODO
     });
 
+    // bool hasMetadata
+    test('to test the property `hasMetadata`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO

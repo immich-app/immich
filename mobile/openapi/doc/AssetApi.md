@@ -500,7 +500,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetById**
-> Object getAssetById(id, key)
+> AssetResponseDto getAssetById(id, key)
 
 
 
@@ -545,7 +545,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Object**](Object.md)
+[**AssetResponseDto**](AssetResponseDto.md)
 
 ### Authorization
 
@@ -728,7 +728,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getByTimeBucket**
-> Object getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, key)
+> List<AssetResponseDto> getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, key)
 
 
 
@@ -785,7 +785,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Object**](Object.md)
+[**List<AssetResponseDto>**](AssetResponseDto.md)
 
 ### Authorization
 

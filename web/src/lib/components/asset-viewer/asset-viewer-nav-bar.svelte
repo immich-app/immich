@@ -28,6 +28,7 @@
   export let showMotionPlayButton: boolean;
   export let isMotionPhotoPlaying = false;
   export let showDownloadButton: boolean;
+  export let showDetailButton: boolean;
   export let showSlideshow = false;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
@@ -133,7 +134,14 @@
         title="Download"
       />
     {/if}
-    <CircleIconButton isOpacity={true} logo={InformationOutline} on:click={() => dispatch('showDetail')} title="Info" />
+    {#if showDetailButton}
+      <CircleIconButton
+        isOpacity={true}
+        logo={InformationOutline}
+        on:click={() => dispatch('showDetail')}
+        title="Info"
+      />
+    {/if}
     {#if isOwner}
       <CircleIconButton
         isOpacity={true}

@@ -1,6 +1,5 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import path from 'node:path';
 import { PersonResponseDto, mapFace } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
@@ -12,11 +11,11 @@ export class SanitizedAssetResponseDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   thumbhash!: string | null;
-  fileCreatedAt!: Date;
   resized!: boolean;
   localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
+  hasMetadata!: boolean;
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
@@ -25,6 +24,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   ownerId!: string;
   owner?: UserResponseDto;
   libraryId!: string;
+  fileCreatedAt!: Date;
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
@@ -36,12 +36,12 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isOffline!: boolean;
   isExternal!: boolean;
   isReadOnly!: boolean;
-  exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
+  exifInfo?: ExifResponseDto;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -74,6 +74,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,
+    hasMetadata: true,
   };
 }
 
@@ -82,11 +83,11 @@ export function mapAssetWithoutMetadata(entity: AssetEntity): SanitizedAssetResp
     id: entity.id,
     type: entity.type,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
-    fileCreatedAt: entity.fileCreatedAt,
     localDateTime: entity.localDateTime,
     resized: !!entity.resizePath,
     duration: entity.duration ?? '0:00:00.00000',
     livePhotoVideoId: entity.livePhotoVideoId,
+    hasMetadata: false,
   };
 }
 

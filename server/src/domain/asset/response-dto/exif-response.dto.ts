@@ -52,3 +52,15 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     projectionType: entity.projectionType,
   };
 }
+
+export function mapSanitizedExif(entity: ExifEntity): ExifResponseDto {
+  return {
+    fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
+    orientation: entity.orientation,
+    dateTimeOriginal: entity.dateTimeOriginal,
+    timeZone: entity.timeZone,
+    projectionType: entity.projectionType,
+    exifImageWidth: entity.exifImageWidth,
+    exifImageHeight: entity.exifImageHeight,
+  };
+}

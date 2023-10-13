@@ -71,7 +71,19 @@ const assetResponse: AssetResponseDto = {
   checksum: 'ZmlsZSBoYXNo',
   isTrashed: false,
   libraryId: 'library-id',
+  hasMetadata: true,
 };
+
+const assetResponseWithoutMetadata = {
+  id: 'id_1',
+  type: AssetType.VIDEO,
+  resized: false,
+  thumbhash: null,
+  localDateTime: today,
+  duration: '0:00:00.00000',
+  livePhotoVideoId: null,
+  hasMetadata: false,
+} as AssetResponseDto;
 
 const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
@@ -285,7 +297,7 @@ export const sharedLinkResponseStub = {
     album: albumResponse,
     assets: [assetResponse],
   }),
-  readonlyNoExif: Object.freeze<SharedLinkResponseDto>({
+  readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',
     userId: 'admin_id',
     key: sharedLinkBytes.toString('base64url'),
@@ -297,6 +309,6 @@ export const sharedLinkResponseStub = {
     allowDownload: false,
     showMetadata: false,
     album: { ...albumResponse, startDate: assetResponse.fileCreatedAt, endDate: assetResponse.fileCreatedAt },
-    assets: [{ ...assetResponse, exifInfo: undefined }],
+    assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
   }),
 };

@@ -861,7 +861,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/AssetResponseDto"
                 }
               }
             },
@@ -1880,7 +1880,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -5767,6 +5770,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "hasMetadata": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
@@ -5847,6 +5853,7 @@
           "deviceId",
           "ownerId",
           "libraryId",
+          "fileCreatedAt",
           "originalPath",
           "originalFileName",
           "resized",
@@ -5861,9 +5868,9 @@
           "checksum",
           "id",
           "thumbhash",
-          "fileCreatedAt",
           "localDateTime",
-          "duration"
+          "duration",
+          "hasMetadata"
         ],
         "type": "object"
       },

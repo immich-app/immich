@@ -206,7 +206,6 @@ export class AssetService {
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
-    console.log(authUser);
     if (authUser.isShowMetadata) {
       return assets.map(mapAsset);
     } else {

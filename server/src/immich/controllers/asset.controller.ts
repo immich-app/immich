@@ -16,7 +16,6 @@ import {
   MemoryLaneDto,
   MemoryLaneResponseDto,
   RandomAssetsDto,
-  SanitizedAssetResponseDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
@@ -98,11 +97,8 @@ export class AssetController {
 
   @Authenticated({ isShared: true })
   @Get('time-bucket')
-  getByTimeBucket(
-    @AuthUser() authUser: AuthUserDto,
-    @Query() dto: TimeBucketAssetDto,
-  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+  getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    return this.service.getByTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
