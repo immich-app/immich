@@ -13,6 +13,7 @@ export const load = (async ({ locals: { user, api } }) => {
     const { data: jobs } = await api.jobApi.getAllJobsStatus();
 
     return {
+      user,
       jobs,
       meta: {
         title: 'Job Status',
