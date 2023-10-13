@@ -24,7 +24,6 @@ class ControlBottomAppBar extends ConsumerWidget {
   final List<Album> albums;
   final List<Album> sharedAlbums;
   final bool enabled;
-  final bool showStack;
   final AssetState selectionAssetState;
 
   const ControlBottomAppBar({
@@ -41,7 +40,6 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onStack,
     this.selectionAssetState = AssetState.remote,
     this.enabled = true,
-    this.showStack = false,
   }) : super(key: key);
 
   @override
@@ -110,12 +108,11 @@ class ControlBottomAppBar extends ConsumerWidget {
                       )
                   : null,
             ),
-          if (showStack)
-            ControlBoxButton(
-              iconData: Icons.filter_none_rounded,
-              label: "Stack".tr(),
-              onPressed: enabled ? onStack : null,
-            ),
+          ControlBoxButton(
+            iconData: Icons.filter_none_rounded,
+            label: "Stack".tr(),
+            onPressed: enabled ? onStack : null,
+          ),
         ],
       );
     }

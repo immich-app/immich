@@ -250,39 +250,52 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onStack() async {
-        if (!selectionEnabledHook.value || selection.value.length != 1) {
-          return;
+        try {
+          processing.value = true;
+          if (!selectionEnabledHook.value) {
+            return;
+          }
+
+          final selectedAsset = selection.value.elementAt(0);
+
+          if (selection.value.length == 1) {
+            final stackChildren =
+                (await ref.read(assetStackProvider(selectedAsset).future))
+                    .toSet();
+            AssetSelectionPageResult? returnPayload =
+                await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+              AssetSelectionRoute(
+                existingAssets: stackChildren,
+                canDeselect: true,
+                query: getAssetStackSelectionQuery(ref, selectedAsset),
+              ),
+            );
+
+            if (returnPayload != null) {
+              Set<Asset> selectedAssets = returnPayload.selectedAssets;
+              // Do not add itself as its stack child
+              selectedAssets.remove(selectedAsset);
+              final removedChildren = stackChildren.difference(selectedAssets);
+              final addedChildren = selectedAssets.difference(stackChildren);
+              await ref.read(assetStackServiceProvider).updateStack(
+                    selectedAsset,
+                    childrenToAdd: addedChildren.toList(),
+                    childrenToRemove: removedChildren.toList(),
+                  );
+            }
+          } else {
+            // Merge photos
+            selection.value.remove(selectedAsset);
+            final selectedAssets = selection.value;
+            await ref.read(assetStackServiceProvider).updateStack(
+                  selectedAsset,
+                  childrenToAdd: selectedAssets.toList(),
+                );
+          }
+        } finally {
+          processing.value = false;
+          selectionEnabledHook.value = false;
         }
-        processing.value = true;
-
-        final selectedAsset = selection.value.elementAt(0);
-        final stackChildren =
-            (await ref.read(assetStackProvider(selectedAsset).future)).toSet();
-        AssetSelectionPageResult? returnPayload =
-            await AutoRouter.of(context).push<AssetSelectionPageResult?>(
-          AssetSelectionRoute(
-            existingAssets: stackChildren,
-            canDeselect: true,
-            query: getAssetStackSelectionQuery(ref, selectedAsset),
-          ),
-        );
-
-        if (returnPayload != null) {
-          Set<Asset> selectedAssets = returnPayload.selectedAssets;
-          // Do not add itself as its stack child
-          selectedAssets.remove(selectedAsset);
-          final removedChildren = stackChildren.difference(selectedAssets);
-          final addedChildren = selectedAssets.difference(stackChildren);
-          await ref.read(assetStackServiceProvider).updateStack(
-                selectedAsset,
-                childrenToAdd: addedChildren.toList(),
-                childrenToRemove: removedChildren.toList(),
-              );
-          ref.invalidate(assetStackProvider(selectedAsset));
-        }
-
-        processing.value = false;
-        selectionEnabledHook.value = false;
       }
 
       Future<void> refreshAssets() async {
@@ -380,7 +393,6 @@ class HomePage extends HookConsumerWidget {
                 enabled: !processing.value,
                 selectionAssetState: selectionAssetState.value,
                 onStack: onStack,
-                showStack: selection.value.length == 1,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],
