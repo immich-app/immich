@@ -90,7 +90,7 @@ export class StorageTemplateService {
     }
 
     this.logger.debug('Cleaning up empty directories...');
-    const libraryFolder = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryFolder = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     await this.storageRepository.removeEmptyDirs(libraryFolder);
 
     this.logger.log('Finished storage template migration');

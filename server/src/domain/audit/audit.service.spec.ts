@@ -1,17 +1,45 @@
 import { DatabaseAction, EntityType } from '@app/infra/entities';
-import { IAccessRepositoryMock, auditStub, authStub, newAccessRepositoryMock, newAuditRepositoryMock } from '@test';
-import { IAuditRepository } from '../repositories';
+import {
+  IAccessRepositoryMock,
+  auditStub,
+  authStub,
+  newAccessRepositoryMock,
+  newAssetRepositoryMock,
+  newAuditRepositoryMock,
+  newCryptoRepositoryMock,
+  newPersonRepositoryMock,
+  newStorageRepositoryMock,
+  newUserRepositoryMock,
+} from '@test';
+import {
+  IAssetRepository,
+  IAuditRepository,
+  ICryptoRepository,
+  IPersonRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { AuditService } from './audit.service';
 
 describe(AuditService.name, () => {
   let sut: AuditService;
   let accessMock: IAccessRepositoryMock;
+  let assetMock: jest.Mocked<IAssetRepository>;
   let auditMock: jest.Mocked<IAuditRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
+    assetMock = newAssetRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
     auditMock = newAuditRepositoryMock();
-    sut = new AuditService(accessMock, auditMock);
+    personMock = newPersonRepositoryMock();
+    storageMock = newStorageRepositoryMock();
+    userMock = newUserRepositoryMock();
+    sut = new AuditService(accessMock, assetMock, cryptoMock, personMock, auditMock, storageMock, userMock);
   });
 
   it('should work', () => {

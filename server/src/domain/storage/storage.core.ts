@@ -32,14 +32,14 @@ export class StorageCore {
   ) {}
 
   getFolderLocation(folder: StorageFolder, userId: string) {
-    return join(this.getBaseFolder(folder), userId);
+    return join(StorageCore.getBaseFolder(folder), userId);
   }
 
   getLibraryFolder(user: { storageLabel: string | null; id: string }) {
-    return join(this.getBaseFolder(StorageFolder.LIBRARY), user.storageLabel || user.id);
+    return join(StorageCore.getBaseFolder(StorageFolder.LIBRARY), user.storageLabel || user.id);
   }
 
-  getBaseFolder(folder: StorageFolder) {
+  static getBaseFolder(folder: StorageFolder) {
     return join(APP_MEDIA_LOCATION, folder);
   }
 
@@ -64,7 +64,7 @@ export class StorageCore {
   }
 
   isAndroidMotionPath(originalPath: string) {
-    return originalPath.startsWith(this.getBaseFolder(StorageFolder.ENCODED_VIDEO));
+    return originalPath.startsWith(StorageCore.getBaseFolder(StorageFolder.ENCODED_VIDEO));
   }
 
   async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {
@@ -135,7 +135,7 @@ export class StorageCore {
   }
 
   removeEmptyDirs(folder: StorageFolder) {
-    return this.repository.removeEmptyDirs(this.getBaseFolder(folder));
+    return this.repository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
   private savePath(pathType: PathType, id: string, newPath: string) {
