@@ -470,7 +470,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void showBurstActionItems() {
+    void showStackActionItems() {
       showModalBottomSheet<void>(
         context: context,
         enableDrag: false,
@@ -483,7 +483,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 children: [
                   if (!isParent)
                     ListTile(
-                      leading: const Icon(Icons.bookmark_border_outlined),
+                      leading: const Icon(
+                        Icons.bookmark_border_outlined,
+                        size: 24,
+                      ),
                       onTap: () async {
                         await ref
                             .read(assetStackServiceProvider)
@@ -502,7 +505,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                       ).tr(),
                     ),
                   ListTile(
-                    leading: const Icon(Icons.copy_all_outlined),
+                    leading: const Icon(
+                      Icons.copy_all_outlined,
+                      size: 24,
+                    ),
                     onTap: () async {
                       if (isParent) {
                         await ref
@@ -532,6 +538,24 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     title: const Text(
                       "Remove from Stack",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.filter_none_outlined,
+                      size: 18,
+                    ),
+                    onTap: () async {
+                      await ref.read(assetStackServiceProvider).updateStack(
+                            currentAsset,
+                            childrenToRemove: stack,
+                          );
+                      Navigator.pop(ctx);
+                      AutoRouter.of(context).pop();
+                    },
+                    title: const Text(
+                      "Un-Stack",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ).tr(),
                   ),
@@ -566,8 +590,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (stack.isNotEmpty)
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
-            label: 'Burst'.tr(),
-            tooltip: 'Burst'.tr(),
+            label: 'Stack'.tr(),
+            tooltip: 'Stack'.tr(),
           ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.delete_outline),
@@ -579,7 +603,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       List<Function(int)> actionlist = [
         (_) => shareAsset(),
         (_) => handleArchive(asset()),
-        if (stack.isNotEmpty) (_) => showBurstActionItems(),
+        if (stack.isNotEmpty) (_) => showStackActionItems(),
         (_) => handleDelete(asset()),
       ];
 
