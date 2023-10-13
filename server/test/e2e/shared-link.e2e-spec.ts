@@ -264,8 +264,8 @@ describe(`${PartnerController.name} (e2e)`, () => {
       await restoreTempFolder();
 
       await fs.promises.cp(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/cyclamen_persicum.jpg`,
+        `${IMMICH_TEST_ASSET_PATH}/metadata/gps-position/thompson-springs.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/thompson-springs.jpg`,
       );
 
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
@@ -299,15 +299,18 @@ describe(`${PartnerController.name} (e2e)`, () => {
       const returnedAsset = returnedLink.assets[0];
       expect(returnedAsset).toEqual(
         expect.objectContaining({
-          originalFileName: 'cyclamen_persicum',
+          originalFileName: 'thompson-springs',
           resized: true,
-          fileCreatedAt: '2007-12-06T05:33:18.000Z',
-
+          localDateTime: '2022-01-10T15:15:44.310Z',
+          fileCreatedAt: '2022-01-10T19:15:44.310Z',
           exifInfo: expect.objectContaining({
-            make: 'FUJIFILM',
-            model: 'FinePix S3Pro',
-            dateTimeOriginal: '2007-12-06T05:33:18.000Z',
-            timeZone: 'UTC+9',
+            longitude: -108.400968333333,
+            latitude: 39.115,
+            orientation: '1',
+            dateTimeOriginal: '2022-01-10T19:15:44.310Z',
+            timeZone: 'UTC-4',
+            state: 'Mesa County, Colorado',
+            country: 'United States of America',
           }),
         }),
       );
