@@ -66,7 +66,7 @@
           allowUpload,
           description,
           allowDownload,
-          showExif: showMetadata,
+          showMetadata,
         },
       });
       sharedLink = `${window.location.origin}/share/${data.key}`;
