@@ -115,12 +115,13 @@ export class AuditService {
     const crawl = async (folder: StorageFolder) =>
       new Set(await this.storageRepository.crawl({ pathsToCrawl: [StorageCore.getBaseFolder(folder)] }));
 
+    const uploadFiles = await crawl(StorageFolder.UPLOAD);
     const libraryFiles = await crawl(StorageFolder.LIBRARY);
     const thumbFiles = await crawl(StorageFolder.THUMBNAILS);
     const videoFiles = await crawl(StorageFolder.ENCODED_VIDEO);
     const profileFiles = await crawl(StorageFolder.PROFILE);
     const allFiles = new Set<string>();
-    for (const list of [libraryFiles, thumbFiles, videoFiles, profileFiles]) {
+    for (const list of [libraryFiles, thumbFiles, videoFiles, profileFiles, uploadFiles]) {
       for (const item of list) {
         allFiles.add(item);
       }
@@ -152,6 +153,7 @@ export class AuditService {
         if (
           originalPath &&
           !hasFile(libraryFiles, originalPath) &&
+          !hasFile(uploadFiles, originalPath) &&
           // Android motion assets
           !hasFile(videoFiles, originalPath) &&
           // ignore external library assets
