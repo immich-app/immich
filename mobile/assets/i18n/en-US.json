@@ -173,6 +173,8 @@
   "library_page_sharing": "Sharing",
   "library_page_sort_created": "Most recently created",
   "library_page_sort_title": "Album title",
+  "library_page_sort_most_recent_photo": "Most recent photo",
+  "library_page_sort_last_modified": "Last modified",
   "login_disabled": "Login has been disabled",
   "login_form_api_exception": "API exception. Please check the server URL and try again.",
   "login_form_handshake_exception": "There was an Handshake Exception with the server. Enable self-signed certificate support in the settings if you are using a self-signed certificate.",

@@ -40,3 +40,7 @@ button {
   --ifm-background-color: #000000;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+.navbar__brand .navbar__title {
+  @apply font-immich-title text-2xl font-normal text-immich-primary dark:text-immich-dark-primary;
+}

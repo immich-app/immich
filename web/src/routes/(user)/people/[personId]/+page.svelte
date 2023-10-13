@@ -134,6 +134,10 @@
 
   onMount(() => {
     const action = $page.url.searchParams.get('action');
+    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
+    if (getPreviousRoute) {
+      previousRoute = getPreviousRoute;
+    }
     if (action == 'merge') {
       viewMode = ViewMode.MERGE_FACES;
     }
@@ -179,7 +183,7 @@
         type: NotificationType.Info,
       });
 
-      goto(AppRoute.EXPLORE, { replaceState: true });
+      goto(previousRoute, { replaceState: true });
     } catch (error) {
       handleError(error, 'Unable to hide person');
     }

@@ -89,6 +89,7 @@ const config = {
         },
       },
       navbar: {
+        title: 'IMMICH',
         logo: {
           alt: 'Immich University Logo',
           src: 'img/color-logo.png',
