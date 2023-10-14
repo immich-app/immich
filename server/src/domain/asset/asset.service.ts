@@ -466,6 +466,7 @@ export class AssetService {
     const { stackParentId, toAdd, toRemove } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, stackParentId);
 
+    let shouldUpdate = false;
     if (!!toAdd && toAdd.length != 0) {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toAdd);
       const assets = await this.assetRepository.getByIds(toAdd);
@@ -477,15 +478,19 @@ export class AssetService {
       }
 
       await this.assetRepository.updateAll(toAdd, { stackParentId });
+      shouldUpdate = true;
     }
 
     if (!!toRemove && toRemove.length != 0) {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toRemove);
       await this.assetRepository.updateAll(toRemove, { stackParentId: null });
+      shouldUpdate = true;
     }
 
-    // This also updates the updatedAt column of the parent to indicate that it is modifed
-    return this.assetRepository.updateAll([stackParentId], { stackParentId: null });
+    if (shouldUpdate) {
+      // This updates the updatedAt column of the parent to indicate that it is modifed
+      return this.assetRepository.updateAll([stackParentId], { stackParentId: null });
+    }
   }
 
   async updateStackParent(authUser: AuthUserDto, dto: UpdateStackParentDto): Promise<void> {
@@ -502,7 +507,7 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
-    // Remove ParentId of New parent if this was previously a child of some other asset
+    // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });
   }
 
