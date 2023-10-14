@@ -186,7 +186,7 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/assetById/:id')
   getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
-    return this.assetService.getAssetById(authUser, id);
+    return this.assetService.getAssetById(authUser, id) as Promise<AssetResponseDto>;
   }
 
   /**

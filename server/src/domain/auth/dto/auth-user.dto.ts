@@ -6,7 +6,7 @@ export class AuthUserDto {
   sharedLinkId?: string;
   isAllowUpload?: boolean;
   isAllowDownload?: boolean;
-  isShowExif?: boolean;
+  isShowMetadata?: boolean;
   accessTokenId?: string;
   externalPath?: string | null;
 }

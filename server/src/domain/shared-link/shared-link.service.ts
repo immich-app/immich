@@ -4,7 +4,7 @@ import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
-import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithNoExif } from './shared-link-response.dto';
+import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class SharedLinkService {
   }
 
   async getMine(authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
-    const { sharedLinkId: id, isPublicUser, isShowExif } = authUser;
+    const { sharedLinkId: id, isPublicUser, isShowMetadata: isShowExif } = authUser;
 
     if (!isPublicUser || !id) {
       throw new ForbiddenException();
@@ -69,7 +69,7 @@ export class SharedLinkService {
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.allowDownload ?? true,
-      showExif: dto.showExif ?? true,
+      showExif: dto.showMetadata ?? true,
     });
 
     return this.map(sharedLink, { withExif: true });
@@ -84,7 +84,7 @@ export class SharedLinkService {
       expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
-      showExif: dto.showExif,
+      showExif: dto.showMetadata,
     });
     return this.map(sharedLink, { withExif: true });
   }
@@ -157,6 +157,6 @@ export class SharedLinkService {
   }
 
   private map(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
-    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithNoExif(sharedLink);
+    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 }
