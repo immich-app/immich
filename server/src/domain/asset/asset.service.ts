@@ -370,7 +370,7 @@ export class AssetService {
 
     if (asset.faces) {
       await Promise.all(
-        asset.faces.map(({ assetId, personId }) =>
+        asset.faces.map(({ assetId, personId }) => personId !=null && 
           this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
         ),
       );

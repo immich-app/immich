@@ -35,6 +35,7 @@ Name | Type | Description | Notes
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
 **thumbhash** | **String** | base64 encoded thumbhash | 
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
+**unassigedFaces** | [**List<AssetFaceBoxDto>**](AssetFaceBoxDto.md) |  | [optional] [default to const []]
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

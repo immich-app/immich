@@ -153,6 +153,11 @@ void main() {
       // TODO
     });
 
+    // List<AssetFaceBoxDto> unassigedFaces (default value: const [])
+    test('to test the property `unassigedFaces`', () async {
+      // TODO
+    });
+
     // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
       // TODO

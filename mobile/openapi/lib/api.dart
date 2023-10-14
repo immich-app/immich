@@ -60,6 +60,7 @@ part 'model/asset_bulk_upload_check_dto.dart';
 part 'model/asset_bulk_upload_check_item.dart';
 part 'model/asset_bulk_upload_check_response_dto.dart';
 part 'model/asset_bulk_upload_check_result.dart';
+part 'model/asset_face_box_dto.dart';
 part 'model/asset_file_upload_response_dto.dart';
 part 'model/asset_ids_dto.dart';
 part 'model/asset_ids_response_dto.dart';

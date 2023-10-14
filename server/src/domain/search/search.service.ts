@@ -361,7 +361,7 @@ export class SearchService {
 
   private patchFaces(faces: AssetFaceEntity[]): OwnedFaceEntity[] {
     return faces.map((face) => ({
-      id: this.asKey(face),
+      id: face.id,
       ownerId: face.asset.ownerId,
       assetId: face.assetId,
       personId: face.personId,

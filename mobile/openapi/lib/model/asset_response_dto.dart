@@ -40,6 +40,7 @@ class AssetResponseDto {
     this.tags = const [],
     required this.thumbhash,
     required this.type,
+    this.unassigedFaces = const [],
     required this.updatedAt,
   });
 
@@ -117,6 +118,8 @@ class AssetResponseDto {
 
   AssetTypeEnum type;
 
+  List<AssetFaceBoxDto> unassigedFaces;
+
   DateTime updatedAt;
 
   @override
@@ -148,6 +151,7 @@ class AssetResponseDto {
      other.tags == tags &&
      other.thumbhash == thumbhash &&
      other.type == type &&
+     other.unassigedFaces == unassigedFaces &&
      other.updatedAt == updatedAt;
 
   @override
@@ -180,10 +184,11 @@ class AssetResponseDto {
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
+    (unassigedFaces.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, unassigedFaces=$unassigedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -234,6 +239,7 @@ class AssetResponseDto {
     //  json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
+      json[r'unassigedFaces'] = this.unassigedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -273,6 +279,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
+        unassigedFaces: AssetFaceBoxDto.listFromJson(json[r'unassigedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }

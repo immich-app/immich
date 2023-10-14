@@ -211,6 +211,7 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
+ - [AssetFaceBoxDto](doc//AssetFaceBoxDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)

@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonResponseDto, mapFace } from '../../person/person.dto';
+import { AssetFaceBoxDto, PersonResponseDto, mapFace, mapFaceAsset } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -36,6 +36,7 @@ export class AssetResponseDto {
   smartInfo?: SmartInfoResponseDto;
   livePhotoVideoId?: string | null;
   tags?: TagResponseDto[];
+  unassigedFaces?: AssetFaceBoxDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
@@ -66,7 +67,10 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
+    unassigedFaces: entity.faces?.filter((assetFace) => assetFace.personId === null).map(mapFaceAsset),
+    people: entity.faces
+      ?.map(mapFace)
+      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden),
     checksum: entity.checksum.toString('base64'),
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,

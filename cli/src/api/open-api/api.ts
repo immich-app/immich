@@ -493,6 +493,49 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 /**
  * 
  * @export
+ * @interface AssetFaceBoxDto
+ */
+export interface AssetFaceBoxDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'boundingBoxX1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'boundingBoxX2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'boundingBoxY1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'boundingBoxY2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'imageHeight': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceBoxDto
+     */
+    'imageWidth': number;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -760,6 +803,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'type': AssetTypeEnum;
+    /**
+     * 
+     * @type {Array<AssetFaceBoxDto>}
+     * @memberof AssetResponseDto
+     */
+    'unassigedFaces'?: Array<AssetFaceBoxDto>;
     /**
      * 
      * @type {string}

@@ -1,14 +1,17 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
 @Entity('asset_faces')
 export class AssetFaceEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @Column()
   assetId!: string;
 
-  @PrimaryColumn()
-  personId!: string;
+  @Column({ nullable: true, type: 'uuid' })
+  personId!: string | null;
 
   @Column({
     type: 'float4',
@@ -39,5 +42,5 @@ export class AssetFaceEntity {
   asset!: AssetEntity;
 
   @ManyToOne(() => PersonEntity, (person) => person.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  person!: PersonEntity;
+  person?: PersonEntity | null;
 }

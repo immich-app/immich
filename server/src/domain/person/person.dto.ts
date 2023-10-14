@@ -83,6 +83,26 @@ export class PeopleResponseDto {
   people!: PersonResponseDto[];
 }
 
+export class AssetFaceBoxDto {
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+}
+
 export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,
@@ -93,6 +113,21 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity): PersonResponseDto {
-  return mapPerson(face.person);
+export function mapFaceAsset(face: AssetFaceEntity): AssetFaceBoxDto {
+  return {
+    boundingBoxX1: face.boundingBoxX1,
+    boundingBoxX2: face.boundingBoxX2,
+    boundingBoxY1: face.boundingBoxY1,
+    boundingBoxY2: face.boundingBoxY2,
+    imageHeight: face.imageHeight,
+    imageWidth: face.imageWidth,
+  };
+}
+
+export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
+  if (face.person) {
+    return mapPerson(face.person);
+  }
+
+  return null;
 }
