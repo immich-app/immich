@@ -437,10 +437,12 @@ class GalleryViewerPage extends HookConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: index == stackIndex.value ? 2 : 0,
-                  ),
+                  border: index == stackIndex.value
+                      ? Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        )
+                      : null,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
