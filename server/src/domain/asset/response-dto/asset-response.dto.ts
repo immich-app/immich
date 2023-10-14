@@ -90,7 +90,7 @@ export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetRespo
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
-    stack: entity.stack?.map(mapAsset),
+    stack: entity.stack?.map((e) => mapAsset(e)),
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,
