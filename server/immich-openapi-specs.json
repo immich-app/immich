@@ -1709,7 +1709,7 @@
       }
     },
     "/asset/stack/parent": {
-      "post": {
+      "put": {
         "operationId": "updateStackParent",
         "parameters": [],
         "requestBody": {
@@ -5840,6 +5840,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "hasMetadata": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
@@ -5916,7 +5919,6 @@
             "type": "array"
           },
           "thumbhash": {
-            "description": "base64 encoded thumbhash",
             "nullable": true,
             "type": "string"
           },
@@ -5931,7 +5933,6 @@
         "required": [
           "type",
           "stackCount",
-          "id",
           "deviceAssetId",
           "deviceId",
           "ownerId",
@@ -5939,19 +5940,21 @@
           "originalPath",
           "originalFileName",
           "resized",
-          "thumbhash",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
           "isFavorite",
           "isArchived",
           "isTrashed",
-          "localDateTime",
           "isOffline",
           "isExternal",
           "isReadOnly",
+          "checksum",
+          "id",
+          "thumbhash",
+          "localDateTime",
           "duration",
-          "checksum"
+          "hasMetadata"
         ],
         "type": "object"
       },
@@ -7683,7 +7686,7 @@
             "nullable": true,
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "default": true,
             "type": "boolean"
           },
@@ -7712,7 +7715,7 @@
             "nullable": true,
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "type": "boolean"
           }
         },
@@ -7754,7 +7757,7 @@
           "key": {
             "type": "string"
           },
-          "showExif": {
+          "showMetadata": {
             "type": "boolean"
           },
           "type": {
@@ -7775,7 +7778,7 @@
           "assets",
           "allowUpload",
           "allowDownload",
-          "showExif"
+          "showMetadata"
         ],
         "type": "object"
       },

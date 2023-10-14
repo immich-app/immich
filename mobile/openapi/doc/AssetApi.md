@@ -39,7 +39,7 @@ Method | HTTP request | Description
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 [**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
 [**updateStack**](AssetApi.md#updatestack) | **POST** /asset/stack | 
-[**updateStackParent**](AssetApi.md#updatestackparent) | **POST** /asset/stack/parent | 
+[**updateStackParent**](AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 

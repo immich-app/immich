@@ -97,7 +97,7 @@ export class PersonService {
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     const assets = await this.repository.getAssets(id);
-    return assets.map(mapAsset);
+    return assets.map((asset) => mapAsset(asset));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {

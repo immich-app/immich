@@ -52,6 +52,11 @@ void main() {
       // TODO
     });
 
+    // bool hasMetadata
+    test('to test the property `hasMetadata`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -157,7 +162,6 @@ void main() {
       // TODO
     });
 
-    // base64 encoded thumbhash
     // String thumbhash
     test('to test the property `thumbhash`', () async {
       // TODO

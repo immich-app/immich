@@ -1693,7 +1693,7 @@ class AssetApi {
     }
   }
 
-  /// Performs an HTTP 'POST /asset/stack/parent' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /asset/stack/parent' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [UpdateStackParentDto] updateStackParentDto (required):
@@ -1713,7 +1713,7 @@ class AssetApi {
 
     return apiClient.invokeAPI(
       path,
-      'POST',
+      'PUT',
       queryParams,
       postBody,
       headerParams,

@@ -1,11 +1,17 @@
 import { AlbumResponseDto, LoginResponseDto, SharedLinkResponseDto } from '@app/domain';
 import { PartnerController } from '@app/immich';
-import { SharedLinkType } from '@app/infra/entities';
+import { LibraryType, SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  createTestApp,
+  restoreTempFolder,
+} from '@test/test-utils';
+import { cp } from 'fs/promises';
 import request from 'supertest';
 
 const user1Dto = {
@@ -18,24 +24,22 @@ const user1Dto = {
 describe(`${PartnerController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
-  let loginResponse: LoginResponseDto;
-  let accessToken: string;
+  let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
 
   beforeAll(async () => {
-    app = await createTestApp();
+    app = await createTestApp(true);
     server = app.getHttpServer();
   });
 
   beforeEach(async () => {
     await db.reset();
     await api.authApi.adminSignUp(server);
-    loginResponse = await api.authApi.adminLogin(server);
-    accessToken = loginResponse.accessToken;
+    admin = await api.authApi.adminLogin(server);
 
-    await api.userApi.create(server, accessToken, user1Dto);
+    await api.userApi.create(server, admin.accessToken, user1Dto);
     user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
 
     album = await api.albumApi.create(server, user1.accessToken, { albumName: 'shared with link' });
@@ -48,6 +52,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
   afterAll(async () => {
     await db.disconnect();
     await app.close();
+    await restoreTempFolder();
   });
 
   describe('GET /shared-link', () => {
@@ -68,7 +73,9 @@ describe(`${PartnerController.name} (e2e)`, () => {
     });
 
     it('should not get shared links created by other users', async () => {
-      const { status, body } = await request(server).get('/shared-link').set('Authorization', `Bearer ${accessToken}`);
+      const { status, body } = await request(server)
+        .get('/shared-link')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual([]);
@@ -77,7 +84,9 @@ describe(`${PartnerController.name} (e2e)`, () => {
 
   describe('GET /shared-link/me', () => {
     it('should not require admin authentication', async () => {
-      const { status } = await request(server).get('/shared-link/me').set('Authorization', `Bearer ${accessToken}`);
+      const { status } = await request(server)
+        .get('/shared-link/me')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(403);
     });
@@ -104,7 +113,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
         type: SharedLinkType.ALBUM,
         albumId: softDeletedAlbum.id,
       });
-      await api.userApi.delete(server, accessToken, user1.userId);
+      await api.userApi.delete(server, admin.accessToken, user1.userId);
 
       const { status, body } = await request(server).get('/shared-link/me').query({ key: softDeletedAlbumLink.key });
 
@@ -133,7 +142,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
     it('should not get shared link by id if user has not created the link or it does not exist', async () => {
       const { status, body } = await request(server)
         .get(`/shared-link/${sharedLink.id}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
       expect(body).toEqual(expect.objectContaining({ message: 'Shared link not found' }));
@@ -246,6 +255,83 @@ describe(`${PartnerController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
+    });
+  });
+
+  describe('Shared link metadata', () => {
+    beforeEach(async () => {
+      await restoreTempFolder();
+
+      await cp(
+        `${IMMICH_TEST_ASSET_PATH}/metadata/gps-position/thompson-springs.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/thompson-springs.jpg`,
+      );
+
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toHaveLength(1);
+
+      album = await api.albumApi.create(server, admin.accessToken, { albumName: 'New album' });
+      await api.albumApi.addAssets(server, admin.accessToken, album.id, { ids: [assets[0].id] });
+    });
+
+    it('should return metadata for album shared link', async () => {
+      const sharedLink = await api.sharedLinkApi.create(server, admin.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: album.id,
+      });
+
+      const returnedLink = await api.sharedLinkApi.getMySharedLink(server, sharedLink.key);
+
+      expect(returnedLink.assets).toHaveLength(1);
+      expect(returnedLink.album).toBeDefined();
+
+      const returnedAsset = returnedLink.assets[0];
+      expect(returnedAsset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'thompson-springs',
+          resized: true,
+          localDateTime: '2022-01-10T15:15:44.310Z',
+          fileCreatedAt: '2022-01-10T19:15:44.310Z',
+          exifInfo: expect.objectContaining({
+            longitude: -108.400968333333,
+            latitude: 39.115,
+            orientation: '1',
+            dateTimeOriginal: '2022-01-10T19:15:44.310Z',
+            timeZone: 'UTC-4',
+            state: 'Mesa County, Colorado',
+            country: 'United States of America',
+          }),
+        }),
+      );
+    });
+
+    it('should not return metadata for album shared link without metadata', async () => {
+      const sharedLink = await api.sharedLinkApi.create(server, admin.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: album.id,
+        showMetadata: false,
+      });
+
+      const returnedLink = await api.sharedLinkApi.getMySharedLink(server, sharedLink.key);
+
+      expect(returnedLink.assets).toHaveLength(1);
+      expect(returnedLink.album).toBeDefined();
+
+      const returnedAsset = returnedLink.assets[0];
+      expect(returnedAsset).not.toHaveProperty('exifInfo');
+      expect(returnedAsset).not.toHaveProperty('fileCreatedAt');
+      expect(returnedAsset).not.toHaveProperty('originalFilename');
+      expect(returnedAsset).not.toHaveProperty('originalPath');
     });
   });
 });

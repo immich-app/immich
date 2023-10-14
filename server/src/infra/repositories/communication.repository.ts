@@ -16,7 +16,7 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
       this.logger.log(`New websocket connection: ${client.id}`);
       const user = await this.authService.validate(client.request.headers, {});
       if (user) {
-        client.join(user.id);
+        await client.join(user.id);
         this.send(CommunicationEvent.SERVER_VERSION, user.id, serverVersion);
       } else {
         client.emit('error', 'unauthorized');
@@ -28,8 +28,8 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
     }
   }
 
-  handleDisconnect(client: Socket) {
-    client.leave(client.nsp.name);
+  async handleDisconnect(client: Socket) {
+    await client.leave(client.nsp.name);
     this.logger.log(`Client ${client.id} disconnected from Websocket`);
   }
 

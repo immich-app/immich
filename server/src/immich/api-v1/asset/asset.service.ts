@@ -10,10 +10,9 @@ import {
   IStorageRepository,
   JobName,
   mapAsset,
-  mapAssetWithoutExif,
-  mapAssetWithStack,
   mimeTypes,
   Permission,
+  SanitizedAssetResponseDto,
   UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
@@ -185,25 +184,32 @@ export class AssetService {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
-    return assets.map(mapAsset);
+    return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(
+    authUser: AuthUserDto,
+    assetId: string,
+  ): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
 
-    const allowExif = this.getExifPermission(authUser);
+    const includeMetadata = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
-    const data = allowExif ? mapAssetWithStack(asset) : mapAssetWithoutExif(asset);
+    if (includeMetadata) {
+      const data = mapAsset(asset, false, true);
 
-    if (data.ownerId !== authUser.id) {
-      data.people = [];
+      if (data.ownerId !== authUser.id) {
+        data.people = [];
+      }
+
+      if (authUser.isPublicUser) {
+        delete data.owner;
+      }
+
+      return data;
+    } else {
+      return mapAsset(asset, true, true);
     }
-
-    if (authUser.isPublicUser) {
-      delete data.owner;
-    }
-
-    return data;
   }
 
   async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
@@ -375,7 +381,7 @@ export class AssetService {
   }
 
   getExifPermission(authUser: AuthUserDto) {
-    return !authUser.isPublicUser || authUser.isShowExif;
+    return !authUser.isPublicUser || authUser.isShowMetadata;
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {

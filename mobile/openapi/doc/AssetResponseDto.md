@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
+**hasMetadata** | **bool** |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
 **isExternal** | **bool** |  | 
@@ -36,7 +37,7 @@ Name | Type | Description | Notes
 **stackCount** | **int** |  | 
 **stackParentId** | **String** |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
-**thumbhash** | **String** | base64 encoded thumbhash | 
+**thumbhash** | **String** |  | 
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

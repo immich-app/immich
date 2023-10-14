@@ -100,7 +100,7 @@ export class AssetController {
   @Authenticated({ isShared: true })
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+    return this.service.getByTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
@@ -154,7 +154,7 @@ export class AssetController {
     return this.service.updateStack(authUser, dto);
   }
 
-  @Post('stack/parent')
+  @Put('stack/parent')
   @HttpCode(HttpStatus.OK)
   updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(authUser, dto);
