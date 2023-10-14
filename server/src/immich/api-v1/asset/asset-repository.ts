@@ -132,6 +132,7 @@ export class AssetRepository implements IAssetRepository {
       relations: {
         exifInfo: true,
         tags: true,
+        stack: true,
       },
       skip: dto.skip || 0,
       order: {

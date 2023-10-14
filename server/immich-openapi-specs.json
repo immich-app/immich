@@ -5902,6 +5902,9 @@
             },
             "type": "array"
           },
+          "stackCount": {
+            "type": "integer"
+          },
           "stackParentId": {
             "nullable": true,
             "type": "string"
@@ -5927,6 +5930,7 @@
         },
         "required": [
           "type",
+          "stackCount",
           "id",
           "deviceAssetId",
           "deviceId",

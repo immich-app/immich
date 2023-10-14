@@ -33,6 +33,7 @@ Name | Type | Description | Notes
 **resized** | **bool** |  | 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
 **stack** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [optional] [default to const []]
+**stackCount** | **int** |  | 
 **stackParentId** | **String** |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
 **thumbhash** | **String** | base64 encoded thumbhash | 

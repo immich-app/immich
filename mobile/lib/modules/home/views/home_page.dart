@@ -284,7 +284,7 @@ class HomePage extends HookConsumerWidget {
                   );
             }
           } else {
-            // Merge photos
+            // Merge assets
             selection.value.remove(selectedAsset);
             final selectedAssets = selection.value;
             await ref.read(assetStackServiceProvider).updateStack(

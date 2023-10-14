@@ -41,9 +41,11 @@ export class AssetResponseDto {
   checksum!: string;
   stackParentId?: string | null;
   stack?: AssetResponseDto[];
+  @ApiProperty({ type: 'integer' })
+  stackCount!: number;
 }
 
-function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
+function _map(entity: AssetEntity, withExif: boolean, withStack: boolean): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
@@ -71,7 +73,8 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
-    stack: entity.stack?.map(mapAsset),
+    stack: withStack ? entity.stack?.map(mapAsset) ?? undefined : undefined,
+    stackCount: entity.stack?.length ?? 0,
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,
@@ -79,11 +82,15 @@ function _map(entity: AssetEntity, withExif: boolean): AssetResponseDto {
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
-  return _map(entity, true);
+  return _map(entity, true, false);
+}
+
+export function mapAssetWithStack(entity: AssetEntity): AssetResponseDto {
+  return _map(entity, true, true);
 }
 
 export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
-  return _map(entity, false);
+  return _map(entity, false, true);
 }
 
 export class MemoryLaneResponseDto {

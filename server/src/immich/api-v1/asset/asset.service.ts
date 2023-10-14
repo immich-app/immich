@@ -11,6 +11,7 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
+  mapAssetWithStack,
   mimeTypes,
   Permission,
   UploadFile,
@@ -184,7 +185,7 @@ export class AssetService {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset));
+    return assets.map(mapAsset);
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
@@ -192,7 +193,7 @@ export class AssetService {
 
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
-    const data = allowExif ? mapAsset(asset) : mapAssetWithoutExif(asset);
+    const data = allowExif ? mapAssetWithStack(asset) : mapAssetWithoutExif(asset);
 
     if (data.ownerId !== authUser.id) {
       data.people = [];

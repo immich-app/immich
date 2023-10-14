@@ -750,6 +750,12 @@ export interface AssetResponseDto {
     'stack'?: Array<AssetResponseDto>;
     /**
      * 
+     * @type {number}
+     * @memberof AssetResponseDto
+     */
+    'stackCount': number;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */

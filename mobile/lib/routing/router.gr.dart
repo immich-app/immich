@@ -744,13 +744,13 @@ class GalleryViewerRouteArgs {
 
   final int initialIndex;
 
-  final bool showStack;
-
   final Asset Function(int) loadAsset;
 
   final int totalAssets;
 
   final int heroOffset;
+
+  final bool showStack;
 
   @override
   String toString() {

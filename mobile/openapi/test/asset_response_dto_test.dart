@@ -142,6 +142,11 @@ void main() {
       // TODO
     });
 
+    // int stackCount
+    test('to test the property `stackCount`', () async {
+      // TODO
+    });
+
     // String stackParentId
     test('to test the property `stackParentId`', () async {
       // TODO

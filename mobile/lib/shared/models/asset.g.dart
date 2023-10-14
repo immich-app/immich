@@ -82,24 +82,29 @@ const AssetSchema = CollectionSchema(
       name: r'remoteId',
       type: IsarType.string,
     ),
-    r'stackParentId': PropertySchema(
+    r'stackCount': PropertySchema(
       id: 13,
+      name: r'stackCount',
+      type: IsarType.long,
+    ),
+    r'stackParentId': PropertySchema(
+      id: 14,
       name: r'stackParentId',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'width',
       type: IsarType.int,
     )
@@ -217,10 +222,11 @@ void _assetSerialize(
   writer.writeString(offsets[10], object.localId);
   writer.writeLong(offsets[11], object.ownerId);
   writer.writeString(offsets[12], object.remoteId);
-  writer.writeString(offsets[13], object.stackParentId);
-  writer.writeByte(offsets[14], object.type.index);
-  writer.writeDateTime(offsets[15], object.updatedAt);
-  writer.writeInt(offsets[16], object.width);
+  writer.writeLong(offsets[13], object.stackCount);
+  writer.writeString(offsets[14], object.stackParentId);
+  writer.writeByte(offsets[15], object.type.index);
+  writer.writeDateTime(offsets[16], object.updatedAt);
+  writer.writeInt(offsets[17], object.width);
 }
 
 Asset _assetDeserialize(
@@ -244,11 +250,12 @@ Asset _assetDeserialize(
     localId: reader.readStringOrNull(offsets[10]),
     ownerId: reader.readLong(offsets[11]),
     remoteId: reader.readStringOrNull(offsets[12]),
-    stackParentId: reader.readStringOrNull(offsets[13]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[14])] ??
+    stackCount: reader.readLong(offsets[13]),
+    stackParentId: reader.readStringOrNull(offsets[14]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[15])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[15]),
-    width: reader.readIntOrNull(offsets[16]),
+    updatedAt: reader.readDateTime(offsets[16]),
+    width: reader.readIntOrNull(offsets[17]),
   );
   return object;
 }
@@ -287,13 +294,15 @@ P _assetDeserializeProp<P>(
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 14:
+      return (reader.readStringOrNull(offset)) as P;
+    case 15:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 15:
-      return (reader.readDateTime(offset)) as P;
     case 16:
+      return (reader.readDateTime(offset)) as P;
+    case 17:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1816,6 +1825,59 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'stackCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'stackCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'stackCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'stackCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2298,6 +2360,18 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stackCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stackCount', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackParentId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'stackParentId', Sort.asc);
@@ -2516,6 +2590,18 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stackCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stackCount', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackParentId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'stackParentId', Sort.asc);
@@ -2650,6 +2736,12 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'stackCount');
+    });
+  }
+
   QueryBuilder<Asset, Asset, QDistinct> distinctByStackParentId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2759,6 +2851,12 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
+    });
+  }
+
+  QueryBuilder<Asset, int, QQueryOperations> stackCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'stackCount');
     });
   }
 

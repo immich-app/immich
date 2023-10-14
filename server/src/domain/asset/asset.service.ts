@@ -475,6 +475,9 @@ export class AssetService {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toRemove);
       await this.assetRepository.updateAll(toRemove, { stackParentId: null });
     }
+
+    // This also updates the updatedAt column of the parent to indicate that it is modifed
+    return this.assetRepository.updateAll([stackParentId], { stackParentId: null });
   }
 
   async updateStackParent(authUser: AuthUserDto, dto: UpdateStackParentDto): Promise<void> {
