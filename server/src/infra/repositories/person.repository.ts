@@ -72,7 +72,7 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
-      .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .limit(500);
     if (!options?.withHidden) {
