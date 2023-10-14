@@ -39,7 +39,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
-  unassigedFaces?: AssetFaceBoxDto[];
+  unassignedFaces?: AssetFaceBoxDto[];
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
@@ -86,7 +86,7 @@ export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetRespo
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    unassigedFaces: entity.faces?.filter((assetFace) => assetFace.personId === null).map(mapFaceAsset),
+    unassignedFaces: entity.faces?.filter((assetFace) => assetFace.personId === null).map(mapFaceAsset),
     people: entity.faces
       ?.map(mapFace)
       .filter((person): person is PersonResponseDto => person !== null && !person.isHidden),

@@ -814,7 +814,7 @@ export interface AssetResponseDto {
      * @type {Array<AssetFaceBoxDto>}
      * @memberof AssetResponseDto
      */
-    'unassigedFaces'?: Array<AssetFaceBoxDto>;
+    'unassignedFaces'?: Array<AssetFaceBoxDto>;
     /**
      * 
      * @type {string}

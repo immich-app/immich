@@ -157,8 +157,8 @@ void main() {
       // TODO
     });
 
-    // List<AssetFaceBoxDto> unassigedFaces (default value: const [])
-    test('to test the property `unassigedFaces`', () async {
+    // List<AssetFaceBoxDto> unassignedFaces (default value: const [])
+    test('to test the property `unassignedFaces`', () async {
       // TODO
     });
 

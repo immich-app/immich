@@ -5873,7 +5873,7 @@
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
-          "unassigedFaces": {
+          "unassignedFaces": {
             "items": {
               "$ref": "#/components/schemas/AssetFaceBoxDto"
             },
