@@ -115,7 +115,7 @@ class ThumbnailImage extends StatelessWidget {
                 width: 3,
               ),
             const Icon(
-              Icons.burst_mode_outlined,
+              Icons.burst_mode_rounded,
               color: Colors.white,
               size: 18,
             ),
@@ -228,7 +228,7 @@ class ThumbnailImage extends StatelessWidget {
               ),
             ),
           if (!asset.isImage) buildVideoIcon(),
-          if (asset.stackCount > 0) buildStackIcon(),
+          if (asset.isImage && asset.stackCount > 0) buildStackIcon(),
         ],
       ),
     );
