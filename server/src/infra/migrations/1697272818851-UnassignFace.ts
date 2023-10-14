@@ -6,7 +6,6 @@ export class UnassignFace1697272818851 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "asset_faces" DROP CONSTRAINT "PK_bf339a24070dac7e71304ec530a"`);
     await queryRunner.query(`ALTER TABLE "asset_faces" ADD COLUMN "id" UUID DEFAULT uuid_generate_v4() NOT NULL`);
-    await queryRunner.query(`UPDATE "asset_faces" SET "id" = uuid_generate_v4()`);
     await queryRunner.query(`ALTER TABLE "asset_faces" ADD CONSTRAINT "PK_6df76ab2eb6f5b57b7c2f1fc684" PRIMARY KEY ("id")`);
     await queryRunner.query(`ALTER TABLE "asset_faces" DROP CONSTRAINT "FK_95ad7106dd7b484275443f580f9"`);
     await queryRunner.query(`ALTER TABLE "asset_faces" ALTER COLUMN "personId" DROP NOT NULL`);
