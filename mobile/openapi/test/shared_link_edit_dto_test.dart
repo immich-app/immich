@@ -36,8 +36,8 @@ void main() {
       // TODO
     });
 
-    // bool showExif
-    test('to test the property `showExif`', () async {
+    // bool showMetadata
+    test('to test the property `showMetadata`', () async {
       // TODO
     });
 

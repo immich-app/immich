@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **allowUpload** | **bool** |  | [optional] 
 **description** | **String** |  | [optional] 
 **expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**showExif** | **bool** |  | [optional] 
+**showMetadata** | **bool** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

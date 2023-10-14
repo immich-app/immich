@@ -21,7 +21,7 @@
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
-  let showExif = true;
+  let showMetadata = true;
   let expirationTime = '';
   let shouldChangeExpirationTime = false;
   let canCopyImagesToClipboard = true;
@@ -41,7 +41,7 @@
       }
       allowUpload = editingLink.allowUpload;
       allowDownload = editingLink.allowDownload;
-      showExif = editingLink.showExif;
+      showMetadata = editingLink.showMetadata;
 
       albumId = editingLink.album?.id;
       assetIds = editingLink.assets.map(({ id }) => id);
@@ -66,7 +66,7 @@
           allowUpload,
           description,
           allowDownload,
-          showExif,
+          showMetadata,
         },
       });
       sharedLink = `${window.location.origin}/share/${data.key}`;
@@ -119,9 +119,9 @@
         sharedLinkEditDto: {
           description,
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-          allowUpload: allowUpload,
-          allowDownload: allowDownload,
-          showExif: showExif,
+          allowUpload,
+          allowDownload,
+          showMetadata,
         },
       });
 
@@ -184,7 +184,7 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showExif} title={'Show metadata'} />
+          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">

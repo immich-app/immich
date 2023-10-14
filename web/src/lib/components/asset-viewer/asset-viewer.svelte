@@ -55,6 +55,7 @@
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
@@ -392,6 +393,7 @@
         showZoomButton={asset.type === AssetTypeEnum.Image}
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
+        showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
@@ -433,9 +435,9 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
-            .toLowerCase()
-            .endsWith('.insp')}
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+              .toLowerCase()
+              .endsWith('.insp'))}
           <PanoramaViewer {asset} />
         {:else}
           <PhotoViewer {asset} on:close={closeViewer} />

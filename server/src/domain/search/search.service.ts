@@ -154,7 +154,7 @@ export class SearchService {
         items: assets.items
           .map((item) => lookup[item.id])
           .filter((item) => !!item)
-          .map(mapAsset),
+          .map((asset) => mapAsset(asset)),
       },
     };
   }

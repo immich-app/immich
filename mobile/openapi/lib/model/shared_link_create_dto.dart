@@ -19,7 +19,7 @@ class SharedLinkCreateDto {
     this.assetIds = const [],
     this.description,
     this.expiresAt,
-    this.showExif = true,
+    this.showMetadata = true,
     required this.type,
   });
 
@@ -47,7 +47,7 @@ class SharedLinkCreateDto {
 
   DateTime? expiresAt;
 
-  bool showExif;
+  bool showMetadata;
 
   SharedLinkType type;
 
@@ -59,7 +59,7 @@ class SharedLinkCreateDto {
      other.assetIds == assetIds &&
      other.description == description &&
      other.expiresAt == expiresAt &&
-     other.showExif == showExif &&
+     other.showMetadata == showMetadata &&
      other.type == type;
 
   @override
@@ -71,11 +71,11 @@ class SharedLinkCreateDto {
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (showExif.hashCode) +
+    (showMetadata.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, showExif=$showExif, type=$type]';
+  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, showMetadata=$showMetadata, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,7 +97,7 @@ class SharedLinkCreateDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
-      json[r'showExif'] = this.showExif;
+      json[r'showMetadata'] = this.showMetadata;
       json[r'type'] = this.type;
     return json;
   }
@@ -118,7 +118,7 @@ class SharedLinkCreateDto {
             : const [],
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', ''),
-        showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,
       );
     }

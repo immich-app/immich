@@ -1,20 +1,21 @@
 <script lang="ts">
-  import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
   import { goto } from '$app/navigation';
-  import { api } from '@api';
-  import type { PageData } from './$types';
+  import empty2Url from '$lib/assets/empty-2.svg';
+  import AlbumCard from '$lib/components/album-page/album-card.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import empty2Url from '$lib/assets/empty-2.svg';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { flip } from 'svelte/animate';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
+  import { api } from '@api';
+  import Link from 'svelte-material-icons/Link.svelte';
+  import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+  import { flip } from 'svelte/animate';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -103,14 +104,11 @@
 
         <!-- Empty List -->
         {#if data.sharedAlbums.length === 0}
-          <div
-            class="m-auto mt-10 flex w-2/3 flex-col place-content-center place-items-center rounded-3xl border bg-gray-50 p-5 dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[500px]"
-          >
-            <img src={empty2Url} alt="Empty shared album" width="500" draggable="false" />
-            <p class="text-immich-text-gray-500 text-center">
-              Create a shared album to share photos and videos with people in your network
-            </p>
-          </div>
+          <EmptyPlaceholder
+            text="Create a shared album to share photos and videos with people in your network"
+            alt="Empty album list"
+            src={empty2Url}
+          />
         {/if}
       </div>
     </div>
