@@ -23,6 +23,10 @@ export class UpdateAssetDto {
   isArchived?: boolean;
 
   @Optional()
+  @IsBoolean()
+  isSkipMotion?: boolean;
+
+  @Optional()
   @IsString()
   description?: string;
 }

@@ -327,9 +327,13 @@ export class AssetService {
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
 
-    const { description, ...rest } = dto;
+    const { description, isSkipMotion, ...rest } = dto;
     if (description !== undefined) {
       await this.assetRepository.upsertExif({ assetId: id, description });
+    }
+
+    if (isSkipMotion !== undefined) {
+      await this.updateIsSkipMotion(id, isSkipMotion);
     }
 
     const asset = await this.assetRepository.save({ id, ...rest });
@@ -469,6 +473,21 @@ export class AssetService {
           await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
       }
+    }
+  }
+
+  private async updateIsSkipMotion(id: string, isSkipMotion: boolean) {
+    const asset = await this.assetRepository.getById(id);
+    if (!asset?.livePhotoVideoId) {
+      return;
+    }
+
+    if (isSkipMotion) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      await this.assetRepository.save({ id, isSkipMotion, livePhotoVideoId: null });
+    } else {
+      await this.assetRepository.save({ id, isSkipMotion });
+      await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
     }
   }
 }

@@ -30,10 +30,11 @@
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
   export let showSlideshow = false;
+  export let showSkipMotion: boolean;
 
   const isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
+  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'skipMotion';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -49,6 +50,7 @@
     asProfileImage: void;
     runJob: AssetJobName;
     playSlideShow: void;
+    skipMotion: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -184,6 +186,9 @@
                   on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
                   text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
+              {/if}
+              {#if showSkipMotion}
+                <MenuOption on:click={() => onMenuClick('skipMotion')} text="Skip motion part" />
               {/if}
             {/if}
           </ContextMenu>

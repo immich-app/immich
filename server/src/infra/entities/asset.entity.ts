@@ -106,6 +106,9 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isOffline!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isSkipMotion!: boolean;
+
   @Column({ type: 'bytea' })
   @Index()
   checksum!: Buffer; // sha1 checksum

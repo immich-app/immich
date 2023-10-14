@@ -56,6 +56,7 @@
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
+  let shouldShowSkipMotion = !!asset.livePhotoVideoId && !asset.isSkipMotion;
   let canCopyImagesToClipboard: boolean;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
@@ -356,6 +357,19 @@
       progressBar.restart(false);
     }
   };
+
+  const handleSkipMotion = async () => {
+    try {
+      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { isSkipMotion: true } });
+    } catch (error) {
+      console.error("Couldn't disable motion part", error);
+    }
+
+    notificationController.show({
+      message: 'Successfully disabled motion of this motion photo. Reload to see the changes',
+      type: NotificationType.Info,
+    });
+  };
 </script>
 
 <section
@@ -395,6 +409,7 @@
         showDownloadButton={shouldShowDownloadButton}
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
+        showSkipMotion={shouldShowSkipMotion}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -408,6 +423,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:skipMotion={handleSkipMotion}
       />
     {/if}
   </div>

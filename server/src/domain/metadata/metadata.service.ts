@@ -166,7 +166,7 @@ export class MetadataService {
 
     const { exifData, tags } = await this.exifData(asset);
 
-    await this.applyMotionPhotos(asset, tags);
+    !asset.isSkipMotion && (await this.applyMotionPhotos(asset, tags));
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
 

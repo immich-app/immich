@@ -36,6 +36,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isOffline!: boolean;
   isExternal!: boolean;
   isReadOnly!: boolean;
+  isSkipMotion!: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
@@ -90,6 +91,7 @@ export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetRespo
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,
+    isSkipMotion: entity.isSkipMotion,
     hasMetadata: true,
   };
 }

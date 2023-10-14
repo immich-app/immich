@@ -5903,6 +5903,9 @@
           "isReadOnly": {
             "type": "boolean"
           },
+          "isSkipMotion": {
+            "type": "boolean"
+          },
           "isTrashed": {
             "type": "boolean"
           },
@@ -5977,6 +5980,7 @@
           "isOffline",
           "isExternal",
           "isReadOnly",
+          "isSkipMotion",
           "checksum",
           "id",
           "thumbhash",
@@ -8493,6 +8497,9 @@
             "type": "boolean"
           },
           "isFavorite": {
+            "type": "boolean"
+          },
+          "isSkipMotion": {
             "type": "boolean"
           }
         },
