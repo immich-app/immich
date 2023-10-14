@@ -22,6 +22,7 @@ Name | Type | Description | Notes
 **isFavorite** | **bool** |  | 
 **isOffline** | **bool** |  | 
 **isReadOnly** | **bool** |  | 
+**isSkipMotion** | **bool** |  | 
 **isTrashed** | **bool** |  | 
 **libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 

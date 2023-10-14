@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isSkipMotion
+    test('to test the property `isSkipMotion`', () async {
+      // TODO
+    });
+
 
   });
 

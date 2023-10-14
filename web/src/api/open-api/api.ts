@@ -687,6 +687,12 @@ export interface AssetResponseDto {
      * @type {boolean}
      * @memberof AssetResponseDto
      */
+    'isSkipMotion': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetResponseDto
+     */
     'isTrashed': boolean;
     /**
      * 
@@ -3949,6 +3955,12 @@ export interface UpdateAssetDto {
      * @memberof UpdateAssetDto
      */
     'isFavorite'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateAssetDto
+     */
+    'isSkipMotion'?: boolean;
 }
 /**
  * 

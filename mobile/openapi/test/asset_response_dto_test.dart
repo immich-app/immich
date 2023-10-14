@@ -87,6 +87,11 @@ void main() {
       // TODO
     });
 
+    // bool isSkipMotion
+    test('to test the property `isSkipMotion`', () async {
+      // TODO
+    });
+
     // bool isTrashed
     test('to test the property `isTrashed`', () async {
       // TODO

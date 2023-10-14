@@ -16,6 +16,7 @@ class UpdateAssetDto {
     this.description,
     this.isArchived,
     this.isFavorite,
+    this.isSkipMotion,
   });
 
   ///
@@ -42,21 +43,31 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isSkipMotion;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.description == description &&
      other.isArchived == isArchived &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.isSkipMotion == isSkipMotion;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (isSkipMotion == null ? 0 : isSkipMotion!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite]';
+  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite, isSkipMotion=$isSkipMotion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -75,6 +86,11 @@ class UpdateAssetDto {
     } else {
     //  json[r'isFavorite'] = null;
     }
+    if (this.isSkipMotion != null) {
+      json[r'isSkipMotion'] = this.isSkipMotion;
+    } else {
+    //  json[r'isSkipMotion'] = null;
+    }
     return json;
   }
 
@@ -89,6 +105,7 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isSkipMotion: mapValueOfType<bool>(json, r'isSkipMotion'),
       );
     }
     return null;
