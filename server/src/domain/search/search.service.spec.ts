@@ -332,7 +332,7 @@ describe(SearchService.name, () => {
         [
           [
             {
-              id: 'asset-id|person-1',
+              id: 'assetFaceId',
               ownerId: 'user-id',
               assetId: 'asset-id',
               personId: 'person-1',
