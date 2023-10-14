@@ -13,7 +13,6 @@ part of openapi.api;
 class AssetFaceBoxDto {
   /// Returns a new [AssetFaceBoxDto] instance.
   AssetFaceBoxDto({
-    required this.assetId,
     required this.boundingBoxX1,
     required this.boundingBoxX2,
     required this.boundingBoxY1,
@@ -21,8 +20,6 @@ class AssetFaceBoxDto {
     required this.imageHeight,
     required this.imageWidth,
   });
-
-  String assetId;
 
   int boundingBoxX1;
 
@@ -38,7 +35,6 @@ class AssetFaceBoxDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceBoxDto &&
-     other.assetId == assetId &&
      other.boundingBoxX1 == boundingBoxX1 &&
      other.boundingBoxX2 == boundingBoxX2 &&
      other.boundingBoxY1 == boundingBoxY1 &&
@@ -49,7 +45,6 @@ class AssetFaceBoxDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
     (boundingBoxX1.hashCode) +
     (boundingBoxX2.hashCode) +
     (boundingBoxY1.hashCode) +
@@ -58,11 +53,10 @@ class AssetFaceBoxDto {
     (imageWidth.hashCode);
 
   @override
-  String toString() => 'AssetFaceBoxDto[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, imageHeight=$imageHeight, imageWidth=$imageWidth]';
+  String toString() => 'AssetFaceBoxDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, imageHeight=$imageHeight, imageWidth=$imageWidth]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
       json[r'boundingBoxX1'] = this.boundingBoxX1;
       json[r'boundingBoxX2'] = this.boundingBoxX2;
       json[r'boundingBoxY1'] = this.boundingBoxY1;
@@ -80,7 +74,6 @@ class AssetFaceBoxDto {
       final json = value.cast<String, dynamic>();
 
       return AssetFaceBoxDto(
-        assetId: mapValueOfType<String>(json, r'assetId')!,
         boundingBoxX1: mapValueOfType<int>(json, r'boundingBoxX1')!,
         boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
@@ -134,7 +127,6 @@ class AssetFaceBoxDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetId',
     'boundingBoxX1',
     'boundingBoxX2',
     'boundingBoxY1',

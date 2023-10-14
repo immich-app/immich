@@ -16,11 +16,6 @@ void main() {
   // final instance = AssetFaceBoxDto();
 
   group('test AssetFaceBoxDto', () {
-    // String assetId
-    test('to test the property `assetId`', () async {
-      // TODO
-    });
-
     // int boundingBoxX1
     test('to test the property `boundingBoxX1`', () async {
       // TODO

@@ -498,12 +498,6 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 export interface AssetFaceBoxDto {
     /**
      * 
-     * @type {string}
-     * @memberof AssetFaceBoxDto
-     */
-    'assetId': string;
-    /**
-     * 
      * @type {number}
      * @memberof AssetFaceBoxDto
      */
