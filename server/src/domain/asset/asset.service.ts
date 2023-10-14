@@ -379,7 +379,7 @@ export class AssetService {
     }
 
     // Replace the parent of the stack children with a new asset
-    if (asset.stack != undefined && asset.stack.length != 0) {
+    if (asset.stack && asset.stack.length != 0) {
       const stackIds = asset.stack.map((a) => a.id);
       const newParentId = stackIds[0];
       await this.assetRepository.updateAll(stackIds.slice(1), { stackParentId: newParentId });
