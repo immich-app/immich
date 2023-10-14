@@ -366,7 +366,7 @@
     }
 
     notificationController.show({
-      message: 'Successfully disabled motion of this motion photo. Reload to see the changes',
+      message: 'Successfully disabled motion of this motion photo. Refresh to see the changes',
       type: NotificationType.Info,
     });
   };
