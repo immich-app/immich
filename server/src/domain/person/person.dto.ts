@@ -84,6 +84,10 @@ export class PeopleResponseDto {
 }
 
 export class AssetFaceBoxDto {
+  @IsString()
+  @IsNotEmpty()
+  assetId!: string;
+
   @ApiProperty({ type: 'integer' })
   imageWidth!: number;
 
@@ -115,6 +119,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
 
 export function mapFaceAsset(face: AssetFaceEntity): AssetFaceBoxDto {
   return {
+    assetId: face.assetId,
     boundingBoxX1: face.boundingBoxX1,
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,

@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**assetId** | **String** |  | 
 **boundingBoxX1** | **int** |  | 
 **boundingBoxX2** | **int** |  | 
 **boundingBoxY1** | **int** |  | 

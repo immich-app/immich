@@ -5666,6 +5666,9 @@
       },
       "AssetFaceBoxDto": {
         "properties": {
+          "assetId": {
+            "type": "string"
+          },
           "boundingBoxX1": {
             "type": "integer"
           },
@@ -5691,7 +5694,8 @@
           "boundingBoxX1",
           "boundingBoxY1",
           "boundingBoxX2",
-          "boundingBoxY2"
+          "boundingBoxY2",
+          "assetId"
         ],
         "type": "object"
       },
