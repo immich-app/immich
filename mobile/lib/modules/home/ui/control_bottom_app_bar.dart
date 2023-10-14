@@ -96,7 +96,7 @@ class ControlBottomAppBar extends ConsumerWidget {
           if (!hasRemote)
             ControlBoxButton(
               iconData: Icons.backup_outlined,
-              label: "Upload",
+              label: "control_bottom_app_bar_upload".tr(),
               onPressed: enabled
                   ? () => showDialog(
                         context: context,
@@ -110,7 +110,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             ),
           ControlBoxButton(
             iconData: Icons.filter_none_rounded,
-            label: "Stack".tr(),
+            label: "control_bottom_app_bar_stack".tr(),
             onPressed: enabled ? onStack : null,
           ),
         ],

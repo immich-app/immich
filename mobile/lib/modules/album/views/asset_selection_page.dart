@@ -75,7 +75,7 @@ class AssetSelectionPage extends HookConsumerWidget {
                     .popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
-                canDeselect ? "Done" : "share_add",
+                canDeselect ? "share_done" : "share_add",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,

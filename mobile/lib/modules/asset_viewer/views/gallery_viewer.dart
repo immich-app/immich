@@ -493,7 +493,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                         AutoRouter.of(context).pop();
                       },
                       title: const Text(
-                        "Use as main asset",
+                        "viewer_stack_use_as_main_asset",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ).tr(),
                     ),
@@ -530,7 +530,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       }
                     },
                     title: const Text(
-                      "Remove from Stack",
+                      "viewer_remove_from_stack",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ).tr(),
                   ),
@@ -548,7 +548,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       AutoRouter.of(context).pop();
                     },
                     title: const Text(
-                      "Un-Stack",
+                      "viewer_unstack",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ).tr(),
                   ),
@@ -584,8 +584,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (stack.isNotEmpty)
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
-            label: 'Stack'.tr(),
-            tooltip: 'Stack'.tr(),
+            label: 'control_bottom_app_bar_stack'.tr(),
+            tooltip: 'control_bottom_app_bar_stack'.tr(),
           ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.delete_outline),
