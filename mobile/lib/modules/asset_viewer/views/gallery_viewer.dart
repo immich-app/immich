@@ -561,6 +561,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     Widget buildBottomBar() {
+      // !!!! itemsList and actionlist should always be in sync
       final itemsList = [
         BottomNavigationBarItem(
           icon: Icon(
@@ -593,7 +594,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         ),
       ];
 
-      List<Function(int)> actionlist = [
+      List<Function(int)> actionslist = [
         (_) => shareAsset(),
         (_) => handleArchive(asset()),
         if (stack.isNotEmpty) (_) => showStackActionItems(),
@@ -607,9 +608,8 @@ class GalleryViewerPage extends HookConsumerWidget {
           opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
           child: Column(
             children: [
-              Visibility(
-                visible: stack.isNotEmpty,
-                child: Padding(
+              if (stack.isNotEmpty)
+                Padding(
                   padding: const EdgeInsets.only(
                     left: 10,
                     bottom: 30,
@@ -619,7 +619,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: buildStackedChildren(),
                   ),
                 ),
-              ),
               Visibility(
                 visible: !asset().isImage && !isPlayingMotionVideo.value,
                 child: Container(
@@ -650,8 +649,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 showUnselectedLabels: false,
                 items: itemsList,
                 onTap: (index) {
-                  if (index < actionlist.length) {
-                    actionlist[index].call(index);
+                  if (index < actionslist.length) {
+                    actionslist[index].call(index);
                   }
                 },
               ),
