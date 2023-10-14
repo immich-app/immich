@@ -2286,6 +2286,118 @@
         ]
       }
     },
+    "/audit/file-report": {
+      "get": {
+        "operationId": "getAuditFiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileReportDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
+    "/audit/file-report/checksum": {
+      "post": {
+        "operationId": "getFileChecksums",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileChecksumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FileChecksumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
+    "/audit/file-report/fix": {
+      "post": {
+        "operationId": "fixAuditFiles",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileReportFixDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
@@ -6580,6 +6692,97 @@
         },
         "type": "object"
       },
+      "FileChecksumDto": {
+        "properties": {
+          "filenames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "filenames"
+        ],
+        "type": "object"
+      },
+      "FileChecksumResponseDto": {
+        "properties": {
+          "checksum": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "checksum"
+        ],
+        "type": "object"
+      },
+      "FileReportDto": {
+        "properties": {
+          "extras": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "orphans": {
+            "items": {
+              "$ref": "#/components/schemas/FileReportItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "orphans",
+          "extras"
+        ],
+        "type": "object"
+      },
+      "FileReportFixDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileReportItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "FileReportItemDto": {
+        "properties": {
+          "checksum": {
+            "type": "string"
+          },
+          "entityId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "entityType": {
+            "$ref": "#/components/schemas/PathEntityType"
+          },
+          "pathType": {
+            "$ref": "#/components/schemas/PathType"
+          },
+          "pathValue": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entityId",
+          "entityType",
+          "pathType",
+          "pathValue"
+        ],
+        "type": "object"
+      },
       "ImportAssetDto": {
         "properties": {
           "assetPath": {
@@ -7026,6 +7229,26 @@
           "passwordLoginEnabled"
         ],
         "type": "object"
+      },
+      "PathEntityType": {
+        "enum": [
+          "asset",
+          "person",
+          "user"
+        ],
+        "type": "string"
+      },
+      "PathType": {
+        "enum": [
+          "original",
+          "jpeg_thumbnail",
+          "webp_thumbnail",
+          "encoded_video",
+          "sidecar",
+          "face",
+          "profile"
+        ],
+        "type": "string"
       },
       "PeopleResponseDto": {
         "properties": {

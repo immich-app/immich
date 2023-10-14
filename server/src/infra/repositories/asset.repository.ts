@@ -174,7 +174,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
-      withDeleted: !!options.trashedBefore,
+      withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',

@@ -117,7 +117,10 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AuditApi* | [**fixAuditFiles**](doc//AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
+*AuditApi* | [**getAuditFiles**](doc//AuditApi.md#getauditfiles) | **GET** /audit/file-report | 
+*AuditApi* | [**getFileChecksums**](doc//AuditApi.md#getfilechecksums) | **POST** /audit/file-report/checksum | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
@@ -247,6 +250,11 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [FileChecksumDto](doc//FileChecksumDto.md)
+ - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
+ - [FileReportDto](doc//FileReportDto.md)
+ - [FileReportFixDto](doc//FileReportFixDto.md)
+ - [FileReportItemDto](doc//FileReportItemDto.md)
  - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
@@ -268,6 +276,8 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
+ - [PathEntityType](doc//PathEntityType.md)
+ - [PathType](doc//PathType.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)

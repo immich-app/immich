@@ -17,8 +17,23 @@ void main() {
   // final instance = AuditApi();
 
   group('tests for AuditApi', () {
+    //Future fixAuditFiles(FileReportFixDto fileReportFixDto) async
+    test('test fixAuditFiles', () async {
+      // TODO
+    });
+
     //Future<AuditDeletesResponseDto> getAuditDeletes(EntityType entityType, DateTime after, { String userId }) async
     test('test getAuditDeletes', () async {
+      // TODO
+    });
+
+    //Future<FileReportDto> getAuditFiles() async
+    test('test getAuditFiles', () async {
+      // TODO
+    });
+
+    //Future<List<FileChecksumResponseDto>> getFileChecksums(FileChecksumDto fileChecksumDto) async
+    test('test getFileChecksums', () async {
       // TODO
     });
 

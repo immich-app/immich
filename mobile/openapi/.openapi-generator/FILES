@@ -59,6 +59,11 @@ doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
+doc/FileChecksumDto.md
+doc/FileChecksumResponseDto.md
+doc/FileReportDto.md
+doc/FileReportFixDto.md
+doc/FileReportItemDto.md
 doc/ImportAssetDto.md
 doc/JobApi.md
 doc/JobCommand.md
@@ -84,6 +89,8 @@ doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
+doc/PathEntityType.md
+doc/PathType.md
 doc/PeopleResponseDto.md
 doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
@@ -227,6 +234,11 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
+lib/model/file_checksum_dto.dart
+lib/model/file_checksum_response_dto.dart
+lib/model/file_report_dto.dart
+lib/model/file_report_fix_dto.dart
+lib/model/file_report_item_dto.dart
 lib/model/import_asset_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
@@ -248,6 +260,8 @@ lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/path_entity_type.dart
+lib/model/path_type.dart
 lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
@@ -364,6 +378,11 @@ test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
+test/file_checksum_dto_test.dart
+test/file_checksum_response_dto_test.dart
+test/file_report_dto_test.dart
+test/file_report_fix_dto_test.dart
+test/file_report_item_dto_test.dart
 test/import_asset_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
@@ -389,6 +408,8 @@ test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
+test/path_entity_type_test.dart
+test/path_type_test.dart
 test/people_response_dto_test.dart
 test/people_update_dto_test.dart
 test/people_update_item_test.dart
