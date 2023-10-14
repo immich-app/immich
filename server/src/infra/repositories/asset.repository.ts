@@ -541,9 +541,10 @@ export class AssetRepository implements IAssetRepository {
     }
 
     // Hide stack children only in main timeline
-    if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
-      builder = builder.andWhere('asset.stackParent IS NULL');
-    }
+    // Uncomment after adding support for stacked assets in web client
+    // if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
+    //   builder = builder.andWhere('asset.stackParent IS NULL');
+    // }
 
     return builder;
   }
