@@ -71,7 +71,19 @@ const assetResponse: AssetResponseDto = {
   checksum: 'ZmlsZSBoYXNo',
   isTrashed: false,
   libraryId: 'library-id',
+  hasMetadata: true,
 };
+
+const assetResponseWithoutMetadata = {
+  id: 'id_1',
+  type: AssetType.VIDEO,
+  resized: false,
+  thumbhash: null,
+  localDateTime: today,
+  duration: '0:00:00.00000',
+  livePhotoVideoId: null,
+  hasMetadata: false,
+} as AssetResponseDto;
 
 const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
@@ -253,7 +265,7 @@ export const sharedLinkResponseStub = {
     expiresAt: tomorrow,
     id: '123',
     key: sharedLinkBytes.toString('base64url'),
-    showExif: true,
+    showMetadata: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
   }),
@@ -267,7 +279,7 @@ export const sharedLinkResponseStub = {
     expiresAt: yesterday,
     id: '123',
     key: sharedLinkBytes.toString('base64url'),
-    showExif: true,
+    showMetadata: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
   }),
@@ -281,11 +293,11 @@ export const sharedLinkResponseStub = {
     description: null,
     allowUpload: false,
     allowDownload: false,
-    showExif: true,
+    showMetadata: true,
     album: albumResponse,
     assets: [assetResponse],
   }),
-  readonlyNoExif: Object.freeze<SharedLinkResponseDto>({
+  readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',
     userId: 'admin_id',
     key: sharedLinkBytes.toString('base64url'),
@@ -295,8 +307,8 @@ export const sharedLinkResponseStub = {
     description: null,
     allowUpload: false,
     allowDownload: false,
-    showExif: false,
+    showMetadata: false,
     album: { ...albumResponse, startDate: assetResponse.fileCreatedAt, endDate: assetResponse.fileCreatedAt },
-    assets: [{ ...assetResponse, exifInfo: undefined }],
+    assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
   }),
 };

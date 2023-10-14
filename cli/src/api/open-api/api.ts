@@ -642,6 +642,12 @@ export interface AssetResponseDto {
     'fileModifiedAt': string;
     /**
      * 
+     * @type {boolean}
+     * @memberof AssetResponseDto
+     */
+    'hasMetadata': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
@@ -761,7 +767,7 @@ export interface AssetResponseDto {
      */
     'tags'?: Array<TagResponseDto>;
     /**
-     * base64 encoded thumbhash
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
@@ -2894,7 +2900,7 @@ export interface SharedLinkCreateDto {
      * @type {boolean}
      * @memberof SharedLinkCreateDto
      */
-    'showExif'?: boolean;
+    'showMetadata'?: boolean;
     /**
      * 
      * @type {SharedLinkType}
@@ -2939,7 +2945,7 @@ export interface SharedLinkEditDto {
      * @type {boolean}
      * @memberof SharedLinkEditDto
      */
-    'showExif'?: boolean;
+    'showMetadata'?: boolean;
 }
 /**
  * 
@@ -3006,7 +3012,7 @@ export interface SharedLinkResponseDto {
      * @type {boolean}
      * @memberof SharedLinkResponseDto
      */
-    'showExif': boolean;
+    'showMetadata': boolean;
     /**
      * 
      * @type {SharedLinkType}

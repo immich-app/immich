@@ -2,7 +2,7 @@ import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals: { api } }) => {
   const { user } = await parent();
 
   if (!user) {
@@ -11,8 +11,11 @@ export const load: PageServerLoad = async ({ parent }) => {
     throw redirect(302, AppRoute.PHOTOS);
   }
 
+  const { data: configs } = await api.systemConfigApi.getConfig();
+
   return {
     user,
+    configs,
     meta: {
       title: 'System Settings',
     },

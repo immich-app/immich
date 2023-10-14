@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **assetIds** | **List<String>** |  | [optional] [default to const []]
 **description** | **String** |  | [optional] 
 **expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**showExif** | **bool** |  | [optional] [default to true]
+**showMetadata** | **bool** |  | [optional] [default to true]
 **type** | [**SharedLinkType**](SharedLinkType.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -22,7 +22,7 @@ class SharedLinkResponseDto {
     required this.expiresAt,
     required this.id,
     required this.key,
-    required this.showExif,
+    required this.showMetadata,
     required this.type,
     required this.userId,
   });
@@ -51,7 +51,7 @@ class SharedLinkResponseDto {
 
   String key;
 
-  bool showExif;
+  bool showMetadata;
 
   SharedLinkType type;
 
@@ -68,7 +68,7 @@ class SharedLinkResponseDto {
      other.expiresAt == expiresAt &&
      other.id == id &&
      other.key == key &&
-     other.showExif == showExif &&
+     other.showMetadata == showMetadata &&
      other.type == type &&
      other.userId == userId;
 
@@ -84,12 +84,12 @@ class SharedLinkResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (key.hashCode) +
-    (showExif.hashCode) +
+    (showMetadata.hashCode) +
     (type.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, showExif=$showExif, type=$type, userId=$userId]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, showMetadata=$showMetadata, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -114,7 +114,7 @@ class SharedLinkResponseDto {
     }
       json[r'id'] = this.id;
       json[r'key'] = this.key;
-      json[r'showExif'] = this.showExif;
+      json[r'showMetadata'] = this.showMetadata;
       json[r'type'] = this.type;
       json[r'userId'] = this.userId;
     return json;
@@ -137,7 +137,7 @@ class SharedLinkResponseDto {
         expiresAt: mapDateTime(json, r'expiresAt', ''),
         id: mapValueOfType<String>(json, r'id')!,
         key: mapValueOfType<String>(json, r'key')!,
-        showExif: mapValueOfType<bool>(json, r'showExif')!,
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
         type: SharedLinkType.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -195,7 +195,7 @@ class SharedLinkResponseDto {
     'expiresAt',
     'id',
     'key',
-    'showExif',
+    'showMetadata',
     'type',
     'userId',
   };

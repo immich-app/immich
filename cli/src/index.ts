@@ -19,9 +19,9 @@ program
   )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
-  .action((paths, options) => {
+  .action(async (paths, options) => {
     options.excludePatterns = options.ignore;
-    new Upload().run(paths, options);
+    await new Upload().run(paths, options);
   });
 
 program
@@ -37,18 +37,18 @@ program
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS').default(false))
   .addOption(new Option('--no-read-only', 'Import files without read-only protection, allowing Immich to manage them'))
   .argument('[paths...]', 'One or more paths to assets to be imported')
-  .action((paths, options) => {
+  .action(async (paths, options) => {
     options.import = true;
     options.excludePatterns = options.ignore;
-    new Upload().run(paths, options);
+    await new Upload().run(paths, options);
   });
 
 program
   .command('server-info')
   .description('Display server information')
 
-  .action(() => {
-    new ServerInfo().run();
+  .action(async () => {
+    await new ServerInfo().run();
   });
 
 program
@@ -56,8 +56,8 @@ program
   .description('Login using an API key')
   .argument('[instanceUrl]')
   .argument('[apiKey]')
-  .action((paths, options) => {
-    new LoginKey().run(paths, options);
+  .action(async (paths, options) => {
+    await new LoginKey().run(paths, options);
   });
 
 program.parse(process.argv);

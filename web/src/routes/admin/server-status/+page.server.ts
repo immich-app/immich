@@ -14,6 +14,7 @@ export const load = (async ({ parent, locals: { api } }) => {
   const { data: stats } = await api.serverInfoApi.getStats();
 
   return {
+    user,
     stats,
     meta: {
       title: 'Server Stats',

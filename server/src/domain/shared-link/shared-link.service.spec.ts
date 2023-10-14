@@ -59,10 +59,10 @@ describe(SharedLinkService.name, () => {
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
 
-    it('should return not return exif', async () => {
+    it('should not return metadata', async () => {
       const authDto = authStub.adminSharedLinkNoExif;
       shareMock.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoExif);
+      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
   });
@@ -137,7 +137,7 @@ describe(SharedLinkService.name, () => {
       await sut.create(authStub.admin, {
         type: SharedLinkType.INDIVIDUAL,
         assetIds: [assetStub.image.id],
-        showExif: true,
+        showMetadata: true,
         allowDownload: true,
         allowUpload: true,
       });

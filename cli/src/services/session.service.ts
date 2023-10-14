@@ -53,7 +53,14 @@ export class SessionService {
 
     if (!fs.existsSync(this.configDir)) {
       // Create config folder if it doesn't exist
-      fs.mkdirSync(this.configDir, { recursive: true });
+      const created = await fs.promises.mkdir(this.configDir, { recursive: true });
+      if (!created) {
+        throw new Error(`Failed to create config folder ${this.configDir}`);
+      }
+    }
+
+    if (!fs.existsSync(this.configDir)) {
+      console.error('waah');
     }
 
     fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
