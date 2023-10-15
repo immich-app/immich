@@ -318,6 +318,12 @@ class _$AppRouter extends RootStackRouter {
         child: const TrashPage(),
       );
     },
+    SharedLinkRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const SharedLinkPage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -633,6 +639,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           TrashRoute.name,
           path: '/trash-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          SharedLinkRoute.name,
+          path: '/shared-link-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1418,6 +1432,18 @@ class TrashRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'TrashRoute';
+}
+
+/// generated route for
+/// [SharedLinkPage]
+class SharedLinkRoute extends PageRouteInfo<void> {
+  const SharedLinkRoute()
+      : super(
+          SharedLinkRoute.name,
+          path: '/shared-link-page',
+        );
+
+  static const String name = 'SharedLinkRoute';
 }
 
 /// generated route for
