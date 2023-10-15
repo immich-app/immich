@@ -324,6 +324,19 @@ class _$AppRouter extends RootStackRouter {
         child: const SharedLinkPage(),
       );
     },
+    SharedLinkEditRoute.name: (routeData) {
+      final args = routeData.argsAs<SharedLinkEditRouteArgs>(
+          orElse: () => const SharedLinkEditRouteArgs());
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: SharedLinkEditPage(
+          key: args.key,
+          existingLink: args.existingLink,
+          assetsList: args.assetsList,
+          albumId: args.albumId,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -647,6 +660,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           SharedLinkRoute.name,
           path: '/shared-link-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          SharedLinkEditRoute.name,
+          path: '/shared-link-edit-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1444,6 +1465,50 @@ class SharedLinkRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SharedLinkRoute';
+}
+
+/// generated route for
+/// [SharedLinkEditPage]
+class SharedLinkEditRoute extends PageRouteInfo<SharedLinkEditRouteArgs> {
+  SharedLinkEditRoute({
+    Key? key,
+    SharedLinkResponseDto? existingLink,
+    List<String>? assetsList,
+    String? albumId,
+  }) : super(
+          SharedLinkEditRoute.name,
+          path: '/shared-link-edit-page',
+          args: SharedLinkEditRouteArgs(
+            key: key,
+            existingLink: existingLink,
+            assetsList: assetsList,
+            albumId: albumId,
+          ),
+        );
+
+  static const String name = 'SharedLinkEditRoute';
+}
+
+class SharedLinkEditRouteArgs {
+  const SharedLinkEditRouteArgs({
+    this.key,
+    this.existingLink,
+    this.assetsList,
+    this.albumId,
+  });
+
+  final Key? key;
+
+  final SharedLinkResponseDto? existingLink;
+
+  final List<String>? assetsList;
+
+  final String? albumId;
+
+  @override
+  String toString() {
+    return 'SharedLinkEditRouteArgs{key: $key, existingLink: $existingLink, assetsList: $assetsList, albumId: $albumId}';
+  }
 }
 
 /// generated route for

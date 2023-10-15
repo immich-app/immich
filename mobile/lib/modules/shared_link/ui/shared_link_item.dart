@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -60,7 +63,11 @@ class SharedLinkItem extends ConsumerWidget {
           sharedLinkResponse.expiresAt!.difference(DateTime.now());
       debugPrint("Difference: $difference");
       if (difference.inDays > 0) {
-        expiresText = "in ${difference.inDays} days";
+        var dayDifference = difference.inDays;
+        if (difference.inHours % 24 > 12) {
+          dayDifference += 1;
+        }
+        expiresText = "in $dayDifference days";
       } else if (difference.inHours > 0) {
         expiresText = "in ${difference.inHours} hours";
       } else if (difference.inMinutes > 0) {
@@ -80,7 +87,7 @@ class SharedLinkItem extends ConsumerWidget {
     final themeDate = Theme.of(context);
     final isDarkMode = themeDate.brightness == Brightness.dark;
     final thumbnailUrl = getThumbnailUrl();
-    const imageSize = 100.0;
+    final imageSize = math.min(MediaQuery.of(context).size.width / 4, 100.0);
 
     copyShareLinkToClipboard() {
       final serverUrl = Store.tryGet(StoreKey.serverUrl);
@@ -129,7 +136,7 @@ class SharedLinkItem extends ConsumerWidget {
     Widget buildThumbnail() {
       if (thumbnailUrl == null) {
         return Container(
-          height: imageSize,
+          height: imageSize * 1.2,
           width: imageSize,
           decoration: BoxDecoration(
             color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
@@ -143,8 +150,8 @@ class SharedLinkItem extends ConsumerWidget {
         );
       }
       return SizedBox(
+        height: imageSize * 1.2,
         width: imageSize,
-        height: imageSize,
         child: Padding(
           padding: const EdgeInsets.only(right: 4.0),
           child: ThumbnailWithInfo(
@@ -212,7 +219,8 @@ class SharedLinkItem extends ConsumerWidget {
               tapTargetSize:
                   MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
-            onPressed: () {},
+            onPressed: () => AutoRouter.of(context)
+                .push(SharedLinkEditRoute(existingLink: sharedLinkResponse)),
           ),
           IconButton(
             splashRadius: 25,

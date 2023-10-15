@@ -31,4 +31,20 @@ class SharedLinkService {
       _log.severe("failed to delete shared link id - $id with error - $e");
     }
   }
+
+  Future<void> createSharedLink(SharedLinkCreateDto dto) async {
+    try {
+      await _apiService.sharedLinkApi.createSharedLink(dto);
+    } catch (e) {
+      _log.severe("failed to update shared link id with error - $e");
+    }
+  }
+
+  Future<void> updateSharedLink(String id, SharedLinkEditDto dto) async {
+    try {
+      await _apiService.sharedLinkApi.updateSharedLink(id, dto);
+    } catch (e) {
+      _log.severe("failed to update shared link id - $id with error - $e");
+    }
+  }
 }
