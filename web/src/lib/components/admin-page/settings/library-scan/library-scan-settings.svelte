@@ -92,10 +92,20 @@
             required={true}
             disabled={disabled || !libraryScanConfig.enabled}
             label="Cron Expression"
-            desc="Set the scanning interval using the cron format. For more information please refer to https://crontab.guru"
             bind:value={libraryScanConfig.cronExpression}
             isEdited={libraryScanConfig.cronExpression !== savedConfig.cronExpression}
-          />
+          >
+            <svelte:fragment slot="desc">
+              <p class="text-sm dark:text-immich-dark-fg">
+                Set the scanning interval using the cron format. For more information please refer to e.g. <a
+                  href="https://crontab.guru"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer">Crontab Guru</a
+                >
+              </p>
+            </svelte:fragment>
+          </SettingInputField>
         </div>
 
         <div class="ml-4">
