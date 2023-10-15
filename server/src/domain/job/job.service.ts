@@ -30,7 +30,9 @@ export class JobService {
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validateCronExpression(config.libraryScan.cronExpression));
-    this.initPeriodicLibraryScan();
+    this.initPeriodicLibraryScan().catch(() => {
+      this.logger.error('An error occurred during the periodic library scan setup');
+    });
   }
 
   async initPeriodicLibraryScan() {
