@@ -3,7 +3,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:isar/isar.dart';
@@ -42,12 +41,6 @@ class TrashNotifier extends StateNotifier<bool> {
         await _db.exifInfos.deleteAll(dbIds);
         await _db.assets.deleteAll(dbIds);
       });
-
-      // Refresh assets in background
-      Future.delayed(
-        const Duration(seconds: 4),
-        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-      );
     } catch (error, stack) {
       _log.severe("Cannot empty trash ${error.toString()}", error, stack);
     }
@@ -68,12 +61,6 @@ class TrashNotifier extends StateNotifier<bool> {
         await _db.writeTxn(() async {
           await _db.assets.putAll(updatedAssets);
         });
-
-        // Refresh assets in background
-        Future.delayed(
-          const Duration(seconds: 4),
-          () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-        );
         return true;
       }
     } catch (error, stack) {
@@ -106,12 +93,6 @@ class TrashNotifier extends StateNotifier<bool> {
       await _db.writeTxn(() async {
         await _db.assets.putAll(updatedAssets);
       });
-
-      // Refresh assets in background
-      Future.delayed(
-        const Duration(seconds: 4),
-        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-      );
     } catch (error, stack) {
       _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }

@@ -106,7 +106,7 @@ class ProfileDrawer extends HookConsumerWidget {
           ),
         ),
         title: Text(
-          "Trash",
+          "profile_drawer_trash",
           style: Theme.of(context)
               .textTheme
               .labelLarge

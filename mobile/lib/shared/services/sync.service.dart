@@ -153,7 +153,7 @@ class SyncService {
     if (toUpsert == null || toDelete == null) return null;
     try {
       if (toDelete.isNotEmpty) {
-        await _handleRemoteAssetRemoval(toDelete);
+        await handleRemoteAssetRemoval(toDelete);
       }
       if (toUpsert.isNotEmpty) {
         final (_, updated) = await _linkWithExistingFromDb(toUpsert);
@@ -171,7 +171,7 @@ class SyncService {
   }
 
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> _handleRemoteAssetRemoval(List<String> idsToDelete) {
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
     return _db.writeTxn(() async {
       await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
       final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
