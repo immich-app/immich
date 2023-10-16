@@ -88,12 +88,6 @@ class HomePage extends HookConsumerWidget {
             : AssetState.local;
       }
 
-      void onShareAssets() {
-        handleShareAssets(ref, context, selection.value.toList());
-
-        selectionEnabledHook.value = false;
-      }
-
       List<Asset> remoteOnlySelection({String? localErrorMessage}) {
         final Set<Asset> assets = selection.value;
         final bool onlyRemote = assets.every((e) => e.isRemote);
@@ -108,6 +102,19 @@ class HomePage extends HookConsumerWidget {
           return assets.where((a) => a.isRemote).toList();
         }
         return assets.toList();
+      }
+
+      void onShareAssets(bool shareLocal) {
+        if (shareLocal) {
+          handleShareAssets(ref, context, selection.value.toList());
+        } else {
+          processing.value = true;
+          final ids = remoteOnlySelection().map((e) => e.remoteId!);
+          AutoRouter.of(context)
+              .push(SharedLinkEditRoute(assetsList: ids.toList()));
+        }
+        processing.value = false;
+        selectionEnabledHook.value = false;
       }
 
       void onFavoriteAssets() async {

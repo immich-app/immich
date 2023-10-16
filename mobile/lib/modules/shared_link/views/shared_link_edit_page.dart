@@ -226,6 +226,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 : descriptionController.text,
             expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
           );
+      ref.invalidate(sharedLinksStateProvider);
       AutoRouter.of(context).pop();
     }
 

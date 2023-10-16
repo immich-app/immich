@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,7 +10,7 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
-  final void Function() onShare;
+  final void Function(bool shareLocal) onShare;
   final void Function() onFavorite;
   final void Function() onArchive;
   final void Function() onDelete;
@@ -47,65 +45,67 @@ class ControlBottomAppBar extends ConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
-    Widget renderActionButtons() {
-      return Row(
-        children: [
+    List<Widget> renderActionButtons() {
+      return [
+        ControlBoxButton(
+          iconData: Icons.share_rounded,
+          label: "control_bottom_app_bar_share".tr(),
+          onPressed: enabled ? () => onShare(false) : null,
+        ),
+        if (hasRemote)
           ControlBoxButton(
-            iconData: Platform.isAndroid
-                ? Icons.share_rounded
-                : Icons.ios_share_rounded,
-            label: "control_bottom_app_bar_share".tr(),
-            onPressed: enabled ? onShare : null,
+            iconData: Icons.ios_share_rounded,
+            label: "control_bottom_app_bar_share_to".tr(),
+            onPressed: enabled ? () => onShare(true) : null,
           ),
-          if (hasRemote)
-            ControlBoxButton(
-              iconData: Icons.archive,
-              label: "control_bottom_app_bar_archive".tr(),
-              onPressed: enabled ? onArchive : null,
-            ),
-          if (hasRemote)
-            ControlBoxButton(
-              iconData: Icons.favorite_border_rounded,
-              label: "control_bottom_app_bar_favorite".tr(),
-              onPressed: enabled ? onFavorite : null,
-            ),
+        if (hasRemote)
           ControlBoxButton(
-            iconData: Icons.delete_outline_rounded,
-            label: "control_bottom_app_bar_delete".tr(),
-            onPressed: enabled
-                ? () {
-                    if (!trashEnabled) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return DeleteDialog(
-                            onDelete: onDelete,
-                          );
-                        },
-                      );
-                    } else {
-                      onDelete();
-                    }
+            iconData: Icons.archive,
+            label: "control_bottom_app_bar_archive".tr(),
+            onPressed: enabled ? onArchive : null,
+          ),
+        if (hasRemote)
+          ControlBoxButton(
+            iconData: Icons.favorite_border_rounded,
+            label: "control_bottom_app_bar_favorite".tr(),
+            onPressed: enabled ? onFavorite : null,
+          ),
+        ControlBoxButton(
+          iconData: Icons.delete_outline_rounded,
+          label: "control_bottom_app_bar_delete".tr(),
+          onPressed: enabled
+              ? () {
+                  if (!trashEnabled) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return DeleteDialog(
+                          onDelete: onDelete,
+                        );
+                      },
+                    );
+                  } else {
+                    onDelete();
                   }
+                }
+              : null,
+        ),
+        if (!hasRemote)
+          ControlBoxButton(
+            iconData: Icons.backup_outlined,
+            label: "Upload",
+            onPressed: enabled
+                ? () => showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return UploadDialog(
+                          onUpload: onUpload,
+                        );
+                      },
+                    )
                 : null,
           ),
-          if (!hasRemote)
-            ControlBoxButton(
-              iconData: Icons.backup_outlined,
-              label: "Upload",
-              onPressed: enabled
-                  ? () => showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return UploadDialog(
-                            onUpload: onUpload,
-                          );
-                        },
-                      )
-                  : null,
-            ),
-        ],
-      );
+      ];
     }
 
     return DraggableScrollableSheet(
@@ -137,7 +137,13 @@ class ControlBottomAppBar extends ConsumerWidget {
                     const SizedBox(height: 12),
                     const CustomDraggingHandle(),
                     const SizedBox(height: 12),
-                    renderActionButtons(),
+                    SizedBox(
+                      height: 70,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: renderActionButtons(),
+                      ),
+                    ),
                     if (hasRemote)
                       const Divider(
                         indent: 16,
@@ -160,10 +166,6 @@ class ControlBottomAppBar extends ConsumerWidget {
                     onAddToAlbum: onAddToAlbum,
                     enabled: enabled,
                   ),
-                ),
-              if (hasRemote)
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 200),
                 ),
             ],
           ),
