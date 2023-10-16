@@ -489,8 +489,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                               currentAsset,
                               stackElements.elementAt(stackIndex.value),
                             );
-                        // sync assets
-                        ref.read(assetProvider.notifier).getAllAsset();
                         Navigator.pop(ctx);
                         AutoRouter.of(context).pop();
                       },

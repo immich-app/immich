@@ -491,6 +491,7 @@ export class AssetService {
 
     if (shouldUpdate) {
       // This updates the updatedAt column of the parent to indicate that it is modifed
+      this.communicationRepository.send(CommunicationEvent.ASSET_STACK, authUser.id, stackParentId);
       return this.assetRepository.updateAll([stackParentId], { stackParentId: null });
     }
   }
@@ -508,6 +509,7 @@ export class AssetService {
       childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
     }
 
+    this.communicationRepository.send(CommunicationEvent.ASSET_STACK, authUser.id, newParentId);
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
     // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });
