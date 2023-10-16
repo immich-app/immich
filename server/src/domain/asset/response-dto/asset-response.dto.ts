@@ -30,6 +30,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
+  isShownInMemory!: boolean;
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
@@ -77,6 +78,7 @@ export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetRespo
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
+    isShownInMemory: entity.isShownInMemory,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
     isTrashed: !!entity.deletedAt,

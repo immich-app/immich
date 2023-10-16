@@ -87,6 +87,11 @@ void main() {
       // TODO
     });
 
+    // bool isShownInMemory
+    test('to test the property `isShownInMemory`', () async {
+      // TODO
+    });
+
     // bool isTrashed
     test('to test the property `isTrashed`', () async {
       // TODO

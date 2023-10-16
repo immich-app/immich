@@ -20,6 +20,12 @@
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { fade } from 'svelte/transition';
   import { tweened } from 'svelte/motion';
+  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
+  import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import { handleError } from '$lib/utils/handle-error';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   const parseIndex = (s: string | null, max: number | null) => Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
@@ -57,6 +63,69 @@
   const reset = () => (resetPromise = progress.set(0));
 
   let paused = false;
+
+  let isShowAssetOptions = false;
+  let contextMenuPosition = { x: 0, y: 0 };
+
+  const updateMemoryStoreAsset = () => {
+    if ($memoryStore && $memoryStore[memoryIndex].assets[assetIndex]) {
+      memoryStore.update((memoryStore) => {
+        const updatedMemoryStore = [...memoryStore];
+
+        if (memoryIndex >= 0 && memoryIndex < updatedMemoryStore.length) {
+          const memoryItem = updatedMemoryStore[memoryIndex];
+
+          if (assetIndex >= 0 && memoryItem.assets.length > 1) {
+            memoryItem.assets.splice(assetIndex, 1);
+          }
+        }
+        return updatedMemoryStore; // Return the updated memoryStore
+      });
+    }
+  };
+
+  const updateMemoryStoreMemory = () => {
+    if ($memoryStore && $memoryStore[memoryIndex].assets[assetIndex]) {
+      memoryStore.update((memoryStore) => {
+        const updatedMemoryStore = [...memoryStore];
+        updatedMemoryStore.splice(memoryIndex, 1);
+
+        return updatedMemoryStore; // Return the updated memoryStore
+      });
+    }
+  };
+
+  const removeFromMemory = async () => {
+    try {
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids: [currentAsset.id], isShownInMemory: false } });
+
+      notificationController.show({
+        message: `Removed asset from memory`,
+        type: NotificationType.Info,
+      });
+      if (currentMemory?.assets.length === 1) {
+        if ($memoryStore?.length === 1) {
+          goto(AppRoute.PHOTOS);
+        } else {
+          if ($memoryStore?.length === memoryIndex + 1) {
+            toPreviousMemory();
+          } else {
+            toNextMemory();
+          }
+          updateMemoryStoreAsset();
+          updateMemoryStoreMemory();
+        }
+      } else {
+        updateMemoryStoreAsset();
+      }
+      isShowAssetOptions = false;
+    } catch (error) {
+      handleError(error, "Can't remove asset from memory");
+    }
+  };
+  const handleRemoveFromMemory = () => {
+    isShowAssetOptions = !isShowAssetOptions;
+  };
 
   // Play or pause progress when the paused state changes.
   $: paused ? pause() : play();
@@ -221,6 +290,16 @@
                 {currentAsset.exifInfo?.city || ''}
                 {currentAsset.exifInfo?.country || ''}
               </p>
+            </div>
+            <div class="absolute right-8 top-4 text-sm font-medium text-white">
+              <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
+                <CircleIconButton isOpacity={true} logo={DotsVertical} on:click={handleRemoveFromMemory} title="More" />
+                {#if isShowAssetOptions}
+                  <ContextMenu {...contextMenuPosition} direction="left">
+                    <MenuOption on:click={removeFromMemory} text="Remove from memories" />
+                  </ContextMenu>
+                {/if}
+              </div>
             </div>
           </div>
         </div>

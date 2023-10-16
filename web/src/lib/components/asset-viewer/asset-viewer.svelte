@@ -346,6 +346,20 @@
     }
   };
 
+  const handleEnableMemories = async () => {
+    try {
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids: [asset.id], isShownInMemory: true } });
+
+      notificationController.show({
+        message: `Asset can be shown in memories`,
+        type: NotificationType.Info,
+      });
+      asset.isShownInMemory = true;
+    } catch (error) {
+      handleError(error, "Can't remove asset from memory");
+    }
+  };
+
   const handleStopSlideshow = async () => {
     try {
       await document.exitFullscreen();
@@ -408,6 +422,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:enableMemories={handleEnableMemories}
       />
     {/if}
   </div>

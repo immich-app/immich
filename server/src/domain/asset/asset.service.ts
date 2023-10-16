@@ -165,7 +165,7 @@ export class AssetService {
     const assets = await this.assetRepository.getByDayOfYear(authUser.id, dto);
 
     return _.chain(assets)
-      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
+      .filter((asset) => asset.localDateTime.getFullYear() < currentYear && asset.isShownInMemory)
       .map((asset) => {
         const years = currentYear - asset.localDateTime.getFullYear();
 

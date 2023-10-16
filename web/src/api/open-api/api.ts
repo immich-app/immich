@@ -399,6 +399,12 @@ export interface AssetBulkUpdateDto {
      * @memberof AssetBulkUpdateDto
      */
     'isFavorite'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkUpdateDto
+     */
+    'isShownInMemory'?: boolean;
 }
 /**
  * 
@@ -682,6 +688,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'isReadOnly': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetResponseDto
+     */
+    'isShownInMemory': boolean;
     /**
      * 
      * @type {boolean}

@@ -11,6 +11,10 @@ export class AssetBulkUpdateDto extends BulkIdsDto {
   @Optional()
   @IsBoolean()
   isArchived?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  isShownInMemory?: boolean;
 }
 
 export class UpdateAssetDto {

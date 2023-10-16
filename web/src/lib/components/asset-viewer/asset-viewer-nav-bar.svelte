@@ -49,6 +49,7 @@
     asProfileImage: void;
     runJob: AssetJobName;
     playSlideShow: void;
+    enableMemories: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -184,6 +185,9 @@
                   on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
                   text={api.getAssetJobName(AssetJobName.TranscodeVideo)}
                 />
+              {/if}
+              {#if !asset.isShownInMemory}
+                <MenuOption on:click={() => dispatch('enableMemories')} text="Show in memories" />
               {/if}
             {/if}
           </ContextMenu>

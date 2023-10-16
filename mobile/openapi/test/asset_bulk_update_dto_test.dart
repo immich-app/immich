@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isShownInMemory
+    test('to test the property `isShownInMemory`', () async {
+      // TODO
+    });
+
 
   });
 

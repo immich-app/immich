@@ -5696,6 +5696,9 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "isShownInMemory": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -5903,6 +5906,9 @@
           "isReadOnly": {
             "type": "boolean"
           },
+          "isShownInMemory": {
+            "type": "boolean"
+          },
           "isTrashed": {
             "type": "boolean"
           },
@@ -5971,6 +5977,7 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
+          "isShownInMemory",
           "isFavorite",
           "isArchived",
           "isTrashed",

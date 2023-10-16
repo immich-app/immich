@@ -16,6 +16,7 @@ class AssetBulkUpdateDto {
     this.ids = const [],
     this.isArchived,
     this.isFavorite,
+    this.isShownInMemory,
   });
 
   List<String> ids;
@@ -36,21 +37,31 @@ class AssetBulkUpdateDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isShownInMemory;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
      other.ids == ids &&
      other.isArchived == isArchived &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.isShownInMemory == isShownInMemory;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (isShownInMemory == null ? 0 : isShownInMemory!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite]';
+  String toString() => 'AssetBulkUpdateDto[ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, isShownInMemory=$isShownInMemory]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,6 +75,11 @@ class AssetBulkUpdateDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
     //  json[r'isFavorite'] = null;
+    }
+    if (this.isShownInMemory != null) {
+      json[r'isShownInMemory'] = this.isShownInMemory;
+    } else {
+    //  json[r'isShownInMemory'] = null;
     }
     return json;
   }
@@ -81,6 +97,7 @@ class AssetBulkUpdateDto {
             : const [],
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isShownInMemory: mapValueOfType<bool>(json, r'isShownInMemory'),
       );
     }
     return null;
