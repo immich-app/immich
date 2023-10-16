@@ -178,6 +178,7 @@ class SyncService {
       if (onlyLocal.isNotEmpty) {
         for (final Asset a in onlyLocal) {
           a.remoteId = null;
+          a.isTrashed = false;
         }
         await _db.assets.putAll(onlyLocal);
       }
