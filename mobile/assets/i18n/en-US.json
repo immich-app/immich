@@ -325,7 +325,7 @@
   "map_location_dialog_cancel": "Cancel",
   "map_location_dialog_yes": "Yes",
   "trash_page_title": "Trash ({})",
-  "trash_page_info": "Backed up items will be permanently deleted after {} days",
+  "trash_page_info": "Trashed items will be permanently deleted after {} days",
   "trash_page_no_assets": "No trashed assets",
   "trash_page_delete": "Delete",
   "trash_page_delete_all": "Delete All",
