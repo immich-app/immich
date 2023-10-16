@@ -331,6 +331,11 @@ export class MetadataService {
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
     const tags = { ...mediaTags, ...sidecarTags };
 
+    // No known way to override `SubSecDateTimeOriginal` via xmp
+    if (sidecarTags?.DateTimeOriginal && tags?.SubSecDateTimeOriginal) {
+      delete tags.SubSecDateTimeOriginal;
+    }
+
     this.logger.verbose('Exif Tags', tags);
 
     return {
