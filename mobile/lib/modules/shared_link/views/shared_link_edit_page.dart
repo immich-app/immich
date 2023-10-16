@@ -91,7 +91,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
         decoration: InputDecoration(
           labelText: 'Description'.tr(),
           labelStyle: TextStyle(
-              fontWeight: FontWeight.bold, color: themeData.primaryColor,),
+            fontWeight: FontWeight.bold,
+            color: themeData.primaryColor,
+          ),
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: const OutlineInputBorder(),
           hintText: 'Enter the share description'.tr(),
@@ -233,6 +235,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? meta;
       String? desc;
       DateTime? expiry;
+      bool? changeExpiry;
 
       if (allowDownload.value != existingLink!.allowDownload) {
         download = allowDownload.value;
@@ -252,6 +255,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       if (editExpiry.value) {
         expiry = expiryAfter.value == 0 ? null : calculateExpiry();
+        changeExpiry = true;
       }
 
       await ref.read(sharedLinksStateProvider.notifier).updateLink(
@@ -261,6 +265,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: upload,
             description: desc,
             expiresAt: expiry,
+            changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
       AutoRouter.of(context).pop();
@@ -313,7 +318,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
                   child: Text(
                     existingLink != null ? "Update link" : "Create link",
                     style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold,),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ).tr(),
                 ),
               ),

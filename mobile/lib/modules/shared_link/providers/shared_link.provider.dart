@@ -63,6 +63,7 @@ class SharedLinksNotifier
     required bool? showMeta,
     required bool? allowDownload,
     required bool? allowUpload,
+    bool? changeExpiry = false,
     String? description,
     DateTime? expiresAt,
   }) async {
@@ -74,6 +75,7 @@ class SharedLinksNotifier
         allowUpload: allowUpload,
         expiresAt: expiresAt,
         description: description,
+        changeExpiryTime: changeExpiry,
       ),
     );
   }
