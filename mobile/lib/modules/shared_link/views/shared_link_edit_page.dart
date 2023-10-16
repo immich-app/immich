@@ -18,10 +18,6 @@ class SharedLinkEditPage extends HookConsumerWidget {
     this.albumId,
   });
 
-  getAppBarTitle() {
-    return existingLink == null ? "Create link to share" : "Edit link";
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = Theme.of(context);
@@ -77,9 +73,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       return const Text(
-        "Let anyone with the link see the selected photo(s)",
+        "shared_link_create_info",
         style: TextStyle(fontWeight: FontWeight.bold),
-      );
+      ).tr();
     }
 
     buildDescriptionField() {
@@ -89,14 +85,14 @@ class SharedLinkEditPage extends HookConsumerWidget {
         textInputAction: TextInputAction.done,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: 'Description'.tr(),
+          labelText: 'shared_link_edit_description'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
             color: themeData.primaryColor,
           ),
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: const OutlineInputBorder(),
-          hintText: 'Enter the share description'.tr(),
+          hintText: 'shared_link_edit_description_hint'.tr(),
           hintStyle: const TextStyle(
             fontWeight: FontWeight.normal,
             fontSize: 14,
@@ -113,10 +109,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: themeData.primaryColor,
         dense: true,
         title: Text(
-          "Show metadata".tr(),
+          "shared_link_edit_show_meta",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
       );
     }
 
@@ -127,10 +123,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: themeData.primaryColor,
         dense: true,
         title: Text(
-          "Allow public user to download".tr(),
+          "shared_link_edit_allow_download",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
       );
     }
 
@@ -141,10 +137,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: themeData.primaryColor,
         dense: true,
         title: Text(
-          "Allow public user to upload".tr(),
+          "shared_link_edit_allow_upload",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
       );
     }
 
@@ -155,10 +151,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: themeData.primaryColor,
         dense: true,
         title: Text(
-          "Change expiration time".tr(),
+          "shared_link_edit_change_expiry",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
       );
     }
 
@@ -274,7 +270,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(getAppBarTitle()).tr(),
+        title: Text(
+          existingLink == null
+              ? "shared_link_create_app_bar_title"
+              : "shared_link_edit_app_bar_title",
+        ).tr(),
         elevation: 0,
         leading: const CloseButton(),
         centerTitle: false,
@@ -317,7 +317,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
                   onPressed:
                       existingLink != null ? handleEditLink : handleNewLink,
                   child: Text(
-                    existingLink != null ? "Update link" : "Create link",
+                    existingLink != null
+                        ? "shared_link_edit_submit_button"
+                        : "shared_link_create_submit_button",
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

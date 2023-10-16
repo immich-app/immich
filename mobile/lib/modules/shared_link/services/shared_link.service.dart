@@ -36,7 +36,7 @@ class SharedLinkService {
     try {
       await _apiService.sharedLinkApi.createSharedLink(dto);
     } catch (e) {
-      _log.severe("failed to update shared link id with error - $e");
+      _log.severe("failed to create shared link with error - $e");
     }
   }
 

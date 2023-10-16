@@ -29,7 +29,7 @@ class SharedLinkPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: const Text(
-              "Manage Shared links",
+              "shared_link_manage_links",
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -42,7 +42,7 @@ class SharedLinkPage extends HookConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: const Text(
-                "You don't have any shared links",
+                "shared_link_empty",
                 style: TextStyle(fontSize: 14),
               ).tr(),
             ),
@@ -67,7 +67,7 @@ class SharedLinkPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 30.0),
             child: const Text(
-              "Manage Shared links",
+              "shared_link_manage_links",
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -89,7 +89,7 @@ class SharedLinkPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Shared Links").tr(),
+        title: const Text("shared_link_app_bar_title").tr(),
         elevation: 0,
         centerTitle: false,
       ),

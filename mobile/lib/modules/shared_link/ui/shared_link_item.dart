@@ -40,7 +40,7 @@ class SharedLinkItem extends ConsumerWidget {
     if (sharedLinkResponse.type == SharedLinkType.INDIVIDUAL) {
       return "INDIVIDUAL SHARE";
     }
-    return "Unknown Share Type";
+    return "UNKOWN SHARE";
   }
 
   bool isExpired() {
@@ -123,8 +123,8 @@ class SharedLinkItem extends ConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return ConfirmDialog(
-            title: "Delete Shared Link",
-            content: "Are you sure you want to delete this shared link?",
+            title: "delete_shared_link_dialog_title",
+            content: "delete_shared_link_dialog_content",
             onOk: () => ref
                 .read(sharedLinksStateProvider.notifier)
                 .deleteLink(sharedLinkResponse.id),

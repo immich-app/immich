@@ -218,7 +218,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             Navigator.pop(context);
           },
           title: const Text(
-            "Share",
+            "control_bottom_app_bar_share",
             style: TextStyle(fontWeight: FontWeight.bold),
           ).tr(),
         ),

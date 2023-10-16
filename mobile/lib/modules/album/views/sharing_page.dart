@@ -153,7 +153,7 @@ class SharingPage extends HookConsumerWidget {
                   size: 20,
                 ),
                 label: const Text(
-                  "Shared links",
+                  "sharing_silver_appbar_shared_links",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
