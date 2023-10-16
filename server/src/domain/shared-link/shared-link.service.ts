@@ -81,7 +81,7 @@ export class SharedLinkService {
       id,
       userId: authUser.id,
       description: dto.description,
-      expiresAt: dto.expiresAt,
+      expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
