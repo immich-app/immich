@@ -6,8 +6,9 @@
   import Button from './button.svelte';
 
   export let color: Color = 'transparent-gray';
+  export let disabled = false;
 </script>
 
-<Button size="link" {color} shadow={false} rounded="lg" on:click>
+<Button size="link" {color} shadow={false} rounded="lg" {disabled} on:click>
   <slot />
 </Button>

@@ -289,6 +289,9 @@ export class MetadataService {
       });
       const checksum = this.cryptoRepository.hashSha1(video);
 
+      const motionPath = this.storageCore.getAndroidMotionPath(asset);
+      this.storageCore.ensureFolders(motionPath);
+
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
@@ -300,7 +303,7 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.getAndroidMotionPath(asset),
+          originalPath: motionPath,
           originalFileName: asset.originalFileName,
           isVisible: false,
           isReadOnly: false,

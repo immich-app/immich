@@ -283,6 +283,16 @@ class ApiClient {
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'FileChecksumDto':
+          return FileChecksumDto.fromJson(value);
+        case 'FileChecksumResponseDto':
+          return FileChecksumResponseDto.fromJson(value);
+        case 'FileReportDto':
+          return FileReportDto.fromJson(value);
+        case 'FileReportFixDto':
+          return FileReportFixDto.fromJson(value);
+        case 'FileReportItemDto':
+          return FileReportItemDto.fromJson(value);
         case 'ImportAssetDto':
           return ImportAssetDto.fromJson(value);
         case 'JobCommand':
@@ -325,6 +335,10 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'PathEntityType':
+          return PathEntityTypeTypeTransformer().decode(value);
+        case 'PathType':
+          return PathTypeTypeTransformer().decode(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdateDto':

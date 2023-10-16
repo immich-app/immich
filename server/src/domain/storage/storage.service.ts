@@ -1,24 +1,16 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IDeleteFilesJob } from '../job';
-import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
+import { IStorageRepository } from '../repositories';
 import { StorageCore, StorageFolder } from './storage.core';
 
 @Injectable()
 export class StorageService {
   private logger = new Logger(StorageService.name);
-  private storageCore: StorageCore;
 
-  constructor(
-    @Inject(IAssetRepository) assetRepository: IAssetRepository,
-    @Inject(IMoveRepository) private moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
-  }
+  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {}
 
   init() {
-    const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     this.storageRepository.mkdirSync(libraryBase);
   }
 
