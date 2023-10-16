@@ -431,6 +431,7 @@ export class AssetService {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
       }
       return;
     }
@@ -450,6 +451,7 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {
