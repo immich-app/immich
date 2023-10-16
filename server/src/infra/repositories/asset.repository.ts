@@ -29,7 +29,8 @@ const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.MONTH]: 'month',
 };
 
-const TIME_BUCKET_COLUMN = 'localDateTime';
+const dateTrunc = (options: TimeBucketOptions) =>
+  `(date_trunc('${truncateMap[options.size]}', ("localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -478,25 +479,23 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
-    const truncateValue = truncateMap[options.size];
+    const truncated = dateTrunc(options);
 
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
-      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+      .addSelect(truncated, 'timeBucket')
+      .groupBy(truncated)
+      .orderBy(truncated, 'DESC')
       .getRawMany();
   }
 
   getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    const truncateValue = truncateMap[options.size];
+    const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
-        .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
-          timeBucket,
-        })
+        .andWhere(`${truncated} = :timeBucket`, { timeBucket })
         // First sort by the day in localtime (put it in the right bucket)
-        .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+        .orderBy(truncated, 'DESC')
         // and then sort by the actual time
         .addOrderBy('asset.fileCreatedAt', 'DESC')
         .getMany()
