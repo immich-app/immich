@@ -162,7 +162,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return DropdownMenu(
         enableSearch: false,
         enableFilter: false,
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: MediaQuery.of(context).size.width - 40,
         initialSelection: expiryAfter.value,
         enabled: existingLink == null || editExpiry.value,
         onSelected: (value) {
@@ -282,6 +282,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(padding: const EdgeInsets.all(20), child: buildLinkTitle()),
             Padding(
