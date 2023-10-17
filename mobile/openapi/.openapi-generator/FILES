@@ -91,7 +91,6 @@ doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
 doc/PathEntityType.md
 doc/PathType.md
-doc/PeopleAssetResponseDto.md
 doc/PeopleResponseDto.md
 doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
@@ -263,7 +262,6 @@ lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
 lib/model/path_entity_type.dart
 lib/model/path_type.dart
-lib/model/people_asset_response_dto.dart
 lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
@@ -412,7 +410,6 @@ test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
 test/path_entity_type_test.dart
 test/path_type_test.dart
-test/people_asset_response_dto_test.dart
 test/people_response_dto_test.dart
 test/people_update_dto_test.dart
 test/people_update_item_test.dart

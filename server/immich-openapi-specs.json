@@ -5931,7 +5931,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PeopleAssetResponseDto"
+              "$ref": "#/components/schemas/PersonResponseDto"
             },
             "type": "array"
           },
@@ -7249,26 +7249,6 @@
           "profile"
         ],
         "type": "string"
-      },
-      "PeopleAssetResponseDto": {
-        "properties": {
-          "assetFaceId": {
-            "type": "string"
-          },
-          "person": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PersonResponseDto"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "assetFaceId",
-          "person"
-        ],
-        "type": "object"
       },
       "PeopleResponseDto": {
         "properties": {

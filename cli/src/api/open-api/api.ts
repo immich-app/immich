@@ -732,10 +732,10 @@ export interface AssetResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {Array<PeopleAssetResponseDto>}
+     * @type {Array<PersonResponseDto>}
      * @memberof AssetResponseDto
      */
-    'people'?: Array<PeopleAssetResponseDto>;
+    'people'?: Array<PersonResponseDto>;
     /**
      * 
      * @type {boolean}
@@ -2323,25 +2323,6 @@ export const PathType = {
 export type PathType = typeof PathType[keyof typeof PathType];
 
 
-/**
- * 
- * @export
- * @interface PeopleAssetResponseDto
- */
-export interface PeopleAssetResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof PeopleAssetResponseDto
-     */
-    'assetFaceId': string;
-    /**
-     * 
-     * @type {PersonResponseDto}
-     * @memberof PeopleAssetResponseDto
-     */
-    'person': PersonResponseDto | null;
-}
 /**
  * 
  * @export

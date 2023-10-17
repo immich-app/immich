@@ -339,8 +339,6 @@ class ApiClient {
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
           return PathTypeTypeTransformer().decode(value);
-        case 'PeopleAssetResponseDto':
-          return PeopleAssetResponseDto.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdateDto':

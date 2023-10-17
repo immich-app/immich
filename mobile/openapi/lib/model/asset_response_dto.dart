@@ -101,7 +101,7 @@ class AssetResponseDto {
 
   String ownerId;
 
-  List<PeopleAssetResponseDto> people;
+  List<PersonResponseDto> people;
 
   bool resized;
 
@@ -273,7 +273,7 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        people: PeopleAssetResponseDto.listFromJson(json[r'people']),
+        people: PersonResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized')!,
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         tags: TagResponseDto.listFromJson(json[r'tags']),

@@ -278,7 +278,6 @@ Class | Method | HTTP request | Description
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PathEntityType](doc//PathEntityType.md)
  - [PathType](doc//PathType.md)
- - [PeopleAssetResponseDto](doc//PeopleAssetResponseDto.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
