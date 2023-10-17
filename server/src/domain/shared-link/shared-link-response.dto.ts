@@ -58,7 +58,7 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): Shar
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, true)) as AssetResponseDto[],
+    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: true })) as AssetResponseDto[],
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,

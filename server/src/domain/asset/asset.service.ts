@@ -210,7 +210,7 @@ export class AssetService {
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset));
     } else {
-      return assets.map((asset) => mapAsset(asset, true));
+      return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
     }
   }
 
