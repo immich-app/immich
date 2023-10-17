@@ -344,6 +344,10 @@ export class AssetService {
 
     if (removeParent) {
       (options as Partial<AssetEntity>).stackParentId = null;
+      const assets = await this.assetRepository.getByIds(ids);
+      // This updates the updatedAt column of the parents to indicate that one of its children is removed
+      // All the unique parent's -> parent is set to null
+      ids.push(...new Set(assets.filter((a) => !!a.stackParentId).map((a) => a.stackParentId!)));
     } else if (options.stackParentId) {
       await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, options.stackParentId);
       // Merge stacks
@@ -351,8 +355,7 @@ export class AssetService {
       const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
       ids.push(...assetsWithChildren.flatMap((child) => child.stack!.map((gChild) => gChild.id)));
 
-      // This updates the updatedAt column of the parent to indicate that it is modifed so that
-      // it'll be updated in the mobile clients when the recently updated assets are fetched
+      // This updates the updatedAt column of the parent to indicate that a new child has been added
       await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
     }
 
