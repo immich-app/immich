@@ -152,11 +152,11 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   stackParentId?: string | null;
 
-  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true })
+  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn({ name: 'stackParentId' })
   stackParent?: AssetEntity | null;
 
-  @OneToMany(() => AssetEntity, (asset) => asset.stackParent, { onDelete: 'SET NULL' })
+  @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
   stack?: AssetEntity[];
 }
 
