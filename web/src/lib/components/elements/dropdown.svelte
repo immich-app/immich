@@ -9,9 +9,16 @@
   const dispatch = createEventDispatcher<{
     select: string;
   }>();
-  export let options: string[];
-  export let value = options[0];
+  export let options: DropdownItem[];
+  export let key = options[0].key || options[0].value;
   export let icons: (typeof Icon)[] | undefined = undefined;
+
+  interface DropdownItem {
+    title: string;
+    /* eslint-disable @typescript-eslint/no-explicit-any*/
+    value: any;
+    key?: string;
+  }
 
   let showMenu = false;
 
@@ -19,18 +26,15 @@
     showMenu = false;
   };
 
-  const handleSelectOption = (index: number) => {
-    if (options[index] === value) {
-      dispatch('select', value);
-    } else {
-      value = options[index];
-    }
+  const handleSelectOption = (selectedKey: string) => {
+    key = selectedKey;
+    dispatch('select', key);
 
     showMenu = false;
   };
 
-  $: index = options.findIndex((option) => option === value);
-  $: icon = icons?.[index];
+  $: value = options.find((option) => key === (option.key ?? option.value))?.value;
+  $: icon = icons?.[key];
 </script>
 
 <div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
@@ -50,22 +54,22 @@
       transition:fly={{ y: -30, x: 30, duration: 200 }}
       class="text-md absolute right-0 top-5 z-50 flex min-w-[250px] flex-col rounded-2xl bg-gray-100 py-4 text-black shadow-lg dark:bg-gray-700 dark:text-white"
     >
-      {#each options as option, index (option)}
+      {#each options as option}
         <button
           class="grid grid-cols-[20px,1fr] place-items-center gap-2 p-4 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
-          on:click={() => handleSelectOption(index)}
+          on:click={() => handleSelectOption(option.key ?? option.value)}
         >
-          {#if value == option}
+          {#if key == option.key ?? option.value}
             <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
               <Check size="18" />
             </div>
             <p class="justify-self-start font-medium text-immich-primary dark:text-immich-dark-primary">
-              {option}
+              {option.title}
             </p>
           {:else}
             <div />
             <p class="justify-self-start">
-              {option}
+              {option.title}
             </p>
           {/if}
         </button>
