@@ -139,15 +139,6 @@ export class AssetController {
     return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
   }
 
-  @Put(':id')
-  updateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: UpdateDto,
-  ): Promise<AssetResponseDto> {
-    return this.service.update(authUser, id, dto);
-  }
-
   @Post('stack')
   @HttpCode(HttpStatus.OK)
   updateStack(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateAssetStackDto): Promise<void> {
@@ -158,5 +149,14 @@ export class AssetController {
   @HttpCode(HttpStatus.OK)
   updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(authUser, dto);
+  }
+
+  @Put(':id')
+  updateAsset(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateDto,
+  ): Promise<AssetResponseDto> {
+    return this.service.update(authUser, id, dto);
   }
 }

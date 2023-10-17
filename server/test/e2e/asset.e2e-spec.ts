@@ -727,7 +727,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
   });
 
-  describe('POST /asset/stack/parent', () => {
+  describe('PUT /asset/stack/parent', () => {
     beforeEach(async () => {
       const { status } = await request(server)
         .post('/asset/stack')

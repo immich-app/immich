@@ -48,7 +48,6 @@ export class AssetCore {
       faces: [],
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
-      stackParentId: null,
       isExternal: dto.isExternal ?? false,
       isOffline: dto.isOffline ?? false,
     });
