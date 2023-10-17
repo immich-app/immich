@@ -11,13 +11,13 @@
   }>();
   export let options: DropdownItem[];
   export let key = options[0].key || options[0].value;
-  export let icons: (typeof Icon)[] | undefined = undefined;
 
   interface DropdownItem {
     title: string;
     /* eslint-disable @typescript-eslint/no-explicit-any*/
     value: any;
     key?: string;
+    icon?: typeof Icon;
   }
 
   let showMenu = false;
@@ -33,18 +33,17 @@
     showMenu = false;
   };
 
-  $: value = options.find((option) => key === (option.key ?? option.value))?.value;
-  $: icon = icons?.[key];
+  $: selectedOption = options.find((option) => key === (option.key ?? option.value));
 </script>
 
 <div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
   <!-- BUTTON TITLE -->
   <LinkButton on:click={() => (showMenu = true)}>
     <div class="flex place-items-center gap-2 text-sm">
-      {#if icon}
-        <svelte:component this={icon} size="18" />
+      {#if selectedOption?.icon}
+        <svelte:component this={selectedOption.icon} size="18" />
       {/if}
-      <p class="hidden sm:block">{value}</p>
+      <p class="hidden sm:block">{selectedOption?.value}</p>
     </div>
   </LinkButton>
 

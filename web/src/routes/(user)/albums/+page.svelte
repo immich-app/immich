@@ -217,10 +217,13 @@
 
     <Dropdown
       options={Object.values(sortByOptions).map((CourseInfo) => {
-        return { title: CourseInfo.sortTitle, value: CourseInfo.sortTitle };
+        return {
+          title: CourseInfo.sortTitle,
+          value: CourseInfo.sortTitle,
+          icon: CourseInfo.sortDesc ? ArrowDownThin : ArrowUpThin,
+        };
       })}
       bind:key={$albumViewSettings.sortBy}
-      icons={Object.keys(sortByOptions).map((key) => (sortByOptions[key].sortDesc ? ArrowDownThin : ArrowUpThin))}
       on:select={(event) => {
         for (const key in sortByOptions) {
           if (sortByOptions[key].sortTitle === event.detail) {
