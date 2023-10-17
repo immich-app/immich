@@ -7,6 +7,7 @@
   import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
   import Cog from 'svelte-material-icons/Cog.svelte';
   import Server from 'svelte-material-icons/Server.svelte';
+  import Tools from 'svelte-material-icons/Tools.svelte';
   import Sync from 'svelte-material-icons/Sync.svelte';
 </script>
 
@@ -26,6 +27,9 @@
   </a>
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_STATS} draggable="false">
     <SideBarButton title="Server Stats" logo={Server} isSelected={$page.route.id === AppRoute.ADMIN_STATS} />
+  </a>
+  <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_REPAIR} draggable="false">
+    <SideBarButton title="Repair" logo={Tools} isSelected={$page.route.id === AppRoute.ADMIN_REPAIR} />
   </a>
   <div class="mb-6 mt-auto">
     <StatusBox />

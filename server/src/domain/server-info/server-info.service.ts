@@ -1,15 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import {
-  IAssetRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-  UserStatsQueryResponse,
-} from '../repositories';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
@@ -25,22 +17,17 @@ import {
 @Injectable()
 export class ServerInfoService {
   private configCore: SystemConfigCore;
-  private storageCore: StorageCore;
 
   constructor(
-    @Inject(IAssetRepository) assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
-    const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);

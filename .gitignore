@@ -4,6 +4,7 @@
 .idea
 
 docker/upload
+docker/library
 uploads
 coverage
 

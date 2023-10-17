@@ -19,6 +19,7 @@ import {
   SystemConfigApi,
   UserApi,
   UserApiFp,
+  AuditApi,
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -28,6 +29,7 @@ export class ImmichApi {
   public albumApi: AlbumApi;
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
+  public auditApi: AuditApi;
   public authenticationApi: AuthenticationApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
@@ -51,6 +53,7 @@ export class ImmichApi {
     this.config = new Configuration(params);
 
     this.albumApi = new AlbumApi(this.config);
+    this.auditApi = new AuditApi(this.config);
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
