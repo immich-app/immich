@@ -4,7 +4,7 @@ export enum CommunicationEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
   ASSET_DELETE = 'on_asset_delete',
   ASSET_TRASH = 'on_asset_trash',
-  ASSET_STACK = 'on_asset_stack',
+  ASSET_UPDATE = 'on_asset_update',
   ASSET_RESTORE = 'on_asset_restore',
   PERSON_THUMBNAIL = 'on_person_thumbnail',
   SERVER_VERSION = 'on_server_version',

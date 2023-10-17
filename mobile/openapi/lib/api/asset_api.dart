@@ -1654,45 +1654,6 @@ class AssetApi {
     }
   }
 
-  /// Performs an HTTP 'POST /asset/stack' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [UpdateAssetStackDto] updateAssetStackDto (required):
-  Future<Response> updateStackWithHttpInfo(UpdateAssetStackDto updateAssetStackDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/stack';
-
-    // ignore: prefer_final_locals
-    Object? postBody = updateAssetStackDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [UpdateAssetStackDto] updateAssetStackDto (required):
-  Future<void> updateStack(UpdateAssetStackDto updateAssetStackDto,) async {
-    final response = await updateStackWithHttpInfo(updateAssetStackDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'PUT /asset/stack/parent' operation and returns the [Response].
   /// Parameters:
   ///

@@ -1673,41 +1673,6 @@
         ]
       }
     },
-    "/asset/stack": {
-      "post": {
-        "operationId": "updateStack",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAssetStackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
@@ -5766,6 +5731,13 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "removeParent": {
+            "type": "boolean"
+          },
+          "stackParentId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
@@ -8580,32 +8552,6 @@
             "type": "boolean"
           }
         },
-        "type": "object"
-      },
-      "UpdateAssetStackDto": {
-        "properties": {
-          "stackParentId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "toAdd": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "toRemove": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "stackParentId"
-        ],
         "type": "object"
       },
       "UpdateLibraryDto": {

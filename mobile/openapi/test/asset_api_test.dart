@@ -174,11 +174,6 @@ void main() {
       // TODO
     });
 
-    //Future updateStack(UpdateAssetStackDto updateAssetStackDto) async
-    test('test updateStack', () async {
-      // TODO
-    });
-
     //Future updateStackParent(UpdateStackParentDto updateStackParentDto) async
     test('test updateStackParent', () async {
       // TODO

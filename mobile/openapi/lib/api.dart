@@ -175,7 +175,6 @@ part 'model/transcode_hw_accel.dart';
 part 'model/transcode_policy.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_asset_dto.dart';
-part 'model/update_asset_stack_dto.dart';
 part 'model/update_library_dto.dart';
 part 'model/update_stack_parent_dto.dart';
 part 'model/update_tag_dto.dart';

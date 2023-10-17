@@ -149,7 +149,7 @@ export class AssetEntity {
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
   faces!: AssetFaceEntity[];
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ nullable: true })
   stackParentId?: string | null;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })

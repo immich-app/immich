@@ -40,7 +40,6 @@ import {
   TimeBucketDto,
   TrashAction,
   UpdateAssetDto,
-  UpdateAssetStackDto,
   UpdateStackParentDto,
   mapStats,
 } from './dto';
@@ -340,10 +339,26 @@ export class AssetService {
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, ...options } = dto;
+    const { ids, removeParent, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+
+    if (removeParent) {
+      (options as Partial<AssetEntity>).stackParentId = null;
+    } else if (options.stackParentId) {
+      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, options.stackParentId);
+      // Merge stacks
+      const assets = await this.assetRepository.getByIds(ids);
+      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
+      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.map((gChild) => gChild.id)));
+
+      // This updates the updatedAt column of the parent to indicate that it is modifed so that
+      // it'll be updated in the mobile clients when the recently updated assets are fetched
+      await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
+    }
+
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     await this.assetRepository.updateAll(ids, options);
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, authUser.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -464,38 +479,6 @@ export class AssetService {
     this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
   }
 
-  async updateStack(authUser: AuthUserDto, dto: UpdateAssetStackDto): Promise<void> {
-    const { stackParentId, toAdd, toRemove } = dto;
-    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, stackParentId);
-
-    let shouldUpdate = false;
-    if (!!toAdd && toAdd.length != 0) {
-      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toAdd);
-      const assets = await this.assetRepository.getByIds(toAdd);
-      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
-      // Merge stacks
-      for (const asset of assetsWithChildren) {
-        const stackIds = asset.stack!.map((a) => a.id);
-        toAdd.push(...stackIds);
-      }
-
-      await this.assetRepository.updateAll(toAdd, { stackParentId });
-      shouldUpdate = true;
-    }
-
-    if (!!toRemove && toRemove.length != 0) {
-      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, toRemove);
-      await this.assetRepository.updateAll(toRemove, { stackParentId: null });
-      shouldUpdate = true;
-    }
-
-    if (shouldUpdate) {
-      // This updates the updatedAt column of the parent to indicate that it is modifed
-      this.communicationRepository.send(CommunicationEvent.ASSET_STACK, authUser.id, stackParentId);
-      return this.assetRepository.updateAll([stackParentId], { stackParentId: null });
-    }
-  }
-
   async updateStackParent(authUser: AuthUserDto, dto: UpdateStackParentDto): Promise<void> {
     const { oldParentId, newParentId } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_READ, oldParentId);
@@ -509,7 +492,7 @@ export class AssetService {
       childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
     }
 
-    this.communicationRepository.send(CommunicationEvent.ASSET_STACK, authUser.id, newParentId);
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, authUser.id, [...childIds, newParentId]);
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
     // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });
