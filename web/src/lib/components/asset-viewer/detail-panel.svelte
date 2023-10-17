@@ -3,13 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import {
-    AlbumResponseDto,
-    AssetResponseDto,
-    PersonResponseDto,
-    ThumbnailFormat,
-    api,
-  } from '@api';
+  import { AlbumResponseDto, AssetResponseDto, PersonResponseDto, ThumbnailFormat, api } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
