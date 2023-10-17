@@ -493,49 +493,6 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 /**
  * 
  * @export
- * @interface AssetFaceBoxDto
- */
-export interface AssetFaceBoxDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'boundingBoxX1': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'boundingBoxX2': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'boundingBoxY1': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'boundingBoxY2': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'imageHeight': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetFaceBoxDto
-     */
-    'imageWidth': number;
-}
-/**
- * 
- * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -775,10 +732,10 @@ export interface AssetResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {Array<PersonResponseDto>}
+     * @type {Array<PeopleAssetResponseDto>}
      * @memberof AssetResponseDto
      */
-    'people'?: Array<PersonResponseDto>;
+    'people'?: Array<PeopleAssetResponseDto>;
     /**
      * 
      * @type {boolean}
@@ -809,12 +766,6 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'type': AssetTypeEnum;
-    /**
-     * 
-     * @type {Array<AssetFaceBoxDto>}
-     * @memberof AssetResponseDto
-     */
-    'unassignedFaces'?: Array<AssetFaceBoxDto>;
     /**
      * 
      * @type {string}
@@ -2234,6 +2185,25 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'url'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface PeopleAssetResponseDto
+ */
+export interface PeopleAssetResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PeopleAssetResponseDto
+     */
+    'assetFaceId': string;
+    /**
+     * 
+     * @type {PersonResponseDto}
+     * @memberof PeopleAssetResponseDto
+     */
+    'person': PersonResponseDto | null;
 }
 /**
  * 

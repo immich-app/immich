@@ -3,7 +3,13 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
+  import {
+    AlbumResponseDto,
+    AssetResponseDto,
+    PersonResponseDto,
+    ThumbnailFormat,
+    api,
+  } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
@@ -22,13 +28,19 @@
   let textarea: HTMLTextAreaElement;
   let description: string;
 
+  let people: PersonResponseDto[] = [];
+
   $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
     if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
+        if (res.data && res.data.people) {
+          people = res.data?.people
+            .map((peopleAsset) => peopleAsset.person)
+            .filter((person): person is PersonResponseDto => person !== null);
+        }
         textarea.value = res.data?.exifInfo?.description || '';
       });
     }
@@ -46,7 +58,13 @@
   $: lat = latlng ? latlng[0] : undefined;
   $: lng = latlng ? latlng[1] : undefined;
 
-  $: people = asset.people || [];
+  $: {
+    if (asset.people) {
+      people = asset.people
+        .map((peopleAsset) => peopleAsset.person)
+        .filter((person): person is PersonResponseDto => person !== null);
+    }
+  }
 
   const dispatch = createEventDispatcher();
 
