@@ -11,7 +11,7 @@
 <p align="center">
 <img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - Soluzione self-hosted per backup di foto e video ad alte prestazioni</h3>
+<h3 align="center">Immich - Soluzione self-hosted ad alte prestazioni per backup di foto e video</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
@@ -100,7 +100,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 Mi dedico al progetto e non smetterò di farlo. Manterrò aggiornata la documentazione, aggiungerò nuove funzioni e risolverò i bug, ma non posso farlo da solo. Ho bisogno del tuo aiuto che mi da motivazione per continuare.
 
-Come detto dal nostro host [selfhosted.show - Nell'episodio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), è un lavoro enorme quello che il team ed io stiamo facendo. Mi piacerebbe dedicarmi al progetto full-time e chiedo il tuo aiuto per renderlo possibile.
+Come detto dal nostro host [selfhosted.show - Nell'episodio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), quello che il team ed io stiamo facendo è un lavoro enorme. Mi piacerebbe dedicarmi al progetto full-time e chiedo il tuo aiuto affinchè sia possibile.
 
 Se pensi che Immich sia una buona causa e che l'app sia qualcosa che useresti nel lungo termine, sappi che puoi supportare il progetto scegliendo tra le opzioni sotto elencate.
 
