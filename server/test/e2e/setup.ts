@@ -1,5 +1,5 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import * as fs from 'fs';
+import { access } from 'fs/promises';
 import path from 'path';
 
 export default async () => {
@@ -23,8 +23,7 @@ export default async () => {
   }
 
   const directoryExists = async (dirPath: string) =>
-    await fs.promises
-      .access(dirPath)
+    await access(dirPath)
       .then(() => true)
       .catch(() => false);
 

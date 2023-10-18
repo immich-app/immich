@@ -1,21 +1,22 @@
 import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let accessToken: string;
   let loginResponse: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    [server] = await testApp.create();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -23,11 +24,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /server-info', () => {
