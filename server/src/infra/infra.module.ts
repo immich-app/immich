@@ -15,11 +15,11 @@ import {
   IPartnerRepository,
   IPersonRepository,
   ISearchRepository,
+  IServerInfoRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
-  ISystemInfoRepository,
   ITagRepository,
   IUserRepository,
   IUserTokenRepository,
@@ -49,6 +49,7 @@ import {
   MoveRepository,
   PartnerRepository,
   PersonRepository,
+  ServerInfoRepository,
   SharedLinkRepository,
   SmartInfoRepository,
   SystemConfigRepository,
@@ -82,7 +83,7 @@ const providers: Provider[] = [
   { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
-  { provide: ISystemInfoRepository, useClass: SystemConfigRepository },
+  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
 ];
 
 const imports = [

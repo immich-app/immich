@@ -4,10 +4,6 @@ import { readFile } from 'fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 
-export type GithubRelease = {
-  tag_name: string;
-};
-
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
     @InjectRepository(SystemConfigEntity)

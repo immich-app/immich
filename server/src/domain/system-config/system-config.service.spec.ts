@@ -15,7 +15,7 @@ import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { JobName, QueueName } from '../job';
 import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { ISystemInfoRepository } from '../repositories/system-info.repository';
+import { IServerInfoRepository } from '../repositories/server-info.repository';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
@@ -126,7 +126,7 @@ describe(SystemConfigService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let infoMock: jest.Mocked<ISystemInfoRepository>;
+  let infoMock: jest.Mocked<IServerInfoRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;

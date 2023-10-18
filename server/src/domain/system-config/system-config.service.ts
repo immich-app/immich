@@ -1,8 +1,13 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ServerVersion, serverVersion } from '../domain.constant';
 import { JobName } from '../job';
-import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { ISystemInfoRepository } from '../repositories/system-info.repository';
+import {
+  CommunicationEvent,
+  ICommunicationRepository,
+  IJobRepository,
+  IServerInfoRepository,
+  ISystemConfigRepository,
+} from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -29,7 +34,7 @@ export class SystemConfigService {
     @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemInfoRepository) private infoRepository: ISystemInfoRepository,
+    @Inject(IServerInfoRepository) private infoRepository: IServerInfoRepository,
   ) {
     this.dateCheckAvailableVersion = null;
     this.availableVersion = null;
