@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ServerVersion, serverVersion } from '../domain.constant';
 import { JobName } from '../job';
 import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
+import { ISystemInfoRepository } from '../repositories/system-info.repository';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -25,10 +26,11 @@ export class SystemConfigService {
   private logger = new Logger();
 
   constructor(
-    @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ){
+    @Inject(ISystemInfoRepository) private infoRepository: ISystemInfoRepository,
+  ) {
     this.dateCheckAvailableVersion = null;
     this.availableVersion = null;
     this.core = SystemConfigCore.create(repository);
@@ -67,7 +69,7 @@ export class SystemConfigService {
   async handleImmichLatestVersionAvailable() {
     try {
       this.logger.debug('Checking if a new version is available ...');
-      const data = await this.repository.getLatestAvailableVersion();
+      const data = await this.infoRepository.getLatestAvailableVersion();
       this.dateCheckAvailableVersion = Date.now();
       if (compareVersions(data.tag_name, serverVersion)) {
         this.logger.log('New Immich version detected : ' + stringToVersion(data.tag_name).toString());

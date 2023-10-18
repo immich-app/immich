@@ -10,6 +10,5 @@ export const newSystemConfigRepositoryMock = (reset = true): jest.Mocked<ISystem
     readFile: jest.fn(),
     saveAll: jest.fn().mockResolvedValue([]),
     deleteKeys: jest.fn(),
-    getLatestAvailableVersion: jest.fn(),
   };
 };

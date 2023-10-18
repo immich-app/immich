@@ -1,6 +1,5 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
   CQMode,
@@ -13,14 +12,11 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { IJobRepository, JobName, QueueName } from '../job';
-import { defaults, SystemConfigValidator } from './system-config.core';
-import { ISystemConfigRepository } from './system-config.repository';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { JobName, QueueName } from '../job';
 import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { SystemConfigValidator, defaults } from './system-config.core';
+import { ISystemInfoRepository } from '../repositories/system-info.repository';
+import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
@@ -130,13 +126,14 @@ describe(SystemConfigService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let infoMock: jest.Mocked<ISystemInfoRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, communicationMock, jobMock);
+    sut = new SystemConfigService(configMock, communicationMock, jobMock, infoMock);
   });
 
   it('should work', () => {

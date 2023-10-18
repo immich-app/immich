@@ -18,9 +18,6 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-
-import { IAlbumRepository } from '../album';
-import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { JobName } from '../job';
 import {

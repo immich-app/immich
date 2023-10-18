@@ -1,9 +1,7 @@
 import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
 import { serverVersion } from '../domain.constant';
-import { ISystemConfigRepository, SystemConfigService } from '../index';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
 import { IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
+import { SystemConfigService } from '../system-config';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
