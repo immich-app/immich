@@ -2,7 +2,7 @@
   import type Icon from 'svelte-material-icons/AbTesting.svelte';
 
   export let logo: typeof Icon;
-  export let backgroundColor = 'transparent';
+  export let backgroundColor = '';
   export let hoverColor = '#e2e7e9';
   export let padding = '3';
   export let size = '24';

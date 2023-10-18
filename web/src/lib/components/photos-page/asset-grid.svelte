@@ -17,6 +17,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let isSelectionMode = false;
@@ -24,6 +25,9 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+
+  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
+  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -34,13 +38,15 @@
   let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
+  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-  const dispatch = createEventDispatcher<{ select: AssetResponseDto }>();
+  const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   onMount(async () => {
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
+    assetStore.connect();
     await assetStore.init(viewport);
   });
 
@@ -52,6 +58,8 @@
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
+
+    assetStore.disconnect();
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -62,7 +70,7 @@
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
-          assetInteractionStore.clearMultiselect();
+          dispatch('escape');
           return;
         case '?':
           if (event.shiftKey) {
@@ -319,7 +327,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-[60px]"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
@@ -341,7 +349,7 @@
     <slot />
 
     <!-- (optional) empty placeholder -->
-    {#if $assetStore.initialized && $assetStore.buckets.length === 0}
+    {#if isEmpty}
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
@@ -383,6 +391,7 @@
     <AssetViewer
       {assetStore}
       asset={$viewingAsset}
+      force={forceDelete || !isTrashEnabled}
       on:previous={() => handlePrevious()}
       on:next={() => handleNext()}
       on:close={() => handleClose()}

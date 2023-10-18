@@ -3,6 +3,7 @@ import { serverVersion } from '../domain.constant';
 import { ISystemConfigRepository, SystemConfigService } from '../index';
 import { IStorageRepository } from '../storage';
 import { IUserRepository } from '../user';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
@@ -152,6 +153,7 @@ describe(ServerInfoService.name, () => {
         clipEncode: true,
         facialRecognition: true,
         map: true,
+        reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
@@ -159,6 +161,7 @@ describe(ServerInfoService.name, () => {
         sidecar: true,
         tagImage: true,
         configFile: false,
+        trash: true,
       });
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -169,6 +172,7 @@ describe(ServerInfoService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
+        trashDays: 30,
         mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       });
       expect(configMock.load).toHaveBeenCalled();

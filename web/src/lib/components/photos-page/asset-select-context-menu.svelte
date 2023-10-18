@@ -10,6 +10,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import type Icon from 'svelte-material-icons/AbTesting.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   export let icon: typeof Icon;
   export let title: string;
@@ -17,9 +18,8 @@
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
 
-  const handleShowMenu = ({ x }: MouseEvent) => {
-    const navigationBarHeight = 75;
-    contextMenuPosition = { x: x, y: navigationBarHeight };
+  const handleShowMenu = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-left');
     showContextMenu = !showContextMenu;
   };
 

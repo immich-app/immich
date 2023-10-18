@@ -20,10 +20,17 @@ class AssetResponseDto {
     this.exifInfo,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
+    required this.hasMetadata,
     required this.id,
     required this.isArchived,
+    required this.isExternal,
     required this.isFavorite,
+    required this.isOffline,
+    required this.isReadOnly,
+    required this.isTrashed,
+    required this.libraryId,
     this.livePhotoVideoId,
+    required this.localDateTime,
     required this.originalFileName,
     required this.originalPath,
     this.owner,
@@ -58,13 +65,27 @@ class AssetResponseDto {
 
   DateTime fileModifiedAt;
 
+  bool hasMetadata;
+
   String id;
 
   bool isArchived;
 
+  bool isExternal;
+
   bool isFavorite;
 
+  bool isOffline;
+
+  bool isReadOnly;
+
+  bool isTrashed;
+
+  String libraryId;
+
   String? livePhotoVideoId;
+
+  DateTime localDateTime;
 
   String originalFileName;
 
@@ -94,7 +115,6 @@ class AssetResponseDto {
 
   List<TagResponseDto> tags;
 
-  /// base64 encoded thumbhash
   String? thumbhash;
 
   AssetTypeEnum type;
@@ -110,10 +130,17 @@ class AssetResponseDto {
      other.exifInfo == exifInfo &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
+     other.hasMetadata == hasMetadata &&
      other.id == id &&
      other.isArchived == isArchived &&
+     other.isExternal == isExternal &&
      other.isFavorite == isFavorite &&
+     other.isOffline == isOffline &&
+     other.isReadOnly == isReadOnly &&
+     other.isTrashed == isTrashed &&
+     other.libraryId == libraryId &&
      other.livePhotoVideoId == livePhotoVideoId &&
+     other.localDateTime == localDateTime &&
      other.originalFileName == originalFileName &&
      other.originalPath == originalPath &&
      other.owner == owner &&
@@ -136,10 +163,17 @@ class AssetResponseDto {
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
+    (hasMetadata.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
+    (isExternal.hashCode) +
     (isFavorite.hashCode) +
+    (isOffline.hashCode) +
+    (isReadOnly.hashCode) +
+    (isTrashed.hashCode) +
+    (libraryId.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+    (localDateTime.hashCode) +
     (originalFileName.hashCode) +
     (originalPath.hashCode) +
     (owner == null ? 0 : owner!.hashCode) +
@@ -153,7 +187,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -168,14 +202,21 @@ class AssetResponseDto {
     }
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
+      json[r'hasMetadata'] = this.hasMetadata;
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
+      json[r'isExternal'] = this.isExternal;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isOffline'] = this.isOffline;
+      json[r'isReadOnly'] = this.isReadOnly;
+      json[r'isTrashed'] = this.isTrashed;
+      json[r'libraryId'] = this.libraryId;
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
     //  json[r'livePhotoVideoId'] = null;
     }
+      json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
       json[r'originalPath'] = this.originalPath;
     if (this.owner != null) {
@@ -217,10 +258,17 @@ class AssetResponseDto {
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
+        hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
+        isExternal: mapValueOfType<bool>(json, r'isExternal')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isOffline: mapValueOfType<bool>(json, r'isOffline')!,
+        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly')!,
+        isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        localDateTime: mapDateTime(json, r'localDateTime', '')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
@@ -285,9 +333,16 @@ class AssetResponseDto {
     'duration',
     'fileCreatedAt',
     'fileModifiedAt',
+    'hasMetadata',
     'id',
     'isArchived',
+    'isExternal',
     'isFavorite',
+    'isOffline',
+    'isReadOnly',
+    'isTrashed',
+    'libraryId',
+    'localDateTime',
     'originalFileName',
     'originalPath',
     'ownerId',

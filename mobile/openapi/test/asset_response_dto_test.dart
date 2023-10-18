@@ -52,6 +52,11 @@ void main() {
       // TODO
     });
 
+    // bool hasMetadata
+    test('to test the property `hasMetadata`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -62,13 +67,43 @@ void main() {
       // TODO
     });
 
+    // bool isExternal
+    test('to test the property `isExternal`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
     });
 
+    // bool isOffline
+    test('to test the property `isOffline`', () async {
+      // TODO
+    });
+
+    // bool isReadOnly
+    test('to test the property `isReadOnly`', () async {
+      // TODO
+    });
+
+    // bool isTrashed
+    test('to test the property `isTrashed`', () async {
+      // TODO
+    });
+
+    // String libraryId
+    test('to test the property `libraryId`', () async {
+      // TODO
+    });
+
     // String livePhotoVideoId
     test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
+    // DateTime localDateTime
+    test('to test the property `localDateTime`', () async {
       // TODO
     });
 
@@ -112,7 +147,6 @@ void main() {
       // TODO
     });
 
-    // base64 encoded thumbhash
     // String thumbhash
     test('to test the property `thumbhash`', () async {
       // TODO

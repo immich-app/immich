@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   albumStub,
-  assetStub,
   authStub,
   IAccessRepositoryMock,
   newAccessRepositoryMock,
@@ -12,10 +11,9 @@ import {
   userStub,
 } from '@test';
 import _ from 'lodash';
-import { BulkIdErrorReason, IAssetRepository } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
-import { IAlbumRepository } from './album.repository';
+import { BulkIdErrorReason } from '../asset';
+import { JobName } from '../job';
+import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
 import { AlbumService } from './album.service';
 
 describe(AlbumService.name, () => {
@@ -226,7 +224,7 @@ describe(AlbumService.name, () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(albumMock.hasAsset).toHaveBeenCalledWith(albumStub.oneAsset.id, 'not-in-album');
+      expect(albumMock.hasAsset).toHaveBeenCalledWith({ albumId: 'album-4', assetId: 'not-in-album' });
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
@@ -462,6 +460,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(false);
 
       await expect(
         sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -474,8 +473,11 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [assetStub.image, { id: 'asset-1' }, { id: 'asset-2' }, { id: 'asset-3' }],
         albumThumbnailAssetId: 'asset-1',
+      });
+      expect(albumMock.addAssets).toHaveBeenCalledWith({
+        albumId: 'album-123',
+        assetIds: ['asset-1', 'asset-2', 'asset-3'],
       });
     });
 
@@ -491,9 +493,9 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [{ id: 'asset-1' }],
         albumThumbnailAssetId: 'asset-id',
       });
+      expect(albumMock.addAssets).toHaveBeenCalled();
     });
 
     it('should allow a shared user to add assets', async () => {
@@ -513,8 +515,11 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [{ id: 'asset-1' }, { id: 'asset-2' }, { id: 'asset-3' }],
         albumThumbnailAssetId: 'asset-1',
+      });
+      expect(albumMock.addAssets).toHaveBeenCalledWith({
+        albumId: 'album-123',
+        assetIds: ['asset-1', 'asset-2', 'asset-3'],
       });
     });
 
@@ -524,6 +529,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasSharedLinkAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(false);
 
       await expect(
         sut.addAssets(authStub.adminSharedLink, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -536,8 +542,11 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [assetStub.image, { id: 'asset-1' }, { id: 'asset-2' }, { id: 'asset-3' }],
         albumThumbnailAssetId: 'asset-1',
+      });
+      expect(albumMock.addAssets).toHaveBeenCalledWith({
+        albumId: 'album-123',
+        assetIds: ['asset-1', 'asset-2', 'asset-3'],
       });
 
       expect(accessMock.album.hasSharedLinkAccess).toHaveBeenCalledWith(
@@ -551,6 +560,7 @@ describe(AlbumService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(false);
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1'] })).resolves.toEqual([
         { success: true, id: 'asset-1' },
@@ -559,10 +569,8 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [assetStub.image, { id: 'asset-1' }],
         albumThumbnailAssetId: 'asset-1',
       });
-
       expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
     });
 
@@ -570,6 +578,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(true);
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: false, id: 'asset-id', error: BulkIdErrorReason.DUPLICATE },
@@ -621,17 +630,14 @@ describe(AlbumService.name, () => {
     it('should allow the owner to remove assets', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(true);
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: 'album-123',
-        updatedAt: expect.any(Date),
-        assets: [],
-        albumThumbnailAssetId: null,
-      });
+      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
+      expect(albumMock.removeAssets).toHaveBeenCalledWith({ assetIds: ['asset-id'], albumId: 'album-123' });
     });
 
     it('should skip assets not in the album', async () => {
@@ -648,9 +654,14 @@ describe(AlbumService.name, () => {
     it('should skip assets without user permission to remove', async () => {
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
+      albumMock.hasAsset.mockResolvedValue(true);
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
-        { success: false, id: 'asset-id', error: BulkIdErrorReason.NO_PERMISSION },
+        {
+          success: false,
+          id: 'asset-id',
+          error: BulkIdErrorReason.NO_PERMISSION,
+        },
       ]);
 
       expect(albumMock.update).not.toHaveBeenCalled();
@@ -659,6 +670,7 @@ describe(AlbumService.name, () => {
     it('should reset the thumbnail if it is removed', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.twoAssets));
+      albumMock.hasAsset.mockResolvedValue(true);
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
@@ -667,9 +679,8 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
         updatedAt: expect.any(Date),
-        assets: [assetStub.withLocation],
-        albumThumbnailAssetId: assetStub.withLocation.id,
       });
+      expect(albumMock.updateThumbnails).toHaveBeenCalled();
     });
   });
 

@@ -43,6 +43,8 @@ class HomePage extends HookConsumerWidget {
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
     final currentUser = ref.watch(currentUserProvider);
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
@@ -54,7 +56,7 @@ class HomePage extends HookConsumerWidget {
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        ref.read(serverInfoProvider.notifier).getServerVersion();
+        ref.read(serverInfoProvider.notifier).getServerInfo();
 
         selectionEnabledHook.addListener(() {
           multiselectEnabled.state = selectionEnabledHook.value;
@@ -139,30 +141,34 @@ class HomePage extends HookConsumerWidget {
       void onDelete() async {
         processing.value = true;
         try {
-          await ref.read(assetProvider.notifier).deleteAssets(selection.value);
+          await ref
+              .read(assetProvider.notifier)
+              .deleteAssets(selection.value, force: !trashEnabled);
+
+          final hasRemote = selection.value.any((a) => a.isRemote);
+          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved =
+              !trashEnabled ? 'deleted permanently' : 'trashed';
+          if (hasRemote) {
+            ImmichToast.show(
+              context: context,
+              msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
           selectionEnabledHook.value = false;
         } finally {
           processing.value = false;
         }
       }
 
-      void onUpload() async {
+      void onUpload() {
         processing.value = true;
+        selectionEnabledHook.value = false;
         try {
-          final Set<Asset> assets = selection.value;
-          if (assets.length > 30) {
-            ImmichToast.show(
-              context: context,
-              msg: 'home_page_upload_err_limit'.tr(),
-              gravity: ToastGravity.BOTTOM,
-            );
-          } else {
-            processing.value = false;
-            selectionEnabledHook.value = false;
-            await ref
-                .read(manualUploadProvider.notifier)
-                .uploadAssets(context, assets);
-          }
+          ref
+              .read(manualUploadProvider.notifier)
+              .uploadAssets(context, selection.value);
         } finally {
           processing.value = false;
         }

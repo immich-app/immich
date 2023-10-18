@@ -1,3 +1,4 @@
+import { SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -12,9 +13,8 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import _ from 'lodash';
-import { SharedLinkType } from '../../infra/entities/shared-link.entity';
-import { AssetIdErrorReason, ICryptoRepository } from '../index';
-import { ISharedLinkRepository } from './shared-link.repository';
+import { AssetIdErrorReason } from '../asset';
+import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkService } from './shared-link.service';
 
 describe(SharedLinkService.name, () => {
@@ -59,10 +59,10 @@ describe(SharedLinkService.name, () => {
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
 
-    it('should return not return exif', async () => {
+    it('should not return metadata', async () => {
       const authDto = authStub.adminSharedLinkNoExif;
       shareMock.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoExif);
+      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
   });
@@ -137,7 +137,7 @@ describe(SharedLinkService.name, () => {
       await sut.create(authStub.admin, {
         type: SharedLinkType.INDIVIDUAL,
         assetIds: [assetStub.image.id],
-        showExif: true,
+        showMetadata: true,
         allowDownload: true,
         allowUpload: true,
       });

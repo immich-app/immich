@@ -7,24 +7,26 @@ import {
   faceStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
-  newFaceRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
+  newPersonRepositoryMock,
   newSearchRepositoryMock,
   newSystemConfigRepositoryMock,
   searchStub,
 } from '@test';
 import { plainToInstance } from 'class-transformer';
-import { IAlbumRepository } from '../album/album.repository';
 import { mapAsset } from '../asset';
-import { IAssetRepository } from '../asset/asset.repository';
-import { IFaceRepository } from '../facial-recognition';
 import { JobName } from '../job';
-import { IJobRepository } from '../job/job.repository';
-import { IMachineLearningRepository } from '../smart-info';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IPersonRepository,
+  ISearchRepository,
+  ISystemConfigRepository,
+} from '../repositories';
 import { SearchDto } from './dto';
-import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
 
 jest.useFakeTimers();
@@ -34,8 +36,8 @@ describe(SearchService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
-  let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
 
@@ -43,12 +45,12 @@ describe(SearchService.name, () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    faceMock = newFaceRepositoryMock();
     jobMock = newJobRepositoryMock();
+    personMock = newPersonRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     searchMock = newSearchRepositoryMock();
 
-    sut = new SearchService(albumMock, assetMock, configMock, faceMock, jobMock, machineMock, searchMock);
+    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
 
     searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false, faces: false });
 
@@ -265,9 +267,9 @@ describe(SearchService.name, () => {
   });
 
   describe('handleIndexAlbums', () => {
-    it('should skip if search is disabled', () => {
+    it('should skip if search is disabled', async () => {
       sut['enabled'] = false;
-      sut.handleIndexAlbums();
+      await sut.handleIndexAlbums();
     });
 
     it('should index all the albums', async () => {
@@ -314,7 +316,7 @@ describe(SearchService.name, () => {
 
   describe('handleIndexFaces', () => {
     it('should call done, even when there are no faces', async () => {
-      faceMock.getAll.mockResolvedValue([]);
+      personMock.getAllFaces.mockResolvedValue([]);
 
       await sut.handleIndexFaces();
 
@@ -322,7 +324,7 @@ describe(SearchService.name, () => {
     });
 
     it('should index all the faces', async () => {
-      faceMock.getAll.mockResolvedValue([faceStub.face1]);
+      personMock.getAllFaces.mockResolvedValue([faceStub.face1]);
 
       await sut.handleIndexFaces();
 
@@ -353,20 +355,20 @@ describe(SearchService.name, () => {
   });
 
   describe('handleIndexAsset', () => {
-    it('should skip if search is disabled', () => {
+    it('should skip if search is disabled', async () => {
       sut['enabled'] = false;
-      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
 
       expect(searchMock.importFaces).not.toHaveBeenCalled();
-      expect(faceMock.getByIds).not.toHaveBeenCalled();
+      expect(personMock.getFacesByIds).not.toHaveBeenCalled();
     });
 
-    it('should index the face', () => {
-      faceMock.getByIds.mockResolvedValue([faceStub.face1]);
+    it('should index the face', async () => {
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
-      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
 
-      expect(faceMock.getByIds).toHaveBeenCalledWith([{ assetId: 'asset-1', personId: 'person-1' }]);
+      expect(personMock.getFacesByIds).toHaveBeenCalledWith([{ assetId: 'asset-1', personId: 'person-1' }]);
     });
   });
 

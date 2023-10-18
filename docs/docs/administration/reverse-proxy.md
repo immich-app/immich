@@ -19,7 +19,7 @@ Users can deploy a custom reverse proxy that forwards requests to Immich's rever
 
 ### Nginx example config
 
-Below is an example config for nginx:
+Below is an example config for nginx. Make sure to include `client_max_body_size 50000M;` also in a `http` block in `/etc/nginx/nginx.conf`.
 
 ```nginx
 server {

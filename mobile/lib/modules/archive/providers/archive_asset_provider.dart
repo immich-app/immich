@@ -13,9 +13,11 @@ final archiveProvider = StreamProvider<RenderList>((ref) async* {
   final query = ref
       .watch(dbProvider)
       .assets
+      .where()
+      .ownerIdEqualToAnyChecksum(user.isarId)
       .filter()
-      .ownerIdEqualTo(user.isarId)
       .isArchivedEqualTo(true)
+      .isTrashedEqualTo(false)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

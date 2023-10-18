@@ -1,11 +1,18 @@
-import { IAssetRepository, IFaceRepository, IPersonRepository, LoginResponseDto, TimeBucketSize } from '@app/domain';
-import { AppModule, AssetController } from '@app/immich';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  IPersonRepository,
+  LibraryResponseDto,
+  LoginResponseDto,
+  SharedLinkResponseDto,
+  TimeBucketSize,
+} from '@app/domain';
+import { AssetController } from '@app/immich';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
+import { createTestApp, db } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
 
@@ -45,17 +52,21 @@ let assetCount = 0;
 const createAsset = (
   repository: IAssetRepository,
   loginResponse: LoginResponseDto,
+  libraryId: string,
   createdAt: Date,
 ): Promise<AssetEntity> => {
   const id = assetCount++;
-  return repository.save({
+  return repository.create({
     ownerId: loginResponse.userId,
     checksum: randomBytes(20),
     originalPath: `/tests/test_${id}`,
     deviceAssetId: `test_${id}`,
     deviceId: 'e2e-test',
+    libraryId,
+    isVisible: true,
     fileCreatedAt: createdAt,
     fileModifiedAt: new Date(),
+    localDateTime: createdAt,
     type: AssetType.IMAGE,
     originalFileName: `test_${id}`,
   });
@@ -65,6 +76,8 @@ describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
   let server: any;
   let assetRepository: IAssetRepository;
+  let defaultLibrary: LibraryResponseDto;
+  let sharedLink: SharedLinkResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let asset1: AssetEntity;
@@ -73,11 +86,8 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset4: AssetEntity;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    app = await createTestApp();
 
-    app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
   });
@@ -87,15 +97,30 @@ describe(`${AssetController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
-    await api.userApi.create(server, admin.accessToken, user1Dto);
-    user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
-    asset1 = await createAsset(assetRepository, user1, new Date('1970-01-01'));
-    asset2 = await createAsset(assetRepository, user1, new Date('1970-01-02'));
-    asset3 = await createAsset(assetRepository, user1, new Date('1970-02-01'));
+    const [libraries] = await Promise.all([
+      api.libraryApi.getAll(server, admin.accessToken),
+      api.userApi.create(server, admin.accessToken, user1Dto),
+      api.userApi.create(server, admin.accessToken, user2Dto),
+    ]);
 
-    await api.userApi.create(server, admin.accessToken, user2Dto);
-    user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-    asset4 = await createAsset(assetRepository, user2, new Date('1970-01-01'));
+    defaultLibrary = libraries[0];
+
+    [user1, user2] = await Promise.all([
+      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
+      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
+    ]);
+
+    [asset1, asset2, asset3, asset4] = await Promise.all([
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01')),
+    ]);
+
+    sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+      type: SharedLinkType.INDIVIDUAL,
+      assetIds: [asset1.id, asset2.id],
+    });
   });
 
   afterAll(async () => {
@@ -139,7 +164,7 @@ describe(`${AssetController.name} (e2e)`, () => {
           .attach('assetData', randomBytes(32), 'example.jpg')
           .field(dto);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -178,6 +203,27 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body.duplicate).toBe(true);
     });
+
+    it("should not upload to another user's library", async () => {
+      const content = randomBytes(32);
+      const library = (await api.libraryApi.getAll(server, user2.accessToken))[0];
+      await api.assetApi.upload(server, user1.accessToken, 'example-image', { content });
+
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .field('libraryId', library.id)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', false)
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', content, 'example.jpg');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no asset.upload access'));
+    });
   });
 
   describe('PUT /asset/:id', () => {
@@ -192,7 +238,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .put(`/asset/${uuidStub.invalid}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorStub.badRequest);
+      expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
     });
 
     it('should require access', async () => {
@@ -241,8 +287,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
 
-      const faceRepository = app.get<IFaceRepository>(IFaceRepository);
-      await faceRepository.create({ assetId: asset1.id, personId: person.id });
+      await personRepository.createFace({ assetId: asset1.id, personId: person.id });
 
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)
@@ -316,7 +361,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/album/statistics');
+      const { status, body } = await request(server).get('/asset/statistics');
 
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
@@ -372,6 +417,80 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
   });
 
+  describe('GET /asset/random', () => {
+    beforeAll(async () => {
+      await Promise.all([
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+        createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
+      ]);
+    });
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/random');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return 1 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(1);
+      expect(assets[0].ownerId).toBe(user1.userId);
+      // assets owned by user1
+      expect([asset1.id, asset2.id, asset3.id]).toContain(assets[0].id);
+      // assets owned by user2
+      expect(assets[0].id).not.toBe(asset4.id);
+    });
+
+    it('should return 2 random assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/random?count=2')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(2);
+
+      for (const asset of assets) {
+        expect(asset.ownerId).toBe(user1.userId);
+        // assets owned by user1
+        expect([asset1.id, asset2.id, asset3.id]).toContain(asset.id);
+        // assets owned by user2
+        expect(asset.id).not.toBe(asset4.id);
+      }
+    });
+
+    it.each(Array(10))(
+      'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
+      async () => {
+        const { status, body } = await request(server)
+          .get('/[]asset/random')
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual([expect.objectContaining({ id: asset4.id })]);
+      },
+    );
+
+    it('should return error', async () => {
+      const { status } = await request(server)
+        .get('/asset/random?count=ABC')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(400);
+    });
+  });
+
   describe('GET /asset/time-buckets', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/asset/time-buckets').query({ size: TimeBucketSize.MONTH });
@@ -393,6 +512,15 @@ describe(`${AssetController.name} (e2e)`, () => {
           { count: 2, timeBucket: asset1.fileCreatedAt.toISOString() },
         ]),
       );
+    });
+
+    it('should not allow access for unrelated shared links', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-buckets')
+        .query({ key: sharedLink.key, size: TimeBucketSize.MONTH });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
     });
 
     it('should get time buckets by day', async () => {
@@ -456,6 +584,47 @@ describe(`${AssetController.name} (e2e)`, () => {
           expect.objectContaining({ id: asset2.id }),
         ]),
       );
+    });
+  });
+
+  describe('GET /asset/map-marker', () => {
+    beforeEach(async () => {
+      await assetRepository.save({ id: asset1.id, isArchived: true });
+      await assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 });
+      await assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/map-marker');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should get map markers for all non-archived assets', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset1.id }),
+          expect.objectContaining({ id: asset2.id }),
+        ]),
+      );
+    });
+
+    it('should get all map markers', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ isArchived: false });
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+      expect(body).toEqual([expect.objectContaining({ id: asset2.id })]);
     });
   });
 });

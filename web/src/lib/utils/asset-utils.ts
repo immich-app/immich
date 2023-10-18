@@ -83,6 +83,13 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 };
 
 export const downloadFile = async (asset: AssetResponseDto) => {
+  if (asset.isOffline) {
+    notificationController.show({
+      type: NotificationType.Info,
+      message: `Asset ${asset.originalFileName} is offline`,
+    });
+    return;
+  }
   const assets = [
     {
       filename: `${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`,
@@ -152,11 +159,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation == 6 || orientation == 90;
+  return orientation === 5 || orientation === 6 || orientation === 90;
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation == 8 || orientation == -90;
+  return orientation === 7 || orientation === 8 || orientation === -90;
 }
 
 /**

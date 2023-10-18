@@ -5,6 +5,9 @@ import { asHumanReadable } from '../domain.util';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigCore, SystemConfigService } from '../system-config';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   AvailableVersionResponseDto,
   ServerConfigDto,
@@ -18,7 +21,6 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
   public schedulerRegistry: SchedulerRegistry;
 
@@ -30,10 +32,11 @@ export class ServerInfoService {
   ) {
     this.configCore = new SystemConfigCore(configRepository);
     this.schedulerRegistry = new SchedulerRegistry();
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
-    const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
@@ -82,10 +85,14 @@ export class ServerInfoService {
     // TODO move to system config
     const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
 
+    const isInitialized = await this.userRepository.hasAdmin();
+
     return {
       loginPageMessage,
       mapTileUrl: config.map.tileUrl,
+      trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
+      isInitialized,
     };
   }
 

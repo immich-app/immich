@@ -1,17 +1,31 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Logger } from '@nestjs/common';
-import { DateTime } from 'luxon';
+import _ from 'lodash';
+import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository, ImmichReadStream, StorageCore, StorageFolder } from '../storage';
-import { IAssetRepository } from './asset.repository';
+import { IAssetDeletionJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
+  CommunicationEvent,
+  IAccessRepository,
+  IAssetRepository,
+  ICommunicationRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichReadStream,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
+import {
+  AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
   AssetJobName,
@@ -24,13 +38,16 @@ import {
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
+  TrashAction,
   UpdateAssetDto,
   mapStats,
 } from './dto';
 import {
   AssetResponseDto,
+  BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
+  SanitizedAssetResponseDto,
   TimeBucketResponseDto,
   mapAsset,
 } from './response-dto';
@@ -57,16 +74,23 @@ export interface UploadFile {
 export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
-  private storageCore = new StorageCore();
+  private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -137,34 +161,36 @@ export class AssetService {
   }
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const target = DateTime.fromJSDate(dto.timestamp);
+    const currentYear = new Date().getFullYear();
+    const assets = await this.assetRepository.getByDayOfYear(authUser.id, dto);
 
-    const onRequest = async (yearsAgo: number): Promise<MemoryLaneResponseDto> => {
-      const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: yearsAgo }).toJSDate());
-      return {
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
-        assets: assets.map((a) => mapAsset(a)),
-      };
-    };
+    return _.chain(assets)
+      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
+      .map((asset) => {
+        const years = currentYear - asset.localDateTime.getFullYear();
 
-    const requests: Promise<MemoryLaneResponseDto>[] = [];
-    for (let i = 1; i <= dto.years; i++) {
-      requests.push(onRequest(i));
-    }
-
-    return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
+        return {
+          title: `${years} year${years > 1 ? 's' : ''} since...`,
+          asset: mapAsset(asset),
+        };
+      })
+      .groupBy((asset) => asset.title)
+      .map((items, title) => ({ title, assets: items.map(({ asset }) => asset) }))
+      .value();
   }
 
   private async timeBucketChecks(authUser: AuthUserDto, dto: TimeBucketDto) {
     if (dto.albumId) {
       await this.access.requirePermission(authUser, Permission.ALBUM_READ, [dto.albumId]);
-    } else if (dto.userId) {
+    } else {
+      dto.userId = dto.userId || authUser.id;
+    }
+
+    if (dto.userId) {
+      await this.access.requirePermission(authUser, Permission.TIMELINE_READ, [dto.userId]);
       if (dto.isArchived !== false) {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
-      await this.access.requirePermission(authUser, Permission.LIBRARY_READ, [dto.userId]);
-    } else {
-      dto.userId = authUser.id;
     }
   }
 
@@ -173,10 +199,17 @@ export class AssetService {
     return this.assetRepository.getTimeBuckets(dto);
   }
 
-  async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+  async getByTimeBucket(
+    authUser: AuthUserDto,
+    dto: TimeBucketAssetDto,
+  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
-    return assets.map(mapAsset);
+    if (authUser.isShowMetadata) {
+      return assets.map((asset) => mapAsset(asset));
+    } else {
+      return assets.map((asset) => mapAsset(asset, true));
+    }
   }
 
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
@@ -185,6 +218,10 @@ export class AssetService {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
     }
 
     return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
@@ -243,7 +280,7 @@ export class AssetService {
       zip.addFile(originalPath, filename);
     }
 
-    zip.finalize();
+    void zip.finalize();
 
     return { stream: zip.stream };
   }
@@ -268,8 +305,10 @@ export class AssetService {
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
-      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
+      await this.access.requirePermission(authUser, Permission.TIMELINE_DOWNLOAD, userId);
+      return usePagination(PAGINATION_SIZE, (pagination) =>
+        this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
+      );
     }
 
     throw new BadRequestException('assetIds, albumId, or userId is required');
@@ -278,6 +317,11 @@ export class AssetService {
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(authUser.id, dto);
     return mapStats(stats);
+  }
+
+  async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    return assets.map((a) => mapAsset(a));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
@@ -293,10 +337,121 @@ export class AssetService {
     return mapAsset(asset);
   }
 
-  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto) {
+  async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     await this.assetRepository.updateAll(ids, options);
+  }
+
+  async handleAssetDeletionCheck() {
+    const config = await this.configCore.getConfig();
+    const trashedDays = config.trash.enabled ? config.trash.days : 0;
+    const trashedBefore = DateTime.now()
+      .minus(Duration.fromObject({ days: trashedDays }))
+      .toJSDate();
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { trashedBefore }),
+    );
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
+      }
+    }
+
+    return true;
+  }
+
+  async handleAssetDeletion(job: IAssetDeletionJob) {
+    const { id, fromExternal } = job;
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      return false;
+    }
+
+    // Ignore requests that are not from external library job but is for an external asset
+    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
+      return false;
+    }
+
+    if (asset.faces) {
+      await Promise.all(
+        asset.faces.map(({ assetId, personId }) =>
+          this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+        ),
+      );
+    }
+
+    await this.assetRepository.remove(asset);
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
+    this.communicationRepository.send(CommunicationEvent.ASSET_DELETE, asset.ownerId, id);
+
+    // TODO refactor this to use cascades
+    if (asset.livePhotoVideoId) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+    }
+
+    const files = [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath];
+    if (!fromExternal) {
+      files.push(asset.originalPath);
+    }
+
+    if (!asset.isReadOnly) {
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    }
+
+    return true;
+  }
+
+  async deleteAll(authUser: AuthUserDto, dto: AssetBulkDeleteDto): Promise<void> {
+    const { ids, force } = dto;
+
+    await this.access.requirePermission(authUser, Permission.ASSET_DELETE, ids);
+
+    if (force) {
+      for (const id of ids) {
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
+      }
+    } else {
+      await this.assetRepository.softDeleteAll(ids);
+      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids } });
+      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, authUser.id, ids);
+    }
+  }
+
+  async handleTrashAction(authUser: AuthUserDto, action: TrashAction): Promise<void> {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getByUserId(pagination, authUser.id, { trashedBefore: DateTime.now().toJSDate() }),
+    );
+
+    if (action == TrashAction.RESTORE_ALL) {
+      for await (const assets of assetPagination) {
+        const ids = assets.map((a) => a.id);
+        await this.assetRepository.restoreAll(ids);
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
+      }
+      return;
+    }
+
+    if (action == TrashAction.EMPTY_ALL) {
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
+        }
+      }
+      return;
+    }
+  }
+
+  async restoreAll(authUser: AuthUserDto, dto: BulkIdsDto): Promise<void> {
+    const { ids } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
+    await this.assetRepository.restoreAll(ids);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

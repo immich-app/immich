@@ -11,12 +11,17 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import { UserCore, UserResponseDto } from '../user';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -37,7 +42,6 @@ import {
   mapLoginResponse,
   mapUserToken,
 } from './response-dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -66,11 +70,12 @@ export class AuthService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30000 });
   }
@@ -375,7 +380,7 @@ export class AuthService {
             sharedLinkId: link.id,
             isAllowUpload: link.allowUpload,
             isAllowDownload: link.allowDownload,
-            isShowExif: link.showExif,
+            isShowMetadata: link.showExif,
           };
         }
       }
@@ -426,7 +431,7 @@ export class AuthService {
         isPublicUser: false,
         isAllowUpload: true,
         isAllowDownload: true,
-        isShowExif: true,
+        isShowMetadata: true,
         accessTokenId: token.id,
       };
     }

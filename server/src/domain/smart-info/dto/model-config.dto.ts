@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Optional } from '../../domain.util';
-import { CLIPMode, ModelType } from '../machine-learning.interface';
+import { CLIPMode, ModelType } from '../../repositories';
 
 export class ModelConfig {
   @IsBoolean()
@@ -48,4 +48,10 @@ export class RecognitionConfig extends ModelConfig {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   maxDistance!: number;
+
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minFaces!: number;
 }

@@ -70,11 +70,11 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CitiesFile) {
+    return CitiesFileTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
-  }
-  if (value is DeleteAssetStatus) {
-    return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
@@ -85,8 +85,17 @@ String parameterToString(dynamic value) {
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
   }
+  if (value is LibraryType) {
+    return LibraryTypeTypeTransformer().encode(value).toString();
+  }
   if (value is ModelType) {
     return ModelTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PathEntityType) {
+    return PathEntityTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PathType) {
+    return PathTypeTypeTransformer().encode(value).toString();
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();

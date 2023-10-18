@@ -2,6 +2,7 @@ import type { ActionReturn } from 'svelte/action';
 
 interface Attributes {
   'on:outclick'?: (e: CustomEvent) => void;
+  'on:escape'?: (e: CustomEvent) => void;
 }
 
 export function clickOutside(node: HTMLElement): ActionReturn<void, Attributes> {
@@ -14,7 +15,7 @@ export function clickOutside(node: HTMLElement): ActionReturn<void, Attributes> 
 
   const handleKey = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      node.dispatchEvent(new CustomEvent('outclick'));
+      node.dispatchEvent(new CustomEvent('escape'));
     }
   };
 

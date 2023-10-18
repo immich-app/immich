@@ -1,24 +1,26 @@
-import { LoginResponseDto } from '@app/domain';
+import { LoginResponseDto, UserResponseDto, UserService } from '@app/domain';
 import { AppModule, UserController } from '@app/immich';
+import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, userSignupStub, userStub } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
+import { Repository } from 'typeorm';
 
 describe(`${UserController.name}`, () => {
   let app: INestApplication;
   let server: any;
   let loginResponse: LoginResponseDto;
   let accessToken: string;
+  let userService: UserService;
+  let userRepository: Repository<UserEntity>;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    app = await createTestApp();
+    userRepository = app.select(AppModule).get('UserEntityRepository');
 
-    app = await moduleFixture.createNestApplication().init();
     server = app.getHttpServer();
   });
 
@@ -27,6 +29,8 @@ describe(`${UserController.name}`, () => {
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
+
+    userService = app.get<UserService>(UserService);
   });
 
   afterAll(async () => {
@@ -131,7 +135,7 @@ describe(`${UserController.name}`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userSignupStub, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -173,6 +177,50 @@ describe(`${UserController.name}`, () => {
     });
   });
 
+  describe('DELETE /user/:id', () => {
+    let userToDelete: UserResponseDto;
+
+    beforeEach(async () => {
+      userToDelete = await api.userApi.create(server, accessToken, {
+        email: userStub.user1.email,
+        firstName: userStub.user1.firstName,
+        lastName: userStub.user1.lastName,
+        password: 'superSecurePassword',
+      });
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).delete(`/user/${userToDelete.id}`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should delete user', async () => {
+      const deleteRequest = await request(server)
+        .delete(`/user/${userToDelete.id}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(deleteRequest.status).toBe(200);
+      expect(deleteRequest.body).toEqual({
+        ...userToDelete,
+        updatedAt: expect.any(String),
+        deletedAt: expect.any(String),
+      });
+
+      await userRepository.save({ id: deleteRequest.body.id, deletedAt: new Date('1970-01-01').toISOString() });
+
+      await userService.handleUserDelete({ id: userToDelete.id });
+
+      const { status, body } = await request(server)
+        .get('/user')
+        .query({ isAll: false })
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+    });
+  });
+
   describe('PUT /user', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server).put(`/user`);
@@ -187,7 +235,7 @@ describe(`${UserController.name}`, () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ ...userStub.admin, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -237,9 +285,9 @@ describe(`${UserController.name}`, () => {
         lastName: 'Last Name',
       });
 
-      expect(after).toMatchObject({
+      expect(after).toEqual({
         ...before,
-        updatedAt: expect.anything(),
+        updatedAt: expect.any(String),
         firstName: 'First Name',
         lastName: 'Last Name',
       });
@@ -263,10 +311,10 @@ describe(`${UserController.name}`, () => {
   });
 
   describe('GET /user/count', () => {
-    it('should not require authentication', async () => {
+    it('should require authentication', async () => {
       const { status, body } = await request(server).get(`/user/count`);
-      expect(status).toBe(200);
-      expect(body).toEqual({ userCount: 1 });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
     });
 
     it('should start with just the admin', async () => {

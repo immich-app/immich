@@ -50,6 +50,10 @@ export class PersonRepository implements IPersonRepository {
     return people.length;
   }
 
+  getAllFaces(): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ relations: { asset: true }, withDeleted: true });
+  }
+
   getAll(): Promise<PersonEntity[]> {
     return this.personRepository.find();
   }
@@ -63,11 +67,12 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
+      .innerJoin('face.asset', 'asset')
       .orderBy('person.isHidden', 'ASC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
-      .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .limit(500);
     if (!options?.withHidden) {
@@ -83,17 +88,27 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .having('COUNT(face.assetId) = 0')
       .groupBy('person.id')
+      .withDeleted()
       .getMany();
   }
 
-  getById(ownerId: string, personId: string): Promise<PersonEntity | null> {
-    return this.personRepository.findOne({ where: { id: personId, ownerId } });
+  getById(personId: string): Promise<PersonEntity | null> {
+    return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getAssets(ownerId: string, personId: string): Promise<AssetEntity[]> {
+  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
+      .limit(20)
+      .getMany();
+  }
+
+  getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
-        ownerId,
         faces: {
           personId,
         },
@@ -118,13 +133,17 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
+  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.save(entity);
+  }
+
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     const { id } = await this.personRepository.save(entity);
     return this.personRepository.findOneByOrFail({ id });
   }
 
-  async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository.findOneBy({ assetId, personId });
+  async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
 
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {

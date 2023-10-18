@@ -53,6 +53,7 @@ const image: Record<string, string[]> = {
   '.heif': ['image/heif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
   '.insp': ['image/jpeg'],
+  '.jpe': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
   '.jxl': ['image/jxl'],
@@ -64,6 +65,7 @@ const image: Record<string, string[]> = {
   '.ori': ['image/ori', 'image/x-olympus-ori'],
   '.pef': ['image/pef', 'image/x-pentax-pef'],
   '.png': ['image/png'],
+  '.psd': ['image/psd', 'image/vnd.adobe.photoshop'],
   '.raf': ['image/raf', 'image/x-fuji-raf'],
   '.raw': ['image/raw', 'image/x-panasonic-raw'],
   '.rwl': ['image/rwl', 'image/x-leica-rwl'],
@@ -87,6 +89,7 @@ const video: Record<string, string[]> = {
   '.flv': ['video/x-flv'],
   '.insv': ['video/mp4'],
   '.m2ts': ['video/mp2t'],
+  '.m4v': ['video/x-m4v'],
   '.mkv': ['video/x-matroska'],
   '.mov': ['video/quicktime'],
   '.mp4': ['video/mp4'],
@@ -112,6 +115,7 @@ export const mimeTypes = {
   video,
 
   isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
+  isImage: (filename: string) => isType(filename, image),
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
@@ -125,4 +129,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
+  getSupportedFileExtensions: () => Object.keys(image).concat(Object.keys(video)),
 };

@@ -312,6 +312,12 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    TrashRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const TrashPage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -619,6 +625,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AlbumOptionsRoute.name,
           path: '/album-options-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          TrashRoute.name,
+          path: '/trash-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1392,6 +1406,18 @@ class AlbumOptionsRouteArgs {
   String toString() {
     return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
   }
+}
+
+/// generated route for
+/// [TrashPage]
+class TrashRoute extends PageRouteInfo<void> {
+  const TrashRoute()
+      : super(
+          TrashRoute.name,
+          path: '/trash-page',
+        );
+
+  static const String name = 'TrashRoute';
 }
 
 /// generated route for

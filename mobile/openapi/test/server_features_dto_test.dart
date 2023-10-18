@@ -51,6 +51,11 @@ void main() {
       // TODO
     });
 
+    // bool reverseGeocoding
+    test('to test the property `reverseGeocoding`', () async {
+      // TODO
+    });
+
     // bool search
     test('to test the property `search`', () async {
       // TODO
@@ -63,6 +68,11 @@ void main() {
 
     // bool tagImage
     test('to test the property `tagImage`', () async {
+      // TODO
+    });
+
+    // bool trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 

@@ -1,5 +1,7 @@
 import {
   AudioCodec,
+  CQMode,
+  CitiesFile,
   Colorspace,
   CQMode,
   SystemConfig,
@@ -18,8 +20,8 @@ import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
+import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
-import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
@@ -51,7 +53,9 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
+    [QueueName.LIBRARY]: { concurrency: 5 },
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
@@ -72,11 +76,16 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
+      minFaces: 1,
     },
   },
   map: {
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     enabled: false,
@@ -94,11 +103,9 @@ export const defaults = Object.freeze<SystemConfig>({
   passwordLogin: {
     enabled: true,
   },
-
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-
   thumbnail: {
     webpSize: 250,
     jpegSize: 1440,
@@ -109,6 +116,10 @@ export const defaults = Object.freeze<SystemConfig>({
   newVersionCheck: {
     enabled: true,
   },
+  trash: {
+    enabled: true,
+    days: 30,
+  },
 });
 
 export enum FeatureFlag {
@@ -116,17 +127,19 @@ export enum FeatureFlag {
   FACIAL_RECOGNITION = 'facialRecognition',
   TAG_IMAGE = 'tagImage',
   MAP = 'map',
+  REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
   SEARCH = 'search',
   OAUTH = 'oauth',
   OAUTH_AUTO_LAUNCH = 'oauthAutoLaunch',
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
+  TRASH = 'trash',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
 
-const singleton = new Subject<SystemConfig>();
+let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
@@ -134,9 +147,20 @@ export class SystemConfigCore {
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfig | null = null;
 
-  public config$ = singleton;
+  public config$ = new Subject<SystemConfig>();
 
-  constructor(private repository: ISystemConfigRepository) {}
+  private constructor(private repository: ISystemConfigRepository) {}
+
+  static create(repository: ISystemConfigRepository) {
+    if (!instance) {
+      instance = new SystemConfigCore(repository);
+    }
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   async requireFeature(feature: FeatureFlag) {
     const hasFeature = await this.hasFeature(feature);
@@ -178,8 +202,10 @@ export class SystemConfigCore {
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
+      [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
+      [FeatureFlag.TRASH]: config.trash.enabled,
 
       // TODO: use these instead of `POST oauth/config`
       [FeatureFlag.OAUTH]: config.oauth.enabled,

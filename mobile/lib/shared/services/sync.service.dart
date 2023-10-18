@@ -123,7 +123,7 @@ class SyncService {
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
     final Asset? inDb =
-        await _db.assets.getByChecksumOwnerId(a.checksum, a.ownerId);
+        await _db.assets.getByOwnerIdChecksum(a.ownerId, a.checksum);
     if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
@@ -153,7 +153,7 @@ class SyncService {
     if (toUpsert == null || toDelete == null) return null;
     try {
       if (toDelete.isNotEmpty) {
-        await _handleRemoteAssetRemoval(toDelete);
+        await handleRemoteAssetRemoval(toDelete);
       }
       if (toUpsert.isNotEmpty) {
         final (_, updated) = await _linkWithExistingFromDb(toUpsert);
@@ -171,13 +171,14 @@ class SyncService {
   }
 
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> _handleRemoteAssetRemoval(List<String> idsToDelete) {
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
     return _db.writeTxn(() async {
       await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
       final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
       if (onlyLocal.isNotEmpty) {
         for (final Asset a in onlyLocal) {
           a.remoteId = null;
+          a.isTrashed = false;
         }
         await _db.assets.putAll(onlyLocal);
       }
@@ -195,8 +196,8 @@ class SyncService {
       return false;
     }
     final List<Asset> inDb = await _db.assets
-        .filter()
-        .ownerIdEqualTo(user.isarId)
+        .where()
+        .ownerIdEqualToAnyChecksum(user.isarId)
         .sortByChecksum()
         .findAll();
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
@@ -282,6 +283,9 @@ class SyncService {
     if (!_hasAlbumResponseDtoChanged(dto, album)) {
       return false;
     }
+    // loadDetails (/api/album/:id) will not include lastModifiedAssetTimestamp,
+    // i.e. it will always be null. Save it here.
+    final originalDto = dto;
     dto = await loadDetails(dto);
     if (dto.assetCount != dto.assets.length) {
       return false;
@@ -321,6 +325,7 @@ class SyncService {
     album.name = dto.albumName;
     album.shared = dto.shared;
     album.modifiedAt = dto.updatedAt;
+    album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -638,9 +643,9 @@ class SyncService {
   ) async {
     if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
 
-    final List<Asset?> inDb = await _db.assets.getAllByChecksumOwnerId(
-      assets.map((a) => a.checksum).toList(growable: false),
+    final List<Asset?> inDb = await _db.assets.getAllByOwnerIdChecksum(
       assets.map((a) => a.ownerId).toInt64List(),
+      assets.map((a) => a.checksum).toList(growable: false),
     );
     assert(inDb.length == assets.length);
     final List<Asset> existing = [], toUpsert = [];
@@ -683,9 +688,9 @@ class SyncService {
       );
       // give details on the errors
       assets.sort(Asset.compareByOwnerChecksum);
-      final inDb = await _db.assets.getAllByChecksumOwnerId(
-        assets.map((e) => e.checksum).toList(growable: false),
+      final inDb = await _db.assets.getAllByOwnerIdChecksum(
         assets.map((e) => e.ownerId).toInt64List(),
+        assets.map((e) => e.checksum).toList(growable: false),
       );
       for (int i = 0; i < assets.length; i++) {
         final Asset a = assets[i];
@@ -808,5 +813,13 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt);
+      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
+      (dto.lastModifiedAssetTimestamp == null &&
+          a.lastModifiedAssetTimestamp != null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp == null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp != null &&
+          !dto.lastModifiedAssetTimestamp!
+              .isAtSameMomentAs(a.lastModifiedAssetTimestamp!));
 }

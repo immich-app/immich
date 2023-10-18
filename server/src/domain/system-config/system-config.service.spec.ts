@@ -1,5 +1,7 @@
 import {
   AudioCodec,
+  CQMode,
+  CitiesFile,
   Colorspace,
   CQMode,
   SystemConfig,
@@ -15,11 +17,16 @@ import { newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { IJobRepository, JobName, QueueName } from '../job';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
+import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { JobName, QueueName } from '../job';
+import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
+import { SystemConfigValidator, defaults } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
+  { key: SystemConfigKey.TRASH_DAYS, value: 10 },
 ];
 
 const updatedConfig = Object.freeze<SystemConfig>({
@@ -31,7 +38,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
+    [QueueName.LIBRARY]: { concurrency: 5 },
     [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
@@ -71,11 +80,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
+      minFaces: 1,
     },
   },
   map: {
     enabled: true,
     tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  reverseGeocoding: {
+    enabled: true,
+    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     autoLaunch: true,
@@ -105,18 +119,24 @@ const updatedConfig = Object.freeze<SystemConfig>({
   newVersionCheck: {
     enabled: true,
   },
+  trash: {
+    enabled: true,
+    days: 10,
+  },
 });
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, jobMock);
+    sut = new SystemConfigService(configMock, communicationMock, jobMock);
   });
 
   it('should work', () => {
@@ -152,6 +172,7 @@ describe(SystemConfigService.name, () => {
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
         { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
+        { key: SystemConfigKey.TRASH_DAYS, value: 10 },
       ]);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -159,7 +180,7 @@ describe(SystemConfigService.name, () => {
 
     it('should load the config from a file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true } };
+      const partialConfig = { ffmpeg: { crf: 30 }, oauth: { autoLaunch: true }, trash: { days: 10 } };
       configMock.readFile.mockResolvedValue(Buffer.from(JSON.stringify(partialConfig)));
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
@@ -174,6 +195,15 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual(defaults);
 
       expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
+    });
+
+    it('should allow underscores in the machine learning url', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
+      configMock.readFile.mockResolvedValue(Buffer.from(JSON.stringify(partialConfig)));
+
+      const config = await sut.getConfig();
+      expect(config.machineLearning.url).toEqual('immich_machine_learning');
     });
 
     const tests = [
@@ -216,8 +246,10 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
+          '{{y}}/{{y}}-{{WW}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
+        weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });
     });

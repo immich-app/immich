@@ -2,13 +2,20 @@ import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { IAlbumRepository } from '../album/album.repository';
-import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { IEntityJob, IJobRepository, JobName } from '../job';
+import { IEntityJob, JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ILibraryRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  IUserRepository,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { IStorageRepository } from '../storage/storage.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
@@ -19,24 +26,26 @@ import {
   mapUserCountResponse,
 } from './response-dto';
 import { UserCore } from './user.core';
-import { IUserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
+  private storageCore: StorageCore;
   private userCore: UserCore;
-  private storageCore = new StorageCore();
 
   constructor(
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
   async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -91,6 +100,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    await this.albumRepository.softDeleteAll(userId);
     const deletedUser = await this.userCore.deleteUser(authUser, user);
     return mapUser(deletedUser);
   }
@@ -101,6 +111,7 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     const updatedUser = await this.userCore.restoreUser(authUser, user);
+    await this.albumRepository.restoreAll(userId);
     return mapUser(updatedUser);
   }
 

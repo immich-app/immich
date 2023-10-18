@@ -1,6 +1,5 @@
-import { AppModule, AuthController } from '@app/immich';
+import { AuthController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import {
@@ -13,6 +12,7 @@ import {
   signupResponseStub,
   uuidStub,
 } from '@test/fixtures';
+import { createTestApp } from '@test/test-utils';
 import request from 'supertest';
 
 const firstName = 'Immich';
@@ -26,11 +26,7 @@ describe(`${AuthController.name} (e2e)`, () => {
   let accessToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
+    app = await createTestApp();
     server = app.getHttpServer();
   });
 
@@ -52,18 +48,33 @@ describe(`${AuthController.name} (e2e)`, () => {
     });
 
     const invalid = [
-      { should: 'require an email address', data: { firstName, lastName, password } },
-      { should: 'require a password', data: { firstName, lastName, email } },
-      { should: 'require a first name ', data: { lastName, email, password } },
-      { should: 'require a last name ', data: { firstName, email, password } },
-      { should: 'require a valid email', data: { firstName, lastName, email: 'immich', password } },
+      {
+        should: 'require an email address',
+        data: { firstName, lastName, password },
+      },
+      {
+        should: 'require a password',
+        data: { firstName, lastName, email },
+      },
+      {
+        should: 'require a first name ',
+        data: { lastName, email, password },
+      },
+      {
+        should: 'require a last name ',
+        data: { firstName, email, password },
+      },
+      {
+        should: 'require a valid email',
+        data: { firstName, lastName, email: 'immich', password },
+      },
     ];
 
     for (const { should, data } of invalid) {
       it(`should ${should}`, async () => {
         const { status, body } = await request(server).post('/auth/admin-sign-up').send(data);
         expect(status).toEqual(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -102,7 +113,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .post('/auth/admin-sign-up')
           .send({ ...adminSignupStub, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
   });
@@ -120,7 +131,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .post('/auth/login')
           .send({ ...loginStub.admin, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 
@@ -225,7 +236,7 @@ describe(`${AuthController.name} (e2e)`, () => {
           .send({ ...changePasswordStub, [key]: null })
           .set('Authorization', `Bearer ${accessToken}`);
         expect(status).toBe(400);
-        expect(body).toEqual(errorStub.badRequest);
+        expect(body).toEqual(errorStub.badRequest());
       });
     }
 

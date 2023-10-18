@@ -26,13 +26,17 @@
   import type { AssetStore } from '$lib/stores/assets.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Close from 'svelte-material-icons/Close.svelte';
+
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  $: isTrashEnabled = $featureFlags.trash;
+  export let force = false;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -50,7 +54,8 @@
   let addToSharedAlbum = true;
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
@@ -117,9 +122,13 @@
         }
         return;
       case 'Delete':
-        isShowDeleteConfirmation = true;
+        trashOrDelete();
         return;
       case 'Escape':
+        if (isShowDeleteConfirmation) {
+          isShowDeleteConfirmation = false;
+          return;
+        }
         closeViewer();
         return;
       case 'f':
@@ -165,27 +174,43 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const deleteAsset = async () => {
+  $: trashOrDelete = !(force || !isTrashEnabled)
+    ? trashAsset
+    : () => {
+        isShowDeleteConfirmation = true;
+      };
+
+  const trashAsset = async () => {
     try {
-      const { data: deletedAssets } = await api.assetApi.deleteAsset({
-        deleteAssetDto: {
-          ids: [asset.id],
-        },
-      });
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
       await navigateAssetForward();
 
-      for (const asset of deletedAssets) {
-        if (asset.status == 'SUCCESS') {
-          assetStore?.removeAsset(asset.id);
-        }
-      }
-    } catch (e) {
+      assetStore?.removeAsset(asset.id);
+
       notificationController.show({
-        type: NotificationType.Error,
-        message: 'Error deleting this asset, check console for more details',
+        message: 'Moved to trash',
+        type: NotificationType.Info,
       });
-      console.error('Error deleteAsset', e);
+    } catch (e) {
+      handleError(e, 'Unable to trash asset');
+    }
+  };
+
+  const deleteAsset = async () => {
+    try {
+      await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
+
+      await navigateAssetForward();
+
+      assetStore?.removeAsset(asset.id);
+
+      notificationController.show({
+        message: 'Permanently deleted asset',
+        type: NotificationType.Info,
+      });
+    } catch (e) {
+      handleError(e, 'Unable to delete asset');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -368,11 +393,12 @@
         showZoomButton={asset.type === AssetTypeEnum.Image}
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
+        showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={() => (isShowDeleteConfirmation = true)}
+        on:delete={trashOrDelete}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}
@@ -409,9 +435,9 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
-            .toLowerCase()
-            .endsWith('.insp')}
+        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+              .toLowerCase()
+              .endsWith('.insp'))}
           <PanoramaViewer {asset} />
         {:else}
           <PhotoViewer {asset} on:close={closeViewer} />

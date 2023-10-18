@@ -5,6 +5,7 @@ export * from './asset.controller';
 export * from './audit.controller';
 export * from './auth.controller';
 export * from './job.controller';
+export * from './library.controller';
 export * from './oauth.controller';
 export * from './partner.controller';
 export * from './person.controller';

@@ -1,4 +1,5 @@
 import {
+  AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
   AssetJobsDto,
@@ -7,18 +8,33 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
+  BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
   MemoryLaneResponseDto,
+  RandomAssetsDto,
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
+  TrashAction,
   UpdateAssetDto as UpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
@@ -39,6 +55,11 @@ export class AssetController {
   @Get('memory-lane')
   getMemoryLane(@AuthUser() authUser: AuthUserDto, @Query() dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     return this.service.getMemoryLane(authUser, dto);
+  }
+
+  @Get('random')
+  getRandom(@AuthUser() authUser: AuthUserDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
+    return this.service.getRandom(authUser, dto.count ?? 1);
   }
 
   @SharedLinkRoute()
@@ -77,7 +98,7 @@ export class AssetController {
   @Authenticated({ isShared: true })
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+    return this.service.getByTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
@@ -90,6 +111,30 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(authUser, dto);
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
+    return this.service.deleteAll(authUser, dto);
+  }
+
+  @Post('restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.restoreAll(authUser, dto);
+  }
+
+  @Post('trash/empty')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  emptyTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.EMPTY_ALL);
+  }
+
+  @Post('trash/restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
   }
 
   @Put(':id')

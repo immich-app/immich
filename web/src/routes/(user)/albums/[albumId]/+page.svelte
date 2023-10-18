@@ -45,8 +45,11 @@
   import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
 
   export let data: PageData;
+
+  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let album = data.album;
   $: album = data.album;
@@ -101,6 +104,30 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleEscape = () => {
+    if (viewMode === ViewMode.SELECT_USERS) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.CONFIRM_DELETE) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.SELECT_ASSETS) {
+      handleCloseSelectAssets();
+      return;
+    }
+    if ($showAssetViewer) {
+      return;
+    }
+    if ($isMultiSelectState) {
+      assetInteractionStore.clearMultiselect();
+      return;
+    }
+    goto(backUrl);
+    return;
+  };
 
   const refreshAlbum = async () => {
     const { data } = await api.albumApi.getAlbumInfo({ id: album.id, withoutAssets: true });
@@ -167,9 +194,8 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = ({ x }: MouseEvent) => {
-    const navigationBarHeight = 75;
-    contextMenuPosition = { x: x, y: navigationBarHeight };
+  const handleOpenAlbumOptions = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-left');
     viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
   };
 
@@ -403,6 +429,7 @@
       isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
       singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
       on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
+      on:escape={handleEscape}
     >
       {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
         <!-- ALBUM TITLE -->
@@ -540,6 +567,6 @@
   <EditDescriptionModal
     {album}
     on:close={() => (isEditingDescription = false)}
-    on:updated={({ detail: description }) => handleUpdateDescription(description)}
+    on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}

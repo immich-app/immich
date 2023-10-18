@@ -6,6 +6,7 @@ import {
   loginResponseStub,
   newCryptoRepositoryMock,
   newKeyRepositoryMock,
+  newLibraryRepositoryMock,
   newSharedLinkRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -18,15 +19,18 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
 import { AuthUserDto, SignUpDto } from './dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -50,6 +54,7 @@ describe('AuthService', () => {
   let sut: AuthService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
@@ -81,12 +86,13 @@ describe('AuthService', () => {
 
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, libraryMock, shareMock, keyMock);
   });
 
   it('should be defined', () => {

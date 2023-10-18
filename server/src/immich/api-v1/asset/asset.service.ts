@@ -6,15 +6,16 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
+  ILibraryRepository,
   IStorageRepository,
   JobName,
   mapAsset,
-  mapAssetWithoutExif,
   mimeTypes,
   Permission,
+  SanitizedAssetResponseDto,
   UploadFile,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -36,7 +37,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
@@ -51,7 +51,6 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 @Injectable()
 export class AssetService {
@@ -65,6 +64,7 @@ export class AssetService {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
@@ -88,12 +88,20 @@ export class AssetService {
     let livePhotoAsset: AssetEntity | null = null;
 
     try {
+      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
+      await this.access.requirePermission(authUser, Permission.ASSET_UPLOAD, libraryId);
       if (livePhotoFile) {
-        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
+        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+      const asset = await this.assetCore.create(
+        authUser,
+        { ...dto, libraryId },
+        file,
+        livePhotoAsset?.id,
+        sidecarFile?.originalPath,
+      );
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -104,14 +112,14 @@ export class AssetService {
       });
 
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
-      throw new BadRequestException(`Error uploading file`, `${error}`);
+      throw error;
     }
   }
 
@@ -152,24 +160,15 @@ export class AssetService {
     };
 
     try {
-      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
+      await this.access.requirePermission(authUser, Permission.ASSET_UPLOAD, libraryId);
+      const asset = await this.assetCore.create(authUser, { ...dto, libraryId }, assetFile, undefined, dto.sidecarPath);
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
-      }
-
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
-        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
-        if (duplicate) {
-          if (duplicate.ownerId === authUser.id) {
-            return { id: duplicate.id, duplicate: true };
-          }
-
-          throw new BadRequestException('Path in use by another user');
-        }
       }
 
       this.logger.error(`Error importing file ${error}`, error?.stack);
@@ -183,27 +182,34 @@ export class AssetService {
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+  public async getAssetById(
+    authUser: AuthUserDto,
+    assetId: string,
+  ): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
 
-    const allowExif = this.getExifPermission(authUser);
+    const includeMetadata = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
-    const data = allowExif ? mapAsset(asset) : mapAssetWithoutExif(asset);
+    if (includeMetadata) {
+      const data = mapAsset(asset);
 
-    if (data.ownerId !== authUser.id) {
-      data.people = [];
+      if (data.ownerId !== authUser.id) {
+        data.people = [];
+      }
+
+      if (authUser.isPublicUser) {
+        delete data.owner;
+      }
+
+      return data;
+    } else {
+      return mapAsset(asset, true);
     }
-
-    if (authUser.isPublicUser) {
-      delete data.owner;
-    }
-
-    return data;
   }
 
   async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
@@ -243,64 +249,6 @@ export class AssetService {
         : asset.encodedVideoPath || asset.originalPath;
 
     await this.sendFile(res, filepath);
-  }
-
-  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const deleteQueue: Array<string | null> = [];
-    const result: DeleteAssetResponseDto[] = [];
-
-    const ids = dto.ids.slice();
-    for (const id of ids) {
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
-      if (!hasAccess) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-        continue;
-      }
-
-      const asset = await this._assetRepository.get(id);
-      if (!asset) {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-        continue;
-      }
-
-      try {
-        if (asset.faces) {
-          await Promise.all(
-            asset.faces.map(({ assetId, personId }) =>
-              this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-            ),
-          );
-        }
-
-        await this._assetRepository.remove(asset);
-        await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
-
-        result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-
-        if (!asset.isReadOnly) {
-          deleteQueue.push(
-            asset.originalPath,
-            asset.webpPath,
-            asset.resizePath,
-            asset.encodedVideoPath,
-            asset.sidecarPath,
-          );
-        }
-
-        // TODO refactor this to use cascades
-        if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
-          ids.push(asset.livePhotoVideoId);
-        }
-      } catch {
-        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
-      }
-    }
-
-    if (deleteQueue.length > 0) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: deleteQueue } });
-    }
-
-    return result;
   }
 
   async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
@@ -433,7 +381,7 @@ export class AssetService {
   }
 
   getExifPermission(authUser: AuthUserDto) {
-    return !authUser.isPublicUser || authUser.isShowExif;
+    return !authUser.isPublicUser || authUser.isShowMetadata;
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
@@ -501,5 +449,26 @@ export class AssetService {
         this.logger.error(`Unable to send file: ${error.name}`, error.stack);
       }
     });
+  }
+
+  private async getLibraryId(authUser: AuthUserDto, libraryId?: string) {
+    if (libraryId) {
+      return libraryId;
+    }
+
+    let library = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+    if (!library) {
+      library = await this.libraryRepository.create({
+        ownerId: authUser.id,
+        name: 'Default Library',
+        assets: [],
+        type: LibraryType.UPLOAD,
+        importPaths: [],
+        exclusionPatterns: [],
+        isVisible: true,
+      });
+    }
+
+    return library.id;
   }
 }

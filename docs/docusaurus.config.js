@@ -89,6 +89,7 @@ const config = {
         },
       },
       navbar: {
+        title: 'IMMICH',
         logo: {
           alt: 'Immich University Logo',
           src: 'img/color-logo.png',
@@ -161,6 +162,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['sql'],
       },
       image: 'overview/img/feature-panel.png',
     }),

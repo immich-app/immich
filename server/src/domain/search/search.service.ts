@@ -1,25 +1,29 @@
 import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { mapAlbumWithAssets } from '../album';
-import { IAlbumRepository } from '../album/album.repository';
 import { AssetResponseDto, mapAsset } from '../asset';
-import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { usePagination } from '../domain.util';
-import { AssetFaceId, IFaceRepository } from '../facial-recognition';
-import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { IMachineLearningRepository } from '../smart-info';
-import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { SearchDto } from './dto';
-import { SearchResponseDto } from './response-dto';
+import { IAssetFaceJob, IBulkEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { PersonResponseDto } from '../person/person.dto';
 import {
+  AssetFaceId,
+  IAlbumRepository,
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IPersonRepository,
   ISearchRepository,
+  ISystemConfigRepository,
   OwnedFaceEntity,
   SearchCollection,
   SearchExploreItem,
   SearchResult,
   SearchStrategy,
-} from './search.repository';
+} from '../repositories';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { SearchDto, SearchPeopleDto } from './dto';
+import { SearchResponseDto } from './response-dto';
 
 interface SyncQueue {
   upsert: Set<string>;
@@ -51,13 +55,13 @@ export class SearchService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   teardown() {
@@ -150,9 +154,13 @@ export class SearchService {
         items: assets.items
           .map((item) => lookup[item.id])
           .filter((item) => !!item)
-          .map(mapAsset),
+          .map((asset) => mapAsset(asset)),
       },
     };
+  }
+
+  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return await this.personRepository.getByName(authUser.id, dto.name);
   }
 
   async handleIndexAlbums() {
@@ -198,7 +206,7 @@ export class SearchService {
     await this.searchRepository.deleteAllFaces();
 
     // TODO: do this in batches based on searchIndexVersion
-    const faces = this.patchFaces(await this.faceRepository.getAll());
+    const faces = this.patchFaces(await this.personRepository.getAllFaces());
     this.logger.log(`Indexing ${faces.length} faces`);
 
     const chunkSize = 1000;
@@ -340,7 +348,7 @@ export class SearchService {
   }
 
   private async idsToFaces(ids: AssetFaceId[]): Promise<OwnedFaceEntity[]> {
-    return this.patchFaces(await this.faceRepository.getByIds(ids));
+    return this.patchFaces(await this.personRepository.getFacesByIds(ids));
   }
 
   private patchAssets(assets: AssetEntity[]): AssetEntity[] {

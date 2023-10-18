@@ -1,15 +1,17 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IAccessRepository } from './access.repository';
+import { IAccessRepository } from '../repositories';
 
 export enum Permission {
   // ASSET_CREATE = 'asset.create',
   ASSET_READ = 'asset.read',
   ASSET_UPDATE = 'asset.update',
   ASSET_DELETE = 'asset.delete',
+  ASSET_RESTORE = 'asset.restore',
   ASSET_SHARE = 'asset.share',
   ASSET_VIEW = 'asset.view',
   ASSET_DOWNLOAD = 'asset.download',
+  ASSET_UPLOAD = 'asset.upload',
 
   // ALBUM_CREATE = 'album.create',
   ALBUM_READ = 'album.read',
@@ -21,8 +23,18 @@ export enum Permission {
 
   ARCHIVE_READ = 'archive.read',
 
+  TIMELINE_READ = 'timeline.read',
+  TIMELINE_DOWNLOAD = 'timeline.download',
+
+  LIBRARY_CREATE = 'library.create',
   LIBRARY_READ = 'library.read',
+  LIBRARY_UPDATE = 'library.update',
+  LIBRARY_DELETE = 'library.delete',
   LIBRARY_DOWNLOAD = 'library.download',
+
+  PERSON_READ = 'person.read',
+  PERSON_WRITE = 'person.write',
+  PERSON_MERGE = 'person.merge',
 }
 
 export class AccessCore {
@@ -85,6 +97,9 @@ export class AccessCore {
       case Permission.ASSET_DOWNLOAD:
         return !!authUser.isAllowDownload && (await this.repository.asset.hasSharedLinkAccess(sharedLinkId, id));
 
+      case Permission.ASSET_UPLOAD:
+        return authUser.isAllowUpload;
+
       case Permission.ASSET_SHARE:
         // TODO: fix this to not use authUser.id for shared link access control
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
@@ -112,6 +127,9 @@ export class AccessCore {
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
       case Permission.ASSET_DELETE:
+        return this.repository.asset.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ASSET_RESTORE:
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
       case Permission.ASSET_SHARE:
@@ -155,17 +173,41 @@ export class AccessCore {
           (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
         );
 
+      case Permission.ASSET_UPLOAD:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
+
       case Permission.ALBUM_REMOVE_ASSET:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
 
       case Permission.ARCHIVE_READ:
         return authUser.id === id;
 
-      case Permission.LIBRARY_READ:
-        return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
+      case Permission.TIMELINE_READ:
+        return authUser.id === id || (await this.repository.timeline.hasPartnerAccess(authUser.id, id));
 
-      case Permission.LIBRARY_DOWNLOAD:
+      case Permission.TIMELINE_DOWNLOAD:
         return authUser.id === id;
+
+      case Permission.LIBRARY_READ:
+        return (
+          (await this.repository.library.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.library.hasPartnerAccess(authUser.id, id))
+        );
+
+      case Permission.LIBRARY_UPDATE:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
+
+      case Permission.LIBRARY_DELETE:
+        return this.repository.library.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_READ:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_WRITE:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_MERGE:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       default:
         return false;

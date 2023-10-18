@@ -15,10 +15,17 @@ Name | Type | Description | Notes
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
+**hasMetadata** | **bool** |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
+**isExternal** | **bool** |  | 
 **isFavorite** | **bool** |  | 
+**isOffline** | **bool** |  | 
+**isReadOnly** | **bool** |  | 
+**isTrashed** | **bool** |  | 
+**libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
@@ -27,7 +34,7 @@ Name | Type | Description | Notes
 **resized** | **bool** |  | 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
-**thumbhash** | **String** | base64 encoded thumbhash | 
+**thumbhash** | **String** |  | 
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

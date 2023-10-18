@@ -1,12 +1,19 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { IAssetRepository, mapAsset } from '../asset';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { FeatureFlag, ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { mapAsset } from '../asset';
+import {
+  CommunicationEvent,
+  IAssetRepository,
+  ICommunicationRepository,
+  IJobRepository,
+  IPersonRepository,
+  ISystemConfigRepository,
+  JobHandler,
+  JobItem,
+} from '../repositories';
+import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
 
 @Injectable()
 export class JobService {
@@ -18,8 +25,9 @@ export class JobService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
@@ -76,6 +84,9 @@ export class JobService {
       case QueueName.STORAGE_TEMPLATE_MIGRATION:
         return this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
 
+      case QueueName.MIGRATION:
+        return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
+
       case QueueName.OBJECT_TAGGING:
         await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
         return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
@@ -98,6 +109,9 @@ export class JobService {
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
 
+      case QueueName.LIBRARY:
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }
@@ -118,7 +132,7 @@ export class JobService {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
-          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+          this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         }
       });
     }
@@ -134,10 +148,12 @@ export class JobService {
   }
 
   async handleNightlyJobs() {
+    await this.jobRepository.queue({ name: JobName.ASSET_DELETION_CHECK });
     await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
   }
 
   /**
@@ -164,15 +180,20 @@ export class JobService {
         }
         break;
 
+      case JobName.GENERATE_PERSON_THUMBNAIL:
+        const { id } = item.data;
+        const person = await this.personRepository.getById(id);
+        if (person) {
+          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, id);
+        }
+        break;
+
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
-        if (item.data.source !== 'upload') {
-          break;
-        }
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
@@ -181,9 +202,19 @@ export class JobService {
           } else if (asset.livePhotoVideoId) {
             await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
           }
-          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
         break;
+      }
+
+      case JobName.GENERATE_WEBP_THUMBNAIL: {
+        if (item.data.source !== 'upload') {
+          break;
+        }
+
+        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+        }
       }
     }
 

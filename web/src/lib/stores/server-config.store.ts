@@ -10,11 +10,13 @@ export const featureFlags = writable<FeatureFlags>({
   sidecar: true,
   tagImage: true,
   map: true,
+  reverseGeocoding: true,
   search: true,
   oauth: false,
   oauthAutoLaunch: false,
   passwordLogin: true,
   configFile: false,
+  trash: true,
 });
 
 export type ServerConfig = ServerConfigDto & { loaded: boolean };
@@ -24,6 +26,8 @@ export const serverConfig = writable<ServerConfig>({
   oauthButtonText: '',
   mapTileUrl: '',
   loginPageMessage: '',
+  trashDays: 30,
+  isInitialized: false,
 });
 
 export const loadConfig = async () => {
