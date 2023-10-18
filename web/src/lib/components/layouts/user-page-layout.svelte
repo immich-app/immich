@@ -13,7 +13,7 @@
   export let admin = false;
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-4 pb-8' : 'scrollbar-hidden pl-4';
-  $: hasTitleClass = title ? 'top-16' : 'top-0';
+  $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
 </script>
 
 <header>
@@ -44,7 +44,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} absolute {hasTitleClass} h-[calc(100%-theme(spacing.16))] w-full overflow-y-auto">
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto">
       <slot />
     </div>
   </section>

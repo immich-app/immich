@@ -70,13 +70,7 @@
 {/if}
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
-  <AssetGrid
-    {assetStore}
-    {assetInteractionStore}
-    removeAction={AssetAction.ARCHIVE}
-    on:escape={handleEscape}
-    hasTitle={false}
-  >
+  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE} on:escape={handleEscape}>
     {#if data.user.memoriesEnabled}
       <MemoryLane />
     {/if}
