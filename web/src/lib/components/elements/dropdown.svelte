@@ -71,12 +71,12 @@
   {#if showMenu}
     <div
       transition:fly={{ y: -30, x: 30, duration: 200 }}
-      class="text-md absolute top-5 z-50 flex flex-col rounded-2xl bg-gray-100 py-4 text-black shadow-lg dark:bg-gray-700 dark:text-white"
+      class="text-md absolute right-0 top-5 z-50 flex min-w-[250px] flex-col rounded-2xl bg-gray-100 py-4 text-black shadow-lg dark:bg-gray-700 dark:text-white"
     >
       {#each options as option (option)}
         {@const renderedOption = renderOption(option)}
         <button
-          class="flex gap-2 p-3 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
+          class="grid grid-cols-[20px,1fr] place-items-center gap-2 p-4 transition-all hover:bg-gray-300 dark:hover:bg-gray-800"
           on:click={() => handleSelectOption(option)}
         >
           {#if _.isEqual(selectedOption, option)}
