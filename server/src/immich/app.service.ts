@@ -7,8 +7,8 @@ import {
   SystemConfigCore,
   SystemConfigService,
 } from '@app/domain';
-import { checkIntervalTime } from '@app/infra';
 import { SystemConfig } from '@app/infra/entities';
+import { checkIntervalTime } from '@app/infra/system.config';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 

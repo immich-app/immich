@@ -73,8 +73,6 @@ function parseTypeSenseConfig(): ConfigurationOptions {
   };
 }
 
-export const checkIntervalTime: number = 60 * 60 * 1000;
-
 export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
 
 export const REVERSE_GEOCODING_DUMP_DIRECTORY =
