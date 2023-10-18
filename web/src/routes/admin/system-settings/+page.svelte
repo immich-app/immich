@@ -61,16 +61,15 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+      <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
+        <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.newVersionCheck} />
+      </SettingAccordion>
       <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
       >
         <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
-      </SettingAccordion>
-
-      <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
-        <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
@@ -105,15 +104,16 @@
         <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
       </SettingAccordion>
 
-    <SettingAccordion
-      title="Video Transcoding Settings"
-      subtitle="Manage the resolution and encoding information of the video files"
-    >
-      <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
-    </SettingAccordion>
+      <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+        <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
 
-    <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
-      <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.newVersionCheck} />
-    </SettingAccordion>
-  {/await}
-</section>
+      <SettingAccordion
+        title="Video Transcoding Settings"
+        subtitle="Manage the resolution and encoding information of the video files"
+      >
+        <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
+      </SettingAccordion>
+    </section>
+  </section>
+</UserPageLayout>

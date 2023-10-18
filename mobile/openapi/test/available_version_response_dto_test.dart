@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // int dateCheckAvailbleVersion
-    test('to test the property `dateCheckAvailbleVersion`', () async {
+    // int dateCheckAvailableVersion
+    test('to test the property `dateCheckAvailableVersion`', () async {
       // TODO
     });
 

@@ -1,8 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ISystemConfigRepository } from '.';
 import { ServerVersion, serverVersion } from '../domain.constant';
-import { IJobRepository, JobName } from '../job';
-import { Inject, Injectable } from '@nestjs/common';
 import { JobName } from '../job';
 import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
@@ -29,15 +26,11 @@ export class SystemConfigService {
 
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {
-    this.dateCheckAvailableVersion = null;
-    this.availableVersion = null;
-    this.core = new SystemConfigCore(repository);
-    @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {
+  ){
+    this.dateCheckAvailableVersion = null;
+    this.availableVersion = null;
     this.core = SystemConfigCore.create(repository);
   }
 

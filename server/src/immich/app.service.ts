@@ -15,18 +15,18 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class AppService {
   private logger = new Logger(AppService.name);
-  private configCore: SystemConfigCore;
+  private core: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     private jobService: JobService,
     private searchService: SearchService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private serverService: ServerInfoService,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.core = SystemConfigCore.create(repository);
+    this.core.config$.subscribe((config) => this.onConfig(config));
   }
 
   async onConfig(config: SystemConfig) {
@@ -62,7 +62,7 @@ export class AppService {
     await this.searchService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
 
-    const config = await this.configCore.getConfig();
+    const config = await this.core.getConfig();
     if (config.newVersionCheck.enabled) {
       await this.systemConfigService.handleImmichLatestVersionAvailable();
       const interval = setInterval(

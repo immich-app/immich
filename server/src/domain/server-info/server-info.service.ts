@@ -2,12 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore, SystemConfigService } from '../system-config';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
-import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { SystemConfigCore } from '../system-config';
+import { SystemConfigCore, SystemConfigService } from '../system-config';
 import {
   AvailableVersionResponseDto,
   ServerConfigDto,
@@ -18,6 +14,7 @@ import {
   ServerStatsResponseDto,
   UsageByUserDto,
 } from './server-info.dto';
+import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
 
 @Injectable()
 export class ServerInfoService {
@@ -30,7 +27,6 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
     this.schedulerRegistry = new SchedulerRegistry();
     this.configCore = SystemConfigCore.create(configRepository);
   }

@@ -20,8 +20,10 @@ class SystemConfigDto {
     required this.newVersionCheck,
     required this.oauth,
     required this.passwordLogin,
+    required this.reverseGeocoding,
     required this.storageTemplate,
     required this.thumbnail,
+    required this.trash,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -38,9 +40,13 @@ class SystemConfigDto {
 
   SystemConfigPasswordLoginDto passwordLogin;
 
+  SystemConfigReverseGeocodingDto reverseGeocoding;
+
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThumbnailDto thumbnail;
+
+  SystemConfigTrashDto trash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
@@ -51,8 +57,10 @@ class SystemConfigDto {
      other.newVersionCheck == newVersionCheck &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
+     other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
-     other.thumbnail == thumbnail;
+     other.thumbnail == thumbnail &&
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -64,11 +72,13 @@ class SystemConfigDto {
     (newVersionCheck.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
+    (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
-    (thumbnail.hashCode);
+    (thumbnail.hashCode) +
+    (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, storageTemplate=$storageTemplate, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -79,8 +89,10 @@ class SystemConfigDto {
       json[r'newVersionCheck'] = this.newVersionCheck;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
+      json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
+      json[r'trash'] = this.trash;
     return json;
   }
 
@@ -99,8 +111,10 @@ class SystemConfigDto {
         newVersionCheck: SystemConfigCheckAvailableVersionDto.fromJson(json[r'newVersionCheck'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
+        reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
+        trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
       );
     }
     return null;
@@ -155,8 +169,10 @@ class SystemConfigDto {
     'newVersionCheck',
     'oauth',
     'passwordLogin',
+    'reverseGeocoding',
     'storageTemplate',
     'thumbnail',
+    'trash',
   };
 }
 

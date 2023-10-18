@@ -6108,7 +6108,7 @@
           "currentVersion": {
             "$ref": "#/components/schemas/SystemConfigImmichVersion"
           },
-          "dateCheckAvailbleVersion": {
+          "dateCheckAvailableVersion": {
             "nullable": true,
             "type": "integer"
           },
@@ -6125,7 +6125,7 @@
           }
         },
         "required": [
-          "dateCheckAvailbleVersion",
+          "dateCheckAvailableVersion",
           "isAvailable",
           "currentVersion",
           "releaseVersion"
@@ -8092,7 +8092,7 @@
           "storageTemplate",
           "job",
           "thumbnail",
-          "newVersionCheck"
+          "newVersionCheck",
           "trash"
         ],
         "type": "object"

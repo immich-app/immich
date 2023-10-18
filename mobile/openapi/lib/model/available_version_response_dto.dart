@@ -14,14 +14,14 @@ class AvailableVersionResponseDto {
   /// Returns a new [AvailableVersionResponseDto] instance.
   AvailableVersionResponseDto({
     required this.currentVersion,
-    required this.dateCheckAvailbleVersion,
+    required this.dateCheckAvailableVersion,
     required this.isAvailable,
     required this.releaseVersion,
   });
 
   SystemConfigImmichVersion currentVersion;
 
-  int? dateCheckAvailbleVersion;
+  int? dateCheckAvailableVersion;
 
   bool isAvailable;
 
@@ -30,7 +30,7 @@ class AvailableVersionResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AvailableVersionResponseDto &&
      other.currentVersion == currentVersion &&
-     other.dateCheckAvailbleVersion == dateCheckAvailbleVersion &&
+     other.dateCheckAvailableVersion == dateCheckAvailableVersion &&
      other.isAvailable == isAvailable &&
      other.releaseVersion == releaseVersion;
 
@@ -38,20 +38,20 @@ class AvailableVersionResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (currentVersion.hashCode) +
-    (dateCheckAvailbleVersion == null ? 0 : dateCheckAvailbleVersion!.hashCode) +
+    (dateCheckAvailableVersion == null ? 0 : dateCheckAvailableVersion!.hashCode) +
     (isAvailable.hashCode) +
     (releaseVersion == null ? 0 : releaseVersion!.hashCode);
 
   @override
-  String toString() => 'AvailableVersionResponseDto[currentVersion=$currentVersion, dateCheckAvailbleVersion=$dateCheckAvailbleVersion, isAvailable=$isAvailable, releaseVersion=$releaseVersion]';
+  String toString() => 'AvailableVersionResponseDto[currentVersion=$currentVersion, dateCheckAvailableVersion=$dateCheckAvailableVersion, isAvailable=$isAvailable, releaseVersion=$releaseVersion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'currentVersion'] = this.currentVersion;
-    if (this.dateCheckAvailbleVersion != null) {
-      json[r'dateCheckAvailbleVersion'] = this.dateCheckAvailbleVersion;
+    if (this.dateCheckAvailableVersion != null) {
+      json[r'dateCheckAvailableVersion'] = this.dateCheckAvailableVersion;
     } else {
-    //  json[r'dateCheckAvailbleVersion'] = null;
+    //  json[r'dateCheckAvailableVersion'] = null;
     }
       json[r'isAvailable'] = this.isAvailable;
     if (this.releaseVersion != null) {
@@ -71,7 +71,7 @@ class AvailableVersionResponseDto {
 
       return AvailableVersionResponseDto(
         currentVersion: SystemConfigImmichVersion.fromJson(json[r'currentVersion'])!,
-        dateCheckAvailbleVersion: mapValueOfType<int>(json, r'dateCheckAvailbleVersion'),
+        dateCheckAvailableVersion: mapValueOfType<int>(json, r'dateCheckAvailableVersion'),
         isAvailable: mapValueOfType<bool>(json, r'isAvailable')!,
         releaseVersion: SystemConfigImmichVersion.fromJson(json[r'releaseVersion']),
       );
@@ -122,7 +122,7 @@ class AvailableVersionResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'currentVersion',
-    'dateCheckAvailbleVersion',
+    'dateCheckAvailableVersion',
     'isAvailable',
     'releaseVersion',
   };
