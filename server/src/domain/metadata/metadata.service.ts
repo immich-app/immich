@@ -109,6 +109,10 @@ export class MetadataService {
     }
   }
 
+  async teardown() {
+    await this.repository.teardown();
+  }
+
   async handleLivePhotoLinking(job: IEntityJob) {
     const { id } = job;
     const [asset] = await this.assetRepository.getByIds([id]);

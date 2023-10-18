@@ -1,16 +1,10 @@
 import { AlbumResponseDto, LoginResponseDto, SharedLinkResponseDto } from '@app/domain';
 import { PartnerController } from '@app/immich';
 import { LibraryType, SharedLinkType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
-import {
-  IMMICH_TEST_ASSET_PATH,
-  IMMICH_TEST_ASSET_TEMP_PATH,
-  createTestApp,
-  restoreTempFolder,
-} from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '@test/test-utils';
 import { cp } from 'fs/promises';
 import request from 'supertest';
 
@@ -22,7 +16,6 @@ const user1Dto = {
 };
 
 describe(`${PartnerController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
@@ -30,8 +23,12 @@ describe(`${PartnerController.name} (e2e)`, () => {
   let sharedLink: SharedLinkResponseDto;
 
   beforeAll(async () => {
-    app = await createTestApp(true);
-    server = app.getHttpServer();
+    [server] = await testApp.create({ jobs: true });
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
+    await restoreTempFolder();
   });
 
   beforeEach(async () => {
@@ -47,12 +44,6 @@ describe(`${PartnerController.name} (e2e)`, () => {
       type: SharedLinkType.ALBUM,
       albumId: album.id,
     });
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
-    await restoreTempFolder();
   });
 
   describe('GET /shared-link', () => {
