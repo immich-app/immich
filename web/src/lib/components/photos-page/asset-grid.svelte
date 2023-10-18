@@ -25,6 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
 
