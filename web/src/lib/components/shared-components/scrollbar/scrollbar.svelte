@@ -6,6 +6,7 @@
   export let timelineY = 0;
   export let height = 0;
   export let assetStore: AssetStore;
+  export let hasTitle = true;
 
   let isHover = false;
   let isDragging = false;
@@ -34,7 +35,7 @@
     const wasDragging = isDragging;
 
     isDragging = event.isDragging ?? isDragging;
-    clientY = event.clientY;
+    clientY = hasTitle ? event.clientY : event.clientY + 64;
 
     if (wasDragging === false && isDragging) {
       scrollTimeline();

@@ -25,6 +25,8 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let hasTitle = true;
+
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
 
@@ -320,6 +322,7 @@
   {assetStore}
   height={viewport.height}
   {timelineY}
+  {hasTitle}
   on:scrollTimeline={({ detail }) => (element.scrollTop = detail)}
 />
 
