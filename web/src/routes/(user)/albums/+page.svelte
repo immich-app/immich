@@ -216,20 +216,20 @@
     </LinkButton>
 
     <Dropdown
-      options={Object.values(sortByOptions).map((CourseInfo) => {
+      options={Object.values(sortByOptions)}
+      render={(option) => {
         return {
-          title: CourseInfo.sortTitle,
-          value: CourseInfo.sortTitle,
-          icon: CourseInfo.sortDesc ? ArrowDownThin : ArrowUpThin,
+          title: option.sortTitle,
+          icon: option.sortDesc ? ArrowDownThin : ArrowUpThin,
         };
-      })}
-      bind:key={$albumViewSettings.sortBy}
+      }}
       on:select={(event) => {
         for (const key in sortByOptions) {
-          if (sortByOptions[key].sortTitle === event.detail) {
+          if (sortByOptions[key].sortTitle === event.detail.sortTitle) {
             sortByOptions[key].sortDesc = !sortByOptions[key].sortDesc;
           }
         }
+        $albumViewSettings.sortBy = event.detail.sortTitle;
       }}
     />
 
