@@ -1,3 +1,4 @@
+import { checkIntervalTime } from '@app/infra';
 import { Inject, Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { mimeTypes, serverVersion } from '../domain.constant';
@@ -29,6 +30,18 @@ export class ServerInfoService {
   ) {
     this.schedulerRegistry = new SchedulerRegistry();
     this.configCore = SystemConfigCore.create(configRepository);
+  }
+
+  async init() {
+    const config = await this.configCore.getConfig();
+    if (config.newVersionCheck.enabled) {
+      await this.systemConfigService.handleImmichLatestVersionAvailable();
+      const interval = setInterval(
+        () => this.systemConfigService.handleImmichLatestVersionAvailable(),
+        checkIntervalTime,
+      );
+      this.schedulerRegistry.addInterval('check-available-version', interval);
+    }
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
