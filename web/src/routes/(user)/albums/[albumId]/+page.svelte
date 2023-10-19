@@ -94,7 +94,7 @@
       url = from.url.href;
     }
 
-    if (from?.route.id === '/(user)/albums/[albumId]') {
+    if (from?.route.id === '/(user)/albums/[albumId]' || from?.route.id === '/(user)/people/[personId]') {
       url = AppRoute.ALBUMS;
     }
 
