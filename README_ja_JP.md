@@ -24,6 +24,7 @@
   <a href="README_es_ES.md">Español</a>
   <a href="README_fr_FR.md">Français</a>
   <a href="README_nl_NL.md">Nederlands</a>
+  <a href="README_it_IT.md">Italiano</a>
 </p>
 
 ## 免責事項
