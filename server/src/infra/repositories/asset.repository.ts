@@ -480,7 +480,6 @@ export class AssetRepository implements IAssetRepository {
 
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
-
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
@@ -508,6 +507,7 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
+      .andWhere('asset.fileCreatedAt < NOW()')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
