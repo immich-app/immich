@@ -6,13 +6,14 @@ function HomepageHeader() {
   return (
     <header>
       <section className="text-center m-6 p-12 border border-red-400 rounded-[50px] bg-gray-100 dark:bg-immich-dark-gray">
-        <h1 className="md:text-6xl font-bold mb-10 font-immich-title text-immich-primary dark:text-immich-dark-primary">
+        <img src="img/immich-logo.svg" className="md:h-24 h-12 mb-2" />
+        <h1 className="md:text-6xl font-immich-title mb-10 text-immich-primary dark:text-immich-dark-primary">
           IMMICH
         </h1>
         <div className="font-thin sm:text-base md:text-2xl my-12 sm:leading-tight">
-          <p>SELF-HOSTED BACKUP SOLUTION </p>
-          <p>FOR PHOTOS AND VIDEOS</p>
-          <p>ON MOBILE DEVICE</p>
+          <p className="mb-1">SELF-HOSTED BACKUP SOLUTION </p>
+          <p className="mb-1">FOR PHOTOS AND VIDEOS</p>
+          <p className="mb-1">ON MOBILE DEVICE</p>
         </div>
 
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 mb-16 gap-4 ">
