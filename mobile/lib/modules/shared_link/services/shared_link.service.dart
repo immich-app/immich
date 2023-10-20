@@ -32,19 +32,26 @@ class SharedLinkService {
     }
   }
 
-  Future<void> createSharedLink(SharedLinkCreateDto dto) async {
+  Future<SharedLinkResponseDto?> createSharedLink(
+    SharedLinkCreateDto dto,
+  ) async {
     try {
-      await _apiService.sharedLinkApi.createSharedLink(dto);
+      return _apiService.sharedLinkApi.createSharedLink(dto);
     } catch (e) {
       _log.severe("failed to create shared link with error - $e");
     }
+    return null;
   }
 
-  Future<void> updateSharedLink(String id, SharedLinkEditDto dto) async {
+  Future<SharedLinkResponseDto?> updateSharedLink(
+    String id,
+    SharedLinkEditDto dto,
+  ) async {
     try {
-      await _apiService.sharedLinkApi.updateSharedLink(id, dto);
+      return _apiService.sharedLinkApi.updateSharedLink(id, dto);
     } catch (e) {
       _log.severe("failed to update shared link id - $id with error - $e");
     }
+    return null;
   }
 }

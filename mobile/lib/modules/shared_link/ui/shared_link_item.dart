@@ -84,8 +84,8 @@ class SharedLinkItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeDate = Theme.of(context);
-    final isDarkMode = themeDate.brightness == Brightness.dark;
+    final themeData = Theme.of(context);
+    final isDarkMode = themeData.brightness == Brightness.dark;
     final thumbnailUrl = getThumbnailUrl();
     final imageSize = math.min(MediaQuery.of(context).size.width / 4, 100.0);
 
@@ -114,7 +114,7 @@ class SharedLinkItem extends ConsumerWidget {
                 color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
-            backgroundColor: themeDate.dialogBackgroundColor,
+            backgroundColor: themeData.dialogBackgroundColor,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -172,7 +172,7 @@ class SharedLinkItem extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.only(right: 10),
         child: Chip(
-          backgroundColor: themeDate.primaryColor,
+          backgroundColor: themeData.primaryColor,
           label: Text(
             labelText,
             style: TextStyle(
@@ -250,7 +250,7 @@ class SharedLinkItem extends ConsumerWidget {
             child: Tooltip(
               verticalOffset: 0,
               decoration: BoxDecoration(
-                color: themeDate.primaryColor.withOpacity(0.9),
+                color: themeData.primaryColor.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(10),
               ),
               textStyle: TextStyle(
@@ -263,7 +263,7 @@ class SharedLinkItem extends ConsumerWidget {
               child: Text(
                 getShareName(),
                 style: TextStyle(
-                  color: themeDate.primaryColor,
+                  color: themeData.primaryColor,
                   fontWeight: FontWeight.bold,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -278,7 +278,7 @@ class SharedLinkItem extends ConsumerWidget {
                 child: Tooltip(
                   verticalOffset: 0,
                   decoration: BoxDecoration(
-                    color: themeDate.primaryColor.withOpacity(0.9),
+                    color: themeData.primaryColor.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   textStyle: TextStyle(

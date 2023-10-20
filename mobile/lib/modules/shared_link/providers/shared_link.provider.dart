@@ -20,7 +20,7 @@ class SharedLinksNotifier
     fetchLinks();
   }
 
-  createLink({
+  Future<SharedLinkResponseDto?> createLink({
     required bool showMeta,
     required bool allowDownload,
     required bool allowUpload,
@@ -32,7 +32,7 @@ class SharedLinksNotifier
     final type =
         albumId != null ? SharedLinkType.ALBUM : SharedLinkType.INDIVIDUAL;
     if (type == SharedLinkType.ALBUM) {
-      await _sharedLinkService.createSharedLink(
+      return _sharedLinkService.createSharedLink(
         SharedLinkCreateDto(
           type: type,
           albumId: albumId,
@@ -44,7 +44,7 @@ class SharedLinksNotifier
         ),
       );
     } else if (assetIds != null) {
-      await _sharedLinkService.createSharedLink(
+      return _sharedLinkService.createSharedLink(
         SharedLinkCreateDto(
           type: type,
           showMetadata: showMeta,
@@ -56,6 +56,7 @@ class SharedLinksNotifier
         ),
       );
     }
+    return null;
   }
 
   updateLink({
