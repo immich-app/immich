@@ -1,53 +1,35 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import FullScreenModal from './full-screen-modal.svelte';
-  import { api, ServerVersionResponseDto } from '@api';
+  import type { ServerVersionResponseDto } from '@api';
+  import { websocketStore } from '$lib/stores/websocket';
   import Button from '../elements/buttons/button.svelte';
+  import FullScreenModal from './full-screen-modal.svelte';
 
   let showModal = false;
-  let releaseVersion: string;
-  let currentVersion: string;
 
-  function semverToName({ major, minor, patch }: ServerVersionResponseDto) {
-    return `v${major}.${minor}.${patch}`;
-  }
+  const { onRelease } = websocketStore;
+
+  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+
+  $: releaseVersion = $onRelease && semverToName($onRelease.releaseVersion);
+  $: serverVersion = $onRelease && semverToName($onRelease.serverVersion);
+  $: $onRelease?.isAvailable && handleRelease();
 
   const onAcknowledge = () => {
-    // Store server version to prevent the notification
-    // from showing again.
     localStorage.setItem('appVersion', releaseVersion);
     showModal = false;
   };
 
-  onMount(async () => {
+  const handleRelease = () => {
     try {
-      const { data } = await api.serverInfoApi.getLatestImmichVersionAvailable();
-      if (data.isAvailable && data.releaseVersion) {
-        releaseVersion = semverToName({
-          major: data.releaseVersion.major,
-          minor: data.releaseVersion.minor,
-          patch: data.releaseVersion.patch,
-        });
-        currentVersion = semverToName({
-          major: data.currentVersion.major,
-          minor: data.currentVersion.minor,
-          patch: data.currentVersion.patch,
-        });
-      }
-
       if (localStorage.getItem('appVersion') === releaseVersion) {
-        // Updated version has already been acknowledged.
         return;
       }
 
-      if (data.isAvailable && !import.meta.env.DEV) {
-        showModal = true;
-      }
+      showModal = true;
     } catch (err) {
-      // Only log any errors that occur.
       console.error('Error [VersionAnnouncementBox]:', err);
     }
-  });
+  };
 </script>
 
 {#if showModal}
@@ -73,7 +55,7 @@
       <div class="mt-4 font-medium">Your friend, Alex</div>
 
       <div class="font-sm mt-8">
-        <code>Server Version: {currentVersion}</code>
+        <code>Server Version: {serverVersion}</code>
         <br />
         <code>Latest Version: {releaseVersion}</code>
       </div>

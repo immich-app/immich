@@ -75,6 +75,7 @@ const providers: Provider[] = [
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: ISearchRepository, useClass: TypesenseRepository },
+  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
   { provide: IStorageRepository, useClass: FilesystemProvider },
@@ -83,7 +84,6 @@ const providers: Provider[] = [
   { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
-  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
 ];
 
 const imports = [

@@ -1,5 +1,4 @@
 import {
-  AvailableVersionResponseDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerInfoResponseDto,
@@ -24,12 +23,6 @@ export class ServerInfoController {
   @Get()
   getServerInfo(): Promise<ServerInfoResponseDto> {
     return this.service.getInfo();
-  }
-
-  @AdminRoute()
-  @Get('/available-version')
-  getLatestImmichVersionAvailable(): Promise<AvailableVersionResponseDto> {
-    return this.service.latestImmichVersionAvailable();
   }
 
   @PublicRoute()

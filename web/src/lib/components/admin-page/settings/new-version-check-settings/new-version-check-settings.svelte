@@ -4,19 +4,17 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigCheckAvailableVersionDto } from '@api';
+  import { api, SystemConfigNewVersionCheckDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import { onMount } from 'svelte';
 
-  export let checkAvailableVersionConfig: SystemConfigCheckAvailableVersionDto; // this is the config that is being edited
+  export let newVersionCheckConfig: SystemConfigNewVersionCheckDto; // this is the config that is being edited
 
-  let lastCheck: string | null = 'Never';
-  let savedConfig: SystemConfigCheckAvailableVersionDto;
-  let defaultConfig: SystemConfigCheckAvailableVersionDto;
+  let savedConfig: SystemConfigNewVersionCheckDto;
+  let defaultConfig: SystemConfigNewVersionCheckDto;
 
   let isConfirmOpen = false;
   let handleConfirm: (value: boolean) => void;
@@ -27,13 +25,6 @@
       api.systemConfigApi.getDefaults().then((res) => res.data.newVersionCheck),
     ]);
   }
-  onMount(async () => {
-    const { data } = await api.serverInfoApi.getLatestImmichVersionAvailable();
-    if (data.dateCheckAvailableVersion) lastCheck = new Date(data.dateCheckAvailableVersion).toLocaleString();
-    else {
-      lastCheck = 'Never';
-    }
-  });
 
   async function saveSetting() {
     try {
@@ -42,11 +33,11 @@
       const result = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...configs,
-          newVersionCheck: checkAvailableVersionConfig,
+          newVersionCheck: newVersionCheckConfig,
         },
       });
 
-      checkAvailableVersionConfig = { ...result.data.newVersionCheck };
+      newVersionCheckConfig = { ...result.data.newVersionCheck };
       savedConfig = { ...result.data.newVersionCheck };
 
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
@@ -58,7 +49,7 @@
   async function reset() {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-    checkAvailableVersionConfig = { ...resetConfig.newVersionCheck };
+    newVersionCheckConfig = { ...resetConfig.newVersionCheck };
     savedConfig = { ...resetConfig.newVersionCheck };
 
     notificationController.show({
@@ -70,7 +61,7 @@
   async function resetToDefault() {
     const { data: configs } = await api.systemConfigApi.getDefaults();
 
-    checkAvailableVersionConfig = { ...configs.newVersionCheck };
+    newVersionCheckConfig = { ...configs.newVersionCheck };
     defaultConfig = { ...configs.newVersionCheck };
 
     notificationController.show({
@@ -90,8 +81,11 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <div class="ml-4">
-            <SettingSwitch title="ENABLED" bind:checked={checkAvailableVersionConfig.enabled} />
-            Last Check : {lastCheck}
+            <SettingSwitch
+              title="ENABLED"
+              subtitle="Enable period requests to GitHub to check for new releases"
+              bind:checked={newVersionCheckConfig.enabled}
+            />
             <SettingButtonsRow
               on:reset={reset}
               on:save={saveSetting}

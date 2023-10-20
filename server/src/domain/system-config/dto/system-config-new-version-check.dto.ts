@@ -1,6 +1,6 @@
 import { IsBoolean } from 'class-validator';
 
-export class SystemConfigCheckAvailableVersionDto {
+export class SystemConfigNewVersionCheckDto {
   @IsBoolean()
   enabled!: boolean;
 }

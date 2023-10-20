@@ -111,7 +111,6 @@ export const defaults = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
-
   newVersionCheck: {
     enabled: true,
   },
@@ -265,6 +264,7 @@ export class SystemConfigCore {
     if (deletes.length > 0) {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
+
     const newConfig = await this.getConfig();
 
     this.config$.next(newConfig);

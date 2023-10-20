@@ -5,32 +5,55 @@ import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 
-const [major, minor, patch] = pkg.version.split('.');
-
 export interface IServerVersion {
   major: number;
   minor: number;
   patch: number;
 }
-export class ServerVersion implements IServerVersion {
-  major: number;
-  minor: number;
-  patch: number;
 
-  constructor(major: number | string, minor: number | string, patch: number | string) {
-    this.major = Number(major);
-    this.minor = Number(minor);
-    this.patch = Number(patch);
-  }
+export class ServerVersion implements IServerVersion {
+  constructor(
+    public readonly major: number,
+    public readonly minor: number,
+    public readonly patch: number,
+  ) {}
 
   toString() {
     return `${this.major}.${this.minor}.${this.patch}`;
   }
+
+  toJSON() {
+    const { major, minor, patch } = this;
+    return { major, minor, patch };
+  }
+
+  static fromString(version: string): ServerVersion {
+    const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
+    const matchResult = version.match(regex);
+    if (matchResult) {
+      const [, major, minor, patch] = matchResult.map(Number);
+      return new ServerVersion(major, minor, patch);
+    } else {
+      throw new Error(`Invalid version format: ${version}`);
+    }
+  }
+
+  isNewerThan(version: ServerVersion): boolean {
+    const equalMajor = this.major === version.major;
+    const equalMinor = this.minor === version.minor;
+
+    return (
+      this.major > version.major ||
+      (equalMajor && this.minor > version.minor) ||
+      (equalMajor && equalMinor && this.patch > version.patch)
+    );
+  }
 }
 
-export const serverVersion: ServerVersion = new ServerVersion(major, minor, patch);
+export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
+export const isDev = process.env.NODE_ENV === 'development';
 
-export const SERVER_VERSION = serverVersion.toString();
+export const serverVersion = ServerVersion.fromString(pkg.version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 

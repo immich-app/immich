@@ -20,7 +20,7 @@
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
-  import CheckAvailableVersionSettings from '$lib/components/admin-page/settings/check-available-version/check-available-version-settings.svelte';
+  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
 
   export let data: PageData;
 
@@ -61,9 +61,6 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <SettingAccordion title="Available Version" subtitle="Manage the tracking of new versions">
-        <CheckAvailableVersionSettings checkAvailableVersionConfig={configs.newVersionCheck} />
-      </SettingAccordion>
       <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
@@ -106,6 +103,10 @@
 
       <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
         <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
+        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

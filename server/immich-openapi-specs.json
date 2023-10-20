@@ -3977,38 +3977,6 @@
         ]
       }
     },
-    "/server-info/available-version": {
-      "get": {
-        "operationId": "getLatestImmichVersionAvailable",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AvailableVersionResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -6103,35 +6071,6 @@
         ],
         "type": "object"
       },
-      "AvailableVersionResponseDto": {
-        "properties": {
-          "currentVersion": {
-            "$ref": "#/components/schemas/SystemConfigImmichVersion"
-          },
-          "dateCheckAvailableVersion": {
-            "nullable": true,
-            "type": "integer"
-          },
-          "isAvailable": {
-            "type": "boolean"
-          },
-          "releaseVersion": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigImmichVersion"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "dateCheckAvailableVersion",
-          "isAvailable",
-          "currentVersion",
-          "releaseVersion"
-        ],
-        "type": "object"
-      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -8035,17 +7974,6 @@
         },
         "type": "object"
       },
-      "SystemConfigCheckAvailableVersionDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
       "SystemConfigDto": {
         "properties": {
           "ffmpeg": {
@@ -8061,7 +7989,7 @@
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
           "newVersionCheck": {
-            "$ref": "#/components/schemas/SystemConfigCheckAvailableVersionDto"
+            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
@@ -8086,13 +8014,13 @@
           "ffmpeg",
           "machineLearning",
           "map",
+          "newVersionCheck",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
           "storageTemplate",
           "job",
           "thumbnail",
-          "newVersionCheck",
           "trash"
         ],
         "type": "object"
@@ -8169,25 +8097,6 @@
           "maxBitrate",
           "temporalAQ",
           "twoPass"
-        ],
-        "type": "object"
-      },
-      "SystemConfigImmichVersion": {
-        "properties": {
-          "major": {
-            "type": "integer"
-          },
-          "minor": {
-            "type": "integer"
-          },
-          "patch": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "major",
-          "minor",
-          "patch"
         ],
         "type": "object"
       },
@@ -8285,6 +8194,17 @@
         "required": [
           "enabled",
           "tileUrl"
+        ],
+        "type": "object"
+      },
+      "SystemConfigNewVersionCheckDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

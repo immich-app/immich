@@ -1,13 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ServerVersion, serverVersion } from '../domain.constant';
+import { Inject, Injectable } from '@nestjs/common';
 import { JobName } from '../job';
-import {
-  CommunicationEvent,
-  ICommunicationRepository,
-  IJobRepository,
-  IServerInfoRepository,
-  ISystemConfigRepository,
-} from '../repositories';
+import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -21,23 +14,15 @@ import {
   supportedYearTokens,
 } from './system-config.constants';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
-import { compareVersions, stringToVersion } from './system-config.util';
 
 @Injectable()
 export class SystemConfigService {
   private core: SystemConfigCore;
-  public availableVersion: ServerVersion | null;
-  public dateCheckAvailableVersion: number | null;
-  private logger = new Logger();
-
   constructor(
     @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IServerInfoRepository) private infoRepository: IServerInfoRepository,
   ) {
-    this.dateCheckAvailableVersion = null;
-    this.availableVersion = null;
     this.core = SystemConfigCore.create(repository);
   }
 
@@ -69,24 +54,6 @@ export class SystemConfigService {
 
   addValidator(validator: SystemConfigValidator) {
     this.core.addValidator(validator);
-  }
-
-  async handleImmichLatestVersionAvailable() {
-    try {
-      this.logger.debug('Checking if a new version is available ...');
-      const data = await this.infoRepository.getLatestAvailableVersion();
-      this.dateCheckAvailableVersion = Date.now();
-      if (compareVersions(data.tag_name, serverVersion)) {
-        this.logger.log('New Immich version detected : ' + stringToVersion(data.tag_name).toString());
-        this.availableVersion = stringToVersion(data.tag_name);
-        return true;
-      } else {
-        this.logger.debug('No new version detected');
-      }
-    } catch (error) {
-      this.logger.error('Error occurred:', error);
-    }
-    return false;
   }
 
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {

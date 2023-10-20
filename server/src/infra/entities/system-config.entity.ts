@@ -67,6 +67,8 @@ export enum SystemConfigKey {
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
   REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
 
+  NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
+
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -85,8 +87,6 @@ export enum SystemConfigKey {
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
   THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
-
-  CHECK_AVAILABLE_VERSION_ENABLED = 'newVersionCheck.enabled',
   THUMBNAIL_QUALITY = 'thumbnail.quality',
   THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
 

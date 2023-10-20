@@ -1,7 +1,7 @@
 import { IServerInfoRepository } from '@app/domain';
 
-export const newSystemConfigRepositoryMock = (): jest.Mocked<IServerInfoRepository> => {
+export const newServerInfoRepositoryMock = (): jest.Mocked<IServerInfoRepository> => {
   return {
-    getLatestAvailableVersion: jest.fn(),
+    getGitHubRelease: jest.fn(),
   };
 };

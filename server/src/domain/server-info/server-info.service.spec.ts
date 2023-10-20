@@ -1,22 +1,36 @@
-import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
+import {
+  newCommunicationRepositoryMock,
+  newServerInfoRepositoryMock,
+  newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
+} from '@test';
 import { serverVersion } from '../domain.constant';
-import { IStorageRepository, ISystemConfigRepository, IUserRepository } from '../repositories';
-import { SystemConfigService } from '../system-config';
+import {
+  ICommunicationRepository,
+  IServerInfoRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
-  let systemMock: jest.Mocked<SystemConfigService>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
+    serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(systemMock, configMock, userMock, storageMock);
+    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
   });
 
   it('should work', () => {
