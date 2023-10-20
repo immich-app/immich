@@ -15,6 +15,7 @@ import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -39,7 +40,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionAssetState = useState(AssetState.remote);
+    final selectionAssetState = useState(const SelectionAssetState());
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
@@ -86,9 +87,8 @@ class HomePage extends HookConsumerWidget {
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
-        selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
-            ? AssetState.remote
-            : AssetState.local;
+        selectionAssetState.value =
+            SelectionAssetState.fromSelection(selectedAssets);
       }
 
       void onShareAssets() {
