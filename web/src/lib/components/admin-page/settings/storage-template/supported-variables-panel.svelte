@@ -1,4 +1,4 @@
-<div class="mt-4 text-xs">
+<div class="mt-4 text-sm">
   <h4>OTHER VARIABLES</h4>
 </div>
 

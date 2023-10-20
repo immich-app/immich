@@ -56,7 +56,7 @@
       ext: 'jpg',
       filetype: 'IMG',
       filetypefull: 'IMAGE',
-      assetId: '00000000-0000-0000-0000-000000000000',
+      assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -155,19 +155,20 @@
       <div class="flex flex-col mt-4">
         <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
 
-        <div class="my-2 text-xs">
+        <div class="my-2 text-sm">
           <h4>PREVIEW</h4>
         </div>
 
-        <p class="text-xs">
+        <p class="text-sm">
           Approximately path length limit : <span
             class="font-semibold text-immich-primary dark:text-immich-dark-primary"
             >{parsedTemplate().length + user.id.length + 'UPLOAD_LOCATION'.length}</span
           >/260
         </p>
 
-        <p class="text-xs">
-          <code>{user.storageLabel || user.id}</code> is the user's Storage Label
+        <p class="text-sm">
+          <code class="text-immich-primary dark:text-immich-dark-primary">{user.storageLabel || user.id}</code> is the user's
+          Storage Label
         </p>
 
         <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
@@ -178,7 +179,7 @@
 
         <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
           <div class="flex flex-col my-2">
-            <label class="text-xs" for="preset-select">PRESET</label>
+            <label class="text-sm" for="preset-select">PRESET</label>
             <select
               class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
               {disabled}
