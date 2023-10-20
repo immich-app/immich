@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
+import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
-import 'package:openapi/api.dart';
 
 class SharedLinkEditPage extends HookConsumerWidget {
-  final SharedLinkResponseDto? existingLink;
+  final SharedLink? existingLink;
   final List<String>? assetsList;
   final String? albumId;
 
@@ -35,9 +36,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final expiryAfter = useState(0);
     final newShareLink = useState("");
 
-    buildLinkTitle() {
+    Widget buildLinkTitle() {
       if (existingLink != null) {
-        if (existingLink!.type == SharedLinkType.ALBUM) {
+        if (existingLink!.type == SharedLinkSource.album) {
           return Row(
             children: [
               const Text(
@@ -45,7 +46,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                existingLink!.album!.albumName,
+                existingLink!.title,
                 style: TextStyle(
                   color: themeData.primaryColor,
                   fontWeight: FontWeight.bold,
@@ -55,7 +56,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           );
         }
 
-        if (existingLink!.type == SharedLinkType.INDIVIDUAL) {
+        if (existingLink!.type == SharedLinkSource.individual) {
           return Row(
             children: [
               const Text(
@@ -83,7 +84,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       ).tr();
     }
 
-    buildDescriptionField() {
+    Widget buildDescriptionField() {
       return TextField(
         controller: descriptionController,
         enabled: newShareLink.value.isEmpty,
@@ -224,7 +225,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       );
     }
 
-    copyLinkToClipboard() {
+    void copyLinkToClipboard() {
       Clipboard.setData(
         ClipboardData(
           text: newShareLink.value,
@@ -271,13 +272,13 @@ class SharedLinkEditPage extends HookConsumerWidget {
       );
     }
 
-    calculateExpiry() {
+    DateTime calculateExpiry() {
       return DateTime.now().add(Duration(minutes: expiryAfter.value));
     }
 
-    handleNewLink() async {
+    Future<void> handleNewLink() async {
       final newLink =
-          await ref.read(sharedLinksStateProvider.notifier).createLink(
+          await ref.read(sharedLinkServiceProvider).createSharedLink(
                 albumId: albumId,
                 assetIds: assetsList,
                 showMeta: showMetadata.value,
@@ -295,7 +296,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
     }
 
-    handleEditLink() async {
+    Future<void> handleEditLink() async {
       bool? download;
       bool? upload;
       bool? meta;
@@ -324,8 +325,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
         changeExpiry = true;
       }
 
-      await ref.read(sharedLinksStateProvider.notifier).updateLink(
-            id: existingLink!.id,
+      await ref.read(sharedLinkServiceProvider).updateSharedLink(
+            existingLink!.id,
             showMeta: meta,
             allowDownload: download,
             allowUpload: upload,

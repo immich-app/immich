@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/ui/shared_link_item.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:openapi/api.dart';
 
 class SharedLinkPage extends HookConsumerWidget {
   const SharedLinkPage({Key? key}) : super(key: key);
@@ -22,7 +22,7 @@ class SharedLinkPage extends HookConsumerWidget {
       [],
     );
 
-    buildNoShares() {
+    Widget buildNoShares() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -60,7 +60,7 @@ class SharedLinkPage extends HookConsumerWidget {
       );
     }
 
-    buildSharesList(List<SharedLinkResponseDto> links) {
+    Widget buildSharesList(List<SharedLink> links) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

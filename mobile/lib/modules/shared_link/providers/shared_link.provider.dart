@@ -1,89 +1,28 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
-import 'package:openapi/api.dart';
 
-class SharedLinksNotifier
-    extends StateNotifier<AsyncValue<List<SharedLinkResponseDto>>> {
+class SharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>> {
   final SharedLinkService _sharedLinkService;
 
   SharedLinksNotifier(this._sharedLinkService) : super(const AsyncLoading()) {
     fetchLinks();
   }
 
-  fetchLinks() async {
+  Future<void> fetchLinks() async {
     state = await _sharedLinkService.getAllSharedLinks();
   }
 
-  deleteLink(String id) async {
+  Future<void> deleteLink(String id) async {
     await _sharedLinkService.deleteSharedLink(id);
     state = const AsyncLoading();
     fetchLinks();
   }
-
-  Future<SharedLinkResponseDto?> createLink({
-    required bool showMeta,
-    required bool allowDownload,
-    required bool allowUpload,
-    String? description,
-    String? albumId,
-    List<String>? assetIds,
-    DateTime? expiresAt,
-  }) async {
-    final type =
-        albumId != null ? SharedLinkType.ALBUM : SharedLinkType.INDIVIDUAL;
-    if (type == SharedLinkType.ALBUM) {
-      return _sharedLinkService.createSharedLink(
-        SharedLinkCreateDto(
-          type: type,
-          albumId: albumId,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-        ),
-      );
-    } else if (assetIds != null) {
-      return _sharedLinkService.createSharedLink(
-        SharedLinkCreateDto(
-          type: type,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          assetIds: assetIds,
-        ),
-      );
-    }
-    return null;
-  }
-
-  updateLink({
-    required String id,
-    required bool? showMeta,
-    required bool? allowDownload,
-    required bool? allowUpload,
-    bool? changeExpiry = false,
-    String? description,
-    DateTime? expiresAt,
-  }) async {
-    await _sharedLinkService.updateSharedLink(
-      id,
-      SharedLinkEditDto(
-        showMetadata: showMeta,
-        allowDownload: allowDownload,
-        allowUpload: allowUpload,
-        expiresAt: expiresAt,
-        description: description,
-        changeExpiryTime: changeExpiry,
-      ),
-    );
-  }
 }
 
-final sharedLinksStateProvider = StateNotifierProvider<SharedLinksNotifier,
-    AsyncValue<List<SharedLinkResponseDto>>>((ref) {
+final sharedLinksStateProvider =
+    StateNotifierProvider<SharedLinksNotifier, AsyncValue<List<SharedLink>>>(
+        (ref) {
   return SharedLinksNotifier(
     ref.watch(sharedLinkServiceProvider),
   );

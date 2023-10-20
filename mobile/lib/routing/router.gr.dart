@@ -1472,7 +1472,7 @@ class SharedLinkRoute extends PageRouteInfo<void> {
 class SharedLinkEditRoute extends PageRouteInfo<SharedLinkEditRouteArgs> {
   SharedLinkEditRoute({
     Key? key,
-    SharedLinkResponseDto? existingLink,
+    SharedLink? existingLink,
     List<String>? assetsList,
     String? albumId,
   }) : super(
@@ -1499,7 +1499,7 @@ class SharedLinkEditRouteArgs {
 
   final Key? key;
 
-  final SharedLinkResponseDto? existingLink;
+  final SharedLink? existingLink;
 
   final List<String>? assetsList;
 
