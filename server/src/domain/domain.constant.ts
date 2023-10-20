@@ -4,6 +4,7 @@ import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
+export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export interface IServerVersion {
   major: number;

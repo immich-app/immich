@@ -1,6 +1,6 @@
-import { JobService, SearchService, ServerInfoService, StorageService } from '@app/domain';
+import { JobService, ONE_HOUR, SearchService, ServerInfoService, StorageService } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class AppService {
@@ -13,7 +13,7 @@ export class AppService {
     private serverService: ServerInfoService,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Interval(ONE_HOUR.as('milliseconds'))
   async onVersionCheck() {
     await this.serverService.handleVersionCheck();
   }
