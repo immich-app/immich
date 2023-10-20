@@ -1,6 +1,6 @@
 import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { CronJob, CronTime } from 'cron';
+import { CronJob } from 'cron';
 import { mapAsset } from '../asset';
 import {
   CommunicationEvent,
@@ -30,34 +30,6 @@ export class JobService {
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validateCronExpression(config.libraryScan.cronExpression));
-    this.initPeriodicLibraryScan().catch(() => {
-      this.logger.error('An error occurred during the periodic library scan setup');
-    });
-  }
-
-  async initPeriodicLibraryScan() {
-    const config = await this.configCore.getConfig();
-    const libraryScanJob = new CronJob(
-      config.libraryScan.cronExpression,
-      async () => {
-        await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
-      },
-      undefined,
-      config.libraryScan.enabled,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      // prevents memory leaking by automatically stopping when the node process finishes
-      true,
-    );
-
-    this.configCore.config$.subscribe((config) => {
-      if (config.libraryScan?.cronExpression) {
-        libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
-      }
-      config.libraryScan?.enabled ? libraryScanJob.start() : libraryScanJob.stop();
-    });
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

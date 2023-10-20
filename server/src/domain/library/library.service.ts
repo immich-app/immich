@@ -10,6 +10,8 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { CronJob, CronTime } from 'cron';
+import { SystemConfigCore } from '..';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -17,6 +19,7 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
   WithProperty,
 } from '../repositories';
@@ -33,10 +36,12 @@ import {
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
   private access: AccessCore;
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
@@ -44,6 +49,32 @@ export class LibraryService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+  }
+
+  async init() {
+    const config = await this.configCore.getConfig();
+    const libraryScanJob = new CronJob(
+      config.libraryScan.cronExpression,
+      async () => {
+        await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
+      },
+      undefined,
+      config.libraryScan.enabled,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      // prevents memory leaking by automatically stopping when the node process finishes
+      true,
+    );
+
+    this.configCore.config$.subscribe((config) => {
+      if (config.libraryScan?.cronExpression) {
+        libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
+      }
+      config.libraryScan?.enabled ? libraryScanJob.start() : libraryScanJob.stop();
+    });
   }
 
   async getStatistics(authUser: AuthUserDto, id: string): Promise<LibraryStatsResponseDto> {
