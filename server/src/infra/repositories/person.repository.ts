@@ -96,7 +96,7 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getByName(userId: string, personName: string, withHidden: boolean): Promise<PersonEntity[]> {
+  getByName(userId: string, personName: string, withHidden: boolean | undefined): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
