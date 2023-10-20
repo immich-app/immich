@@ -35,7 +35,6 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { browser } from '$app/environment';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
@@ -87,6 +86,9 @@
   let isSearchingPeople = false;
 
   const searchPeople = async () => {
+    if ((people.length < 20 && name.includes(searchWord)) || name === '') {
+      return;
+    }
     isSearchingPeople = true;
     people = [];
     try {
@@ -99,14 +101,6 @@
 
     isSearchingPeople = false;
   };
-
-  $: {
-    if (name !== '' && browser) {
-      if (people.length === 20 || (!name.includes(searchWord) && people.length !== 20)) {
-        searchPeople();
-      }
-    }
-  }
 
   $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
@@ -417,6 +411,7 @@
                 suggestedPeople={suggestedPeople.length > 0 || isSearchingPeople}
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
+                on:input={searchPeople}
               />
             {:else}
               <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>

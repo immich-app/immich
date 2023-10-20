@@ -11,6 +11,7 @@
   const dispatch = createEventDispatcher<{
     change: string;
     cancel: void;
+    input: void;
   }>();
 </script>
 
@@ -39,6 +40,7 @@
       type="text"
       placeholder="New name or nickname"
       bind:value={name}
+      on:input={() => dispatch('input')}
     />
     <Button size="sm" type="submit">Done</Button>
   </form>
