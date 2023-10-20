@@ -260,6 +260,7 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
       .where()
       .remoteIdIsNotNull()
       .filter()
+      .isArchivedEqualTo(false)
       .ownerIdEqualTo(userId)
       .not()
       .remoteIdEqualTo(parentAsset.remoteId)
