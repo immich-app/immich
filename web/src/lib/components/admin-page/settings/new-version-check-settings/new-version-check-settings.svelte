@@ -7,7 +7,6 @@
   import { api, SystemConfigNewVersionCheckDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
-  import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
 
@@ -15,9 +14,6 @@
 
   let savedConfig: SystemConfigNewVersionCheckDto;
   let defaultConfig: SystemConfigNewVersionCheckDto;
-
-  let isConfirmOpen = false;
-  let handleConfirm: (value: boolean) => void;
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -70,10 +66,6 @@
     });
   }
 </script>
-
-{#if isConfirmOpen}
-  <ConfirmDisableLogin on:cancel={() => handleConfirm(false)} on:confirm={() => handleConfirm(true)} />
-{/if}
 
 <div>
   {#await getConfigs() then}
