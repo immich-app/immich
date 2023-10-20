@@ -324,7 +324,7 @@ class SharedLinkItem extends ConsumerWidget {
           ],
         ),
         const Padding(
-          padding: EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 10),
+          padding: EdgeInsets.all(20),
           child: Divider(
             height: 0,
           ),

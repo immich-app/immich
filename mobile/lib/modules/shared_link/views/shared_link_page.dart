@@ -76,10 +76,30 @@ class SharedLinkPage extends HookConsumerWidget {
             ).tr(),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: links.length,
-              itemBuilder: (context, index) {
-                return SharedLinkItem(links.elementAt(index));
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  // Two column
+                  return GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisExtent: 180,
+                    ),
+                    itemCount: links.length,
+                    itemBuilder: (context, index) {
+                      return SharedLinkItem(links.elementAt(index));
+                    },
+                  );
+                }
+
+                // Single column
+                return ListView.builder(
+                  itemCount: links.length,
+                  itemBuilder: (context, index) {
+                    return SharedLinkItem(links.elementAt(index));
+                  },
+                );
               },
             ),
           ),

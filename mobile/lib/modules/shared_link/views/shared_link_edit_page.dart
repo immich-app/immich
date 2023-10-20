@@ -64,7 +64,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               ),
               Expanded(
                 child: Text(
-                  existingLink!.description ?? "",
+                  existingLink!.description ?? "--",
                   style: TextStyle(
                     color: themeData.primaryColor,
                     fontWeight: FontWeight.bold,
