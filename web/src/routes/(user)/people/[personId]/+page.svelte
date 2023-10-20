@@ -262,6 +262,7 @@
   };
 
   const handleNameChange = async (name: string) => {
+    isEditingName = false;
     potentialMergePeople = [];
     personName = name;
 
@@ -273,7 +274,7 @@
       return;
     }
 
-    const result = await api.searchApi.searchPerson({ name: personName });
+    const result = await api.searchApi.searchPerson({ name: personName, withHidden: true });
 
     const existingPerson = result.data.find(
       (person: PersonResponseDto) =>

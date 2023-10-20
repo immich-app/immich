@@ -220,7 +220,9 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
-  Future<Response> searchPersonWithHttpInfo(String name,) async {
+  ///
+  /// * [bool] withHidden:
+  Future<Response> searchPersonWithHttpInfo(String name, { bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/person';
 
@@ -232,6 +234,9 @@ class SearchApi {
     final formParams = <String, String>{};
 
       queryParams.addAll(_queryParams('', 'name', name));
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
 
     const contentTypes = <String>[];
 
@@ -250,8 +255,10 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
-  Future<List<PersonResponseDto>?> searchPerson(String name,) async {
-    final response = await searchPersonWithHttpInfo(name,);
+  ///
+  /// * [bool] withHidden:
+  Future<List<PersonResponseDto>?> searchPerson(String name, { bool? withHidden, }) async {
+    final response = await searchPersonWithHttpInfo(name,  withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -96,17 +96,20 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
-    return this.personRepository
+  getByName(userId: string, personName: string, withHidden: boolean): Promise<PersonEntity[]> {
+    const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
-      .andWhere('person.isHidden = false')
       .andWhere('LOWER(person.name) LIKE :name', { name: `%${personName.toLowerCase()}%` })
       .groupBy('person.id')
       .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(20)
-      .getMany();
+      .limit(20);
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+    return queryBuilder.getMany();
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {

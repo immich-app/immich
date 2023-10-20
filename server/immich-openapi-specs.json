@@ -3912,6 +3912,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

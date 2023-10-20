@@ -160,7 +160,7 @@ export class SearchService {
   }
 
   async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return await this.personRepository.getByName(authUser.id, dto.name);
+    return await this.personRepository.getByName(authUser.id, dto.name, dto.withHidden || false);
   }
 
   async handleIndexAlbums() {
