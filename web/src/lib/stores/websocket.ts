@@ -16,7 +16,6 @@ export const openWebsocketConnection = () => {
   try {
     const websocket = io('', {
       path: '/api/socket.io',
-      transports: ['polling'],
       reconnection: true,
       forceNew: true,
       autoConnect: true,

@@ -7,6 +7,7 @@ import { Duration } from 'luxon';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
+  ExifDuration,
   IAlbumRepository,
   IAssetRepository,
   ICryptoRepository,
@@ -107,6 +108,10 @@ export class MetadataService {
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
+  }
+
+  async teardown() {
+    await this.repository.teardown();
   }
 
   async handleLivePhotoLinking(job: IEntityJob) {
@@ -394,7 +399,11 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number): string {
-    return Duration.fromObject({ seconds }).toFormat('hh:mm:ss.SSS');
+  private getDuration(seconds?: number | ExifDuration): string {
+    let _seconds = seconds as number;
+    if (typeof seconds === 'object') {
+      _seconds = seconds.Value * (seconds?.Scale || 1);
+    }
+    return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 }

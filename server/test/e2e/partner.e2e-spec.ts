@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 const user1Dto = {
@@ -31,9 +31,12 @@ describe(`${PartnerController.name} (e2e)`, () => {
   let user2: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    [server, app] = await testApp.create();
     repository = app.get<IPartnerRepository>(IPartnerRepository);
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -42,16 +45,15 @@ describe(`${PartnerController.name} (e2e)`, () => {
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
 
-    await api.userApi.create(server, accessToken, user1Dto);
-    user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
+    await Promise.all([
+      api.userApi.create(server, accessToken, user1Dto),
+      api.userApi.create(server, accessToken, user2Dto),
+    ]);
 
-    await api.userApi.create(server, accessToken, user2Dto);
-    user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
+    [user1, user2] = await Promise.all([
+      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
+      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
+    ]);
   });
 
   describe('GET /partner', () => {

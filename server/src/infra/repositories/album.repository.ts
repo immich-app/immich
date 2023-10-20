@@ -1,4 +1,4 @@
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
+import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
@@ -168,22 +168,42 @@ export class AlbumRepository implements IAlbumRepository {
       .createQueryBuilder()
       .delete()
       .from('albums_assets_assets')
-      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId })
+      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
+  }
+
+  async removeAssets(asset: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where({
+        albumsId: asset.albumId,
+        assetsId: In(asset.assetIds),
+      })
       .execute();
   }
 
-  hasAsset(id: string, assetId: string): Promise<boolean> {
+  hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
       where: {
-        id,
+        id: asset.albumId,
         assets: {
-          id: assetId,
+          id: asset.assetId,
         },
       },
       relations: {
         assets: true,
       },
     });
+  }
+
+  async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
   }
 
   async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {

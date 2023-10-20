@@ -12,7 +12,7 @@ import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
-import { createTestApp, db } from '@test/test-utils';
+import { db, testApp } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
 
@@ -86,10 +86,12 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset4: AssetEntity;
 
   beforeAll(async () => {
-    app = await createTestApp();
-
-    server = app.getHttpServer();
+    [server, app] = await testApp.create();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -121,11 +123,6 @@ describe(`${AssetController.name} (e2e)`, () => {
       type: SharedLinkType.INDIVIDUAL,
       assetIds: [asset1.id, asset2.id],
     });
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('POST /asset/upload', () => {
@@ -589,9 +586,11 @@ describe(`${AssetController.name} (e2e)`, () => {
 
   describe('GET /asset/map-marker', () => {
     beforeEach(async () => {
-      await assetRepository.save({ id: asset1.id, isArchived: true });
-      await assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 });
-      await assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 });
+      await Promise.all([
+        assetRepository.save({ id: asset1.id, isArchived: true }),
+        assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 }),
+        assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 }),
+      ]);
     });
 
     it('should require authentication', async () => {

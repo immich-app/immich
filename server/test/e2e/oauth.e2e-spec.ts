@@ -1,28 +1,24 @@
 import { OAuthController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${OAuthController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    [server] = await testApp.create();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
     await db.reset();
     await api.authApi.adminSignUp(server);
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('POST /oauth/authorize', () => {

@@ -13,6 +13,7 @@
   export let admin = false;
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-4 pb-8' : 'scrollbar-hidden pl-4';
+  $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
 </script>
 
 <header>
@@ -32,20 +33,19 @@
       <SideBar />
     {/if}
   </slot>
-  <slot name="content">
-    {#if title}
-      <section class="relative">
-        <div
-          class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
-        >
-          <p class="font-medium">{title}</p>
-          <slot name="buttons" />
-        </div>
 
-        <div class="{scrollbarClass} absolute top-16 h-[calc(100%-theme(spacing.16))] w-full overflow-y-auto">
-          <slot />
-        </div>
-      </section>
+  <section class="relative">
+    {#if title}
+      <div
+        class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
+      >
+        <p class="font-medium">{title}</p>
+        <slot name="buttons" />
+      </div>
     {/if}
-  </slot>
+
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto">
+      <slot />
+    </div>
+  </section>
 </main>

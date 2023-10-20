@@ -2,10 +2,11 @@ import { LoginResponseDto, UserResponseDto, UserService } from '@app/domain';
 import { AppModule, UserController } from '@app/immich';
 import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, userSignupStub, userStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 import { Repository } from 'typeorm';
 
@@ -18,10 +19,12 @@ describe(`${UserController.name}`, () => {
   let userRepository: Repository<UserEntity>;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    userRepository = app.select(AppModule).get('UserEntityRepository');
+    [server, app] = await testApp.create();
+    userRepository = app.select(AppModule).get(getRepositoryToken(UserEntity));
+  });
 
-    server = app.getHttpServer();
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
