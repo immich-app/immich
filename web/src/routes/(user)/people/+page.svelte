@@ -258,7 +258,7 @@
       changeName();
       return;
     }
-    const { data } = await api.searchApi.searchPerson({ name: personName });
+    const { data } = await api.searchApi.searchPerson({ name: personName, withHidden: true });
 
     // We check if another person has the same name as the name entered by the user
 
