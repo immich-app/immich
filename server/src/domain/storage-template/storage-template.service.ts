@@ -219,7 +219,7 @@ export class StorageTemplateService {
       ext,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
-      assetId: asset.id
+      assetId: asset.id,
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
