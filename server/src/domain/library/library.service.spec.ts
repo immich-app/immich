@@ -12,6 +12,7 @@ import {
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   userStub,
 } from '@test';
@@ -23,6 +24,7 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
 } from '../repositories';
 import { LibraryService } from './library.service';
@@ -32,6 +34,7 @@ describe(LibraryService.name, () => {
 
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -40,6 +43,7 @@ describe(LibraryService.name, () => {
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     userMock = newUserRepositoryMock();
     assetMock = newAssetRepositoryMock();
@@ -55,7 +59,16 @@ describe(LibraryService.name, () => {
 
     accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
-    sut = new LibraryService(accessMock, assetMock, cryptoMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new LibraryService(
+      accessMock,
+      assetMock,
+      configMock,
+      cryptoMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      userMock,
+    );
   });
 
   it('should work', () => {
