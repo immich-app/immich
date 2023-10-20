@@ -9,7 +9,7 @@
   };
 </script>
 
-<div class="mt-2 text-xs">
+<div class="mt-2 text-sm">
   <h4>DATE & TIME</h4>
 </div>
 
