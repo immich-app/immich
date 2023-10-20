@@ -158,7 +158,6 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
-*ServerInfoApi* | [**getLatestImmichVersionAvailable**](doc//ServerInfoApi.md#getlatestimmichversionavailable) | **GET** /server-info/available-version | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
@@ -226,7 +225,6 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
- - [AvailableVersionResponseDto](doc//AvailableVersionResponseDto.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
@@ -309,13 +307,12 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
- - [SystemConfigCheckAvailableVersionDto](doc//SystemConfigCheckAvailableVersionDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
- - [SystemConfigImmichVersion](doc//SystemConfigImmichVersion.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
+ - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)

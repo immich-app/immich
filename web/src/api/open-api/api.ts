@@ -896,37 +896,6 @@ export interface AuthDeviceResponseDto {
 /**
  * 
  * @export
- * @interface AvailableVersionResponseDto
- */
-export interface AvailableVersionResponseDto {
-    /**
-     * 
-     * @type {SystemConfigImmichVersion}
-     * @memberof AvailableVersionResponseDto
-     */
-    'currentVersion': SystemConfigImmichVersion;
-    /**
-     * 
-     * @type {number}
-     * @memberof AvailableVersionResponseDto
-     */
-    'dateCheckAvailableVersion': number | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AvailableVersionResponseDto
-     */
-    'isAvailable': boolean;
-    /**
-     * 
-     * @type {SystemConfigImmichVersion}
-     * @memberof AvailableVersionResponseDto
-     */
-    'releaseVersion': SystemConfigImmichVersion | null;
-}
-/**
- * 
- * @export
  * @interface BulkIdResponseDto
  */
 export interface BulkIdResponseDto {
@@ -3251,19 +3220,6 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
- * @interface SystemConfigCheckAvailableVersionDto
- */
-export interface SystemConfigCheckAvailableVersionDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SystemConfigCheckAvailableVersionDto
-     */
-    'enabled': boolean;
-}
-/**
- * 
- * @export
  * @interface SystemConfigDto
  */
 export interface SystemConfigDto {
@@ -3293,10 +3249,10 @@ export interface SystemConfigDto {
     'map': SystemConfigMapDto;
     /**
      * 
-     * @type {SystemConfigCheckAvailableVersionDto}
+     * @type {SystemConfigNewVersionCheckDto}
      * @memberof SystemConfigDto
      */
-    'newVersionCheck': SystemConfigCheckAvailableVersionDto;
+    'newVersionCheck': SystemConfigNewVersionCheckDto;
     /**
      * 
      * @type {SystemConfigOAuthDto}
@@ -3448,31 +3404,6 @@ export interface SystemConfigFFmpegDto {
 /**
  * 
  * @export
- * @interface SystemConfigImmichVersion
- */
-export interface SystemConfigImmichVersion {
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigImmichVersion
-     */
-    'major': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigImmichVersion
-     */
-    'minor': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigImmichVersion
-     */
-    'patch': number;
-}
-/**
- * 
- * @export
  * @interface SystemConfigJobDto
  */
 export interface SystemConfigJobDto {
@@ -3604,6 +3535,19 @@ export interface SystemConfigMapDto {
      * @memberof SystemConfigMapDto
      */
     'tileUrl': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigNewVersionCheckDto
+ */
+export interface SystemConfigNewVersionCheckDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigNewVersionCheckDto
+     */
+    'enabled': boolean;
 }
 /**
  * 
@@ -12936,44 +12880,6 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLatestImmichVersionAvailable: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/server-info/available-version`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         getServerConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/server-info/config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -13205,15 +13111,6 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getLatestImmichVersionAvailable(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AvailableVersionResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLatestImmichVersionAvailable(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         async getServerConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerConfigDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getServerConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -13287,14 +13184,6 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLatestImmichVersionAvailable(options?: AxiosRequestConfig): AxiosPromise<AvailableVersionResponseDto> {
-            return localVarFp.getLatestImmichVersionAvailable(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         getServerConfig(options?: AxiosRequestConfig): AxiosPromise<ServerConfigDto> {
             return localVarFp.getServerConfig(options).then((request) => request(axios, basePath));
         },
@@ -13356,16 +13245,6 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
  * @extends {BaseAPI}
  */
 export class ServerInfoApi extends BaseAPI {
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ServerInfoApi
-     */
-    public getLatestImmichVersionAvailable(options?: AxiosRequestConfig) {
-        return ServerInfoApiFp(this.configuration).getLatestImmichVersionAvailable(options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {*} [options] Override http request option.

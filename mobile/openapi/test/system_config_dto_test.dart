@@ -36,7 +36,7 @@ void main() {
       // TODO
     });
 
-    // SystemConfigCheckAvailableVersionDto newVersionCheck
+    // SystemConfigNewVersionCheckDto newVersionCheck
     test('to test the property `newVersionCheck`', () async {
       // TODO
     });

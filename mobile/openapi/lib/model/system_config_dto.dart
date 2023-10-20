@@ -34,7 +34,7 @@ class SystemConfigDto {
 
   SystemConfigMapDto map;
 
-  SystemConfigCheckAvailableVersionDto newVersionCheck;
+  SystemConfigNewVersionCheckDto newVersionCheck;
 
   SystemConfigOAuthDto oauth;
 
@@ -108,7 +108,7 @@ class SystemConfigDto {
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
-        newVersionCheck: SystemConfigCheckAvailableVersionDto.fromJson(json[r'newVersionCheck'])!,
+        newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,

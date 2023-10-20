@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
-**newVersionCheck** | [**SystemConfigCheckAvailableVersionDto**](SystemConfigCheckAvailableVersionDto.md) |  | 
+**newVersionCheck** | [**SystemConfigNewVersionCheckDto**](SystemConfigNewVersionCheckDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **reverseGeocoding** | [**SystemConfigReverseGeocodingDto**](SystemConfigReverseGeocodingDto.md) |  | 

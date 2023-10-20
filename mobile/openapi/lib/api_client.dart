@@ -233,8 +233,6 @@ class ApiClient {
           return AuditDeletesResponseDto.fromJson(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
-        case 'AvailableVersionResponseDto':
-          return AvailableVersionResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -399,20 +397,18 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
-        case 'SystemConfigCheckAvailableVersionDto':
-          return SystemConfigCheckAvailableVersionDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
-        case 'SystemConfigImmichVersion':
-          return SystemConfigImmichVersion.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':
           return SystemConfigMapDto.fromJson(value);
+        case 'SystemConfigNewVersionCheckDto':
+          return SystemConfigNewVersionCheckDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
