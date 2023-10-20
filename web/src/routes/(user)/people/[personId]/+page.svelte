@@ -63,7 +63,7 @@
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let previousPersonId: string = data.person.id;
-  let people: PersonResponseDto[];
+  let people: PersonResponseDto[] = [];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
@@ -84,7 +84,6 @@
    * or if the new search word starts with another word / letter
    **/
   let searchWord: string;
-  let maxPeople = false;
   let isSearchingPeople = false;
 
   const searchPeople = async () => {
@@ -94,11 +93,6 @@
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
       searchWord = name;
-      if (data.length < 20) {
-        maxPeople = false;
-      } else {
-        maxPeople = true;
-      }
     } catch (error) {
       handleError(error, "Can't search people");
     }
@@ -108,7 +102,9 @@
 
   $: {
     if (name !== '' && browser) {
-      if (maxPeople === true || (!name.startsWith(searchWord) && maxPeople === false)) searchPeople();
+      if (people.length === 20 || (!name.includes(searchWord) && people.length !== 20)) {
+        searchPeople();
+      }
     }
   }
 
@@ -124,7 +120,7 @@
         : people
             .filter(
               (person: PersonResponseDto) =>
-                person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id,
+                person.name.toLowerCase().includes(name.toLowerCase()) && person.id !== data.person.id,
             )
             .slice(0, 5);
     }
