@@ -7,10 +7,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 
 class SharedLinkItem extends ConsumerWidget {
@@ -90,7 +90,7 @@ class SharedLinkItem extends ConsumerWidget {
     final imageSize = math.min(MediaQuery.of(context).size.width / 4, 100.0);
 
     copyShareLinkToClipboard() {
-      final serverUrl = Store.tryGet(StoreKey.serverUrl);
+      final serverUrl = getServerUrl();
       if (serverUrl == null) {
         ImmichToast.show(
           context: context,
@@ -100,8 +100,11 @@ class SharedLinkItem extends ConsumerWidget {
         );
         return;
       }
+
       Clipboard.setData(
-        ClipboardData(text: "$serverUrl/share/${sharedLinkResponse.key}"),
+        ClipboardData(
+          text: "$serverUrl/share/${sharedLinkResponse.key}",
+        ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
