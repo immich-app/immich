@@ -313,8 +313,8 @@ export class TypesenseRepository implements ISearchRepository {
         {
           collection: assetSchema.name,
           q: '*',
-          vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:100)`,
-          per_page: 100,
+          vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:1000)`,
+          per_page: 1000,
           facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
           filter_by: this.getAssetFilters(filters),
         } as any,
