@@ -78,7 +78,6 @@
         {#if user.isAdmin}
           <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
             <div class="hidden sm:block">
-              <LinkButton>
                 <span
                   class={$page.url.pathname.includes('/admin')
                     ? 'item text-immich-primary underline dark:text-immich-dark-primary'
@@ -86,17 +85,14 @@
                 >
                   Administration
                 </span>
-              </LinkButton>
             </div>
             <div class="block sm:hidden">
-              <IconButton title="Administration">
                 <Cog
                   size="1.5em"
                   class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
                     ? 'text-immich-primary dark:text-immich-dark-primary'
                     : ''}"
                 />
-              </IconButton>
               <hr
                 class={$page.url.pathname.includes('/admin')
                   ? 'border-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
