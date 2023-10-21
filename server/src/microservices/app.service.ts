@@ -103,4 +103,8 @@ export class AppService {
     await this.metadataService.init();
     await this.searchService.init();
   }
+
+  async teardown() {
+    await this.metadataService.teardown();
+  }
 }

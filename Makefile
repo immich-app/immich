@@ -4,6 +4,9 @@ dev:
 dev-new:
 	docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
+dev-down:
+	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
+
 dev-new-update:
 	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
@@ -20,7 +23,7 @@ pull-stage:
 	docker-compose -f ./docker/docker-compose.staging.yml pull
 
 test-e2e:
-	docker-compose -f ./docker/docker-compose.test.yml -p immich-test-e2e up  --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server-test --remove-orphans --build
+	docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
 prod:
 	docker-compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans

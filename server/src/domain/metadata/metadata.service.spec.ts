@@ -409,6 +409,54 @@ describe(MetadataService.name, () => {
         localDateTime: new Date('1970-01-01'),
       });
     });
+
+    it('should handle duration', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: 6.21 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.210',
+        }),
+      );
+    });
+
+    it('should handle duration as an object without Scale', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: { Value: 6.2 } });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.200',
+        }),
+      );
+    });
+
+    it('should handle duration with scale', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: { Scale: 1.11111111111111e-5, Value: 558720 } });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.207',
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
