@@ -21,6 +21,10 @@ services:
       - .env
     environment:
       - NODE_ENV=development
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     depends_on:
       - redis
       - database
@@ -48,6 +52,10 @@ services:
       - 9231:9230
     environment:
       - NODE_ENV=development
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     depends_on:
       - database
       - immich-server
@@ -73,6 +81,10 @@ services:
     volumes:
       - ../web:/usr/src/app
       - /usr/src/app/node_modules
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     restart: unless-stopped
     depends_on:
       - immich-server

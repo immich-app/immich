@@ -191,6 +191,7 @@ export class StorageTemplateService {
       fileCreatedAt: new Date(),
       originalPath: '/upload/test/IMG_123.jpg',
       type: AssetType.IMAGE,
+      id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
     } as AssetEntity;
     try {
       this.render(this.compile(config.storageTemplate.template), testAsset, 'IMG_123', 'jpg');
@@ -218,6 +219,7 @@ export class StorageTemplateService {
       ext,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
+      assetId: asset.id,
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

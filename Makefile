@@ -4,6 +4,9 @@ dev:
 dev-new:
 	docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
+dev-down:
+	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
+
 dev-new-update:
 	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
