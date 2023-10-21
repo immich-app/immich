@@ -11,9 +11,11 @@ function HomepageHeader() {
           Immich
         </h1>
         <div className="font-thin sm:text-base md:text-2xl my-12 sm:leading-tight">
-          <p className="mb-1">SELF-HOSTED BACKUP SOLUTION </p>
-          <p className="mb-1">FOR PHOTOS AND VIDEOS</p>
-          <p className="mb-1">ON MOBILE DEVICE</p>
+          <p className="mb-1 uppercase">
+            Self-hosted backup solution <span class="block"></span>
+            for photos and videos <span class="block"></span>
+            on mobile device
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 mb-16 gap-4 ">
