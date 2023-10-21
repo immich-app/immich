@@ -9,8 +9,10 @@ export const load = (async ({ locals, parent, params }) => {
   }
 
   const { data: person } = await locals.api.personApi.getPerson({ id: params.personId });
+  const { data: count } = await locals.api.personApi.getPersonAssetsCount({ id: params.personId });
 
   return {
+    count,
     user,
     person,
     meta: {

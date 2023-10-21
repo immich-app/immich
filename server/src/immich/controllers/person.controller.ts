@@ -38,6 +38,11 @@ export class PersonController {
     return this.service.updatePeople(authUser, dto);
   }
 
+  @Get(':id/controller')
+  getPersonAssetsCount(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<number> {
+    return this.service.getPersonAssetsCount(authUser, id);
+  }
+
   @Get(':id')
   getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(authUser, id);

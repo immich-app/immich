@@ -11844,6 +11844,48 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getPersonAssetsCount: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getPersonAssetsCount', 'id', id)
+            const localVarPath = `/person/{id}/controller`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getPersonThumbnail: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPersonThumbnail', 'id', id)
@@ -12066,6 +12108,16 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getPersonAssetsCount(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonAssetsCount(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getPersonThumbnail(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonThumbnail(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -12138,6 +12190,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          */
         getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getPersonAssets(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PersonApiGetPersonAssetsCountRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig): AxiosPromise<number> {
+            return localVarFp.getPersonAssetsCount(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12216,6 +12277,20 @@ export interface PersonApiGetPersonAssetsRequest {
      * 
      * @type {string}
      * @memberof PersonApiGetPersonAssets
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for getPersonAssetsCount operation in PersonApi.
+ * @export
+ * @interface PersonApiGetPersonAssetsCountRequest
+ */
+export interface PersonApiGetPersonAssetsCountRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiGetPersonAssetsCount
      */
     readonly id: string
 }
@@ -12328,6 +12403,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonAssets(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiGetPersonAssetsCountRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).getPersonAssetsCount(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

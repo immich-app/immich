@@ -84,6 +84,16 @@ export class PersonService {
     return this.findOrFail(id).then(mapPerson);
   }
 
+  async getPersonAssetsCount(authUser: AuthUserDto, id: string): Promise<number> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const person = await this.repository.getById(id);
+    if (!person) {
+      throw new NotFoundException();
+    }
+
+    return this.repository.getPersonAssetsCount(person.id);
+  }
+
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     const person = await this.repository.getById(id);

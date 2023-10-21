@@ -112,6 +112,17 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  getPersonAssetsCount(personId: string): Promise<number> {
+    return this.assetFaceRepository
+      .createQueryBuilder('face')
+      .leftJoin('face.asset', 'asset')
+      .where('face.personId = :personId', { personId })
+      .andWhere('asset.isArchived = false')
+      .andWhere('asset.deletedAt IS NULL')
+      .distinct(true)
+      .getCount();
+  }
+
   getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {

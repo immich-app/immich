@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future<num> getPersonAssetsCount(String id) async
+    test('test getPersonAssetsCount', () async {
+      // TODO
+    });
+
     //Future<MultipartFile> getPersonThumbnail(String id) async
     test('test getPersonThumbnail', () async {
       // TODO

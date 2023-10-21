@@ -38,6 +38,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
+  let numberOfAssets = data.count;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -194,6 +195,17 @@
     viewMode = ViewMode.VIEW_ASSETS;
   };
 
+  const updateAssetCount = async () => {
+    try {
+      const result = await api.personApi.getPersonAssetsCount({
+        id: data.person.id,
+      });
+      numberOfAssets = result.data;
+    } catch (error) {
+      handleError(error, "Can't update the asset count");
+    }
+  };
+
   const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
     const [personToMerge, personToBeMergedIn] = response;
     viewMode = ViewMode.VIEW_ASSETS;
@@ -209,6 +221,7 @@
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       if (personToBeMergedIn.name != personName && data.person.id === personToBeMergedIn.id) {
+        await updateAssetCount();
         refreshAssetGrid = !refreshAssetGrid;
         return;
       }
@@ -414,30 +427,35 @@
                 on:input={searchPeople}
               />
             {:else}
-              <button
-                class="flex items-center justify-center"
-                title="Edit name"
-                on:click={() => (isEditingName = true)}
-              >
-                <ImageThumbnail
-                  circle
-                  shadow
-                  url={thumbnailData}
-                  altText={data.person.name}
-                  widthStyle="3.375rem"
-                  heightStyle="3.375rem"
-                />
-                <div
-                  class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+              <div class="relative">
+                <button
+                  class="flex items-center justify-center"
+                  title="Edit name"
+                  on:click={() => (isEditingName = true)}
                 >
-                  {#if data.person.name}
-                    <p class="py-2 font-medium">{data.person.name}</p>
-                  {:else}
-                    <p class="w-fitfont-medium">Add a name</p>
-                    <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
-                  {/if}
-                </div>
-              </button>
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={data.person.name}
+                    widthStyle="3.375rem"
+                    heightStyle="3.375rem"
+                  />
+                  <div
+                    class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+                  >
+                    {#if data.person.name}
+                      <p class="py-2 font-medium">{data.person.name}</p>
+                      <p class="absolute w-full text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                        {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
+                      </p>
+                    {:else}
+                      <p class="w-fit font-medium">Add a name</p>
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+                    {/if}
+                  </div>
+                </button>
+              </div>
             {/if}
           </section>
           {#if isEditingName}
