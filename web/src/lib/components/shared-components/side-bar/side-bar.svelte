@@ -141,8 +141,9 @@
         {/await}
       </svelte:fragment>
     </SideBarButton>
+  </a>
 
-    {#if $featureFlags.trash}
+  {#if $featureFlags.trash}
       <a data-sveltekit-preload-data="hover" href={AppRoute.TRASH} draggable="false">
         <SideBarButton title="Trash" logo={TrashCanOutline} isSelected={isTrashSelected}>
           <svelte:fragment slot="moreInformation">
@@ -157,8 +158,7 @@
           </svelte:fragment>
         </SideBarButton>
       </a>
-    {/if}
-  </a>
+  {/if}
 
   <!-- Status Box -->
   <div class="mb-6 mt-auto">
