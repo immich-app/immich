@@ -77,6 +77,7 @@
 
         {#if user.isAdmin}
           <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}
+            aria-label="Administration"
             aria-current={$page.url.pathname.includes('/admin')
             ? 'page'
             : null
@@ -92,7 +93,7 @@
                     Administration
                   </span>
               </div>
-              <div class="block sm:hidden">
+              <div class="block sm:hidden" aria-hidden="true">
                   <Cog
                     size="1.5em"
                     class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
