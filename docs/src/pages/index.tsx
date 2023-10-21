@@ -12,8 +12,8 @@ function HomepageHeader() {
         </h1>
         <div className="font-thin sm:text-base md:text-2xl my-12 sm:leading-tight">
           <p className="mb-1 uppercase">
-            Self-hosted backup solution <span class="block"></span>
-            for photos and videos <span class="block"></span>
+            Self-hosted backup solution <span className="block"></span>
+            for photos and videos <span className="block"></span>
             on mobile device
           </p>
         </div>
