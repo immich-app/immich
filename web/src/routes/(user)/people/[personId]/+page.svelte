@@ -445,12 +445,12 @@
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
                     {#if data.person.name}
-                      <p class="py-2 font-medium">{data.person.name}</p>
+                      <p class="w-72 font-medium truncate">{data.person.name}</p>
                       <p class="absolute w-full text-sm text-gray-500 dark:text-immich-gray bottom-0">
                         {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
                       </p>
                     {:else}
-                      <p class="w-fit font-medium">Add a name</p>
+                      <p class="font-medium">Add a name</p>
                       <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
                     {/if}
                   </div>
