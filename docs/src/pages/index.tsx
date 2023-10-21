@@ -6,7 +6,7 @@ function HomepageHeader() {
   return (
     <header>
       <section className="text-center m-6 p-12 border border-red-400 rounded-[50px] bg-gray-100 dark:bg-immich-dark-gray">
-        <img src="img/immich-logo.svg" className="md:h-24 h-12 mb-2" />
+        <img src="img/immich-logo.svg" className="md:h-24 h-12 mb-2" alt="Immich logo" />
         <h1 className="md:text-6xl font-immich-title mb-10 text-immich-primary dark:text-immich-dark-primary">
           IMMICH
         </h1>
