@@ -17,7 +17,7 @@ class SharedLinkEditDto {
     this.allowUpload,
     this.description,
     this.expiresAt,
-    this.showExif,
+    this.showMetadata,
   });
 
   ///
@@ -52,7 +52,7 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? showExif;
+  bool? showMetadata;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
@@ -60,7 +60,7 @@ class SharedLinkEditDto {
      other.allowUpload == allowUpload &&
      other.description == description &&
      other.expiresAt == expiresAt &&
-     other.showExif == showExif;
+     other.showMetadata == showMetadata;
 
   @override
   int get hashCode =>
@@ -69,10 +69,10 @@ class SharedLinkEditDto {
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (showExif == null ? 0 : showExif!.hashCode);
+    (showMetadata == null ? 0 : showMetadata!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, showExif=$showExif]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, showMetadata=$showMetadata]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -96,10 +96,10 @@ class SharedLinkEditDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
-    if (this.showExif != null) {
-      json[r'showExif'] = this.showExif;
+    if (this.showMetadata != null) {
+      json[r'showMetadata'] = this.showMetadata;
     } else {
-    //  json[r'showExif'] = null;
+    //  json[r'showMetadata'] = null;
     }
     return json;
   }
@@ -116,7 +116,7 @@ class SharedLinkEditDto {
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', ''),
-        showExif: mapValueOfType<bool>(json, r'showExif'),
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
       );
     }
     return null;

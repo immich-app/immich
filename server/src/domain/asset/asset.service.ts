@@ -47,6 +47,7 @@ import {
   BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
+  SanitizedAssetResponseDto,
   TimeBucketResponseDto,
   mapAsset,
 } from './response-dto';
@@ -198,10 +199,17 @@ export class AssetService {
     return this.assetRepository.getTimeBuckets(dto);
   }
 
-  async getByTimeBucket(authUser: AuthUserDto, dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+  async getByTimeBucket(
+    authUser: AuthUserDto,
+    dto: TimeBucketAssetDto,
+  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
-    return assets.map(mapAsset);
+    if (authUser.isShowMetadata) {
+      return assets.map((asset) => mapAsset(asset));
+    } else {
+      return assets.map((asset) => mapAsset(asset, true));
+    }
   }
 
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
@@ -423,6 +431,7 @@ export class AssetService {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
       }
       return;
     }
@@ -442,6 +451,7 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
+    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

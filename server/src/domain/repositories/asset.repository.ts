@@ -14,6 +14,7 @@ export interface AssetSearchOptions {
   trashedBefore?: Date;
   type?: AssetType;
   order?: 'ASC' | 'DESC';
+  withDeleted?: boolean;
 }
 
 export interface LivePhotoSearchOptions {

@@ -34,7 +34,7 @@ export class SharedLinkCreateDto {
 
   @Optional()
   @IsBoolean()
-  showExif?: boolean = true;
+  showMetadata?: boolean = true;
 }
 
 export class SharedLinkEditDto {
@@ -51,5 +51,5 @@ export class SharedLinkEditDto {
   allowDownload?: boolean;
 
   @Optional()
-  showExif?: boolean;
+  showMetadata?: boolean;
 }

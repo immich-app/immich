@@ -25,6 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
 
@@ -37,6 +38,7 @@
   let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
+  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -325,7 +327,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-[60px]"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
@@ -347,7 +349,7 @@
     <slot />
 
     <!-- (optional) empty placeholder -->
-    {#if $assetStore.initialized && $assetStore.buckets.length === 0}
+    {#if isEmpty}
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>

@@ -1,10 +1,10 @@
 version: "3.8"
 
-# Compose file for dockerized end-to-end testing of the backend
+name: "immich-test-e2e"
 
 services:
-  immich-server-test:
-    image: immich-server-test
+  immich-server:
+    image: immich-server-dev:latest
     build:
       context: ../server
       dockerfile: Dockerfile
@@ -14,27 +14,20 @@ services:
       - ../server:/usr/src/app
       - /usr/src/app/node_modules
     environment:
-      - DB_HOSTNAME=immich-database-test
+      - DB_HOSTNAME=database
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=e2e_test
       - IMMICH_RUN_ALL_TESTS=true
     depends_on:
-      - immich-database-test
-    networks:
-      - immich-test-network
+      - database
 
-  immich-database-test:
-    container_name: immich-database-test
+  database:
     image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    command: -c fsync=off
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: e2e_test
-    networks:
-      - immich-test-network
     logging:
       driver: none
-
-networks:
-  immich-test-network:

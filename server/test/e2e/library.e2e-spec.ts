@@ -1,22 +1,14 @@
 import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import {
-  IMMICH_TEST_ASSET_PATH,
-  IMMICH_TEST_ASSET_TEMP_PATH,
-  createTestApp,
-  db,
-  restoreTempFolder,
-} from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
 import { errorStub, uuidStub } from '../fixtures';
 
 describe(`${LibraryController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
 
@@ -35,8 +27,12 @@ describe(`${LibraryController.name} (e2e)`, () => {
   };
 
   beforeAll(async () => {
-    app = await createTestApp(true);
-    server = app.getHttpServer();
+    [server] = await testApp.create({ jobs: true });
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
+    await restoreTempFolder();
   });
 
   beforeEach(async () => {
@@ -44,12 +40,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
-    await restoreTempFolder();
   });
 
   describe('GET /library', () => {

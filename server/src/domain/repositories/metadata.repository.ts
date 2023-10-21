@@ -14,7 +14,12 @@ export interface ReverseGeocodeResult {
   city: string | null;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength'> {
+export interface ExifDuration {
+  Value: number;
+  Scale?: number;
+}
+
+export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -22,10 +27,12 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength'> {
   MediaGroupUUID?: string;
   ImagePixelDepth?: string;
   FocalLength?: number;
+  Duration?: number | ExifDuration;
 }
 
 export interface IMetadataRepository {
   init(options: Partial<InitOptions>): Promise<void>;
+  teardown(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
   deleteCache(): Promise<void>;
   getExifTags(path: string): Promise<ImmichTags | null>;

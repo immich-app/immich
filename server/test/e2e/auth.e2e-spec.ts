@@ -1,5 +1,4 @@
 import { AuthController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import {
@@ -12,7 +11,7 @@ import {
   signupResponseStub,
   uuidStub,
 } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 const firstName = 'Immich';
@@ -21,13 +20,16 @@ const password = 'Password123';
 const email = 'admin@immich.app';
 
 describe(`${AuthController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let accessToken: string;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    await testApp.reset();
+    [server] = await testApp.create();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -35,11 +37,6 @@ describe(`${AuthController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     const response = await api.authApi.adminLogin(server);
     accessToken = response.accessToken;
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('POST /auth/admin-sign-up', () => {

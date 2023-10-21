@@ -1,9 +1,8 @@
-import { dataSource } from '@app/infra';
-
 import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { INestApplication, Logger } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { dataSource } from '@app/infra';
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import path from 'path';
 import { AppService } from '../src/microservices/app.service';
@@ -36,37 +35,47 @@ export const db = {
 
 let _handler: JobItemHandler = () => Promise.resolve();
 
-export async function createTestApp(runJobs = false, log = false): Promise<INestApplication> {
-  const moduleBuilder = Test.createTestingModule({
-    imports: [AppModule],
-    providers: [AppService],
-  })
-    .overrideProvider(IJobRepository)
-    .useValue({
-      addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
-      queue: (item: JobItem) => runJobs && _handler(item),
-      resume: jest.fn(),
-      empty: jest.fn(),
-      setConcurrency: jest.fn(),
-      getQueueStatus: jest.fn(),
-      getJobCounts: jest.fn(),
-      pause: jest.fn(),
-    } as IJobRepository);
-
-  const moduleFixture: TestingModule = await moduleBuilder.compile();
-
-  const app = moduleFixture.createNestApplication();
-  if (log) {
-    app.useLogger(new Logger());
-  } else {
-    app.useLogger(false);
-  }
-  await app.init();
-  const appService = app.get(AppService);
-  await appService.init();
-
-  return app;
+interface TestAppOptions {
+  jobs: boolean;
 }
+
+let app: INestApplication;
+
+export const testApp = {
+  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
+    const { jobs } = options || { jobs: false };
+
+    const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+      .overrideProvider(IJobRepository)
+      .useValue({
+        addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
+        queue: (item: JobItem) => jobs && _handler(item),
+        resume: jest.fn(),
+        empty: jest.fn(),
+        setConcurrency: jest.fn(),
+        getQueueStatus: jest.fn(),
+        getJobCounts: jest.fn(),
+        pause: jest.fn(),
+      } as IJobRepository)
+      .compile();
+
+    app = await moduleFixture.createNestApplication().init();
+
+    if (jobs) {
+      await app.get(AppService).init();
+    }
+
+    return [app.getHttpServer(), app];
+  },
+  reset: async () => {
+    await db.reset();
+  },
+  teardown: async () => {
+    await app.get(AppService).teardown();
+    await db.disconnect();
+    await app.close();
+  },
+};
 
 export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
 

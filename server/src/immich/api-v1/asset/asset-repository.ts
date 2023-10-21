@@ -172,6 +172,7 @@ export class AssetRepository implements IAssetRepository {
         deviceId,
         isVisible: true,
       },
+      withDeleted: true,
     });
 
     return items.map((asset) => asset.deviceAssetId);
@@ -205,6 +206,7 @@ export class AssetRepository implements IAssetRepository {
         deviceId: checkDuplicateAssetDto.deviceId,
         ownerId,
       },
+      withDeleted: true,
     });
     return assets.map((asset) => asset.deviceAssetId);
   }

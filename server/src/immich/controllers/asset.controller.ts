@@ -98,7 +98,7 @@ export class AssetController {
   @Authenticated({ isShared: true })
   @Get('time-bucket')
   getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+    return this.service.getByTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
