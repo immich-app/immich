@@ -76,7 +76,12 @@
         {/if}
 
         {#if user.isAdmin}
-          <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
+          <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}
+            aria-current={$page.url.pathname.includes('/admin')
+            ? 'page'
+            : null
+            }
+            >
             <div class="inline-flex items-center justify-center transition-colors dark:text-immich-dark-fg p-2 font-medium rounded-lg">
               <div class="hidden sm:block">
                   <span
