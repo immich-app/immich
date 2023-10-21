@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
@@ -209,8 +209,7 @@
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       if (personToBeMergedIn.name != personName && data.person.id === personToBeMergedIn.id) {
-        changeName();
-        invalidateAll();
+        refreshAssetGrid = !refreshAssetGrid;
         return;
       }
       goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
@@ -222,6 +221,7 @@
   const handleSuggestPeople = (person: PersonResponseDto) => {
     isEditingName = false;
     potentialMergePeople = [];
+    personName = person.name;
     personMerge1 = data.person;
     personMerge2 = person;
     viewMode = ViewMode.SUGGEST_MERGE;
@@ -404,7 +404,7 @@
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
-          <section class="flex w-96 h-14 place-items-center border-black">
+          <section class="flex w-96 place-items-center border-black">
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
@@ -414,7 +414,11 @@
                 on:input={searchPeople}
               />
             {:else}
-              <button on:click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+              <button
+                class="flex items-center justify-center"
+                title="Edit name"
+                on:click={() => (isEditingName = true)}
+              >
                 <ImageThumbnail
                   circle
                   shadow
@@ -423,19 +427,16 @@
                   widthStyle="3.375rem"
                   heightStyle="3.375rem"
                 />
-              </button>
-
-              <button
-                title="Edit name"
-                class="px-4 text-immich-primary dark:text-immich-dark-primary"
-                on:click={() => (isEditingName = true)}
-              >
-                {#if data.person.name}
-                  <p class="py-2 font-medium">{data.person.name}</p>
-                {:else}
-                  <p class="w-fit font-medium">Add a name</p>
-                  <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
-                {/if}
+                <div
+                  class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+                >
+                  {#if data.person.name}
+                    <p class="py-2 font-medium">{data.person.name}</p>
+                  {:else}
+                    <p class="w-fitfont-medium">Add a name</p>
+                    <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+                  {/if}
+                </div>
               </button>
             {/if}
           </section>
@@ -454,7 +455,7 @@
                   <div
                     class="flex {index === suggestedPeople.length - 1
                       ? 'rounded-b-lg'
-                      : 'border-b dark:border-immich-dark-gray'} place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                      : ''} border-t dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
                   >
                     <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
                       <ImageThumbnail

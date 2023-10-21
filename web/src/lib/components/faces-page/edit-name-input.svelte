@@ -16,8 +16,8 @@
 </script>
 
 <div
-  class="flex w-full place-items-center {suggestedPeople
-    ? 'rounded-t-lg border-b dark:border-immich-dark-gray'
+  class="flex w-full h-14 place-items-center {suggestedPeople
+    ? 'rounded-t-lg dark:border-immich-dark-gray'
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
   <ImageThumbnail
