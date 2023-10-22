@@ -5,6 +5,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
+import 'package:isar/isar.dart';
 
 class ThumbnailImage extends StatelessWidget {
   final Asset asset;
@@ -41,6 +42,8 @@ class ThumbnailImage extends StatelessWidget {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+    final isFromResponse = asset.id == Isar.autoIncrement;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -129,7 +132,9 @@ class ThumbnailImage extends StatelessWidget {
         width: 300,
         height: 300,
         child: Hero(
-          tag: asset.id + heroOffset,
+          tag: isFromResponse
+              ? '${asset.remoteId}-$heroOffset'
+              : asset.id + heroOffset,
           child: ImmichImage(
             asset,
             useGrayBoxPlaceholder: useGrayBoxPlaceholder,
