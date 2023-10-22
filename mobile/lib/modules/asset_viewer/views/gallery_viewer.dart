@@ -777,7 +777,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
                       onPlaying: () => isPlayingVideo.value = true,
-                      onPaused: () => isPlayingVideo.value = false,
+                      onPaused: () =>
+                          WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => isPlayingVideo.value = false,
+                      ),
                       asset: a,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
