@@ -245,31 +245,3 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
 }
-
-QueryBuilder<Asset, Asset, QAfterSortBy>? getAssetStackSelectionQuery(
-  WidgetRef ref,
-  Asset parentAsset,
-) {
-  final userId = ref.watch(currentUserProvider)?.isarId;
-  if (userId == null || !parentAsset.isRemote) {
-    return null;
-  }
-  return ref
-      .watch(dbProvider)
-      .assets
-      .where()
-      .remoteIdIsNotNull()
-      .filter()
-      .isArchivedEqualTo(false)
-      .ownerIdEqualTo(userId)
-      .not()
-      .remoteIdEqualTo(parentAsset.remoteId)
-      // Show existing stack children in selection page
-      .group(
-        (q) => q
-            .stackParentIdIsNull()
-            .or()
-            .stackParentIdEqualTo(parentAsset.remoteId),
-      )
-      .sortByFileCreatedAtDesc();
-}

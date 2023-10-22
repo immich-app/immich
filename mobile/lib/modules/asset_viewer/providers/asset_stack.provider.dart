@@ -46,5 +46,6 @@ final assetStackProvider =
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .stackParentIdEqualTo(asset.remoteId)
+      .sortByFileCreatedAtDesc()
       .findAll();
 });
