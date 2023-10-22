@@ -209,7 +209,10 @@ class AddToAlbumTitleRow extends StatelessWidget {
           ).tr(),
           TextButton.icon(
             onPressed: onCreateNewAlbum,
-            icon: const Icon(Icons.add),
+            icon: Icon(
+              Icons.add,
+              color: Theme.of(context).primaryColor,
+            ),
             label: Text(
               "common_create_new_album",
               style: TextStyle(

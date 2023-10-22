@@ -27,7 +27,6 @@ class SharedLinkEditPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const padding = 20.0;
     final themeData = Theme.of(context);
-    final isDarkMode = themeData.brightness == Brightness.dark;
     final descriptionController =
         useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
