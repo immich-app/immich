@@ -116,9 +116,7 @@ class AssetNotifier extends StateNotifier<bool> {
           if (remoteDeleted.any((e) => e.isLocal)) {
             // Force delete: Add all local assets including merged assets
             if (force) {
-              dbIds.addAll(
-                remoteDeleted.map((e) => e.id).toList(),
-              );
+              dbIds.addAll(remoteDeleted.map((e) => e.id));
               // Soft delete: Remove local Id from asset and trash it
             } else {
               dbUpdates.addAll(

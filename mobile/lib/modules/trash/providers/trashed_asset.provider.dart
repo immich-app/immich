@@ -39,7 +39,7 @@ class TrashNotifier extends StateNotifier<bool> {
 
       _ref
           .read(syncServiceProvider)
-          .handleRemoteAssetRemoval(idsToRemove.map((e) => e!).toList());
+          .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
     } catch (error, stack) {
       _log.severe("Cannot empty trash ${error.toString()}", error, stack);
     }
