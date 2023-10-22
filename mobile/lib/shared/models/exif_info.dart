@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
 
 part 'exif_info.g.dart';
 
@@ -165,7 +164,11 @@ double? _exposureTimeToSeconds(String? s) {
   }
   final parts = s.split("/");
   if (parts.length == 2) {
-    return parts[0].toDouble() / parts[1].toDouble();
+    final numerator = double.tryParse(parts[0]);
+    final denominator = double.tryParse(parts[1]);
+    if (numerator != null && denominator != null) {
+      return numerator / denominator;
+    }
   }
   return null;
 }
