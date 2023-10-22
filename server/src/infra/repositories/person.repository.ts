@@ -119,6 +119,7 @@ export class PersonRepository implements IPersonRepository {
       .where('face.personId = :personId', { personId })
       .andWhere('asset.isArchived = false')
       .andWhere('asset.deletedAt IS NULL')
+      .andWhere('asset.livePhotoVideoId IS NULL')
       .distinct(true)
       .getCount();
   }
