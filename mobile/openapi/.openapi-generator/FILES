@@ -149,6 +149,7 @@ doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
+doc/UpdateStackParentDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
@@ -314,6 +315,7 @@ lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
+lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
@@ -468,6 +470,7 @@ test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart
+test/update_stack_parent_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart

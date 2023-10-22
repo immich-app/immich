@@ -196,7 +196,7 @@ export class AssetService {
     const includeMetadata = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
     if (includeMetadata) {
-      const data = mapAsset(asset);
+      const data = mapAsset(asset, { withStack: true });
 
       if (data.ownerId !== authUser.id) {
         data.people = [];
@@ -208,7 +208,7 @@ export class AssetService {
 
       return data;
     } else {
-      return mapAsset(asset, true);
+      return mapAsset(asset, { stripMetadata: true, withStack: true });
     }
   }
 

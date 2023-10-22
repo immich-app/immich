@@ -1,11 +1,9 @@
 import { LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { IMMICH_TEST_ASSET_PATH, createTestApp, db, runAllTests } from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, db, runAllTests, testApp } from '@test/test-utils';
 
 describe(`Supported file formats (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
 
@@ -170,8 +168,11 @@ describe(`Supported file formats (e2e)`, () => {
   const testsToRun = formatTests.filter((formatTest) => formatTest.runTest);
 
   beforeAll(async () => {
-    app = await createTestApp(true);
-    server = app.getHttpServer();
+    [server] = await testApp.create({ jobs: true });
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -179,11 +180,6 @@ describe(`Supported file formats (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
     await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   it.each(testsToRun)('should import file of format $format', async (testedFormat) => {

@@ -5,6 +5,7 @@ export const newMetadataRepositoryMock = (): jest.Mocked<IMetadataRepository> =>
     deleteCache: jest.fn(),
     getExifTags: jest.fn(),
     init: jest.fn(),
+    teardown: jest.fn(),
     reverseGeocode: jest.fn(),
   };
 };

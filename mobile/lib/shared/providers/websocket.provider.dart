@@ -133,6 +133,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_delete', _handleOnAssetDelete);
         socket.on('on_asset_trash', _handleServerUpdates);
         socket.on('on_asset_restore', _handleServerUpdates);
+        socket.on('on_asset_update', _handleServerUpdates);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }

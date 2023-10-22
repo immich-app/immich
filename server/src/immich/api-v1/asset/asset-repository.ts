@@ -109,6 +109,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        stack: true,
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
@@ -131,6 +132,7 @@ export class AssetRepository implements IAssetRepository {
       relations: {
         exifInfo: true,
         tags: true,
+        stack: true,
       },
       skip: dto.skip || 0,
       order: {

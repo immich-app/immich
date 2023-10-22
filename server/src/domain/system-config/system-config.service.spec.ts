@@ -189,6 +189,15 @@ describe(SystemConfigService.name, () => {
       expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should allow underscores in the machine learning url', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
+      configMock.readFile.mockResolvedValue(Buffer.from(JSON.stringify(partialConfig)));
+
+      const config = await sut.getConfig();
+      expect(config.machineLearning.url).toEqual('immich_machine_learning');
+    });
+
     const tests = [
       { should: 'validate numbers', config: { ffmpeg: { crf: 'not-a-number' } } },
       { should: 'validate booleans', config: { oauth: { enabled: 'invalid' } } },
@@ -230,6 +239,9 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
           '{{y}}/{{y}}-{{WW}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
         ],
         secondOptions: ['s', 'ss'],
         weekOptions: ['W', 'WW'],

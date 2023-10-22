@@ -70,7 +70,7 @@
 {/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
-  <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title}>
+  <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     <div class="flex place-items-center gap-2" slot="buttons">
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
@@ -87,7 +87,7 @@
     </div>
 
     <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
-      <p class="font-medium text-gray-500/60 dark:text-gray-300/60">
+      <p class="font-medium text-gray-500/60 dark:text-gray-300/60 py-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>
       <EmptyPlaceholder

@@ -2,11 +2,10 @@ import { AlbumResponseDto, LoginResponseDto } from '@app/domain';
 import { AlbumController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { SharedLinkType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 const user1SharedUser = 'user1SharedUser';
@@ -17,7 +16,6 @@ const user2SharedLink = 'user2SharedLink';
 const user2NotShared = 'user2NotShared';
 
 describe(`${AlbumController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
@@ -27,9 +25,11 @@ describe(`${AlbumController.name} (e2e)`, () => {
   let user2Albums: AlbumResponseDto[];
 
   beforeAll(async () => {
-    app = await createTestApp();
+    [server] = await testApp.create();
+  });
 
-    server = app.getHttpServer();
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -37,24 +37,30 @@ describe(`${AlbumController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
 
-    await api.userApi.create(server, admin.accessToken, {
-      email: 'user1@immich.app',
-      password: 'Password123',
-      firstName: 'User 1',
-      lastName: 'Test',
-    });
-    user1 = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
+    await Promise.all([
+      api.userApi.create(server, admin.accessToken, {
+        email: 'user1@immich.app',
+        password: 'Password123',
+        firstName: 'User 1',
+        lastName: 'Test',
+      }),
+      api.userApi.create(server, admin.accessToken, {
+        email: 'user2@immich.app',
+        password: 'Password123',
+        firstName: 'User 2',
+        lastName: 'Test',
+      }),
+    ]);
 
-    await api.userApi.create(server, admin.accessToken, {
-      email: 'user2@immich.app',
-      password: 'Password123',
-      firstName: 'User 2',
-      lastName: 'Test',
-    });
-    user2 = await api.authApi.login(server, { email: 'user2@immich.app', password: 'Password123' });
+    [user1, user2] = await Promise.all([
+      api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' }),
+      api.authApi.login(server, { email: 'user2@immich.app', password: 'Password123' }),
+    ]);
 
     user1Asset = await api.assetApi.upload(server, user1.accessToken, 'example');
-    user1Albums = await Promise.all([
+
+    const albums = await Promise.all([
+      // user 1
       api.albumApi.create(server, user1.accessToken, {
         albumName: user1SharedUser,
         sharedWithUserIds: [user2.userId],
@@ -62,15 +68,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
       }),
       api.albumApi.create(server, user1.accessToken, { albumName: user1SharedLink, assetIds: [user1Asset.id] }),
       api.albumApi.create(server, user1.accessToken, { albumName: user1NotShared, assetIds: [user1Asset.id] }),
-    ]);
 
-    // add shared link to user1SharedLink album
-    await api.sharedLinkApi.create(server, user1.accessToken, {
-      type: SharedLinkType.ALBUM,
-      albumId: user1Albums[1].id,
-    });
-
-    user2Albums = await Promise.all([
+      // user 2
       api.albumApi.create(server, user2.accessToken, {
         albumName: user2SharedUser,
         sharedWithUserIds: [user1.userId],
@@ -80,16 +79,22 @@ describe(`${AlbumController.name} (e2e)`, () => {
       api.albumApi.create(server, user2.accessToken, { albumName: user2NotShared }),
     ]);
 
-    // add shared link to user2SharedLink album
-    await api.sharedLinkApi.create(server, user2.accessToken, {
-      type: SharedLinkType.ALBUM,
-      albumId: user2Albums[1].id,
-    });
-  });
+    user1Albums = albums.slice(0, 3);
+    user2Albums = albums.slice(3);
 
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
+    await Promise.all([
+      // add shared link to user1SharedLink album
+      api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: user1Albums[1].id,
+      }),
+
+      // add shared link to user2SharedLink album
+      api.sharedLinkApi.create(server, user2.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: user2Albums[1].id,
+      }),
+    ]);
   });
 
   describe('GET /album', () => {
