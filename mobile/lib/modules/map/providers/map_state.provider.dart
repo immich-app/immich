@@ -4,26 +4,24 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class MapStateNotifier extends StateNotifier<MapState> {
-  MapStateNotifier(this.appSettingsProvider)
+  MapStateNotifier(this._appSettingsProvider)
       : super(
           MapState(
-            isDarkTheme: appSettingsProvider
+            isDarkTheme: _appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapThemeMode),
-            showFavoriteOnly: appSettingsProvider
+            showFavoriteOnly: _appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
-            includeArchived: appSettingsProvider
+            includeArchived: _appSettingsProvider
                 .getSetting<bool>(AppSettingsEnum.mapIncludeArchived),
-            relativeTime: appSettingsProvider
+            relativeTime: _appSettingsProvider
                 .getSetting<int>(AppSettingsEnum.mapRelativeDate),
           ),
         );
 
-  final AppSettingsService appSettingsProvider;
-
-  bool get isDarkTheme => state.isDarkTheme;
+  final AppSettingsService _appSettingsProvider;
 
   void switchTheme(bool isDarkTheme) {
-    appSettingsProvider.setSetting(
+    _appSettingsProvider.setSetting(
       AppSettingsEnum.mapThemeMode,
       isDarkTheme,
     );
@@ -31,7 +29,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    appSettingsProvider.setSetting(
+    _appSettingsProvider.setSetting(
       AppSettingsEnum.mapShowFavoriteOnly,
       isFavoriteOnly,
     );
@@ -39,7 +37,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    appSettingsProvider.setSetting(
+    _appSettingsProvider.setSetting(
       AppSettingsEnum.mapIncludeArchived,
       isIncludeArchived,
     );
@@ -47,7 +45,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
   }
 
   void setRelativeTime(int relativeTime) {
-    appSettingsProvider.setSetting(
+    _appSettingsProvider.setSetting(
       AppSettingsEnum.mapRelativeDate,
       relativeTime,
     );
