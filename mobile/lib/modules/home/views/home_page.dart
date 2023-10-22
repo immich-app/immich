@@ -7,12 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
@@ -259,46 +257,15 @@ class HomePage extends HookConsumerWidget {
       void onStack() async {
         try {
           processing.value = true;
-          if (!selectionEnabledHook.value) {
+          if (!selectionEnabledHook.value || selection.value.length < 2) {
             return;
           }
-
-          final selectedAsset = selection.value.elementAt(0);
-
-          if (selection.value.length == 1) {
-            final stackChildren =
-                (await ref.read(assetStackProvider(selectedAsset).future))
-                    .toSet();
-            AssetSelectionPageResult? returnPayload =
-                await AutoRouter.of(context).push<AssetSelectionPageResult?>(
-              AssetSelectionRoute(
-                existingAssets: stackChildren,
-                canDeselect: true,
-                query: getAssetStackSelectionQuery(ref, selectedAsset),
-              ),
-            );
-
-            if (returnPayload != null) {
-              Set<Asset> selectedAssets = returnPayload.selectedAssets;
-              // Do not add itself as its stack child
-              selectedAssets.remove(selectedAsset);
-              final removedChildren = stackChildren.difference(selectedAssets);
-              final addedChildren = selectedAssets.difference(stackChildren);
-              await ref.read(assetStackServiceProvider).updateStack(
-                    selectedAsset,
-                    childrenToAdd: addedChildren.toList(),
-                    childrenToRemove: removedChildren.toList(),
-                  );
-            }
-          } else {
-            // Merge assets
-            selection.value.remove(selectedAsset);
-            final selectedAssets = selection.value;
-            await ref.read(assetStackServiceProvider).updateStack(
-                  selectedAsset,
-                  childrenToAdd: selectedAssets.toList(),
-                );
-          }
+          final parent = selection.value.elementAt(0);
+          selection.value.remove(parent);
+          await ref.read(assetStackServiceProvider).updateStack(
+                parent,
+                childrenToAdd: selection.value.toList(),
+              );
         } finally {
           processing.value = false;
           selectionEnabledHook.value = false;
