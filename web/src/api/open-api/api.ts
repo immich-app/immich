@@ -3084,6 +3084,12 @@ export interface SharedLinkEditDto {
      */
     'allowUpload'?: boolean;
     /**
+     * Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+     * @type {boolean}
+     * @memberof SharedLinkEditDto
+     */
+    'changeExpiryTime'?: boolean;
+    /**
      * 
      * @type {string}
      * @memberof SharedLinkEditDto

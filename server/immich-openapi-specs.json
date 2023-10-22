@@ -7902,6 +7902,10 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "changeExpiryTime": {
+            "description": "Few clients cannot send null to set the expiryTime to never.\nSetting this flag and not sending expiryAt is considered as null instead.\nClients that can send null values can ignore this.",
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           },
