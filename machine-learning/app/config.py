@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 1
     model_intra_op_threads: int = 2
-    max_batch_size: int = 8
+    max_batch_size: int = 1
     batch_timeout_s: float = 0.005
 
     class Config:

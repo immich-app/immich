@@ -76,8 +76,13 @@ async def predict(
 
     model = await load(await app.state.model_cache.get(model_name, model_type, **kwargs))
     model.configure(**kwargs)
-    batcher: Batcher = app.state.model_batcher.get(model_name, model_type, **kwargs)
-    outputs = await batcher.batch_process(element, run, model)
+
+    if settings.max_batch_size > 1:
+        batcher: Batcher = app.state.model_batcher.get(model_name, model_type, **kwargs)
+        outputs = await batcher.batch_process(element, run, model)
+    else:
+        outputs = await run(model, [element])
+
     return ORJSONResponse(outputs)
 
 
