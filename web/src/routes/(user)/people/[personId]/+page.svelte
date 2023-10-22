@@ -417,7 +417,7 @@
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
-          <section class="flex w-96 place-items-center border-black">
+          <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
@@ -445,8 +445,8 @@
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
                     {#if data.person.name}
-                      <p class="w-72 font-medium truncate">{data.person.name}</p>
-                      <p class="absolute w-full text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                      <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
+                      <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
                         {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
                       </p>
                     {:else}
