@@ -42,6 +42,8 @@ const responseDto: PersonResponseDto = {
   isHidden: false,
 };
 
+const assetCount = 3;
+
 const croppedFace = Buffer.from('Cropped Face');
 
 const detectFaceMock = {
@@ -728,6 +730,27 @@ describe(PersonService.name, () => {
       ]);
 
       expect(personMock.delete).not.toHaveBeenCalled();
+      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+    });
+  });
+  describe('getPersonAssetsCount', () => {
+    it('should get correct number of person', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getPersonAssetsCount.mockResolvedValue(assetCount);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).resolves.toEqual(3);
+      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+    });
+    it('should require person.read permission', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
+      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+    });
+    it('should throw an error when personId is invalid', async () => {
+      personMock.getPersonAssetsCount.mockResolvedValue(assetCount);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
   });
