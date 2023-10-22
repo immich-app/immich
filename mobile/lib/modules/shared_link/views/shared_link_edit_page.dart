@@ -234,15 +234,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
         ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
               "Copied to clipboard",
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
             ),
-            backgroundColor: themeData.dialogBackgroundColor,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
       });
@@ -267,6 +263,24 @@ class SharedLinkEditPage extends HookConsumerWidget {
               suffixIcon: IconButton(
                 onPressed: copyLinkToClipboard,
                 icon: const Icon(Icons.copy),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: ElevatedButton(
+                onPressed: () {
+                  AutoRouter.of(context).pop();
+                },
+                child: const Text(
+                  "Done",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).tr(),
               ),
             ),
           ),
@@ -295,6 +309,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       final serverUrl = getServerUrl();
       if (newLink != null && serverUrl != null) {
         newShareLink.value = "$serverUrl/share/${newLink.key}";
+        copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
           context: context,

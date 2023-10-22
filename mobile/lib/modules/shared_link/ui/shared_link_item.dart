@@ -83,15 +83,11 @@ class SharedLinkItem extends ConsumerWidget {
         ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
               "Copied to clipboard",
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
             ),
-            backgroundColor: themeData.dialogBackgroundColor,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
       });
