@@ -43,16 +43,7 @@ import {
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
-import Timeline from '../components/timeline';
-
-interface Item {
-  icon: string;
-  title: string;
-  description?: string;
-  release: string;
-  tag?: string;
-  date: Date;
-}
+import Timeline, { Item } from '../components/timeline';
 
 const items: Item[] = [
   {
