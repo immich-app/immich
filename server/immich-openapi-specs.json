@@ -3595,7 +3595,7 @@
         ]
       }
     },
-    "/person/{id}/controller": {
+    "/person/{id}/count": {
       "get": {
         "operationId": "getPersonAssetsCount",
         "parameters": [
