@@ -94,7 +94,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                 }
               : null,
         ),
-        if (!hasLocal)
+        if (!hasLocal && selectionAssetState.selectedCount > 1)
           ControlBoxButton(
             iconData: Icons.filter_none_rounded,
             label: "control_bottom_app_bar_stack".tr(),
