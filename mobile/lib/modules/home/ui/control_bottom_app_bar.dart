@@ -51,17 +51,17 @@ class ControlBottomAppBar extends ConsumerWidget {
 
     List<Widget> renderActionButtons() {
       return [
-        ControlBoxButton(
-          iconData: Icons.share_rounded,
-          label: "control_bottom_app_bar_share".tr(),
-          onPressed: enabled ? () => onShare(false) : null,
-        ),
         if (hasRemote)
           ControlBoxButton(
-            iconData: Icons.ios_share_rounded,
-            label: "control_bottom_app_bar_share_to".tr(),
-            onPressed: enabled ? () => onShare(true) : null,
+            iconData: Icons.share_rounded,
+            label: "control_bottom_app_bar_share".tr(),
+            onPressed: enabled ? () => onShare(false) : null,
           ),
+        ControlBoxButton(
+          iconData: Icons.ios_share_rounded,
+          label: "control_bottom_app_bar_share_to".tr(),
+          onPressed: enabled ? () => onShare(true) : null,
+        ),
         if (hasRemote)
           ControlBoxButton(
             iconData: Icons.archive,

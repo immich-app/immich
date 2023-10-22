@@ -108,10 +108,10 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onShareAssets(bool shareLocal) {
+        processing.value = true;
         if (shareLocal) {
           handleShareAssets(ref, context, selection.value.toList());
         } else {
-          processing.value = true;
           final ids = remoteOnlySelection().map((e) => e.remoteId!);
           AutoRouter.of(context)
               .push(SharedLinkEditRoute(assetsList: ids.toList()));
