@@ -40,17 +40,17 @@ export default function Timeline({ items }: Props): JSX.Element {
               ></div>
             </div>
             <Icon
-              className="z-10 bg-immich-primary rounded-full text-black relative top-[50%] left-[-3px] translate-y-[-50%] translate-x-[-50%] w-16 h-16 shadow-lg p-0.5"
+              className="z-10 bg-immich-primary border-2 border-solid rounded-full dark:text-black text-white relative top-[50%] left-[-3px] translate-y-[-50%] translate-x-[-50%] w-16 h-16 shadow-lg p-0.5"
               path={mdiCheckboxMarkedCircleOutline}
               size={1.25}
             />
-            <section className=" bg-immich-dark-gray border-2 shadow-lg rounded-2xl flex flex-col w-full gap-2 p-4 ml-4 my-2">
+            <section className=" dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-400 border-solid border shadow-lg rounded-2xl flex flex-col w-full gap-2 p-4 ml-4 my-2">
               <div className="m-0 text-lg flex w-full items-center justify-between gap-2">
                 <p className="m-0 items-start flex gap-2">
                   <Icon path={item.icon} size={1} />
                   <span>{item.title}</span>
                 </p>
-                <span className="text-immich-dark-primary">[{item.release}]</span>
+                <span className="dark:text-immich-dark-primary text-immich-primary">[{item.release}]</span>
               </div>
               <p className="m-0 text-sm">{item.description}</p>
             </section>
