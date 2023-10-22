@@ -10,7 +10,7 @@ String sanitizeUrl(String url) {
 }
 
 String? getServerUrl() {
-  final serverUrl = Store.tryGet(StoreKey.serverUrl);
+  final serverUrl = Store.tryGet(StoreKey.serverEndpoint);
   final serverUri = serverUrl != null ? Uri.tryParse(serverUrl) : null;
   if (serverUri == null) {
     return null;
