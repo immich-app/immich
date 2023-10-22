@@ -5,7 +5,7 @@ from aiocache.lock import OptimisticLock
 from aiocache.plugins import BasePlugin, TimingPlugin
 
 from ..schemas import ModelType
-from .base import InferenceModel
+from .base import InferenceModel, get_model_key
 
 
 class ModelCache:
@@ -46,7 +46,7 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
+        key = get_model_key(model_name, model_type, model_kwargs.get("mode", ""))
         async with OptimisticLock(self.cache, key) as lock:
             model = await self.cache.get(key)
             if model is None:

@@ -11,6 +11,7 @@ from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchF
 from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
+from app.models.batcher import Batcher, ModelBatcher
 
 from .config import log, settings
 from .models.cache import ModelCache
@@ -26,6 +27,7 @@ app = FastAPI()
 
 def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
+    app.state.model_batcher = ModelBatcher(max_size=settings.max_batch_size, timeout_s=settings.batch_timeout_s)
     log.info(
         (
             "Created in-memory cache with unloading "
@@ -62,9 +64,9 @@ async def predict(
     image: UploadFile | None = None,
 ) -> Any:
     if image is not None:
-        inputs: str | bytes = await image.read()
+        element: str | bytes = await image.read()
     elif text is not None:
-        inputs = text
+        element = text
     else:
         raise HTTPException(400, "Either image or text must be provided")
     try:
@@ -74,15 +76,16 @@ async def predict(
 
     model = await load(await app.state.model_cache.get(model_name, model_type, **kwargs))
     model.configure(**kwargs)
-    outputs = await run(model, inputs)
+    batcher: Batcher = app.state.model_batcher.get(model_name, model_type, **kwargs)
+    outputs = await batcher.batch_process(element, run, model)
     return ORJSONResponse(outputs)
 
 
-async def run(model: InferenceModel, inputs: Any) -> Any:
+async def run(model: InferenceModel, elements: list[Any]) -> Any:
     if app.state.thread_pool is None:
-        return model.predict(inputs)
+        return model.predict_batch(elements)
 
-    return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict, inputs)
+    return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict_batch, elements)
 
 
 async def load(model: InferenceModel) -> InferenceModel:

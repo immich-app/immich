@@ -12,6 +12,10 @@ from ..config import get_cache_dir, log, settings
 from ..schemas import ModelType
 
 
+def get_model_key(model_name: str, model_type: ModelType, mode: str = "") -> str:
+    return f"{model_name}{model_type.value}{mode}"
+
+
 class InferenceModel(ABC):
     _model_type: ModelType
 
@@ -65,14 +69,15 @@ class InferenceModel(ABC):
         self._load()
         self.loaded = True
 
-    def predict(self, inputs: Any, **model_kwargs: Any) -> Any:
+    def predict(self, element: Any) -> Any:
+        return self.predict_batch([element])[0]
+    
+    def predict_batch(self, inputs: list[Any]) -> list[Any]:
         self.load()
-        if model_kwargs:
-            self.configure(**model_kwargs)
-        return self._predict(inputs)
+        return self._predict_batch(inputs)
 
     @abstractmethod
-    def _predict(self, inputs: Any) -> Any:
+    def _predict_batch(self, inputs: list[Any]) -> Any:
         ...
 
     def configure(self, **model_kwargs: Any) -> None:

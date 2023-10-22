@@ -1,5 +1,7 @@
 from enum import StrEnum
+from typing import Any, TypeAlias
 
+import numpy as np
 from pydantic import BaseModel
 
 
@@ -31,3 +33,6 @@ class ModelType(StrEnum):
     IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
+
+
+ndarray: TypeAlias = np.ndarray[int, np.dtype[Any]]
