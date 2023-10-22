@@ -130,7 +130,9 @@
   "control_bottom_app_bar_delete": "Delete",
   "control_bottom_app_bar_favorite": "Favorite",
   "control_bottom_app_bar_share": "Share",
+  "control_bottom_app_bar_stack": "Stack",
   "control_bottom_app_bar_unarchive": "Unarchive",
+  "control_bottom_app_bar_upload": "Upload",
   "create_album_page_untitled": "Untitled",
   "create_shared_album_page_create": "Create",
   "create_shared_album_page_share": "Share",
@@ -275,6 +277,7 @@
   "setting_pages_app_bar_settings": "Settings",
   "settings_require_restart": "Please restart Immich to apply this setting",
   "share_add": "Add",
+  "share_done": "Done",
   "share_add_photos": "Add photos",
   "share_add_title": "Add a title",
   "share_create_album": "Create album",
@@ -337,5 +340,8 @@
   "trash_page_select_assets_btn": "Select assets",
   "trash_page_empty_trash_btn": "Empty trash",
   "trash_page_empty_trash_dialog_ok": "Ok",
-  "trash_page_empty_trash_dialog_content": "Do you want to empty your trashed assets? These items will be permanently removed from Immich"
+  "trash_page_empty_trash_dialog_content": "Do you want to empty your trashed assets? These items will be permanently removed from Immich",
+  "viewer_stack_use_as_main_asset": "Use as Main Asset",
+  "viewer_remove_from_stack": "Remove from Stack",
+  "viewer_unstack": "Un-Stack"
 }

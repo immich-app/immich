@@ -1673,6 +1673,41 @@
         ]
       }
     },
+    "/asset/stack/parent": {
+      "put": {
+        "operationId": "updateStackParent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStackParentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/statistics": {
       "get": {
         "operationId": "getAssetStats",
@@ -5696,6 +5731,13 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "removeParent": {
+            "type": "boolean"
+          },
+          "stackParentId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
@@ -5941,6 +5983,19 @@
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
+          "stack": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "stackCount": {
+            "type": "integer"
+          },
+          "stackParentId": {
+            "nullable": true,
+            "type": "string"
+          },
           "tags": {
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
@@ -5961,6 +6016,7 @@
         },
         "required": [
           "type",
+          "stackCount",
           "deviceAssetId",
           "deviceId",
           "ownerId",
@@ -8519,6 +8575,23 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateStackParentDto": {
+        "properties": {
+          "newParentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "oldParentId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldParentId",
+          "newParentId"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

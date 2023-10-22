@@ -42,9 +42,20 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
+  stackParentId?: string | null;
+  stack?: AssetResponseDto[];
+  @ApiProperty({ type: 'integer' })
+  stackCount!: number;
 }
 
-export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetResponseDto {
+export type AssetMapOptions = {
+  stripMetadata?: boolean;
+  withStack?: boolean;
+};
+
+export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
+  const { stripMetadata = false, withStack = false } = options;
+
   const sanitizedAssetResponse: SanitizedAssetResponseDto = {
     id: entity.id,
     type: entity.type,
@@ -87,6 +98,9 @@ export function mapAsset(entity: AssetEntity, stripMetadata = false): AssetRespo
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
     checksum: entity.checksum.toString('base64'),
+    stackParentId: entity.stackParentId,
+    stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
+    stackCount: entity.stack?.length ?? 0,
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,

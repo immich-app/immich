@@ -21,6 +21,7 @@ import {
   TimeBucketResponseDto,
   TrashAction,
   UpdateAssetDto as UpdateDto,
+  UpdateStackParentDto,
 } from '@app/domain';
 import {
   Body,
@@ -135,6 +136,12 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
+  }
+
+  @Put('stack/parent')
+  @HttpCode(HttpStatus.OK)
+  updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
+    return this.service.updateStackParent(authUser, dto);
   }
 
   @Put(':id')

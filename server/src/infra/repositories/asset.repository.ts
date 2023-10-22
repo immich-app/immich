@@ -112,6 +112,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        stack: true,
       },
       withDeleted: true,
     });
@@ -192,6 +193,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         library: true,
+        stack: true,
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
@@ -537,6 +539,12 @@ export class AssetRepository implements IAssetRepository {
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
     }
+
+    // Hide stack children only in main timeline
+    // Uncomment after adding support for stacked assets in web client
+    // if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
+    //   builder = builder.andWhere('asset.stackParent IS NULL');
+    // }
 
     return builder;
   }

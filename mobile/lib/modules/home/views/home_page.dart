@@ -7,11 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -36,7 +40,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionAssetState = useState(AssetState.remote);
+    final selectionAssetState = useState(const SelectionAssetState());
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
@@ -83,9 +87,8 @@ class HomePage extends HookConsumerWidget {
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
-        selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
-            ? AssetState.remote
-            : AssetState.local;
+        selectionAssetState.value =
+            SelectionAssetState.fromSelection(selectedAssets);
       }
 
       void onShareAssets() {
@@ -246,6 +249,55 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      void onStack() async {
+        try {
+          processing.value = true;
+          if (!selectionEnabledHook.value) {
+            return;
+          }
+
+          final selectedAsset = selection.value.elementAt(0);
+
+          if (selection.value.length == 1) {
+            final stackChildren =
+                (await ref.read(assetStackProvider(selectedAsset).future))
+                    .toSet();
+            AssetSelectionPageResult? returnPayload =
+                await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+              AssetSelectionRoute(
+                existingAssets: stackChildren,
+                canDeselect: true,
+                query: getAssetStackSelectionQuery(ref, selectedAsset),
+              ),
+            );
+
+            if (returnPayload != null) {
+              Set<Asset> selectedAssets = returnPayload.selectedAssets;
+              // Do not add itself as its stack child
+              selectedAssets.remove(selectedAsset);
+              final removedChildren = stackChildren.difference(selectedAssets);
+              final addedChildren = selectedAssets.difference(stackChildren);
+              await ref.read(assetStackServiceProvider).updateStack(
+                    selectedAsset,
+                    childrenToAdd: addedChildren.toList(),
+                    childrenToRemove: removedChildren.toList(),
+                  );
+            }
+          } else {
+            // Merge assets
+            selection.value.remove(selectedAsset);
+            final selectedAssets = selection.value;
+            await ref.read(assetStackServiceProvider).updateStack(
+                  selectedAsset,
+                  childrenToAdd: selectedAssets.toList(),
+                );
+          }
+        } finally {
+          processing.value = false;
+          selectionEnabledHook.value = false;
+        }
+      }
+
       Future<void> refreshAssets() async {
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
@@ -322,6 +374,7 @@ class HomePage extends HookConsumerWidget {
                                   currentUser.memoryEnabled!)
                               ? const MemoryLane()
                               : const SizedBox(),
+                          showStack: true,
                         ),
                   error: (error, _) => Center(child: Text(error.toString())),
                   loading: buildLoadingIndicator,
@@ -339,6 +392,7 @@ class HomePage extends HookConsumerWidget {
                 onUpload: onUpload,
                 enabled: !processing.value,
                 selectionAssetState: selectionAssetState.value,
+                onStack: onStack,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],

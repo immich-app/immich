@@ -16,6 +16,8 @@ class AssetBulkUpdateDto {
     this.ids = const [],
     this.isArchived,
     this.isFavorite,
+    this.removeParent,
+    this.stackParentId,
   });
 
   List<String> ids;
@@ -36,21 +38,41 @@ class AssetBulkUpdateDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? removeParent;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? stackParentId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
      other.ids == ids &&
      other.isArchived == isArchived &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.removeParent == removeParent &&
+     other.stackParentId == stackParentId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (removeParent == null ? 0 : removeParent!.hashCode) +
+    (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite]';
+  String toString() => 'AssetBulkUpdateDto[ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,6 +86,16 @@ class AssetBulkUpdateDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
     //  json[r'isFavorite'] = null;
+    }
+    if (this.removeParent != null) {
+      json[r'removeParent'] = this.removeParent;
+    } else {
+    //  json[r'removeParent'] = null;
+    }
+    if (this.stackParentId != null) {
+      json[r'stackParentId'] = this.stackParentId;
+    } else {
+    //  json[r'stackParentId'] = null;
     }
     return json;
   }
@@ -81,6 +113,8 @@ class AssetBulkUpdateDto {
             : const [],
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        removeParent: mapValueOfType<bool>(json, r'removeParent'),
+        stackParentId: mapValueOfType<String>(json, r'stackParentId'),
       );
     }
     return null;

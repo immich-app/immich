@@ -51,6 +51,7 @@ import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
 import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
+import 'package:isar/isar.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 part 'router.gr.dart';

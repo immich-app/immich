@@ -4,9 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
+import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
@@ -19,11 +19,12 @@ class ControlBottomAppBar extends ConsumerWidget {
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
+  final void Function() onStack;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
   final bool enabled;
-  final AssetState selectionAssetState;
+  final SelectionAssetState selectionAssetState;
 
   const ControlBottomAppBar({
     Key? key,
@@ -36,19 +37,24 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
-    this.selectionAssetState = AssetState.remote,
+    required this.onStack,
+    this.selectionAssetState = const SelectionAssetState(),
     this.enabled = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    var hasRemote = selectionAssetState == AssetState.remote;
+    var hasRemote =
+        selectionAssetState.hasRemote || selectionAssetState.hasMerged;
+    var hasLocal = selectionAssetState.hasLocal;
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     Widget renderActionButtons() {
-      return Row(
+      return Wrap(
+        spacing: 10,
+        runSpacing: 15,
         children: [
           ControlBoxButton(
             iconData: Platform.isAndroid
@@ -92,7 +98,7 @@ class ControlBottomAppBar extends ConsumerWidget {
           if (!hasRemote)
             ControlBoxButton(
               iconData: Icons.backup_outlined,
-              label: "Upload",
+              label: "control_bottom_app_bar_upload".tr(),
               onPressed: enabled
                   ? () => showDialog(
                         context: context,
@@ -104,6 +110,12 @@ class ControlBottomAppBar extends ConsumerWidget {
                       )
                   : null,
             ),
+          if (!hasLocal)
+            ControlBoxButton(
+              iconData: Icons.filter_none_rounded,
+              label: "control_bottom_app_bar_stack".tr(),
+              onPressed: enabled ? onStack : null,
+            ),
         ],
       );
     }
@@ -111,7 +123,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     return DraggableScrollableSheet(
       initialChildSize: hasRemote ? 0.30 : 0.18,
       minChildSize: 0.18,
-      maxChildSize: hasRemote ? 0.57 : 0.18,
+      maxChildSize: hasRemote ? 0.60 : 0.18,
       snap: true,
       builder: (
         BuildContext context,
