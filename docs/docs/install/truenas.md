@@ -102,6 +102,7 @@ Click **Update** to save changes.
 TrueNAS automatically updates, recreates, and redeploys the Immich container with the updated environment variables.
 
 ## Updating the App
+
 When updates become available, SCALE alerts and provides easy updates.
 To update the app to the latest version, click **Update** on the **Application Info** widget from the **Installed Applications** screen.
 
