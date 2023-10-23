@@ -318,6 +318,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
+ - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)

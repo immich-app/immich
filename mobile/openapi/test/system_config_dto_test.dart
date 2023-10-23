@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigThemeDto theme
+    test('to test the property `theme`', () async {
+      // TODO
+    });
+
     // SystemConfigThumbnailDto thumbnail
     test('to test the property `thumbnail`', () async {
       // TODO

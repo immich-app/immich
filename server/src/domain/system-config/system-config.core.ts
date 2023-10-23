@@ -114,6 +114,9 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
     days: 30,
   },
+  theme: {
+    customCss: '',
+  },
 });
 
 export enum FeatureFlag {

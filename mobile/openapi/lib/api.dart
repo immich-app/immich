@@ -163,6 +163,7 @@ part 'model/system_config_password_login_dto.dart';
 part 'model/system_config_reverse_geocoding_dto.dart';
 part 'model/system_config_storage_template_dto.dart';
 part 'model/system_config_template_storage_option_dto.dart';
+part 'model/system_config_theme_dto.dart';
 part 'model/system_config_thumbnail_dto.dart';
 part 'model/system_config_trash_dto.dart';
 part 'model/tag_response_dto.dart';

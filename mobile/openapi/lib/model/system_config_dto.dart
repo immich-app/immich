@@ -21,6 +21,7 @@ class SystemConfigDto {
     required this.passwordLogin,
     required this.reverseGeocoding,
     required this.storageTemplate,
+    required this.theme,
     required this.thumbnail,
     required this.trash,
   });
@@ -41,6 +42,8 @@ class SystemConfigDto {
 
   SystemConfigStorageTemplateDto storageTemplate;
 
+  SystemConfigThemeDto theme;
+
   SystemConfigThumbnailDto thumbnail;
 
   SystemConfigTrashDto trash;
@@ -55,6 +58,7 @@ class SystemConfigDto {
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
+     other.theme == theme &&
      other.thumbnail == thumbnail &&
      other.trash == trash;
 
@@ -69,11 +73,12 @@ class SystemConfigDto {
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
+    (theme.hashCode) +
     (thumbnail.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -85,6 +90,7 @@ class SystemConfigDto {
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'theme'] = this.theme;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
     return json;
@@ -106,6 +112,7 @@ class SystemConfigDto {
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
       );
@@ -163,6 +170,7 @@ class SystemConfigDto {
     'passwordLogin',
     'reverseGeocoding',
     'storageTemplate',
+    'theme',
     'thumbnail',
     'trash',
   };
