@@ -38,6 +38,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
 // ignore: must_be_immutable
@@ -86,6 +87,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
+    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+    final isFromResponse = currentAsset.id == Isar.autoIncrement;
 
     Asset asset() => stackIndex.value == -1
         ? currentAsset
@@ -752,7 +755,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: a.id + heroOffset,
+                      tag: isFromResponse
+                          ? '${a.remoteId}-$heroOffset'
+                          : a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
@@ -769,7 +774,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: a.id + heroOffset,
+                      tag: isFromResponse
+                          ? '${a.remoteId}-$heroOffset'
+                          : a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
@@ -777,7 +784,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
                       onPlaying: () => isPlayingVideo.value = true,
-                      onPaused: () => isPlayingVideo.value = false,
+                      onPaused: () =>
+                          WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => isPlayingVideo.value = false,
+                      ),
                       asset: a,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
