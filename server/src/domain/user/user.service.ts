@@ -45,7 +45,7 @@ export class UserService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
-    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
+    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
   }
 
   async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {

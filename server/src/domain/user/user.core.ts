@@ -15,12 +15,30 @@ import { ICryptoRepository, ILibraryRepository, IUserRepository, UserListFilter 
 
 const SALT_ROUNDS = 10;
 
+let instance: UserCore | null;
+
 export class UserCore {
-  constructor(
-    private userRepository: IUserRepository,
-    private libraryRepository: ILibraryRepository,
+  private constructor(
     private cryptoRepository: ICryptoRepository,
+    private libraryRepository: ILibraryRepository,
+    private userRepository: IUserRepository,
   ) {}
+
+  static create(
+    cryptoRepository: ICryptoRepository,
+    libraryRepository: ILibraryRepository,
+    userRepository: IUserRepository,
+  ) {
+    if (!instance) {
+      instance = new UserCore(cryptoRepository, libraryRepository, userRepository);
+    }
+
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {
