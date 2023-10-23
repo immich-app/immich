@@ -62,6 +62,13 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordion
+        title="Custom Stylesheets"
+        subtitle="Manage the custom stylesheets for the Immich web interface"
+      >
+        <StylesheetsSettings disabled={$featureFlags.configFile} stylesheetsConfig={configs.stylesheets} />
+      </SettingAccordion>
+
+      <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
@@ -110,13 +117,6 @@
         subtitle="Manage the resolution and encoding information of the video files"
       >
         <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
-      </SettingAccordion>
-
-      <SettingAccordion
-        title="Custom Stylesheets"
-        subtitle="Manage the custom stylesheets for the Immich web interface"
-      >
-        <StylesheetsSettings disabled={$featureFlags.configFile} stylesheetsConfig={configs.stylesheets} />
       </SettingAccordion>
     </section>
   </section>
