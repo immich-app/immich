@@ -7,7 +7,7 @@ sidebar_position: 80
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
 
-**Please report issues to the corresponding [Github Repository][github].**
+**Please report issues to the corresponding [Github Repository](https://github.com/truenas/charts/tree/master/community/immich).**
 :::
 
 Immich can easily be installed on TrueNAS SCALE via the **Community** train application.
