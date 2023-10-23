@@ -10,8 +10,6 @@ import {
   newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
@@ -25,8 +23,6 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
-  IMoveRepository,
-  IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -165,8 +161,6 @@ describe(AssetService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
@@ -181,21 +175,9 @@ describe(AssetService.name, () => {
     communicationMock = newCommunicationRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
-    moveMock = newMoveRepositoryMock();
-    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    sut = new AssetService(
-      accessMock,
-      assetMock,
-      cryptoMock,
-      jobMock,
-      configMock,
-      moveMock,
-      personMock,
-      storageMock,
-      communicationMock,
-    );
+    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock, communicationMock);
 
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)

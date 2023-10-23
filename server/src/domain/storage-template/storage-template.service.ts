@@ -52,7 +52,7 @@ export class StorageTemplateService {
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
     this.configCore.config$.subscribe((config) => this.onConfig(config));
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -99,7 +99,7 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly || asset.isExternal || this.storageCore.isAndroidMotionPath(asset.originalPath)) {
+    if (asset.isReadOnly || asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;
@@ -131,7 +131,7 @@ export class StorageTemplateService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = this.storageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+      const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
