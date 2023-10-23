@@ -36,6 +36,7 @@ To install the **Immich** application, go to **Apps**, click **Discover Apps**, 
 src={require('./img/truenas01.png').default}
 width="50%"
 alt="Immich App Widget"
+className="border rounded-xl"
 />
 
 Click on the widget to open the **Immich** application details screen.
@@ -44,6 +45,7 @@ Click on the widget to open the **Immich** application details screen.
 src={require('./img/truenas02.png').default}
 width="100%"
 alt="Immich App Details Screen"
+className="border rounded-xl"
 />
 
 Click **Install** to open the Immich application configuration screen.
@@ -55,6 +57,7 @@ To find specific fields click in the **Search Input Fields** search field, scrol
 src={require('./img/truenas03.png').default}
 width="50%"
 alt="Install Immich Screen"
+className="border rounded-xl"
 />
 
 Accept the default values in **Application Name** and **Version**.
@@ -79,6 +82,7 @@ When the installation completes it changes to **Running**.
 src={require('./img/truenas04.png').default}
 width="100%"
 alt="Immich Installed"
+className="border rounded-xl"
 />
 
 Click **Web Portal** on the **Application Info** widget to open the Immich web interface to set up your account and begin uploading photos.
@@ -122,6 +126,7 @@ You can accept the defaults in the **Immich Configuration** settings, or enter t
 src={require('./img/truenas05.png').default}
 width="100%"
 alt="Configuration Settings"
+className="border rounded-xl"
 />
 
 Accept the default setting in **Timezone** or change to match your local timezone.
@@ -141,6 +146,7 @@ To change the port numbers, enter a number within the range 9000-65535.
 src={require('./img/truenas06.png').default}
 width="100%"
 alt="Networking Settings"
+className="border rounded-xl"
 />
 
 ### Storage Settings
@@ -151,6 +157,7 @@ You can install Immich using the default setting **ixVolume (dataset created aut
 src={require('./img/truenas07.png').default}
 width="100%"
 alt="Configure Storage ixVolumes"
+className="border rounded-xl"
 />
 
 Select **Host Path (Path that already exists on the system)** to browse to and select the datasets.
@@ -159,6 +166,7 @@ Select **Host Path (Path that already exists on the system)** to browse to and s
 src={require('./img/truenas08.png').default}
 width="100%"
 alt="Configure Storage Host Paths"
+className="border rounded-xl"
 />
 
 ### Resource Configuration Settings
@@ -170,6 +178,7 @@ By default, this application is limited to use no more than 4 CPU cores and 8 Gi
 src={require('./img/truenas09.png').default}
 width="100%"
 alt="Resource Limits"
+className="border rounded-xl"
 />
 
 To customize the CPU and memory allocated to the container Immich uses, enter new CPU values as a plain integer value followed by the suffix m (milli).
