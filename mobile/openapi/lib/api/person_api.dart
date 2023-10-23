@@ -166,13 +166,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/count' operation and returns the [Response].
+  /// Performs an HTTP 'GET /person/{id}/statistics' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonAssetsCountWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/count'
+    final path = r'/person/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

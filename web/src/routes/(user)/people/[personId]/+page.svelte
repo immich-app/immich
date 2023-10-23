@@ -200,7 +200,7 @@
       const result = await api.personApi.getPersonAssetsCount({
         id: data.person.id,
       });
-      numberOfAssets = result.data;
+      numberOfAssets = result.data.assets;
     } catch (error) {
       handleError(error, "Can't update the asset count");
     }
@@ -471,9 +471,10 @@
               {:else}
                 {#each suggestedPeople as person, index (person.id)}
                   <div
-                    class="flex {index === suggestedPeople.length - 1
+                    class="flex border-t dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700 {index ===
+                    suggestedPeople.length - 1
                       ? 'rounded-b-lg'
-                      : ''} border-t dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                      : ''}"
                   >
                     <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
                       <ImageThumbnail

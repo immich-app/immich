@@ -11860,7 +11860,7 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         getPersonAssetsCount: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPersonAssetsCount', 'id', id)
-            const localVarPath = `/person/{id}/count`
+            const localVarPath = `/person/{id}/statistics`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
