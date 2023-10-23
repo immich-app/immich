@@ -54,7 +54,7 @@ To find specific fields click in the **Search Input Fields** search field, scrol
 <img
 src={require('./img/truenas03.png').default}
 width="50%"
-alt=Install Immich Screen"
+alt="Install Immich Screen"
 />
 
 Accept the default values in **Application Name** and **Version**.
