@@ -1,6 +1,5 @@
-import { text } from '@sveltejs/kit';
-import type { ImmichApi } from '../../api/api';
-export const GET = async ({ locals: { api } }: { locals: { api: ImmichApi } }) => {
+import { RequestHandler, text } from '@sveltejs/kit';
+export const GET = (async ({ locals: { api } }) => {
   const { css } = await api.systemConfigApi.getConfig().then((res) => res.data.stylesheets);
   return text(css);
-};
+}) satisfies RequestHandler;
