@@ -2,6 +2,7 @@ import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { UserResponseDto, mapUser } from '../user';
+import { AlbumAssetCount } from '..';
 
 export class AlbumResponseDto {
   id!: string;
@@ -22,6 +23,19 @@ export class AlbumResponseDto {
   startDate?: Date;
   endDate?: Date;
 }
+
+export class AlbumsForPersonResponseDto {
+  albumId!: string;
+  assetCount!: number;
+}
+
+export function mapAlbumCount(entity: AlbumAssetCount): AlbumsForPersonResponseDto {
+  return {
+    albumId: entity.albumId,
+    assetCount: entity.assetCount,
+  };
+}
+
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];

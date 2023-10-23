@@ -13,8 +13,8 @@ const config = {
     // connect to a remote backend during web-only development
     proxy: {
       '/api': {
-        target: process.env.PUBLIC_IMMICH_SERVER_URL,
-        secure: true,
+        target: 'http://52.30.150.127:2283/api',
+        secure: false,
         changeOrigin: true,
         logLevel: 'debug',
         rewrite: (path) => path.replace(/^\/api/, ''),

@@ -1,0 +1,141 @@
+diff --git a/server/src/domain/album/album-response.dto.ts b/server/src/domain/album/album-response.dto.ts
+index 9f0e134c..134efb0b 100644
+--- a/server/src/domain/album/album-response.dto.ts
++++ b/server/src/domain/album/album-response.dto.ts
+@@ -2,6 +2,7 @@ import { AlbumEntity } from '@app/infra/entities';
+ import { ApiProperty } from '@nestjs/swagger';
+ import { AssetResponseDto, mapAsset } from '../asset';
+ import { UserResponseDto, mapUser } from '../user';
++import { AlbumAssetCount } from '..';
+ 
+ export class AlbumResponseDto {
+   id!: string;
+@@ -23,6 +24,19 @@ export class AlbumResponseDto {
+   endDate?: Date;
+ }
+ 
++export class AlbumsForPersonResponseDto {
++  albumId!: string;
++  assetCount!: number;
++}
++
++export function mapAlbumCount(entity: AlbumAssetCount): AlbumsForPersonResponseDto {
++  return {
++    albumId: entity.albumId,
++    assetCount: entity.assetCount,
++  };
++}
++
++
+ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumResponseDto => {
+   const sharedUsers: UserResponseDto[] = [];
+ 
+diff --git a/server/src/domain/person/person.service.ts b/server/src/domain/person/person.service.ts
+index 162ab8fd..fd9e4833 100644
+--- a/server/src/domain/person/person.service.ts
++++ b/server/src/domain/person/person.service.ts
+@@ -36,6 +36,7 @@ import {
+   PersonUpdateDto,
+   mapPerson,
+ } from './person.dto';
++import { AlbumsForPersonResponseDto, mapAlbumCount } from '..';
+ 
+ @Injectable()
+ export class PersonService {
+@@ -100,6 +101,12 @@ export class PersonService {
+     return assets.map((asset) => mapAsset(asset));
+   }
+ 
++  async getAlbums(authUser: AuthUserDto, id: string): Promise<AlbumsForPersonResponseDto[]> {
++    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
++    const albums = await this.repository.getAlbums(id);
++    return albums.map((album) => mapAlbumCount(album));
++  }
++
+   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
+     let person = await this.findOrFail(id);
+diff --git a/server/src/domain/repositories/person.repository.ts b/server/src/domain/repositories/person.repository.ts
+index d39b4468..e4749967 100644
+--- a/server/src/domain/repositories/person.repository.ts
++++ b/server/src/domain/repositories/person.repository.ts
+@@ -1,4 +1,5 @@
+ import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
++import { AlbumAssetCount } from '.';
+ export const IPersonRepository = 'IPersonRepository';
+ 
+ export interface PersonSearchOptions {
+@@ -27,6 +28,7 @@ export interface IPersonRepository {
+   getAssets(personId: string): Promise<AssetEntity[]>;
+   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
+   reassignFaces(data: UpdateFacesData): Promise<number>;
++  getAlbums(personId: string): Promise<AlbumAssetCount[]>;
+ 
+   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+diff --git a/server/src/immich/controllers/person.controller.ts b/server/src/immich/controllers/person.controller.ts
+index db4d378f..a1a30747 100644
+--- a/server/src/immich/controllers/person.controller.ts
++++ b/server/src/immich/controllers/person.controller.ts
+@@ -1,4 +1,5 @@
+ import {
++  AlbumsForPersonResponseDto,
+   AssetResponseDto,
+   AuthUserDto,
+   BulkIdResponseDto,
+@@ -75,4 +76,10 @@ export class PersonController {
+   ): Promise<BulkIdResponseDto[]> {
+     return this.service.mergePerson(authUser, id, dto);
+   }
++
++  @Get(':id/albums')
++  getPersonAlbums(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AlbumsForPersonResponseDto[]> {
++    return this.service.getAlbums(authUser, id);
++  }
++
+ }
+diff --git a/server/src/infra/repositories/person.repository.ts b/server/src/infra/repositories/person.repository.ts
+index d651b338..56f0358a 100644
+--- a/server/src/infra/repositories/person.repository.ts
++++ b/server/src/infra/repositories/person.repository.ts
+@@ -1,11 +1,12 @@
+-import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
++import { AlbumAssetCount, AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
+ import { InjectRepository } from '@nestjs/typeorm';
+ import { In, Repository } from 'typeorm';
+-import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
++import { AlbumEntity, AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
+ 
+ export class PersonRepository implements IPersonRepository {
+   constructor(
+     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
++    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
+     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
+     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
+   ) {}
+@@ -106,6 +107,25 @@ export class PersonRepository implements IPersonRepository {
+       .getMany();
+   }
+ 
++  async getAlbums(personId: string): Promise<AlbumAssetCount[]> {
++    const countByAlbums = await this.albumRepository
++    .createQueryBuilder('album')
++    .select('album.id')
++    .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
++    .innerJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
++    .innerJoin('asset_faces', 'asset_faces', 'asset_faces.assetId = albums_assets.assetId')
++    .innerJoin('person', 'person', 'asset_faces.personId = person.id')
++    .where('person.id = :personId', { personId })
++    .groupBy('person.id, album.name')
++    .orderBy('person.id, album.name')
++    .getRawMany();
++
++    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
++      albumId: albumCount['album_id'],
++      assetCount: Number(albumCount['asset_count']),
++    }));
++  }
++
+   getAssets(personId: string): Promise<AssetEntity[]> {
+     return this.assetRepository.find({
+       where: {

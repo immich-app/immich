@@ -36,6 +36,7 @@ import {
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
+import { AlbumsForPersonResponseDto, mapAlbumCount } from '..';
 
 @Injectable()
 export class PersonService {
@@ -98,6 +99,12 @@ export class PersonService {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     const assets = await this.repository.getAssets(id);
     return assets.map((asset) => mapAsset(asset));
+  }
+
+  async getAlbums(authUser: AuthUserDto, id: string): Promise<AlbumsForPersonResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    const albums = await this.repository.getAlbums(id);
+    return albums.map((album) => mapAlbumCount(album));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {

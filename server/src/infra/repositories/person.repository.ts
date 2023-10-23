@@ -1,11 +1,12 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
+import { AlbumAssetCount, AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
@@ -104,6 +105,25 @@ export class PersonRepository implements IPersonRepository {
       .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
       .limit(20)
       .getMany();
+  }
+
+  async getAlbums(personId: string): Promise<AlbumAssetCount[]> {
+    const countByAlbums = await this.albumRepository
+    .createQueryBuilder('album')
+    .select('album.id')
+    .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
+    .innerJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
+    .innerJoin('asset_faces', 'asset_faces', 'asset_faces.assetId = albums_assets.assetId')
+    .innerJoin('person', 'person', 'asset_faces.personId = person.id')
+    .where('person.id = :personId', { personId })
+    .groupBy('person.id, album.name')
+    .orderBy('person.id, album.name')
+    .getRawMany();
+
+    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
+      albumId: albumCount['album_id'],
+      assetCount: Number(albumCount['asset_count']),
+    }));
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {
