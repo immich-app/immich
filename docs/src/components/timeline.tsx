@@ -1,6 +1,7 @@
 import React from 'react';
 import Icon from '@mdi/react';
 import { mdiCheckboxMarkedCircleOutline } from '@mdi/js';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
 export interface Item {
   icon: string;
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export default function Timeline({ items }: Props): JSX.Element {
+  const isBrowser = useIsBrowser();
+
   return (
     <ul className="flex flex-col pl-4">
       {items.map((item, index) => {
@@ -35,7 +38,7 @@ export default function Timeline({ items }: Props): JSX.Element {
         return (
           <li key={index} className="flex min-h-24 w-[700px] max-w-[90vw]">
             <div className="flex justify-start w-36 mr-8 items-center dark:text-immich-dark-primary text-immich-primary">
-              {item.date.toLocaleDateString(navigator.language)}
+              {isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}
             </div>
             <div className={`${isFirst && 'relative top-[50%]'} ${isLast && 'relative bottom-[50%]'}`}>
               <div
