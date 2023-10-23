@@ -80,7 +80,7 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
     this.configCore.config$.subscribe(() => this.init());
   }
 
@@ -294,7 +294,7 @@ export class MetadataService {
       });
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      const motionPath = this.storageCore.getAndroidMotionPath(asset);
+      const motionPath = StorageCore.getAndroidMotionPath(asset);
       this.storageCore.ensureFolders(motionPath);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);

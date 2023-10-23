@@ -10,8 +10,6 @@ import {
   ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
-  IMoveRepository,
-  IPersonRepository,
   IStorageRepository,
   IUserRepository,
 } from '../repositories';
@@ -30,7 +28,6 @@ import { UserCore } from './user.core';
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
-  private storageCore: StorageCore;
   private userCore: UserCore;
 
   constructor(
@@ -39,12 +36,9 @@ export class UserService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
   }
 
@@ -171,11 +165,11 @@ export class UserService {
     this.logger.log(`Deleting user: ${user.id}`);
 
     const folders = [
-      this.storageCore.getLibraryFolder(user),
-      this.storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
-      this.storageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
-      this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),
-      this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, user.id),
+      StorageCore.getLibraryFolder(user),
+      StorageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
+      StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+      StorageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),
+      StorageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, user.id),
     ];
 
     for (const folder of folders) {
