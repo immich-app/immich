@@ -67,6 +67,7 @@
 <svelte:head>
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/custom.css" />
   <meta name="theme-color" content="currentColor" />
   <FaviconHeader />
   <AppleHeader />
