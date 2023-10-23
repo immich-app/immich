@@ -77,7 +77,7 @@ When the installation completes it changes to **Running**.
 
 <img
 src={require('./img/truenas04.png').default}
-width="50%"
+width="100%"
 alt="Immich Installed"
 />
 
