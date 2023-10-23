@@ -20,6 +20,7 @@ docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > "/path/to/back
 docker-compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
 docker-compose pull     # Update to latest version of Immich (if desired)
 docker-compose create   # Create Docker containers for Immich apps without running them.
+docker network create immich-app_default     # Create a docker network 
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gunzip < "/path/to/backup/dump.sql.gz" | docker exec -i immich_postgres psql -U postgres -d immich    # Restore Backup
