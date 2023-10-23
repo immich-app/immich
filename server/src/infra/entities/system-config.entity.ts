@@ -90,6 +90,8 @@ export enum SystemConfigKey {
 
   TRASH_ENABLED = 'trash.enabled',
   TRASH_DAYS = 'trash.days',
+
+  STYLESHEETS_CSS = 'stylesheets.css',
 }
 
 export enum TranscodePolicy {
