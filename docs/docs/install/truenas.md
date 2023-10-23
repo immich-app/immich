@@ -42,7 +42,7 @@ Click on the widget to open the **Immich** application details screen.
 
 <img
 src={require('./img/truenas02.png').default}
-width="50%"
+width="100%"
 alt="Immich App Details Screen"
 />
 
