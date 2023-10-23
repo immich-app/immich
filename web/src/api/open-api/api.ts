@@ -3303,10 +3303,10 @@ export interface SystemConfigDto {
     'storageTemplate': SystemConfigStorageTemplateDto;
     /**
      * 
-     * @type {SystemConfigStylesheetsDto}
+     * @type {SystemConfigThemeDto}
      * @memberof SystemConfigDto
      */
-    'stylesheets': SystemConfigStylesheetsDto;
+    'theme': SystemConfigThemeDto;
     /**
      * 
      * @type {SystemConfigThumbnailDto}
@@ -3689,19 +3689,6 @@ export interface SystemConfigStorageTemplateDto {
 /**
  * 
  * @export
- * @interface SystemConfigStylesheetsDto
- */
-export interface SystemConfigStylesheetsDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof SystemConfigStylesheetsDto
-     */
-    'css': string;
-}
-/**
- * 
- * @export
  * @interface SystemConfigTemplateStorageOptionDto
  */
 export interface SystemConfigTemplateStorageOptionDto {
@@ -3753,6 +3740,19 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @memberof SystemConfigTemplateStorageOptionDto
      */
     'yearOptions': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigThemeDto
+ */
+export interface SystemConfigThemeDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigThemeDto
+     */
+    'customCss': string;
 }
 /**
  * 

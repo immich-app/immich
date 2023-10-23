@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **reverseGeocoding** | [**SystemConfigReverseGeocodingDto**](SystemConfigReverseGeocodingDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 
-**stylesheets** | [**SystemConfigStylesheetsDto**](SystemConfigStylesheetsDto.md) |  | 
+**theme** | [**SystemConfigThemeDto**](SystemConfigThemeDto.md) |  | 
 **thumbnail** | [**SystemConfigThumbnailDto**](SystemConfigThumbnailDto.md) |  | 
 **trash** | [**SystemConfigTrashDto**](SystemConfigTrashDto.md) |  | 
 

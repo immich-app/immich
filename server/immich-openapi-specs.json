@@ -8056,8 +8056,8 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
-          "stylesheets": {
-            "$ref": "#/components/schemas/SystemConfigStylesheetsDto"
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
@@ -8077,7 +8077,7 @@
           "job",
           "thumbnail",
           "trash",
-          "stylesheets"
+          "theme"
         ],
         "type": "object"
       },
@@ -8341,17 +8341,6 @@
         ],
         "type": "object"
       },
-      "SystemConfigStylesheetsDto": {
-        "properties": {
-          "css": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "css"
-        ],
-        "type": "object"
-      },
       "SystemConfigTemplateStorageOptionDto": {
         "properties": {
           "dayOptions": {
@@ -8412,6 +8401,17 @@
           "minuteOptions",
           "secondOptions",
           "presetOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
         ],
         "type": "object"
       },

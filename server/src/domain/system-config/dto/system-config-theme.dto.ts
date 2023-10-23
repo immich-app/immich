@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class SystemConfigStylesheetsDto {
+export class SystemConfigThemeDto {
   @IsString()
-  css!: string;
+  customCss!: string;
 }

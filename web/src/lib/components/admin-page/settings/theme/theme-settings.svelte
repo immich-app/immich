@@ -4,22 +4,22 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, SystemConfigStylesheetsDto } from '@api';
+  import { api, SystemConfigThemeDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingTextarea from '../setting-textarea.svelte';
 
-  export let stylesheetsConfig: SystemConfigStylesheetsDto; // this is the config that is being edited
+  export let themeConfig: SystemConfigThemeDto; // this is the config that is being edited
   export let disabled = false;
 
-  let savedConfig: SystemConfigStylesheetsDto;
-  let defaultConfig: SystemConfigStylesheetsDto;
+  let savedConfig: SystemConfigThemeDto;
+  let defaultConfig: SystemConfigThemeDto;
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.stylesheets),
-      api.systemConfigApi.getDefaults().then((res) => res.data.stylesheets),
+      api.systemConfigApi.getConfig().then((res) => res.data.theme),
+      api.systemConfigApi.getDefaults().then((res) => res.data.theme),
     ]);
   }
 
@@ -30,14 +30,14 @@
       const { data: updated } = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...current,
-          stylesheets: stylesheetsConfig,
+          theme: themeConfig,
         },
       });
 
-      stylesheetsConfig = { ...updated.stylesheets };
-      savedConfig = { ...updated.stylesheets };
+      themeConfig = { ...updated.theme };
+      savedConfig = { ...updated.theme };
 
-      notificationController.show({ message: 'Stylesheets saved', type: NotificationType.Info });
+      notificationController.show({ message: 'Theme saved', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to save settings');
     }
@@ -46,11 +46,11 @@
   async function reset() {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-    stylesheetsConfig = { ...resetConfig.stylesheets };
-    savedConfig = { ...resetConfig.stylesheets };
+    themeConfig = { ...resetConfig.theme };
+    savedConfig = { ...resetConfig.theme };
 
     notificationController.show({
-      message: 'Reset stylesheets to the recent saved stylesheets',
+      message: 'Reset theme to the recent saved theme',
       type: NotificationType.Info,
     });
   }
@@ -58,11 +58,11 @@
   async function resetToDefault() {
     const { data: configs } = await api.systemConfigApi.getDefaults();
 
-    stylesheetsConfig = { ...configs.stylesheets };
-    defaultConfig = { ...configs.stylesheets };
+    themeConfig = { ...configs.theme };
+    defaultConfig = { ...configs.theme };
 
     notificationController.show({
-      message: 'Reset stylesheets to default',
+      message: 'Reset theme to default',
       type: NotificationType.Info,
     });
   }
@@ -78,9 +78,9 @@
               {disabled}
               label="Custom CSS"
               desc="Cascading Style Sheets allow the design of Immich to be customized."
-              bind:value={stylesheetsConfig.css}
+              bind:value={themeConfig.customCss}
               required={true}
-              isEdited={stylesheetsConfig.css !== savedConfig.css}
+              isEdited={themeConfig.customCss !== savedConfig.customCss}
             />
 
             <SettingButtonsRow

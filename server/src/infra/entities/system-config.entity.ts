@@ -91,7 +91,7 @@ export enum SystemConfigKey {
   TRASH_ENABLED = 'trash.enabled',
   TRASH_DAYS = 'trash.days',
 
-  STYLESHEETS_CSS = 'stylesheets.css',
+  THEME_CUSTOM_CSS = 'theme.customCss',
 }
 
 export enum TranscodePolicy {
@@ -223,7 +223,7 @@ export interface SystemConfig {
     enabled: boolean;
     days: number;
   };
-  stylesheets: {
-    css: string;
+  theme: {
+    customCss: string;
   };
 }

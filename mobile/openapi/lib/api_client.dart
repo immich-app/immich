@@ -415,10 +415,10 @@ class ApiClient {
           return SystemConfigReverseGeocodingDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
-        case 'SystemConfigStylesheetsDto':
-          return SystemConfigStylesheetsDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'SystemConfigThemeDto':
+          return SystemConfigThemeDto.fromJson(value);
         case 'SystemConfigThumbnailDto':
           return SystemConfigThumbnailDto.fromJson(value);
         case 'SystemConfigTrashDto':

@@ -56,8 +56,8 @@ void main() {
       // TODO
     });
 
-    // SystemConfigStylesheetsDto stylesheets
-    test('to test the property `stylesheets`', () async {
+    // SystemConfigThemeDto theme
+    test('to test the property `theme`', () async {
       // TODO
     });
 

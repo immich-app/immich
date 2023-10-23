@@ -10,7 +10,7 @@
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
-  import StylesheetsSettings from '$lib/components/admin-page/settings/stylesheets/stylesheets-settings.svelte';
+  import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { downloadManager } from '$lib/stores/download';
@@ -62,13 +62,6 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordion
-        title="Custom Stylesheets"
-        subtitle="Manage the custom stylesheets for the Immich web interface"
-      >
-        <StylesheetsSettings disabled={$featureFlags.configFile} stylesheetsConfig={configs.stylesheets} />
-      </SettingAccordion>
-
-      <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
@@ -102,6 +95,10 @@
           storageConfig={configs.storageTemplate}
           user={data.user}
         />
+      </SettingAccordion>
+
+      <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">
+        <ThemeSettings disabled={$featureFlags.configFile} themeConfig={configs.theme} />
       </SettingAccordion>
 
       <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
