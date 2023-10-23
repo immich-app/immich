@@ -142,24 +142,26 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   ) {
     return isScrolling
         ? _getPlaceholder(asset)
-        : ThumbnailImage(
-            asset: asset,
-            index: index,
-            loadAsset: widget.renderList.loadAsset,
-            totalAssets: widget.renderList.totalAssets,
-            multiselectEnabled: widget.selectionActive,
-            isSelected:
-                widget.selectionActive && _selectedAssets.contains(asset),
-            onSelect: () => _selectAssets([asset]),
-            onDeselect: widget.canDeselect ||
-                    widget.preselectedAssets == null ||
-                    !widget.preselectedAssets!.contains(asset)
-                ? () => _deselectAssets([asset])
-                : null,
-            useGrayBoxPlaceholder: true,
-            showStorageIndicator: widget.showStorageIndicator,
-            heroOffset: widget.heroOffset,
-            showStack: widget.showStack,
+        : RepaintBoundary(
+            child: ThumbnailImage(
+              asset: asset,
+              index: index,
+              loadAsset: widget.renderList.loadAsset,
+              totalAssets: widget.renderList.totalAssets,
+              multiselectEnabled: widget.selectionActive,
+              isSelected:
+                  widget.selectionActive && _selectedAssets.contains(asset),
+              onSelect: () => _selectAssets([asset]),
+              onDeselect: widget.canDeselect ||
+                      widget.preselectedAssets == null ||
+                      !widget.preselectedAssets!.contains(asset)
+                  ? () => _deselectAssets([asset])
+                  : null,
+              useGrayBoxPlaceholder: true,
+              showStorageIndicator: widget.showStorageIndicator,
+              heroOffset: widget.heroOffset,
+              showStack: widget.showStack,
+            ),
           );
   }
 
