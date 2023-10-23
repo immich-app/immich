@@ -50,6 +50,7 @@ RUN ldconfig /usr/local/lib
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
+COPY ./assets ./assets
 
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
