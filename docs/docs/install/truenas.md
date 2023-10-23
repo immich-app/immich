@@ -120,7 +120,7 @@ You can accept the defaults in the **Immich Configuration** settings, or enter t
 
 <img
 src={require('./img/truenas05.png').default}
-width="50%"
+width="100%"
 alt="Configuration Settings"
 />
 
@@ -139,7 +139,7 @@ To change the port numbers, enter a number within the range 9000-65535.
 
 <img
 src={require('./img/truenas06.png').default}
-width="50%"
+width="100%"
 alt="Networking Settings"
 />
 
@@ -149,7 +149,7 @@ You can install Immich using the default setting **ixVolume (dataset created aut
 
 <img
 src={require('./img/truenas07.png').default}
-width="50%"
+width="100%"
 alt="Configure Storage ixVolumes"
 />
 
@@ -157,7 +157,7 @@ Select **Host Path (Path that already exists on the system)** to browse to and s
 
 <img
 src={require('./img/truenas08.png').default}
-width="50%"
+width="100%"
 alt="Configure Storage Host Paths"
 />
 
@@ -168,7 +168,7 @@ By default, this application is limited to use no more than 4 CPU cores and 8 Gi
 
 <img
 src={require('./img/truenas09.png').default}
-width="50%"
+width="100%"
 alt="Resource Limits"
 />
 
