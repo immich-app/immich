@@ -26,6 +26,7 @@ export interface IAlbumRepository {
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
   addAssets(assets: AlbumAssets): Promise<void>;
+  getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>>;
   hasAsset(asset: AlbumAsset): Promise<boolean>;
   removeAsset(assetId: string): Promise<void>;
   removeAssets(assets: AlbumAssets): Promise<void>;
