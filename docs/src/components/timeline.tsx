@@ -14,8 +14,8 @@ export interface Item {
 }
 
 export enum DateType {
-  release = 'Release Date',
-  date = 'Date',
+  RELEASE = 'Release Date',
+  DATE = 'Date',
 }
 
 interface Props {

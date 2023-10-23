@@ -54,7 +54,7 @@ const items: Item[] = [
     release: 'v1.82.0',
     tag: 'v1.82.0',
     date: new Date(2023, 9, 17),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiBookSearchOutline,
@@ -63,7 +63,7 @@ const items: Item[] = [
     release: 'v1.79.0',
     tag: 'v1.79.0',
     date: new Date(2023, 8, 21),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMap,
@@ -72,7 +72,7 @@ const items: Item[] = [
     release: 'v1.76.0',
     tag: 'v1.76.0',
     date: new Date(2023, 7, 29),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFile,
@@ -81,7 +81,7 @@ const items: Item[] = [
     release: 'v1.75.0',
     tag: 'v1.75.0',
     date: new Date(2023, 7, 26),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMonitor,
@@ -90,7 +90,7 @@ const items: Item[] = [
     release: 'v1.75.0',
     tag: 'v1.75.0',
     date: new Date(2023, 7, 26),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiServer,
@@ -99,7 +99,7 @@ const items: Item[] = [
     release: 'v1.72.0',
     tag: 'v1.72.0',
     date: new Date(2023, 7, 6),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImageAlbum,
@@ -108,7 +108,7 @@ const items: Item[] = [
     release: 'v1.72.0',
     tag: 'v1.72.0',
     date: new Date(2023, 7, 6),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImageAlbum,
@@ -117,7 +117,7 @@ const items: Item[] = [
     release: 'v1.72.0',
     tag: 'v1.72.0',
     date: new Date(2023, 7, 6),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiRotate360,
@@ -126,7 +126,7 @@ const items: Item[] = [
     release: 'v1.71.0',
     tag: 'v1.71.0',
     date: new Date(2023, 6, 29),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMotionPlayOutline,
@@ -135,7 +135,7 @@ const items: Item[] = [
     release: 'v1.69.0',
     tag: 'v1.69.0',
     date: new Date(2023, 6, 23),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFaceManOutline,
@@ -144,7 +144,7 @@ const items: Item[] = [
     release: 'v1.68.0',
     tag: 'v1.68.0',
     date: new Date(2023, 6, 20),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMerge,
@@ -153,7 +153,7 @@ const items: Item[] = [
     release: 'v1.67.0',
     tag: 'v1.67.0',
     date: new Date(2023, 6, 14),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImage,
@@ -162,7 +162,7 @@ const items: Item[] = [
     release: 'v1.66.0',
     tag: 'v1.66.0',
     date: new Date(2023, 6, 4),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiKeyboardSettingsOutline,
@@ -171,7 +171,7 @@ const items: Item[] = [
     release: 'v1.66.0',
     tag: 'v1.66.0',
     date: new Date(2023, 6, 4),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImageMultipleOutline,
@@ -180,7 +180,7 @@ const items: Item[] = [
     release: 'v1.65.0',
     tag: 'v1.65.0',
     date: new Date(2023, 5, 30),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFaceMan,
@@ -189,7 +189,7 @@ const items: Item[] = [
     release: 'v1.63.0',
     tag: 'v1.63.0',
     date: new Date(2023, 5, 24),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImageMultipleOutline,
@@ -198,7 +198,7 @@ const items: Item[] = [
     release: 'v1.61.0',
     tag: 'v1.61.0',
     date: new Date(2023, 5, 16),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiCollage,
@@ -207,7 +207,7 @@ const items: Item[] = [
     release: 'v1.61.0',
     tag: 'v1.61.0',
     date: new Date(2023, 5, 16),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiRaw,
@@ -216,7 +216,7 @@ const items: Item[] = [
     release: 'v1.61.0',
     tag: 'v1.61.0',
     date: new Date(2023, 5, 16),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiShareAll,
@@ -225,7 +225,7 @@ const items: Item[] = [
     release: 'v1.58.0',
     tag: 'v1.58.0',
     date: new Date(2023, 4, 28),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFile,
@@ -234,7 +234,7 @@ const items: Item[] = [
     release: 'v1.58.0',
     tag: 'v1.58.0',
     date: new Date(2023, 4, 28),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFolder,
@@ -243,7 +243,7 @@ const items: Item[] = [
     release: 'v1.57.0',
     tag: 'v1.57.0',
     date: new Date(2023, 4, 23),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiShareCircle,
@@ -252,7 +252,7 @@ const items: Item[] = [
     release: 'v1.56.0',
     tag: 'v1.56.0',
     date: new Date(2023, 4, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFaceMan,
@@ -261,7 +261,7 @@ const items: Item[] = [
     release: 'v1.56.0',
     tag: 'v1.56.0',
     date: new Date(2023, 4, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMap,
@@ -270,7 +270,7 @@ const items: Item[] = [
     release: 'v1.55.0',
     tag: 'v1.55.0',
     date: new Date(2023, 4, 9),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiDevices,
@@ -279,7 +279,7 @@ const items: Item[] = [
     release: 'v1.55.0',
     tag: 'v1.55.0',
     date: new Date(2023, 4, 9),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiStar,
@@ -288,7 +288,7 @@ const items: Item[] = [
     release: 'v1.54.0',
     tag: 'v1.54.0',
     date: new Date(2023, 3, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiText,
@@ -297,7 +297,7 @@ const items: Item[] = [
     release: 'v1.54.0',
     tag: 'v1.54.0',
     date: new Date(2023, 3, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiArchiveOutline,
@@ -306,7 +306,7 @@ const items: Item[] = [
     release: 'v1.54.0',
     tag: 'v1.54.0',
     date: new Date(2023, 3, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiDevices,
@@ -315,7 +315,7 @@ const items: Item[] = [
     release: 'v1.54.0',
     tag: 'v1.54.0',
     date: new Date(2023, 3, 18),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFileSearch,
@@ -324,7 +324,7 @@ const items: Item[] = [
     release: 'v1.52.0',
     tag: 'v1.52.0',
     date: new Date(2023, 2, 29),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImageSearch,
@@ -333,7 +333,7 @@ const items: Item[] = [
     release: 'v1.51.0',
     tag: 'v1.51.0',
     date: new Date(2023, 2, 20),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMagnify,
@@ -342,7 +342,7 @@ const items: Item[] = [
     release: 'v1.51.0',
     tag: 'v1.51.0',
     date: new Date(2023, 2, 20),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiAppleIos,
@@ -351,7 +351,7 @@ const items: Item[] = [
     release: 'v1.48.0',
     tag: 'v1.48.0',
     date: new Date(2023, 1, 21),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMotionPlayOutline,
@@ -360,7 +360,7 @@ const items: Item[] = [
     release: 'v1.48.0',
     tag: 'v1.48.0',
     date: new Date(2023, 2, 21),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMaterialDesign,
@@ -369,7 +369,7 @@ const items: Item[] = [
     release: 'v1.47.0',
     tag: 'v1.47.0',
     date: new Date(2023, 1, 13),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiHeart,
@@ -378,7 +378,7 @@ const items: Item[] = [
     release: 'v1.46.0',
     tag: 'v1.46.0',
     date: new Date(2023, 1, 9),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiCakeVariant,
@@ -387,7 +387,7 @@ const items: Item[] = [
     release: 'v1.43.0',
     tag: 'v1.43.0',
     date: new Date(2023, 1, 3),
-    dateType: DateType.date,
+    dateType: DateType.DATE,
   },
   {
     icon: mdiHeart,
@@ -396,7 +396,7 @@ const items: Item[] = [
     release: 'v1.43.0',
     tag: 'v1.43.0',
     date: new Date(2023, 0, 27),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiShareCircle,
@@ -405,7 +405,7 @@ const items: Item[] = [
     release: 'v1.41.0',
     tag: 'v1.41.1_64-dev',
     date: new Date(2023, 0, 10),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiFolder,
@@ -414,7 +414,7 @@ const items: Item[] = [
     release: 'v1.39.0',
     tag: 'v1.39.0_61-dev',
     date: new Date(2022, 11, 19),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiMotionPlayOutline,
@@ -423,7 +423,7 @@ const items: Item[] = [
     release: 'v1.36.0',
     tag: 'v1.36.0_55-dev',
     date: new Date(2022, 10, 20),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiSecurity,
@@ -432,7 +432,7 @@ const items: Item[] = [
     release: 'v1.36.0',
     tag: 'v1.36.0_55-dev',
     date: new Date(2022, 10, 20),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiWeb,
@@ -441,7 +441,7 @@ const items: Item[] = [
     release: 'v1.33.1',
     tag: 'v1.33.0_52-dev',
     date: new Date(2022, 9, 26),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiThemeLightDark,
@@ -450,7 +450,7 @@ const items: Item[] = [
     release: 'v1.32.0',
     tag: ' v1.32.0_50-dev',
     date: new Date(2022, 9, 14),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiPanVertical,
@@ -459,7 +459,7 @@ const items: Item[] = [
     release: 'v1.27.0',
     tag: 'v1.27.0_37-dev',
     date: new Date(2022, 8, 6),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiCheckAll,
@@ -468,7 +468,7 @@ const items: Item[] = [
     release: 'v1.27.0',
     tag: 'v1.27.0_37-dev',
     date: new Date(2022, 8, 6),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiAndroid,
@@ -477,7 +477,7 @@ const items: Item[] = [
     release: 'v1.24.0',
     tag: 'v1.24.0_34-dev',
     date: new Date(2022, 7, 19),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiAccountGroup,
@@ -486,7 +486,7 @@ const items: Item[] = [
     release: 'v1.10.0',
     tag: 'v1.10.0_15-dev',
     date: new Date(2022, 4, 29),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiShareCircle,
@@ -495,7 +495,7 @@ const items: Item[] = [
     release: 'v1.7.0',
     tag: 'v1.7.0_11-dev ',
     date: new Date(2022, 3, 24),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiTag,
@@ -504,7 +504,7 @@ const items: Item[] = [
     release: 'v1.7.0',
     tag: 'v1.7.0_11-dev ',
     date: new Date(2022, 3, 24),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiImage,
@@ -513,7 +513,7 @@ const items: Item[] = [
     release: 'v1.3.0',
     tag: 'V1.3.0-dev ',
     date: new Date(2022, 2, 22),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiCheckboxMarked,
@@ -522,7 +522,7 @@ const items: Item[] = [
     release: 'v1.2.0',
     tag: 'V0.2-dev ',
     date: new Date(2022, 1, 8),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiVideo,
@@ -531,7 +531,7 @@ const items: Item[] = [
     release: 'v1.2.0',
     tag: 'v0.2-dev ',
     date: new Date(2022, 1, 8),
-    dateType: DateType.release,
+    dateType: DateType.RELEASE,
   },
   {
     icon: mdiPartyPopper,
@@ -539,7 +539,7 @@ const items: Item[] = [
     description: 'First commit on GitHub, Immich is born.',
     release: 'v1.0.0',
     date: new Date(2022, 1, 3),
-    dateType: DateType.date,
+    dateType: DateType.DATE,
   },
 ];
 
