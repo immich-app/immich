@@ -183,6 +183,28 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
+  /**
+   * Get asset IDs for the given album ID.
+   *
+   * @param albumId Album ID to get asset IDs for.
+   * @param assetIds Optional list of asset IDs to filter on.
+   * @returns Set of Asset IDs for the given album ID.
+   */
+  async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
+    const query = this.dataSource
+      .createQueryBuilder()
+      .select('albums_assets.assetsId', 'assetId')
+      .from('albums_assets_assets', 'albums_assets')
+      .where('"albums_assets"."albumsId" = :albumId', { albumId });
+
+    if (assetIds?.length) {
+      query.andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds });
+    }
+
+    const result = await query.getRawMany();
+    return new Set(result.map((row) => row['assetId']));
+  }
+
   hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
       where: {

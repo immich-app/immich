@@ -152,9 +152,11 @@ export class AlbumService {
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
+    const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
-      const hasAsset = await this.albumRepository.hasAsset({ albumId: id, assetId });
+      const hasAsset = existingAssetIds.has(assetId);
       if (hasAsset) {
         results.push({ id: assetId, success: false, error: BulkIdErrorReason.DUPLICATE });
         continue;
@@ -187,9 +189,11 @@ export class AlbumService {
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
+    const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
-      const hasAsset = await this.albumRepository.hasAsset({ albumId: id, assetId });
+      const hasAsset = existingAssetIds.has(assetId);
       if (!hasAsset) {
         results.push({ id: assetId, success: false, error: BulkIdErrorReason.NOT_FOUND });
         continue;
