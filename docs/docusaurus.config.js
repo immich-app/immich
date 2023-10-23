@@ -102,6 +102,11 @@ const config = {
             label: 'Docs',
           },
           {
+            to: '/milestones',
+            position: 'right',
+            label: 'Milestones',
+          },
+          {
             to: '/docs/api',
             position: 'right',
             label: 'API',
