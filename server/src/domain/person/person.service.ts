@@ -345,9 +345,7 @@ export class PersonService {
     } as const;
 
     await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
-    if (personId) {
-      await this.repository.update({ id: personId, thumbnailPath });
-    }
+    await this.repository.update({ id: person.id, thumbnailPath });
 
     return true;
   }
