@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigStylesheetsDto stylesheets
+    test('to test the property `stylesheets`', () async {
+      // TODO
+    });
+
 
   });
 

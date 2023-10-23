@@ -317,6 +317,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
+ - [SystemConfigStylesheetsDto](doc//SystemConfigStylesheetsDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)

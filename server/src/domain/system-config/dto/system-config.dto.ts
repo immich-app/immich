@@ -11,6 +11,7 @@ import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocodi
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
 import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
 import { SystemConfigTrashDto } from './system-config-trash.dto';
+import { SystemConfigStylesheetsDto } from './system-config-stylesheets.dto';
 
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)
@@ -62,6 +63,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   trash!: SystemConfigTrashDto;
+
+  @Type(() => SystemConfigStylesheetsDto)
+  @ValidateNested()
+  @IsObject()
+  stylesheets!: SystemConfigStylesheetsDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

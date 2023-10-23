@@ -221,4 +221,7 @@ export interface SystemConfig {
     enabled: boolean;
     days: number;
   };
+  stylesheets: {
+    css: string;
+  };
 }

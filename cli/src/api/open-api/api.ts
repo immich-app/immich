@@ -3313,6 +3313,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'trash': SystemConfigTrashDto;
+    /**
+     * 
+     * @type {SystemConfigStylesheetsDto}
+     * @memberof SystemConfigDto
+     */
+    'stylesheets'?: SystemConfigStylesheetsDto;
 }
 /**
  * 
@@ -3679,6 +3685,19 @@ export interface SystemConfigStorageTemplateDto {
      * @memberof SystemConfigStorageTemplateDto
      */
     'template': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigStylesheetsDto
+ */
+export interface SystemConfigStylesheetsDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigStylesheetsDto
+     */
+    'css': string;
 }
 /**
  * 

@@ -23,6 +23,7 @@ class SystemConfigDto {
     required this.storageTemplate,
     required this.thumbnail,
     required this.trash,
+    this.stylesheets,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -45,6 +46,14 @@ class SystemConfigDto {
 
   SystemConfigTrashDto trash;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  SystemConfigStylesheetsDto? stylesheets;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
@@ -56,7 +65,8 @@ class SystemConfigDto {
      other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
      other.thumbnail == thumbnail &&
-     other.trash == trash;
+     other.trash == trash &&
+     other.stylesheets == stylesheets;
 
   @override
   int get hashCode =>
@@ -70,10 +80,11 @@ class SystemConfigDto {
     (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
     (thumbnail.hashCode) +
-    (trash.hashCode);
+    (trash.hashCode) +
+    (stylesheets == null ? 0 : stylesheets!.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash, stylesheets=$stylesheets]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +98,11 @@ class SystemConfigDto {
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
+    if (this.stylesheets != null) {
+      json[r'stylesheets'] = this.stylesheets;
+    } else {
+    //  json[r'stylesheets'] = null;
+    }
     return json;
   }
 
@@ -108,6 +124,7 @@ class SystemConfigDto {
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
+        stylesheets: SystemConfigStylesheetsDto.fromJson(json[r'stylesheets']),
       );
     }
     return null;

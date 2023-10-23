@@ -10,6 +10,7 @@
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import StylesheetsSettings from '$lib/components/admin-page/settings/stylesheets/stylesheets-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { downloadManager } from '$lib/stores/download';
@@ -109,6 +110,13 @@
         subtitle="Manage the resolution and encoding information of the video files"
       >
         <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
+      </SettingAccordion>
+
+      <SettingAccordion
+        title="Custom Stylesheets"
+        subtitle="Manage the custom stylesheets for the Immich web interface"
+      >
+        <StylesheetsSettings disabled={$featureFlags.configFile} stylesheetsConfig={configs.stylesheets} />
       </SettingAccordion>
     </section>
   </section>
