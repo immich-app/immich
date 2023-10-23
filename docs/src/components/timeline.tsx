@@ -10,6 +10,12 @@ export interface Item {
   release: string;
   tag?: string;
   date: Date;
+  dateType: DateType;
+}
+
+export enum DateType {
+  release = 'Release Date',
+  date = 'Date',
 }
 
 interface Props {
@@ -72,9 +78,7 @@ export default function Timeline({ items }: Props): JSX.Element {
                 </span>
               </div>
               <div className="md:hidden text-xs">
-                {`${item.tag ? 'Release' : ''} Date - ${
-                  isBrowser ? item.date.toLocaleDateString(navigator.language) : ''
-                }`}
+                {`${item.dateType} - ${isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}`}
               </div>
               <p className="m-0 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
             </section>
