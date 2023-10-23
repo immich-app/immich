@@ -4,6 +4,7 @@ import {
   mdiAppleIos,
   mdiArchiveOutline,
   mdiBookSearchOutline,
+  mdiCakeVariant,
   mdiCheckAll,
   mdiCheckboxMarked,
   mdiCollage,
@@ -380,7 +381,7 @@ const items: Item[] = [
     dateType: DateType.release,
   },
   {
-    icon: mdiPartyPopper,
+    icon: mdiCakeVariant,
     title: 'Immich Turns 1',
     description: 'Immich is officially one year old.',
     release: 'v1.43.0',
