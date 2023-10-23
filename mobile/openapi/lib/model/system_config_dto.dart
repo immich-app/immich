@@ -21,9 +21,9 @@ class SystemConfigDto {
     required this.passwordLogin,
     required this.reverseGeocoding,
     required this.storageTemplate,
+    required this.stylesheets,
     required this.thumbnail,
     required this.trash,
-    this.stylesheets,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -42,17 +42,11 @@ class SystemConfigDto {
 
   SystemConfigStorageTemplateDto storageTemplate;
 
+  SystemConfigStylesheetsDto stylesheets;
+
   SystemConfigThumbnailDto thumbnail;
 
   SystemConfigTrashDto trash;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  SystemConfigStylesheetsDto? stylesheets;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
@@ -64,9 +58,9 @@ class SystemConfigDto {
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
+     other.stylesheets == stylesheets &&
      other.thumbnail == thumbnail &&
-     other.trash == trash &&
-     other.stylesheets == stylesheets;
+     other.trash == trash;
 
   @override
   int get hashCode =>
@@ -79,12 +73,12 @@ class SystemConfigDto {
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
+    (stylesheets.hashCode) +
     (thumbnail.hashCode) +
-    (trash.hashCode) +
-    (stylesheets == null ? 0 : stylesheets!.hashCode);
+    (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash, stylesheets=$stylesheets]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, stylesheets=$stylesheets, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -96,13 +90,9 @@ class SystemConfigDto {
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'stylesheets'] = this.stylesheets;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
-    if (this.stylesheets != null) {
-      json[r'stylesheets'] = this.stylesheets;
-    } else {
-    //  json[r'stylesheets'] = null;
-    }
     return json;
   }
 
@@ -122,9 +112,9 @@ class SystemConfigDto {
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        stylesheets: SystemConfigStylesheetsDto.fromJson(json[r'stylesheets'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
-        stylesheets: SystemConfigStylesheetsDto.fromJson(json[r'stylesheets']),
       );
     }
     return null;
@@ -180,6 +170,7 @@ class SystemConfigDto {
     'passwordLogin',
     'reverseGeocoding',
     'storageTemplate',
+    'stylesheets',
     'thumbnail',
     'trash',
   };

@@ -3303,6 +3303,12 @@ export interface SystemConfigDto {
     'storageTemplate': SystemConfigStorageTemplateDto;
     /**
      * 
+     * @type {SystemConfigStylesheetsDto}
+     * @memberof SystemConfigDto
+     */
+    'stylesheets': SystemConfigStylesheetsDto;
+    /**
+     * 
      * @type {SystemConfigThumbnailDto}
      * @memberof SystemConfigDto
      */
@@ -3313,12 +3319,6 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'trash': SystemConfigTrashDto;
-    /**
-     * 
-     * @type {SystemConfigStylesheetsDto}
-     * @memberof SystemConfigDto
-     */
-    'stylesheets'?: SystemConfigStylesheetsDto;
 }
 /**
  * 

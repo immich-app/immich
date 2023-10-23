@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigStylesheetsDto stylesheets
+    test('to test the property `stylesheets`', () async {
+      // TODO
+    });
+
     // SystemConfigThumbnailDto thumbnail
     test('to test the property `thumbnail`', () async {
       // TODO
@@ -63,11 +68,6 @@ void main() {
 
     // SystemConfigTrashDto trash
     test('to test the property `trash`', () async {
-      // TODO
-    });
-
-    // SystemConfigStylesheetsDto stylesheets
-    test('to test the property `stylesheets`', () async {
       // TODO
     });
 
