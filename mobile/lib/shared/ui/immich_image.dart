@@ -123,6 +123,8 @@ class ImmichImage extends StatelessWidget {
         cacheKey: getThumbnailCacheKey(asset, type: type),
       ),
       fit: fit,
+      duration: const Duration(milliseconds: 500),
+      syncDuration: const Duration(milliseconds: 500),
       placeholder: placeholderWidget,
       errorBuilder: (context, error) {
         if (error is HttpExceptionWithStatus &&

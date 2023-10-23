@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_thumbhash/flutter_thumbhash.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -120,25 +121,46 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
-  Widget _buildThumbnailOrPlaceholder(Asset asset, int index) {
-    return ThumbnailImage(
-      asset: asset,
-      index: index,
-      loadAsset: widget.renderList.loadAsset,
-      totalAssets: widget.renderList.totalAssets,
-      multiselectEnabled: widget.selectionActive,
-      isSelected: widget.selectionActive && _selectedAssets.contains(asset),
-      onSelect: () => _selectAssets([asset]),
-      onDeselect: widget.canDeselect ||
-              widget.preselectedAssets == null ||
-              !widget.preselectedAssets!.contains(asset)
-          ? () => _deselectAssets([asset])
-          : null,
-      useGrayBoxPlaceholder: true,
-      showStorageIndicator: widget.showStorageIndicator,
-      heroOffset: widget.heroOffset,
-      showStack: widget.showStack,
+  Widget _getPlaceholder(Asset asset) {
+    if (asset.thumbhash != null) {
+      return FittedBox(
+        fit: BoxFit.fill,
+        child: Image(
+          image: ThumbHash.fromIntList(asset.thumbhash!).toImage(),
+        ),
+      );
+    }
+    return Container(
+      color: Colors.grey,
     );
+  }
+
+  Widget _buildThumbnailOrPlaceholder(
+    Asset asset,
+    int index,
+    bool isScrolling,
+  ) {
+    return isScrolling
+        ? _getPlaceholder(asset)
+        : ThumbnailImage(
+            asset: asset,
+            index: index,
+            loadAsset: widget.renderList.loadAsset,
+            totalAssets: widget.renderList.totalAssets,
+            multiselectEnabled: widget.selectionActive,
+            isSelected:
+                widget.selectionActive && _selectedAssets.contains(asset),
+            onSelect: () => _selectAssets([asset]),
+            onDeselect: widget.canDeselect ||
+                    widget.preselectedAssets == null ||
+                    !widget.preselectedAssets!.contains(asset)
+                ? () => _deselectAssets([asset])
+                : null,
+            useGrayBoxPlaceholder: true,
+            showStorageIndicator: widget.showStorageIndicator,
+            heroOffset: widget.heroOffset,
+            showStack: widget.showStack,
+          );
   }
 
   Widget _buildAssetRow(
@@ -147,6 +169,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     List<Asset> assets,
     int absoluteOffset,
     double width,
+    bool isScrolling,
   ) {
     // Default: All assets have the same width
     final widthDistribution = List.filled(assets.length, 1.0);
@@ -185,7 +208,11 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             bottom: widget.margin,
             right: last ? 0.0 : widget.margin,
           ),
-          child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
+          child: _buildThumbnailOrPlaceholder(
+            asset,
+            absoluteOffset + index,
+            isScrolling,
+          ),
         );
       }).toList(),
     );
@@ -224,25 +251,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     );
   }
 
-  Widget _buildPlaceHolderRow(Key key, int num, double width, double height) {
-    return Row(
-      key: key,
-      children: [
-        for (int i = 0; i < num; i++)
-          Container(
-            key: ValueKey(i),
-            width: width,
-            height: height,
-            margin: EdgeInsets.only(
-              bottom: widget.margin,
-              right: i + 1 == num ? 0.0 : widget.margin,
-            ),
-            color: Colors.grey,
-          ),
-      ],
-    );
-  }
-
   Widget _buildSection(
     BuildContext context,
     RenderAssetGridElement section,
@@ -254,9 +262,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
         final rows =
             (section.count + widget.assetsPerRow - 1) ~/ widget.assetsPerRow;
-        final List<Asset> assetsToRender = scrolling
-            ? []
-            : widget.renderList.loadAssets(section.offset, section.count);
+        final List<Asset> assetsToRender =
+            widget.renderList.loadAssets(section.offset, section.count);
         return Column(
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,25 +281,17 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
                         .loadAssets(section.offset, section.totalCount),
               ),
             for (int i = 0; i < rows; i++)
-              scrolling
-                  ? _buildPlaceHolderRow(
-                      ValueKey(i),
-                      i + 1 == rows
-                          ? section.count - i * widget.assetsPerRow
-                          : widget.assetsPerRow,
-                      width,
-                      width,
-                    )
-                  : _buildAssetRow(
-                      ValueKey(i),
-                      context,
-                      assetsToRender.nestedSlice(
-                        i * widget.assetsPerRow,
-                        min((i + 1) * widget.assetsPerRow, section.count),
-                      ),
-                      section.offset + i * widget.assetsPerRow,
-                      width,
-                    ),
+              _buildAssetRow(
+                ValueKey(i),
+                context,
+                assetsToRender.nestedSlice(
+                  i * widget.assetsPerRow,
+                  min((i + 1) * widget.assetsPerRow, section.count),
+                ),
+                section.offset + i * widget.assetsPerRow,
+                width,
+                scrolling,
+              ),
           ],
         );
       },
