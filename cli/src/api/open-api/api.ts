@@ -3220,6 +3220,19 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface StatisticsResponseDto
+ */
+export interface StatisticsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof StatisticsResponseDto
+     */
+    'assets': number;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigDto
  */
 export interface SystemConfigDto {
@@ -12108,7 +12121,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPersonAssetsCount(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+        async getPersonAssetsCount(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonAssetsCount(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12197,7 +12210,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig): AxiosPromise<number> {
+        getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
             return localVarFp.getPersonAssetsCount(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**

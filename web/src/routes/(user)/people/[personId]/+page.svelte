@@ -38,7 +38,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
-  let numberOfAssets = data.count;
+  let numberOfAssets = data.count.assets;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 

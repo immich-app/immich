@@ -3614,7 +3614,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "number"
+                  "$ref": "#/components/schemas/StatisticsResponseDto"
                 }
               }
             },
@@ -8023,6 +8023,17 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "StatisticsResponseDto": {
+        "properties": {
+          "assets": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assets"
+        ],
         "type": "object"
       },
       "SystemConfigDto": {

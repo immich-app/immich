@@ -112,7 +112,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
-  getPersonAssetsCount(personId: string): Promise<number> {
+  getStatistics(personId: string): Promise<number> {
     return this.assetFaceRepository
       .createQueryBuilder('face')
       .leftJoin('face.asset', 'asset')

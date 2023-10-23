@@ -10,6 +10,7 @@ import {
   PersonSearchDto,
   PersonService,
   PersonUpdateDto,
+  StatisticsResponseDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -39,7 +40,10 @@ export class PersonController {
   }
 
   @Get(':id/count')
-  getPersonAssetsCount(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<number> {
+  getPersonAssetsCount(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<StatisticsResponseDto> {
     return this.service.getPersonAssetsCount(authUser, id);
   }
 

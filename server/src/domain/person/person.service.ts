@@ -34,6 +34,7 @@ import {
   PersonResponseDto,
   PersonSearchDto,
   PersonUpdateDto,
+  StatisticsResponseDto,
   mapPerson,
 } from './person.dto';
 
@@ -84,14 +85,10 @@ export class PersonService {
     return this.findOrFail(id).then(mapPerson);
   }
 
-  async getPersonAssetsCount(authUser: AuthUserDto, id: string): Promise<number> {
+  async getPersonAssetsCount(authUser: AuthUserDto, id: string): Promise<StatisticsResponseDto> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
-    const person = await this.repository.getById(id);
-    if (!person) {
-      throw new NotFoundException();
-    }
-
-    return this.repository.getPersonAssetsCount(person.id);
+    const person = await this.findOrFail(id);
+    return { assets: await this.repository.getStatistics(person.id) };
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {

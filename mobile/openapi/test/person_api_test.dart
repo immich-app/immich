@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<num> getPersonAssetsCount(String id) async
+    //Future<StatisticsResponseDto> getPersonAssetsCount(String id) async
     test('test getPersonAssetsCount', () async {
       // TODO
     });

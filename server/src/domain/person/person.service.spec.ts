@@ -736,9 +736,9 @@ describe(PersonService.name, () => {
   describe('getPersonAssetsCount', () => {
     it('should get correct number of person', async () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
-      personMock.getPersonAssetsCount.mockResolvedValue(assetCount);
+      personMock.getStatistics.mockResolvedValue(assetCount);
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
-      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).resolves.toEqual(3);
+      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).resolves.toEqual({ assets: 3 });
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
     it('should require person.read permission', async () => {
@@ -748,9 +748,9 @@ describe(PersonService.name, () => {
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
     it('should throw an error when personId is invalid', async () => {
-      personMock.getPersonAssetsCount.mockResolvedValue(assetCount);
+      personMock.getStatistics.mockResolvedValue(assetCount);
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
-      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getPersonAssetsCount(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
   });
