@@ -56,7 +56,7 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, repository);
   }

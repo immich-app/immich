@@ -40,7 +40,7 @@ export class AuditService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   async handleCleanup(): Promise<boolean> {

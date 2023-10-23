@@ -68,7 +68,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   public async uploadFile(

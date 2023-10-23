@@ -31,7 +31,7 @@ export class AlbumService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   async getCount(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
