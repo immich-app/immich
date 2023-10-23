@@ -116,8 +116,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     days: 10,
   },
   stylesheets: {
-    css: ''
-  }
+    css: '',
+  },
 });
 
 describe(SystemConfigService.name, () => {
