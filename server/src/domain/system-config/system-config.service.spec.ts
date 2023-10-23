@@ -115,8 +115,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
     days: 10,
   },
-  stylesheets: {
-    css: '',
+  theme: {
+    customCss: '',
   },
 });
 
