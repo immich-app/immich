@@ -57,7 +57,7 @@
       filetype: 'IMG',
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
-      album: 'Immich Adventures',
+      album: 'Album Name',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
