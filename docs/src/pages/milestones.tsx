@@ -347,8 +347,7 @@ const items: Item[] = [
     title: 'Immich Turns 1',
     description: 'Immich is officially one year old.',
     release: 'v1.43.0',
-    tag: 'v1.43.0',
-    date: new Date(2023, 0, 27),
+    date: new Date(2023, 1, 3),
   },
   {
     icon: mdiHeart,
@@ -483,7 +482,7 @@ const items: Item[] = [
     title: 'First Commit',
     description: 'First commit on GitHub, Immich is born.',
     release: 'v1.0.0',
-    date: new Date(2022, 2, 3),
+    date: new Date(2022, 1, 3),
   },
 ];
 
