@@ -21,12 +21,12 @@ void main() {
       // TODO
     });
 
-    // num total
+    // int total
     test('to test the property `total`', () async {
       // TODO
     });
 
-    // num visible
+    // int visible
     test('to test the property `visible`', () async {
       // TODO
     });

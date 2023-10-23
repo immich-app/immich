@@ -199,6 +199,10 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkDeleteDto':
+          return AssetBulkDeleteDto.fromJson(value);
+        case 'AssetBulkUpdateDto':
+          return AssetBulkUpdateDto.fromJson(value);
         case 'AssetBulkUploadCheckDto':
           return AssetBulkUploadCheckDto.fromJson(value);
         case 'AssetBulkUploadCheckItem':
@@ -213,6 +217,10 @@ class ApiClient {
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
           return AssetIdsResponseDto.fromJson(value);
+        case 'AssetJobName':
+          return AssetJobNameTypeTransformer().decode(value);
+        case 'AssetJobsDto':
+          return AssetJobsDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
@@ -221,12 +229,20 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
+        case 'AuditDeletesResponseDto':
+          return AuditDeletesResponseDto.fromJson(value);
         case 'AuthDeviceResponseDto':
           return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
           return BulkIdsDto.fromJson(value);
+        case 'CLIPConfig':
+          return CLIPConfig.fromJson(value);
+        case 'CLIPMode':
+          return CLIPModeTypeTransformer().decode(value);
+        case 'CQMode':
+          return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
@@ -237,8 +253,16 @@ class ApiClient {
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
           return CheckExistingAssetsResponseDto.fromJson(value);
+        case 'CitiesFile':
+          return CitiesFileTypeTransformer().decode(value);
+        case 'ClassificationConfig':
+          return ClassificationConfig.fromJson(value);
+        case 'Colorspace':
+          return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
+        case 'CreateLibraryDto':
+          return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -249,18 +273,26 @@ class ApiClient {
           return CuratedLocationsResponseDto.fromJson(value);
         case 'CuratedObjectsResponseDto':
           return CuratedObjectsResponseDto.fromJson(value);
-        case 'DeleteAssetDto':
-          return DeleteAssetDto.fromJson(value);
-        case 'DeleteAssetResponseDto':
-          return DeleteAssetResponseDto.fromJson(value);
-        case 'DeleteAssetStatus':
-          return DeleteAssetStatusTypeTransformer().decode(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
+        case 'DownloadInfoDto':
+          return DownloadInfoDto.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
+        case 'EntityType':
+          return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'FileChecksumDto':
+          return FileChecksumDto.fromJson(value);
+        case 'FileChecksumResponseDto':
+          return FileChecksumResponseDto.fromJson(value);
+        case 'FileReportDto':
+          return FileReportDto.fromJson(value);
+        case 'FileReportFixDto':
+          return FileReportFixDto.fromJson(value);
+        case 'FileReportItemDto':
+          return FileReportItemDto.fromJson(value);
         case 'ImportAssetDto':
           return ImportAssetDto.fromJson(value);
         case 'JobCommand':
@@ -275,6 +307,12 @@ class ApiClient {
           return JobSettingsDto.fromJson(value);
         case 'JobStatusDto':
           return JobStatusDto.fromJson(value);
+        case 'LibraryResponseDto':
+          return LibraryResponseDto.fromJson(value);
+        case 'LibraryStatsResponseDto':
+          return LibraryStatsResponseDto.fromJson(value);
+        case 'LibraryType':
+          return LibraryTypeTypeTransformer().decode(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -287,12 +325,20 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'ModelType':
+          return ModelTypeTypeTransformer().decode(value);
+        case 'OAuthAuthorizeResponseDto':
+          return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'PathEntityType':
+          return PathEntityTypeTypeTransformer().decode(value);
+        case 'PathType':
+          return PathTypeTypeTransformer().decode(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdateDto':
@@ -305,14 +351,16 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RecognitionConfig':
+          return RecognitionConfig.fromJson(value);
+        case 'ScanLibraryDto':
+          return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetDto':
           return SearchAssetDto.fromJson(value);
         case 'SearchAssetResponseDto':
           return SearchAssetResponseDto.fromJson(value);
-        case 'SearchConfigResponseDto':
-          return SearchConfigResponseDto.fromJson(value);
         case 'SearchExploreItem':
           return SearchExploreItem.fromJson(value);
         case 'SearchExploreResponseDto':
@@ -323,6 +371,10 @@ class ApiClient {
           return SearchFacetResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
+        case 'ServerConfigDto':
+          return ServerConfigDto.fromJson(value);
+        case 'ServerFeaturesDto':
+          return ServerFeaturesDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
@@ -331,8 +383,8 @@ class ApiClient {
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
-        case 'ServerVersionReponseDto':
-          return ServerVersionReponseDto.fromJson(value);
+        case 'ServerVersionResponseDto':
+          return ServerVersionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -351,14 +403,24 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
+        case 'SystemConfigMachineLearningDto':
+          return SystemConfigMachineLearningDto.fromJson(value);
+        case 'SystemConfigMapDto':
+          return SystemConfigMapDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
           return SystemConfigPasswordLoginDto.fromJson(value);
+        case 'SystemConfigReverseGeocodingDto':
+          return SystemConfigReverseGeocodingDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'SystemConfigThumbnailDto':
+          return SystemConfigThumbnailDto.fromJson(value);
+        case 'SystemConfigTrashDto':
+          return SystemConfigTrashDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
@@ -369,6 +431,8 @@ class ApiClient {
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':
           return TimeBucketSizeTypeTransformer().decode(value);
+        case 'ToneMapping':
+          return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
@@ -377,6 +441,10 @@ class ApiClient {
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
+        case 'UpdateLibraryDto':
+          return UpdateLibraryDto.fromJson(value);
+        case 'UpdateStackParentDto':
+          return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':

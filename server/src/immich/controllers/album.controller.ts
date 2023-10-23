@@ -1,18 +1,20 @@
 import {
   AddUsersDto,
   AlbumCountResponseDto,
+  AlbumInfoDto,
+  AlbumResponseDto,
   AlbumService,
   AuthUserDto,
   BulkIdResponseDto,
   BulkIdsDto,
-  CreateAlbumDto,
-  UpdateAlbumDto,
+  CreateAlbumDto as CreateDto,
+  GetAlbumsDto,
+  UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
-import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
-import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
+import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -34,18 +36,18 @@ export class AlbumController {
   }
 
   @Post()
-  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumDto) {
+  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto) {
     return this.service.create(authUser, dto);
   }
 
   @SharedLinkRoute()
   @Get(':id')
-  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.get(authUser, id);
+  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Query() dto: AlbumInfoDto) {
+    return this.service.get(authUser, id, dto);
   }
 
   @Patch(':id')
-  updateAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateAlbumDto) {
+  updateAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto) {
     return this.service.update(authUser, id, dto);
   }
 
@@ -74,7 +76,11 @@ export class AlbumController {
   }
 
   @Put(':id/users')
-  addUsersToAlbum(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
+  addUsersToAlbum(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AddUsersDto,
+  ): Promise<AlbumResponseDto> {
     return this.service.addUsers(authUser, id, dto);
   }
 

@@ -1,14 +1,15 @@
 import {
   AuthUserDto,
-  SearchConfigResponseDto,
+  PersonResponseDto,
   SearchDto,
   SearchExploreResponseDto,
+  SearchPeopleDto,
   SearchResponseDto,
   SearchService,
 } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authenticated, AuthUser } from '../app.guard';
+import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 @ApiTags('Search')
@@ -18,14 +19,14 @@ import { UseValidation } from '../app.utils';
 export class SearchController {
   constructor(private service: SearchService) {}
 
+  @Get('person')
+  searchPerson(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.service.searchPerson(authUser, dto);
+  }
+
   @Get()
   search(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
     return this.service.search(authUser, dto);
-  }
-
-  @Get('config')
-  getSearchConfig(): SearchConfigResponseDto {
-    return this.service.getConfig();
   }
 
   @Get('explore')

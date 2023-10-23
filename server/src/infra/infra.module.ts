@@ -2,15 +2,16 @@ import {
   IAccessRepository,
   IAlbumRepository,
   IAssetRepository,
+  IAuditRepository,
   ICommunicationRepository,
   ICryptoRepository,
-  IFaceRepository,
-  IGeocodingRepository,
   IJobRepository,
   IKeyRepository,
+  ILibraryRepository,
   IMachineLearningRepository,
   IMediaRepository,
-  immichAppConfig,
+  IMetadataRepository,
+  IMoveRepository,
   IPartnerRepository,
   IPersonRepository,
   ISearchRepository,
@@ -21,28 +22,30 @@ import {
   ITagRepository,
   IUserRepository,
   IUserTokenRepository,
+  immichAppConfig,
 } from '@app/domain';
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommunicationGateway } from './communication.gateway';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
 import {
+  APIKeyRepository,
   AccessRepository,
   AlbumRepository,
-  APIKeyRepository,
   AssetRepository,
+  AuditRepository,
   CommunicationRepository,
   CryptoRepository,
-  FaceRepository,
   FilesystemProvider,
-  GeocodingRepository,
   JobRepository,
+  LibraryRepository,
   MachineLearningRepository,
   MediaRepository,
+  MetadataRepository,
+  MoveRepository,
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
@@ -58,13 +61,15 @@ const providers: Provider[] = [
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
-  { provide: IFaceRepository, useClass: FaceRepository },
-  { provide: IGeocodingRepository, useClass: GeocodingRepository },
   { provide: IJobRepository, useClass: JobRepository },
+  { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
+  { provide: IMetadataRepository, useClass: MetadataRepository },
+  { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: ISearchRepository, useClass: TypesenseRepository },
@@ -78,16 +83,24 @@ const providers: Provider[] = [
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
 ];
 
+const imports = [
+  ConfigModule.forRoot(immichAppConfig),
+  TypeOrmModule.forRoot(databaseConfig),
+  TypeOrmModule.forFeature(databaseEntities),
+];
+
+const moduleExports = [...providers];
+
+if (process.env.IMMICH_TEST_ENV !== 'true') {
+  imports.push(BullModule.forRoot(bullConfig));
+  imports.push(BullModule.registerQueue(...bullQueues));
+  moduleExports.push(BullModule);
+}
+
 @Global()
 @Module({
-  imports: [
-    ConfigModule.forRoot(immichAppConfig),
-    TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature(databaseEntities),
-    BullModule.forRoot(bullConfig),
-    BullModule.registerQueue(...bullQueues),
-  ],
-  providers: [...providers, CommunicationGateway],
-  exports: [...providers, BullModule],
+  imports,
+  providers: [...providers],
+  exports: moduleExports,
 })
 export class InfraModule {}

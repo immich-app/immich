@@ -5,11 +5,15 @@
   "globalSetup": "<rootDir>/test/e2e/setup.ts",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
-  "testTimeout": 15000,
+  "testTimeout": 60000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "collectCoverageFrom": ["<rootDir>/src/**/*.(t|j)s", "!<rootDir>/src/infra/**/*"],
+  "collectCoverageFrom": [
+    "<rootDir>/src/**/*.(t|j)s",
+    "!<rootDir>/src/**/*.spec.(t|s)s",
+    "!<rootDir>/src/infra/migrations/**"
+  ],
   "coverageDirectory": "./coverage",
   "moduleNameMapper": {
     "^@test(|/.*)$": "<rootDir>/test/$1",

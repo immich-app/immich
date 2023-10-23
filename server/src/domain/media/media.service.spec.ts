@@ -1,18 +1,37 @@
-import { AssetType, SystemConfigKey, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import {
+  AssetType,
+  Colorspace,
+  ExifEntity,
+  SystemConfigKey,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from '@app/infra/entities';
 import {
   assetStub,
+  faceStub,
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  personStub,
   probeStub,
 } from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMediaRepository } from './media.repository';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { MediaService } from './media.service';
 
 describe(MediaService.name, () => {
@@ -21,6 +40,8 @@ describe(MediaService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
@@ -28,9 +49,11 @@ describe(MediaService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MediaService(assetMock, jobMock, mediaMock, storageMock, configMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
   });
 
   it('should be defined', () => {
@@ -43,6 +66,8 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([personStub.newThumbnail]);
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -52,6 +77,37 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: personStub.newThumbnail.id },
+      });
+    });
+
+    it('should queue all people with missing thumbnail path', async () => {
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetStub.image],
+        hasNextPage: false,
+      });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([personStub.noThumbnail]);
+      personMock.getRandomFace.mockResolvedValue(faceStub.face1);
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
+      expect(personMock.getRandomFace).toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: {
+          id: personStub.newThumbnail.id,
+        },
+      });
     });
 
     it('should queue all assets with missing resize path', async () => {
@@ -59,6 +115,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noResizePath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -68,6 +125,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing webp path', async () => {
@@ -75,6 +135,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noWebpPath],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -84,6 +145,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_WEBP_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -91,6 +155,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noThumbhash],
         hasNextPage: false,
       });
+      personMock.getAllWithoutThumbnail.mockResolvedValue([]);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -100,6 +165,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
         data: { id: assetStub.image.id },
       });
+
+      expect(personMock.getAll).not.toHaveBeenCalled();
+      expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
     });
   });
 
@@ -111,35 +179,122 @@ describe(MediaService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalledWith();
     });
 
+    it('should skip video thumbnail generation if no video stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.noVideoStreams);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalledWith();
+    });
+
     it('should generate a thumbnail for an image', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
 
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/asset-id.jpeg', {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
+        quality: 80,
+        colorspace: Colorspace.SRGB,
       });
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
-        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
+        resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
+      });
+    });
+
+    it('should generate a P3 thumbnail for a wide gamut image', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+      ]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.image.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.jpeg', {
+        size: 1440,
+        format: 'jpeg',
+        quality: 80,
+        colorspace: Colorspace.P3,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
     });
 
     it('should generate a thumbnail for a video', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
 
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.extractVideoThumbnail).toHaveBeenCalledWith(
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/asset-id.jpeg',
-        1440,
+        'upload/thumbs/user-id/as/se/asset-id.jpeg',
+        {
+          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          outputOptions: [
+            '-frames:v 1',
+            '-v verbose',
+            '-vf scale=-2:1440:flags=lanczos+accurate_rnd+bitexact+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p',
+          ],
+          twoPass: false,
+        },
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
-        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
+        resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
       });
+    });
+
+    it('should tonemap thumbnail for hdr video', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id.jpeg',
+        {
+          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          outputOptions: [
+            '-frames:v 1',
+            '-v verbose',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+          ],
+          twoPass: false,
+        },
+      );
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        resizePath: 'upload/thumbs/user-id/as/se/asset-id.jpeg',
+      });
+    });
+
+    it('should always generate video thumbnail in one pass', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '5000k' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGenerateJpegThumbnail({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id.jpeg',
+        {
+          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          outputOptions: [
+            '-frames:v 1',
+            '-v verbose',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+          ],
+          twoPass: false,
+        },
+      );
     });
 
     it('should run successfully', async () => {
@@ -156,22 +311,39 @@ describe(MediaService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalledWith();
     });
 
-    it('should skip thumbnail generate if resize path is missing', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
-      await sut.handleGenerateWebpThumbnail({ id: assetStub.noResizePath.id });
-      expect(mediaMock.resize).not.toHaveBeenCalled();
-    });
-
     it('should generate a thumbnail', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
 
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
-        '/uploads/user-id/thumbs/path.webp',
-        { format: 'webp', size: 250 },
-      );
-      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.webp' });
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.webp', {
+        format: 'webp',
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.SRGB,
+      });
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: 'asset-id',
+        webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
+      });
+    });
+  });
+
+  it('should generate a P3 thumbnail for a wide gamut image', async () => {
+    assetMock.getByIds.mockResolvedValue([
+      { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
+    ]);
+    await sut.handleGenerateWebpThumbnail({ id: assetStub.image.id });
+
+    expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+    expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', 'upload/thumbs/user-id/as/se/asset-id.webp', {
+      format: 'webp',
+      size: 250,
+      quality: 80,
+      colorspace: Colorspace.P3,
+    });
+    expect(assetMock.save).toHaveBeenCalledWith({
+      id: 'asset-id',
+      webpPath: 'upload/thumbs/user-id/as/se/asset-id.webp',
     });
   });
 
@@ -206,6 +378,7 @@ describe(MediaService.name, () => {
         items: [assetStub.video],
         hasNextPage: false,
       });
+      personMock.getAll.mockResolvedValue([]);
 
       await sut.handleQueueVideoConversion({ force: true });
 
@@ -264,15 +437,18 @@ describe(MediaService.name, () => {
       expect(storageMock.mkdirSync).toHaveBeenCalled();
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -302,15 +478,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -325,16 +504,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -352,15 +533,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
+            '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -376,16 +560,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=720:-2',
+            '-vf scale=720:-2,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -401,16 +587,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -426,16 +614,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -475,16 +665,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
             '-maxrate 4500k',
@@ -505,16 +697,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-b:v 3104k',
             '-minrate 1552k',
@@ -532,16 +726,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -561,16 +757,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
             '-row-mt 1',
             '-b:v 3104k',
@@ -592,16 +790,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 2',
             '-row-mt 1',
             '-crf 23',
@@ -622,16 +822,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-row-mt 1',
             '-crf 23',
             '-b:v 0',
@@ -651,16 +853,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec vp9',
-            '-acodec aac',
+            '-c:v vp9',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-cpu-used 5',
             '-row-mt 1',
             '-threads 2',
@@ -679,16 +883,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-threads 2',
             '-x264-params "pools=none"',
@@ -707,16 +913,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -735,16 +943,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec hevc',
-            '-acodec aac',
+            '-c:v hevc',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-threads 2',
             '-x265-params "pools=none"',
@@ -766,16 +976,18 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec hevc',
-            '-acodec aac',
+            '-c:v hevc',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -826,25 +1038,23 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-b:v 6897k',
             '-maxrate 10000k',
@@ -866,25 +1076,23 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
             '-maxrate 10000k',
@@ -902,25 +1110,23 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
           ],
@@ -939,25 +1145,23 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-cq:v 23',
           ],
           twoPass: false,
@@ -972,25 +1176,23 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
           outputOptions: [
-            `-vcodec h264_nvenc`,
             '-tune hq',
             '-qmin 0',
-            '-g 250',
-            '-bf 3',
-            '-b_ref_mode middle',
-            '-temporal-aq 1',
             '-rc-lookahead 20',
             '-i_qfactor 0.75',
-            '-b_qfactor 1.1',
-            '-acodec aac',
+            `-c:v h264_nvenc`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720',
+            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
           ],
@@ -1010,18 +1212,19 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec h264_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-acodec aac',
+            `-c:v h264_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
@@ -1045,18 +1248,19 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec h264_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-acodec aac',
+            `-c:v h264_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-global_quality 23',
@@ -1077,19 +1281,20 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
           outputOptions: [
-            `-vcodec vp9_qsv`,
-            '-g 256',
-            '-extbrc 1',
-            '-refs 5',
-            '-bf 7',
-            '-low_power 1',
-            '-acodec aac',
+            `-c:v vp9_qsv`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-bf 7',
+            '-refs 5',
+            '-g 256',
+            '-low_power 1',
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
@@ -1120,14 +1325,17 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1149,14 +1357,17 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1180,14 +1391,17 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-qp 23',
@@ -1207,14 +1421,17 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1230,14 +1447,17 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD129', '-filter_hw_device accel'],
           outputOptions: [
-            `-vcodec h264_vaapi`,
-            '-acodec aac',
+            `-c:v h264_vaapi`,
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720',
             '-compression_level 7',
@@ -1260,16 +1480,18 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledTimes(2);
       expect(mediaMock.transcode).toHaveBeenLastCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/asset-id.mp4',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
           outputOptions: [
-            '-vcodec h264',
-            '-acodec aac',
+            '-c:v h264',
+            '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
             '-v verbose',
-            '-vf scale=-2:720',
+            '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
           ],
@@ -1285,6 +1507,134 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should tonemap when policy is required and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.REQUIRED }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/as/se/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-c:v h264',
+          '-c:a aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should tonemap when policy is optimal and video is hdr', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/as/se/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-c:v h264',
+          '-c:a aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  it('should set npl to 250 for reinhard and mobius tone-mapping algorithms', async () => {
+    mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TONEMAP, value: ToneMapping.MOBIUS }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.video]);
+    await sut.handleVideoConversion({ id: assetStub.video.id });
+    expect(mediaMock.transcode).toHaveBeenCalledWith(
+      '/original/path.ext',
+      'upload/encoded-video/user-id/as/se/asset-id.mp4',
+      {
+        inputOptions: [],
+        outputOptions: [
+          '-c:v h264',
+          '-c:a aac',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-v verbose',
+          '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          '-preset ultrafast',
+          '-crf 23',
+        ],
+        twoPass: false,
+      },
+    );
+  });
+
+  describe('isSRGB', () => {
+    it('should return true for srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 8-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for image with no colorspace or bit depth metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: {} as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return false for non-srgb colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for non-srgb profile description', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return false for 16-bit image with no colorspace metadata', () => {
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(false);
+    });
+
+    it('should return true for 16-bit image with sRGB colorspace', () => {
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
+    });
+
+    it('should return true for 16-bit image with sRGB profile', () => {
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      expect(sut.isSRGB(asset)).toEqual(true);
     });
   });
 });

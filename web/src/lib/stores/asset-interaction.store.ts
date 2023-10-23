@@ -1,8 +1,8 @@
+import type { AssetResponseDto } from '@api';
 import { derived, writable } from 'svelte/store';
-import type { AssetResponseDto } from '../../api/open-api';
 
 export interface AssetInteractionStore {
-  addAssetToMultiselectGroup: (asset: AssetResponseDto) => void;
+  selectAsset: (asset: AssetResponseDto) => void;
   removeAssetFromMultiselectGroup: (asset: AssetResponseDto) => void;
   addGroupToMultiselectGroup: (group: string) => void;
   removeGroupFromMultiselectGroup: (group: string) => void;
@@ -12,13 +12,6 @@ export interface AssetInteractionStore {
   clearMultiselect: () => void;
   isMultiSelectState: {
     subscribe: (run: (value: boolean) => void, invalidate?: (value?: boolean) => void) => () => void;
-  };
-  assetsInAlbumState: {
-    subscribe: (
-      run: (value: AssetResponseDto[]) => void,
-      invalidate?: (value?: AssetResponseDto[]) => void,
-    ) => () => void;
-    set: (value: AssetResponseDto[]) => void;
   };
   selectedAssets: {
     subscribe: (
@@ -46,11 +39,9 @@ export interface AssetInteractionStore {
 export function createAssetInteractionStore(): AssetInteractionStore {
   let _selectedAssets: Set<AssetResponseDto>;
   let _selectedGroup: Set<string>;
-  let _assetsInAlbums: AssetResponseDto[];
   let _assetSelectionCandidates: Set<AssetResponseDto>;
   let _assetSelectionStart: AssetResponseDto | null;
 
-  const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
   // Selected assets
   const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
   // Selected date groups
@@ -72,10 +63,6 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     _selectedGroup = group;
   });
 
-  assetsInAlbumStoreState.subscribe((assets) => {
-    _assetsInAlbums = assets;
-  });
-
   assetSelectionCandidates.subscribe((assets) => {
     _assetSelectionCandidates = assets;
   });
@@ -84,12 +71,7 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     _assetSelectionStart = asset;
   });
 
-  const addAssetToMultiselectGroup = (asset: AssetResponseDto) => {
-    // Not select if in album already
-    if (_assetsInAlbums.find((a) => a.id === asset.id)) {
-      return;
-    }
-
+  const selectAsset = (asset: AssetResponseDto) => {
     _selectedAssets.add(asset);
     selectedAssets.set(_selectedAssets);
   };
@@ -128,7 +110,6 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     // Multi-selection
     _selectedAssets.clear();
     _selectedGroup.clear();
-    _assetsInAlbums = [];
 
     // Range selection
     _assetSelectionCandidates.clear();
@@ -136,13 +117,12 @@ export function createAssetInteractionStore(): AssetInteractionStore {
 
     selectedAssets.set(_selectedAssets);
     selectedGroup.set(_selectedGroup);
-    assetsInAlbumStoreState.set(_assetsInAlbums);
     assetSelectionCandidates.set(_assetSelectionCandidates);
     assetSelectionStart.set(_assetSelectionStart);
   };
 
   return {
-    addAssetToMultiselectGroup,
+    selectAsset,
     removeAssetFromMultiselectGroup,
     addGroupToMultiselectGroup,
     removeGroupFromMultiselectGroup,
@@ -152,10 +132,6 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     clearMultiselect,
     isMultiSelectState: {
       subscribe: isMultiSelectStoreState.subscribe,
-    },
-    assetsInAlbumState: {
-      subscribe: assetsInAlbumStoreState.subscribe,
-      set: assetsInAlbumStoreState.set,
     },
     selectedAssets: {
       subscribe: selectedAssets.subscribe,

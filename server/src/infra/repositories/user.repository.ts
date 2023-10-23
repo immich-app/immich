@@ -16,6 +16,10 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
+  async hasAdmin(): Promise<boolean> {
+    return this.userRepository.exist({ where: { isAdmin: true } });
+  }
+
   async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     let builder = this.userRepository.createQueryBuilder('user').where({ email });
 

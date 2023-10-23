@@ -20,6 +20,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/heic', extension: '.heic' },
     { mimetype: 'image/heif', extension: '.heif' },
     { mimetype: 'image/iiq', extension: '.iiq' },
+    { mimetype: 'image/jpeg', extension: '.jpe' },
     { mimetype: 'image/jpeg', extension: '.jpeg' },
     { mimetype: 'image/jpeg', extension: '.jpg' },
     { mimetype: 'image/jxl', extension: '.jxl' },
@@ -31,14 +32,17 @@ describe('mimeTypes', () => {
     { mimetype: 'image/ori', extension: '.ori' },
     { mimetype: 'image/pef', extension: '.pef' },
     { mimetype: 'image/png', extension: '.png' },
+    { mimetype: 'image/psd', extension: '.psd' },
     { mimetype: 'image/raf', extension: '.raf' },
     { mimetype: 'image/raw', extension: '.raw' },
     { mimetype: 'image/rwl', extension: '.rwl' },
     { mimetype: 'image/sr2', extension: '.sr2' },
     { mimetype: 'image/srf', extension: '.srf' },
     { mimetype: 'image/srw', extension: '.srw' },
+    { mimetype: 'image/tiff', extension: '.tif' },
     { mimetype: 'image/tiff', extension: '.tiff' },
     { mimetype: 'image/webp', extension: '.webp' },
+    { mimetype: 'image/vnd.adobe.photoshop', extension: '.psd' },
     { mimetype: 'image/x-adobe-dng', extension: '.dng' },
     { mimetype: 'image/x-arriflex-ari', extension: '.ari' },
     { mimetype: 'image/x-canon-cr2', extension: '.cr2' },
@@ -82,7 +86,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/x-ms-wmv', extension: '.wmv' },
     { mimetype: 'video/x-msvideo', extension: '.avi' },
   ]) {
-    it(`should map ${extension} to ${mimetype}`, async () => {
+    it(`should map ${extension} to ${mimetype}`, () => {
       expect({ ...mimeTypes.image, ...mimeTypes.video }[extension]).toContain(mimetype);
     });
   }

@@ -16,7 +16,9 @@ import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
@@ -68,7 +70,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
-          isNewAlbum: false,
+          canDeselect: false,
+          query: getRemoteAssetQuery(ref),
         ),
       );
 
@@ -116,7 +119,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildControlButton(Album album) {
       return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+        padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 16),
         child: SizedBox(
           height: 40,
           child: ListView(
@@ -141,7 +144,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildTitle(Album album) {
       return Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 24),
         child: userId == album.ownerId && album.isRemote
             ? AlbumViewerEditableTitle(
                 album: album,
@@ -172,7 +175,6 @@ class AlbumViewerPage extends HookConsumerWidget {
       return Padding(
         padding: EdgeInsets.only(
           left: 16.0,
-          top: 8.0,
           bottom: album.shared ? 0.0 : 8.0,
         ),
         child: Text(
@@ -180,7 +182,34 @@ class AlbumViewerPage extends HookConsumerWidget {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.grey,
+          ),
+        ),
+      );
+    }
+
+    Widget buildSharedUserIconsRow(Album album) {
+      return GestureDetector(
+        onTap: () async {
+          await AutoRouter.of(context).push(AlbumOptionsRoute(album: album));
+          ref.invalidate(albumDetailProvider(album.id));
+        },
+        child: SizedBox(
+          height: 50,
+          child: ListView.builder(
+            padding: const EdgeInsets.only(left: 16),
+            scrollDirection: Axis.horizontal,
+            itemBuilder: ((context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: UserCircleAvatar(
+                  user: album.sharedUsers.toList()[index],
+                  radius: 18,
+                  size: 36,
+                  useRandomBackgroundColor: true,
+                ),
+              );
+            }),
+            itemCount: album.sharedUsers.length,
           ),
         ),
       );
@@ -193,33 +222,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         children: [
           buildTitle(album),
           if (album.assets.isNotEmpty == true) buildAlbumDateRange(album),
-          if (album.shared)
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 16),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: ((context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey[300],
-                      radius: 18,
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50.0),
-                          child: Image.asset(
-                            'assets/immich-logo-no-outline.png',
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                itemCount: album.sharedUsers.length,
-              ),
-            ),
+          if (album.shared) buildSharedUserIconsRow(album),
         ],
       );
     }

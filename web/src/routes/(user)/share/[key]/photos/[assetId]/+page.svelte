@@ -8,10 +8,9 @@
 {#if data.asset && data.key}
   <AssetViewer
     asset={data.asset}
-    publicSharedKey={data.key}
-    on:navigate-previous={() => null}
-    on:navigate-next={() => null}
     showNavigation={false}
+    on:previous={() => null}
+    on:next={() => null}
     on:close={() => goto(`/share/${data.key}`)}
   />
 {/if}

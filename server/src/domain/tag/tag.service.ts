@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto, AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
-import { mapTag, TagResponseDto } from './tag-response.dto';
+import { ITagRepository } from '../repositories';
+import { TagResponseDto, mapTag } from './tag-response.dto';
 import { CreateTagDto, UpdateTagDto } from './tag.dto';
-import { ITagRepository } from './tag.repository';
 
 @Injectable()
 export class TagService {
@@ -47,7 +47,7 @@ export class TagService {
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
     await this.findOrFail(authUser, id);
     const assets = await this.repository.getAssets(authUser.id, id);
-    return assets.map(mapAsset);
+    return assets.map((asset) => mapAsset(asset));
   }
 
   async addAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {

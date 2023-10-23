@@ -11,8 +11,9 @@ services:
     command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 3001:3001
       - 9230:9230
@@ -20,29 +21,14 @@ services:
       - .env
     environment:
       - NODE_ENV=development
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     depends_on:
       - redis
       - database
       - typesense
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning-dev:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    ports:
-      - 3003:3003
-    volumes:
-      - ../machine-learning/app:/usr/src/app
-      - model-cache:/cache
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - database
-    restart: unless-stopped
 
   immich-microservices:
     container_name: immich_microservices
@@ -57,14 +43,19 @@ services:
     command: npm run start:debug microservices
     volumes:
       - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /usr/src/app/node_modules
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
     ports:
       - 9231:9230
     environment:
       - NODE_ENV=development
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     depends_on:
       - database
       - immich-server
@@ -90,9 +81,32 @@ services:
     volumes:
       - ../web:/usr/src/app
       - /usr/src/app/node_modules
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     restart: unless-stopped
     depends_on:
       - immich-server
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning-dev:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3003
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - model-cache:/cache
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+    restart: unless-stopped
 
   typesense:
     container_name: immich_typesense
@@ -100,10 +114,10 @@ services:
     environment:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
       - TYPESENSE_DATA_DIR=/data
-    logging:
-      driver: none
+      # remove this to get debug messages
+      - GLOG_minloglevel=1
     volumes:
-      - tsdata:/data
+      - ${UPLOAD_LOCATION}/typesense:/data
 
   redis:
     container_name: immich_redis
@@ -119,7 +133,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
@@ -141,6 +155,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgdata:
   model-cache:
-  tsdata:

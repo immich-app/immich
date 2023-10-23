@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { ValidateUUID } from '../../domain.util';
+import { Optional, ValidateUUID } from '../../domain.util';
 
 export class CreateAlbumDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
   albumName!: string;
+
+  @IsString()
+  @Optional()
+  description?: string;
 
   @ValidateUUID({ optional: true, each: true })
   sharedWithUserIds?: string[];

@@ -6,14 +6,20 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
+  newPersonRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IAssetRepository } from '../asset';
-import { ICommunicationRepository } from '../communication';
-import { ISystemConfigRepository } from '../system-config';
+import {
+  IAssetRepository,
+  ICommunicationRepository,
+  IJobRepository,
+  IPersonRepository,
+  ISystemConfigRepository,
+  JobHandler,
+  JobItem,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
 import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {
@@ -30,13 +36,15 @@ describe(JobService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new JobService(assetMock, communicationMock, jobMock, configMock);
+    personMock = newPersonRepositoryMock();
+    sut = new JobService(assetMock, communicationMock, jobMock, configMock, personMock);
   });
 
   it('should work', () => {
@@ -48,9 +56,12 @@ describe(JobService.name, () => {
       await sut.handleNightlyJobs();
 
       expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.ASSET_DELETION_CHECK }],
         [{ name: JobName.USER_DELETE_CHECK }],
         [{ name: JobName.PERSON_CLEANUP }],
         [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
+        [{ name: JobName.CLEAN_OLD_AUDIT_LOGS }],
+        [{ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }],
       ]);
     });
   });
@@ -92,10 +103,12 @@ describe(JobService.name, () => {
         [QueueName.OBJECT_TAGGING]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
         [QueueName.STORAGE_TEMPLATE_MIGRATION]: expectedJobStatus,
+        [QueueName.MIGRATION]: expectedJobStatus,
         [QueueName.THUMBNAIL_GENERATION]: expectedJobStatus,
         [QueueName.VIDEO_CONVERSION]: expectedJobStatus,
         [QueueName.RECOGNIZE_FACES]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
+        [QueueName.LIBRARY]: expectedJobStatus,
       });
     });
   });
@@ -214,8 +227,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.registerHandlers(makeMockHandlers(false));
 
-      const configCore = new SystemConfigCore(newSystemConfigRepositoryMock());
-      configCore.config$.next({
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.CLIP_ENCODING]: { concurrency: 10 },
@@ -224,7 +236,9 @@ describe(JobService.name, () => {
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
+          [QueueName.LIBRARY]: { concurrency: 10 },
           [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 10 },
+          [QueueName.MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
         },
@@ -236,7 +250,9 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.STORAGE_TEMPLATE_MIGRATION, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);
     });
@@ -252,6 +268,10 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
+        jobs: [JobName.LINK_LIVE_PHOTOS],
+      },
+      {
+        item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
         jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, JobName.SEARCH_INDEX_ASSET],
       },
       {
@@ -284,6 +304,17 @@ describe(JobService.name, () => {
         ],
       },
       {
+        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        jobs: [
+          JobName.CLASSIFY_IMAGE,
+          JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.RECOGNIZE_FACES,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.ENCODE_CLIP,
+          JobName.VIDEO_CONVERSION,
+        ],
+      },
+      {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
         jobs: [JobName.SEARCH_INDEX_ASSET],
       },
@@ -300,7 +331,11 @@ describe(JobService.name, () => {
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
         if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
-          assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+          if (item.data.id === 'asset-live-image') {
+            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+          } else {
+            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+          }
         } else {
           assetMock.getByIds.mockResolvedValue([]);
         }

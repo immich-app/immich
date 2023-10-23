@@ -58,11 +58,11 @@ class SmartInfoResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SmartInfoResponseDto(
-        objects: json[r'objects'] is Iterable
-            ? (json[r'objects'] as Iterable).cast<String>().toList(growable: false)
+        objects: json[r'objects'] is List
+            ? (json[r'objects'] as List).cast<String>()
             : const [],
-        tags: json[r'tags'] is Iterable
-            ? (json[r'tags'] as Iterable).cast<String>().toList(growable: false)
+        tags: json[r'tags'] is List
+            ? (json[r'tags'] as List).cast<String>()
             : const [],
       );
     }

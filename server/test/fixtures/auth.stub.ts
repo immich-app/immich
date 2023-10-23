@@ -1,10 +1,15 @@
 import { AuthUserDto } from '@app/domain';
 
-export const signupStub = {
+export const adminSignupStub = {
   firstName: 'Immich',
   lastName: 'Admin',
   email: 'admin@immich.app',
   password: 'Password123',
+};
+
+export const userSignupStub = {
+  ...adminSignupStub,
+  memoriesEnabled: true,
 };
 
 export const signupResponseStub = {
@@ -20,6 +25,11 @@ export const loginStub = {
     email: 'admin@immich.app',
     password: 'Password123',
   },
+};
+
+export const changePasswordStub = {
+  password: 'Password123',
+  newPassword: 'Password1234',
 };
 
 export const authStub = {
@@ -38,7 +48,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: null,
   }),
@@ -49,7 +59,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: null,
   }),
@@ -60,7 +70,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: '/data/user1',
   }),
@@ -71,7 +81,7 @@ export const authStub = {
     isAllowUpload: true,
     isAllowDownload: true,
     isPublicUser: true,
-    isShowExif: true,
+    isShowMetadata: true,
     sharedLinkId: '123',
   }),
   adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
@@ -81,7 +91,7 @@ export const authStub = {
     isAllowUpload: true,
     isAllowDownload: true,
     isPublicUser: true,
-    isShowExif: false,
+    isShowMetadata: false,
     sharedLinkId: '123',
   }),
   readonlySharedLink: Object.freeze<AuthUserDto>({
@@ -91,7 +101,7 @@ export const authStub = {
     isAllowUpload: false,
     isAllowDownload: false,
     isPublicUser: true,
-    isShowExif: true,
+    isShowMetadata: true,
     sharedLinkId: '123',
     accessTokenId: 'token-id',
   }),

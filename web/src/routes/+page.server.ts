@@ -10,10 +10,10 @@ export const load = (async ({ parent, locals: { api } }) => {
     throw redirect(302, AppRoute.PHOTOS);
   }
 
-  const { data } = await api.userApi.getUserCount({ admin: true });
+  const { data } = await api.serverInfoApi.getServerConfig();
 
-  if (data.userCount > 0) {
-    // Redirect to login page if an admin is already registered.
+  if (data.isInitialized) {
+    // Redirect to login page if there exists an admin account (i.e. server is initialized)
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
 

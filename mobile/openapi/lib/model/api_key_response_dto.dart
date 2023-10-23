@@ -62,10 +62,10 @@ class APIKeyResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;

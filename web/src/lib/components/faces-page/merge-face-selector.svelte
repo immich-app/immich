@@ -12,7 +12,9 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
+  import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -22,7 +24,9 @@
   let dispatch = createEventDispatcher();
 
   $: hasSelection = selectedPeople.length > 0;
-  $: unselectedPeople = people.filter((source) => !selectedPeople.includes(source) && source.id !== person.id);
+  $: unselectedPeople = people.filter(
+    (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
+  );
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
@@ -31,6 +35,11 @@
 
   const onClose = () => {
     dispatch('go-back');
+  };
+
+  const handleSwapPeople = () => {
+    [person, selectedPeople[0]] = [selectedPeople[0], person];
+    goto(`${AppRoute.PEOPLE}/${person.id}?action=merge`);
   };
 
   const onSelect = (selected: PersonResponseDto) => {
@@ -61,8 +70,9 @@
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
+      people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
       await invalidateAll();
-      onClose();
+      dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge faces');
     } finally {
@@ -112,13 +122,20 @@
           {/each}
 
           {#if hasSelection}
-            <span><CallMerge size={48} class="rotate-90 dark:text-white" /> </span>
+            <span class="grid grid-cols-1"
+              ><CallMerge size={48} class="rotate-90 dark:text-white" />
+              {#if selectedPeople.length === 1}
+                <button class="flex justify-center" on:click={handleSwapPeople}
+                  ><SwapHorizontal size={24} class="dark:text-white" />
+                </button>
+              {/if}
+            </span>
           {/if}
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
       <div
-        class="overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
+        class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
         <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">

@@ -1,4 +1,19 @@
+---
+sidebar_position: 90
+---
+
 # Environment Variables
+
+:::caution
+
+To change environment variables, you must recreate the Immich containers.
+Just restarting the containers does not replace the environment within the container!
+
+In order to recreate the container using docker compose, run `docker compose up -d`.
+In most cases docker will recognize that the `.env` file has changed and recreate the affected containers.
+If this should not work, try running `docker compose up -d --force-recreate`.
+
+:::
 
 ## Docker Compose
 
@@ -22,6 +37,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
 | `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
 | `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
+| `IMMICH_CONFIG_FILE`        | Path to config file                          |              | server                                       |
 
 :::tip
 
@@ -33,30 +49,28 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Geocoding
 
-| Variable                           | Description                         |           Default            | Services      |
-| :--------------------------------- | :---------------------------------- | :--------------------------: | :------------ |
-| `DISABLE_REVERSE_GEOCODING`        | Disable Reverse Geocoding Precision |           `false`            | microservices |
-| `REVERSE_GEOCODING_PRECISION`      | Reverse Geocoding Precision         |             `3`              | microservices |
-| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory    | `./.reverse-geocoding-dump/` | microservices |
+| Variable                           | Description                      |           Default            | Services      |
+| :--------------------------------- | :------------------------------- | :--------------------------: | :------------ |
+| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices |
 
 ## Ports
 
-| Variable                | Description           | Default | Services         |
-| :---------------------- | :-------------------- | :-----: | :--------------- |
-| `PORT`                  | Web Port              | `3000`  | web              |
-| `SERVER_PORT`           | Server Port           | `3001`  | server           |
-| `MICROSERVICES_PORT`    | Microservices Port    | `3002`  | microservices    |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port | `3003`  | machine learning |
+| Variable                | Description           |  Default  | Services         |
+| :---------------------- | :-------------------- | :-------: | :--------------- |
+| `PORT`                  | Web Port              |  `3000`   | web              |
+| `SERVER_PORT`           | Server Port           |  `3001`   | server           |
+| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices    |
+| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
+| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
 
 ## URLs
 
-| Variable                      | Description                                              |                Default                | Services              |
-| :---------------------------- | :------------------------------------------------------- | :-----------------------------------: | :-------------------- |
-| `IMMICH_WEB_URL`              | Immich Web URL                                           |       `http://immich-web:3000`        | proxy                 |
-| `IMMICH_SERVER_URL`           | Immich Server URL                                        |      `http://immich-server:3001`      | web, proxy            |
-| `IMMICH_MACHINE_LEARNING_URL` | Immich Machine Learning URL, set `"false"` to disable ML | `http://immich-machine-learning:3003` | server, microservices |
-| `PUBLIC_IMMICH_SERVER_URL`    | Public Immich URL                                        |      `http://immich-server:3001`      | web                   |
-| `IMMICH_API_URL_EXTERNAL`     | Immich API URL External                                  |                `/api`                 | web                   |
+| Variable                   | Description             |           Default           | Services   |
+| :------------------------- | :---------------------- | :-------------------------: | :--------- |
+| `IMMICH_WEB_URL`           | Immich Web URL          |  `http://immich-web:3000`   | proxy      |
+| `IMMICH_SERVER_URL`        | Immich Server URL       | `http://immich-server:3001` | web, proxy |
+| `PUBLIC_IMMICH_SERVER_URL` | Public Immich URL       | `http://immich-server:3001` | web        |
+| `IMMICH_API_URL_EXTERNAL`  | Immich API URL External |           `/api`            | web        |
 
 :::info
 
@@ -172,18 +186,27 @@ Typesense URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                    | Description                    |        Default        | Services         |
-| :------------------------------------------ | :----------------------------- | :-------------------: | :--------------- |
-| `MACHINE_LEARNING_MIN_FACE_SCORE`           | Minimum Face Score             |         `0.7`         | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL`                | Model TTL                      |         `300`         | machine learning |
-| `MACHINE_LEARNING_EAGER_STARTUP`            | Eager Startup                  |        `true`         | machine learning |
-| `MACHINE_LEARNING_MIN_TAG_SCORE`            | Minimum Tag Score              |         `0.9`         | machine learning |
-| `MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL` | Facial Recognition Model       |      `buffalo_l`      | machine learning |
-| `MACHINE_LEARNING_CLIP_TEXT_MODEL`          | Clip Text Model                |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLIP_IMAGE_MODEL`         | Clip Image Model               |    `clip-ViT-B-32`    | machine learning |
-| `MACHINE_LEARNING_CLASSIFICATION_MODEL`     | Classification Model           | `microsoft/resnet-50` | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`             | ML Cache Location              |       `/cache`        | machine learning |
-| `TRANSFORMERS_CACHE`                        | ML Transformers Cache Location |       `/cache`        | machine learning |
+| Variable                                         | Description                                                       |       Default       | Services         |
+| :----------------------------------------------- | :---------------------------------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`<sup>\*1</sup>       | Inactivity time (s) before a model is unloaded (disabled if <= 0) |         `0`         | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                             |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*2</sup> | Thread count of the request thread pool (disabled if <= 0)        | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                               |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                        |         `2`         | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*3</sup>         | Number of worker processes to spawn                               |         `1`         | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed    |        `120`        | machine learning |
+
+\*1: This is an experimental feature. It may result in increased memory use over time when loading models repeatedly.
+
+\*2: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
+
+\*3: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.
+
+:::info
+
+Other machine learning parameters can be tuned from the admin UI.
+
+:::
 
 ## Docker Secrets
 

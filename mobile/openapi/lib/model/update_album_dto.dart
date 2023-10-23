@@ -15,6 +15,7 @@ class UpdateAlbumDto {
   UpdateAlbumDto({
     this.albumName,
     this.albumThumbnailAssetId,
+    this.description,
   });
 
   ///
@@ -33,19 +34,29 @@ class UpdateAlbumDto {
   ///
   String? albumThumbnailAssetId;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
      other.albumName == albumName &&
-     other.albumThumbnailAssetId == albumThumbnailAssetId;
+     other.albumThumbnailAssetId == albumThumbnailAssetId &&
+     other.description == description;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName == null ? 0 : albumName!.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode);
+    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+    (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -58,6 +69,11 @@ class UpdateAlbumDto {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
     //  json[r'albumThumbnailAssetId'] = null;
+    }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
     }
     return json;
   }
@@ -72,6 +88,7 @@ class UpdateAlbumDto {
       return UpdateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName'),
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
+        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;

@@ -25,7 +25,7 @@ typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
-  BuildContext context, 
+  BuildContext context,
   int index,
 );
 
@@ -276,10 +276,12 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            heroAttributes: pageOption.heroAttributes,
             child: pageOption.child,
           )
         : PhotoView(
             key: ObjectKey(index),
+            index: index,
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
@@ -306,27 +308,18 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
             errorBuilder: pageOption.errorBuilder,
+            heroAttributes: pageOption.heroAttributes,
           );
-
-    if (pageOption.heroAttributes != null) {
-      return Hero(
-        tag: pageOption.heroAttributes!.tag,
-        createRectTween: pageOption.heroAttributes!.createRectTween,
-        flightShuttleBuilder: pageOption.heroAttributes!.flightShuttleBuilder,
-        placeholderBuilder: pageOption.heroAttributes!.placeholderBuilder,
-        transitionOnUserGestures: pageOption.heroAttributes!.transitionOnUserGestures,
-        child: ClipRect(
-          child: photoView,
-        ),
-      );
-    }
 
     return ClipRect(
       child: photoView,
     );
   }
 
-  PhotoViewGalleryPageOptions _buildPageOption(BuildContext context, int index) {
+  PhotoViewGalleryPageOptions _buildPageOption(
+    BuildContext context,
+    int index,
+  ) {
     if (widget._isBuilder) {
       return widget.builder!(context, index);
     }

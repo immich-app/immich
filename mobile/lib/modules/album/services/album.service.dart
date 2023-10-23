@@ -348,6 +348,26 @@ class AlbumService {
     }
   }
 
+  Future<bool> removeUserFromAlbum(
+    Album album,
+    User user,
+  ) async {
+    try {
+      await _apiService.albumApi.removeUserFromAlbum(
+        album.remoteId!,
+        user.id,
+      );
+
+      album.sharedUsers.remove(user);
+      await _db.writeTxn(() => album.sharedUsers.update(unlink: [user]));
+
+      return true;
+    } catch (e) {
+      debugPrint("Error removeUserFromAlbum  ${e.toString()}");
+      return false;
+    }
+  }
+
   Future<bool> changeTitleAlbum(
     Album album,
     String newAlbumTitle,

@@ -3,7 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { assetStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
 import { when } from 'jest-when';
 import { AssetIdErrorReason } from '../asset';
-import { ITagRepository } from './tag.repository';
+import { ITagRepository } from '../repositories';
 import { TagService } from './tag.service';
 
 describe(TagService.name, () => {

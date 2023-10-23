@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup_verification.service.dart';
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
@@ -25,7 +26,7 @@ import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -53,7 +54,8 @@ class BackupControllerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
+        if (backupState.backupProgress != BackUpProgressEnum.inProgress &&
+            backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
           ref.watch(backupProvider.notifier).getBackupInfo();
         }
 
@@ -79,7 +81,9 @@ class BackupControllerPage extends HookConsumerWidget {
           context: context,
           msg: "Deleting ${assets.length} assets on the server...",
         );
-        await ref.read(assetProvider.notifier).deleteAssets(assets);
+        await ref
+            .read(assetProvider.notifier)
+            .deleteAssets(assets, force: true);
         ImmichToast.show(
           context: context,
           msg: "Deleted ${assets.length} assets on the server. "
@@ -112,7 +116,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
           return;
         }
-        Wakelock.enable();
+        WakelockPlus.enable();
         const limit = 100;
         final toDelete = await ref
             .read(backupVerificationServiceProvider)
@@ -138,7 +142,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
         }
       } finally {
-        Wakelock.disable();
+        WakelockPlus.disable();
         checkInProgress.value = false;
       }
     }
@@ -200,7 +204,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 child: const Text('backup_controller_page_storage_format').tr(
                   args: [
                     backupState.serverInfo.diskUse,
-                    backupState.serverInfo.diskSize
+                    backupState.serverInfo.diskSize,
                   ],
                 ),
               ),
@@ -254,7 +258,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -622,7 +626,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   style: TextStyle(fontSize: 12),
                 ).tr(),
                 buildSelectedAlbumName(),
-                buildExcludedAlbumName()
+                buildExcludedAlbumName(),
               ],
             ),
           ),
@@ -656,7 +660,9 @@ class BackupControllerPage extends HookConsumerWidget {
           top: 24,
         ),
         child: Container(
-          child: backupState.backupProgress == BackUpProgressEnum.inProgress
+          child: backupState.backupProgress == BackUpProgressEnum.inProgress ||
+                  backupState.backupProgress ==
+                      BackUpProgressEnum.manualInProgress
               ? ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.grey[50],
@@ -664,7 +670,12 @@ class BackupControllerPage extends HookConsumerWidget {
                     // padding: const EdgeInsets.all(14),
                   ),
                   onPressed: () {
-                    ref.read(backupProvider.notifier).cancelBackup();
+                    if (backupState.backupProgress ==
+                        BackUpProgressEnum.manualInProgress) {
+                      ref.read(manualUploadProvider.notifier).cancelBackup();
+                    } else {
+                      ref.read(backupProvider.notifier).cancelBackup();
+                    }
                   },
                   child: const Text(
                     "backup_controller_page_cancel",
@@ -767,7 +778,7 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             const CurrentUploadingAssetInfoBox(),
             if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
-            buildBackupButton()
+            buildBackupButton(),
           ],
         ),
       ),

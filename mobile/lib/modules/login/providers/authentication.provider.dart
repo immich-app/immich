@@ -97,12 +97,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<void> logout() async {
     var log = Logger('AuthenticationNotifier');
     try {
-
       String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
 
       _apiService.authenticationApi
           .logout()
-          .then((_) => log.info("Logout was successfull for $userEmail"))
+          .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
             (error, stackTrace) =>
                 log.severe("Error logging out $userEmail", error, stackTrace),
@@ -114,7 +113,17 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.delete(StoreKey.accessToken),
       ]);
 
-      state = state.copyWith(isAuthenticated: false);
+      state = state.copyWith(
+        deviceId: "",
+        userId: "",
+        userEmail: "",
+        firstName: '',
+        lastName: '',
+        profileImagePath: '',
+        isAdmin: false,
+        shouldChangePassword: false,
+        isAuthenticated: false,
+      );
     } catch (e) {
       log.severe("Error logging out $e");
     }
@@ -186,8 +195,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         user = User.fromDto(userResponseDto);
 
         retResult = true;
-      }
-      else {
+      } else {
         _log.severe("Unable to get user information from the server.");
         return false;
       }

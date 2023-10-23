@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -13,36 +14,96 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
     required this.onFavorite,
-    required this.isFavorite,
+    required this.onUploadPressed,
   }) : super(key: key);
 
   final Asset asset;
   final Function onMoreInfoPressed;
+  final VoidCallback? onUploadPressed;
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
-  final VoidCallback? onFavorite;
+  final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
-  final bool isFavorite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const double iconSize = 22.0;
+    final a = ref.watch(assetWatcher(asset)).value ?? asset;
 
-    Widget buildFavoriteButton() {
+    Widget buildFavoriteButton(a) {
       return IconButton(
-        onPressed: onFavorite,
+        onPressed: () => onFavorite(a),
         icon: Icon(
-          isFavorite ? Icons.favorite : Icons.favorite_border,
+          a.isFavorite ? Icons.favorite : Icons.favorite_border,
           color: Colors.grey[200],
         ),
       );
     }
 
-    return AppBar(
-      foregroundColor: Colors.grey[100],
-      backgroundColor: Colors.transparent,
-      leading: IconButton(
+    Widget buildLivePhotoButton() {
+      return IconButton(
+        onPressed: () {
+          onToggleMotionVideo();
+        },
+        icon: isPlayingMotionVideo
+            ? Icon(
+                Icons.motion_photos_pause_outlined,
+                color: Colors.grey[200],
+              )
+            : Icon(
+                Icons.play_circle_outline_rounded,
+                color: Colors.grey[200],
+              ),
+      );
+    }
+
+    Widget buildMoreInfoButton() {
+      return IconButton(
+        onPressed: () {
+          onMoreInfoPressed();
+        },
+        icon: Icon(
+          Icons.info_outline_rounded,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildDownloadButton() {
+      return IconButton(
+        onPressed: onDownloadPressed,
+        icon: Icon(
+          Icons.cloud_download_outlined,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildAddToAlbumButtom() {
+      return IconButton(
+        onPressed: () {
+          onAddToAlbumPressed();
+        },
+        icon: Icon(
+          Icons.add,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildUploadButton() {
+      return IconButton(
+        onPressed: onUploadPressed,
+        icon: Icon(
+          Icons.backup_outlined,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildBackButton() {
+      return IconButton(
         onPressed: () {
           AutoRouter.of(context).pop();
         },
@@ -51,54 +112,23 @@ class TopControlAppBar extends HookConsumerWidget {
           size: 20.0,
           color: Colors.grey[200],
         ),
-      ),
+      );
+    }
+
+    return AppBar(
+      foregroundColor: Colors.grey[100],
+      backgroundColor: Colors.transparent,
+      leading: buildBackButton(),
       actionsIconTheme: const IconThemeData(
         size: iconSize,
       ),
       actions: [
-        if (asset.isRemote) buildFavoriteButton(),
-        if (asset.livePhotoVideoId != null)
-          IconButton(
-            onPressed: () {
-              onToggleMotionVideo();
-            },
-            icon: isPlayingMotionVideo
-                ? Icon(
-                    Icons.motion_photos_pause_outlined,
-                    color: Colors.grey[200],
-                  )
-                : Icon(
-                    Icons.play_circle_outline_rounded,
-                    color: Colors.grey[200],
-                  ),
-          ),
-        if (asset.storage == AssetState.remote)
-          IconButton(
-            onPressed: onDownloadPressed,
-            icon: Icon(
-              Icons.cloud_download_outlined,
-              color: Colors.grey[200],
-            ),
-          ),
-        if (asset.isRemote)
-          IconButton(
-            onPressed: () {
-              onAddToAlbumPressed();
-            },
-            icon: Icon(
-              Icons.add,
-              color: Colors.grey[200],
-            ),
-          ),
-        IconButton(
-          onPressed: () {
-            onMoreInfoPressed();
-          },
-          icon: Icon(
-            Icons.info_outline_rounded,
-            color: Colors.grey[200],
-          ),
-        ),
+        if (asset.isRemote) buildFavoriteButton(a),
+        if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
+        if (asset.isLocal && !asset.isRemote) buildUploadButton(),
+        if (asset.isRemote && !asset.isLocal) buildDownloadButton(),
+        if (asset.isRemote) buildAddToAlbumButtom(),
+        buildMoreInfoButton(),
       ],
     );
   }

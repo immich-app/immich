@@ -11,14 +11,9 @@ import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
-import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/cache/widgets_binding.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -29,27 +24,26 @@ import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
+import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  ImmichWidgetsBinding();
 
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
+  HttpOverrides.global = HttpSSLCertOverride();
   runApp(getMainWidget(db));
 }
 
@@ -72,11 +66,15 @@ Future<void> initApp() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    log.severe(details.toString(), details, details.stack);
+    log.severe(
+      'Catch all error: ${details.toString()} - ${details.exception} - ${details.library} - ${details.context} - ${details.stack}',
+      details,
+      details.stack,
+    );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    log.severe(error.toString(), error, stack);
+    log.severe('Catch all error: ${error.toString()} - $error', error, stack);
     return true;
   };
 }
@@ -131,53 +129,26 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     switch (state) {
       case AppLifecycleState.resumed:
         debugPrint("[APP STATE] resumed");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
-
-        var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
-        final permission = ref.watch(galleryPermissionNotifier);
-
-        // Needs to be logged in and have gallery permissions
-        if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
-          ref.read(backupProvider.notifier).resumeBackup();
-          ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-          ref.watch(assetProvider.notifier).getAllAsset();
-          ref.watch(serverInfoProvider.notifier).getServerVersion();
-        }
-
-        ref.watch(websocketProvider.notifier).connect();
-
-        ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
-
-        ref
-            .watch(notificationPermissionProvider.notifier)
-            .getNotificationPermission();
-        ref
-            .watch(galleryPermissionNotifier.notifier)
-            .getGalleryPermissionStatus();
-
-        ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
-
-        ref.invalidate(memoryFutureProvider);
-
+        ref.read(appStateProvider.notifier).handleAppResume();
         break;
 
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.inactive;
-        ImmichLogger().flush();
-        ref.watch(websocketProvider.notifier).disconnect();
-        ref.watch(backupProvider.notifier).cancelBackup();
-
+        ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
 
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.paused;
+        ref.read(appStateProvider.notifier).handleAppPause();
         break;
 
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
-        ref.watch(appStateProvider.notifier).state = AppStateEnum.detached;
+        ref.read(appStateProvider.notifier).handleAppDetached();
+        break;
+      case AppLifecycleState.hidden:
+        debugPrint("[APP STATE] hidden");
+        ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }
   }
@@ -203,6 +174,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+    await ref.read(localNotificationService).setup();
   }
 
   @override

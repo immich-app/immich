@@ -1,10 +1,12 @@
 import { IAccessRepository } from '@app/domain';
 
-export type IAccessRepositoryMock = {
+export interface IAccessRepositoryMock {
   asset: jest.Mocked<IAccessRepository['asset']>;
   album: jest.Mocked<IAccessRepository['album']>;
   library: jest.Mocked<IAccessRepository['library']>;
-};
+  timeline: jest.Mocked<IAccessRepository['timeline']>;
+  person: jest.Mocked<IAccessRepository['person']>;
+}
 
 export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
   return {
@@ -22,7 +24,16 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
     },
 
     library: {
+      hasOwnerAccess: jest.fn(),
       hasPartnerAccess: jest.fn(),
+    },
+
+    timeline: {
+      hasPartnerAccess: jest.fn(),
+    },
+
+    person: {
+      hasOwnerAccess: jest.fn(),
     },
   };
 };

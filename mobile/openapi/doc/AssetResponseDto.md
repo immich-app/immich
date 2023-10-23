@@ -15,18 +15,29 @@ Name | Type | Description | Notes
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
+**hasMetadata** | **bool** |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
+**isExternal** | **bool** |  | 
 **isFavorite** | **bool** |  | 
+**isOffline** | **bool** |  | 
+**isReadOnly** | **bool** |  | 
+**isTrashed** | **bool** |  | 
+**libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 
+**localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
+**owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
 **ownerId** | **String** |  | 
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
 **resized** | **bool** |  | 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
+**stack** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [optional] [default to const []]
+**stackCount** | **int** |  | 
+**stackParentId** | **String** |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
-**thumbhash** | **String** | base64 encoded thumbhash | 
+**thumbhash** | **String** |  | 
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

@@ -6,6 +6,7 @@ import {
   loginResponseStub,
   newCryptoRepositoryMock,
   newKeyRepositoryMock,
+  newLibraryRepositoryMock,
   newSharedLinkRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
@@ -16,17 +17,20 @@ import {
   userTokenStub,
 } from '@test';
 import { IncomingHttpHeaders } from 'http';
-import { generators, Issuer } from 'openid-client';
+import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
 import { AuthUserDto, SignUpDto } from './dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -50,6 +54,7 @@ describe('AuthService', () => {
   let sut: AuthService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
@@ -81,12 +86,13 @@ describe('AuthService', () => {
 
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, libraryMock, shareMock, keyMock);
   });
 
   it('should be defined', () => {
@@ -213,6 +219,15 @@ describe('AuthService', () => {
       });
 
       expect(userTokenMock.delete).toHaveBeenCalledWith('123', 'token123');
+    });
+
+    it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
+      const authUser = { id: '123' } as AuthUserDto;
+
+      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
+        successful: true,
+        redirectUri: '/auth/login?autoLaunch=0',
+      });
     });
   });
 

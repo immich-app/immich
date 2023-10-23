@@ -1,7 +1,7 @@
-import { AlbumAssetCount, IAlbumRepository } from '@app/domain';
+import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 
@@ -10,27 +10,30 @@ export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  getById(id: string): Promise<AlbumEntity | null> {
-    return this.repository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        owner: true,
-        sharedUsers: true,
-        assets: {
-          exifInfo: true,
-        },
-        sharedLinks: true,
-      },
-      order: {
-        assets: {
-          fileCreatedAt: 'DESC',
-        },
-      },
-    });
+  getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
+    const relations: FindOptionsRelations<AlbumEntity> = {
+      owner: true,
+      sharedUsers: true,
+      assets: false,
+      sharedLinks: true,
+    };
+
+    const order: FindOptionsOrder<AlbumEntity> = {};
+
+    if (options.withAssets) {
+      relations.assets = {
+        exifInfo: true,
+      };
+
+      order.assets = {
+        fileCreatedAt: 'DESC',
+      };
+    }
+
+    return this.repository.findOne({ where: { id }, relations, order });
   }
 
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
@@ -47,7 +50,10 @@ export class AlbumRepository implements IAlbumRepository {
 
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      where: { ownerId, assets: { id: assetId } },
+      where: [
+        { ownerId, assets: { id: assetId } },
+        { sharedUsers: { id: ownerId }, assets: { id: assetId } },
+      ],
       relations: { owner: true, sharedUsers: true },
       order: { createdAt: 'DESC' },
     });
@@ -82,7 +88,7 @@ export class AlbumRepository implements IAlbumRepository {
    */
   async getInvalidThumbnail(): Promise<string[]> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = dataSource
+    const albumHasAssets = this.dataSource
       .createQueryBuilder()
       .select('1')
       .from('albums_assets_assets', 'albums_assets')
@@ -136,6 +142,14 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  async restoreAll(userId: string): Promise<void> {
+    await this.repository.restore({ ownerId: userId });
+  }
+
+  async softDeleteAll(userId: string): Promise<void> {
+    await this.repository.softDelete({ ownerId: userId });
+  }
+
   async deleteAll(userId: string): Promise<void> {
     await this.repository.delete({ ownerId: userId });
   }
@@ -148,18 +162,48 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  hasAsset(id: string, assetId: string): Promise<boolean> {
+  async removeAsset(assetId: string): Promise<void> {
+    // Using dataSource, because there is no direct access to albums_assets_assets.
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
+  }
+
+  async removeAssets(asset: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where({
+        albumsId: asset.albumId,
+        assetsId: In(asset.assetIds),
+      })
+      .execute();
+  }
+
+  hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
       where: {
-        id,
+        id: asset.albumId,
         assets: {
-          id: assetId,
+          id: asset.assetId,
         },
       },
       relations: {
         assets: true,
       },
     });
+  }
+
+  async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
   }
 
   async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
@@ -181,6 +225,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: {
         owner: true,
         sharedUsers: true,
+        sharedLinks: true,
         assets: true,
       },
     });

@@ -13,20 +13,15 @@ jobs:
   e2e-tests:
     name: Run end-to-end test suites
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Run npm install
-        run: npm ci
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
 
       - name: Run e2e tests
-        run: npm run test:e2e
-        if: ${{ !cancelled() }}
+        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks
@@ -37,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -59,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -89,7 +84,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -115,7 +110,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run npm install
         run: npm ci
@@ -144,12 +139,12 @@ jobs:
     name: Run mobile unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.10.5"
+          flutter-version: "3.13.6"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -161,7 +156,7 @@ jobs:
       run:
         working-directory: ./machine-learning
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -171,6 +166,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --with dev
+          poetry run pip install --no-deps -r requirements.txt
       - name: Lint with ruff
         run: |
           poetry run ruff check --format=github app
@@ -188,7 +184,7 @@ jobs:
     name: Check generated files are up-to-date
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run API generation
         run: npm --prefix server run api:generate
       - name: Find file changes
@@ -222,15 +218,27 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    defaults:
+      run:
+        working-directory: ./server
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install server dependencies
-        run: npm --prefix server ci
+        run: npm ci
+
+      - name: Build the
+        run: npm run build
+
       - name: Run existing migrations
-        run: npm --prefix server run typeorm:migrations:run
+        run: npm run typeorm:migrations:run
+
       - name: Generate new migrations
         continue-on-error: true
-        run: npm --prefix server run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+        run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
@@ -248,7 +256,7 @@ jobs:
   #   name: Run mobile end-to-end integration tests
   #   runs-on: macos-latest
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
   #     - uses: actions/setup-java@v3
   #       with:
   #         distribution: 'zulu'

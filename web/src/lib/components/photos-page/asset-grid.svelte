@@ -1,40 +1,52 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
+  import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
-  import AssetDateGroup from './asset-date-group.svelte';
-
-  import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
+  import AssetDateGroup from './asset-date-group.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
-  export let isAlbumSelectionMode = false;
+  export let isSelectionMode = false;
+  export let singleSelect = false;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
+  export let removeAction: AssetAction | null = null;
 
-  const { assetSelectionCandidates, assetSelectionStart, selectedAssets, isMultiSelectState } = assetInteractionStore;
+  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
+  export let forceDelete = false;
+
+  const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
+    assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
   let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
   let element: HTMLElement;
   let showShortcuts = false;
+  let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
+  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+  const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   onMount(async () => {
+    showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
+    assetStore.connect();
     await assetStore.init(viewport);
   });
 
@@ -42,17 +54,23 @@
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
     }
+
+    if ($showAssetViewer) {
+      $showAssetViewer = false;
+    }
+
+    assetStore.disconnect();
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
 
     if (!$showAssetViewer) {
       switch (event.key) {
         case 'Escape':
-          assetInteractionStore.clearMultiselect();
+          dispatch('escape');
           return;
         case '?':
           if (event.shiftKey) {
@@ -65,6 +83,12 @@
           goto(AppRoute.EXPLORE);
           return;
       }
+    }
+  };
+
+  const handleSelectAsset = (asset: AssetResponseDto) => {
+    if (!assetStore.albumAssets.has(asset.id)) {
+      assetInteractionStore.selectAsset(asset);
     }
   };
 
@@ -81,17 +105,33 @@
     element.scrollBy(0, event.detail.heightDelta);
   }
 
-  const navigateToPreviousAsset = async () => {
-    const prevAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
-    if (prevAsset) {
-      assetViewingStore.setAssetId(prevAsset);
+  const handlePrevious = async () => {
+    const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+    if (previousAsset) {
+      assetViewingStore.setAssetId(previousAsset);
     }
+
+    return !!previousAsset;
   };
 
-  const navigateToNextAsset = async () => {
+  const handleNext = async () => {
     const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
     if (nextAsset) {
       assetViewingStore.setAssetId(nextAsset);
+    }
+
+    return !!nextAsset;
+  };
+
+  const handleClose = () => assetViewingStore.showAssetViewer(false);
+
+  const handleAction = async (asset: AssetResponseDto, action: AssetAction) => {
+    if (removeAction === action) {
+      // find the next asset to show or close the viewer
+      (await handleNext()) || (await handlePrevious()) || handleClose();
+
+      // delete after find the next one
+      assetStore.removeAsset(asset.id);
     }
   };
 
@@ -107,12 +147,6 @@
       timelineY = element?.scrollTop || 0;
       animationTick = false;
     });
-  };
-
-  const handleArchiveSuccess = (e: CustomEvent) => {
-    const asset = e.detail as AssetResponseDto;
-    navigateToNextAsset();
-    assetStore.removeAsset(asset.id);
   };
 
   let lastAssetMouseEvent: AssetResponseDto | null = null;
@@ -153,17 +187,36 @@
     selectAssetCandidates(lastAssetMouseEvent);
   }
 
-  const handleSelectAssetCandidates = (e: CustomEvent) => {
-    const asset = e.detail.asset;
+  const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
     if (asset) {
       selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const handleSelectAssets = async (e: CustomEvent) => {
-    const asset = e.detail.asset;
+  const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
+    if ($selectedGroup.has(group)) {
+      assetInteractionStore.removeGroupFromMultiselectGroup(group);
+      for (const asset of assets) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+      }
+    } else {
+      assetInteractionStore.addGroupToMultiselectGroup(group);
+      for (const asset of assets) {
+        handleSelectAsset(asset);
+      }
+    }
+  };
+
+  const handleSelectAssets = async (asset: AssetResponseDto) => {
     if (!asset) {
+      return;
+    }
+
+    dispatch('select', asset);
+
+    if (singleSelect) {
+      element.scrollTop = 0;
       return;
     }
 
@@ -178,9 +231,9 @@
       assetInteractionStore.removeAssetFromMultiselectGroup(asset);
     } else {
       for (const candidate of $assetSelectionCandidates || []) {
-        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+        handleSelectAsset(candidate);
       }
-      assetInteractionStore.addAssetToMultiselectGroup(asset);
+      handleSelectAsset(asset);
     }
 
     assetInteractionStore.clearAssetSelectionCandidates();
@@ -205,7 +258,7 @@
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
           } else {
-            assetInteractionStore.addAssetToMultiselectGroup(asset);
+            handleSelectAsset(asset);
           }
         }
       }
@@ -274,14 +327,31 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-4"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
   on:scroll={handleTimelineScroll}
 >
+  <!-- skeleton -->
+  {#if showSkeleton}
+    <div class="mt-8 animate-pulse">
+      <div class="mb-2 h-4 w-24 rounded-full bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+      <div class="flex w-[120%] flex-wrap">
+        {#each Array(100) as _}
+          <div class="m-[1px] h-[10em] w-[16em] bg-immich-primary/20 dark:bg-immich-dark-primary/20" />
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   {#if element}
     <slot />
+
+    <!-- (optional) empty placeholder -->
+    {#if isEmpty}
+      <slot name="empty" />
+    {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
       {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
         <IntersectionObserver
@@ -297,10 +367,12 @@
               <AssetDateGroup
                 {assetStore}
                 {assetInteractionStore}
-                {isAlbumSelectionMode}
+                {isSelectionMode}
+                {singleSelect}
+                on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
                 on:shift={handleScrollTimeline}
-                on:selectAssetCandidates={handleSelectAssetCandidates}
-                on:selectAssets={handleSelectAssets}
+                on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
+                on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
                 assets={bucket.assets}
                 bucketDate={bucket.bucketDate}
                 bucketHeight={bucket.bucketHeight}
@@ -319,12 +391,14 @@
     <AssetViewer
       {assetStore}
       asset={$viewingAsset}
-      on:navigate-previous={navigateToPreviousAsset}
-      on:navigate-next={navigateToNextAsset}
-      on:close={() => {
-        assetViewingStore.showAssetViewer(false);
-      }}
-      on:archived={handleArchiveSuccess}
+      force={forceDelete || !isTrashEnabled}
+      on:previous={() => handlePrevious()}
+      on:next={() => handleNext()}
+      on:close={() => handleClose()}
+      on:archived={({ detail: asset }) => handleAction(asset, AssetAction.ARCHIVE)}
+      on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
+      on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
+      on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
     />
   {/if}
 </Portal>

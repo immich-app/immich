@@ -1,20 +1,14 @@
-import {
-  AdminSignupResponseDto,
-  AlbumResponseDto,
-  AuthDeviceResponseDto,
-  AuthUserDto,
-  CreateAlbumDto,
-  CreateUserDto,
-  LoginCredentialDto,
-  LoginResponseDto,
-  SharedLinkCreateDto,
-  SharedLinkResponseDto,
-  UpdateUserDto,
-  UserResponseDto,
-} from '@app/domain';
+import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
+import { AppModule } from '@app/immich';
 import { dataSource } from '@app/infra';
-import request from 'supertest';
-import { loginResponseStub, loginStub, signupResponseStub, signupStub } from './fixtures';
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import * as fs from 'fs';
+import path from 'path';
+import { AppService } from '../src/microservices/app.service';
+
+export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
+export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
 
 export const db = {
   reset: async () => {
@@ -39,117 +33,63 @@ export const db = {
   },
 };
 
-export function getAuthUser(): AuthUserDto {
-  return {
-    id: '3108ac14-8afb-4b7e-87fd-39ebb6b79750',
-    email: 'test@email.com',
-    isAdmin: false,
-  };
+let _handler: JobItemHandler = () => Promise.resolve();
+
+interface TestAppOptions {
+  jobs: boolean;
 }
 
-export const api = {
-  adminSignUp: async (server: any) => {
-    const { status, body } = await request(server).post('/auth/admin-sign-up').send(signupStub);
+let app: INestApplication;
 
-    expect(status).toBe(201);
-    expect(body).toEqual(signupResponseStub);
+export const testApp = {
+  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
+    const { jobs } = options || { jobs: false };
 
-    return body as AdminSignupResponseDto;
+    const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+      .overrideProvider(IJobRepository)
+      .useValue({
+        addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
+        queue: (item: JobItem) => jobs && _handler(item),
+        resume: jest.fn(),
+        empty: jest.fn(),
+        setConcurrency: jest.fn(),
+        getQueueStatus: jest.fn(),
+        getJobCounts: jest.fn(),
+        pause: jest.fn(),
+      } as IJobRepository)
+      .compile();
+
+    app = await moduleFixture.createNestApplication().init();
+
+    if (jobs) {
+      await app.get(AppService).init();
+    }
+
+    return [app.getHttpServer(), app];
   },
-  adminLogin: async (server: any) => {
-    const { status, body } = await request(server).post('/auth/login').send(loginStub.admin);
-
-    expect(body).toEqual(loginResponseStub.admin.response);
-    expect(body).toMatchObject({ accessToken: expect.any(String) });
-    expect(status).toBe(201);
-
-    return body as LoginResponseDto;
+  reset: async () => {
+    await db.reset();
   },
-  login: async (server: any, dto: LoginCredentialDto) => {
-    const { status, body } = await request(server).post('/auth/login').send(dto);
-
-    expect(status).toEqual(201);
-    expect(body).toMatchObject({ accessToken: expect.any(String) });
-
-    return body as LoginResponseDto;
+  teardown: async () => {
+    await app.get(AppService).teardown();
+    await db.disconnect();
+    await app.close();
   },
-  getAuthDevices: async (server: any, accessToken: string) => {
-    const { status, body } = await request(server).get('/auth/devices').set('Authorization', `Bearer ${accessToken}`);
+};
 
-    expect(body).toEqual(expect.any(Array));
-    expect(status).toBe(200);
+export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
 
-    return body as AuthDeviceResponseDto[];
-  },
-  validateToken: async (server: any, accessToken: string) => {
-    const response = await request(server).post('/auth/validateToken').set('Authorization', `Bearer ${accessToken}`);
-    expect(response.body).toEqual({ authStatus: true });
-    expect(response.status).toBe(200);
-  },
-  albumApi: {
-    create: async (server: any, accessToken: string, dto: CreateAlbumDto) => {
-      const res = await request(server).post('/album').set('Authorization', `Bearer ${accessToken}`).send(dto);
-      expect(res.status).toEqual(201);
-      return res.body as AlbumResponseDto;
-    },
-  },
-  sharedLinkApi: {
-    create: async (server: any, accessToken: string, dto: SharedLinkCreateDto) => {
-      const { status, body } = await request(server)
-        .post('/shared-link')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(dto);
-      expect(status).toBe(201);
-      return body as SharedLinkResponseDto;
-    },
-  },
-  userApi: {
-    create: async (server: any, accessToken: string, dto: CreateUserDto) => {
-      const { status, body } = await request(server)
-        .post('/user')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(dto);
+const directoryExists = async (dirPath: string) =>
+  await fs.promises
+    .access(dirPath)
+    .then(() => true)
+    .catch(() => false);
 
-      expect(status).toBe(201);
-      expect(body).toMatchObject({
-        id: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        email: dto.email,
-      });
-
-      return body as UserResponseDto;
-    },
-    get: async (server: any, accessToken: string, id: string) => {
-      const { status, body } = await request(server)
-        .get(`/user/info/${id}`)
-        .set('Authorization', `Bearer ${accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ id });
-
-      return body as UserResponseDto;
-    },
-    update: async (server: any, accessToken: string, dto: UpdateUserDto) => {
-      const { status, body } = await request(server)
-        .put('/user')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(dto);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ id: dto.id });
-
-      return body as UserResponseDto;
-    },
-    delete: async (server: any, accessToken: string, id: string) => {
-      const { status, body } = await request(server)
-        .delete(`/user/${id}`)
-        .set('Authorization', `Bearer ${accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ id, deletedAt: expect.any(String) });
-
-      return body as UserResponseDto;
-    },
-  },
-} as const;
+export async function restoreTempFolder(): Promise<void> {
+  if (await directoryExists(`${IMMICH_TEST_ASSET_TEMP_PATH}`)) {
+    // Temp directory exists, delete all files inside it
+    await fs.promises.rm(IMMICH_TEST_ASSET_TEMP_PATH, { recursive: true });
+  }
+  // Create temp folder
+  await fs.promises.mkdir(IMMICH_TEST_ASSET_TEMP_PATH);
+}

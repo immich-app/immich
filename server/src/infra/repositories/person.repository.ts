@@ -50,16 +50,36 @@ export class PersonRepository implements IPersonRepository {
     return people.length;
   }
 
-  getAll(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
-    return this.personRepository
+  getAllFaces(): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ relations: { asset: true }, withDeleted: true });
+  }
+
+  getAll(): Promise<PersonEntity[]> {
+    return this.personRepository.find();
+  }
+
+  getAllWithoutThumbnail(): Promise<PersonEntity[]> {
+    return this.personRepository.findBy({ thumbnailPath: '' });
+  }
+
+  getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
+    const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+      .innerJoin('face.asset', 'asset')
+      .orderBy('person.isHidden', 'ASC')
+      .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
+      .addOrderBy('COUNT(face.assetId)', 'DESC')
+      .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
+      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
-      .limit(500)
-      .getMany();
+      .limit(500);
+    if (!options?.withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+
+    return queryBuilder.getMany();
   }
 
   getAllWithoutFaces(): Promise<PersonEntity[]> {
@@ -68,17 +88,27 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .having('COUNT(face.assetId) = 0')
       .groupBy('person.id')
+      .withDeleted()
       .getMany();
   }
 
-  getById(ownerId: string, personId: string): Promise<PersonEntity | null> {
-    return this.personRepository.findOne({ where: { id: personId, ownerId } });
+  getById(personId: string): Promise<PersonEntity | null> {
+    return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getAssets(ownerId: string, personId: string): Promise<AssetEntity[]> {
+  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId', { userId })
+      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
+      .limit(20)
+      .getMany();
+  }
+
+  getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
-        ownerId,
         faces: {
           personId,
         },
@@ -103,12 +133,20 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
+  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.save(entity);
+  }
+
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     const { id } = await this.personRepository.save(entity);
     return this.personRepository.findOneByOrFail({ id });
   }
 
-  async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository.findOneBy({ assetId, personId });
+  async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
+  }
+
+  async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOneBy({ personId });
   }
 }

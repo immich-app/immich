@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
+import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -14,12 +19,67 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
 
-  bool get showMap =>
-      asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
+  bool hasCoordinates(ExifInfo? exifInfo) =>
+      exifInfo != null &&
+      exifInfo.latitude != null &&
+      exifInfo.longitude != null &&
+      exifInfo.latitude != 0 &&
+      exifInfo.longitude != 0;
+
+  String get formattedDateTime {
+    final fileCreatedAt = asset.fileCreatedAt.toLocal();
+    final date = DateFormat.yMMMEd().format(fileCreatedAt);
+    final time = DateFormat.jm().format(fileCreatedAt);
+
+    return '$date • $time';
+  }
+
+  Future<Uri?> _createCoordinatesUri(ExifInfo? exifInfo) async {
+    if (!hasCoordinates(exifInfo)) {
+      return null;
+    }
+
+    final double latitude = exifInfo!.latitude!;
+    final double longitude = exifInfo.longitude!;
+
+    const zoomLevel = 16;
+
+    if (Platform.isAndroid) {
+      Uri uri = Uri(
+        scheme: 'geo',
+        host: '$latitude,$longitude',
+        queryParameters: {
+          'z': '$zoomLevel',
+          'q': '$latitude,$longitude($formattedDateTime)',
+        },
+      );
+      if (await canLaunchUrl(uri)) {
+        return uri;
+      }
+    } else if (Platform.isIOS) {
+      var params = {
+        'll': '$latitude,$longitude',
+        'q': formattedDateTime,
+        'z': '$zoomLevel',
+      };
+      Uri uri = Uri.https('maps.apple.com', '/', params);
+      if (await canLaunchUrl(uri)) {
+        return uri;
+      }
+    }
+
+    return Uri(
+      scheme: 'https',
+      host: 'openstreetmap.org',
+      queryParameters: {'mlat': '$latitude', 'mlon': '$longitude'},
+      fragment: 'map=$zoomLevel/$latitude/$longitude',
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exifInfo = asset.exifInfo;
+    final assetWithExif = ref.watch(assetDetailProvider(asset));
+    final exifInfo = (assetWithExif.value ?? asset).exifInfo;
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     var textColor = isDarkTheme ? Colors.white : Colors.black;
 
@@ -28,55 +88,35 @@ class ExifBottomSheet extends HookConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return Container(
-              height: 150,
-              width: constraints.maxWidth,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
+            return MapThumbnail(
+              coords: LatLng(
+                exifInfo?.latitude ?? 0,
+                exifInfo?.longitude ?? 0,
               ),
-              child: FlutterMap(
-                options: MapOptions(
-                  interactiveFlags: InteractiveFlag.none,
-                  center: LatLng(
+              height: 150,
+              zoom: 16.0,
+              markers: [
+                Marker(
+                  anchorPos: AnchorPos.align(AnchorAlign.top),
+                  point: LatLng(
                     exifInfo?.latitude ?? 0,
                     exifInfo?.longitude ?? 0,
                   ),
-                  zoom: 16.0,
+                  builder: (ctx) => const Image(
+                    image: AssetImage('assets/location-pin.png'),
+                  ),
                 ),
-                nonRotatedChildren: [
-                  RichAttributionWidget(
-                    attributions: [
-                      TextSourceAttribution(
-                        'OpenStreetMap contributors',
-                        onTap: () => launchUrl(
-                          Uri.parse('https://openstreetmap.org/copyright'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: const ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        anchorPos: AnchorPos.align(AnchorAlign.top),
-                        point: LatLng(
-                          exifInfo?.latitude ?? 0,
-                          exifInfo?.longitude ?? 0,
-                        ),
-                        builder: (ctx) => const Image(
-                          image: AssetImage('assets/location-pin.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
+              onTap: (tapPosition, latLong) async {
+                Uri? uri = await _createCoordinatesUri(exifInfo);
+
+                if (uri == null) {
+                  return;
+                }
+
+                debugPrint('Opening Map Uri: $uri');
+                launchUrl(uri);
+              },
             );
           },
         ),
@@ -91,7 +131,7 @@ class ExifBottomSheet extends HookConsumerWidget {
           ? formatBytes(a.exifInfo!.fileSize!)
           : "";
       String text = resolution + fileSize;
-      return text.isEmpty ? null : Text(text);
+      return text.isNotEmpty ? text : null;
     }
 
     buildDragHeader() {
@@ -110,7 +150,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     buildLocation() {
       // Guard no lat/lng
-      if (!showMap) {
+      if (!hasCoordinates(exifInfo)) {
         return Container();
       }
 
@@ -158,7 +198,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               Text(
                 "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
                 style: const TextStyle(fontSize: 12),
-              )
+              ),
             ],
           ),
         ],
@@ -166,12 +206,8 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDate() {
-      final fileCreatedAt = asset.fileCreatedAt.toLocal();
-      final date = DateFormat.yMMMEd().format(fileCreatedAt);
-      final time = DateFormat.jm().format(fileCreatedAt);
-
       return Text(
-        '$date • $time',
+        formattedDateTime,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -179,7 +215,58 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
+    buildImageProperties() {
+      // Helper to create the ListTile and avoid repeating code
+      createImagePropertiesListStyle(title, subtitle) => ListTile(
+            contentPadding: const EdgeInsets.all(0),
+            dense: true,
+            leading: Icon(
+              Icons.image,
+              color: textColor.withAlpha(200),
+            ),
+            titleAlignment: ListTileTitleAlignment.center,
+            title: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            subtitle: subtitle,
+          );
+
+      final imgSizeString = buildSizeText(asset);
+
+      if (imgSizeString == null && asset.fileName.isNotEmpty) {
+        // There is only filename
+        return createImagePropertiesListStyle(
+          asset.fileName,
+          null,
+        );
+      } else if (imgSizeString != null && asset.fileName.isNotEmpty) {
+        // There is both filename and size information
+        return createImagePropertiesListStyle(
+          asset.fileName,
+          Text(imgSizeString),
+        );
+      } else if (imgSizeString != null && asset.fileName.isEmpty) {
+        // There is only size information
+        return createImagePropertiesListStyle(
+          imgSizeString,
+          null,
+        );
+      }
+    }
+
     buildDetail() {
+      final imgProperties = buildImageProperties();
+
+      // There are no details
+      if (imgProperties == null &&
+          (exifInfo == null || exifInfo.make == null)) {
+        return Container();
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -194,22 +281,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
             ).tr(),
           ),
-          ListTile(
-            contentPadding: const EdgeInsets.all(0),
-            dense: true,
-            leading: Icon(
-              Icons.image,
-              color: textColor.withAlpha(200),
-            ),
-            title: Text(
-              asset.fileName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            subtitle: buildSizeText(asset),
-          ),
+          if (imgProperties != null) imgProperties,
           if (exifInfo?.make != null)
             ListTile(
               contentPadding: const EdgeInsets.all(0),
@@ -226,7 +298,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 ),
               ),
               subtitle: Text(
-                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
+                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
               ),
             ),
         ],
@@ -265,7 +337,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
-                              flex: showMap ? 5 : 0,
+                              flex: hasCoordinates(exifInfo) ? 5 : 0,
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: buildLocation(),
@@ -292,10 +364,21 @@ class ExifBottomSheet extends HookConsumerWidget {
                   children: [
                     buildDragHeader(),
                     buildDate(),
-                    if (asset.isRemote) DescriptionInput(asset: asset),
+                    assetWithExif.when(
+                      data: (data) => DescriptionInput(asset: data),
+                      error: (error, stackTrace) => Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      loading: () => const SizedBox(
+                        width: 75,
+                        height: 75,
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    ),
                     const SizedBox(height: 8.0),
                     buildLocation(),
-                    SizedBox(height: showMap ? 16.0 : 0.0),
+                    SizedBox(height: hasCoordinates(exifInfo) ? 16.0 : 0.0),
                     buildDetail(),
                     const SizedBox(height: 50),
                   ],

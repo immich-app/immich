@@ -2,55 +2,114 @@
   import { page } from '$app/stores';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
+  import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
+  import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { api } from '@api';
+  import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
+  import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import { downloadManager } from '$lib/stores/download';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { downloadBlob } from '$lib/utils/asset-utils';
+  import { copyToClipboard } from '@api';
+  import Alert from 'svelte-material-icons/Alert.svelte';
+  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
+  import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
 
-  const getConfig = async () => {
-    const { data } = await api.systemConfigApi.getConfig();
-    return data;
+  const configs = data.configs;
+
+  const downloadConfig = () => {
+    const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
+    const downloadKey = 'immich-config.json';
+    downloadManager.add(downloadKey, blob.size);
+    downloadManager.update(downloadKey, blob.size);
+    downloadBlob(blob, downloadKey);
+    setTimeout(() => downloadManager.clear(downloadKey), 5_000);
   };
 </script>
 
-<section class="">
-  {#await getConfig()}
-    <LoadingSpinner />
-  {:then configs}
-    <SettingAccordion
-      title="FFmpeg Settings"
-      subtitle="Manage the resolution and encoding information of the video files"
-    >
-      <FFmpegSettings ffmpegConfig={configs.ffmpeg} />
-    </SettingAccordion>
+{#if $featureFlags.configFile}
+  <div class="mb-8 flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
+    <Alert class="text-yellow-400" size={18} />
+    <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
+  </div>
+{/if}
 
-    <SettingAccordion
-      title="Job Settings"
-      subtitle="Manage job concurrency"
-      isOpen={$page.url.searchParams.get('open') === 'job-settings'}
-    >
-      <JobSettings jobConfig={configs.job} />
-    </SettingAccordion>
+<UserPageLayout user={data.user} title={data.meta.title} admin>
+  <div class="flex justify-end gap-2" slot="buttons">
+    <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <ContentCopy size="18" />
+        Copy to Clipboard
+      </div>
+    </LinkButton>
+    <LinkButton on:click={() => downloadConfig()}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Download size="18" />
+        Export as JSON
+      </div>
+    </LinkButton>
+  </div>
 
-    <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
-      <PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
-    </SettingAccordion>
+  <section id="setting-content" class="flex place-content-center sm:mx-4">
+    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+      <SettingAccordion
+        title="Job Settings"
+        subtitle="Manage job concurrency"
+        isOpen={$page.url.searchParams.get('open') === 'job-settings'}
+      >
+        <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
+      </SettingAccordion>
 
-    <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
-      <OAuthSettings oauthConfig={configs.oauth} />
-    </SettingAccordion>
+      <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
+        <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
+      </SettingAccordion>
 
-    <SettingAccordion
-      title="Storage Template"
-      subtitle="Manage the folder structure and file name of the upload asset"
-      isOpen={$page.url.searchParams.get('open') === 'storage-template'}
-    >
-      <StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
-    </SettingAccordion>
-  {/await}
-</section>
+      <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
+        <MapSettings disabled={$featureFlags.configFile} config={configs} />
+      </SettingAccordion>
+
+      <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
+        <OAuthSettings disabled={$featureFlags.configFile} oauthConfig={configs.oauth} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
+        <PasswordLoginSettings disabled={$featureFlags.configFile} passwordLoginConfig={configs.passwordLogin} />
+      </SettingAccordion>
+
+      <SettingAccordion
+        title="Storage Template"
+        subtitle="Manage the folder structure and file name of the upload asset"
+        isOpen={$page.url.searchParams.get('open') === 'storage-template'}
+      >
+        <StorageTemplateSettings
+          disabled={$featureFlags.configFile}
+          storageConfig={configs.storageTemplate}
+          user={data.user}
+        />
+      </SettingAccordion>
+
+      <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
+        <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+        <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
+
+      <SettingAccordion
+        title="Video Transcoding Settings"
+        subtitle="Manage the resolution and encoding information of the video files"
+      >
+        <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
+      </SettingAccordion>
+    </section>
+  </section>
+</UserPageLayout>

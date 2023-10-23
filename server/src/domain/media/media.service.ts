@@ -1,35 +1,53 @@
-import { AssetEntity, AssetType, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import {
+  AssetEntity,
+  AssetPathType,
+  AssetType,
+  Colorspace,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
-import { join } from 'path';
-import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  AudioStreamInfo,
+  IAssetRepository,
+  IJobRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  VideoCodecHWConfig,
+  VideoStreamInfo,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, VAAPIConfig, VP9Config } from './media.util';
+import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
 
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
-  private storageCore = new StorageCore();
   private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
   ) {
-    this.configCore = new SystemConfigCore(systemConfig);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = new StorageCore(this.storageRepository, assetRepository, moveRepository, personRepository);
   }
 
-  async handleQueueGenerateThumbnails(job: IBaseJob) {
-    const { force } = job;
-
+  async handleQueueGenerateThumbnails({ force }: IBaseJob) {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
@@ -51,6 +69,59 @@ export class MediaService {
       }
     }
 
+    const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
+
+    for (const person of people) {
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
+        }
+
+        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
+      }
+
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+    }
+
+    return true;
+  }
+
+  async handleQueueMigration() {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination),
+    );
+
+    const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
+    if (active === 1 && waiting === 0) {
+      await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
+      await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
+    }
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
+      }
+    }
+
+    const people = await this.personRepository.getAll();
+    for (const person of people) {
+      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+    }
+
+    return true;
+  }
+
+  async handleAssetMigration({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+
+    await this.storageCore.moveAssetFile(asset, AssetPathType.JPEG_THUMBNAIL);
+    await this.storageCore.moveAssetFile(asset, AssetPathType.WEBP_THUMBNAIL);
+    await this.storageCore.moveAssetFile(asset, AssetPathType.ENCODED_VIDEO);
+
     return true;
   }
 
@@ -60,40 +131,55 @@ export class MediaService {
       return false;
     }
 
-    const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    this.storageRepository.mkdirSync(resizePath);
-    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
+    const resizePath = await this.generateThumbnail(asset, 'jpeg');
+    await this.assetRepository.save({ id: asset.id, resizePath });
+    return true;
+  }
+
+  private async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+    const { thumbnail, ffmpeg } = await this.configCore.getConfig();
+    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
+    const path =
+      format === 'jpeg' ? this.storageCore.getLargeThumbnailPath(asset) : this.storageCore.getSmallThumbnailPath(asset);
+    this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
       case AssetType.IMAGE:
-        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-          size: JPEG_THUMBNAIL_SIZE,
-          format: 'jpeg',
-        });
+        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
+        const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
+        await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
         break;
+
       case AssetType.VIDEO:
-        this.logger.log('Generating video thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
-        this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
+        const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainStream(videoStreams);
+        if (!mainVideoStream) {
+          this.logger.warn(`Skipped thumbnail generation for asset ${asset.id}: no video streams found`);
+          return;
+        }
+        const mainAudioStream = this.getMainStream(audioStreams);
+        const config = { ...ffmpeg, targetResolution: size.toString() };
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
+        await this.mediaRepository.transcode(asset.originalPath, path, options);
         break;
+
+      default:
+        throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
-
-    await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
-
-    return true;
+    this.logger.log(
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`,
+    );
+    return path;
   }
 
   async handleGenerateWebpThumbnail({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    if (!asset) {
       return false;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
-
-    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
+    const webpPath = await this.generateThumbnail(asset, 'webp');
     await this.assetRepository.save({ id: asset.id, webpPath });
-
     return true;
   }
 
@@ -134,13 +220,12 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-    const output = join(outputFolder, `${asset.id}.mp4`);
-    this.storageRepository.mkdirSync(outputFolder);
+    const output = this.storageCore.getEncodedVideoPath(asset);
+    this.storageCore.ensureFolders(output);
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
-    const mainVideoStream = this.getMainVideoStream(videoStreams);
-    const mainAudioStream = this.getMainAudioStream(audioStreams);
+    const mainVideoStream = this.getMainStream(videoStreams);
+    const mainAudioStream = this.getMainStream(audioStreams);
     const containerExtension = format.formatName;
     if (!mainVideoStream || !containerExtension) {
       return false;
@@ -155,7 +240,7 @@ export class MediaService {
 
     let transcodeOptions;
     try {
-      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream, mainAudioStream));
     } catch (err) {
       this.logger.error(`An error occurred while configuring transcoding options: ${err}`);
       return false;
@@ -166,13 +251,13 @@ export class MediaService {
       await this.mediaRepository.transcode(input, output, transcodeOptions);
     } catch (err) {
       this.logger.error(err);
-      if (config.accel && config.accel !== TranscodeHWAccel.DISABLED) {
+      if (config.accel !== TranscodeHWAccel.DISABLED) {
         this.logger.error(
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
         );
       }
       config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream));
+      transcodeOptions = await this.getCodecConfig(config).then((c) => c.getOptions(mainVideoStream, mainAudioStream));
       await this.mediaRepository.transcode(input, output, transcodeOptions);
     }
 
@@ -183,12 +268,8 @@ export class MediaService {
     return true;
   }
 
-  private getMainVideoStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {
+  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
-  }
-
-  private getMainAudioStream(streams: AudioStreamInfo[]): AudioStreamInfo | null {
-    return streams[0];
   }
 
   private isTranscodeRequired(
@@ -226,10 +307,10 @@ export class MediaService {
         return true;
 
       case TranscodePolicy.REQUIRED:
-        return !allTargetsMatching;
+        return !allTargetsMatching || videoStream.isHDR;
 
       case TranscodePolicy.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetRes;
+        return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
 
       default:
         return false;
@@ -281,5 +362,18 @@ export class MediaService {
     }
 
     return handler;
+  }
+
+  isSRGB(asset: AssetEntity): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+    if (colorspace || profileDescription) {
+      return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
+    } else if (bitsPerSample) {
+      // assume sRGB for 8-bit images with no color profile or colorspace metadata
+      return bitsPerSample === 8;
+    } else {
+      // assume sRGB for images with no relevant metadata
+      return true;
+    }
   }
 }

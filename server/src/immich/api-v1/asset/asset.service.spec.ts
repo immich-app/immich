@@ -1,14 +1,15 @@
-import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { ICryptoRepository, IJobRepository, ILibraryRepository, IStorageRepository, JobName } from '@app/domain';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   assetStub,
   authStub,
   fileStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newLibraryRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
@@ -27,6 +28,7 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.isFavorite = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
+  createAssetDto.libraryId = 'libraryId';
 
   return createAssetDto;
 };
@@ -89,14 +91,13 @@ describe('AssetService', () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
 
   beforeEach(() => {
     assetRepositoryMock = {
       get: jest.fn(),
       create: jest.fn(),
-      remove: jest.fn(),
 
-      update: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getById: jest.fn(),
@@ -112,8 +113,9 @@ describe('AssetService', () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, storageMock);
+    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, libraryMock, storageMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -135,6 +137,7 @@ describe('AssetService', () => {
       const dto = _getCreateAssetDto();
 
       assetRepositoryMock.create.mockResolvedValue(assetEntity);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
@@ -150,10 +153,11 @@ describe('AssetService', () => {
       };
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 
@@ -167,10 +171,11 @@ describe('AssetService', () => {
     it('should handle a live photo', async () => {
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(
         sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
@@ -205,113 +210,6 @@ describe('AssetService', () => {
     expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
 
-  describe('deleteAll', () => {
-    it('should return failed status when an asset is missing', async () => {
-      assetRepositoryMock.get.mockResolvedValue(null);
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', status: 'FAILED' },
-      ]);
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should return failed status a delete fails', async () => {
-      assetRepositoryMock.get.mockResolvedValue({ id: 'asset1' } as AssetEntity);
-      assetRepositoryMock.remove.mockRejectedValue('delete failed');
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', status: 'FAILED' },
-      ]);
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should delete a live photo', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: [assetStub.livePhotoStillAsset.id] })).resolves.toEqual([
-        { id: assetStub.livePhotoStillAsset.id, status: 'SUCCESS' },
-        { id: assetStub.livePhotoMotionAsset.id, status: 'SUCCESS' },
-      ]);
-
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: {
-          files: [
-            'fake_path/asset_1.jpeg',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            'fake_path/asset_1.mp4',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-          ],
-        },
-      });
-    });
-
-    it('should delete a batch of assets', async () => {
-      const asset1 = {
-        id: 'asset1',
-        originalPath: 'original-path-1',
-        resizePath: 'resize-path-1',
-        webpPath: 'web-path-1',
-      };
-
-      const asset2 = {
-        id: 'asset2',
-        originalPath: 'original-path-2',
-        resizePath: 'resize-path-2',
-        webpPath: 'web-path-2',
-        encodedVideoPath: 'encoded-video-path-2',
-      };
-
-      when(assetRepositoryMock.get)
-        .calledWith(asset1.id)
-        .mockResolvedValue(asset1 as AssetEntity);
-      when(assetRepositoryMock.get)
-        .calledWith(asset2.id)
-        .mockResolvedValue(asset2 as AssetEntity);
-
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
-        { id: 'asset1', status: 'SUCCESS' },
-        { id: 'asset2', status: 'SUCCESS' },
-      ]);
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset1'] } }],
-        [{ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: ['asset2'] } }],
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                'original-path-1',
-                'web-path-1',
-                'resize-path-1',
-                undefined,
-                undefined,
-                'original-path-2',
-                'web-path-2',
-                'resize-path-2',
-                'encoded-video-path-2',
-                undefined,
-              ],
-            },
-          },
-        ],
-      ]);
-    });
-  });
-
   describe('bulkUploadCheck', () => {
     it('should accept hex and base64 checksums', async () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -344,12 +242,14 @@ describe('AssetService', () => {
     it('should handle a file import', async () => {
       assetRepositoryMock.create.mockResolvedValue(assetStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(
         sut.importFile(authStub.external1, {
           ..._getCreateAssetDto(),
           assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
+          libraryId: 'library-id',
         }),
       ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
 
@@ -358,11 +258,12 @@ describe('AssetService', () => {
 
     it('should handle a duplicate if originalPath already exists', async () => {
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetStub.image]);
       storageMock.checkFileExists.mockResolvedValue(true);
+      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
       cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
 
       await expect(
@@ -370,6 +271,7 @@ describe('AssetService', () => {
           ..._getCreateAssetDto(),
           assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
+          libraryId: 'library-id',
         }),
       ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
 

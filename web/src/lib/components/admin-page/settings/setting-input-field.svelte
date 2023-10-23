@@ -13,6 +13,9 @@
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
+  export let min = Number.MIN_SAFE_INTEGER.toString();
+  export let max = Number.MAX_SAFE_INTEGER.toString();
+  export let step = '1';
   export let label = '';
   export let desc = '';
   export let required = false;
@@ -27,7 +30,7 @@
   };
 </script>
 
-<div class="w-full">
+<div class="mb-4 w-full">
   <div class={`flex h-[26px] place-items-center gap-1`}>
     <label class={`immich-form-label text-sm`} for={label}>{label}</label>
     {#if required}
@@ -45,9 +48,11 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-xs" id="{label}-desc">
+    <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
       {desc}
     </p>
+  {:else}
+    <slot name="desc" />
   {/if}
 
   <input
@@ -57,6 +62,9 @@
     id={label}
     name={label}
     type={inputType}
+    {min}
+    {max}
+    {step}
     {required}
     {value}
     on:input={handleInput}

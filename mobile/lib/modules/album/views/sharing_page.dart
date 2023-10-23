@@ -117,6 +117,7 @@ class SharingPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(
           left: 12.0,
           right: 12.0,
+          top: 24.0,
           bottom: 12.0,
         ),
         child: Row(
@@ -146,13 +147,13 @@ class SharingPage extends HookConsumerWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () =>
-                    AutoRouter.of(context).push(const PartnerRoute()),
+                    AutoRouter.of(context).push(const SharedLinkRoute()),
                 icon: const Icon(
-                  Icons.swap_horizontal_circle_outlined,
+                  Icons.link,
                   size: 20,
                 ),
                 label: const Text(
-                  "sharing_silver_appbar_share_partner",
+                  "sharing_silver_appbar_shared_links",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
@@ -160,7 +161,7 @@ class SharingPage extends HookConsumerWidget {
                   maxLines: 1,
                 ).tr(),
               ),
-            )
+            ),
           ],
         ),
       );
@@ -178,6 +179,17 @@ class SharingPage extends HookConsumerWidget {
             fontSize: 22,
           ),
         ),
+        actions: [
+          IconButton(
+            splashRadius: 25,
+            iconSize: 20,
+            icon: const Icon(
+              Icons.swap_horizontal_circle_outlined,
+              size: 20,
+            ),
+            onPressed: () => AutoRouter.of(context).push(const PartnerRoute()),
+          ),
+        ],
       );
     }
 

@@ -1,18 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 
-class ThumbnailImage extends HookConsumerWidget {
+class ThumbnailImage extends StatelessWidget {
   final Asset asset;
   final int index;
   final Asset Function(int index) loadAsset;
   final int totalAssets;
   final bool showStorageIndicator;
+  final bool showStack;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
@@ -27,6 +27,7 @@ class ThumbnailImage extends HookConsumerWidget {
     required this.loadAsset,
     required this.totalAssets,
     this.showStorageIndicator = true,
+    this.showStack = false,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -36,7 +37,7 @@ class ThumbnailImage extends HookConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
@@ -61,12 +62,80 @@ class ThumbnailImage extends HookConsumerWidget {
       }
     }
 
-    Widget buildImage(Asset asset) {
-      var image = ImmichImage(
-        asset,
+    Widget buildVideoIcon() {
+      final minutes = asset.duration.inMinutes;
+      final durationString = asset.duration.toString();
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: Row(
+          children: [
+            Text(
+              minutes > 59
+                  ? durationString.substring(0, 7) // h:mm:ss
+                  : minutes > 0
+                      ? durationString.substring(2, 7) // mm:ss
+                      : durationString.substring(3, 7), // m:ss
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              width: 3,
+            ),
+            const Icon(
+              Icons.play_circle_fill_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildStackIcon() {
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: Row(
+          children: [
+            if (asset.stackCount > 1)
+              Text(
+                "${asset.stackCount}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (asset.stackCount > 1)
+              const SizedBox(
+                width: 3,
+              ),
+            const Icon(
+              Icons.burst_mode_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildImage() {
+      final image = SizedBox(
         width: 300,
         height: 300,
-        useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+        child: Hero(
+          tag: asset.id + heroOffset,
+          child: ImmichImage(
+            asset,
+            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
+            fit: BoxFit.cover,
+          ),
+        ),
       );
       if (!multiselectEnabled || !isSelected) {
         return image;
@@ -75,9 +144,9 @@ class ThumbnailImage extends HookConsumerWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: assetContainerColor,
+            color: onDeselect == null ? Colors.grey : assetContainerColor,
           ),
-          color: assetContainerColor,
+          color: onDeselect == null ? Colors.grey : assetContainerColor,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -106,6 +175,7 @@ class ThumbnailImage extends HookConsumerWidget {
               loadAsset: loadAsset,
               totalAssets: totalAssets,
               heroOffset: heroOffset,
+              showStack: showStack,
             ),
           );
         }
@@ -114,73 +184,52 @@ class ThumbnailImage extends HookConsumerWidget {
         onSelect?.call();
         HapticFeedback.heavyImpact();
       },
-      child: Hero(
-        tag: asset.id + heroOffset,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: multiselectEnabled && isSelected
-                    ? Border.all(
-                        color: onDeselect == null
-                            ? Colors.grey
-                            : assetContainerColor,
-                        width: 8,
-                      )
-                    : const Border(),
-              ),
-              child: buildImage(asset),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: multiselectEnabled && isSelected
+                  ? Border.all(
+                      color: onDeselect == null
+                          ? Colors.grey
+                          : assetContainerColor,
+                      width: 8,
+                    )
+                  : const Border(),
             ),
-            if (multiselectEnabled)
-              Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: buildSelectionIcon(asset),
-                ),
+            child: buildImage(),
+          ),
+          if (multiselectEnabled)
+            Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: buildSelectionIcon(asset),
               ),
-            if (showStorageIndicator)
-              Positioned(
-                right: 10,
-                bottom: 5,
-                child: Icon(
-                  storageIcon(asset),
-                  color: Colors.white,
-                  size: 18,
-                ),
+            ),
+          if (showStorageIndicator)
+            Positioned(
+              right: 10,
+              bottom: 5,
+              child: Icon(
+                storageIcon(asset),
+                color: Colors.white,
+                size: 18,
               ),
-            if (asset.isFavorite)
-              const Positioned(
-                left: 10,
-                bottom: 5,
-                child: Icon(
-                  Icons.favorite,
-                  color: Colors.white,
-                  size: 18,
-                ),
+            ),
+          if (asset.isFavorite)
+            const Positioned(
+              left: 10,
+              bottom: 5,
+              child: Icon(
+                Icons.favorite,
+                color: Colors.white,
+                size: 18,
               ),
-            if (!asset.isImage)
-              Positioned(
-                top: 5,
-                right: 5,
-                child: Row(
-                  children: [
-                    Text(
-                      asset.duration.toString().substring(0, 7),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.play_circle_outline_rounded,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
+            ),
+          if (!asset.isImage) buildVideoIcon(),
+          if (asset.isImage && asset.stackCount > 0) buildStackIcon(),
+        ],
       ),
     );
   }

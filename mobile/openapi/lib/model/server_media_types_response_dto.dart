@@ -56,14 +56,14 @@ class ServerMediaTypesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerMediaTypesResponseDto(
-        image: json[r'image'] is Iterable
-            ? (json[r'image'] as Iterable).cast<String>().toList(growable: false)
+        image: json[r'image'] is List
+            ? (json[r'image'] as List).cast<String>()
             : const [],
-        sidecar: json[r'sidecar'] is Iterable
-            ? (json[r'sidecar'] as Iterable).cast<String>().toList(growable: false)
+        sidecar: json[r'sidecar'] is List
+            ? (json[r'sidecar'] as List).cast<String>()
             : const [],
-        video: json[r'video'] is Iterable
-            ? (json[r'video'] as Iterable).cast<String>().toList(growable: false)
+        video: json[r'video'] is List
+            ? (json[r'video'] as List).cast<String>()
             : const [],
       );
     }

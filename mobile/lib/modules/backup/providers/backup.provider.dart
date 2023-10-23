@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -20,7 +21,6 @@ import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -45,14 +45,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupRequireCharging:
                 Store.get(StoreKey.backupRequireCharging, false),
             backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
-            serverInfo: ServerInfoResponseDto(
+            serverInfo: const ServerDiskInfo(
               diskAvailable: "0",
-              diskAvailableRaw: 0,
               diskSize: "0",
-              diskSizeRaw: 0,
-              diskUsagePercentage: 0,
               diskUse: "0",
-              diskUseRaw: 0,
+              diskUsagePercentage: 0,
             ),
             availableAlbums: const [],
             selectedBackupAlbums: const {},
@@ -217,24 +214,25 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       final assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
-        final assetList =
-            await album.getAssetListRange(start: 0, end: assetCountInAlbum);
+        final assetList = await album.getAssetListPaged(page: 0, size: 1);
 
-        if (assetList.isNotEmpty) {
-          final thumbnailAsset = assetList.first;
-
-          try {
-            final thumbnailData = await thumbnailAsset
-                .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-            availableAlbum =
-                availableAlbum.copyWith(thumbnailData: thumbnailData);
-          } catch (e, stack) {
-            log.severe(
-              "Failed to get thumbnail for album ${album.name}",
-              e.toString(),
-              stack,
-            );
-          }
+        // Even though we check assetCountInAlbum to make sure that there are assets in album
+        // The `getAssetListPaged` method still return empty list and cause not assets get rendered
+        if (assetList.isEmpty) {
+          continue;
+        }
+        final thumbnailAsset = assetList.first;
+        try {
+          final thumbnailData = await thumbnailAsset
+              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
+          availableAlbum =
+              availableAlbum.copyWith(thumbnailData: thumbnailData);
+        } catch (e, stack) {
+          log.severe(
+            "Failed to get thumbnail for album ${album.name}",
+            e.toString(),
+            stack,
+          );
         }
 
         availableAlbums.add(availableAlbum);
@@ -388,7 +386,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
-      await _updateServerInfo();
+      await updateServerInfo();
       await _updateBackupAssetCount();
     }
   }
@@ -465,7 +463,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _onSetCurrentBackupAsset,
         _onBackupError,
       );
-      await _notifyBackgroundServiceCanRun();
+      await notifyBackgroundServiceCanRun();
     } else {
       openAppSettings();
     }
@@ -487,7 +485,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   void cancelBackup() {
     if (state.backupProgress != BackUpProgressEnum.inProgress) {
-      _notifyBackgroundServiceCanRun();
+      notifyBackgroundServiceCanRun();
     }
     state.cancelToken.cancel();
     state = state.copyWith(
@@ -511,7 +509,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
-          deviceAssetId
+          deviceAssetId,
         },
         allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
       );
@@ -537,7 +535,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _updatePersistentAlbumsSelection();
     }
 
-    _updateServerInfo();
+    updateServerInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
@@ -546,7 +544,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  Future<void> _updateServerInfo() async {
+  Future<void> updateServerInfo() async {
     final serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
@@ -569,14 +567,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Check if this device is enable backup by the user
     if (state.autoBackup) {
-      // check if backup is alreayd in process - then return
+      // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        log.info("[_resumeBackup] Backup is already in progress - abort");
+        log.info("[_resumeBackup] Auto Backup is already in progress - abort");
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.inBackground) {
         log.info("[_resumeBackup] Background backup is running - abort");
+        return;
+      }
+
+      if (state.backupProgress == BackUpProgressEnum.manualInProgress) {
+        log.info("[_resumeBackup] Manual upload is running - abort");
         return;
       }
 
@@ -594,7 +597,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         .findAll();
     final List<BackupAlbum> excludedBackupAlbums = await _db.backupAlbums
         .filter()
-        .selectionEqualTo(BackupSelection.select)
+        .selectionEqualTo(BackupSelection.exclude)
         .findAll();
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
@@ -646,7 +649,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return result;
   }
 
-  Future<void> _notifyBackgroundServiceCanRun() async {
+  Future<void> notifyBackgroundServiceCanRun() async {
     const allowedStates = [
       AppStateEnum.inactive,
       AppStateEnum.paused,
@@ -655,6 +658,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       _backgroundService.releaseLock();
     }
+  }
+
+  BackUpProgressEnum get backupProgress => state.backupProgress;
+  void updateBackupProgress(BackUpProgressEnum backupProgress) {
+    state = state.copyWith(backupProgress: backupProgress);
   }
 }
 

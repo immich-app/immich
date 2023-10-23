@@ -7,10 +7,21 @@ const probeStubDefaultFormat: VideoFormat = {
 };
 
 const probeStubDefaultVideoStream: VideoStreamInfo[] = [
-  { height: 1080, width: 1920, codecName: 'hevc', codecType: 'video', frameCount: 100, rotation: 0 },
+  {
+    index: 0,
+    height: 1080,
+    width: 1920,
+    codecName: 'hevc',
+    codecType: 'video',
+    frameCount: 100,
+    rotation: 0,
+    isHDR: false,
+  },
 ];
 
-const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ codecName: 'aac', codecType: 'audio' }];
+const probeStubDefaultAudioStream: AudioStreamInfo[] = [
+  { index: 1, codecName: 'aac', codecType: 'audio', frameCount: 100 },
+];
 
 const probeStubDefault: VideoInfo = {
   format: probeStubDefaultFormat,
@@ -25,20 +36,24 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [
       {
+        index: 0,
         height: 1080,
         width: 400,
         codecName: 'hevc',
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
       },
       {
+        index: 1,
         height: 1080,
         width: 400,
         codecName: 'h7000',
         codecType: 'video',
         frameCount: 99,
         rotation: 0,
+        isHDR: false,
       },
     ],
   }),
@@ -46,12 +61,14 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [
       {
+        index: 0,
         height: 0,
         width: 400,
         codecName: 'hevc',
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
       },
     ],
   }),
@@ -59,12 +76,29 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [
       {
+        index: 0,
         height: 2160,
         width: 3840,
         codecName: 'h264',
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
+  videoStreamHDR: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 480,
+        width: 480,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: true,
       },
     ],
   }),
@@ -72,18 +106,20 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [
       {
+        index: 0,
         height: 2160,
         width: 3840,
         codecName: 'h264',
         codecType: 'video',
         frameCount: 100,
         rotation: 90,
+        isHDR: false,
       },
     ],
   }),
   audioStreamMp3: Object.freeze<VideoInfo>({
     ...probeStubDefault,
-    audioStreams: [{ codecType: 'audio', codecName: 'aac' }],
+    audioStreams: [{ index: 1, codecType: 'audio', codecName: 'aac', frameCount: 100 }],
   }),
   matroskaContainer: Object.freeze<VideoInfo>({
     ...probeStubDefault,

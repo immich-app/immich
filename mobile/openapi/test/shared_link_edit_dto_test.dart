@@ -26,6 +26,12 @@ void main() {
       // TODO
     });
 
+    // Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+    // bool changeExpiryTime
+    test('to test the property `changeExpiryTime`', () async {
+      // TODO
+    });
+
     // String description
     test('to test the property `description`', () async {
       // TODO
@@ -36,8 +42,8 @@ void main() {
       // TODO
     });
 
-    // bool showExif
-    test('to test the property `showExif`', () async {
+    // bool showMetadata
+    test('to test the property `showMetadata`', () async {
       // TODO
     });
 

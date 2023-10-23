@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // String description
+    test('to test the property `description`', () async {
+      // TODO
+    });
+
 
   });
 

@@ -1,15 +1,27 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
-import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
+import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import { UserCore, UserResponseDto } from '../user';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -24,12 +36,12 @@ import {
   AuthDeviceResponseDto,
   LoginResponseDto,
   LogoutResponseDto,
+  OAuthAuthorizeResponseDto,
+  OAuthConfigResponseDto,
   mapAdminSignupResponse,
   mapLoginResponse,
   mapUserToken,
-  OAuthConfigResponseDto,
 } from './response-dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -58,11 +70,12 @@ export class AuthService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30000 });
   }
@@ -201,6 +214,22 @@ export class AuthService {
     return { ...response, buttonText, url, autoLaunch };
   }
 
+  async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+    const config = await this.configCore.getConfig();
+    if (!config.oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const client = await this.getOAuthClient(config);
+    const url = await client.authorizationUrl({
+      redirect_uri: this.normalize(config, dto.redirectUri),
+      scope: config.oauth.scope,
+      state: generators.state(),
+    });
+
+    return { url };
+  }
+
   async callback(
     dto: OAuthCallbackDto,
     loginDetails: LoginDetails,
@@ -280,8 +309,13 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    const tokens = await client.callback(redirectUri, params, { state: params.state });
-    return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    try {
+      const tokens = await client.callback(redirectUri, params, { state: params.state });
+      return client.userinfo<OAuthProfile>(tokens.access_token || '');
+    } catch (error: Error | any) {
+      this.logger.error(`Unable to complete OAuth login: ${error}`, error?.stack);
+      throw new InternalServerErrorException(`Unable to complete OAuth login: ${error}`, { cause: error });
+    }
   }
 
   private async getOAuthClient(config: SystemConfig) {
@@ -346,7 +380,7 @@ export class AuthService {
             sharedLinkId: link.id,
             isAllowUpload: link.allowUpload,
             isAllowDownload: link.allowDownload,
-            isShowExif: link.showExif,
+            isShowMetadata: link.showExif,
           };
         }
       }
@@ -397,7 +431,7 @@ export class AuthService {
         isPublicUser: false,
         isAllowUpload: true,
         isAllowDownload: true,
-        isShowExif: true,
+        isShowMetadata: true,
         accessTokenId: token.id,
       };
     }

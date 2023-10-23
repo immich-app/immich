@@ -1,12 +1,18 @@
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
-enum BackUpProgressEnum { idle, inProgress, inBackground, done }
+enum BackUpProgressEnum {
+  idle,
+  inProgress,
+  manualInProgress,
+  inBackground,
+  done
+}
 
 class BackUpState {
   // enum
@@ -14,7 +20,7 @@ class BackUpState {
   final List<String> allAssetsInDatabase;
   final double progressInPercentage;
   final CancellationToken cancelToken;
-  final ServerInfoResponseDto serverInfo;
+  final ServerDiskInfo serverInfo;
   final bool autoBackup;
   final bool backgroundBackup;
   final bool backupRequireWifi;
@@ -59,7 +65,7 @@ class BackUpState {
     List<String>? allAssetsInDatabase,
     double? progressInPercentage,
     CancellationToken? cancelToken,
-    ServerInfoResponseDto? serverInfo,
+    ServerDiskInfo? serverInfo,
     bool? autoBackup,
     bool? backgroundBackup,
     bool? backupRequireWifi,

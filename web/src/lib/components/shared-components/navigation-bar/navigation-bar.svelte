@@ -16,6 +16,7 @@
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import Cog from 'svelte-material-icons/Cog.svelte';
   import UserAvatar from '../user-avatar.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   export let user: UserResponseDto;
   export let showUploadButton = true;
 
@@ -45,17 +46,21 @@
     </a>
     <div class="flex justify-between gap-16 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
-        <SearchBar grayTheme={true} />
+        {#if $featureFlags.search}
+          <SearchBar grayTheme={true} />
+        {/if}
       </div>
 
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
-        <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
-          <IconButton title="Search">
-            <div class="flex gap-2">
-              <Magnify size="1.5em" />
-            </div>
-          </IconButton>
-        </a>
+        {#if $featureFlags.search}
+          <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
+            <IconButton title="Search">
+              <div class="flex gap-2">
+                <Magnify size="1.5em" />
+              </div>
+            </IconButton>
+          </a>
+        {/if}
 
         <ThemeButton />
 
@@ -101,7 +106,11 @@
           </a>
         {/if}
 
-        <div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
+        <div
+          use:clickOutside
+          on:outclick={() => (shouldShowAccountInfoPanel = false)}
+          on:escape={() => (shouldShowAccountInfoPanel = false)}
+        >
           <button
             class="flex"
             on:mouseover={() => (shouldShowAccountInfo = true)}
@@ -110,7 +119,7 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="md" showTitle={false} interactive />
+            <UserAvatar {user} size="lg" showTitle={false} interactive />
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
@@ -132,10 +141,3 @@
     </div>
   </div>
 </section>
-
-<style>
-  :root {
-    /* Used by layouts to ensure proper spacing between navbar and content */
-    --navbar-height: calc(theme(spacing.18) + 4px);
-  }
-</style>

@@ -1,8 +1,10 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import { Colorspace } from '@app/infra/entities';
 import { Logger } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
+import { Writable } from 'stream';
 import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
@@ -11,8 +13,9 @@ sharp.concurrency(0);
 export class MediaRepository implements IMediaRepository {
   private logger = new Logger(MediaRepository.name);
 
-  crop(input: string, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOnError: false })
+  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
+    return sharp(input, { failOn: 'none' })
+      .pipelineColorspace('rgb16')
       .extract({
         left: options.left,
         top: options.top,
@@ -23,46 +26,18 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    switch (options.format) {
-      case 'webp':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .webp()
-          .rotate()
-          .toFile(output);
-        return;
-
-      case 'jpeg':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .jpeg()
-          .rotate()
-          .toFile(output);
-        return;
-    }
-  }
-
-  extractVideoThumbnail(input: string, output: string, size: number) {
-    return new Promise<void>((resolve, reject) => {
-      ffmpeg(input)
-        .outputOptions([
-          '-ss 00:00:00.000',
-          '-frames:v 1',
-          `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
-        ])
-        .output(output)
-        .on('error', (err, stdout, stderr) => {
-          this.logger.error(stderr);
-          reject(err);
-        })
-        .on('end', resolve)
-        .run();
-    });
+    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+    await sharp(input, { failOn: 'none' })
+      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+      .rotate()
+      .withMetadata({ icc: options.colorspace })
+      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
+      .toFile(output);
   }
 
   async probe(input: string): Promise<VideoInfo> {
     const results = await probe(input);
-
     return {
       format: {
         formatName: results.format.format_name,
@@ -72,23 +47,27 @@ export class MediaRepository implements IMediaRepository {
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
         .map((stream) => ({
+          index: stream.index,
           height: stream.height || 0,
           width: stream.width || 0,
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
           frameCount: Number.parseInt(stream.nb_frames ?? '0'),
           rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+          isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
         .map((stream) => ({
+          index: stream.index,
           codecType: stream.codec_type,
           codecName: stream.codec_name,
+          frameCount: Number.parseInt(stream.nb_frames ?? '0'),
         })),
     };
   }
 
-  transcode(input: string, output: string, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
@@ -102,6 +81,10 @@ export class MediaRepository implements IMediaRepository {
           .on('end', resolve)
           .run();
       });
+    }
+
+    if (typeof output !== 'string') {
+      throw new Error('Two-pass transcoding does not support writing to a stream');
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice

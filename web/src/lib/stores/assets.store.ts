@@ -1,6 +1,9 @@
 import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
-import { writable } from 'svelte/store';
+import { throttle } from 'lodash-es';
+import { DateTime } from 'luxon';
+import { Unsubscriber, writable } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
+import { websocketStore } from './websocket';
 
 export enum BucketPosition {
   Above = 'above',
@@ -34,24 +37,116 @@ export class AssetBucket {
   position!: BucketPosition;
 }
 
+const isMismatched = (option: boolean | undefined, value: boolean): boolean =>
+  option === undefined ? false : option !== value;
+
 const THUMBNAIL_HEIGHT = 235;
+
+interface AddAsset {
+  type: 'add';
+  value: AssetResponseDto;
+}
+
+interface DeleteAsset {
+  type: 'delete';
+  value: string;
+}
+
+interface TrashAsset {
+  type: 'trash';
+  value: string;
+}
+
+type PendingChange = AddAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {
   private store$ = writable(this);
   private assetToBucket: Record<string, AssetLookup> = {};
+  private pendingChanges: PendingChange[] = [];
+  private unsubscribers: Unsubscriber[] = [];
 
+  initialized = false;
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
   assets: AssetResponseDto[] = [];
+  albumAssets: Set<string> = new Set();
 
-  constructor(private options: AssetStoreOptions) {
+  constructor(private options: AssetStoreOptions, private albumId?: string) {
     this.store$.set(this);
   }
 
   subscribe = this.store$.subscribe;
 
+  connect() {
+    this.unsubscribers.push(
+      websocketStore.onUploadSuccess.subscribe((value) => {
+        if (value) {
+          this.pendingChanges.push({ type: 'add', value });
+          this.processPendingChanges();
+        }
+      }),
+
+      websocketStore.onAssetTrash.subscribe((ids) => {
+        if (ids) {
+          for (const id of ids) {
+            this.pendingChanges.push({ type: 'trash', value: id });
+          }
+          this.processPendingChanges();
+        }
+      }),
+
+      websocketStore.onAssetDelete.subscribe((value) => {
+        if (value) {
+          this.pendingChanges.push({ type: 'delete', value });
+          this.processPendingChanges();
+        }
+      }),
+    );
+  }
+
+  disconnect() {
+    for (const unsubscribe of this.unsubscribers) {
+      unsubscribe();
+    }
+  }
+
+  processPendingChanges = throttle(() => {
+    for (const { type, value } of this.pendingChanges) {
+      switch (type) {
+        case 'add':
+          this.addAsset(value);
+          break;
+
+        case 'trash':
+          if (!this.options.isTrashed) {
+            this.removeAsset(value);
+          }
+          break;
+
+        case 'delete':
+          this.removeAsset(value);
+          break;
+      }
+    }
+
+    this.pendingChanges = [];
+    this.emit(true);
+  }, 10_000);
+
   async init(viewport: Viewport) {
-    const { data: buckets } = await api.assetApi.getTimeBuckets(this.options);
+    this.initialized = false;
+    this.timelineHeight = 0;
+    this.buckets = [];
+    this.assets = [];
+    this.assetToBucket = {};
+    this.albumAssets = new Set();
+
+    const { data: buckets } = await api.assetApi.getTimeBuckets({
+      ...this.options,
+      key: api.getKey(),
+    });
+
+    this.initialized = true;
 
     this.buckets = buckets.map((bucket) => {
       const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
@@ -100,9 +195,29 @@ export class AssetStore {
       bucket.cancelToken = new AbortController();
 
       const { data: assets } = await api.assetApi.getByTimeBucket(
-        { ...this.options, timeBucket: bucketDate },
+        {
+          ...this.options,
+          timeBucket: bucketDate,
+          key: api.getKey(),
+        },
         { signal: bucket.cancelToken.signal },
       );
+
+      if (this.albumId) {
+        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+          {
+            albumId: this.albumId,
+            timeBucket: bucketDate,
+            size: this.options.size,
+            key: api.getKey(),
+          },
+          { signal: bucket.cancelToken.signal },
+        );
+
+        for (const asset of albumAssets) {
+          this.albumAssets.add(asset.id);
+        }
+      }
 
       bucket.assets = assets;
       this.emit(true);
@@ -134,6 +249,46 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
+  private addAsset(asset: AssetResponseDto): void {
+    if (
+      this.assetToBucket[asset.id] ||
+      this.options.userId ||
+      this.options.personId ||
+      this.options.albumId ||
+      isMismatched(this.options.isArchived, asset.isArchived) ||
+      isMismatched(this.options.isFavorite, asset.isFavorite)
+    ) {
+      return;
+    }
+
+    const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+    let bucket = this.getBucketByDate(timeBucket);
+
+    if (!bucket) {
+      bucket = {
+        bucketDate: timeBucket,
+        bucketHeight: THUMBNAIL_HEIGHT,
+        assets: [],
+        cancelToken: null,
+        position: BucketPosition.Unknown,
+      };
+
+      this.buckets.push(bucket);
+      this.buckets = this.buckets.sort((a, b) => {
+        const aDate = DateTime.fromISO(a.bucketDate).toUTC();
+        const bDate = DateTime.fromISO(b.bucketDate).toUTC();
+        return bDate.diff(aDate).milliseconds;
+      });
+    }
+
+    bucket.assets.push(asset);
+    bucket.assets.sort((a, b) => {
+      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
+      return bDate.diff(aDate).milliseconds;
+    });
+  }
+
   getBucketByDate(bucketDate: string): AssetBucket | null {
     return this.buckets.find((bucket) => bucket.bucketDate === bucketDate) || null;
   }
@@ -146,22 +301,30 @@ export class AssetStore {
     return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
-  updateAsset(assetId: string, isFavorite: boolean) {
-    const asset = this.assets.find((asset) => asset.id === assetId);
+  updateAsset(_asset: AssetResponseDto) {
+    const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
     }
 
-    asset.isFavorite = isFavorite;
+    Object.assign(asset, _asset);
+
     this.emit(false);
   }
 
-  removeAsset(assetId: string) {
+  removeAssets(ids: string[]) {
+    // TODO: this could probably be more efficient
+    for (const id of ids) {
+      this.removeAsset(id);
+    }
+  }
+
+  removeAsset(id: string) {
     for (let i = 0; i < this.buckets.length; i++) {
       const bucket = this.buckets[i];
       for (let j = 0; j < bucket.assets.length; j++) {
         const asset = bucket.assets[j];
-        if (asset.id !== assetId) {
+        if (asset.id !== id) {
           continue;
         }
 

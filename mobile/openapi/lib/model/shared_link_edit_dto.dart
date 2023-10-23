@@ -15,9 +15,10 @@ class SharedLinkEditDto {
   SharedLinkEditDto({
     this.allowDownload,
     this.allowUpload,
+    this.changeExpiryTime,
     this.description,
     this.expiresAt,
-    this.showExif,
+    this.showMetadata,
   });
 
   ///
@@ -36,6 +37,15 @@ class SharedLinkEditDto {
   ///
   bool? allowUpload;
 
+  /// Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? changeExpiryTime;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -52,27 +62,29 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? showExif;
+  bool? showMetadata;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
      other.allowDownload == allowDownload &&
      other.allowUpload == allowUpload &&
+     other.changeExpiryTime == changeExpiryTime &&
      other.description == description &&
      other.expiresAt == expiresAt &&
-     other.showExif == showExif;
+     other.showMetadata == showMetadata;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (showExif == null ? 0 : showExif!.hashCode);
+    (showMetadata == null ? 0 : showMetadata!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, showExif=$showExif]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, showMetadata=$showMetadata]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +98,11 @@ class SharedLinkEditDto {
     } else {
     //  json[r'allowUpload'] = null;
     }
+    if (this.changeExpiryTime != null) {
+      json[r'changeExpiryTime'] = this.changeExpiryTime;
+    } else {
+    //  json[r'changeExpiryTime'] = null;
+    }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -96,10 +113,10 @@ class SharedLinkEditDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
-    if (this.showExif != null) {
-      json[r'showExif'] = this.showExif;
+    if (this.showMetadata != null) {
+      json[r'showMetadata'] = this.showMetadata;
     } else {
-    //  json[r'showExif'] = null;
+    //  json[r'showMetadata'] = null;
     }
     return json;
   }
@@ -114,9 +131,10 @@ class SharedLinkEditDto {
       return SharedLinkEditDto(
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
-        showExif: mapValueOfType<bool>(json, r'showExif'),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
       );
     }
     return null;

@@ -1,6 +1,5 @@
 <script lang="ts">
   import '../app.css';
-
   import { page } from '$app/stores';
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
@@ -14,12 +13,20 @@
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
-
+  import { onMount } from 'svelte';
+  import { loadConfig } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { api } from '@api';
+  import { openWebsocketConnection } from '$lib/stores/websocket';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
   let albumId: string | undefined;
+
+  if ($page.route.id?.startsWith('/(user)/share/[key]')) {
+    api.setKey($page.params.key);
+  }
 
   beforeNavigate(() => {
     showNavigationLoadingBar = true;
@@ -27,6 +34,16 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
+  });
+
+  onMount(async () => {
+    openWebsocketConnection();
+
+    try {
+      await loadConfig();
+    } catch (error) {
+      handleError(error, 'Unable to connect to server');
+    }
   });
 
   const dropHandler = async ({ dataTransfer }: DragEvent) => {

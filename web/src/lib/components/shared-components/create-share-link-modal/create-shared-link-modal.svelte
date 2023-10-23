@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AlbumResponseDto, api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Link from 'svelte-material-icons/Link.svelte';
   import BaseModal from '../base-modal.svelte';
@@ -13,16 +13,15 @@
   import DropdownButton from '../dropdown-button.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
 
-  export let shareType: SharedLinkType;
-  export let sharedAssets: AssetResponseDto[] = [];
-  export let album: AlbumResponseDto | undefined = undefined;
+  export let albumId: string | undefined = undefined;
+  export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
   let sharedLink: string | null = null;
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
-  let showExif = true;
+  let showMetadata = true;
   let expirationTime = '';
   let shouldChangeExpirationTime = false;
   let canCopyImagesToClipboard = true;
@@ -33,6 +32,8 @@
     options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
   };
 
+  $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
+
   onMount(async () => {
     if (editingLink) {
       if (editingLink.description) {
@@ -40,7 +41,10 @@
       }
       allowUpload = editingLink.allowUpload;
       allowDownload = editingLink.allowDownload;
-      showExif = editingLink.showExif;
+      showMetadata = editingLink.showMetadata;
+
+      albumId = editingLink.album?.id;
+      assetIds = editingLink.assets.map(({ id }) => id);
     }
 
     const module = await import('copy-image-clipboard');
@@ -56,13 +60,13 @@
       const { data } = await api.sharedLinkApi.createSharedLink({
         sharedLinkCreateDto: {
           type: shareType,
-          albumId: album ? album.id : undefined,
-          assetIds: sharedAssets.map((a) => a.id),
+          albumId,
+          assetIds,
           expiresAt: expirationDate,
           allowUpload,
           description,
           allowDownload,
-          showExif,
+          showMetadata,
         },
       });
       sharedLink = `${window.location.origin}/share/${data.key}`;
@@ -76,12 +80,7 @@
       return;
     }
 
-    try {
-      await navigator.clipboard.writeText(sharedLink);
-      notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
-    } catch (e) {
-      handleError(e, 'Cannot copy to clipboard, make sure you are accessing the page through https');
-    }
+    await copyToClipboard(sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
@@ -120,9 +119,9 @@
         sharedLinkEditDto: {
           description,
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-          allowUpload: allowUpload,
-          allowDownload: allowDownload,
-          showExif: showExif,
+          allowUpload,
+          allowDownload,
+          showMetadata,
         },
       });
 
@@ -138,7 +137,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
+<BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <Link size={24} />
@@ -151,7 +150,7 @@
   </svelte:fragment>
 
   <section class="mx-6 mb-6">
-    {#if shareType == SharedLinkType.Album}
+    {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
         <div>Let anyone with the link see photos and people in this album.</div>
       {:else}
@@ -163,7 +162,7 @@
       {/if}
     {/if}
 
-    {#if shareType == SharedLinkType.Individual}
+    {#if shareType === SharedLinkType.Individual}
       {#if !editingLink}
         <div>Let anyone with the link see the selected photo(s)</div>
       {:else}
@@ -185,7 +184,7 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showExif} title={'Show metadata'} />
+          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">

@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
@@ -27,11 +28,17 @@ export class AlbumEntity {
   @Column({ default: 'Untitled Album' })
   albumName!: string;
 
+  @Column({ type: 'text', default: '' })
+  description!: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @DeleteDateColumn({ type: 'timestamptz' })
+  deletedAt!: Date | null;
 
   @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   albumThumbnailAsset!: AssetEntity | null;

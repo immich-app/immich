@@ -32,7 +32,10 @@ class Asset {
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         thumbhash =
-            remote.thumbhash != null ? base64.decode(remote.thumbhash!) : null;
+            remote.thumbhash != null ? base64.decode(remote.thumbhash!) : null,
+        isTrashed = remote.isTrashed,
+        stackParentId = remote.stackParentId,
+        stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -47,6 +50,8 @@ class Asset {
         updatedAt = local.modifiedDateTime,
         isFavorite = local.isFavorite,
         isArchived = false,
+        isTrashed = false,
+        stackCount = 0,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -77,6 +82,9 @@ class Asset {
     required this.isFavorite,
     required this.isArchived,
     required this.thumbhash,
+    required this.isTrashed,
+    this.stackParentId,
+    required this.stackCount,
   });
 
   @ignore
@@ -103,12 +111,6 @@ class Asset {
 
   /// stores the raw SHA1 bytes as a base64 String
   /// because Isar cannot sort lists of byte arrays
-  @Index(
-    unique: true,
-    replace: false,
-    type: IndexType.hash,
-    composite: [CompositeIndex("ownerId")],
-  )
   String checksum;
 
   List<byte>? thumbhash;
@@ -119,6 +121,11 @@ class Asset {
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? localId;
 
+  @Index(
+    unique: true,
+    replace: false,
+    composite: [CompositeIndex("checksum", type: IndexType.hash)],
+  )
   int ownerId;
 
   DateTime fileCreatedAt;
@@ -144,8 +151,14 @@ class Asset {
 
   bool isArchived;
 
+  bool isTrashed;
+
   @ignore
   ExifInfo? exifInfo;
+
+  String? stackParentId;
+
+  int stackCount;
 
   /// `true` if this [Asset] is present on the device
   @ignore
@@ -183,6 +196,7 @@ class Asset {
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
+    if (identical(this, other)) return true;
     return id == other.id &&
         checksum == other.checksum &&
         thumbhash == other.thumbhash &&
@@ -200,7 +214,10 @@ class Asset {
         livePhotoVideoId == other.livePhotoVideoId &&
         isFavorite == other.isFavorite &&
         isLocal == other.isLocal &&
-        isArchived == other.isArchived;
+        isArchived == other.isArchived &&
+        isTrashed == other.isTrashed &&
+        stackCount == other.stackCount &&
+        stackParentId == other.stackParentId;
   }
 
   @override
@@ -223,7 +240,10 @@ class Asset {
       livePhotoVideoId.hashCode ^
       isFavorite.hashCode ^
       isLocal.hashCode ^
-      isArchived.hashCode;
+      isArchived.hashCode ^
+      isTrashed.hashCode ^
+      stackCount.hashCode ^
+      stackParentId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -237,8 +257,11 @@ class Asset {
         height == null && a.height != null ||
         thumbhash == null && a.thumbhash != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        !isRemote && a.isRemote && isFavorite != a.isFavorite ||
-        !isRemote && a.isRemote && isArchived != a.isArchived;
+        stackParentId == null && a.stackParentId != null ||
+        isFavorite != a.isFavorite ||
+        isArchived != a.isArchived ||
+        isTrashed != a.isTrashed ||
+        stackCount != a.stackCount;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -267,8 +290,11 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
+          stackParentId: stackParentId,
+          stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
+          isTrashed: isTrashed,
           thumbhash: thumbhash,
         );
       }
@@ -281,9 +307,12 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
+          stackParentId: a.stackParentId,
+          stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
+          isTrashed: a.isTrashed,
           thumbhash: a.thumbhash,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
@@ -317,7 +346,10 @@ class Asset {
     String? livePhotoVideoId,
     bool? isFavorite,
     bool? isArchived,
+    bool? isTrashed,
     ExifInfo? exifInfo,
+    String? stackParentId,
+    int? stackCount,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -337,7 +369,10 @@ class Asset {
         livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
+        isTrashed: isTrashed ?? this.isTrashed,
         exifInfo: exifInfo ?? this.exifInfo,
+        stackParentId: stackParentId ?? this.stackParentId,
+        stackCount: stackCount ?? this.stackCount,
       );
 
   Future<void> put(Isar db) async {
@@ -375,11 +410,13 @@ class Asset {
 {
   "id": ${id == Isar.autoIncrement ? '"N/A"' : id},
   "remoteId": "${remoteId ?? "N/A"}",
+  "thumbhash": "$thumbhash",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
-  "thumbhash": "$thumbhash",
   "ownerId": $ownerId, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
+  "stackCount": "$stackCount",
+  "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt", 
   "updatedAt": "$updatedAt", 
@@ -391,7 +428,8 @@ class Asset {
   "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
-  "isArchived": $isArchived
+  "isArchived": $isArchived,
+  "isTrashed": $isTrashed,
 }""";
   }
 }
@@ -430,17 +468,17 @@ enum AssetState {
 
 extension AssetsHelper on IsarCollection<Asset> {
   Future<int> deleteAllByRemoteId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value(0) : _remote(ids).deleteAll();
+      ids.isEmpty ? Future.value(0) : remote(ids).deleteAll();
   Future<int> deleteAllByLocalId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value(0) : _local(ids).deleteAll();
+      ids.isEmpty ? Future.value(0) : local(ids).deleteAll();
   Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value([]) : _remote(ids).findAll();
+      ids.isEmpty ? Future.value([]) : remote(ids).findAll();
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
-      ids.isEmpty ? Future.value([]) : _local(ids).findAll();
+      ids.isEmpty ? Future.value([]) : local(ids).findAll();
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> _remote(Iterable<String> ids) =>
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
-  QueryBuilder<Asset, Asset, QAfterWhereClause> _local(Iterable<String> ids) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
 }

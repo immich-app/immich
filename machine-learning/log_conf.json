@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "disable_existing_loggers": true,
+  "formatters": { "rich": { "show_path": false, "omit_repeated_times": false } },
+  "handlers": {
+    "console": {
+      "class": "app.config.CustomRichHandler",
+      "formatter": "rich",
+      "level": "INFO"
+    }
+  },
+  "loggers": {
+    "gunicorn.access": { "propagate": true },
+    "gunicorn.error": { "propagate": true }
+  },
+  "root": { "handlers": ["console"] }
+}

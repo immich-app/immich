@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { LibraryType, UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -6,17 +6,21 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { constants, createReadStream, ReadStream } from 'fs';
+import { ReadStream, constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
+import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { IUserRepository, UserListFilter } from './user.repository';
+import { ICryptoRepository, ILibraryRepository, IUserRepository, UserListFilter } from '../repositories';
 
 const SALT_ROUNDS = 10;
 
 export class UserCore {
-  constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private libraryRepository: ILibraryRepository,
+    private cryptoRepository: ICryptoRepository,
+  ) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {
@@ -58,6 +62,8 @@ export class UserCore {
 
       if (dto.externalPath === '') {
         dto.externalPath = null;
+      } else if (dto.externalPath) {
+        dto.externalPath = path.normalize(dto.externalPath);
       }
 
       return this.userRepository.update(id, dto);
@@ -88,7 +94,19 @@ export class UserCore {
       if (payload.storageLabel) {
         payload.storageLabel = sanitize(payload.storageLabel);
       }
-      return this.userRepository.create(payload);
+
+      const userEntity = await this.userRepository.create(payload);
+      await this.libraryRepository.create({
+        owner: { id: userEntity.id } as UserEntity,
+        name: 'Default Library',
+        assets: [],
+        type: LibraryType.UPLOAD,
+        importPaths: [],
+        exclusionPatterns: [],
+        isVisible: true,
+      });
+
+      return userEntity;
     } catch (e) {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');

@@ -3,8 +3,9 @@
 /* eslint-disable */
 {{>licenseInfo}}
 
-import globalAxios, { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { Configuration } from '{{apiRelativeToRoot}}configuration';
+import type { Configuration } from '{{apiRelativeToRoot}}configuration';
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
+import globalAxios from 'axios';
 {{#withNodeImports}}
 // URLSearchParams not necessarily used
 // @ts-ignore
@@ -146,12 +147,16 @@ export const {{classname}}AxiosParamCreator = function (configuration?: Configur
             }
             {{/isArray}}
             {{^isArray}}
-            if ({{paramName}} !== undefined && {{paramName}} !== null) {
+            {{! `val == null` covers for both `null` and `undefined`}}
+            if ({{paramName}} != null) {
                 {{#isString}}
                 localVarHeaderParameter['{{baseName}}'] = String({{paramName}});
                 {{/isString}}
                 {{^isString}}
-                localVarHeaderParameter['{{baseName}}'] = String(JSON.stringify({{paramName}}));
+                {{! isString is falsy also for $ref that defines a string or enum type}}
+                localVarHeaderParameter['{{baseName}}'] = typeof {{paramName}} === 'string' 
+                    ? {{paramName}} 
+                    : JSON.stringify({{paramName}});
                 {{/isString}}
             }
             {{/isArray}}
@@ -253,16 +258,30 @@ export const {{classname}}Factory = function (configuration?: Configuration, bas
          {{#summary}}
          * @summary {{&summary}}
          {{/summary}}
+        {{#useSingleRequestParameter}}
+         {{#allParams.0}}
+         * @param {{=<% %>=}}{<%& classname %><%& operationIdCamelCase %>Request}<%={{ }}=%> requestParameters Request parameters.
+         {{/allParams.0}}
+        {{/useSingleRequestParameter}}
+        {{^useSingleRequestParameter}}
          {{#allParams}}
          * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
          {{/allParams}}
+        {{/useSingleRequestParameter}}
          * @param {*} [options] Override http request option.{{#isDeprecated}}
          * @deprecated{{/isDeprecated}}
          * @throws {RequiredError}
          */
+        {{#useSingleRequestParameter}}
+        {{nickname}}({{#allParams.0}}requestParameters: {{classname}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}options?: AxiosRequestConfig): AxiosPromise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
+            return localVarFp.{{nickname}}({{#allParams.0}}{{#allParams}}requestParameters.{{paramName}}, {{/allParams}}{{/allParams.0}}options).then((request) => request(axios, basePath));
+        },
+        {{/useSingleRequestParameter}}
+        {{^useSingleRequestParameter}}
         {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}options?: any): AxiosPromise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
             return localVarFp.{{nickname}}({{#allParams}}{{paramName}}, {{/allParams}}options).then((request) => request(axios, basePath));
         },
+        {{/useSingleRequestParameter}}
     {{/operation}}
     };
 };

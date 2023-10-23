@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 export LD_PRELOAD=/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2
 
@@ -32,4 +32,4 @@ if [ "$REDIS_PASSWORD_FILE" ]; then
 	unset REDIS_PASSWORD_FILE
 fi
 
-exec node dist/main $1
+exec node dist/main $@

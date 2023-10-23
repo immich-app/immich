@@ -1,35 +1,32 @@
-import { toBoolean } from '@app/domain';
+import { Optional, toBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
 export class AssetSearchDto {
-  @IsOptional()
+  @Optional()
   @IsNotEmpty()
   @IsBoolean()
   @Transform(toBoolean)
   isFavorite?: boolean;
 
-  @IsOptional()
+  @Optional()
   @IsNotEmpty()
   @IsBoolean()
   @Transform(toBoolean)
   isArchived?: boolean;
 
-  /**
-   * Include assets without thumbnails
-   */
-  @IsOptional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  withoutThumbs?: boolean;
-
-  @IsOptional()
+  @Optional()
   @IsNumber()
   skip?: number;
 
-  @IsOptional()
+  @Optional()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   userId?: string;
+
+  @Optional()
+  @IsDate()
+  @Type(() => Date)
+  updatedAfter?: Date;
 }

@@ -68,7 +68,7 @@ class AdminSignupResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AdminSignupResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         id: mapValueOfType<String>(json, r'id')!,
