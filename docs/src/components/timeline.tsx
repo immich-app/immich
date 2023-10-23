@@ -72,8 +72,9 @@ export default function Timeline({ items }: Props): JSX.Element {
                 </span>
               </div>
               <div className="md:hidden text-xs">
-                {`${item.tag ? 'Release' : ''} Date`} -{' '}
-                {isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}
+                {`${item.tag ? 'Release' : ''} Date - ${
+                  isBrowser ? item.date.toLocaleDateString(navigator.language) : ''
+                }`}
               </div>
               <p className="m-0 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
             </section>

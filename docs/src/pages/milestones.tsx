@@ -490,17 +490,15 @@ export default function MilestonePage(): JSX.Element {
   return (
     <Layout title="Milestones" description="History of Immich">
       <section className="my-8">
-        <h1 className="md:text-6xl text-center mb-10 text-immich-primary dark:text-immich-dark-primary">
+        <h1 className="md:text-6xl text-center mb-10 text-immich-primary dark:text-immich-dark-primary px-2">
           Major Milestones
         </h1>
-        <p className="text-center text-xl">
+        <p className="text-center text-xl px-2">
           A list of project achievements and milestones, <br />
           by release date.
         </p>
-        <div className="flex row justify-around mt-8">
-          <div className="flex max-w-full ">
-            <Timeline items={items} />
-          </div>
+        <div className="flex justify-around mt-8 w-full max-w-full">
+          <Timeline items={items} />
         </div>
       </section>
     </Layout>
