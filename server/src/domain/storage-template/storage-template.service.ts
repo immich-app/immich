@@ -7,6 +7,7 @@ import sanitize from 'sanitize-filename';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
+  IAlbumRepository,
   IAssetRepository,
   IMoveRepository,
   IPersonRepository,
@@ -32,14 +33,26 @@ export interface MoveAssetMetadata {
   filename: string;
 }
 
+interface RenderMetadata {
+  asset: AssetEntity;
+  filename: string;
+  extension: string;
+  albumName: string | null;
+}
+
 @Injectable()
 export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private storageTemplate: HandlebarsTemplateDelegate<any>;
+  private template: {
+    compiled: HandlebarsTemplateDelegate<any>;
+    raw: string;
+    needsAlbum: boolean;
+  };
 
   constructor(
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
@@ -48,10 +61,14 @@ export class StorageTemplateService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.storageTemplate = this.compile(config.storageTemplate.template);
+    this.template = this.compile(config.storageTemplate.template);
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
+    this.configCore.config$.subscribe((config) => {
+      const template = config.storageTemplate.template;
+      this.logger.debug(`Received config, compiling storage template: ${template}`);
+      this.template = this.compile(template);
+    });
     this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
@@ -132,7 +149,19 @@ export class StorageTemplateService {
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
-      const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+
+      let albumName = null;
+      if (this.template.needsAlbum) {
+        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        albumName = albums?.[0]?.albumName || null;
+      }
+
+      const storagePath = this.render(this.template.compiled, {
+        asset,
+        filename: sanitized,
+        extension: ext,
+        albumName,
+      });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
 
@@ -187,39 +216,43 @@ export class StorageTemplateService {
   }
 
   private validate(config: SystemConfig) {
-    const testAsset = {
-      fileCreatedAt: new Date(),
-      originalPath: '/upload/test/IMG_123.jpg',
-      type: AssetType.IMAGE,
-      id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
-    } as AssetEntity;
     try {
-      this.render(this.compile(config.storageTemplate.template), testAsset, 'IMG_123', 'jpg');
+      const { compiled } = this.compile(config.storageTemplate.template);
+      this.render(compiled, {
+        asset: {
+          fileCreatedAt: new Date(),
+          originalPath: '/upload/test/IMG_123.jpg',
+          type: AssetType.IMAGE,
+          id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
+        } as AssetEntity,
+        filename: 'IMG_123',
+        extension: 'jpg',
+        albumName: 'album',
+      });
     } catch (e) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
 
-  private onConfig(config: SystemConfig) {
-    this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
-    this.storageTemplate = this.compile(config.storageTemplate.template);
-  }
-
   private compile(template: string) {
-    return handlebar.compile(template, {
-      knownHelpers: undefined,
-      strict: true,
-    });
+    return {
+      raw: template,
+      compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
+      needsAlbum: template.indexOf('{{album}}') !== -1,
+    };
   }
 
-  private render(template: HandlebarsTemplateDelegate<any>, asset: AssetEntity, filename: string, ext: string) {
+  private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
+    const { filename, extension, asset, albumName } = options;
     const substitutions: Record<string, string> = {
       filename,
-      ext,
+      ext: extension,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
+      //just throw into the root if it doesn't belong to an album
+      album: (albumName && sanitize(albumName.replace(/\.+/g, ''))) || '.',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
