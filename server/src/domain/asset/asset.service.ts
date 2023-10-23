@@ -89,7 +89,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }

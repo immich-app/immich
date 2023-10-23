@@ -37,8 +37,22 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
 }
 
+let instance: AccessCore | null;
+
 export class AccessCore {
-  constructor(private repository: IAccessRepository) {}
+  private constructor(private repository: IAccessRepository) {}
+
+  static create(repository: IAccessRepository) {
+    if (!instance) {
+      instance = new AccessCore(repository);
+    }
+
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   requireUploadAccess(authUser: AuthUserDto | null): AuthUserDto {
     if (!authUser || (authUser.isPublicUser && !authUser.isAllowUpload)) {
