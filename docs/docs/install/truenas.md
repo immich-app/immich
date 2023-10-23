@@ -55,7 +55,7 @@ To find specific fields click in the **Search Input Fields** search field, scrol
 
 <img
 src={require('./img/truenas03.png').default}
-width="50%"
+width="100%"
 alt="Install Immich Screen"
 className="border rounded-xl"
 />
