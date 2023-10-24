@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AlbumEntity, AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 
+const peopleLimit = Number(process.env.PEOPLE_LIMIT);
+
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
@@ -75,7 +77,7 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
-      .limit(500);
+      .limit(peopleLimit);
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
