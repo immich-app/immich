@@ -1,4 +1,4 @@
-import { AuthService, CommunicationEvent, ICommunicationRepository, serverVersion } from '@app/domain';
+import { AuthService, Callback, CommunicationEvent, ICommunicationRepository } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -6,10 +6,15 @@ import { Server, Socket } from 'socket.io';
 @WebSocketGateway({ cors: true })
 export class CommunicationRepository implements OnGatewayConnection, OnGatewayDisconnect, ICommunicationRepository {
   private logger = new Logger(CommunicationRepository.name);
+  private onConnectCallbacks: Callback[] = [];
 
   constructor(private authService: AuthService) {}
 
   @WebSocketServer() server!: Server;
+
+  addEventListener(event: 'connect', callback: Callback) {
+    this.onConnectCallbacks.push(callback);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -17,7 +22,9 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
       const user = await this.authService.validate(client.request.headers, {});
       if (user) {
         await client.join(user.id);
-        this.send(CommunicationEvent.SERVER_VERSION, user.id, serverVersion);
+        for (const callback of this.onConnectCallbacks) {
+          await callback(user.id);
+        }
       } else {
         client.emit('error', 'unauthorized');
         client.disconnect();
@@ -34,7 +41,7 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
   }
 
   send(event: CommunicationEvent, userId: string, data: any) {
-    this.server.to(userId).emit(event, JSON.stringify(data));
+    this.server.to(userId).emit(event, data);
   }
 
   broadcast(event: CommunicationEvent, data: any) {

@@ -25,7 +25,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Response as Res } from 'express';
+import { Response as Res, Response } from 'express';
 import { constants } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
@@ -34,7 +34,6 @@ import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -47,10 +46,12 @@ import {
   AssetUploadAction,
 } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+
+type SendFile = Parameters<Response['sendFile']>;
+type SendFileOptions = SendFile[1];
 
 @Injectable()
 export class AssetService {
@@ -68,7 +69,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   public async uploadFile(
@@ -196,7 +197,7 @@ export class AssetService {
     const includeMetadata = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
     if (includeMetadata) {
-      const data = mapAsset(asset);
+      const data = mapAsset(asset, { withStack: true });
 
       if (data.ownerId !== authUser.id) {
         data.people = [];
@@ -208,7 +209,7 @@ export class AssetService {
 
       return data;
     } else {
-      return mapAsset(asset, true);
+      return mapAsset(asset, { stripMetadata: true, withStack: true });
     }
   }
 
@@ -316,23 +317,6 @@ export class AssetService {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
-  async checkDuplicatedAsset(
-    authUser: AuthUserDto,
-    checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    const res = await this.assetRepository.findOne({
-      where: {
-        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
-        deviceId: checkDuplicateAssetDto.deviceId,
-        ownerId: authUser.id,
-      },
-    });
-
-    const isDuplicated = res ? true : false;
-
-    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
-  }
-
   async checkExistingAssets(
     authUser: AuthUserDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
@@ -436,7 +420,10 @@ export class AssetService {
 
   private async sendFile(res: Res, filepath: string): Promise<void> {
     await fs.access(filepath, constants.R_OK);
-    const options = path.isAbsolute(filepath) ? {} : { root: process.cwd() };
+    const options: SendFileOptions = { dotfiles: 'allow' };
+    if (!path.isAbsolute(filepath)) {
+      options.root = process.cwd();
+    }
 
     res.set('Cache-Control', 'private, max-age=86400, no-transform');
     res.header('Content-Type', mimeTypes.lookup(filepath));

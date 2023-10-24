@@ -67,6 +67,8 @@ export enum SystemConfigKey {
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
   REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
 
+  NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
+
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -90,6 +92,8 @@ export enum SystemConfigKey {
 
   TRASH_ENABLED = 'trash.enabled',
   TRASH_DAYS = 'trash.days',
+
+  THEME_CUSTOM_CSS = 'theme.customCss',
 }
 
 export enum TranscodePolicy {
@@ -217,8 +221,14 @@ export interface SystemConfig {
     quality: number;
     colorspace: Colorspace;
   };
+  newVersionCheck: {
+    enabled: boolean;
+  };
   trash: {
     enabled: boolean;
     days: number;
+  };
+  theme: {
+    customCss: string;
   };
 }

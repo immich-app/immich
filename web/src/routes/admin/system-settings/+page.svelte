@@ -10,6 +10,7 @@
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { downloadManager } from '$lib/stores/download';
@@ -20,6 +21,7 @@
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
+  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
 
   export let data: PageData;
 
@@ -96,12 +98,20 @@
         />
       </SettingAccordion>
 
+      <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">
+        <ThemeSettings disabled={$featureFlags.configFile} themeConfig={configs.theme} />
+      </SettingAccordion>
+
       <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
         <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
       </SettingAccordion>
 
       <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
         <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
+        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

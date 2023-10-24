@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsPositive, IsString } from 'class-validator';
-import { Optional } from '../../domain.util';
+import { Optional, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
 export class AssetBulkUpdateDto extends BulkIdsDto {
@@ -11,6 +11,14 @@ export class AssetBulkUpdateDto extends BulkIdsDto {
   @Optional()
   @IsBoolean()
   isArchived?: boolean;
+
+  @Optional()
+  @ValidateUUID()
+  stackParentId?: string;
+
+  @Optional()
+  @IsBoolean()
+  removeParent?: boolean;
 }
 
 export class UpdateAssetDto {

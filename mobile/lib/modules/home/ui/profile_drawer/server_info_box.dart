@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/server_info_state.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -13,7 +13,7 @@ class ServerInfoBox extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
+    ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
 
@@ -107,7 +107,7 @@ class ServerInfoBox extends HookConsumerWidget {
                   ),
                   Text(
                     serverInfoState.serverVersion.major > 0
-                        ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch_}"
+                        ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
                         : "?",
                     style: TextStyle(
                       fontSize: 11,

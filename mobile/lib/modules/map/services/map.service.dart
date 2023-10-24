@@ -17,7 +17,7 @@ final mapServiceProvider = Provider(
 class MapSerivce {
   final ApiService _apiService;
   final Isar _db;
-  final log = Logger("MapService");
+  final _log = Logger("MapService");
 
   MapSerivce(this._apiService, this._db);
 
@@ -37,7 +37,7 @@ class MapSerivce {
 
       return markers ?? [];
     } catch (error, stack) {
-      log.severe("Cannot get map markers ${error.toString()}", error, stack);
+      _log.severe("Cannot get map markers ${error.toString()}", error, stack);
       return [];
     }
   }
@@ -53,7 +53,7 @@ class MapSerivce {
       }
       return Asset.remote(dto);
     } catch (error, stack) {
-      log.severe(
+      _log.severe(
         "Cannot get asset for marker ${error.toString()}",
         error,
         stack,

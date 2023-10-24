@@ -927,58 +927,6 @@
         ]
       }
     },
-    "/asset/check": {
-      "post": {
-        "description": "Check duplicated asset before uploading - for Web upload used",
-        "operationId": "checkDuplicateAsset",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckDuplicateAssetDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckDuplicateAssetResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -1654,6 +1602,41 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/stack/parent": {
+      "put": {
+        "operationId": "updateStackParent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStackParentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -3745,6 +3728,48 @@
         ]
       }
     },
+    "/person/{id}/statistics": {
+      "get": {
+        "operationId": "getPersonStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
     "/person/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
@@ -4056,6 +4081,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -5841,6 +5874,13 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "removeParent": {
+            "type": "boolean"
+          },
+          "stackParentId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
@@ -6146,6 +6186,19 @@
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
+          "stack": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "stackCount": {
+            "type": "integer"
+          },
+          "stackParentId": {
+            "nullable": true,
+            "type": "string"
+          },
           "tags": {
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
@@ -6166,6 +6219,7 @@
         },
         "required": [
           "type",
+          "stackCount",
           "deviceAssetId",
           "deviceId",
           "ownerId",
@@ -6365,35 +6419,6 @@
         "required": [
           "password",
           "newPassword"
-        ],
-        "type": "object"
-      },
-      "CheckDuplicateAssetDto": {
-        "properties": {
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetId",
-          "deviceId"
-        ],
-        "type": "object"
-      },
-      "CheckDuplicateAssetResponseDto": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "isExist": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isExist"
         ],
         "type": "object"
       },
@@ -7550,6 +7575,17 @@
         ],
         "type": "object"
       },
+      "PersonStatisticsResponseDto": {
+        "properties": {
+          "assets": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assets"
+        ],
+        "type": "object"
+      },
       "PersonUpdateDto": {
         "properties": {
           "birthDate": {
@@ -8051,6 +8087,10 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "changeExpiryTime": {
+            "description": "Few clients cannot send null to set the expiryTime to never.\nSetting this flag and not sending expiryAt is considered as null instead.\nClients that can send null values can ignore this.",
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           },
@@ -8193,6 +8233,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "newVersionCheck": {
+            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -8205,6 +8248,9 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
           },
@@ -8216,13 +8262,15 @@
           "ffmpeg",
           "machineLearning",
           "map",
+          "newVersionCheck",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
           "storageTemplate",
           "job",
           "thumbnail",
-          "trash"
+          "trash",
+          "theme"
         ],
         "type": "object"
       },
@@ -8398,6 +8446,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigNewVersionCheckDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
@@ -8546,6 +8605,17 @@
           "minuteOptions",
           "secondOptions",
           "presetOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
         ],
         "type": "object"
       },
@@ -8724,6 +8794,23 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateStackParentDto": {
+        "properties": {
+          "newParentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "oldParentId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldParentId",
+          "newParentId"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

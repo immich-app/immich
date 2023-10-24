@@ -1,7 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { mimeTypes, serverVersion } from '../domain.constant';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { DateTime } from 'luxon';
+import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, ISystemConfigRepository, IUserRepository, UserStatsQueryResponse } from '../repositories';
+import {
+  CommunicationEvent,
+  ICommunicationRepository,
+  IServerInfoRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  UserStatsQueryResponse,
+} from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
@@ -16,14 +25,20 @@ import {
 
 @Injectable()
 export class ServerInfoService {
+  private logger = new Logger(ServerInfoService.name);
   private configCore: SystemConfigCore;
+  private releaseVersion = serverVersion;
+  private releaseVersionCheckedAt: DateTime | null = null;
 
   constructor(
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
+    this.communicationRepository.addEventListener('connect', (userId) => this.handleConnect(userId));
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -100,5 +115,57 @@ export class ServerInfoService {
       image: Object.keys(mimeTypes.image),
       sidecar: Object.keys(mimeTypes.sidecar),
     };
+  }
+
+  async handleVersionCheck(): Promise<boolean> {
+    try {
+      if (isDev) {
+        return true;
+      }
+
+      const { newVersionCheck } = await this.configCore.getConfig();
+      if (!newVersionCheck.enabled) {
+        return true;
+      }
+
+      // check once per hour (max)
+      if (this.releaseVersionCheckedAt && this.releaseVersionCheckedAt.diffNow().as('minutes') < 60) {
+        return true;
+      }
+
+      const githubRelease = await this.repository.getGitHubRelease();
+      const githubVersion = ServerVersion.fromString(githubRelease.tag_name);
+      const publishedAt = new Date(githubRelease.published_at);
+      this.releaseVersion = githubVersion;
+      this.releaseVersionCheckedAt = DateTime.now();
+
+      if (githubVersion.isNewerThan(serverVersion)) {
+        this.logger.log(`Found ${githubVersion.toString()}, released at ${publishedAt.toLocaleString()}`);
+        this.newReleaseNotification();
+      }
+    } catch (error: Error | any) {
+      this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
+    }
+
+    return true;
+  }
+
+  private async handleConnect(userId: string) {
+    this.communicationRepository.send(CommunicationEvent.SERVER_VERSION, userId, serverVersion);
+    this.newReleaseNotification(userId);
+  }
+
+  private newReleaseNotification(userId?: string) {
+    const event = CommunicationEvent.NEW_RELEASE;
+    const payload = {
+      isAvailable: this.releaseVersion.isNewerThan(serverVersion),
+      checkedAt: this.releaseVersionCheckedAt,
+      serverVersion,
+      releaseVersion: this.releaseVersion,
+    };
+
+    userId
+      ? this.communicationRepository.send(event, userId, payload)
+      : this.communicationRepository.broadcast(event, payload);
   }
 }

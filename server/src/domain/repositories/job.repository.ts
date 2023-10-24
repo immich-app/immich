@@ -85,7 +85,7 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION; data: IAssetDeletionJob }
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
-  // Library Managment
+  // Library Management
   | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }

@@ -16,7 +16,7 @@ export class SharedLinkService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
@@ -81,7 +81,7 @@ export class SharedLinkService {
       id,
       userId: authUser.id,
       description: dto.description,
-      expiresAt: dto.expiresAt,
+      expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,

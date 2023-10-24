@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigNewVersionCheckDto newVersionCheck
+    test('to test the property `newVersionCheck`', () async {
+      // TODO
+    });
+
     // SystemConfigOAuthDto oauth
     test('to test the property `oauth`', () async {
       // TODO
@@ -53,6 +58,11 @@ void main() {
 
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
+      // TODO
+    });
+
+    // SystemConfigThemeDto theme
+    test('to test the property `theme`', () async {
       // TODO
     });
 

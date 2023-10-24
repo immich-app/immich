@@ -148,6 +148,16 @@ export class AssetEntity {
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
   faces!: AssetFaceEntity[];
+
+  @Column({ nullable: true })
+  stackParentId?: string | null;
+
+  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @JoinColumn({ name: 'stackParentId' })
+  stackParent?: AssetEntity | null;
+
+  @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
+  stack?: AssetEntity[];
 }
 
 export enum AssetType {

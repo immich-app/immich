@@ -3,7 +3,7 @@ import {
   IMMICH_API_KEY_HEADER,
   IMMICH_API_KEY_NAME,
   ImmichReadStream,
-  SERVER_VERSION,
+  serverVersion,
 } from '@app/domain';
 import { INestApplication, StreamableFile } from '@nestjs/common';
 import {
@@ -91,7 +91,7 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion(SERVER_VERSION)
+    .setVersion(serverVersion.toString())
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',

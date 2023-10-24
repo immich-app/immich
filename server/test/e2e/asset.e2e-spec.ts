@@ -626,4 +626,167 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(body).toEqual([expect.objectContaining({ id: asset2.id })]);
     });
   });
+
+  describe('PUT /asset', () => {
+    beforeEach(async () => {
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: asset1.id, ids: [asset2.id, asset3.id] });
+
+      expect(status).toBe(204);
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).put('/asset');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should require a valid parent id', async () => {
+      const { status, body } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: uuidStub.invalid, ids: [asset1.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest(['stackParentId must be a UUID']));
+    });
+
+    it('should require access to the parent', async () => {
+      const { status, body } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: asset4.id, ids: [asset1.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
+    });
+
+    it('should add stack children', async () => {
+      const parent = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
+      const child = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
+
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: parent.id, ids: [child.id] });
+
+      expect(status).toBe(204);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, parent.id);
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: child.id })]));
+    });
+
+    it('should remove stack children', async () => {
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ removeParent: true, ids: [asset2.id] });
+
+      expect(status).toBe(204);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, asset1.id);
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset3.id })]));
+    });
+
+    it('should remove all stack children', async () => {
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ removeParent: true, ids: [asset2.id, asset3.id] });
+
+      expect(status).toBe(204);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, asset1.id);
+      expect(asset.stack).toHaveLength(0);
+    });
+
+    it('should merge stack children', async () => {
+      const newParent = await createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01'));
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: newParent.id, ids: [asset1.id] });
+
+      expect(status).toBe(204);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, newParent.id);
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset1.id }),
+          expect.objectContaining({ id: asset2.id }),
+          expect.objectContaining({ id: asset3.id }),
+        ]),
+      );
+    });
+  });
+
+  describe('PUT /asset/stack/parent', () => {
+    beforeEach(async () => {
+      const { status } = await request(server)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: asset1.id, ids: [asset2.id, asset3.id] });
+
+      expect(status).toBe(204);
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).put('/asset/stack/parent');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(server)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: uuidStub.invalid, newParentId: uuidStub.invalid });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest());
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(server)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: asset4.id, newParentId: asset1.id });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.noPermission);
+    });
+
+    it('should make old parent child of new parent', async () => {
+      const { status } = await request(server)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: asset1.id, newParentId: asset2.id });
+
+      expect(status).toBe(200);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, asset2.id);
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset1.id })]));
+    });
+
+    it('should make all childrens of old parent, a child of new parent', async () => {
+      const { status } = await request(server)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: asset1.id, newParentId: asset2.id });
+
+      expect(status).toBe(200);
+
+      const asset = await api.assetApi.get(server, user1.accessToken, asset2.id);
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset3.id })]));
+    });
+  });
 });

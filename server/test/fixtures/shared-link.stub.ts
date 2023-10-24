@@ -72,6 +72,7 @@ const assetResponse: AssetResponseDto = {
   isTrashed: false,
   libraryId: 'library-id',
   hasMetadata: true,
+  stackCount: 0,
 };
 
 const assetResponseWithoutMetadata = {
