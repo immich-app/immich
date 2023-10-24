@@ -25,7 +25,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Response as Res } from 'express';
+import { Response as Res, Response } from 'express';
 import { constants } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
@@ -51,6 +51,9 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+
+type SendFile = Parameters<Response['sendFile']>;
+type SendFileOptions = SendFile[1];
 
 @Injectable()
 export class AssetService {
@@ -436,7 +439,10 @@ export class AssetService {
 
   private async sendFile(res: Res, filepath: string): Promise<void> {
     await fs.access(filepath, constants.R_OK);
-    const options = path.isAbsolute(filepath) ? {} : { root: process.cwd() };
+    const options: SendFileOptions = { dotfiles: 'allow' };
+    if (!path.isAbsolute(filepath)) {
+      options.root = process.cwd();
+    }
 
     res.set('Cache-Control', 'private, max-age=86400, no-transform');
     res.header('Content-Type', mimeTypes.lookup(filepath));
