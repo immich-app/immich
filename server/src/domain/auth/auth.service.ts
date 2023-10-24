@@ -147,7 +147,7 @@ export class AuthService {
     return mapAdminSignupResponse(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
