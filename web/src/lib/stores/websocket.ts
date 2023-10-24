@@ -1,5 +1,5 @@
 import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
 
@@ -20,9 +20,15 @@ export const websocketStore = {
   onRelease: writable<ReleaseEvent>(),
 };
 
+let websocket: Socket | null = null;
+
 export const openWebsocketConnection = () => {
   try {
-    const websocket = io('', {
+    if (websocket) {
+      return;
+    }
+
+    websocket = io('', {
       path: '/api/socket.io',
       reconnection: true,
       forceNew: true,
@@ -40,9 +46,14 @@ export const openWebsocketConnection = () => {
       .on('on_config_update', () => loadConfig())
       .on('on_new_release', (data) => websocketStore.onRelease.set(data))
       .on('error', (e) => console.log('Websocket Error', e));
-
-    return () => websocket?.close();
   } catch (e) {
     console.log('Cannot connect to websocket ', e);
   }
+};
+
+export const closeWebsocketConnection = () => {
+  if (websocket) {
+    websocket.close();
+  }
+  websocket = null;
 };

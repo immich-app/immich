@@ -18,26 +18,22 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
 
   async handleConnection(client: Socket) {
     try {
-      this.logger.log(`New websocket connection: ${client.id}`);
+      this.logger.log(`Websocket Connect:    ${client.id}`);
       const user = await this.authService.validate(client.request.headers, {});
-      if (user) {
-        await client.join(user.id);
-        for (const callback of this.onConnectCallbacks) {
-          await callback(user.id);
-        }
-      } else {
-        client.emit('error', 'unauthorized');
-        client.disconnect();
+      await client.join(user.id);
+      for (const callback of this.onConnectCallbacks) {
+        await callback(user.id);
       }
-    } catch (e) {
+    } catch (error: Error | any) {
+      this.logger.error(`Websocket connection error: ${error}`, error?.stack);
       client.emit('error', 'unauthorized');
       client.disconnect();
     }
   }
 
   async handleDisconnect(client: Socket) {
+    this.logger.log(`Websocket Disconnect: ${client.id}`);
     await client.leave(client.nsp.name);
-    this.logger.log(`Client ${client.id} disconnected from Websocket`);
   }
 
   send(event: CommunicationEvent, userId: string, data: any) {
