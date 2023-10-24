@@ -927,58 +927,6 @@
         ]
       }
     },
-    "/asset/check": {
-      "post": {
-        "description": "Check duplicated asset before uploading - for Web upload used",
-        "operationId": "checkDuplicateAsset",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckDuplicateAssetDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckDuplicateAssetResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
@@ -6266,35 +6214,6 @@
         "required": [
           "password",
           "newPassword"
-        ],
-        "type": "object"
-      },
-      "CheckDuplicateAssetDto": {
-        "properties": {
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetId",
-          "deviceId"
-        ],
-        "type": "object"
-      },
-      "CheckDuplicateAssetResponseDto": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "isExist": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isExist"
         ],
         "type": "object"
       },
