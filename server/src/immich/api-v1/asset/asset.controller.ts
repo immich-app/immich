@@ -37,7 +37,6 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { TusService } from './tus.service';
 
 interface UploadFiles {
   assetData: ImmichFile[];
@@ -50,10 +49,7 @@ interface UploadFiles {
 @Authenticated()
 export class AssetController {
   private logger = new Logger(AssetController.name);
-  constructor(
-    private assetService: AssetService,
-    private tusService: TusService,
-  ) {}
+  constructor(private assetService: AssetService) {}
 
   @SharedLinkRoute()
   @Post('upload')
