@@ -102,7 +102,7 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .andWhere('LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere', {
-        name: `${personName.toLowerCase()}%`,
+        nameStart: `${personName.toLowerCase()}%`,
         nameAnywhere: `% ${personName.toLowerCase()}%`,
       })
       .groupBy('person.id')

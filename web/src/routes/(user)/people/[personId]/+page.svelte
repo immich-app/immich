@@ -87,7 +87,7 @@
   let isSearchingPeople = false;
 
   const searchPeople = async () => {
-    if ((people.length < 20 && name.includes(searchWord)) || name === '') {
+    if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
       return;
     }
     isSearchingPeople = true;
@@ -113,10 +113,13 @@
       suggestedPeople = !name
         ? []
         : people
-            .filter(
-              (person: PersonResponseDto) =>
-                person.name.toLowerCase().includes(name.toLowerCase()) && person.id !== data.person.id,
-            )
+            .filter((person: PersonResponseDto) => {
+              const nameParts = person.name.split(' ');
+              return (
+                nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
+                person.id !== data.person.id
+              );
+            })
             .slice(0, 5);
     }
   }
