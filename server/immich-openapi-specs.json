@@ -8456,6 +8456,7 @@
           "nvenc",
           "qsv",
           "vaapi",
+          "rkmpp",
           "disabled"
         ],
         "type": "string"

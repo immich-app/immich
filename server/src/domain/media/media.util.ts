@@ -143,6 +143,13 @@ class BaseConfig implements VideoCodecSWConfig {
     return this.isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
+  getSize(videoStream: VideoStreamInfo) {
+    const smaller = this.getTargetResolution(videoStream);
+    const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
+    const larger = Math.round(smaller * factor);
+    return this.isVideoVertical(videoStream) ? { width: smaller, height: larger } : { width: larger, height: smaller };
+  }
+
   isVideoRotated(videoStream: VideoStreamInfo) {
     return Math.abs(videoStream.rotation) === 90;
   }
@@ -553,5 +560,60 @@ export class VAAPIConfig extends BaseHWConfig {
 
   useCQP() {
     return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
+  }
+}
+
+export class RKMPPConfig extends BaseHWConfig {
+  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo | undefined): TranscodeOptions {
+    const options = super.getOptions(videoStream, audioStream);
+    options.ffmpegPath = 'ffmpeg_mpp';
+    options.outputOptions.push(...this.getSizeOptions(videoStream));
+    return options;
+  }
+
+  getBaseInputOptions() {
+    if (this.devices.length === 0) {
+      throw Error('No RKMPP device found');
+    }
+    return [];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = [];
+    if (this.shouldToneMap(videoStream)) {
+      options.push(...this.getToneMapping());
+    }
+    return options;
+  }
+
+  getSizeOptions(videoStream: VideoStreamInfo) {
+    if (this.shouldScale(videoStream)) {
+      const { width, height } = this.getSize(videoStream);
+      return [`-width ${width}`, `-height ${height}`];
+    }
+    return [];
+  }
+
+  getPresetOptions() {
+    return ['-level 153'];
+  }
+
+  getBitrateOptions() {
+    const bitrate = this.getMaxBitrateValue();
+    if (bitrate > 0) {
+      return ['-rc_mode 3', '-quality_min 0', '-quality_max 100', `-b:v ${bitrate}${this.getBitrateUnit()}`];
+    } else {
+      // convert CQP from 51-10 to 0-100
+      const quality = Math.floor(125 - this.config.crf * 2.45);
+      return ['-rc_mode 2', `-quality_min ${quality}`, `-quality_max ${quality}`];
+    }
+  }
+
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC];
+  }
+
+  getVideoCodec(): string {
+    return `${this.config.targetVideoCodec}_rkmpp_encoder`;
   }
 }

@@ -26,7 +26,16 @@ import {
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
+import {
+  H264Config,
+  HEVCConfig,
+  NVENCConfig,
+  QSVConfig,
+  RKMPPConfig,
+  ThumbnailConfig,
+  VAAPIConfig,
+  VP9Config,
+} from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -351,6 +360,10 @@ export class MediaService {
       case TranscodeHWAccel.VAAPI:
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new VAAPIConfig(config, devices);
+        break;
+      case TranscodeHWAccel.RKMPP:
+        devices = await this.storageRepository.readdir('/dev/dri');
+        handler = new RKMPPConfig(config, devices);
         break;
       default:
         throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);

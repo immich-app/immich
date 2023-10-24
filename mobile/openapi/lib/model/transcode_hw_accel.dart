@@ -26,6 +26,7 @@ class TranscodeHWAccel {
   static const nvenc = TranscodeHWAccel._(r'nvenc');
   static const qsv = TranscodeHWAccel._(r'qsv');
   static const vaapi = TranscodeHWAccel._(r'vaapi');
+  static const rkmpp = TranscodeHWAccel._(r'rkmpp');
   static const disabled = TranscodeHWAccel._(r'disabled');
 
   /// List of all possible values in this [enum][TranscodeHWAccel].
@@ -33,6 +34,7 @@ class TranscodeHWAccel {
     nvenc,
     qsv,
     vaapi,
+    rkmpp,
     disabled,
   ];
 
@@ -75,6 +77,7 @@ class TranscodeHWAccelTypeTransformer {
         case r'nvenc': return TranscodeHWAccel.nvenc;
         case r'qsv': return TranscodeHWAccel.qsv;
         case r'vaapi': return TranscodeHWAccel.vaapi;
+        case r'rkmpp': return TranscodeHWAccel.rkmpp;
         case r'disabled': return TranscodeHWAccel.disabled;
         default:
           if (!allowNull) {

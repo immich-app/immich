@@ -71,6 +71,7 @@ export class MediaRepository implements IMediaRepository {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
+          .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
           .inputOptions(options.inputOptions)
           .outputOptions(options.outputOptions)
           .output(output)

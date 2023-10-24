@@ -115,6 +115,7 @@ export enum TranscodeHWAccel {
   NVENC = 'nvenc',
   QSV = 'qsv',
   VAAPI = 'vaapi',
+  RKMPP = 'rkmpp',
   DISABLED = 'disabled',
 }
 
