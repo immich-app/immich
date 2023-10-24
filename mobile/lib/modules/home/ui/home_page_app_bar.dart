@@ -8,7 +8,7 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/shared/models/server_info_state.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 
@@ -28,7 +28,7 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final BackUpState backupState = ref.watch(backupProvider);
     final bool isEnableAutoBackup =
         backupState.backgroundBackup || backupState.autoBackup;
-    final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
+    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     AuthenticationState authState = ref.watch(authenticationProvider);
     final user = Store.tryGet(StoreKey.currentUser);
     buildProfilePhoto() {

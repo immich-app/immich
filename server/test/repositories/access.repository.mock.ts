@@ -1,4 +1,4 @@
-import { IAccessRepository } from '@app/domain';
+import { AccessCore, IAccessRepository } from '@app/domain';
 
 export interface IAccessRepositoryMock {
   asset: jest.Mocked<IAccessRepository['asset']>;
@@ -8,7 +8,11 @@ export interface IAccessRepositoryMock {
   person: jest.Mocked<IAccessRepository['person']>;
 }
 
-export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
+export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
+  if (reset) {
+    AccessCore.reset();
+  }
+
   return {
     asset: {
       hasOwnerAccess: jest.fn(),

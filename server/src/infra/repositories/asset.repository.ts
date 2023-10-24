@@ -97,6 +97,7 @@ export class AssetRepository implements IAssetRepository {
           month,
         },
       )
+      .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
       .orderBy('entity.localDateTime', 'DESC')
       .getMany();
   }
@@ -111,6 +112,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        stack: true,
       },
       withDeleted: true,
     });
@@ -191,6 +193,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         library: true,
+        stack: true,
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
@@ -480,7 +483,6 @@ export class AssetRepository implements IAssetRepository {
 
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
-
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
@@ -508,6 +510,7 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
+      .andWhere('asset.fileCreatedAt < NOW()')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
 
     if (albumId) {
@@ -536,6 +539,12 @@ export class AssetRepository implements IAssetRepository {
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
     }
+
+    // Hide stack children only in main timeline
+    // Uncomment after adding support for stacked assets in web client
+    // if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
+    //   builder = builder.andWhere('asset.stackParent IS NULL');
+    // }
 
     return builder;
   }

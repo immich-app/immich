@@ -52,4 +52,13 @@ export class SharedLinkEditDto {
 
   @Optional()
   showMetadata?: boolean;
+
+  /**
+   * Few clients cannot send null to set the expiryTime to never.
+   * Setting this flag and not sending expiryAt is considered as null instead.
+   * Clients that can send null values can ignore this.
+   */
+  @Optional()
+  @IsBoolean()
+  changeExpiryTime?: boolean;
 }

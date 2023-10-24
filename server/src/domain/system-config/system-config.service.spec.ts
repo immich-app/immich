@@ -118,6 +118,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
     days: 10,
   },
+  theme: {
+    customCss: '',
+  },
 });
 
 describe(SystemConfigService.name, () => {
@@ -242,6 +245,10 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
           '{{y}}/{{y}}-{{WW}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+          '{{album}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
         weekOptions: ['W', 'WW'],

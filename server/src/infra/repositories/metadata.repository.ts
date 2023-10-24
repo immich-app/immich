@@ -45,6 +45,10 @@ export class MetadataRepository implements IMetadataRepository {
     });
   }
 
+  async teardown() {
+    await exiftool.end();
+  }
+
   async deleteCache() {
     const dumpDirectory = REVERSE_GEOCODING_DUMP_DIRECTORY;
     if (dumpDirectory) {

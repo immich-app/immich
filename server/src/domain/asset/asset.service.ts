@@ -16,8 +16,6 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
-  IMoveRepository,
-  IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
@@ -40,6 +38,7 @@ import {
   TimeBucketDto,
   TrashAction,
   UpdateAssetDto,
+  UpdateStackParentDto,
   mapStats,
 } from './dto';
 import {
@@ -75,7 +74,6 @@ export class AssetService {
   private logger = new Logger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -83,14 +81,11 @@ export class AssetService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -146,9 +141,9 @@ export class AssetService {
   getUploadFolder({ authUser, fieldName }: UploadRequest): string {
     authUser = this.access.requireUploadAccess(authUser);
 
-    let folder = this.storageCore.getFolderLocation(StorageFolder.UPLOAD, authUser.id);
+    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, authUser.id);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = this.storageCore.getFolderLocation(StorageFolder.PROFILE, authUser.id);
+      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, authUser.id);
     }
 
     this.storageRepository.mkdirSync(folder);
@@ -208,7 +203,7 @@ export class AssetService {
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset));
     } else {
-      return assets.map((asset) => mapAsset(asset, true));
+      return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
     }
   }
 
@@ -338,10 +333,29 @@ export class AssetService {
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, ...options } = dto;
+    const { ids, removeParent, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
+
+    if (removeParent) {
+      (options as Partial<AssetEntity>).stackParentId = null;
+      const assets = await this.assetRepository.getByIds(ids);
+      // This updates the updatedAt column of the parents to indicate that one of its children is removed
+      // All the unique parent's -> parent is set to null
+      ids.push(...new Set(assets.filter((a) => !!a.stackParentId).map((a) => a.stackParentId!)));
+    } else if (options.stackParentId) {
+      await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, options.stackParentId);
+      // Merge stacks
+      const assets = await this.assetRepository.getByIds(ids);
+      const assetsWithChildren = assets.filter((a) => a.stack && a.stack.length > 0);
+      ids.push(...assetsWithChildren.flatMap((child) => child.stack!.map((gChild) => gChild.id)));
+
+      // This updates the updatedAt column of the parent to indicate that a new child has been added
+      await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
+    }
+
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     await this.assetRepository.updateAll(ids, options);
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, authUser.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -378,10 +392,20 @@ export class AssetService {
 
     if (asset.faces) {
       await Promise.all(
-        asset.faces.map(({ assetId, personId }) =>
-          this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+        asset.faces.map(
+          ({ assetId, personId }) =>
+            personId != null &&
+            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
         ),
       );
+    }
+
+    // Replace the parent of the stack children with a new asset
+    if (asset.stack && asset.stack.length != 0) {
+      const stackIds = asset.stack.map((a) => a.id);
+      const newParentId = stackIds[0];
+      await this.assetRepository.updateAll(stackIds.slice(1), { stackParentId: newParentId });
+      await this.assetRepository.updateAll([newParentId], { stackParentId: null });
     }
 
     await this.assetRepository.remove(asset);
@@ -452,6 +476,25 @@ export class AssetService {
     await this.assetRepository.restoreAll(ids);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
     this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, authUser.id, ids);
+  }
+
+  async updateStackParent(authUser: AuthUserDto, dto: UpdateStackParentDto): Promise<void> {
+    const { oldParentId, newParentId } = dto;
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, oldParentId);
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, newParentId);
+
+    const childIds: string[] = [];
+    const oldParent = await this.assetRepository.getById(oldParentId);
+    if (oldParent != null) {
+      childIds.push(oldParent.id);
+      // Get all children of old parent
+      childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
+    }
+
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, authUser.id, [...childIds, newParentId]);
+    await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
+    // Remove ParentId of new parent if this was previously a child of some other asset
+    return this.assetRepository.updateAll([newParentId], { stackParentId: null });
   }
 
   async run(authUser: AuthUserDto, dto: AssetJobsDto) {

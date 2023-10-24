@@ -44,7 +44,7 @@ export class MediaService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(this.storageRepository, assetRepository, moveRepository, personRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -140,7 +140,7 @@ export class MediaService {
     const { thumbnail, ffmpeg } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
     const path =
-      format === 'jpeg' ? this.storageCore.getLargeThumbnailPath(asset) : this.storageCore.getSmallThumbnailPath(asset);
+      format === 'jpeg' ? StorageCore.getLargeThumbnailPath(asset) : StorageCore.getSmallThumbnailPath(asset);
     this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
@@ -220,7 +220,7 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const output = this.storageCore.getEncodedVideoPath(asset);
+    const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);

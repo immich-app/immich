@@ -8,11 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
@@ -36,6 +38,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
 // ignore: must_be_immutable
@@ -44,6 +47,7 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int totalAssets;
   final int initialIndex;
   final int heroOffset;
+  final bool showStack;
 
   GalleryViewerPage({
     super.key,
@@ -51,6 +55,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.loadAsset,
     required this.totalAssets,
     this.heroOffset = 0,
+    this.showStack = false,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -77,8 +82,19 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isFromTrash = isTrashEnabled &&
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
+    final stackIndex = useState(-1);
+    final stack = showStack && currentAsset.stackCount > 0
+        ? ref.watch(assetStackStateProvider(currentAsset))
+        : <Asset>[];
+    final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
+    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+    final isFromResponse = currentAsset.id == Isar.autoIncrement;
 
-    Asset asset() => currentAsset;
+    Asset asset() => stackIndex.value == -1
+        ? currentAsset
+        : stackElements.elementAt(stackIndex.value);
+
+    bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
 
     useEffect(
       () {
@@ -165,10 +181,19 @@ class GalleryViewerPage extends HookConsumerWidget {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: currentAsset),
+            child: ExifBottomSheet(asset: asset()),
           );
         },
       );
+    }
+
+    void removeAssetFromStack() {
+      if (stackIndex.value > 0 && showStack) {
+        ref
+            .read(assetStackStateProvider(currentAsset).notifier)
+            .removeChild(stackIndex.value - 1);
+        stackIndex.value = stackIndex.value - 1;
+      }
     }
 
     void handleDelete(Asset deleteAsset) async {
@@ -177,7 +202,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           {deleteAsset},
           force: force,
         );
-        if (isDeleted) {
+        if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
             AutoRouter.of(context).pop();
@@ -195,14 +220,17 @@ class GalleryViewerPage extends HookConsumerWidget {
       // Asset is trashed
       if (isTrashEnabled && !isFromTrash) {
         final isDeleted = await onDelete(false);
-        // Can only trash assets stored in server. Local assets are always permanently removed for now
-        if (context.mounted && isDeleted && deleteAsset.isRemote) {
-          ImmichToast.show(
-            durationInSecond: 1,
-            context: context,
-            msg: 'Asset trashed',
-            gravity: ToastGravity.BOTTOM,
-          );
+        if (isDeleted) {
+          // Can only trash assets stored in server. Local assets are always permanently removed for now
+          if (context.mounted && deleteAsset.isRemote && isParent) {
+            ImmichToast.show(
+              durationInSecond: 1,
+              context: context,
+              msg: 'Asset trashed',
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+          removeAssetFromStack();
         }
         return;
       }
@@ -211,7 +239,14 @@ class GalleryViewerPage extends HookConsumerWidget {
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return DeleteDialog(onDelete: () => onDelete(true));
+          return DeleteDialog(
+            onDelete: () async {
+              final isDeleted = await onDelete(true);
+              if (isDeleted) {
+                removeAssetFromStack();
+              }
+            },
+          );
         },
       );
     }
@@ -268,7 +303,11 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
-      AutoRouter.of(context).pop();
+      if (isParent) {
+        AutoRouter.of(context).pop();
+        return;
+      }
+      removeAssetFromStack();
     }
 
     handleUpload(Asset asset) {
@@ -385,7 +424,186 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    buildBottomBar() {
+    Widget buildStackedChildren() {
+      return ListView.builder(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemCount: stackElements.length,
+        itemBuilder: (context, index) {
+          final assetId = stackElements.elementAt(index).remoteId;
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: GestureDetector(
+              onTap: () => stackIndex.value = index,
+              child: Container(
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border: index == stackIndex.value
+                      ? Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        )
+                      : null,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl:
+                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$assetId',
+                    httpHeaders: {
+                      "Authorization":
+                          "Bearer ${Store.get(StoreKey.accessToken)}",
+                    },
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.image_not_supported_outlined),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    void showStackActionItems() {
+      showModalBottomSheet<void>(
+        context: context,
+        enableDrag: false,
+        builder: (BuildContext ctx) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isParent)
+                    ListTile(
+                      leading: const Icon(
+                        Icons.bookmark_border_outlined,
+                        size: 24,
+                      ),
+                      onTap: () async {
+                        await ref
+                            .read(assetStackServiceProvider)
+                            .updateStackParent(
+                              currentAsset,
+                              stackElements.elementAt(stackIndex.value),
+                            );
+                        Navigator.pop(ctx);
+                        AutoRouter.of(context).pop();
+                      },
+                      title: const Text(
+                        "viewer_stack_use_as_main_asset",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ).tr(),
+                    ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.copy_all_outlined,
+                      size: 24,
+                    ),
+                    onTap: () async {
+                      if (isParent) {
+                        await ref
+                            .read(assetStackServiceProvider)
+                            .updateStackParent(
+                              currentAsset,
+                              stackElements
+                                  .elementAt(1), // Next asset as parent
+                            );
+                        // Remove itself from stack
+                        await ref.read(assetStackServiceProvider).updateStack(
+                          stackElements.elementAt(1),
+                          childrenToRemove: [currentAsset],
+                        );
+                        Navigator.pop(ctx);
+                        AutoRouter.of(context).pop();
+                      } else {
+                        await ref.read(assetStackServiceProvider).updateStack(
+                          currentAsset,
+                          childrenToRemove: [
+                            stackElements.elementAt(stackIndex.value),
+                          ],
+                        );
+                        removeAssetFromStack();
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    title: const Text(
+                      "viewer_remove_from_stack",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.filter_none_outlined,
+                      size: 18,
+                    ),
+                    onTap: () async {
+                      await ref.read(assetStackServiceProvider).updateStack(
+                            currentAsset,
+                            childrenToRemove: stack,
+                          );
+                      Navigator.pop(ctx);
+                      AutoRouter.of(context).pop();
+                    },
+                    title: const Text(
+                      "viewer_unstack",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    Widget buildBottomBar() {
+      // !!!! itemsList and actionlist should always be in sync
+      final itemsList = [
+        BottomNavigationBarItem(
+          icon: Icon(
+            Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
+          ),
+          label: 'control_bottom_app_bar_share'.tr(),
+          tooltip: 'control_bottom_app_bar_share'.tr(),
+        ),
+        asset().isArchived
+            ? BottomNavigationBarItem(
+                icon: const Icon(Icons.unarchive_rounded),
+                label: 'control_bottom_app_bar_unarchive'.tr(),
+                tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+              )
+            : BottomNavigationBarItem(
+                icon: const Icon(Icons.archive_outlined),
+                label: 'control_bottom_app_bar_archive'.tr(),
+                tooltip: 'control_bottom_app_bar_archive'.tr(),
+              ),
+        if (stack.isNotEmpty)
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.burst_mode_outlined),
+            label: 'control_bottom_app_bar_stack'.tr(),
+            tooltip: 'control_bottom_app_bar_stack'.tr(),
+          ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.delete_outline),
+          label: 'control_bottom_app_bar_delete'.tr(),
+          tooltip: 'control_bottom_app_bar_delete'.tr(),
+        ),
+      ];
+
+      List<Function(int)> actionslist = [
+        (_) => shareAsset(),
+        (_) => handleArchive(asset()),
+        if (stack.isNotEmpty) (_) => showStackActionItems(),
+        (_) => handleDelete(asset()),
+      ];
+
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
         child: AnimatedOpacity(
@@ -393,6 +611,17 @@ class GalleryViewerPage extends HookConsumerWidget {
           opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
           child: Column(
             children: [
+              if (stack.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    bottom: 30,
+                  ),
+                  child: SizedBox(
+                    height: 40,
+                    child: buildStackedChildren(),
+                  ),
+                ),
               Visibility(
                 visible: !asset().isImage && !isPlayingMotionVideo.value,
                 child: Container(
@@ -421,44 +650,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 selectedLabelStyle: const TextStyle(color: Colors.black),
                 showSelectedLabels: false,
                 showUnselectedLabels: false,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: Icon(
-                      Platform.isAndroid
-                          ? Icons.share_rounded
-                          : Icons.ios_share_rounded,
-                    ),
-                    label: 'control_bottom_app_bar_share'.tr(),
-                    tooltip: 'control_bottom_app_bar_share'.tr(),
-                  ),
-                  asset().isArchived
-                      ? BottomNavigationBarItem(
-                          icon: const Icon(Icons.unarchive_rounded),
-                          label: 'control_bottom_app_bar_unarchive'.tr(),
-                          tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-                        )
-                      : BottomNavigationBarItem(
-                          icon: const Icon(Icons.archive_outlined),
-                          label: 'control_bottom_app_bar_archive'.tr(),
-                          tooltip: 'control_bottom_app_bar_archive'.tr(),
-                        ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.delete_outline),
-                    label: 'control_bottom_app_bar_delete'.tr(),
-                    tooltip: 'control_bottom_app_bar_delete'.tr(),
-                  ),
-                ],
+                items: itemsList,
                 onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      shareAsset();
-                      break;
-                    case 1:
-                      handleArchive(asset());
-                      break;
-                    case 2:
-                      handleDelete(asset());
-                      break;
+                  if (index < actionslist.length) {
+                    actionslist[index].call(index);
                   }
                 },
               ),
@@ -504,6 +699,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
                 precacheNextImage(next);
                 currentIndex.value = value;
+                stackIndex.value = -1;
                 HapticFeedback.selectionClick();
               },
               loadingBuilder: (context, event, index) {
@@ -544,10 +740,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                     : webPThumbnail;
               },
               builder: (context, index) {
-                final asset = loadAsset(index);
-                final ImageProvider provider = finalImageProvider(asset);
+                final a =
+                    index == currentIndex.value ? asset() : loadAsset(index);
+                final ImageProvider provider = finalImageProvider(a);
 
-                if (asset.isImage && !isPlayingMotionVideo.value) {
+                if (a.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
@@ -558,13 +755,15 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id + heroOffset,
+                      tag: isFromResponse
+                          ? '${a.remoteId}-$heroOffset'
+                          : a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
                     minScale: PhotoViewComputedScale.contained,
                     errorBuilder: (context, error, stackTrace) => ImmichImage(
-                      asset,
+                      a,
                       fit: BoxFit.contain,
                     ),
                   );
@@ -575,7 +774,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: asset.id + heroOffset,
+                      tag: isFromResponse
+                          ? '${a.remoteId}-$heroOffset'
+                          : a.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
@@ -583,8 +784,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                     basePosition: Alignment.center,
                     child: VideoViewerPage(
                       onPlaying: () => isPlayingVideo.value = true,
-                      onPaused: () => isPlayingVideo.value = false,
-                      asset: asset,
+                      onPaused: () =>
+                          WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => isPlayingVideo.value = false,
+                      ),
+                      asset: a,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,

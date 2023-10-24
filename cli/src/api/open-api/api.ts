@@ -399,6 +399,18 @@ export interface AssetBulkUpdateDto {
      * @memberof AssetBulkUpdateDto
      */
     'isFavorite'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkUpdateDto
+     */
+    'removeParent'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUpdateDto
+     */
+    'stackParentId'?: string;
 }
 /**
  * 
@@ -748,6 +760,24 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'smartInfo'?: SmartInfoResponseDto;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'stack'?: Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetResponseDto
+     */
+    'stackCount': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'stackParentId'?: string | null;
     /**
      * 
      * @type {Array<TagResponseDto>}
@@ -3054,6 +3084,12 @@ export interface SharedLinkEditDto {
      */
     'allowUpload'?: boolean;
     /**
+     * Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+     * @type {boolean}
+     * @memberof SharedLinkEditDto
+     */
+    'changeExpiryTime'?: boolean;
+    /**
      * 
      * @type {string}
      * @memberof SharedLinkEditDto
@@ -3277,6 +3313,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigThemeDto}
+     * @memberof SystemConfigDto
+     */
+    'theme': SystemConfigThemeDto;
     /**
      * 
      * @type {SystemConfigThumbnailDto}
@@ -3727,6 +3769,19 @@ export interface SystemConfigTemplateStorageOptionDto {
 /**
  * 
  * @export
+ * @interface SystemConfigThemeDto
+ */
+export interface SystemConfigThemeDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigThemeDto
+     */
+    'customCss': string;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigThumbnailDto
  */
 export interface SystemConfigThumbnailDto {
@@ -3999,6 +4054,25 @@ export interface UpdateLibraryDto {
      * @memberof UpdateLibraryDto
      */
     'name'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateStackParentDto
+ */
+export interface UpdateStackParentDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateStackParentDto
+     */
+    'newParentId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateStackParentDto
+     */
+    'oldParentId': string;
 }
 /**
  * 
@@ -7156,6 +7230,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {UpdateStackParentDto} updateStackParentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStackParent: async (updateStackParentDto: UpdateStackParentDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateStackParentDto' is not null or undefined
+            assertParamExists('updateStackParent', 'updateStackParentDto', updateStackParentDto)
+            const localVarPath = `/asset/stack/parent`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateStackParentDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7622,6 +7740,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {UpdateStackParentDto} updateStackParentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateStackParent(updateStackParentDto: UpdateStackParentDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateStackParent(updateStackParentDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7910,6 +8038,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUpdateStackParentRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStackParent(requestParameters: AssetApiUpdateStackParentRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.updateStackParent(requestParameters.updateStackParentDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8519,6 +8656,20 @@ export interface AssetApiUpdateAssetsRequest {
 }
 
 /**
+ * Request parameters for updateStackParent operation in AssetApi.
+ * @export
+ * @interface AssetApiUpdateStackParentRequest
+ */
+export interface AssetApiUpdateStackParentRequest {
+    /**
+     * 
+     * @type {UpdateStackParentDto}
+     * @memberof AssetApiUpdateStackParent
+     */
+    readonly updateStackParentDto: UpdateStackParentDto
+}
+
+/**
  * Request parameters for uploadFile operation in AssetApi.
  * @export
  * @interface AssetApiUploadFileRequest
@@ -8956,6 +9107,17 @@ export class AssetApi extends BaseAPI {
      */
     public updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUpdateStackParentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public updateStackParent(requestParameters: AssetApiUpdateStackParentRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).updateStackParent(requestParameters.updateStackParentDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

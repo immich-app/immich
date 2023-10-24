@@ -174,6 +174,11 @@ void main() {
       // TODO
     });
 
+    //Future updateStackParent(UpdateStackParentDto updateStackParentDto) async
+    test('test updateStackParent', () async {
+      // TODO
+    });
+
     //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isExternal, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO

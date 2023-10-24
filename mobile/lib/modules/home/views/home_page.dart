@@ -11,7 +11,9 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
+import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -36,7 +38,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionAssetState = useState(AssetState.remote);
+    final selectionAssetState = useState(const SelectionAssetState());
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
@@ -83,15 +85,8 @@ class HomePage extends HookConsumerWidget {
       ) {
         selectionEnabledHook.value = multiselect;
         selection.value = selectedAssets;
-        selectionAssetState.value = selectedAssets.any((e) => e.isRemote)
-            ? AssetState.remote
-            : AssetState.local;
-      }
-
-      void onShareAssets() {
-        handleShareAssets(ref, context, selection.value.toList());
-
-        selectionEnabledHook.value = false;
+        selectionAssetState.value =
+            SelectionAssetState.fromSelection(selectedAssets);
       }
 
       List<Asset> remoteOnlySelection({String? localErrorMessage}) {
@@ -108,6 +103,19 @@ class HomePage extends HookConsumerWidget {
           return assets.where((a) => a.isRemote).toList();
         }
         return assets.toList();
+      }
+
+      void onShareAssets(bool shareLocal) {
+        processing.value = true;
+        if (shareLocal) {
+          handleShareAssets(ref, context, selection.value.toList());
+        } else {
+          final ids = remoteOnlySelection().map((e) => e.remoteId!);
+          AutoRouter.of(context)
+              .push(SharedLinkEditRoute(assetsList: ids.toList()));
+        }
+        processing.value = false;
+        selectionEnabledHook.value = false;
       }
 
       void onFavoriteAssets() async {
@@ -246,6 +254,24 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      void onStack() async {
+        try {
+          processing.value = true;
+          if (!selectionEnabledHook.value || selection.value.length < 2) {
+            return;
+          }
+          final parent = selection.value.elementAt(0);
+          selection.value.remove(parent);
+          await ref.read(assetStackServiceProvider).updateStack(
+                parent,
+                childrenToAdd: selection.value.toList(),
+              );
+        } finally {
+          processing.value = false;
+          selectionEnabledHook.value = false;
+        }
+      }
+
       Future<void> refreshAssets() async {
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
@@ -322,6 +348,7 @@ class HomePage extends HookConsumerWidget {
                                   currentUser.memoryEnabled!)
                               ? const MemoryLane()
                               : const SizedBox(),
+                          showStack: true,
                         ),
                   error: (error, _) => Center(child: Text(error.toString())),
                   loading: buildLoadingIndicator,
@@ -339,6 +366,7 @@ class HomePage extends HookConsumerWidget {
                 onUpload: onUpload,
                 enabled: !processing.value,
                 selectionAssetState: selectionAssetState.value,
+                onStack: onStack,
               ),
             if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],

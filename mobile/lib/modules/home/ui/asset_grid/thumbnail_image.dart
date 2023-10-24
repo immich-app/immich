@@ -5,6 +5,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
+import 'package:isar/isar.dart';
 
 class ThumbnailImage extends StatelessWidget {
   final Asset asset;
@@ -12,6 +13,7 @@ class ThumbnailImage extends StatelessWidget {
   final Asset Function(int index) loadAsset;
   final int totalAssets;
   final bool showStorageIndicator;
+  final bool showStack;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
@@ -26,6 +28,7 @@ class ThumbnailImage extends StatelessWidget {
     required this.loadAsset,
     required this.totalAssets,
     this.showStorageIndicator = true,
+    this.showStack = false,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -39,6 +42,8 @@ class ThumbnailImage extends StatelessWidget {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+    final isFromResponse = asset.id == Isar.autoIncrement;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -93,12 +98,43 @@ class ThumbnailImage extends StatelessWidget {
       );
     }
 
+    Widget buildStackIcon() {
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: Row(
+          children: [
+            if (asset.stackCount > 1)
+              Text(
+                "${asset.stackCount}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (asset.stackCount > 1)
+              const SizedBox(
+                width: 3,
+              ),
+            const Icon(
+              Icons.burst_mode_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
     Widget buildImage() {
       final image = SizedBox(
         width: 300,
         height: 300,
         child: Hero(
-          tag: asset.id + heroOffset,
+          tag: isFromResponse
+              ? '${asset.remoteId}-$heroOffset'
+              : asset.id + heroOffset,
           child: ImmichImage(
             asset,
             useGrayBoxPlaceholder: useGrayBoxPlaceholder,
@@ -113,9 +149,9 @@ class ThumbnailImage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: assetContainerColor,
+            color: onDeselect == null ? Colors.grey : assetContainerColor,
           ),
-          color: assetContainerColor,
+          color: onDeselect == null ? Colors.grey : assetContainerColor,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -144,6 +180,7 @@ class ThumbnailImage extends StatelessWidget {
               loadAsset: loadAsset,
               totalAssets: totalAssets,
               heroOffset: heroOffset,
+              showStack: showStack,
             ),
           );
         }
@@ -196,6 +233,7 @@ class ThumbnailImage extends StatelessWidget {
               ),
             ),
           if (!asset.isImage) buildVideoIcon(),
+          if (asset.isImage && asset.stackCount > 0) buildStackIcon(),
         ],
       ),
     );

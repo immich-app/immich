@@ -1673,6 +1673,41 @@
         ]
       }
     },
+    "/asset/stack/parent": {
+      "put": {
+        "operationId": "updateStackParent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStackParentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/statistics": {
       "get": {
         "operationId": "getAssetStats",
@@ -5696,6 +5731,13 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "removeParent": {
+            "type": "boolean"
+          },
+          "stackParentId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
@@ -5941,6 +5983,19 @@
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
+          "stack": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "stackCount": {
+            "type": "integer"
+          },
+          "stackParentId": {
+            "nullable": true,
+            "type": "string"
+          },
           "tags": {
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
@@ -5961,6 +6016,7 @@
         },
         "required": [
           "type",
+          "stackCount",
           "deviceAssetId",
           "deviceId",
           "ownerId",
@@ -7846,6 +7902,10 @@
           "allowUpload": {
             "type": "boolean"
           },
+          "changeExpiryTime": {
+            "description": "Few clients cannot send null to set the expiryTime to never.\nSetting this flag and not sending expiryAt is considered as null instead.\nClients that can send null values can ignore this.",
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           },
@@ -8003,6 +8063,9 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
           },
@@ -8021,7 +8084,8 @@
           "storageTemplate",
           "job",
           "thumbnail",
-          "trash"
+          "trash",
+          "theme"
         ],
         "type": "object"
       },
@@ -8359,6 +8423,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
+        ],
+        "type": "object"
+      },
       "SystemConfigThumbnailDto": {
         "properties": {
           "colorspace": {
@@ -8534,6 +8609,23 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateStackParentDto": {
+        "properties": {
+          "newParentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "oldParentId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldParentId",
+          "newParentId"
+        ],
         "type": "object"
       },
       "UpdateTagDto": {

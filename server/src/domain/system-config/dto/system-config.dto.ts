@@ -10,6 +10,7 @@ import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
+import { SystemConfigThemeDto } from './system-config-theme.dto';
 import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
 import { SystemConfigTrashDto } from './system-config-trash.dto';
 
@@ -68,6 +69,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   trash!: SystemConfigTrashDto;
+
+  @Type(() => SystemConfigThemeDto)
+  @ValidateNested()
+  @IsObject()
+  theme!: SystemConfigThemeDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

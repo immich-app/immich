@@ -136,6 +136,7 @@ doc/SystemConfigPasswordLoginDto.md
 doc/SystemConfigReverseGeocodingDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
+doc/SystemConfigThemeDto.md
 doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
 doc/TagApi.md
@@ -150,6 +151,7 @@ doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
+doc/UpdateStackParentDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
@@ -303,6 +305,7 @@ lib/model/system_config_password_login_dto.dart
 lib/model/system_config_reverse_geocoding_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
+lib/model/system_config_theme_dto.dart
 lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
 lib/model/tag_response_dto.dart
@@ -316,6 +319,7 @@ lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
+lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
@@ -457,6 +461,7 @@ test/system_config_password_login_dto_test.dart
 test/system_config_reverse_geocoding_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
+test/system_config_theme_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
 test/tag_api_test.dart
@@ -471,6 +476,7 @@ test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart
+test/update_stack_parent_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
