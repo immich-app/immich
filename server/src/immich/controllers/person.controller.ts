@@ -9,8 +9,8 @@ import {
   PersonResponseDto,
   PersonSearchDto,
   PersonService,
+  PersonStatisticsResponseDto,
   PersonUpdateDto,
-  StatisticsResponseDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -39,14 +39,6 @@ export class PersonController {
     return this.service.updatePeople(authUser, dto);
   }
 
-  @Get(':id/statistics')
-  getPersonAssetsCount(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<StatisticsResponseDto> {
-    return this.service.getPersonAssetsCount(authUser, id);
-  }
-
   @Get(':id')
   getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(authUser, id);
@@ -59,6 +51,14 @@ export class PersonController {
     @Body() dto: PersonUpdateDto,
   ): Promise<PersonResponseDto> {
     return this.service.update(authUser, id, dto);
+  }
+
+  @Get(':id/statistics')
+  getPersonStatistics(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<PersonStatisticsResponseDto> {
+    return this.service.getStatistics(authUser, id);
   }
 
   @Get(':id/thumbnail')

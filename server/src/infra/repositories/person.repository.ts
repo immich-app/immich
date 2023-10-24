@@ -1,4 +1,11 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
+import {
+  AssetFaceId,
+  IPersonRepository,
+  PersonNameSearchOptions,
+  PersonSearchOptions,
+  PersonStatistics,
+  UpdateFacesData,
+} from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -96,7 +103,7 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getByName(userId: string, personName: string, withHidden: boolean | undefined): Promise<PersonEntity[]> {
+  getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
@@ -115,16 +122,18 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
-  getStatistics(personId: string): Promise<number> {
-    return this.assetFaceRepository
-      .createQueryBuilder('face')
-      .leftJoin('face.asset', 'asset')
-      .where('face.personId = :personId', { personId })
-      .andWhere('asset.isArchived = false')
-      .andWhere('asset.deletedAt IS NULL')
-      .andWhere('asset.livePhotoVideoId IS NULL')
-      .distinct(true)
-      .getCount();
+  async getStatistics(personId: string): Promise<PersonStatistics> {
+    return {
+      assets: await this.assetFaceRepository
+        .createQueryBuilder('face')
+        .leftJoin('face.asset', 'asset')
+        .where('face.personId = :personId', { personId })
+        .andWhere('asset.isArchived = false')
+        .andWhere('asset.deletedAt IS NULL')
+        .andWhere('asset.livePhotoVideoId IS NULL')
+        .distinct(true)
+        .getCount(),
+    };
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {

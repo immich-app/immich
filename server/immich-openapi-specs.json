@@ -3652,7 +3652,7 @@
     },
     "/person/{id}/statistics": {
       "get": {
-        "operationId": "getPersonAssetsCount",
+        "operationId": "getPersonStatistics",
         "parameters": [
           {
             "name": "id",
@@ -3669,7 +3669,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StatisticsResponseDto"
+                  "$ref": "#/components/schemas/PersonStatisticsResponseDto"
                 }
               }
             },
@@ -3960,7 +3960,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           }
@@ -7396,6 +7395,17 @@
         ],
         "type": "object"
       },
+      "PersonStatisticsResponseDto": {
+        "properties": {
+          "assets": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assets"
+        ],
+        "type": "object"
+      },
       "PersonUpdateDto": {
         "properties": {
           "birthDate": {
@@ -8023,17 +8033,6 @@
             "type": "array"
           }
         },
-        "type": "object"
-      },
-      "StatisticsResponseDto": {
-        "properties": {
-          "assets": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "assets"
-        ],
         "type": "object"
       },
       "SystemConfigDto": {

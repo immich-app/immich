@@ -73,7 +73,7 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
-export class StatisticsResponseDto {
+export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
 }

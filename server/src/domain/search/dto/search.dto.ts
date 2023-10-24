@@ -93,5 +93,6 @@ export class SearchPeopleDto {
 
   @IsBoolean()
   @Transform(toBoolean)
-  withHidden?: boolean = false;
+  @Optional()
+  withHidden?: boolean;
 }

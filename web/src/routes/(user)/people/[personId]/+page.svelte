@@ -38,8 +38,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let data: PageData;
-  let numberOfAssets = data.count.assets;
 
+  let numberOfAssets = data.statistics.assets;
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   enum ViewMode {
@@ -90,17 +90,16 @@
     if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    const timeout = setTimeout(() => {
-      isSearchingPeople = true;
-    }, 300);
+    const timeout = setTimeout(() => (isSearchingPeople = true), 300);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
-      clearTimeout(timeout);
       people = data;
       searchWord = name;
     } catch (error) {
       people = [];
       handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
     }
 
     isSearchingPeople = false;
@@ -203,10 +202,10 @@
 
   const updateAssetCount = async () => {
     try {
-      const result = await api.personApi.getPersonAssetsCount({
+      const { data: statistics } = await api.personApi.getPersonStatistics({
         id: data.person.id,
       });
-      numberOfAssets = result.data.assets;
+      numberOfAssets = statistics.assets;
     } catch (error) {
       handleError(error, "Can't update the asset count");
     }
@@ -478,9 +477,7 @@
                 {#each suggestedPeople as person, index (person.id)}
                   <div
                     class="flex border-t dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700 {index ===
-                    suggestedPeople.length - 1
-                      ? 'rounded-b-lg'
-                      : ''}"
+                      suggestedPeople.length - 1 && 'rounded-b-lg'}"
                   >
                     <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
                       <ImageThumbnail
