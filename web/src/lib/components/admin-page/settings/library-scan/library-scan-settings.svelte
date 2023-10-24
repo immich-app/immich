@@ -3,23 +3,23 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, SystemConfigLibraryScanDto } from '@api';
+  import { api, SystemConfigLibraryDto } from '@api';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
 
-  export let libraryScanConfig: SystemConfigLibraryScanDto; // this is the config that is being edited
+  export let libraryConfig: SystemConfigLibraryDto; // this is the config that is being edited
   export let disabled = false;
 
-  let savedConfig: SystemConfigLibraryScanDto;
-  let defaultConfig: SystemConfigLibraryScanDto;
+  let savedConfig: SystemConfigLibraryDto;
+  let defaultConfig: SystemConfigLibraryDto;
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.libraryScan),
-      api.systemConfigApi.getDefaults().then((res) => res.data.libraryScan),
+      api.systemConfigApi.getConfig().then((res) => res.data.library),
+      api.systemConfigApi.getDefaults().then((res) => res.data.library),
     ]);
   }
 
@@ -30,12 +30,12 @@
       const result = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...configs,
-          libraryScan: libraryScanConfig,
+          library: libraryConfig,
         },
       });
 
-      libraryScanConfig = { ...result.data.libraryScan };
-      savedConfig = { ...result.data.libraryScan };
+      libraryConfig = { ...result.data.library };
+      savedConfig = { ...result.data.library };
 
       notificationController.show({
         message: 'Library scan settings saved',
@@ -53,8 +53,8 @@
   async function reset() {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
 
-    libraryScanConfig = { ...resetConfig.libraryScan };
-    savedConfig = { ...resetConfig.libraryScan };
+    libraryConfig = { ...resetConfig.library };
+    savedConfig = { ...resetConfig.library };
 
     notificationController.show({
       message: 'Reset library scan settings to the recent saved settings',
@@ -65,8 +65,8 @@
   async function resetToDefault() {
     const { data: configs } = await api.systemConfigApi.getDefaults();
 
-    libraryScanConfig = { ...configs.libraryScan };
-    defaultConfig = { ...configs.libraryScan };
+    libraryConfig = { ...configs.library };
+    defaultConfig = { ...configs.library };
 
     notificationController.show({
       message: 'Reset library scan settings to default',
@@ -84,16 +84,16 @@
             title="ENABLED"
             {disabled}
             subtitle="Enable automatic library scanning"
-            bind:checked={libraryScanConfig.enabled}
+            bind:checked={libraryConfig.scan.enabled}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
             required={true}
-            disabled={disabled || !libraryScanConfig.enabled}
+            disabled={disabled || !libraryConfig.scan.enabled}
             label="Cron Expression"
-            bind:value={libraryScanConfig.cronExpression}
-            isEdited={libraryScanConfig.cronExpression !== savedConfig.cronExpression}
+            bind:value={libraryConfig.scan.cronExpression}
+            isEdited={libraryConfig.scan.cronExpression !== savedConfig.scan.cronExpression}
           >
             <svelte:fragment slot="desc">
               <p class="text-sm dark:text-immich-dark-fg">

@@ -55,14 +55,14 @@ export class LibraryService {
   async init() {
     const config = await this.configCore.getConfig();
     const libraryScanJob = new CronJob(
-      config.libraryScan.cronExpression,
+      config.library.scan.cronExpression,
       async () => {
         await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
       },
       // function to run onComplete
       undefined,
       // whether it should start directly
-      config.libraryScan.enabled,
+      config.library.scan.enabled,
       // timezone
       undefined,
       // context
@@ -76,10 +76,8 @@ export class LibraryService {
     );
 
     this.configCore.config$.subscribe((config) => {
-      if (config.libraryScan?.cronExpression) {
-        libraryScanJob.setTime(new CronTime(config.libraryScan.cronExpression));
-      }
-      config.libraryScan?.enabled ? libraryScanJob.start() : libraryScanJob.stop();
+      libraryScanJob.setTime(new CronTime(config.library.scan.cronExpression));
+      config.library.scan.enabled ? libraryScanJob.start() : libraryScanJob.stop();
     });
   }
 

@@ -120,9 +120,11 @@ export const defaults = Object.freeze<SystemConfig>({
   theme: {
     customCss: '',
   },
-  libraryScan: {
-    enabled: true,
-    cronExpression: '0 0 * * *',
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: '0 0 * * *',
+    },
   },
 });
 

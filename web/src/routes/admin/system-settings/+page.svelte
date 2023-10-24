@@ -70,8 +70,8 @@
         <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
       </SettingAccordion>
 
-      <SettingAccordion title="Library scanning" subtitle="Manage the settings for the automatic library scanning job">
-        <LibraryScanSettings disabled={$featureFlags.configFile} libraryScanConfig={configs.libraryScan} />
+      <SettingAccordion title="Library" subtitle="Manage library settings">
+        <LibraryScanSettings disabled={$featureFlags.configFile} libraryConfig={configs.library} />
       </SettingAccordion>
 
       <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">

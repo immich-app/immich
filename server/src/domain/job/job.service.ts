@@ -29,7 +29,7 @@ export class JobService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.configCore.addValidator((config) => this.validateCronExpression(config.libraryScan.cronExpression));
+    this.configCore.addValidator((config) => this.validateCronExpression(config.library.scan.cronExpression));
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

@@ -1,9 +1,9 @@
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
+import { SystemConfigLibraryDto } from '.';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
-import { SystemConfigLibraryScanDto } from './system-config-library-scan.dto';
 import { SystemConfigMachineLearningDto } from './system-config-machine-learning.dto';
 import { SystemConfigMapDto } from './system-config-map.dto';
 import { SystemConfigNewVersionCheckDto } from './system-config-new-version-check.dto';
@@ -76,10 +76,10 @@ export class SystemConfigDto implements SystemConfig {
   @IsObject()
   theme!: SystemConfigThemeDto;
 
-  @Type(() => SystemConfigLibraryScanDto)
+  @Type(() => SystemConfigLibraryDto)
   @ValidateNested()
   @IsObject()
-  libraryScan!: SystemConfigLibraryScanDto;
+  library!: SystemConfigLibraryDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

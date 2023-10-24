@@ -95,8 +95,8 @@ export enum SystemConfigKey {
 
   THEME_CUSTOM_CSS = 'theme.customCss',
 
-  LIBRARY_SCAN_ENABLED = 'libraryScan.enabled',
-  LIBRARY_SCAN_CRON_EXPRESSION = 'libraryScan.cronExpression',
+  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
+  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 }
 
 export enum TranscodePolicy {
@@ -234,8 +234,10 @@ export interface SystemConfig {
   theme: {
     customCss: string;
   };
-  libraryScan: {
-    enabled: boolean;
-    cronExpression: string;
+  library: {
+    scan: {
+      enabled: boolean;
+      cronExpression: string;
+    };
   };
 }
