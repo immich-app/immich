@@ -1,6 +1,11 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonResponseDto, mapFace } from '../../person/person.dto';
+import {
+  PeopleAssetResponseDto,
+  UnassignedFacesResponseDto,
+  mapFace,
+  mapUnassignedFace,
+} from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -39,7 +44,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
-  people?: PersonResponseDto[];
+  unassignedPeople?: UnassignedFacesResponseDto[];
+  people?: PeopleAssetResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
@@ -96,9 +102,12 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
+    unassignedPeople: entity.faces
+      ?.map(mapUnassignedFace)
+      .filter((assetFace) => assetFace) as UnassignedFacesResponseDto[],
     people: entity.faces
       ?.map(mapFace)
-      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden),
+      .filter((assetFace) => assetFace && !assetFace.person.isHidden) as PeopleAssetResponseDto[],
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,

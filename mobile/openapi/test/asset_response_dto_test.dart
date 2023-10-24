@@ -127,7 +127,7 @@ void main() {
       // TODO
     });
 
-    // List<PersonResponseDto> people (default value: const [])
+    // List<PeopleAssetResponseDto> people (default value: const [])
     test('to test the property `people`', () async {
       // TODO
     });
@@ -169,6 +169,11 @@ void main() {
 
     // AssetTypeEnum type
     test('to test the property `type`', () async {
+      // TODO
+    });
+
+    // List<UnassignedFacesResponseDto> unassignedPeople (default value: const [])
+    test('to test the property `unassignedPeople`', () async {
       // TODO
     });
 

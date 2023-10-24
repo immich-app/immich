@@ -3,7 +3,14 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
+  import {
+    AlbumResponseDto,
+    AssetResponseDto,
+    PersonResponseDto,
+    ThumbnailFormat,
+    UnassignedFacesResponseDto,
+    api,
+  } from '@api';
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
@@ -20,6 +27,8 @@
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  let unassignedFaces: UnassignedFacesResponseDto[] = [];
+  let people: PersonResponseDto[] = [];
 
   let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
 
@@ -46,7 +55,13 @@
     // Get latest description from server
     if (asset.id && !api.isSharedLink && !showEditFaces) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
+        if (res.data && res.data.people) {
+          unassignedFaces = res.data?.unassignedPeople || [];
+          people = (res.data?.people || [])
+            .map((peopleAsset) => peopleAsset.person)
+            .filter((person): person is PersonResponseDto => person !== null);
+        }
+
         textarea.value = res.data?.exifInfo?.description || '';
       });
     }
@@ -63,8 +78,6 @@
 
   $: lat = latlng ? latlng[0] : undefined;
   $: lng = latlng ? latlng[1] : undefined;
-
-  let people = asset.people || [];
 
   const dispatch = createEventDispatcher();
 
@@ -148,10 +161,12 @@
       <section class="px-4 py-4 text-sm">
         <div class="grid grid-cols-2 items-center">
           <h2 class="justify-self-start uppercase">People</h2>
-
           <button class="justify-self-end" on:click={() => (showEditFaces = true)}>
             <Pencil size={18} />
           </button>
+          {#if unassignedFaces.length > 0}
+            <p>{`${unassignedFaces.length} face${unassignedFaces.length > 1 ? 's' : ''} available to add`}</p>
+          {/if}
         </div>
         {#if people.length > 0}
           <div class="mt-4 flex flex-wrap gap-2">

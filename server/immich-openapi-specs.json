@@ -6176,7 +6176,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonResponseDto"
+              "$ref": "#/components/schemas/PeopleAssetResponseDto"
             },
             "type": "array"
           },
@@ -6211,6 +6211,12 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "unassignedPeople": {
+            "items": {
+              "$ref": "#/components/schemas/UnassignedFacesResponseDto"
+            },
+            "type": "array"
           },
           "updatedAt": {
             "format": "date-time",
@@ -7480,6 +7486,21 @@
         ],
         "type": "string"
       },
+      "PeopleAssetResponseDto": {
+        "properties": {
+          "assetFaceId": {
+            "type": "string"
+          },
+          "person": {
+            "$ref": "#/components/schemas/PersonResponseDto"
+          }
+        },
+        "required": [
+          "assetFaceId",
+          "person"
+        ],
+        "type": "object"
+      },
       "PeopleResponseDto": {
         "properties": {
           "people": {
@@ -8743,6 +8764,21 @@
           "disabled"
         ],
         "type": "string"
+      },
+      "UnassignedFacesResponseDto": {
+        "properties": {
+          "assetFaceId": {
+            "type": "string"
+          },
+          "boudinxBox": {
+            "$ref": "#/components/schemas/AssetFaceBoxDto"
+          }
+        },
+        "required": [
+          "assetFaceId",
+          "boudinxBox"
+        ],
+        "type": "object"
       },
       "UpdateAlbumDto": {
         "properties": {

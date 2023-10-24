@@ -44,6 +44,7 @@ class AssetResponseDto {
     this.tags = const [],
     required this.thumbhash,
     required this.type,
+    this.unassignedPeople = const [],
     required this.updatedAt,
   });
 
@@ -104,7 +105,7 @@ class AssetResponseDto {
 
   String ownerId;
 
-  List<PersonResponseDto> people;
+  List<PeopleAssetResponseDto> people;
 
   bool resized;
 
@@ -127,6 +128,8 @@ class AssetResponseDto {
   String? thumbhash;
 
   AssetTypeEnum type;
+
+  List<UnassignedFacesResponseDto> unassignedPeople;
 
   DateTime updatedAt;
 
@@ -163,6 +166,7 @@ class AssetResponseDto {
      other.tags == tags &&
      other.thumbhash == thumbhash &&
      other.type == type &&
+     other.unassignedPeople == unassignedPeople &&
      other.updatedAt == updatedAt;
 
   @override
@@ -199,10 +203,11 @@ class AssetResponseDto {
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
+    (unassignedPeople.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedPeople=$unassignedPeople, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -261,6 +266,7 @@ class AssetResponseDto {
     //  json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
+      json[r'unassignedPeople'] = this.unassignedPeople;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -295,7 +301,7 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        people: PersonResponseDto.listFromJson(json[r'people']),
+        people: PeopleAssetResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized')!,
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetResponseDto.listFromJson(json[r'stack']),
@@ -304,6 +310,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
+        unassignedPeople: UnassignedFacesResponseDto.listFromJson(json[r'unassignedPeople']),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }

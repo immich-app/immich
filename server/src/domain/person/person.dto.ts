@@ -110,6 +110,16 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class PeopleAssetResponseDto {
+  assetFaceId!: string;
+  person!: PersonResponseDto;
+}
+
+export class UnassignedFacesResponseDto {
+  assetFaceId!: string;
+  boudinxBox!: AssetFaceBoxDto;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -135,10 +145,31 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
+export function mapFace(face: AssetFaceEntity): PeopleAssetResponseDto | null {
   if (face.person) {
-    return mapPerson(face.person);
+    return {
+      assetFaceId: face.id,
+      person: face.person,
+    };
+  } else {
+    return null;
   }
+}
 
-  return null;
+export function mapUnassignedFace(face: AssetFaceEntity): UnassignedFacesResponseDto | null {
+  if (face.person !== null) {
+    return null;
+  } else {
+    return {
+      assetFaceId: face.id,
+      boudinxBox: {
+        imageWidth: face.imageWidth,
+        imageHeight: face.imageHeight,
+        boundingBoxX1: face.boundingBoxX1,
+        boundingBoxY1: face.boundingBoxY1,
+        boundingBoxX2: face.boundingBoxX2,
+        boundingBoxY2: face.boundingBoxY2,
+      },
+    };
+  }
 }

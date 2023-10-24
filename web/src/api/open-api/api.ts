@@ -819,10 +819,10 @@ export interface AssetResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {Array<PersonResponseDto>}
+     * @type {Array<PeopleAssetResponseDto>}
      * @memberof AssetResponseDto
      */
-    'people'?: Array<PersonResponseDto>;
+    'people'?: Array<PeopleAssetResponseDto>;
     /**
      * 
      * @type {boolean}
@@ -871,6 +871,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'type': AssetTypeEnum;
+    /**
+     * 
+     * @type {Array<UnassignedFacesResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'unassignedPeople'?: Array<UnassignedFacesResponseDto>;
     /**
      * 
      * @type {string}
@@ -2390,6 +2396,25 @@ export const PathType = {
 export type PathType = typeof PathType[keyof typeof PathType];
 
 
+/**
+ * 
+ * @export
+ * @interface PeopleAssetResponseDto
+ */
+export interface PeopleAssetResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PeopleAssetResponseDto
+     */
+    'assetFaceId': string;
+    /**
+     * 
+     * @type {PersonResponseDto}
+     * @memberof PeopleAssetResponseDto
+     */
+    'person': PersonResponseDto;
+}
 /**
  * 
  * @export
@@ -4024,6 +4049,25 @@ export const TranscodePolicy = {
 export type TranscodePolicy = typeof TranscodePolicy[keyof typeof TranscodePolicy];
 
 
+/**
+ * 
+ * @export
+ * @interface UnassignedFacesResponseDto
+ */
+export interface UnassignedFacesResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UnassignedFacesResponseDto
+     */
+    'assetFaceId': string;
+    /**
+     * 
+     * @type {AssetFaceBoxDto}
+     * @memberof UnassignedFacesResponseDto
+     */
+    'boudinxBox': AssetFaceBoxDto;
+}
 /**
  * 
  * @export

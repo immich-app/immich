@@ -341,6 +341,8 @@ class ApiClient {
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
           return PathTypeTypeTransformer().decode(value);
+        case 'PeopleAssetResponseDto':
+          return PeopleAssetResponseDto.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdateDto':
@@ -445,6 +447,8 @@ class ApiClient {
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
+        case 'UnassignedFacesResponseDto':
+          return UnassignedFacesResponseDto.fromJson(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
