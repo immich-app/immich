@@ -399,6 +399,18 @@ export interface AssetBulkUpdateDto {
      * @memberof AssetBulkUpdateDto
      */
     'isFavorite'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetBulkUpdateDto
+     */
+    'removeParent'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUpdateDto
+     */
+    'stackParentId'?: string;
 }
 /**
  * 
@@ -825,6 +837,24 @@ export interface AssetResponseDto {
     'smartInfo'?: SmartInfoResponseDto;
     /**
      * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof AssetResponseDto
+     */
+    'stack'?: Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetResponseDto
+     */
+    'stackCount': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'stackParentId'?: string | null;
+    /**
+     * 
      * @type {Array<TagResponseDto>}
      * @memberof AssetResponseDto
      */
@@ -1096,44 +1126,6 @@ export interface ChangePasswordDto {
      * @memberof ChangePasswordDto
      */
     'password': string;
-}
-/**
- * 
- * @export
- * @interface CheckDuplicateAssetDto
- */
-export interface CheckDuplicateAssetDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetDto
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetDto
-     */
-    'deviceId': string;
-}
-/**
- * 
- * @export
- * @interface CheckDuplicateAssetResponseDto
- */
-export interface CheckDuplicateAssetResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetResponseDto
-     */
-    'id'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof CheckDuplicateAssetResponseDto
-     */
-    'isExist': boolean;
 }
 /**
  * 
@@ -2513,6 +2505,19 @@ export interface PersonResponseDto {
 /**
  * 
  * @export
+ * @interface PersonStatisticsResponseDto
+ */
+export interface PersonStatisticsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof PersonStatisticsResponseDto
+     */
+    'assets': number;
+}
+/**
+ * 
+ * @export
  * @interface PersonUpdateDto
  */
 export interface PersonUpdateDto {
@@ -3129,6 +3134,12 @@ export interface SharedLinkEditDto {
      */
     'allowUpload'?: boolean;
     /**
+     * Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+     * @type {boolean}
+     * @memberof SharedLinkEditDto
+     */
+    'changeExpiryTime'?: boolean;
+    /**
      * 
      * @type {string}
      * @memberof SharedLinkEditDto
@@ -3324,6 +3335,12 @@ export interface SystemConfigDto {
     'map': SystemConfigMapDto;
     /**
      * 
+     * @type {SystemConfigNewVersionCheckDto}
+     * @memberof SystemConfigDto
+     */
+    'newVersionCheck': SystemConfigNewVersionCheckDto;
+    /**
+     * 
      * @type {SystemConfigOAuthDto}
      * @memberof SystemConfigDto
      */
@@ -3346,6 +3363,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigThemeDto}
+     * @memberof SystemConfigDto
+     */
+    'theme': SystemConfigThemeDto;
     /**
      * 
      * @type {SystemConfigThumbnailDto}
@@ -3608,6 +3631,19 @@ export interface SystemConfigMapDto {
 /**
  * 
  * @export
+ * @interface SystemConfigNewVersionCheckDto
+ */
+export interface SystemConfigNewVersionCheckDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigNewVersionCheckDto
+     */
+    'enabled': boolean;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigOAuthDto
  */
 export interface SystemConfigOAuthDto {
@@ -3779,6 +3815,19 @@ export interface SystemConfigTemplateStorageOptionDto {
      * @memberof SystemConfigTemplateStorageOptionDto
      */
     'yearOptions': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigThemeDto
+ */
+export interface SystemConfigThemeDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigThemeDto
+     */
+    'customCss': string;
 }
 /**
  * 
@@ -4055,6 +4104,25 @@ export interface UpdateLibraryDto {
      * @memberof UpdateLibraryDto
      */
     'name'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateStackParentDto
+ */
+export interface UpdateStackParentDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateStackParentDto
+     */
+    'newParentId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateStackParentDto
+     */
+    'oldParentId': string;
 }
 /**
  * 
@@ -5826,55 +5894,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
-         * @param {string} [key] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkDuplicateAsset: async (checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'checkDuplicateAssetDto' is not null or undefined
-            assertParamExists('checkDuplicateAsset', 'checkDuplicateAssetDto', checkDuplicateAssetDto)
-            const localVarPath = `/asset/check`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
-            }
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(checkDuplicateAssetDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
@@ -7212,6 +7231,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {UpdateStackParentDto} updateStackParentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStackParent: async (updateStackParentDto: UpdateStackParentDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateStackParentDto' is not null or undefined
+            assertParamExists('updateStackParent', 'updateStackParentDto', updateStackParentDto)
+            const localVarPath = `/asset/stack/parent`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateStackParentDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7362,17 +7425,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
          */
         async bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetBulkUploadCheckResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.bulkUploadCheck(assetBulkUploadCheckDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
-         * @param {string} [key] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckDuplicateAssetResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.checkDuplicateAsset(checkDuplicateAssetDto, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7678,6 +7730,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {UpdateStackParentDto} updateStackParentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateStackParent(updateStackParentDto: UpdateStackParentDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateStackParent(updateStackParentDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {File} assetData 
          * @param {string} deviceAssetId 
          * @param {string} deviceId 
@@ -7719,15 +7781,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         bulkUploadCheck(requestParameters: AssetApiBulkUploadCheckRequest, options?: AxiosRequestConfig): AxiosPromise<AssetBulkUploadCheckResponseDto> {
             return localVarFp.bulkUploadCheck(requestParameters.assetBulkUploadCheckDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {AssetApiCheckDuplicateAssetRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkDuplicateAsset(requestParameters: AssetApiCheckDuplicateAssetRequest, options?: AxiosRequestConfig): AxiosPromise<CheckDuplicateAssetResponseDto> {
-            return localVarFp.checkDuplicateAsset(requestParameters.checkDuplicateAssetDto, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
@@ -7969,6 +8022,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {AssetApiUpdateStackParentRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateStackParent(requestParameters: AssetApiUpdateStackParentRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.updateStackParent(requestParameters.updateStackParentDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {AssetApiUploadFileRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -7991,27 +8053,6 @@ export interface AssetApiBulkUploadCheckRequest {
      * @memberof AssetApiBulkUploadCheck
      */
     readonly assetBulkUploadCheckDto: AssetBulkUploadCheckDto
-}
-
-/**
- * Request parameters for checkDuplicateAsset operation in AssetApi.
- * @export
- * @interface AssetApiCheckDuplicateAssetRequest
- */
-export interface AssetApiCheckDuplicateAssetRequest {
-    /**
-     * 
-     * @type {CheckDuplicateAssetDto}
-     * @memberof AssetApiCheckDuplicateAsset
-     */
-    readonly checkDuplicateAssetDto: CheckDuplicateAssetDto
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiCheckDuplicateAsset
-     */
-    readonly key?: string
 }
 
 /**
@@ -8575,6 +8616,20 @@ export interface AssetApiUpdateAssetsRequest {
 }
 
 /**
+ * Request parameters for updateStackParent operation in AssetApi.
+ * @export
+ * @interface AssetApiUpdateStackParentRequest
+ */
+export interface AssetApiUpdateStackParentRequest {
+    /**
+     * 
+     * @type {UpdateStackParentDto}
+     * @memberof AssetApiUpdateStackParent
+     */
+    readonly updateStackParentDto: UpdateStackParentDto
+}
+
+/**
  * Request parameters for uploadFile operation in AssetApi.
  * @export
  * @interface AssetApiUploadFileRequest
@@ -8709,17 +8764,6 @@ export class AssetApi extends BaseAPI {
      */
     public bulkUploadCheck(requestParameters: AssetApiBulkUploadCheckRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).bulkUploadCheck(requestParameters.assetBulkUploadCheckDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Check duplicated asset before uploading - for Web upload used
-     * @param {AssetApiCheckDuplicateAssetRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public checkDuplicateAsset(requestParameters: AssetApiCheckDuplicateAssetRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).checkDuplicateAsset(requestParameters.checkDuplicateAssetDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9012,6 +9056,17 @@ export class AssetApi extends BaseAPI {
      */
     public updateAssets(requestParameters: AssetApiUpdateAssetsRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).updateAssets(requestParameters.assetBulkUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUpdateStackParentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public updateStackParent(requestParameters: AssetApiUpdateStackParentRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).updateStackParent(requestParameters.updateStackParentDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -12009,6 +12064,48 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getPersonStatistics: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getPersonStatistics', 'id', id)
+            const localVarPath = `/person/{id}/statistics`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getPersonThumbnail: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPersonThumbnail', 'id', id)
@@ -12300,6 +12397,16 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getPersonStatistics(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonStatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonStatistics(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getPersonThumbnail(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonThumbnail(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -12401,6 +12508,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          */
         getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
             return localVarFp.getPersonAssets(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PersonApiGetPersonStatisticsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPersonStatistics(requestParameters: PersonApiGetPersonStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<PersonStatisticsResponseDto> {
+            return localVarFp.getPersonStatistics(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12523,6 +12639,20 @@ export interface PersonApiGetPersonAssetsRequest {
      * 
      * @type {string}
      * @memberof PersonApiGetPersonAssets
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for getPersonStatistics operation in PersonApi.
+ * @export
+ * @interface PersonApiGetPersonStatisticsRequest
+ */
+export interface PersonApiGetPersonStatisticsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiGetPersonStatistics
      */
     readonly id: string
 }
@@ -12678,6 +12808,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonAssets(requestParameters: PersonApiGetPersonAssetsRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonAssets(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiGetPersonStatisticsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public getPersonStatistics(requestParameters: PersonApiGetPersonStatisticsRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).getPersonStatistics(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -12902,10 +13043,11 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {string} name 
+         * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchPerson: async (name: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchPerson: async (name: string, withHidden?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'name' is not null or undefined
             assertParamExists('searchPerson', 'name', name)
             const localVarPath = `/search/person`;
@@ -12931,6 +13073,10 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (name !== undefined) {
                 localVarQueryParameter['name'] = name;
+            }
+
+            if (withHidden !== undefined) {
+                localVarQueryParameter['withHidden'] = withHidden;
             }
 
 
@@ -12991,11 +13137,12 @@ export const SearchApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} name 
+         * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchPerson(name: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.searchPerson(name, options);
+        async searchPerson(name: string, withHidden?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchPerson(name, withHidden, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -13032,7 +13179,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         searchPerson(requestParameters: SearchApiSearchPersonRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PersonResponseDto>> {
-            return localVarFp.searchPerson(requestParameters.name, options).then((request) => request(axios, basePath));
+            return localVarFp.searchPerson(requestParameters.name, requestParameters.withHidden, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -13168,6 +13315,13 @@ export interface SearchApiSearchPersonRequest {
      * @memberof SearchApiSearchPerson
      */
     readonly name: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearchPerson
+     */
+    readonly withHidden?: boolean
 }
 
 /**
@@ -13206,7 +13360,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public searchPerson(requestParameters: SearchApiSearchPersonRequest, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).searchPerson(requestParameters.name, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).searchPerson(requestParameters.name, requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

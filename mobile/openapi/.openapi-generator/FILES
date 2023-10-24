@@ -43,8 +43,6 @@ doc/CLIPConfig.md
 doc/CLIPMode.md
 doc/CQMode.md
 doc/ChangePasswordDto.md
-doc/CheckDuplicateAssetDto.md
-doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CitiesFile.md
@@ -99,6 +97,7 @@ doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
+doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
 doc/RecognitionConfig.md
@@ -133,11 +132,13 @@ doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
+doc/SystemConfigNewVersionCheckDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
 doc/SystemConfigReverseGeocodingDto.md
 doc/SystemConfigStorageTemplateDto.md
 doc/SystemConfigTemplateStorageOptionDto.md
+doc/SystemConfigThemeDto.md
 doc/SystemConfigThumbnailDto.md
 doc/SystemConfigTrashDto.md
 doc/TagApi.md
@@ -152,6 +153,7 @@ doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
+doc/UpdateStackParentDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
@@ -218,8 +220,6 @@ lib/model/auth_device_response_dto.dart
 lib/model/bulk_id_response_dto.dart
 lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
-lib/model/check_duplicate_asset_dto.dart
-lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/cities_file.dart
@@ -272,6 +272,7 @@ lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
+lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/recognition_config.dart
@@ -302,11 +303,13 @@ lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
+lib/model/system_config_new_version_check_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
 lib/model/system_config_reverse_geocoding_dto.dart
 lib/model/system_config_storage_template_dto.dart
 lib/model/system_config_template_storage_option_dto.dart
+lib/model/system_config_theme_dto.dart
 lib/model/system_config_thumbnail_dto.dart
 lib/model/system_config_trash_dto.dart
 lib/model/tag_response_dto.dart
@@ -320,6 +323,7 @@ lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
+lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
@@ -365,8 +369,6 @@ test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart
 test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
-test/check_duplicate_asset_dto_test.dart
-test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/cities_file_test.dart
@@ -424,6 +426,7 @@ test/people_update_dto_test.dart
 test/people_update_item_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
+test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
 test/recognition_config_test.dart
@@ -458,11 +461,13 @@ test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
+test/system_config_new_version_check_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart
 test/system_config_reverse_geocoding_dto_test.dart
 test/system_config_storage_template_dto_test.dart
 test/system_config_template_storage_option_dto_test.dart
+test/system_config_theme_dto_test.dart
 test/system_config_thumbnail_dto_test.dart
 test/system_config_trash_dto_test.dart
 test/tag_api_test.dart
@@ -477,6 +482,7 @@ test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart
+test/update_stack_parent_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart

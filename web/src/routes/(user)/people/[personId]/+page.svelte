@@ -92,7 +92,7 @@
     if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 300);
+    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
@@ -185,10 +185,6 @@
     }
   };
 
-  const handleReassignAssets = () => {
-    viewMode = ViewMode.UNASSIGN_ASSETS;
-  };
-
   const handleMerge = () => {
     handleGoBack();
     refreshAssetGrid = !refreshAssetGrid;
@@ -211,7 +207,6 @@
     viewMode = ViewMode.UNASSIGN_ASSETS;
   };
 
-
   const updateAssetCount = async () => {
     try {
       const { data: statistics } = await api.personApi.getPersonStatistics({
@@ -221,6 +216,12 @@
     } catch (error) {
       handleError(error, "Can't update the asset count");
     }
+  };
+
+  const handleUnmerge = () => {
+    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    assetInteractionStore.clearMultiselect();
+    viewMode = ViewMode.VIEW_ASSETS;
   };
 
   const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
@@ -281,7 +282,7 @@
     if (viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
-
+    isSearchingPeople = false;
     isEditingName = false;
   };
 
@@ -490,7 +491,7 @@
             <div class="absolute z-[999] w-64 sm:w-96">
               {#if isSearchingPeople}
                 <div
-                  class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
+                  class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
                 >
                   <div class="flex w-full place-items-center">
                     <LoadingSpinner />
@@ -499,8 +500,10 @@
               {:else}
                 {#each suggestedPeople as person, index (person.id)}
                   <div
-                    class="flex border-t dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700 {index ===
-                      suggestedPeople.length - 1 && 'rounded-b-lg'}"
+                    class="flex border-t border-x border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] {index ===
+                    suggestedPeople.length - 1
+                      ? 'rounded-b-lg border-b'
+                      : ''}"
                   >
                     <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
                       <ImageThumbnail

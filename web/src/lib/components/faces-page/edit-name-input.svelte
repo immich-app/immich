@@ -17,8 +17,8 @@
 
 <div
   class="flex w-full h-14 place-items-center {suggestedPeople
-    ? 'rounded-t-lg dark:border-immich-dark-gray'
-    : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
+    ? 'rounded-t-lg border-immich-primary dark:border-immich-dark-gray'
+    : 'rounded-lg'}  bg-gray-200 p-2 dark:bg-gray-700"
 >
   <ImageThumbnail
     circle
@@ -36,7 +36,7 @@
     <!-- svelte-ignore a11y-autofocus -->
     <input
       autofocus
-      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+      class="w-full gap-2 bg-gray-200 dark:bg-gray-700 dark:text-white"
       type="text"
       placeholder="New name or nickname"
       bind:value={name}
