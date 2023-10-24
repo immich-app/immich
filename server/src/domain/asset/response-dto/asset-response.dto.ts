@@ -96,7 +96,9 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: entity.faces?.map(mapFace).filter((person) => !person.isHidden),
+    people: entity.faces
+      ?.map(mapFace)
+      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden),
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
