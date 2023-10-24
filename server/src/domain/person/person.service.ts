@@ -56,9 +56,9 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, repository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, repository, storageRepository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -309,7 +309,7 @@ export class PersonService {
     }
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
-    const thumbnailPath = this.storageCore.getPersonThumbnailPath(person);
+    const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
     const halfWidth = (x2 - x1) / 2;

@@ -460,7 +460,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(false);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(
         sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -485,6 +485,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep({ ...albumStub.empty, albumThumbnailAssetId: 'asset-id' }));
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1'] })).resolves.toEqual([
         { success: true, id: 'asset-1' },
@@ -503,6 +504,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithUser));
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(
         sut.addAssets(authStub.user1, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -529,7 +531,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasSharedLinkAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(false);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(
         sut.addAssets(authStub.adminSharedLink, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -560,7 +562,7 @@ describe(AlbumService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(false);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1'] })).resolves.toEqual([
         { success: true, id: 'asset-1' },
@@ -578,7 +580,7 @@ describe(AlbumService.name, () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(true);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: false, id: 'asset-id', error: BulkIdErrorReason.DUPLICATE },
@@ -592,6 +594,7 @@ describe(AlbumService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1'] })).resolves.toEqual([
         { success: false, id: 'asset-1', error: BulkIdErrorReason.NO_PERMISSION },
@@ -630,7 +633,7 @@ describe(AlbumService.name, () => {
     it('should allow the owner to remove assets', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(true);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
@@ -643,6 +646,7 @@ describe(AlbumService.name, () => {
     it('should skip assets not in the album', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.empty));
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: false, id: 'asset-id', error: BulkIdErrorReason.NOT_FOUND },
@@ -654,7 +658,7 @@ describe(AlbumService.name, () => {
     it('should skip assets without user permission to remove', async () => {
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
-      albumMock.hasAsset.mockResolvedValue(true);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         {
@@ -670,7 +674,7 @@ describe(AlbumService.name, () => {
     it('should reset the thumbnail if it is removed', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.twoAssets));
-      albumMock.hasAsset.mockResolvedValue(true);
+      albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },

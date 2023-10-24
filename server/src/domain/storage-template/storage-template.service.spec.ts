@@ -1,6 +1,7 @@
 import { AssetPathType } from '@app/infra/entities';
 import {
   assetStub,
+  newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
@@ -11,6 +12,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import {
+  IAlbumRepository,
   IAssetRepository,
   IMoveRepository,
   IPersonRepository,
@@ -23,6 +25,7 @@ import { StorageTemplateService } from './storage-template.service';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
+  let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let moveMock: jest.Mocked<IMoveRepository>;
@@ -36,13 +39,23 @@ describe(StorageTemplateService.name, () => {
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new StorageTemplateService(assetMock, configMock, defaults, moveMock, personMock, storageMock, userMock);
+    sut = new StorageTemplateService(
+      albumMock,
+      assetMock,
+      configMock,
+      defaults,
+      moveMock,
+      personMock,
+      storageMock,
+      userMock,
+    );
   });
 
   describe('handleMigrationSingle', () => {

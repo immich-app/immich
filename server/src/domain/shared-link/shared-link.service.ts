@@ -16,7 +16,7 @@ export class SharedLinkService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {

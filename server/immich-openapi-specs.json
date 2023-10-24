@@ -8060,6 +8060,9 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          },
           "thumbnail": {
             "$ref": "#/components/schemas/SystemConfigThumbnailDto"
           },
@@ -8077,7 +8080,8 @@
           "storageTemplate",
           "job",
           "thumbnail",
-          "trash"
+          "trash",
+          "theme"
         ],
         "type": "object"
       },
@@ -8401,6 +8405,17 @@
           "minuteOptions",
           "secondOptions",
           "presetOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
         ],
         "type": "object"
       },

@@ -10,6 +10,12 @@ export interface Item {
   release: string;
   tag?: string;
   date: Date;
+  dateType: DateType;
+}
+
+export enum DateType {
+  RELEASE = 'Release Date',
+  DATE = 'Date',
 }
 
 interface Props {
@@ -50,7 +56,7 @@ export default function Timeline({ items }: Props): JSX.Element {
             <div className="z-10 flex items-center bg-immich-primary dark:bg-immich-dark-primary border-2 border-solid rounded-full dark:text-black text-white relative top-[50%] left-[-3px] translate-y-[-50%] translate-x-[-50%] w-8 h-8 shadow-lg ">
               <Icon path={mdiCheckboxMarkedCircleOutline} size={1.25} />
             </div>
-            <section className=" dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-200 border border-solid rounded-2xl flex flex-col w-full gap-2 p-4 ml-4 my-2 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 transition-all">
+            <section className=" dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-200 border border-solid rounded-2xl flex flex-col w-full gap-2 p-4 md:ml-4 my-2 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 transition-all">
               <div className="m-0 text-lg flex w-full items-center justify-between gap-2">
                 <p className="m-0 items-start flex gap-2">
                   <Icon path={item.icon} size={1} />
@@ -67,14 +73,12 @@ export default function Timeline({ items }: Props): JSX.Element {
                       [{item.release}]{' '}
                     </a>
                   ) : (
-                    <span>
-                      [{item.release} {isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}]
-                    </span>
+                    <span>[{item.release}]</span>
                   )}
                 </span>
               </div>
               <div className="md:hidden text-xs">
-                Release Date - {isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}
+                {`${item.dateType} - ${isBrowser ? item.date.toLocaleDateString(navigator.language) : ''}`}
               </div>
               <p className="m-0 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
             </section>

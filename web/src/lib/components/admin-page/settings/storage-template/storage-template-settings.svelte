@@ -57,6 +57,7 @@
       filetype: 'IMG',
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
+      album: 'Album Name',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -208,13 +209,26 @@
             </div>
           </div>
 
-          <div id="migration-info" class="mt-4 text-sm">
-            <p>
-              Template changes will only apply to new assets. To retroactively apply the template to previously uploaded
-              assets, run the <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
-                >Storage Migration Job</a
-              >
-            </p>
+          <div id="migration-info" class="mt-2 text-sm">
+            <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Notes</h3>
+            <section class="flex flex-col gap-2">
+              <p>
+                Template changes will only apply to new assets. To retroactively apply the template to previously
+                uploaded assets, run the
+                <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                  >Storage Migration Job</a
+                >.
+              </p>
+              <p>
+                The template variable <span class="font-mono">{`{{album}}`}</span> will always be empty for new assets,
+                so manually running the
+
+                <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                  >Storage Migration Job</a
+                >
+                is required in order to successfully use the variable.
+              </p>
+            </section>
           </div>
 
           <SettingButtonsRow
