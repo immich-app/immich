@@ -91,12 +91,12 @@
       return;
     }
     isSearchingPeople = true;
-    people = [];
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
       searchWord = name;
     } catch (error) {
+      people = [];
       handleError(error, "Can't search people");
     }
 
