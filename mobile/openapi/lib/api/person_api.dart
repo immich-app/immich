@@ -170,7 +170,7 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getPersonAssetsCountWithHttpInfo(String id,) async {
+  Future<Response> getPersonStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/person/{id}/statistics'
       .replaceAll('{id}', id);
@@ -199,8 +199,8 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<StatisticsResponseDto?> getPersonAssetsCount(String id,) async {
-    final response = await getPersonAssetsCountWithHttpInfo(id,);
+  Future<PersonStatisticsResponseDto?> getPersonStatistics(String id,) async {
+    final response = await getPersonStatisticsWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -208,7 +208,7 @@ class PersonApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StatisticsResponseDto',) as StatisticsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonStatisticsResponseDto',) as PersonStatisticsResponseDto;
     
     }
     return null;

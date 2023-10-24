@@ -32,8 +32,8 @@ void main() {
       // TODO
     });
 
-    //Future<StatisticsResponseDto> getPersonAssetsCount(String id) async
-    test('test getPersonAssetsCount', () async {
+    //Future<PersonStatisticsResponseDto> getPersonStatistics(String id) async
+    test('test getPersonStatistics', () async {
       // TODO
     });
 

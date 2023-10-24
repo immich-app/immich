@@ -190,7 +190,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**|  | 
- **withHidden** | **bool**|  | [optional] [default to false]
+ **withHidden** | **bool**|  | [optional] 
 
 ### Return type
 

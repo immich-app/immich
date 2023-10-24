@@ -2438,6 +2438,19 @@ export interface PersonResponseDto {
 /**
  * 
  * @export
+ * @interface PersonStatisticsResponseDto
+ */
+export interface PersonStatisticsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof PersonStatisticsResponseDto
+     */
+    'assets': number;
+}
+/**
+ * 
+ * @export
  * @interface PersonUpdateDto
  */
 export interface PersonUpdateDto {
@@ -3216,19 +3229,6 @@ export interface SmartInfoResponseDto {
      * @memberof SmartInfoResponseDto
      */
     'tags'?: Array<string> | null;
-}
-/**
- * 
- * @export
- * @interface StatisticsResponseDto
- */
-export interface StatisticsResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof StatisticsResponseDto
-     */
-    'assets': number;
 }
 /**
  * 
@@ -11857,9 +11857,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPersonAssetsCount: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPersonStatistics: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getPersonAssetsCount', 'id', id)
+            assertParamExists('getPersonStatistics', 'id', id)
             const localVarPath = `/person/{id}/statistics`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -12121,8 +12121,8 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPersonAssetsCount(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonAssetsCount(id, options);
+        async getPersonStatistics(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonStatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonStatistics(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -12206,12 +12206,12 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
-         * @param {PersonApiGetPersonAssetsCountRequest} requestParameters Request parameters.
+         * @param {PersonApiGetPersonStatisticsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
-            return localVarFp.getPersonAssetsCount(requestParameters.id, options).then((request) => request(axios, basePath));
+        getPersonStatistics(requestParameters: PersonApiGetPersonStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<PersonStatisticsResponseDto> {
+            return localVarFp.getPersonStatistics(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12295,15 +12295,15 @@ export interface PersonApiGetPersonAssetsRequest {
 }
 
 /**
- * Request parameters for getPersonAssetsCount operation in PersonApi.
+ * Request parameters for getPersonStatistics operation in PersonApi.
  * @export
- * @interface PersonApiGetPersonAssetsCountRequest
+ * @interface PersonApiGetPersonStatisticsRequest
  */
-export interface PersonApiGetPersonAssetsCountRequest {
+export interface PersonApiGetPersonStatisticsRequest {
     /**
      * 
      * @type {string}
-     * @memberof PersonApiGetPersonAssetsCount
+     * @memberof PersonApiGetPersonStatistics
      */
     readonly id: string
 }
@@ -12420,13 +12420,13 @@ export class PersonApi extends BaseAPI {
 
     /**
      * 
-     * @param {PersonApiGetPersonAssetsCountRequest} requestParameters Request parameters.
+     * @param {PersonApiGetPersonStatisticsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PersonApi
      */
-    public getPersonAssetsCount(requestParameters: PersonApiGetPersonAssetsCountRequest, options?: AxiosRequestConfig) {
-        return PersonApiFp(this.configuration).getPersonAssetsCount(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    public getPersonStatistics(requestParameters: PersonApiGetPersonStatisticsRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).getPersonStatistics(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -12,7 +12,7 @@ Method | HTTP request | Description
 [**getAllPeople**](PersonApi.md#getallpeople) | **GET** /person | 
 [**getPerson**](PersonApi.md#getperson) | **GET** /person/{id} | 
 [**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
-[**getPersonAssetsCount**](PersonApi.md#getpersonassetscount) | **GET** /person/{id}/statistics | 
+[**getPersonStatistics**](PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
 [**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 [**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
 [**updatePeople**](PersonApi.md#updatepeople) | **PUT** /person | 
@@ -184,8 +184,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getPersonAssetsCount**
-> StatisticsResponseDto getPersonAssetsCount(id)
+# **getPersonStatistics**
+> PersonStatisticsResponseDto getPersonStatistics(id)
 
 
 
@@ -211,10 +211,10 @@ final api_instance = PersonApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getPersonAssetsCount(id);
+    final result = api_instance.getPersonStatistics(id);
     print(result);
 } catch (e) {
-    print('Exception when calling PersonApi->getPersonAssetsCount: $e\n');
+    print('Exception when calling PersonApi->getPersonStatistics: $e\n');
 }
 ```
 
@@ -226,7 +226,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**StatisticsResponseDto**](StatisticsResponseDto.md)
+[**PersonStatisticsResponseDto**](PersonStatisticsResponseDto.md)
 
 ### Authorization
 
