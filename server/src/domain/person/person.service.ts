@@ -33,6 +33,7 @@ import {
   PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
+  PersonStatisticsResponseDto,
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
@@ -82,6 +83,11 @@ export class PersonService {
   async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     return this.findOrFail(id).then(mapPerson);
+  }
+
+  async getStatistics(authUser: AuthUserDto, id: string): Promise<PersonStatisticsResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    return this.repository.getStatistics(id);
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {

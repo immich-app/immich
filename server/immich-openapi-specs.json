@@ -3685,6 +3685,48 @@
         ]
       }
     },
+    "/person/{id}/statistics": {
+      "get": {
+        "operationId": "getPersonStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
     "/person/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
@@ -3946,6 +3988,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -7398,6 +7448,17 @@
           "name",
           "thumbnailPath",
           "isHidden"
+        ],
+        "type": "object"
+      },
+      "PersonStatisticsResponseDto": {
+        "properties": {
+          "assets": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assets"
         ],
         "type": "object"
       },

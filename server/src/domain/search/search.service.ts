@@ -159,8 +159,8 @@ export class SearchService {
     };
   }
 
-  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return await this.personRepository.getByName(authUser.id, dto.name);
+  searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
   }
 
   async handleIndexAlbums() {

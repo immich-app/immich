@@ -96,6 +96,7 @@ doc/PeopleUpdateDto.md
 doc/PeopleUpdateItem.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
+doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
 doc/RecognitionConfig.md
@@ -269,6 +270,7 @@ lib/model/people_response_dto.dart
 lib/model/people_update_dto.dart
 lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
+lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/recognition_config.dart
@@ -421,6 +423,7 @@ test/people_update_dto_test.dart
 test/people_update_item_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
+test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
 test/recognition_config_test.dart
