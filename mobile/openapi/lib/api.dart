@@ -158,6 +158,7 @@ part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_job_dto.dart';
 part 'model/system_config_machine_learning_dto.dart';
 part 'model/system_config_map_dto.dart';
+part 'model/system_config_new_version_check_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
 part 'model/system_config_reverse_geocoding_dto.dart';

@@ -1,8 +1,8 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -109,6 +109,9 @@ export const defaults = Object.freeze<SystemConfig>({
     jpegSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+  },
+  newVersionCheck: {
+    enabled: true,
   },
   trash: {
     enabled: true,

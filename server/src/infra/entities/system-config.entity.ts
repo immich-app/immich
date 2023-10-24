@@ -67,6 +67,8 @@ export enum SystemConfigKey {
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
   REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
 
+  NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
+
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -218,6 +220,9 @@ export interface SystemConfig {
     jpegSize: number;
     quality: number;
     colorspace: Colorspace;
+  };
+  newVersionCheck: {
+    enabled: boolean;
   };
   trash: {
     enabled: boolean;

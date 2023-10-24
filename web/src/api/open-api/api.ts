@@ -3285,6 +3285,12 @@ export interface SystemConfigDto {
     'map': SystemConfigMapDto;
     /**
      * 
+     * @type {SystemConfigNewVersionCheckDto}
+     * @memberof SystemConfigDto
+     */
+    'newVersionCheck': SystemConfigNewVersionCheckDto;
+    /**
+     * 
      * @type {SystemConfigOAuthDto}
      * @memberof SystemConfigDto
      */
@@ -3571,6 +3577,19 @@ export interface SystemConfigMapDto {
      * @memberof SystemConfigMapDto
      */
     'tileUrl': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigNewVersionCheckDto
+ */
+export interface SystemConfigNewVersionCheckDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigNewVersionCheckDto
+     */
+    'enabled': boolean;
 }
 /**
  * 

@@ -21,6 +21,7 @@
   import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
   import Download from 'svelte-material-icons/Download.svelte';
   import type { PageData } from './$types';
+  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
 
   export let data: PageData;
 
@@ -107,6 +108,10 @@
 
       <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
         <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
+        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

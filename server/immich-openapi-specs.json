@@ -8048,6 +8048,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "newVersionCheck": {
+            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -8074,6 +8077,7 @@
           "ffmpeg",
           "machineLearning",
           "map",
+          "newVersionCheck",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
@@ -8254,6 +8258,17 @@
         "required": [
           "enabled",
           "tileUrl"
+        ],
+        "type": "object"
+      },
+      "SystemConfigNewVersionCheckDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

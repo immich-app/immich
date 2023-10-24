@@ -407,6 +407,8 @@ class ApiClient {
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':
           return SystemConfigMapDto.fromJson(value);
+        case 'SystemConfigNewVersionCheckDto':
+          return SystemConfigNewVersionCheckDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':

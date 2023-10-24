@@ -313,6 +313,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
+ - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)

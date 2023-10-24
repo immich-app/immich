@@ -17,6 +17,7 @@ class SystemConfigDto {
     required this.job,
     required this.machineLearning,
     required this.map,
+    required this.newVersionCheck,
     required this.oauth,
     required this.passwordLogin,
     required this.reverseGeocoding,
@@ -33,6 +34,8 @@ class SystemConfigDto {
   SystemConfigMachineLearningDto machineLearning;
 
   SystemConfigMapDto map;
+
+  SystemConfigNewVersionCheckDto newVersionCheck;
 
   SystemConfigOAuthDto oauth;
 
@@ -54,6 +57,7 @@ class SystemConfigDto {
      other.job == job &&
      other.machineLearning == machineLearning &&
      other.map == map &&
+     other.newVersionCheck == newVersionCheck &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
@@ -69,6 +73,7 @@ class SystemConfigDto {
     (job.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
+    (newVersionCheck.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
@@ -78,7 +83,7 @@ class SystemConfigDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +91,7 @@ class SystemConfigDto {
       json[r'job'] = this.job;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
+      json[r'newVersionCheck'] = this.newVersionCheck;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
@@ -108,6 +114,7 @@ class SystemConfigDto {
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
+        newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
@@ -166,6 +173,7 @@ class SystemConfigDto {
     'job',
     'machineLearning',
     'map',
+    'newVersionCheck',
     'oauth',
     'passwordLogin',
     'reverseGeocoding',
