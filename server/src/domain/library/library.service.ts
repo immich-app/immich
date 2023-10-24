@@ -59,11 +59,17 @@ export class LibraryService {
       async () => {
         await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
       },
+      // function to run onComplete
       undefined,
+      // whether it should start directly
       config.libraryScan.enabled,
+      // timezone
       undefined,
+      // context
       undefined,
+      // runOnInit
       undefined,
+      // utcOffset
       undefined,
       // prevents memory leaking by automatically stopping when the node process finishes
       true,
