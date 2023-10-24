@@ -40,8 +40,6 @@ doc/CLIPConfig.md
 doc/CLIPMode.md
 doc/CQMode.md
 doc/ChangePasswordDto.md
-doc/CheckDuplicateAssetDto.md
-doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CitiesFile.md
@@ -216,8 +214,6 @@ lib/model/auth_device_response_dto.dart
 lib/model/bulk_id_response_dto.dart
 lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
-lib/model/check_duplicate_asset_dto.dart
-lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/cities_file.dart
@@ -364,8 +360,6 @@ test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart
 test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
-test/check_duplicate_asset_dto_test.dart
-test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/cities_file_test.dart

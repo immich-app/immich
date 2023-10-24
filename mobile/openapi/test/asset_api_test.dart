@@ -24,13 +24,6 @@ void main() {
       // TODO
     });
 
-    // Check duplicated asset before uploading - for Web upload used
-    //
-    //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
-    test('test checkDuplicateAsset', () async {
-      // TODO
-    });
-
     // Checks if multiple assets exist on the server and returns all existing - used by background backup
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async

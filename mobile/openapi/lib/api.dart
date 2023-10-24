@@ -77,8 +77,6 @@ part 'model/clip_config.dart';
 part 'model/clip_mode.dart';
 part 'model/cq_mode.dart';
 part 'model/change_password_dto.dart';
-part 'model/check_duplicate_asset_dto.dart';
-part 'model/check_duplicate_asset_response_dto.dart';
 part 'model/check_existing_assets_dto.dart';
 part 'model/check_existing_assets_response_dto.dart';
 part 'model/cities_file.dart';
