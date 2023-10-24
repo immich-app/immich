@@ -118,6 +118,10 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AssetApi* | [**uploadFileTusDelete**](doc//AssetApi.md#uploadfiletusdelete) | **DELETE** /asset/upload-tus/{id} | 
+*AssetApi* | [**uploadFileTusHead**](doc//AssetApi.md#uploadfiletushead) | **HEAD** /asset/upload-tus/{id} | 
+*AssetApi* | [**uploadFileTusPatch**](doc//AssetApi.md#uploadfiletuspatch) | **PATCH** /asset/upload-tus/{id} | 
+*AssetApi* | [**uploadFileTusPost**](doc//AssetApi.md#uploadfiletuspost) | **POST** /asset/upload-tus | 
 *AuditApi* | [**fixAuditFiles**](doc//AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuditApi* | [**getAuditFiles**](doc//AuditApi.md#getauditfiles) | **GET** /audit/file-report | 

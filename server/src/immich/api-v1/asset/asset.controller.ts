@@ -2,11 +2,17 @@ import { AssetResponseDto, AuthUserDto } from '@app/domain';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Head,
   HttpCode,
   HttpStatus,
+  Logger,
+  Req as NestReq,
+  Res as NestRes,
   Param,
   ParseFilePipe,
+  Patch,
   Post,
   Query,
   Response,
@@ -16,6 +22,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
+import { IncomingMessage, ServerResponse } from 'http';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
@@ -36,6 +43,7 @@ import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-a
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { TusService } from './tus.service';
 
 interface UploadFiles {
   assetData: ImmichFile[];
@@ -47,7 +55,54 @@ interface UploadFiles {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
-  constructor(private assetService: AssetService) {}
+  private logger = new Logger(AssetController.name);
+  constructor(
+    private assetService: AssetService,
+    private tusService: TusService,
+  ) {}
+
+  @SharedLinkRoute()
+  @Post('/upload-tus')
+  async uploadFileTusPost(@NestReq() req: IncomingMessage, @NestRes() res: ServerResponse<IncomingMessage>) {
+    return this.uploadFileHandler(req, res, null);
+  }
+
+  @SharedLinkRoute()
+  @Head('/upload-tus/:id')
+  async uploadFileTusHead(
+    @NestReq() req: IncomingMessage,
+    @NestRes() res: ServerResponse<IncomingMessage>,
+    @Param() params: UUIDParamDto,
+  ) {
+    return this.uploadFileHandler(req, res, params);
+  }
+
+  @SharedLinkRoute()
+  @Patch('/upload-tus/:id')
+  async uploadFileTusPatch(
+    @NestReq() req: IncomingMessage,
+    @NestRes() res: ServerResponse<IncomingMessage>,
+    @Param() params: UUIDParamDto,
+  ) {
+    return this.uploadFileHandler(req, res, params);
+  }
+
+  @SharedLinkRoute()
+  @Delete('/upload-tus/:id')
+  async uploadFileTusDelete(
+    @NestReq() req: IncomingMessage,
+    @NestRes() res: ServerResponse<IncomingMessage>,
+    @Param() params: UUIDParamDto,
+  ) {
+    return this.uploadFileHandler(req, res, params);
+  }
+
+  async uploadFileHandler(req: IncomingMessage, res: ServerResponse<IncomingMessage>, params: any) {
+    this.logger.log(
+      `Upload TUS request! ${JSON.stringify(params)} ${req.method} ${req.url} ${JSON.stringify(req.headers)}`,
+    );
+    return this.tusService.handleTus(req, res);
+  }
 
   @SharedLinkRoute()
   @Post('upload')

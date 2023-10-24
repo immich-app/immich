@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';
+import { TusService } from './api-v1/asset/tus.service';
 import { AppGuard } from './app.guard';
 import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
@@ -65,6 +66,7 @@ import {
     AppGuard,
     AppService,
     AssetService,
+    TusService,
     FileUploadInterceptor,
   ],
 })

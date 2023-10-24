@@ -51,6 +51,8 @@
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
     "@socket.io/redis-adapter": "^8.2.1",
+    "@tus/file-store": "1.0.1",
+    "@tus/server": "1.0.0",
     "archiver": "^6.0.0",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",

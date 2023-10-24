@@ -7387,6 +7387,190 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusDelete: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('uploadFileTusDelete', 'id', id)
+            const localVarPath = `/asset/upload-tus/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusHead: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('uploadFileTusHead', 'id', id)
+            const localVarPath = `/asset/upload-tus/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'HEAD', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusPatch: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('uploadFileTusPatch', 'id', id)
+            const localVarPath = `/asset/upload-tus/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusPost: async (key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/upload-tus`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -7754,6 +7938,49 @@ export const AssetApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, duration, isArchived, isExternal, isOffline, isReadOnly, isVisible, libraryId, livePhotoData, sidecarData, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadFileTusDelete(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFileTusDelete(id, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadFileTusHead(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFileTusHead(id, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadFileTusPatch(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFileTusPatch(id, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadFileTusPost(key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFileTusPost(key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -8037,6 +8264,42 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig): AxiosPromise<AssetFileUploadResponseDto> {
             return localVarFp.uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.duration, requestParameters.isArchived, requestParameters.isExternal, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUploadFileTusDeleteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusDelete(requestParameters: AssetApiUploadFileTusDeleteRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.uploadFileTusDelete(requestParameters.id, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUploadFileTusHeadRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusHead(requestParameters: AssetApiUploadFileTusHeadRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.uploadFileTusHead(requestParameters.id, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUploadFileTusPatchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusPatch(requestParameters: AssetApiUploadFileTusPatchRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.uploadFileTusPatch(requestParameters.id, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiUploadFileTusPostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadFileTusPost(requestParameters: AssetApiUploadFileTusPostRequest = {}, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.uploadFileTusPost(requestParameters.key, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -8770,6 +9033,83 @@ export interface AssetApiUploadFileRequest {
 }
 
 /**
+ * Request parameters for uploadFileTusDelete operation in AssetApi.
+ * @export
+ * @interface AssetApiUploadFileTusDeleteRequest
+ */
+export interface AssetApiUploadFileTusDeleteRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusDelete
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusDelete
+     */
+    readonly key?: string
+}
+
+/**
+ * Request parameters for uploadFileTusHead operation in AssetApi.
+ * @export
+ * @interface AssetApiUploadFileTusHeadRequest
+ */
+export interface AssetApiUploadFileTusHeadRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusHead
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusHead
+     */
+    readonly key?: string
+}
+
+/**
+ * Request parameters for uploadFileTusPatch operation in AssetApi.
+ * @export
+ * @interface AssetApiUploadFileTusPatchRequest
+ */
+export interface AssetApiUploadFileTusPatchRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusPatch
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusPatch
+     */
+    readonly key?: string
+}
+
+/**
+ * Request parameters for uploadFileTusPost operation in AssetApi.
+ * @export
+ * @interface AssetApiUploadFileTusPostRequest
+ */
+export interface AssetApiUploadFileTusPostRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiUploadFileTusPost
+     */
+    readonly key?: string
+}
+
+/**
  * AssetApi - object-oriented interface
  * @export
  * @class AssetApi
@@ -9110,6 +9450,50 @@ export class AssetApi extends BaseAPI {
      */
     public uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).uploadFile(requestParameters.assetData, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.duration, requestParameters.isArchived, requestParameters.isExternal, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.libraryId, requestParameters.livePhotoData, requestParameters.sidecarData, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUploadFileTusDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public uploadFileTusDelete(requestParameters: AssetApiUploadFileTusDeleteRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFileTusDelete(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUploadFileTusHeadRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public uploadFileTusHead(requestParameters: AssetApiUploadFileTusHeadRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFileTusHead(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUploadFileTusPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public uploadFileTusPatch(requestParameters: AssetApiUploadFileTusPatchRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFileTusPatch(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiUploadFileTusPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public uploadFileTusPost(requestParameters: AssetApiUploadFileTusPostRequest = {}, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFileTusPost(requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

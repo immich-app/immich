@@ -184,5 +184,25 @@ void main() {
       // TODO
     });
 
+    //Future<Object> uploadFileTusDelete(String id, { String key }) async
+    test('test uploadFileTusDelete', () async {
+      // TODO
+    });
+
+    //Future<Object> uploadFileTusHead(String id, { String key }) async
+    test('test uploadFileTusHead', () async {
+      // TODO
+    });
+
+    //Future<Object> uploadFileTusPatch(String id, { String key }) async
+    test('test uploadFileTusPatch', () async {
+      // TODO
+    });
+
+    //Future<Object> uploadFileTusPost({ String key }) async
+    test('test uploadFileTusPost', () async {
+      // TODO
+    });
+
   });
 }
