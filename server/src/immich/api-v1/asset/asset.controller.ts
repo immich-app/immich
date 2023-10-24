@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Logger,
   Param,
   ParseFilePipe,
   Post,
@@ -48,7 +47,6 @@ interface UploadFiles {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetController {
-  private logger = new Logger(AssetController.name);
   constructor(private assetService: AssetService) {}
 
   @SharedLinkRoute()

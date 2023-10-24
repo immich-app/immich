@@ -48,20 +48,27 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
 
 export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
   const extensions = await getExtensions();
-  const promises = [];
+  const promises: Promise<string>[] = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
-    if (extensions.some((ext) => name.endsWith(ext))) {
-      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
-    }
+    // if (extensions.some((ext) => name.endsWith(ext))) {
+    //   uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
+    //   promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+    // }
 
+    const fileCreatedAt = new Date(file.lastModified).toISOString();
+    const deviceAssetId = getDeviceAssetId(file);
     const upload = new Upload(file, {
       endpoint: 'http://localhost:2283/api/asset/upload-tus',
       retryDelays: [0, 3000, 5000, 10000, 20000],
       metadata: {
         filename: file.name,
-        filetype: file.type,
+        deviceAssetId: deviceAssetId,
+        deviceId: 'WEB',
+        fileCreatedAt,
+        fileModifiedAt: new Date(file.lastModified).toISOString(),
+        isFavorite: 'false',
+        duration: '0:00:00.000000',
       },
       onError: function (error) {
         console.log('Failed because: ' + error);
