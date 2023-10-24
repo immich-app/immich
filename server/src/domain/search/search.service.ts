@@ -360,13 +360,20 @@ export class SearchService {
   }
 
   private patchFaces(faces: AssetFaceEntity[]): OwnedFaceEntity[] {
-    return faces.map((face) => ({
-      id: this.asKey(face),
-      ownerId: face.asset.ownerId,
-      assetId: face.assetId,
-      personId: face.personId,
-      embedding: face.embedding,
-    }));
+    const results: OwnedFaceEntity[] = [];
+    for (const face of faces) {
+      if (face.personId) {
+        results.push({
+          id: this.asKey(face as AssetFaceId),
+          ownerId: face.asset.ownerId,
+          assetId: face.assetId,
+          personId: face.personId,
+          embedding: face.embedding,
+        });
+      }
+    }
+
+    return results;
   }
 
   private asKey(face: AssetFaceId): string {

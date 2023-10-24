@@ -8,7 +8,7 @@ export interface PersonSearchOptions {
 
 export interface AssetFaceId {
   assetId: string;
-  personId: string | null;
+  personId: string;
 }
 
 export interface UpdateFacesData {
