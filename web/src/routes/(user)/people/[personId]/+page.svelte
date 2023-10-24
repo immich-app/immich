@@ -90,9 +90,12 @@
     if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    isSearchingPeople = true;
+    const timeout = setTimeout(() => {
+      isSearchingPeople = true;
+    }, 300);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
+      clearTimeout(timeout);
       people = data;
       searchWord = name;
     } catch (error) {
@@ -462,7 +465,7 @@
             {/if}
           </section>
           {#if isEditingName}
-            <div class="absolute z-[999] w-96">
+            <div class="absolute z-[999] w-64 sm:w-96">
               {#if isSearchingPeople}
                 <div
                   class="flex rounded-b-lg dark:border-immich-dark-gray place-items-center bg-gray-100 p-2 dark:bg-gray-700"
