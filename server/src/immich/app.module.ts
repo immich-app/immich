@@ -1,7 +1,7 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import { AssetEntity } from '@app/infra/entities';
-import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -31,6 +31,7 @@ import {
   TagController,
   UserController,
 } from './controllers';
+import { TusMiddleware } from './middlewares/tus.middleware';
 
 @Module({
   imports: [
@@ -70,8 +71,12 @@ import {
     FileUploadInterceptor,
   ],
 })
-export class AppModule implements OnModuleInit, OnModuleDestroy {
+export class AppModule implements NestModule, OnModuleInit, OnModuleDestroy {
   constructor(private appService: AppService) {}
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TusMiddleware).forRoutes('asset/upload-tus', 'asset/upload-tus/*');
+  }
 
   async onModuleInit() {
     await this.appService.init();

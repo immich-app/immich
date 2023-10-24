@@ -10,6 +10,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  TUS_PARTIAL = 'tus-uploads',
 }
 
 export interface MoveRequest {
