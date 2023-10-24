@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // SystemConfigLibraryScanDto libraryScan
-    test('to test the property `libraryScan`', () async {
+    // SystemConfigLibraryDto library_
+    test('to test the property `library_`', () async {
       // TODO
     });
 

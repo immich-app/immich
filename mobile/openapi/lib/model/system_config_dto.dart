@@ -15,7 +15,7 @@ class SystemConfigDto {
   SystemConfigDto({
     required this.ffmpeg,
     required this.job,
-    required this.libraryScan,
+    required this.library_,
     required this.machineLearning,
     required this.map,
     required this.newVersionCheck,
@@ -32,7 +32,7 @@ class SystemConfigDto {
 
   SystemConfigJobDto job;
 
-  SystemConfigLibraryScanDto libraryScan;
+  SystemConfigLibraryDto library_;
 
   SystemConfigMachineLearningDto machineLearning;
 
@@ -58,7 +58,7 @@ class SystemConfigDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
      other.ffmpeg == ffmpeg &&
      other.job == job &&
-     other.libraryScan == libraryScan &&
+     other.library_ == library_ &&
      other.machineLearning == machineLearning &&
      other.map == map &&
      other.newVersionCheck == newVersionCheck &&
@@ -75,7 +75,7 @@ class SystemConfigDto {
     // ignore: unnecessary_parenthesis
     (ffmpeg.hashCode) +
     (job.hashCode) +
-    (libraryScan.hashCode) +
+    (library_.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
     (newVersionCheck.hashCode) +
@@ -88,13 +88,13 @@ class SystemConfigDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, libraryScan=$libraryScan, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'job'] = this.job;
-      json[r'libraryScan'] = this.libraryScan;
+      json[r'library'] = this.library_;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
       json[r'newVersionCheck'] = this.newVersionCheck;
@@ -118,7 +118,7 @@ class SystemConfigDto {
       return SystemConfigDto(
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
-        libraryScan: SystemConfigLibraryScanDto.fromJson(json[r'libraryScan'])!,
+        library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
@@ -178,7 +178,7 @@ class SystemConfigDto {
   static const requiredKeys = <String>{
     'ffmpeg',
     'job',
-    'libraryScan',
+    'library',
     'machineLearning',
     'map',
     'newVersionCheck',
