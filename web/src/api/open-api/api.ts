@@ -1055,44 +1055,6 @@ export interface ChangePasswordDto {
 /**
  * 
  * @export
- * @interface CheckDuplicateAssetDto
- */
-export interface CheckDuplicateAssetDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetDto
-     */
-    'deviceAssetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetDto
-     */
-    'deviceId': string;
-}
-/**
- * 
- * @export
- * @interface CheckDuplicateAssetResponseDto
- */
-export interface CheckDuplicateAssetResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckDuplicateAssetResponseDto
-     */
-    'id'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof CheckDuplicateAssetResponseDto
-     */
-    'isExist': boolean;
-}
-/**
- * 
- * @export
  * @interface CheckExistingAssetsDto
  */
 export interface CheckExistingAssetsDto {
@@ -5857,55 +5819,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
-         * @param {string} [key] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkDuplicateAsset: async (checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'checkDuplicateAssetDto' is not null or undefined
-            assertParamExists('checkDuplicateAsset', 'checkDuplicateAssetDto', checkDuplicateAssetDto)
-            const localVarPath = `/asset/check`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
-            }
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(checkDuplicateAssetDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
@@ -7440,17 +7353,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
-         * @param {string} [key] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckDuplicateAssetResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.checkDuplicateAsset(checkDuplicateAssetDto, key, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
          * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
          * @param {*} [options] Override http request option.
@@ -7806,15 +7708,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.bulkUploadCheck(requestParameters.assetBulkUploadCheckDto, options).then((request) => request(axios, basePath));
         },
         /**
-         * Check duplicated asset before uploading - for Web upload used
-         * @param {AssetApiCheckDuplicateAssetRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkDuplicateAsset(requestParameters: AssetApiCheckDuplicateAssetRequest, options?: AxiosRequestConfig): AxiosPromise<CheckDuplicateAssetResponseDto> {
-            return localVarFp.checkDuplicateAsset(requestParameters.checkDuplicateAssetDto, requestParameters.key, options).then((request) => request(axios, basePath));
-        },
-        /**
          * Checks if multiple assets exist on the server and returns all existing - used by background backup
          * @param {AssetApiCheckExistingAssetsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -8085,27 +7978,6 @@ export interface AssetApiBulkUploadCheckRequest {
      * @memberof AssetApiBulkUploadCheck
      */
     readonly assetBulkUploadCheckDto: AssetBulkUploadCheckDto
-}
-
-/**
- * Request parameters for checkDuplicateAsset operation in AssetApi.
- * @export
- * @interface AssetApiCheckDuplicateAssetRequest
- */
-export interface AssetApiCheckDuplicateAssetRequest {
-    /**
-     * 
-     * @type {CheckDuplicateAssetDto}
-     * @memberof AssetApiCheckDuplicateAsset
-     */
-    readonly checkDuplicateAssetDto: CheckDuplicateAssetDto
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiCheckDuplicateAsset
-     */
-    readonly key?: string
 }
 
 /**
@@ -8817,17 +8689,6 @@ export class AssetApi extends BaseAPI {
      */
     public bulkUploadCheck(requestParameters: AssetApiBulkUploadCheckRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).bulkUploadCheck(requestParameters.assetBulkUploadCheckDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Check duplicated asset before uploading - for Web upload used
-     * @param {AssetApiCheckDuplicateAssetRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public checkDuplicateAsset(requestParameters: AssetApiCheckDuplicateAssetRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).checkDuplicateAsset(requestParameters.checkDuplicateAssetDto, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -245,10 +245,6 @@ class ApiClient {
           return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'CheckDuplicateAssetDto':
-          return CheckDuplicateAssetDto.fromJson(value);
-        case 'CheckDuplicateAssetResponseDto':
-          return CheckDuplicateAssetResponseDto.fromJson(value);
         case 'CheckExistingAssetsDto':
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':

@@ -34,7 +34,6 @@ import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -47,7 +46,6 @@ import {
   AssetUploadAction,
 } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
@@ -317,23 +315,6 @@ export class AssetService {
 
   async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
-  }
-
-  async checkDuplicatedAsset(
-    authUser: AuthUserDto,
-    checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    const res = await this.assetRepository.findOne({
-      where: {
-        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
-        deviceId: checkDuplicateAssetDto.deviceId,
-        ownerId: authUser.id,
-      },
-    });
-
-    const isDuplicated = res ? true : false;
-
-    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
   async checkExistingAssets(

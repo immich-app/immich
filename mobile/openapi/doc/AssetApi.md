@@ -10,7 +10,6 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**bulkUploadCheck**](AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
-[**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
@@ -87,65 +86,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AssetBulkUploadCheckResponseDto**](AssetBulkUploadCheckResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **checkDuplicateAsset**
-> CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto, key)
-
-
-
-Check duplicated asset before uploading - for Web upload used
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final checkDuplicateAssetDto = CheckDuplicateAssetDto(); // CheckDuplicateAssetDto | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.checkDuplicateAsset(checkDuplicateAssetDto, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->checkDuplicateAsset: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **checkDuplicateAssetDto** | [**CheckDuplicateAssetDto**](CheckDuplicateAssetDto.md)|  | 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**CheckDuplicateAssetResponseDto**](CheckDuplicateAssetResponseDto.md)
 
 ### Authorization
 

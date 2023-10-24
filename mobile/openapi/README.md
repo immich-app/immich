@@ -88,7 +88,6 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
 *AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
-*AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
@@ -233,8 +232,6 @@ Class | Method | HTTP request | Description
  - [CLIPMode](doc//CLIPMode.md)
  - [CQMode](doc//CQMode.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
- - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
- - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CitiesFile](doc//CitiesFile.md)
