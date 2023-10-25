@@ -166,29 +166,30 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildAlbumDateRange(Album album) {
       final DateTime? startDate = album.startDate;
       final DateTime? endDate = album.endDate;
-      if (startDate != null && endDate != null) {
-        final String startDateText = (startDate.year == endDate.year
-                ? DateFormat.MMMd()
-                : DateFormat.yMMMd())
-            .format(startDate);
-        final String endDateText = DateFormat.yMMMd().format(endDate);
 
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16.0,
-            bottom: album.shared ? 0.0 : 8.0,
-          ),
-          child: Text(
-            "$startDateText - $endDateText",
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
-      } else {
+      if (startDate == null || endDate == null) {
         return const SizedBox();
       }
+
+      final String startDateText = (startDate.year == endDate.year
+              ? DateFormat.MMMd()
+              : DateFormat.yMMMd())
+          .format(startDate);
+      final String endDateText = DateFormat.yMMMd().format(endDate);
+
+      return Padding(
+        padding: EdgeInsets.only(
+          left: 16.0,
+          bottom: album.shared ? 0.0 : 8.0,
+        ),
+        child: Text(
+          "$startDateText - $endDateText",
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
     }
 
     Widget buildSharedUserIconsRow(Album album) {
