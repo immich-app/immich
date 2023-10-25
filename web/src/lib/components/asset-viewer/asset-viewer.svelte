@@ -68,6 +68,13 @@
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
   });
 
+  $: {
+    console.log('0----------------');
+    console.log(asset.stack);
+    console.log(asset.stackCount);
+    console.log(asset.stackParentId);
+  }
+
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);

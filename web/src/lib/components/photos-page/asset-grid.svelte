@@ -25,6 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let withStackedAssets = true;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
@@ -47,7 +48,7 @@
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
     assetStore.connect();
-    await assetStore.init(viewport);
+    await assetStore.init(viewport, withStackedAssets);
   });
 
   onDestroy(() => {
@@ -97,7 +98,7 @@
     const target = el.firstChild as HTMLElement;
     if (target) {
       const bucketDate = target.id.split('_')[1];
-      assetStore.loadBucket(bucketDate, event.detail.position);
+      assetStore.loadBucket(bucketDate, event.detail.position, withStackedAssets);
     }
   }
 
@@ -253,7 +254,7 @@
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
         const bucket = $assetStore.buckets[bucketIndex];
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown, withStackedAssets);
         for (const asset of bucket.assets) {
           if (deselect) {
             assetInteractionStore.removeAssetFromMultiselectGroup(asset);
