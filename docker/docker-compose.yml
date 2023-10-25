@@ -83,10 +83,6 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: ghcr.io/immich-app/immich-proxy:${IMMICH_VERSION:-release}
-    environment:
-      # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_URL
-      - IMMICH_WEB_URL
     ports:
       - 2283:8080
     depends_on:
