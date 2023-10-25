@@ -16,11 +16,6 @@ void main() {
   // final instance = ServerConfigDto();
 
   group('test ServerConfigDto', () {
-    // String customCss
-    test('to test the property `customCss`', () async {
-      // TODO
-    });
-
     // bool isInitialized
     test('to test the property `isInitialized`', () async {
       // TODO

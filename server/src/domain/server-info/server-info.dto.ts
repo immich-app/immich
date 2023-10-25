@@ -1,5 +1,6 @@
 import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
@@ -79,11 +80,14 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
+export class ServerThemeDto {
+  theme!: SystemConfigThemeDto;
+}
+
 export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
   mapTileUrl!: string;
-  customCss!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;

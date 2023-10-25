@@ -99,7 +99,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         trashDays: 30,
         isInitialized: true,
-        customCss: '',
       });
     });
   });
