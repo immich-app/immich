@@ -14,30 +14,36 @@ class UnassignedFacesResponseDto {
   /// Returns a new [UnassignedFacesResponseDto] instance.
   UnassignedFacesResponseDto({
     required this.assetFaceId,
+    required this.assetId,
     required this.boudinxBox,
   });
 
   String assetFaceId;
+
+  String assetId;
 
   AssetFaceBoxDto boudinxBox;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UnassignedFacesResponseDto &&
      other.assetFaceId == assetFaceId &&
+     other.assetId == assetId &&
      other.boudinxBox == boudinxBox;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetFaceId.hashCode) +
+    (assetId.hashCode) +
     (boudinxBox.hashCode);
 
   @override
-  String toString() => 'UnassignedFacesResponseDto[assetFaceId=$assetFaceId, boudinxBox=$boudinxBox]';
+  String toString() => 'UnassignedFacesResponseDto[assetFaceId=$assetFaceId, assetId=$assetId, boudinxBox=$boudinxBox]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetFaceId'] = this.assetFaceId;
+      json[r'assetId'] = this.assetId;
       json[r'boudinxBox'] = this.boudinxBox;
     return json;
   }
@@ -51,6 +57,7 @@ class UnassignedFacesResponseDto {
 
       return UnassignedFacesResponseDto(
         assetFaceId: mapValueOfType<String>(json, r'assetFaceId')!,
+        assetId: mapValueOfType<String>(json, r'assetId')!,
         boudinxBox: AssetFaceBoxDto.fromJson(json[r'boudinxBox'])!,
       );
     }
@@ -100,6 +107,7 @@ class UnassignedFacesResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetFaceId',
+    'assetId',
     'boudinxBox',
   };
 }

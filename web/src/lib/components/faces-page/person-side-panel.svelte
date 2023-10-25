@@ -11,20 +11,24 @@
   import Magnify from 'svelte-material-icons/Magnify.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import { linear } from 'svelte/easing';
-  import { api, ThumbnailFormat, type PersonResponseDto } from '@api';
+  import { api, ThumbnailFormat, type PersonResponseDto, UnassignedFacesResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { cloneDeep } from 'lodash-es';
   import { handleError } from '$lib/utils/handle-error';
   import Close from 'svelte-material-icons/Close.svelte';
   import { createEventDispatcher, onMount } from 'svelte';
+  import Minus from 'svelte-material-icons/Minus.svelte';
+  import Account from 'svelte-material-icons/Account.svelte';
   import Restart from 'svelte-material-icons/Restart.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { browser } from '$app/environment';
 
   export let people: PersonResponseDto[];
+  export let unassignedFaces: UnassignedFacesResponseDto[];
   export let assetId: string;
 
+  let peopleToAdd: (PersonResponseDto | string)[] = [];
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
   let maxPeople = false;
@@ -33,6 +37,7 @@
 
   let searchFaces = false;
   let searchName = '';
+  let isSearchingPeople = false;
 
   let allPeople: PersonResponseDto[] = [];
   let editedPerson: number;
@@ -47,10 +52,15 @@
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
     allPeople = data.people;
+
+    peopleToAdd = await initUnassignedFaces();
   });
 
   const searchPeople = async () => {
-    searchedPeople = [];
+    if ((people.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
+      return;
+    }
+    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName });
       searchedPeople = data.filter((item) => item.id !== people[editedPerson].id);
@@ -62,26 +72,45 @@
       }
     } catch (error) {
       handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
     }
-  };
 
-  $: {
-    if (searchName !== '' && browser) {
-      if (maxPeople === true || (!searchName.startsWith(searchWord) && maxPeople === false)) searchPeople();
-    }
-  }
+    isSearchingPeople = false;
+  };
 
   $: {
     searchedPeople = !searchName
       ? allPeople
       : allPeople
-          .filter((person: PersonResponseDto) => person.name.toLowerCase().startsWith(searchName.toLowerCase()))
+          .filter((person: PersonResponseDto) => {
+            const nameParts = person.name.split(' ');
+            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(searchName.toLowerCase()));
+          })
           .slice(0, 5);
   }
 
-  function initInput(element: HTMLInputElement) {
+  const initInput = (element: HTMLInputElement) => {
     element.focus();
-  }
+  };
+
+  const initUnassignedFaces = async (): Promise<string[]> => {
+    const results: string[] = [];
+    for (let i = 0; i < unassignedFaces.length; i++) {
+      const data = await api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg);
+      const newFeaturePhoto = await zoomImageToBase64(
+        data,
+        unassignedFaces[i].boudinxBox.boundingBoxX1,
+        unassignedFaces[i].boudinxBox.boundingBoxX2,
+        unassignedFaces[i].boudinxBox.boundingBoxY1,
+        unassignedFaces[i].boudinxBox.boundingBoxY2,
+      );
+      if (newFeaturePhoto) {
+        results.push(newFeaturePhoto);
+      }
+    }
+    return results;
+  };
 
   const handleBackButton = () => {
     searchName = '';
@@ -264,7 +293,7 @@
       {#each editedPeople as person, index}
         <div class="relative h-[115px] w-[95px]">
           <a href="/people/{person.id}">
-            <div class="absolute left-0 top-0 h-[90px] w-[90px]">
+            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 h-[90px] w-[90px]">
               <ImageThumbnail
                 curve
                 shadow
@@ -280,6 +309,16 @@
               </p>
             </div>
           </a>
+          <div
+            transition:blur={{ amount: 10, duration: 50 }}
+            class="absolute -left-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-red-700"
+          >
+            <button on:click={() => handleReset(index)} class="flex h-full w-full">
+              <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+                <Minus size={18} />
+              </div>
+            </button>
+          </div>
 
           <div
             transition:blur={{ amount: 10, duration: 50 }}
@@ -293,11 +332,38 @@
               </button>
             {:else}
               <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
-                <div
-                  class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
-                />
+                <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+                  <Account size={18} />
+                </div>
               </button>
             {/if}
+          </div>
+        </div>
+      {/each}
+      {#each peopleToAdd as face, index}
+        <div class="relative h-[115px] w-[95px]">
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2 h-[90px] w-[90px]">
+            <ImageThumbnail
+              curve
+              shadow
+              url={typeof face === 'string' ? face : api.getPeopleThumbnailUrl(face.id)}
+              altText="Unassigned face"
+              title="TO DO"
+              widthStyle="90px"
+              heightStyle="90px"
+              thumbhash={null}
+            />
+          </div>
+
+          <div
+            transition:blur={{ amount: 10, duration: 50 }}
+            class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700"
+          >
+            <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
+              <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+                <Minus size={18} />
+              </div>
+            </button>
           </div>
         </div>
       {/each}
@@ -322,15 +388,23 @@
           <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Select face</p>
         </div>
         <div class="flex justify-end gap-2">
-          <button
-            class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-            title="Search existing person"
-            on:click={() => {
-              searchFaces = true;
-            }}
-          >
-            <Magnify size="24" />
-          </button>
+          {#if isSearchingPeople}
+            <button
+              class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
+              title="Search existing person"
+              on:click={() => {
+                searchFaces = true;
+              }}
+            >
+              <Magnify size="24" />
+            </button>
+          {:else}
+            <div
+              class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
+            >
+              <LoadingSpinner />
+            </div>
+          {/if}
 
           <button
             class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -352,6 +426,7 @@
           type="text"
           placeholder="Name or nickname"
           bind:value={searchName}
+          on:input={() => searchPeople()}
           use:initInput
         />
         <button

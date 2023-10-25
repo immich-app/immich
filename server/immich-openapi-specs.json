@@ -8770,12 +8770,16 @@
           "assetFaceId": {
             "type": "string"
           },
+          "assetId": {
+            "type": "string"
+          },
           "boudinxBox": {
             "$ref": "#/components/schemas/AssetFaceBoxDto"
           }
         },
         "required": [
           "assetFaceId",
+          "assetId",
           "boudinxBox"
         ],
         "type": "object"

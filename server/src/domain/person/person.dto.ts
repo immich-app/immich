@@ -117,6 +117,7 @@ export class PeopleAssetResponseDto {
 
 export class UnassignedFacesResponseDto {
   assetFaceId!: string;
+  assetId!: string;
   boudinxBox!: AssetFaceBoxDto;
 }
 
@@ -162,6 +163,7 @@ export function mapUnassignedFace(face: AssetFaceEntity): UnassignedFacesRespons
   } else {
     return {
       assetFaceId: face.id,
+      assetId: face.assetId,
       boudinxBox: {
         imageWidth: face.imageWidth,
         imageHeight: face.imageHeight,

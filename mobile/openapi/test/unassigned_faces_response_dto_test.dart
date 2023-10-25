@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // String assetId
+    test('to test the property `assetId`', () async {
+      // TODO
+    });
+
     // AssetFaceBoxDto boudinxBox
     test('to test the property `boudinxBox`', () async {
       // TODO

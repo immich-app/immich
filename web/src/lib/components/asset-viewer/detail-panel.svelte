@@ -413,6 +413,7 @@
 {#if showEditFaces}
   <PersonSidePanel
     bind:people
+    bind:unassignedFaces
     bind:selectedPersonToCreate={customFeaturePhoto}
     assetId={asset.id}
     on:close={() => (showEditFaces = false)}

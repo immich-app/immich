@@ -4063,6 +4063,12 @@ export interface UnassignedFacesResponseDto {
     'assetFaceId': string;
     /**
      * 
+     * @type {string}
+     * @memberof UnassignedFacesResponseDto
+     */
+    'assetId': string;
+    /**
+     * 
      * @type {AssetFaceBoxDto}
      * @memberof UnassignedFacesResponseDto
      */
