@@ -76,9 +76,16 @@
         {/if}
 
         {#if user.isAdmin}
-          <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-            <div class="hidden sm:block">
-              <LinkButton>
+          <a
+            data-sveltekit-preload-data="hover"
+            href={AppRoute.ADMIN_USER_MANAGEMENT}
+            aria-label="Administration"
+            aria-current={$page.url.pathname.includes('/admin') ? 'page' : null}
+          >
+            <div
+              class="inline-flex items-center justify-center transition-colors dark:text-immich-dark-fg p-2 font-medium rounded-lg"
+            >
+              <div class="hidden sm:block">
                 <span
                   class={$page.url.pathname.includes('/admin')
                     ? 'item text-immich-primary underline dark:text-immich-dark-primary'
@@ -86,22 +93,20 @@
                 >
                   Administration
                 </span>
-              </LinkButton>
-            </div>
-            <div class="block sm:hidden">
-              <IconButton title="Administration">
+              </div>
+              <div class="block sm:hidden" aria-hidden="true">
                 <Cog
                   size="1.5em"
                   class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
                     ? 'text-immich-primary dark:text-immich-dark-primary'
                     : ''}"
                 />
-              </IconButton>
-              <hr
-                class={$page.url.pathname.includes('/admin')
-                  ? 'border-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
-                  : 'hidden'}
-              />
+                <div
+                  class={$page.url.pathname.includes('/admin')
+                    ? 'border-t-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
+                    : 'hidden'}
+                />
+              </div>
             </div>
           </a>
         {/if}
