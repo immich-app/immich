@@ -7,9 +7,9 @@
   import ImmichLogo from './immich-logo.svelte';
   import { getFilenameExtension } from '$lib/utils/asset-utils';
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import Cancel from 'svelte-material-icons/Cancel.svelte';
-  import Refresh from 'svelte-material-icons/Refresh.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
+  import { mdiRefresh, mdiCancel } from '@mdi/js';
 
   export let uploadAsset: UploadAsset;
 
@@ -84,14 +84,14 @@
           title="Retry upload"
           class="flex h-full w-full place-content-center place-items-center text-sm"
         >
-          <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Refresh size="20" /></span>
+          <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Icon path={mdiRefresh} size="20" /></span>
         </button>
         <button
           on:click={() => uploadAssetsStore.removeUploadAsset(uploadAsset.id)}
           title="Dismiss error"
           class="flex h-full w-full place-content-center place-items-center text-sm"
         >
-          <span class="text-immich-error"><Cancel size="20" /></span>
+          <span class="text-immich-error"><Icon path={mdiCancel} size="20" /></span>
         </button>
       </div>
     {/if}

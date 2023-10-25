@@ -7,14 +7,11 @@
   import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import Calendar from 'svelte-material-icons/Calendar.svelte';
-  import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-  import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-  import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -91,7 +88,7 @@
       class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
       on:click={() => dispatch('close')}
     >
-      <Close size="24" />
+      <Icon path={mdiClose} size="24" />
     </button>
 
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
@@ -186,7 +183,7 @@
       })}
       <div class="flex gap-4 py-4">
         <div>
-          <Calendar size="24" />
+          <Icon path={mdiCalendar} size="24" />
         </div>
 
         <div>
@@ -218,7 +215,7 @@
 
     {#if asset.exifInfo?.fileSizeInByte}
       <div class="flex gap-4 py-4">
-        <div><ImageOutline size="24" /></div>
+        <div><Icon path={mdiImageOutline} size="24" /></div>
 
         <div>
           <p class="break-all">
@@ -242,7 +239,7 @@
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><CameraIris size="24" /></div>
+        <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
@@ -271,7 +268,7 @@
 
     {#if asset.exifInfo?.city}
       <div class="flex gap-4 py-4">
-        <div><MapMarkerOutline size="24" /></div>
+        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.city}</p>

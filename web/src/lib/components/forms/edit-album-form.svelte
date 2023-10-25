@@ -1,11 +1,10 @@
 <script lang="ts">
   import { AlbumResponseDto, api } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
-
+  import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../elements/buttons/button.svelte';
-
   import { handleError } from '../../utils/handle-error';
+  import { mdiImageAlbum } from '@mdi/js';
 
   export let album: AlbumResponseDto;
 
@@ -36,7 +35,7 @@
   <div
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
-    <ImageAlbum size="4em" />
+    <Icon path={mdiImageAlbum} size="4em" />
     <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit album</h1>
   </div>
 

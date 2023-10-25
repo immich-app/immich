@@ -1,12 +1,12 @@
 <script lang="ts">
   import { UserResponseDto, api } from '@api';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { mdiClose } from '@mdi/js';
 
   export let user: UserResponseDto;
 
@@ -64,7 +64,7 @@
           </div>
           <CircleIconButton
             on:click={() => (removePartner = partner)}
-            logo={Close}
+            icon={mdiClose}
             size={'16'}
             title="Remove partner"
           />

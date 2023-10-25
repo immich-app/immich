@@ -6,15 +6,14 @@
   import { fly } from 'svelte/transition';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import Merge from 'svelte-material-icons/Merge.svelte';
-  import CallMerge from 'svelte-material-icons/CallMerge.svelte';
   import { flip } from 'svelte/animate';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { goto, invalidateAll } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
+  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -104,7 +103,7 @@
           isShowConfirmation = true;
         }}
       >
-        <Merge size={18} />
+        <Icon path={mdiMerge} size={18} />
         <span class="ml-2"> Merge</span></Button
       >
     </svelte:fragment>
@@ -123,10 +122,10 @@
 
           {#if hasSelection}
             <span class="grid grid-cols-1"
-              ><CallMerge size={48} class="rotate-90 dark:text-white" />
+              ><Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
               {#if selectedPeople.length === 1}
                 <button class="flex justify-center" on:click={handleSwapPeople}
-                  ><SwapHorizontal size={24} class="dark:text-white" />
+                  ><Icon path={mdiSwapHorizontal} size={24} class="dark:text-white" />
                 </button>
               {/if}
             </span>

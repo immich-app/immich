@@ -4,7 +4,6 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
   import { api, UserResponseDto } from '@api';
   import ThemeButton from '../theme-button.svelte';
   import { AppRoute } from '../../../constants';
@@ -12,11 +11,11 @@
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Magnify from 'svelte-material-icons/Magnify.svelte';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
   export let user: UserResponseDto;
   export let showUploadButton = true;
 
@@ -56,7 +55,7 @@
           <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
             <IconButton title="Search">
               <div class="flex gap-2">
-                <Magnify size="1.5em" />
+                <Icon path={mdiMagnify} size="1.5em" />
               </div>
             </IconButton>
           </a>
@@ -68,7 +67,7 @@
           <div in:fly={{ x: 50, duration: 250 }}>
             <LinkButton on:click={() => dispatch('uploadClicked')}>
               <div class="flex gap-2">
-                <TrayArrowUp size="1.5em" />
+                <Icon path={mdiTrayArrowUp} size="1.5em" />
                 <span class="hidden md:block">Upload</span>
               </div>
             </LinkButton>
@@ -95,7 +94,8 @@
                 </span>
               </div>
               <div class="block sm:hidden" aria-hidden="true">
-                <Cog
+                <Icon
+                  path={mdiCog}
                   size="1.5em"
                   class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
                     ? 'text-immich-primary dark:text-immich-dark-primary'

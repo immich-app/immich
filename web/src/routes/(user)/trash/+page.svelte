@@ -16,13 +16,13 @@
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { AssetStore } from '$lib/stores/assets.store';
   import { api, TimeBucketSize } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import HistoryOutline from 'svelte-material-icons/History.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
 
   export let data: PageData;
 
@@ -74,13 +74,13 @@
     <div class="flex place-items-center gap-2" slot="buttons">
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
-          <HistoryOutline size="18" />
+          <Icon path={mdiHistory} size="18" />
           Restore All
         </div>
       </LinkButton>
       <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
-          <DeleteOutline size="18" />
+          <Icon path={mdiDeleteOutline} size="18" />
           Empty Trash
         </div>
       </LinkButton>

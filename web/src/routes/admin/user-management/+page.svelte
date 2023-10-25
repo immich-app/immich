@@ -1,12 +1,7 @@
 <script lang="ts">
   import { api, UserResponseDto } from '@api';
-
   import { onMount } from 'svelte';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
-  import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
-  import Check from 'svelte-material-icons/Check.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
@@ -17,6 +12,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import type { PageData } from './$types';
+  import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
 
   export let data: PageData;
 
@@ -196,9 +192,9 @@
                 <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
                     {#if user.externalPath}
-                      <Check size="16" />
+                      <Icon path={mdiCheck} size="16" />
                     {:else}
-                      <Close size="16" />
+                      <Icon path={mdiClose} size="16" />
                     {/if}
                   </div>
                 </td>
@@ -208,14 +204,14 @@
                       on:click={() => editUserHandler(user)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                     >
-                      <PencilOutline size="16" />
+                      <Icon path={mdiPencilOutline} size="16" />
                     </button>
                     {#if user.id !== data.user.id}
                       <button
                         on:click={() => deleteUserHandler(user)}
                         class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                       >
-                        <TrashCanOutline size="16" />
+                        <Icon path={mdiTrashCanOutline} size="16" />
                       </button>
                     {/if}
                   {/if}
@@ -225,7 +221,7 @@
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                       title={`scheduled removal on ${getDeleteDate(user)}`}
                     >
-                      <DeleteRestore size="16" />
+                      <Icon path={mdiDeleteRestore} size="16" />
                     </button>
                   {/if}
                 </td>
@@ -265,13 +261,13 @@
                       on:click={() => editUserHandler(user)}
                       class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1 sm:p-3"
                     >
-                      <PencilOutline size="16" />
+                      <Icon path={mdiPencilOutline} size="16" />
                     </button>
                     <button
                       on:click={() => deleteUserHandler(user)}
                       class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 sm:p-3"
                     >
-                      <TrashCanOutline size="16" />
+                      <Icon path={mdiTrashCanOutline} size="16" />
                     </button>
                   {/if}
                   {#if isDeleted(user)}
@@ -280,7 +276,7 @@
                       class="rounded-full bg-immich-primary p-2 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 sm:p-3"
                       title={`scheduled removal on ${getDeleteDate(user)}`}
                     >
-                      <DeleteRestore size="16" />
+                      <Icon path={mdiDeleteRestore} size="16" />
                     </button>
                   {/if}
                 </td>

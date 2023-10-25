@@ -2,12 +2,11 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { api, type PersonResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-  import Merge from 'svelte-material-icons/Merge.svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   const dispatch = createEventDispatcher<{
     reject: void;
@@ -40,7 +39,7 @@
           Merge faces - {title}
         </h1>
         <div class="p-2">
-          <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
+          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
         </div>
       </div>
 
@@ -57,7 +56,7 @@
           </div>
           <div class="mx-0.5 flex md:mx-2">
             <CircleIconButton
-              logo={Merge}
+              icon={mdiMerge}
               on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
             />
           </div>
@@ -83,7 +82,7 @@
         {:else}
           <div class="grid w-full grid-cols-1 gap-2">
             <div class="px-2">
-              <button on:click={() => (choosePersonToMerge = false)}> <ArrowLeft /></button>
+              <button on:click={() => (choosePersonToMerge = false)}> <Icon path={mdiArrowLeft} /></button>
             </div>
             <div class="flex items-center justify-center">
               <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">

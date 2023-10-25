@@ -1,11 +1,12 @@
 <script lang="ts">
   import { api, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import AccountEditOutline from 'svelte-material-icons/AccountEditOutline.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiAccountEditOutline } from '@mdi/js';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -72,7 +73,7 @@
   <div
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
-    <AccountEditOutline size="4em" />
+    <Icon path={mdiAccountEditOutline} size="4em" />
     <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
   </div>
 

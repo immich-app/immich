@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { APIKeyResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiKeyVariant } from '@mdi/js';
 
   export let apiKey: Partial<APIKeyResponseDto>;
   export let title = 'API Key';
@@ -22,7 +23,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <KeyVariant size="4em" />
+      <Icon path={mdiKeyVariant} size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
       </h1>

@@ -5,9 +5,10 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
-  import History from 'svelte-material-icons/History.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../../elements/buttons/button.svelte';
   import { OnRestore, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiHistory } from '@mdi/js';
 
   export let onRestore: OnRestore | undefined = undefined;
 
@@ -38,6 +39,6 @@
 </script>
 
 <Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleRestore}>
-  <History size="24" />
+  <Icon path={mdiHistory} size="24" />
   <span class="ml-2">Restore</span>
 </Button>

@@ -29,13 +29,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, PersonResponseDto, TimeBucketSize, api } from '@api';
   import { onMount } from 'svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
 
   export let data: PageData;
 
@@ -370,12 +368,12 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={Plus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
       <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
-      <AssetSelectContextMenu icon={DotsVertical} title="Add">
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
@@ -383,9 +381,9 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
-          <AssetSelectContextMenu icon={DotsVertical} title="Menu">
+          <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
             <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />

@@ -5,8 +5,9 @@
   import { AppRoute } from '$lib/constants';
   import { AllJobStatusResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import CogIcon from 'svelte-material-icons/Cog.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
+  import { mdiCog } from '@mdi/js';
 
   export let data: PageData;
 
@@ -34,7 +35,7 @@
     <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
       <LinkButton>
         <div class="flex place-items-center gap-2 text-sm">
-          <CogIcon size="18" />
+          <Icon path={mdiCog} size="18" />
           Manage Concurrency
         </div>
       </LinkButton>

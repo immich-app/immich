@@ -1,10 +1,10 @@
 <script lang="ts">
   import { DownloadProgress, downloadAssets, downloadManager, isDownloading } from '$lib/stores/download';
   import { locale } from '$lib/stores/preferences.store';
-  import Close from 'svelte-material-icons/Close.svelte';
   import { fly, slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { mdiClose } from '@mdi/js';
 
   const abort = (downloadKey: string, download: DownloadProgress) => {
     download.abort?.abort();
@@ -39,7 +39,7 @@
             </div>
           </div>
           <div class="absolute right-2">
-            <CircleIconButton on:click={() => abort(downloadKey, download)} size="20" logo={Close} forceDark />
+            <CircleIconButton on:click={() => abort(downloadKey, download)} size="20" icon={mdiClose} forceDark />
           </div>
         </div>
       {/each}

@@ -62,6 +62,7 @@
   "type": "module",
   "dependencies": {
     "@egjs/svelte-view360": "^4.0.0-beta.7",
+    "@mdi/js": "^7.3.67",
     "@zoom-image/svelte": "^0.1.8",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
@@ -76,7 +77,6 @@
     "socket.io-client": "^4.6.1",
     "svelte-loading-spinners": "^0.3.4",
     "svelte-local-storage-store": "^0.5.0",
-    "svelte-material-icons": "^3.0.5",
     "thumbhash": "^0.1.1"
   }
 }

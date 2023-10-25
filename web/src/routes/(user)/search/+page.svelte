@@ -13,12 +13,8 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import type { AssetResponseDto } from '@api';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { AppRoute } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
@@ -28,6 +24,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
 
   export let data: PageData;
 
@@ -109,21 +106,21 @@
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
       <CreateSharedLink />
-      <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
-      <AssetSelectContextMenu icon={Plus} title="Add">
+      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+      <AssetSelectContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
       <DeleteAssets {onAssetDelete} />
 
-      <AssetSelectContextMenu icon={DotsVertical} title="Add">
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchived} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
+    <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
       <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
@@ -155,7 +152,7 @@
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
-            <ImageOffOutline size="3.5em" />
+            <Icon path={mdiImageOffOutline} size="3.5em" />
             <p class="mt-5 text-3xl font-medium">No results</p>
             <p class="text-base font-normal">Try a synonym or more general keyword</p>
           </div>

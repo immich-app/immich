@@ -4,8 +4,9 @@
   import { LibraryType, type LibraryResponseDto } from '@api';
   import { handleError } from '../../utils/handle-error';
   import { onMount } from 'svelte';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
+  import { mdiPencilOutline } from '@mdi/js';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -139,7 +140,7 @@
               }}
               class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
             >
-              <PencilOutline size="16" />
+              <Icon path={mdiPencilOutline} size="16" />
             </button>
           </td>
         </tr>
