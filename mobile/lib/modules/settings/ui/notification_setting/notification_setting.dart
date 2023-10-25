@@ -82,23 +82,33 @@ class NotificationSetting extends HookConsumerWidget {
         if (!hasPermission)
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
-            title: const Text('notification_permission_list_tile_title').tr(),
+            title: Text(
+              'notification_permission_list_tile_title',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ).tr(),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('notification_permission_list_tile_content').tr(),
+                Text(
+                  'notification_permission_list_tile_content',
+                  style: Theme.of(context).textTheme.labelMedium,
+                ).tr(),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: ()
-                  => ref.watch(notificationPermissionProvider.notifier)
-                    .requestNotificationPermission().then((permission) {
-                      if (permission == PermissionStatus.permanentlyDenied) {
-                        showPermissionsDialog();
-                      }
+                  onPressed: () => ref
+                      .watch(notificationPermissionProvider.notifier)
+                      .requestNotificationPermission()
+                      .then((permission) {
+                    if (permission == PermissionStatus.permanentlyDenied) {
+                      showPermissionsDialog();
+                    }
                   }),
-                  child:
-                  const Text('notification_permission_list_tile_enable_button')
-                    .tr(),
+                  child: const Text(
+                    'notification_permission_list_tile_enable_button',
+                  ).tr(),
                 ),
               ],
             ),
@@ -130,7 +140,8 @@ class NotificationSetting extends HookConsumerWidget {
           ).tr(args: [formattedValue]),
           subtitle: Slider(
             value: sliderValue.value,
-            onChanged: !hasPermission ? null : (double v) => sliderValue.value = v,
+            onChanged:
+                !hasPermission ? null : (double v) => sliderValue.value = v,
             onChangeEnd: (double v) => appSettingService.setSetting(
               AppSettingsEnum.uploadErrorNotificationGracePeriod,
               v.toInt(),

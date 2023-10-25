@@ -361,5 +361,7 @@
   "shared_link_create_submit_button": "Create link",
   "shared_link_app_bar_title": "Shared Links",
   "shared_link_manage_links": "Manage Shared links",
-  "shared_link_empty": "You don't have any shared links"
+  "shared_link_empty": "You don't have any shared links",
+  "cache_settings_tile_title": "Local Storage",
+  "cache_settings_tile_subtitle": "Control the local storage behaviour"
 }
