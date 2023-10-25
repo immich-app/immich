@@ -366,7 +366,6 @@
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnmergeFaceSelector
-    {people}
     assetIds={Array.from($selectedAssets).map((a) => a.id)}
     personId={data.person.id}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}

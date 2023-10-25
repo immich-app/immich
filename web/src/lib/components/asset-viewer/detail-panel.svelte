@@ -17,9 +17,8 @@
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Pencil from 'svelte-material-icons/Pencil.svelte';
   import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
-  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
+  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let asset: AssetResponseDto;
@@ -120,7 +119,7 @@
         class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
         on:click={() => dispatch('close')}
       >
-      <Icon path={mdiClose} size="24" />
+        <Icon path={mdiClose} size="24" />
       </button>
 
       <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
@@ -159,7 +158,7 @@
         <div class="grid grid-cols-2 items-center">
           <h2 class="justify-self-start uppercase">People</h2>
           <button class="justify-self-end" on:click={() => (showEditFaces = true)}>
-            <Pencil size={18} />
+            <Icon path={mdiPencil} size={18} />
           </button>
           {#if unassignedFaces.length > 0}
             <p>{`${unassignedFaces.length} face${unassignedFaces.length > 1 ? 's' : ''} available to add`}</p>
@@ -224,7 +223,7 @@
         })}
         <div class="flex gap-4 py-4">
           <div>
-            <Calendar size="24" />
+            <Icon path={mdiCalendar} size="24" />
           </div>
 
           <div>
@@ -256,7 +255,7 @@
 
       {#if asset.exifInfo?.fileSizeInByte}
         <div class="flex gap-4 py-4">
-          <div><ImageOutline size="24" /></div>
+          <div><Icon path={mdiImageOutline} size="24" /></div>
 
           <div>
             <p class="break-all">
@@ -280,7 +279,7 @@
 
       {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
         <div class="flex gap-4 py-4">
-          <div><CameraIris size="24" /></div>
+          <div><Icon path={mdiCameraIris} size="24" /></div>
 
           <div>
             <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
@@ -309,24 +308,24 @@
 
       {#if asset.exifInfo?.city}
         <div class="flex gap-4 py-4">
-          <div><MapMarkerOutline size="24" /></div>
-        <div>
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
           <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
+            <div>
+              <p>{asset.exifInfo.city}</p>
+              {#if asset.exifInfo?.state}
+                <div class="flex gap-2 text-sm">
+                  <p>{asset.exifInfo.state}</p>
+                </div>
+              {/if}
+              {#if asset.exifInfo?.country}
+                <div class="flex gap-2 text-sm">
+                  <p>{asset.exifInfo.country}</p>
+                </div>
+              {/if}
+            </div>
           </div>
         </div>
       {/if}
-
     </div>
   </section>
 

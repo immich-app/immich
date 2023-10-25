@@ -146,7 +146,7 @@
     {/if}
     {#if isOwner}
       {#if !asset.isReadOnly && !asset.isExternal}
-        <CircleIconButton isOpacity={true} logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+        <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       {/if}
       <CircleIconButton
         isOpacity={true}
