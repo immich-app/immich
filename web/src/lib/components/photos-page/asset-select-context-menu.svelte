@@ -9,10 +9,9 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import type Icon from 'svelte-material-icons/AbTesting.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
 
-  export let icon: typeof Icon;
+  export let icon: string;
   export let title: string;
 
   let showContextMenu = false;
@@ -27,7 +26,7 @@
 </script>
 
 <div use:clickOutside on:outclick={() => (showContextMenu = false)}>
-  <CircleIconButton {title} logo={icon} on:click={handleShowMenu} />
+  <CircleIconButton {title} {icon} on:click={handleShowMenu} />
   {#if showContextMenu}
     <ContextMenu {...contextMenuPosition}>
       <div class="flex flex-col rounded-lg">

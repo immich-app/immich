@@ -3,10 +3,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { OnClick, OnShowContextMenu } from './album-card';
   import { getContextMenuPosition } from '../../utils/context-menu';
+  import { mdiDotsVertical } from '@mdi/js';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
@@ -75,7 +76,7 @@
       data-testid="context-button-parent"
     >
       <IconButton color="transparent-primary">
-        <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
+        <Icon path={mdiDotsVertical} size="20" class="icon-white-drop-shadow text-white" />
       </IconButton>
     </div>
   {/if}

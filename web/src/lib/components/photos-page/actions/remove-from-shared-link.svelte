@@ -1,11 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { SharedLinkResponseDto, api } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
   import { handleError } from '../../../utils/handle-error';
+  import { mdiDeleteOutline } from '@mdi/js';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -45,7 +45,7 @@
   };
 </script>
 
-<CircleIconButton title="Remove from shared link" on:click={() => (removing = true)} logo={DeleteOutline} />
+<CircleIconButton title="Remove from shared link" on:click={() => (removing = true)} icon={mdiDeleteOutline} />
 
 {#if removing}
   <ConfirmDialogue

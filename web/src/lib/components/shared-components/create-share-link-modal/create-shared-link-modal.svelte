@@ -7,11 +7,12 @@
   import { handleError } from '$lib/utils/handle-error';
   import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
+  import { mdiLink } from '@mdi/js';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -140,7 +141,7 @@
 <BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
-      <Link size={24} />
+      <Icon path={mdiLink} size={24} />
       {#if editingLink}
         <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
       {:else}

@@ -2,12 +2,12 @@
   import { browser } from '$app/environment';
 
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
+  import { mdiClose } from '@mdi/js';
 
   export let showBackButton = true;
-  export let backIcon = Close;
+  export let backIcon = mdiClose;
   export let tailwindClasses = '';
   export let forceDark = false;
 
@@ -51,7 +51,7 @@
       {#if showBackButton}
         <CircleIconButton
           on:click={() => dispatch('close-button-click')}
-          logo={backIcon}
+          icon={backIcon}
           backgroundColor={'transparent'}
           hoverColor={'#e2e7e9'}
           size={'24'}

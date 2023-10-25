@@ -2,9 +2,6 @@
   import { goto } from '$app/navigation';
   import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -16,8 +13,6 @@
   import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import Pause from 'svelte-material-icons/Pause.svelte';
-  import Play from 'svelte-material-icons/Play.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
@@ -25,11 +20,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -368,14 +363,14 @@
       <!-- SlideShowController -->
       <div class="flex">
         <div class="m-4 flex gap-2">
-          <CircleIconButton logo={Close} on:click={handleStopSlideshow} title="Exit Slideshow" />
+          <CircleIconButton icon={mdiClose} on:click={handleStopSlideshow} title="Exit Slideshow" />
           <CircleIconButton
-            logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
+            icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
             on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
             title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
           />
-          <CircleIconButton logo={ChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton logo={ChevronRight} on:click={navigateAssetForward} title="Next" />
+          <CircleIconButton icon={mdiChevronLeft} on:click={navigateAssetBackward} title="Previous" />
+          <CircleIconButton icon={mdiChevronRight} on:click={navigateAssetForward} title="Next" />
         </div>
         <ProgressBar
           autoplay
@@ -414,7 +409,7 @@
 
   {#if !isSlideshowMode && showNavigation}
     <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
+      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
     </div>
   {/if}
 
@@ -425,7 +420,7 @@
           <div
             class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
           >
-            <ImageBrokenVariant size="25%" />
+            <Icon path={mdiImageBrokenVariant} size="25%" />
           </div>
         </div>
       {:else if asset.type === AssetTypeEnum.Image}
@@ -455,7 +450,7 @@
 
   {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
+      <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
 

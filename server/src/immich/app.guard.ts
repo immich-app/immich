@@ -99,11 +99,6 @@ export class AppGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<AuthRequest>();
 
     const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
-    if (!authDto) {
-      this.logger.warn(`Denied access to authenticated route: ${req.path}`);
-      return false;
-    }
-
     if (authDto.isPublicUser && !isSharedRoute) {
       this.logger.warn(`Denied access to non-shared route: ${req.path}`);
       return false;

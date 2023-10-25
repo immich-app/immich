@@ -7,8 +7,6 @@
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { TimeBucketSize, type AlbumResponseDto, type SharedLinkResponseDto } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
@@ -21,6 +19,7 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -122,12 +121,12 @@
           <CircleIconButton
             title="Add Photos"
             on:click={() => openFileUploadDialog(album.id)}
-            logo={FileImagePlusOutline}
+            icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum()} logo={FolderDownloadOutline} />
+          <CircleIconButton title="Download" on:click={() => downloadAlbum()} icon={mdiFolderDownloadOutline} />
         {/if}
 
         <ThemeButton />

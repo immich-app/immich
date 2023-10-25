@@ -1,10 +1,8 @@
 <script>
   import { page } from '$app/stores';
+  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import CodeTags from 'svelte-material-icons/CodeTags.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import Message from 'svelte-material-icons/Message.svelte';
-  import PartyPopper from 'svelte-material-icons/PartyPopper.svelte';
+  import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { copyToClipboard } from '../api/utils';
 
   const handleCopy = async () => {
@@ -43,7 +41,7 @@
                 on:click={() => handleCopy()}
                 class="rounded-full bg-immich-primary px-3 py-2 text-sm text-white shadow-md transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80"
               >
-                <ContentCopy size={24} />
+                <Icon path={mdiContentCopy} size={24} />
               </button>
             </div>
           </div>
@@ -71,7 +69,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
-                <Message size={24} />
+                <Icon path={mdiMessage} size={24} />
                 <p class="text-sm">Get Help</p>
               </button>
             </a>
@@ -83,7 +81,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
-                <PartyPopper size={24} />
+                <Icon path={mdiPartyPopper} size={24} />
                 <p class="text-sm">Read Changelog</p>
               </button>
             </a>
@@ -95,7 +93,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
-                <CodeTags size={24} />
+                <Icon path={mdiCodeTags} size={24} />
                 <p class="text-sm">Check Logs</p>
               </button>
             </a>
