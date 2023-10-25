@@ -33,7 +33,7 @@
   export let showDetailButton: boolean;
   export let showSlideshow = false;
 
-  const isOwner = asset.ownerId === $page.data.user?.id;
+  $: isOwner = asset.ownerId === $page.data.user?.id;
 
   type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
 
