@@ -13,12 +13,15 @@ part of openapi.api;
 class ServerConfigDto {
   /// Returns a new [ServerConfigDto] instance.
   ServerConfigDto({
+    required this.customCss,
     required this.isInitialized,
     required this.loginPageMessage,
     required this.mapTileUrl,
     required this.oauthButtonText,
     required this.trashDays,
   });
+
+  String customCss;
 
   bool isInitialized;
 
@@ -32,6 +35,7 @@ class ServerConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
+     other.customCss == customCss &&
      other.isInitialized == isInitialized &&
      other.loginPageMessage == loginPageMessage &&
      other.mapTileUrl == mapTileUrl &&
@@ -41,6 +45,7 @@ class ServerConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (customCss.hashCode) +
     (isInitialized.hashCode) +
     (loginPageMessage.hashCode) +
     (mapTileUrl.hashCode) +
@@ -48,10 +53,11 @@ class ServerConfigDto {
     (trashDays.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, mapTileUrl=$mapTileUrl, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[customCss=$customCss, isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, mapTileUrl=$mapTileUrl, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'customCss'] = this.customCss;
       json[r'isInitialized'] = this.isInitialized;
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'mapTileUrl'] = this.mapTileUrl;
@@ -68,6 +74,7 @@ class ServerConfigDto {
       final json = value.cast<String, dynamic>();
 
       return ServerConfigDto(
+        customCss: mapValueOfType<String>(json, r'customCss')!,
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         mapTileUrl: mapValueOfType<String>(json, r'mapTileUrl')!,
@@ -120,6 +127,7 @@ class ServerConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'customCss',
     'isInitialized',
     'loginPageMessage',
     'mapTileUrl',

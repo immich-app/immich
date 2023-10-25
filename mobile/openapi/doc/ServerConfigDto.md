@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**customCss** | **String** |  | 
 **isInitialized** | **bool** |  | 
 **loginPageMessage** | **String** |  | 
 **mapTileUrl** | **String** |  | 

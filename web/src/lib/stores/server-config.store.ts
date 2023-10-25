@@ -28,6 +28,7 @@ export const serverConfig = writable<ServerConfig>({
   loginPageMessage: '',
   trashDays: 30,
   isInitialized: false,
+  customCss: '',
 });
 
 export const loadConfig = async () => {

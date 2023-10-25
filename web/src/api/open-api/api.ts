@@ -2732,6 +2732,12 @@ export interface SearchResponseDto {
 export interface ServerConfigDto {
     /**
      * 
+     * @type {string}
+     * @memberof ServerConfigDto
+     */
+    'customCss': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ServerConfigDto
      */

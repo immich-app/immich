@@ -83,6 +83,7 @@ export class ServerInfoService {
       mapTileUrl: config.map.tileUrl,
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
+      customCss: config.theme.customCss,
       isInitialized,
     };
   }

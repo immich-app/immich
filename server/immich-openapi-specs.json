@@ -7613,6 +7613,9 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "customCss": {
+            "type": "string"
+          },
           "isInitialized": {
             "type": "boolean"
           },
@@ -7634,6 +7637,7 @@
           "oauthButtonText",
           "loginPageMessage",
           "mapTileUrl",
+          "customCss",
           "isInitialized"
         ],
         "type": "object"

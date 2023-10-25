@@ -83,6 +83,7 @@ export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
   mapTileUrl!: string;
+  customCss!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;
