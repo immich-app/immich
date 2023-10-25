@@ -37,6 +37,7 @@ export interface IPersonRepository {
   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   reassignFace(oldPersonId: string, newPersonId: string, assetId: string): Promise<number>;
+  unassignFace(id: string): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -7,17 +7,23 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
   import Merge from 'svelte-material-icons/Merge.svelte';
+  import CloseThick from 'svelte-material-icons/CloseThick.svelte';
   import Plus from 'svelte-material-icons/Plus.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import PeopleList from './people-list.svelte';
 
-  export let people: PersonResponseDto[] = [];
+  let people: PersonResponseDto[] = [];
   export let assetIds: string[];
   export let personId: string;
 
   const data: AssetFaceUpdateItem[] = [];
+
+  onMount(async () => {
+    const { data } = await api.personApi.getAllPeople({ withHidden: false });
+    people = data.people;
+  });
 
   for (const assetId of assetIds) {
     data.push({ assetId, personId });
@@ -27,6 +33,7 @@
   let disableButtons = false;
   let showLoadingSpinnerCreate = false;
   let showLoadingSpinnerReassign = false;
+  let showLoadingSpinnerUnassign = false;
 
   let hasSelection = false;
 
@@ -48,6 +55,23 @@
   const handleRemoveSelectedPerson = () => {
     selectedPerson = null;
     hasSelection = false;
+  };
+
+  const handleUnassign = async () => {
+    try {
+      showLoadingSpinnerCreate = true;
+      disableButtons = true;
+      await api.personApi.unassignFaces({
+        assetFaceUpdateDto: { data },
+      });
+      notificationController.show({
+        message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to reassign assets to a new person');
+    }
+    dispatch('confirm');
   };
 
   const handleCreate = async () => {
@@ -105,9 +129,24 @@
       <div class="flex gap-4">
         <!-- TODO: Implement actions  -->
         <Button
+          title={'Unassign selected assets'}
+          size={'sm'}
+          disabled={disableButtons || hasSelection}
+          on:click={() => {
+            handleUnassign();
+          }}
+        >
+          {#if !showLoadingSpinnerUnassign}
+            <CloseThick size={18} />
+          {:else}
+            <LoadingSpinner />
+          {/if}
+          <span class="ml-2"> Unassign assets</span></Button
+        >
+        <Button
           title={'Assign selected assets to a new person'}
           size={'sm'}
-          disabled={disableButtons}
+          disabled={disableButtons || hasSelection}
           on:click={() => {
             handleCreate();
           }}

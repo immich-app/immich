@@ -22,7 +22,6 @@
   import Restart from 'svelte-material-icons/Restart.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { browser } from '$app/environment';
 
   export let people: PersonResponseDto[];
   export let unassignedFaces: UnassignedFacesResponseDto[];
@@ -31,7 +30,6 @@
   let peopleToAdd: (PersonResponseDto | string)[] = [];
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
-  let maxPeople = false;
 
   const dispatch = createEventDispatcher();
 
@@ -65,11 +63,6 @@
       const { data } = await api.searchApi.searchPerson({ name: searchName });
       searchedPeople = data.filter((item) => item.id !== people[editedPerson].id);
       searchWord = searchName;
-      if (data.length < 20) {
-        maxPeople = false;
-      } else {
-        maxPeople = true;
-      }
     } catch (error) {
       handleError(error, "Can't search people");
     } finally {

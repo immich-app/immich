@@ -302,6 +302,28 @@ export class PersonService {
     return result;
   }
 
+  async unassignFaces(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+    const results: BulkIdResponseDto[] = [];
+
+    for (const data of dto.data) {
+      try {
+        const [face] = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
+        await this.access.requirePermission(authUser, Permission.ASSET_VIEW, face.assetId);
+        await this.repository.unassignFace(face.id);
+
+        results.push({id:face.id, success:true});
+      } catch (error: Error | any) {
+        this.logger.error(
+          `Unable to un-merge asset ${data.assetId} from ${data.personId}`,
+          error?.stack,
+        );
+        results.push({ id: 'face.id', success: false, error: BulkIdErrorReason.UNKNOWN });
+      }
+    }
+
+    return results;
+  }
+
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);

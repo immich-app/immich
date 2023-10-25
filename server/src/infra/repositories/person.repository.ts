@@ -59,6 +59,17 @@ export class PersonRepository implements IPersonRepository {
     return result.affected ?? 0;
   }
 
+  async unassignFace(id: string): Promise<number> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId: null })
+      .where({ id })
+      .execute();
+
+    return result.affected ?? 0;
+  }
+
   delete(entity: PersonEntity): Promise<PersonEntity | null> {
     return this.personRepository.remove(entity);
   }
