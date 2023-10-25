@@ -100,10 +100,9 @@
                       ? 'text-immich-primary dark:text-immich-dark-primary'
                       : ''}"
                   />
-                <hr
-                  role="decoration"
+                <div
                   class={$page.url.pathname.includes('/admin')
-                    ? 'border-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
+                    ? 'border-t-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
                     : 'hidden'}
                 />
               </div>
