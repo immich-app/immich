@@ -771,7 +771,7 @@ export interface AssetResponseDto {
      * @type {number}
      * @memberof AssetResponseDto
      */
-    'stackCount': number;
+    'stackCount': number | null;
     /**
      * 
      * @type {string}

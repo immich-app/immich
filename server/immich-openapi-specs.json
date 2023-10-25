@@ -5988,6 +5988,7 @@
             "type": "array"
           },
           "stackCount": {
+            "nullable": true,
             "type": "integer"
           },
           "stackParentId": {

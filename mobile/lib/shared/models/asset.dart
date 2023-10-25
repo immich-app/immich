@@ -153,7 +153,10 @@ class Asset {
 
   String? stackParentId;
 
-  int stackCount;
+  @ignore
+  int get stackChildrenCount => stackCount ?? 0;
+
+  int? stackCount;
 
   /// `true` if this [Asset] is present on the device
   @ignore
@@ -253,7 +256,11 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
-        stackCount != a.stackCount;
+        // no local stack count or different count from remote
+        ((stackCount == null && a.stackCount != null) ||
+            (stackCount != null &&
+                a.stackCount != null &&
+                stackCount != a.stackCount));
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -269,6 +276,7 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          stackCount: a.stackCount ?? stackCount,
         );
       } else if (isRemote) {
         return _copyWith(
@@ -299,7 +307,7 @@ class Asset {
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
           stackParentId: a.stackParentId,
-          stackCount: a.stackCount,
+          stackCount: a.stackCount ?? stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
