@@ -1,17 +1,15 @@
-FROM ghcr.io/immich-app/base-server:main as builder
+FROM immich-base-image:dev as dev
 
 COPY package.json package-lock.json ./
-
 RUN npm ci
-
 COPY . .
 
-FROM builder as prod
+FROM dev as prod
 
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM ghcr.io/immich-app/base-server:main
+FROM immich-base-image:runtime
 
 ENV NODE_ENV=production
 
