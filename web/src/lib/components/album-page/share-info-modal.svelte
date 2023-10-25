@@ -3,7 +3,6 @@
   import { AlbumResponseDto, api, UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -11,6 +10,7 @@
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
+  import { mdiDotsVertical } from '@mdi/js';
 
   export let album: AlbumResponseDto;
 
@@ -99,7 +99,7 @@
               <div>
                 <CircleIconButton
                   on:click={(event) => showContextMenu(event, user)}
-                  logo={DotsVertical}
+                  icon={mdiDotsVertical}
                   backgroundColor="transparent"
                   hoverColor="#e2e7e9"
                   size="20"

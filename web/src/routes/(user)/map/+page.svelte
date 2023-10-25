@@ -12,8 +12,9 @@
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
+  import { mdiCog } from '@mdi/js';
 
   export let data: PageData;
 
@@ -135,7 +136,7 @@
               title="Open map settings"
               on:click={() => (showSettingsModal = true)}
             >
-              <Cog size="100%" class="p-1" />
+              <Icon path={mdiCog} size="100%" class="p-1" />
             </button>
           </Control>
         </Map>

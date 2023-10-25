@@ -4,10 +4,10 @@
   import { websocketStore } from '$lib/stores/websocket';
   import { ServerInfoResponseDto, api } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import Cloud from 'svelte-material-icons/Cloud.svelte';
-  import Dns from 'svelte-material-icons/Dns.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
+  import { mdiCloud, mdiDns } from '@mdi/js';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -40,7 +40,7 @@
 <div class="dark:text-immich-dark-fg">
   <div class="storage-status grid grid-cols-[64px_auto]">
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
-      <Cloud size={'24'} />
+      <Icon path={mdiCloud} size={'24'} />
     </div>
     <div class="hidden group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
@@ -68,7 +68,7 @@
   </div>
   <div class="server-status grid grid-cols-[64px_auto]">
     <div class="pb-11 pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
-      <Dns size={'24'} />
+      <Icon path={mdiDns} size={'24'} />
     </div>
     <div class="hidden text-xs group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>

@@ -12,12 +12,9 @@
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { FileReportItemDto, api, copyToClipboard } from '@api';
-  import CheckAll from 'svelte-material-icons/CheckAll.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import Download from 'svelte-material-icons/Download.svelte';
-  import Refresh from 'svelte-material-icons/Refresh.svelte';
-  import Wrench from 'svelte-material-icons/Wrench.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
+  import { mdiWrench, mdiCheckAll, mdiDownload, mdiRefresh, mdiContentCopy } from '@mdi/js';
 
   export let data: PageData;
 
@@ -178,25 +175,25 @@
   <div class="flex justify-end gap-2" slot="buttons">
     <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
       <div class="flex place-items-center gap-2 text-sm">
-        <Wrench size="18" />
+        <Icon path={mdiWrench} size="18" />
         Repair All
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
       <div class="flex place-items-center gap-2 text-sm">
-        <CheckAll size="18" />
+        <Icon path={mdiCheckAll} size="18" />
         Check All
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
       <div class="flex place-items-center gap-2 text-sm">
-        <Download size="18" />
+        <Icon path={mdiDownload} size="18" />
         Export
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleRefresh()}>
       <div class="flex place-items-center gap-2 text-sm">
-        <Refresh size="18" />
+        <Icon path={mdiRefresh} size="18" />
         Refresh
       </div>
     </LinkButton>
@@ -273,7 +270,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton logo={ContentCopy} size="18" />
+                    <CircleIconButton icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -313,7 +310,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton logo={ContentCopy} size="18" />
+                    <CircleIconButton icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

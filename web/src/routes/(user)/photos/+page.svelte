@@ -18,10 +18,9 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { TimeBucketSize } from '@api';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
 
   export let data: PageData;
 
@@ -52,7 +51,7 @@
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={Plus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
@@ -60,7 +59,7 @@
       on:escape={() => (handleEscapeKey = true)}
       onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
     />
-    <AssetSelectContextMenu icon={DotsVertical} title="Menu">
+    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <FavoriteAction menuItem removeFavorite={isAllFavorite} />
       <DownloadAction menuItem />
       <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />

@@ -7,13 +7,11 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;
@@ -70,9 +68,9 @@
 {#if menuItem}
   <MenuOption text={force ? 'Permanently Delete' : 'Delete'} on:click={handleTrash} />
 {:else if loading}
-  <CircleIconButton title="Loading" logo={TimerSand} />
+  <CircleIconButton title="Loading" icon={mdiTimerSand} />
 {:else}
-  <CircleIconButton title="Delete" logo={DeleteOutline} on:click={handleTrash} />
+  <CircleIconButton title="Delete" icon={mdiDeleteOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}

@@ -1,15 +1,13 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
-  import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-  import WindowClose from 'svelte-material-icons/WindowClose.svelte';
-
+  import Icon from '$lib/components/elements/icon.svelte';
   import {
     ImmichNotification,
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
+  import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
 
   export let notificationInfo: ImmichNotification;
 
@@ -17,7 +15,7 @@
   let errorPrimaryColor = '#E64132';
   let warningPrimaryColor = '#D08613';
 
-  $: icon = notificationInfo.type === NotificationType.Error ? CloseCircleOutline : InformationOutline;
+  $: icon = notificationInfo.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
 
   $: backgroundColor = () => {
     if (notificationInfo.type === NotificationType.Info) {
@@ -93,13 +91,13 @@
 >
   <div class="flex justify-between">
     <div class="flex place-items-center gap-2">
-      <svelte:component this={icon} color={primaryColor()} size="20" />
+      <Icon path={icon} color={primaryColor()} size="20" />
       <h2 style:color={primaryColor()} class="font-medium" data-testid="title">
         {notificationInfo.type.toString()}
       </h2>
     </div>
     <button on:click|stopPropagation={discard}>
-      <svelte:component this={WindowClose} size="20" />
+      <Icon path={mdiWindowClose} size="20" />
     </button>
   </div>
 

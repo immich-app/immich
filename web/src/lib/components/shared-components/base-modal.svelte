@@ -1,11 +1,11 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import Close from 'svelte-material-icons/Close.svelte';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { mdiClose } from '@mdi/js';
 
   const dispatch = createEventDispatcher();
   export let zIndex = 9999;
@@ -46,7 +46,7 @@
         </slot>
       </div>
 
-      <CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
+      <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} />
     </div>
 
     <div class="">

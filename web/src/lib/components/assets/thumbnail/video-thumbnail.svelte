@@ -1,9 +1,8 @@
 <script lang="ts">
   import { Duration } from 'luxon';
-  import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
-  import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-  import AlertCircleOutline from 'svelte-material-icons/AlertCircleOutline.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
   export let durationInSeconds = 0;
@@ -11,8 +10,8 @@
   export let playbackOnIconHover = false;
   export let showTime = true;
   export let curve = false;
-  export let playIcon = PlayCircleOutline;
-  export let pauseIcon = PauseCircleOutline;
+  export let playIcon = mdiPlayCircleOutline;
+  export let pauseIcon = mdiPauseCircleOutline;
 
   let remainingSeconds = durationInSeconds;
   let loading = true;
@@ -55,12 +54,12 @@
       {#if loading}
         <LoadingSpinner />
       {:else if error}
-        <AlertCircleOutline size="24" class="text-red-600" />
+        <Icon path={mdiAlertCircleOutline} size="24" class="text-red-600" />
       {:else}
-        <svelte:component this={pauseIcon} size="24" />
+        <Icon path={pauseIcon} size="24" />
       {/if}
     {:else}
-      <svelte:component this={playIcon} size="24" />
+      <Icon path={playIcon} size="24" />
     {/if}
   </span>
 </div>

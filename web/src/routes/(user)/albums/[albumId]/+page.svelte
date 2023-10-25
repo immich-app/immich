@@ -35,17 +35,20 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { TimeBucketSize, UserResponseDto, api } from '@api';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
-  import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import {
+    mdiPlus,
+    mdiDotsVertical,
+    mdiArrowLeft,
+    mdiFileImagePlusOutline,
+    mdiShareVariantOutline,
+    mdiDeleteOutline,
+    mdiFolderDownloadOutline,
+    mdiLink,
+  } from '@mdi/js';
 
   export let data: PageData;
 
@@ -313,11 +316,11 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={Plus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <AssetSelectContextMenu icon={DotsVertical} title="Menu">
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
         {#if isAllUserOwned}
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         {/if}
@@ -333,33 +336,33 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
-      <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(backUrl)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(backUrl)}>
         <svelte:fragment slot="trailing">
           <CircleIconButton
             title="Add Photos"
             on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-            logo={FileImagePlusOutline}
+            icon={mdiFileImagePlusOutline}
           />
 
           {#if isOwned}
             <CircleIconButton
               title="Share"
               on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-              logo={ShareVariantOutline}
+              icon={mdiShareVariantOutline}
             />
             <CircleIconButton
               title="Delete album"
               on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-              logo={DeleteOutline}
+              icon={mdiDeleteOutline}
             />
           {/if}
 
           {#if album.assetCount > 0}
-            <CircleIconButton title="Download" on:click={handleDownloadAlbum} logo={FolderDownloadOutline} />
+            <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
             {#if isOwned}
               <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} logo={DotsVertical}>
+                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                   {#if viewMode === ViewMode.ALBUM_OPTIONS}
                     <ContextMenu {...contextMenuPosition}>
                       <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
@@ -465,7 +468,7 @@
                   backgroundColor="#d3d3d3"
                   forceDark
                   size="20"
-                  logo={Link}
+                  icon={mdiLink}
                   on:click={() => (viewMode = ViewMode.LINK_SHARING)}
                 />
               {/if}
@@ -487,7 +490,7 @@
                   backgroundColor="#d3d3d3"
                   forceDark
                   size="20"
-                  logo={Plus}
+                  icon={mdiPlus}
                   on:click={() => (viewMode = ViewMode.SELECT_USERS)}
                   title="Add more users"
                 />
@@ -518,7 +521,9 @@
               on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
               class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
             >
-              <span class="text-text-immich-primary dark:text-immich-dark-primary"><Plus size="24" /> </span>
+              <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                ><Icon path={mdiPlus} size="24" />
+              </span>
               <span class="text-lg">Select photos</span>
             </button>
           </div>
