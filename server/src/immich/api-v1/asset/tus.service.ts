@@ -30,7 +30,7 @@ export class TusService implements OnModuleInit {
       this.initializeTusServer(userId);
     }
 
-    this.tusServers[userId].handle(req, res);
+    await this.tusServers[userId].handle(req, res);
     return this.tusServers[userId];
   }
 
@@ -45,21 +45,8 @@ export class TusService implements OnModuleInit {
         directory: join(StorageCore.getBaseFolder(StorageFolder.TUS_PARTIAL), userId),
       }),
       namingFunction: (req: IncomingMessage) => {
-        let uploadMeta = req.headersDistinct['upload-metadata']; // Lowercase
-        const metadata: Record<string, string> = {};
-
-        if (uploadMeta === undefined) {
-          return randomBytes(16).toString('hex');
-        } else {
-          uploadMeta[0].split(',').map((item) => {
-            const tmp = item.split(' ');
-            const key = tmp[0];
-            const value = Buffer.from(tmp[1], 'base64').toString('ascii');
-            metadata[key] = value;
-          });
-        }
-
-        const extension = metadata['filename'].split('.').pop();
+        const filename = this.getFilename(req);
+        const extension = filename.split('.').pop();
 
         return randomBytes(16).toString('hex') + '.' + extension;
       },
@@ -68,5 +55,32 @@ export class TusService implements OnModuleInit {
     this.tusServers[userId].on(EVENTS.POST_FINISH, (req, res, upload) => {
       this.logger.log(`Upload complete for file ${JSON.stringify(upload)} and server ${userId}`);
     });
+  }
+
+  getFilename(req: IncomingMessage): string {
+    const metadata = this.getMetadata(req);
+
+    if (metadata['filename'] === undefined) throw new Error(`File name not found in Upload-Metadata header!`);
+
+    return metadata['filename']; // TODO metadata type
+  }
+
+  getMetadata(req: IncomingMessage): Record<string, string | undefined> {
+    const uploadMeta = req.headersDistinct['upload-metadata']; // Lowercase
+
+    if (uploadMeta === undefined) {
+      this.logger.error(`Headers: ${JSON.stringify(req.headersDistinct)}`);
+      throw new Error(`Upload-Metadata header has not been found in this request!`);
+    }
+
+    const metadata: Record<string, string> = {};
+    uploadMeta[0].split(',').map((item) => {
+      const tmp = item.split(' ');
+      const key = tmp[0];
+      const value = Buffer.from(tmp[1], 'base64').toString('ascii');
+      metadata[key] = value;
+    });
+
+    return metadata;
   }
 }

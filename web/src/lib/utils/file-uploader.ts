@@ -48,7 +48,7 @@ export const openFileUploadDialog = async (albumId: string | undefined = undefin
 
 export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
   const extensions = await getExtensions();
-  const promises: Promise<string>[] = [];
+  const promises: Promise<string | undefined>[] = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
     // if (extensions.some((ext) => name.endsWith(ext))) {
