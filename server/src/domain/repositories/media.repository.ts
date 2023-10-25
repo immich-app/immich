@@ -52,6 +52,7 @@ export interface TranscodeOptions {
   outputOptions: string[];
   twoPass: boolean;
   ffmpegPath?: string;
+  ldLibraryPath?: string;
 }
 
 export interface BitrateDistribution {

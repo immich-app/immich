@@ -567,6 +567,7 @@ export class RKMPPConfig extends BaseHWConfig {
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo | undefined): TranscodeOptions {
     const options = super.getOptions(videoStream, audioStream);
     options.ffmpegPath = 'ffmpeg_mpp';
+    options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
     options.outputOptions.push(...this.getSizeOptions(videoStream));
     return options;
   }

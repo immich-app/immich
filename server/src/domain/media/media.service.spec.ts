@@ -1542,6 +1542,7 @@ describe(MediaService.name, () => {
           ],
           twoPass: false,
           ffmpegPath: 'ffmpeg_mpp',
+          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });
@@ -1579,6 +1580,7 @@ describe(MediaService.name, () => {
           ],
           twoPass: false,
           ffmpegPath: 'ffmpeg_mpp',
+          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
         },
       );
     });

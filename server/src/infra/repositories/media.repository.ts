@@ -70,17 +70,28 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        ffmpeg(input, { niceness: 10 })
-          .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
-          .inputOptions(options.inputOptions)
-          .outputOptions(options.outputOptions)
-          .output(output)
-          .on('error', (err, stdout, stderr) => {
-            this.logger.error(stderr);
-            reject(err);
-          })
-          .on('end', resolve)
-          .run();
+        const oldLdLibraryPath = process.env['LD_LIBRARY_PATH'];
+        if (options.ldLibraryPath) {
+          // fluent ffmpeg does not allow to set environment variables, so we do it manually
+          process.env['LD_LIBRARY_PATH'] = (oldLdLibraryPath || '') + options.ldLibraryPath;
+        }
+        try {
+          ffmpeg(input, { niceness: 10 })
+            .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
+            .inputOptions(options.inputOptions)
+            .outputOptions(options.outputOptions)
+            .output(output)
+            .on('error', (err, stdout, stderr) => {
+              this.logger.error(stderr);
+              reject(err);
+            })
+            .on('end', resolve)
+            .run();
+        } finally {
+          if (options.ldLibraryPath) {
+            process.env['LD_LIBRARY_PATH'] = oldLdLibraryPath;
+          }
+        }
       });
     }
 
