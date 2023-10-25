@@ -53,6 +53,8 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
 
+  $: hasStackedAssets = asset.stackCount > 0 && asset.stack;
+
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
@@ -67,13 +69,6 @@
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
   });
-
-  $: {
-    console.log('0----------------');
-    console.log(asset.stack);
-    console.log(asset.stackCount);
-    console.log(asset.stackParentId);
-  }
 
   onDestroy(() => {
     if (browser) {
@@ -453,6 +448,25 @@
         />
       {/if}
     {/key}
+
+    {#if hasStackedAssets && asset.stack != null}
+      <div class="z-[1005] w-full col-span-4 col-start-1 absolute bottom-0 overflow-x-auto">
+        <div class="relative whitespace-nowrap transition-all">
+          <div class="inline-block border-red-300 border-2">
+            {#each asset.stack as stackedAsset (stackedAsset.id)}
+              <button class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl" on:click={() => {}}>
+                <img
+                  class="h-full w-full rounded-xl object-cover"
+                  src={api.getAssetThumbnailUrl(stackedAsset.id, 'JPEG')}
+                  alt={stackedAsset.id}
+                  draggable="false"
+                />
+              </button>
+            {/each}
+          </div>
+        </div>
+      </div>
+    {/if}
   </div>
 
   {#if !isSlideshowMode && showNavigation}
