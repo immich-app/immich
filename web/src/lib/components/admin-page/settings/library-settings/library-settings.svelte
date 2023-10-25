@@ -9,6 +9,7 @@
   import SettingSwitch from '../setting-switch.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
+  import { handleError } from '../../../../utils/handle-error';
 
   export let libraryConfig: SystemConfigLibraryDto; // this is the config that is being edited
   export let disabled = false;
@@ -38,15 +39,11 @@
       savedConfig = { ...result.data.library };
 
       notificationController.show({
-        message: 'Library scan settings saved',
+        message: 'Library settings saved',
         type: NotificationType.Info,
       });
     } catch (e) {
-      console.error('Error [library-scan-settings] [saveSetting]', e);
-      notificationController.show({
-        message: 'Unable to save settings',
-        type: NotificationType.Error,
-      });
+      handleError(e, 'Unable to save settings');
     }
   }
 
@@ -57,7 +54,7 @@
     savedConfig = { ...resetConfig.library };
 
     notificationController.show({
-      message: 'Reset library scan settings to the recent saved settings',
+      message: 'Reset library settings to the recent saved settings',
       type: NotificationType.Info,
     });
   }
@@ -69,7 +66,7 @@
     defaultConfig = { ...configs.library };
 
     notificationController.show({
-      message: 'Reset library scan settings to default',
+      message: 'Reset library settings to default',
       type: NotificationType.Info,
     });
   }
