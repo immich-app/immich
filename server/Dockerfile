@@ -1,7 +1,11 @@
-FROM immich-base-image:dev as dev
+FROM immich-base-image:dev as base
 
 COPY package.json package-lock.json ./
 RUN npm ci
+
+FROM immich-base-image:runtime as dev
+
+COPY --from=base /usr/src/app/node_modules ./node_modules
 COPY . .
 
 FROM dev as prod
@@ -9,7 +13,7 @@ FROM dev as prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM immich-base-image:prod
+FROM immich-base-image:runtime
 
 ENV NODE_ENV=production
 
