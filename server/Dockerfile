@@ -9,7 +9,7 @@ FROM dev as prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM immich-base-image:runtime
+FROM immich-base-image:prod
 
 ENV NODE_ENV=production
 
