@@ -153,14 +153,6 @@
         disabled={!isOwner}
       />
     </section>
-    {#if asset.exifInfo?.dateTimeOriginal}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
-      <div class="flex gap-4 py-4">
-        <div>
-          <Icon path={mdiCalendar} size="24" />
-        </div>
 
     {#if !api.isSharedLink && people.length > 0}
       <section class="px-4 py-4 text-sm">
@@ -286,9 +278,9 @@
         </div>
       {/if}
 
-    {#if asset.exifInfo?.fileSizeInByte}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageOutline} size="24" /></div>
+      {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
+        <div class="flex gap-4 py-4">
+          <div><CameraIris size="24" /></div>
 
           <div>
             <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
@@ -315,10 +307,10 @@
         </div>
       {/if}
 
-    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiCameraIris} size="24" /></div>
-
+      {#if asset.exifInfo?.city}
+        <div class="flex gap-4 py-4">
+          <div><MapMarkerOutline size="24" /></div>
+        <div>
           <div>
             <p>{asset.exifInfo.city}</p>
             {#if asset.exifInfo?.state}
@@ -333,68 +325,8 @@
             {/if}
           </div>
         </div>
-      </div>
-    {/if}
+      {/if}
 
-    {#if asset.exifInfo?.city}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-        <div>
-          <p>{asset.exifInfo.city}</p>
-          {#if asset.exifInfo?.state}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.state}</p>
-            </div>
-          {/if}
-          {#if asset.exifInfo?.country}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.country}</p>
-            </div>
-          {/if}
-        </div>
-      </div>
-    {/if}
-  </div>
-</section>
-
-{#if latlng && $featureFlags.loaded && $featureFlags.map}
-  <div class="h-[360px]">
-    {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
-      <Map center={latlng} zoom={14}>
-        <TileLayer
-          urlTemplate={$serverConfig.mapTileUrl}
-          options={{
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          }}
-        />
-        <Marker {latlng}>
-          <p>
-            {lat}, {lng}
-          </p>
-          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
-            Open in OpenStreetMap
-          </a>
-        </Marker>
-      </Map>
-    {/await}
-  </div>
-{/if}
-
-{#if asset.owner && !isOwner}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
-    <p class="text-sm">SHARED BY</p>
-    <div class="flex gap-4 pt-4">
-      <div>
-        <UserAvatar user={asset.owner} size="md" autoColor />
-      </div>
-
-      <div class="mb-auto mt-auto">
-        <p>
-          {asset.owner.firstName}
-          {asset.owner.lastName}
-        </p>
-      </div>
     </div>
   </section>
 

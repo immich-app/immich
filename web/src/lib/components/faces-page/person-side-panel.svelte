@@ -7,21 +7,17 @@
 
 <script lang="ts">
   import { blur, fly } from 'svelte/transition';
-  import ArrowLeftThin from 'svelte-material-icons/ArrowLeftThin.svelte';
-  import Magnify from 'svelte-material-icons/Magnify.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+
   import { linear } from 'svelte/easing';
   import { api, ThumbnailFormat, type PersonResponseDto, UnassignedFacesResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { cloneDeep } from 'lodash-es';
   import { handleError } from '$lib/utils/handle-error';
-  import Close from 'svelte-material-icons/Close.svelte';
   import { createEventDispatcher, onMount } from 'svelte';
-  import Minus from 'svelte-material-icons/Minus.svelte';
-  import Account from 'svelte-material-icons/Account.svelte';
-  import Restart from 'svelte-material-icons/Restart.svelte';
+  import { mdiRestart, mdiAccount, mdiMinus, mdiClose, mdiPlus, mdiMagnify, mdiArrowLeftThin } from '@mdi/js';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let people: PersonResponseDto[];
   export let unassignedFaces: UnassignedFacesResponseDto[];
@@ -266,7 +262,7 @@
         class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
         on:click={handleBackButton}
       >
-        <ArrowLeftThin size="24" />
+        <Icon path={mdiArrowLeftThin} size="24" />
       </button>
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
     </div>
@@ -308,7 +304,7 @@
           >
             <button on:click={() => handleReset(index)} class="flex h-full w-full">
               <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                <Minus size={18} />
+                <Icon path={mdiMinus} size={18} />
               </div>
             </button>
           </div>
@@ -320,13 +316,13 @@
             {#if (selectedPersonToCreate[index] && selectedPersonToCreate[index]?.canEdit !== false) || selectedPersonToReassign[index]}
               <button on:click={() => handleReset(index)} class="flex h-full w-full">
                 <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                  <Restart size={18} />
+                  <Icon path={mdiRestart} size={18} />
                 </div>
               </button>
             {:else}
               <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
                 <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                  <Account size={18} />
+                  <Icon path={mdiAccount} size={18} />
                 </div>
               </button>
             {/if}
@@ -354,7 +350,7 @@
           >
             <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
               <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                <Minus size={18} />
+                <Icon path={mdiMinus} size={18} />
               </div>
             </button>
           </div>
@@ -376,7 +372,7 @@
             class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
             on:click={handleBackButton}
           >
-            <ArrowLeftThin size="24" />
+            <Icon path={mdiArrowLeftThin} size="24" />
           </button>
           <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Select face</p>
         </div>
@@ -389,7 +385,7 @@
                 searchFaces = true;
               }}
             >
-              <Magnify size="24" />
+              <Icon path={mdiMagnify} size="24" />
             </button>
           {:else}
             <div
@@ -404,7 +400,7 @@
             on:click={() => handleCreatePerson()}
             title="Create new person"
           >
-            <Plus size="24" />
+            <Icon path={mdiPlus} size="24" />
           </button>
         </div>
       {:else}
@@ -412,7 +408,7 @@
           class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
           on:click={handleBackButton}
         >
-          <ArrowLeftThin size="24" />
+          <Icon path={mdiArrowLeftThin} size="24" />
         </button>
         <input
           class="w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg"
@@ -426,7 +422,7 @@
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
           on:click={() => (searchFaces = false)}
         >
-          <Close size="24" />
+          <Icon path={mdiClose} size="24" />
         </button>
       {/if}
     </div>

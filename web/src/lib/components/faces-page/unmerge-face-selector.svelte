@@ -6,13 +6,12 @@
   import { api, AssetFaceUpdateItem, type PersonResponseDto } from '@api';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import Merge from 'svelte-material-icons/Merge.svelte';
-  import CloseThick from 'svelte-material-icons/CloseThick.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+  import { mdiPlus, mdiCloseThick, mdiMerge } from '@mdi/js';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import PeopleList from './people-list.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   let people: PersonResponseDto[] = [];
   export let assetIds: string[];
@@ -137,7 +136,7 @@
           }}
         >
           {#if !showLoadingSpinnerUnassign}
-            <CloseThick size={18} />
+            <Icon path={mdiCloseThick} size={18} />
           {:else}
             <LoadingSpinner />
           {/if}
@@ -152,7 +151,7 @@
           }}
         >
           {#if !showLoadingSpinnerCreate}
-            <Plus size={18} />
+            <Icon path={mdiPlus} size={18} />
           {:else}
             <LoadingSpinner />
           {/if}
@@ -167,7 +166,7 @@
           }}
         >
           {#if !showLoadingSpinnerReassign}
-            <Merge size={18} class="rotate-180" />
+            <Icon path={mdiMerge} size={18} class="rotate-180" />
           {:else}
             <LoadingSpinner />
           {/if}
