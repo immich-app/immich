@@ -1,6 +1,5 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import AccountOff from 'svelte-material-icons/AccountOff.svelte';
   import type { PageData } from './$types';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -15,19 +14,20 @@
   } from '$lib/components/shared-components/notification/notification';
   import ShowHide from '$lib/components/faces-page/show-hide.svelte';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import EyeOutline from 'svelte-material-icons/EyeOutline.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let data: PageData;
   let selectHidden = false;
   let initialHiddenValues: Record<string, boolean> = {};
 
-  let eyeColorMap: Record<string, string> = {};
+  let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let people = data.people.people;
   let countTotalPeople = data.people.total;
@@ -362,7 +362,7 @@
     {#if countTotalPeople > 0}
       <IconButton on:click={() => (selectHidden = !selectHidden)}>
         <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <EyeOutline size="18" />
+          <Icon path={mdiEyeOutline} size="18" />
           <p class="ml-2">Show & hide faces</p>
         </div>
       </IconButton>
@@ -388,7 +388,7 @@
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
-        <AccountOff size="3.5em" />
+        <Icon path={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium">No people</p>
       </div>
     </div>

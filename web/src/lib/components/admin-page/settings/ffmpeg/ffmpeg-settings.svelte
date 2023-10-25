@@ -17,10 +17,11 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import HelpCircleOutline from 'svelte-material-icons/HelpCircleOutline.svelte';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingAccordion from '../setting-accordion.svelte';
+  import { mdiHelpCircleOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
   export let disabled = false;
@@ -93,7 +94,7 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <p class="text-sm dark:text-immich-dark-fg">
-            <HelpCircleOutline class="inline" size="15" />
+            <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
             To learn more about the terminology used here, refer to FFmpeg documentation for
             <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
               >H.264 codec</a

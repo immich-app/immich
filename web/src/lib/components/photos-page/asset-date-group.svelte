@@ -5,14 +5,14 @@
   import type { AssetResponseDto } from '@api';
   import justifiedLayout from 'justified-layout';
   import { createEventDispatcher } from 'svelte';
-  import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-  import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -154,9 +154,9 @@
             on:keydown={() => handleSelectGroup(groupTitle, groupAssets)}
           >
             {#if $selectedGroup.has(groupTitle)}
-              <CheckCircle size="24" color="#4250af" />
+              <Icon path={mdiCheckCircle} size="24" color="#4250af" />
             {:else}
-              <CircleOutline size="24" color="#757575" />
+              <Icon path={mdiCircleOutline} size="24" color="#757575" />
             {/if}
           </div>
         {/if}

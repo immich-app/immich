@@ -6,11 +6,9 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-  import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { OnArchive, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiArchiveArrowUpOutline, mdiArchiveArrowDownOutline, mdiTimerSand } from '@mdi/js';
 
   export let onArchive: OnArchive | undefined = undefined;
 
@@ -18,7 +16,7 @@
   export let unarchive = false;
 
   $: text = unarchive ? 'Unarchive' : 'Archive';
-  $: logo = unarchive ? ArchiveArrowUpOutline : ArchiveArrowDownOutline;
+  $: icon = unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline;
 
   let loading = false;
 
@@ -62,8 +60,8 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" logo={TimerSand} />
+    <CircleIconButton title="Loading" icon={mdiTimerSand} />
   {:else}
-    <CircleIconButton title={text} {logo} on:click={handleArchive} />
+    <CircleIconButton title={text} {icon} on:click={handleArchive} />
   {/if}
 {/if}

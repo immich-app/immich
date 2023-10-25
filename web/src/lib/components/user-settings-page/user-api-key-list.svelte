@@ -1,7 +1,6 @@
 <script lang="ts">
   import { api, APIKeyResponseDto } from '@api';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import APIKeyForm from '../forms/api-key-form.svelte';
@@ -10,6 +9,7 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
   import Button from '../elements/buttons/button.svelte';
+  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
 
   export let keys: APIKeyResponseDto[];
 
@@ -143,13 +143,13 @@
                     on:click={() => (editKey = key)}
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
-                    <PencilOutline size="16" />
+                    <Icon path={mdiPencilOutline} size="16" />
                   </button>
                   <button
                     on:click={() => (deleteKey = key)}
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
-                    <TrashCanOutline size="16" />
+                    <Icon path={mdiTrashCanOutline} size="16" />
                   </button>
                 </td>
               </tr>

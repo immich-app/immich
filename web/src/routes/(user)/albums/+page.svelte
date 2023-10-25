@@ -16,11 +16,7 @@
   import { goto } from '$app/navigation';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import FormatListBulletedSquare from 'svelte-material-icons/FormatListBulletedSquare.svelte';
-  import ViewGridOutline from 'svelte-material-icons/ViewGridOutline.svelte';
   import type { PageData } from './$types';
-  import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
   import { useAlbums } from './albums.bloc';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -37,13 +33,20 @@
   } from '$lib/components/shared-components/notification/notification';
   import type { AlbumResponseDto } from '@api';
   import TableHeader from '$lib/components/elements/table-header.svelte';
-  import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte';
-  import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { orderBy } from 'lodash-es';
+  import {
+    mdiPlusBoxOutline,
+    mdiArrowDownThin,
+    mdiArrowUpThin,
+    mdiFormatListBulletedSquare,
+    mdiPencilOutline,
+    mdiTrashCanOutline,
+    mdiViewGridOutline,
+    mdiDeleteOutline,
+  } from '@mdi/js';
 
   export let data: PageData;
   let shouldShowEditUserForm = false;
@@ -210,7 +213,7 @@
   <div class="flex place-items-center gap-2" slot="buttons">
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
-        <PlusBoxOutline size="18" />
+        <Icon path={mdiPlusBoxOutline} size="18" />
         Create album
       </div>
     </LinkButton>
@@ -220,7 +223,7 @@
       render={(option) => {
         return {
           title: option.sortTitle,
-          icon: option.sortDesc ? ArrowDownThin : ArrowUpThin,
+          icon: option.sortDesc ? mdiArrowDownThin : mdiArrowUpThin,
         };
       }}
       on:select={(event) => {
@@ -236,10 +239,10 @@
     <LinkButton on:click={() => handleChangeListMode()}>
       <div class="flex place-items-center gap-2 text-sm">
         {#if $albumViewSettings.view === AlbumViewMode.List}
-          <ViewGridOutline size="18" />
+          <Icon path={mdiViewGridOutline} size="18" />
           <p class="hidden sm:block">Cover</p>
         {:else}
-          <FormatListBulletedSquare size="18" />
+          <Icon path={mdiFormatListBulletedSquare} size="18" />
           <p class="hidden sm:block">List</p>
         {/if}
       </div>
@@ -293,13 +296,13 @@
                 on:click|stopPropagation={() => handleEdit(album)}
                 class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
               >
-                <PencilOutline size="16" />
+                <Icon path={mdiPencilOutline} size="16" />
               </button>
               <button
                 on:click|stopPropagation={() => chooseAlbumToDelete(album)}
                 class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
               >
-                <TrashCanOutline size="16" />
+                <Icon path={mdiTrashCanOutline} size="16" />
               </button>
             </td>
           </tr>
@@ -323,7 +326,7 @@
   <ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu} on:escape={closeAlbumContextMenu}>
     <MenuOption on:click={() => setAlbumToDelete()}>
       <span class="flex place-content-center place-items-center gap-2">
-        <DeleteOutline size="18" />
+        <Icon path={mdiDeleteOutline} size="18" />
         <p>Delete album</p>
       </span>
     </MenuOption>

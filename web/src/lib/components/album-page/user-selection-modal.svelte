@@ -3,12 +3,12 @@
   import { AlbumResponseDto, api, SharedLinkResponseDto, UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import Link from 'svelte-material-icons/Link.svelte';
-  import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
   import { goto } from '$app/navigation';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { AppRoute } from '$lib/constants';
+  import { mdiLink, mdiShareCircle } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let album: AlbumResponseDto;
   let users: UserResponseDto[] = [];
@@ -128,7 +128,7 @@
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
       on:click={() => dispatch('share')}
     >
-      <Link size={24} />
+      <Icon path={mdiLink} size={24} />
       <p class="text-sm">Create link</p>
     </button>
 
@@ -137,7 +137,7 @@
         class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
         on:click={() => goto(AppRoute.SHARED_LINKS)}
       >
-        <ShareCircle size={24} />
+        <Icon path={mdiShareCircle} size={24} />
         <p class="text-sm">View links</p>
       </button>
     {/if}

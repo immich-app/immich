@@ -12,10 +12,10 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
   import { api } from '@api';
-  import Link from 'svelte-material-icons/Link.svelte';
-  import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
   import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
+  import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let data: PageData;
 
@@ -43,14 +43,14 @@
   <div class="flex" slot="buttons">
     <LinkButton on:click={createSharedAlbum}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <PlusBoxOutline size="18" class="shrink-0" />
+        <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
         <span class="leading-none max-sm:text-xs">Create shared album</span>
       </div>
     </LinkButton>
 
     <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <Link size="18" class="shrink-0" />
+        <Icon path={mdiLink} size="18" class="shrink-0" />
         <span class="leading-none max-sm:text-xs">Shared links</span>
       </div>
     </LinkButton>

@@ -3,7 +3,8 @@
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
-  import EyeOffOutline from 'svelte-material-icons/EyeOffOutline.svelte';
+  import { mdiEyeOffOutline } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
   export let altText: string;
@@ -18,7 +19,7 @@
   export let border = false;
   let complete = false;
 
-  export let eyeColor = 'white';
+  export let eyeColor: 'black' | 'white' = 'white';
 </script>
 
 <img
@@ -43,7 +44,7 @@
 
 {#if hidden}
   <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <EyeOffOutline size="2em" color={eyeColor} />
+    <Icon path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
   </div>
 {/if}
 

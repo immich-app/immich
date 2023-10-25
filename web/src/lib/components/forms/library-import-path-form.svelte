@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import FolderSync from 'svelte-material-icons/FolderSync.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { mdiFolderSync } from '@mdi/js';
 
   export let importPath: string;
   export let title = 'Import path';
@@ -22,7 +23,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <FolderSync size="4em" />
+      <Icon path={mdiFolderSync} size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
       </h1>

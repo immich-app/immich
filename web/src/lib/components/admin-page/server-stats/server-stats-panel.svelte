@@ -1,11 +1,10 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { ServerStatsResponseDto } from '@api';
-  import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-  import Memory from 'svelte-material-icons/Memory.svelte';
-  import PlayCircle from 'svelte-material-icons/PlayCircle.svelte';
-  import { asByteUnitString, getBytesWithUnit } from '../../../utils/byte-units';
+  import { asByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import StatsCard from './stats-card.svelte';
+  import { mdiCameraIris, mdiMemory, mdiPlayCircle } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let stats: ServerStatsResponseDto = {
     photos: 0,
@@ -30,15 +29,15 @@
     <p class="text-sm dark:text-immich-dark-fg">TOTAL USAGE</p>
 
     <div class="mt-5 hidden justify-between lg:flex">
-      <StatsCard logo={CameraIris} title="PHOTOS" value={stats.photos} />
-      <StatsCard logo={PlayCircle} title="VIDEOS" value={stats.videos} />
-      <StatsCard logo={Memory} title="STORAGE" value={statsUsage} unit={statsUsageUnit} />
+      <StatsCard icon={mdiCameraIris} title="PHOTOS" value={stats.photos} />
+      <StatsCard icon={mdiPlayCircle} title="VIDEOS" value={stats.videos} />
+      <StatsCard icon={mdiMemory} title="STORAGE" value={statsUsage} unit={statsUsageUnit} />
     </div>
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <CameraIris size="25" />
+            <Icon path={mdiCameraIris} size="25" />
             <p>PHOTOS</p>
           </div>
 
@@ -50,7 +49,7 @@
         </div>
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <PlayCircle size="25" />
+            <Icon path={mdiPlayCircle} size="25" />
             <p>VIDEOS</p>
           </div>
 
@@ -62,7 +61,7 @@
         </div>
         <div class="flex flex-wrap gap-x-7">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <Memory size="25" />
+            <Icon path={mdiMemory} size="25" />
             <p>STORAGE</p>
           </div>
 
